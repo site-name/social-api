@@ -24,6 +24,8 @@ type Channel struct {
 	Currency       string      `json:"currency" gorm:"column:Currency;type:varchar(3)"`
 	DefaultCountry CountryCode `json:"default_country" gorm:"column:DefaultCountry;type:varchar(10)"` // default "US"
 
+	ShippingZones ShippingZones `json:"-" gorm:"many2many:ShippingZoneChannels"`
+
 	hasOrders bool `db:"-"`
 }
 
@@ -31,6 +33,7 @@ func (c *Channel) GetHasOrders() bool            { return c.hasOrders }
 func (c *Channel) SetHasOrders(b bool)           { c.hasOrders = b }
 func (c *Channel) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
 func (c *Channel) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *Channel) TableName() string             { return ChannelTableName }
 
 // ChannelFilterOption is used for building sql queries
 type ChannelFilterOption struct {

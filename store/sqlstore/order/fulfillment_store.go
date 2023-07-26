@@ -2,12 +2,10 @@ package order
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -18,28 +16,6 @@ type SqlFulfillmentStore struct {
 
 func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
 	return &SqlFulfillmentStore{sqlStore}
-}
-
-func (fs *SqlFulfillmentStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"FulfillmentOrder",
-		"OrderID",
-		"Status",
-		"TrackingNumber",
-		"CreateAt",
-		"ShippingRefundAmount",
-		"TotalRefundAmount",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (fs *SqlFulfillmentStore) ScanFields(holder *model.Fulfillment) []interface{} {
@@ -59,75 +35,32 @@ func (fs *SqlFulfillmentStore) ScanFields(holder *model.Fulfillment) []interface
 
 // Upsert depends on given fulfillment's Id to decide update or insert it
 func (fs *SqlFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
-	var (
-		isSaving bool
-		upsertor *gorm.DB = fs.GetMaster()
-	)
-	if transaction != nil {
-		upsertor = transaction
+	if transaction == nil {
+		transaction = fs.GetMaster()
 	}
 
+	var err error
 	if fulfillment.Id == "" {
-		isSaving = true
-		fulfillment.PreSave()
+		err = transaction.Create(fulfillment).Error
 	} else {
-		fulfillment.PreUpdate()
-	}
+		// prevent update:
+		fulfillment.CreateAt = 0
+		fulfillment.OrderID = ""
+		fulfillment.FulfillmentOrder = 0
 
-	if err := fulfillment.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.FulfillmentTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
-		_, err = upsertor.NamedExec(query, fulfillment)
-
-	} else {
-		oldFulfillment, err := fs.Get(fulfillment.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		// set default fields:
-		fulfillment.OrderID = oldFulfillment.OrderID
-		fulfillment.CreateAt = oldFulfillment.CreateAt
-
-		query := "UPDATE " + model.FulfillmentTableName + " SET " + fs.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = upsertor.NamedExec(query, fulfillment)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
+		err = transaction.Model(fulfillment).Updates(fulfillment).Error
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert fulfillment with id=%s", fulfillment.Id)
+		return nil, errors.Wrap(err, "failed to upsert fulfillment")
 	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple fulfillents were updated: %d instead of 1", numUpdated)
-	}
-
 	return fulfillment, nil
 }
 
 // Get fidns and returns a fulfillment with given id
 func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 	var ffm model.Fulfillment
-	if err := fs.GetReplica().Get(
-		&ffm,
-		"SELECT * FROM "+model.FulfillmentTableName+" WHERE Id = ?",
-		id,
-	); err != nil {
+	if err := fs.GetReplica().First(&ffm, "Id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.FulfillmentTableName, id)
 		}
@@ -137,48 +70,34 @@ func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 	return &ffm, nil
 }
 
-func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterOption) squirrel.SelectBuilder {
+func (fs *SqlFulfillmentStore) commonQueryBuild(transaction *gorm.DB, option *model.FulfillmentFilterOption) squirrel.SelectBuilder {
 	// decide which fiedlds to select
-	selectFields := fs.ModelFields(model.FulfillmentTableName + ".")
+	selectFields := []string{model.FulfillmentTableName + ".*"}
 	if option.SelectRelatedOrder {
-		selectFields = append(selectFields, fs.Order().ModelFields(model.OrderTableName+".")...)
+		selectFields = append(selectFields, model.OrderTableName+".*")
 	}
 
 	// build query:
 	query := fs.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.FulfillmentTableName)
+		From(model.FulfillmentTableName).
+		Where(option.Conditions)
 
 	// parse option
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.OrderID != nil {
-		query = query.Where(option.OrderID)
-	}
-	if option.Status != nil {
-		query = query.Where(option.Status)
-	}
 	if option.FulfillmentLineID != nil {
-		// joinFunc can be either LeftJoin or InnerJoin
-		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
-
-		if equal, ok := option.FulfillmentLineID.(squirrel.Eq); ok && len(equal) > 0 {
-			for _, value := range equal {
-				if value == nil {
-					joinFunc = query.LeftJoin
-					break
-				}
-			}
-		}
-
-		query = joinFunc(model.FulfillmentLineTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
+		query = query.
+			InnerJoin(model.FulfillmentLineTableName + " ON FulfillmentLines.FulfillmentID = Fulfillments.Id").
 			Where(option.FulfillmentLineID)
+	} else if option.HaveNoFulfillmentLines {
+		query = query.
+			LeftJoin(model.FulfillmentLineTableName + " ON FulfillmentLines.FulfillmentID = Fulfillments.Id").
+			Where("FulfillmentLines.FulfillmentID IS NULL")
 	}
+
 	if option.SelectRelatedOrder {
 		query = query.InnerJoin(model.OrderTableName + " ON (Orders.Id = Fulfillments.OrderID)")
 	}
-	if option.SelectForUpdate {
+	if option.SelectForUpdate && transaction != nil {
 		query = query.Suffix("FOR UPDATE")
 	}
 
@@ -187,9 +106,8 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterO
 
 // GetByOption returns 1 fulfillment, filtered by given option
 func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
-	var runner *gorm.DB = fs.GetReplica()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = fs.GetMaster()
 	}
 
 	var (
@@ -201,14 +119,14 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.F
 		scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
 	}
 
-	queryString, args, err := fs.commonQueryBuild(option).ToSql()
+	queryString, args, err := fs.commonQueryBuild(transaction, option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	err = runner.QueryRow(queryString, args...).Scan(scanFields...)
+	err = transaction.Raw(queryString, args...).Row().Scan(scanFields)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.NewErrNotFound(model.FulfillmentTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find fulfillment based on given option")
@@ -223,17 +141,16 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.F
 
 // FilterByOption finds and returns a slice of fulfillments by given option
 func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
-	var runner *gorm.DB = fs.GetReplica()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = fs.GetMaster()
 	}
 
-	queryString, args, err := fs.commonQueryBuild(option).ToSql()
+	queryString, args, err := fs.commonQueryBuild(transaction, option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := runner.Query(queryString, args...)
+	rows, err := transaction.Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
@@ -267,19 +184,13 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorm.DB, option *mode
 
 // BulkDeleteFulfillments deletes given fulfillments
 func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error {
-	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMaster().Exec
-	if transaction != nil {
-		exeFunc = transaction.Exec
+	if transaction == nil {
+		transaction = fs.GetMaster()
 	}
 
-	res, err := exeFunc("DELETE * FROM "+model.FulfillmentTableName+" WHERE Id in ?", fulfillments.IDs())
+	err := transaction.Raw("DELETE * FROM "+model.FulfillmentTableName+" WHERE Id IN ?", fulfillments.IDs()).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete fulfillments")
-	}
-
-	numDeleted, _ := res.RowsAffected()
-	if int(numDeleted) != len(fulfillments) {
-		return fmt.Errorf("%d fulfillemts deleted instead of %d", numDeleted, len(fulfillments))
 	}
 
 	return nil

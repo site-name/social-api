@@ -2,18 +2,12 @@ package model
 
 import (
 	"fmt"
-	"unicode/utf8"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"gorm.io/gorm"
-)
-
-// max lengths for some fields of product variant
-const (
-	PRODUCT_VARIANT_NAME_MAX_LENGTH = 255
-	PRODUCT_VARIANT_SKU_MAX_LENGTH  = 255
 )
 
 // sort by sku
@@ -41,18 +35,16 @@ type ProductVariant struct {
 	ProductMedias     ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
 	Attributes        []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:VariantID"`
 	AttributesRelated []*AttributeVariant         `json:"-" gorm:"many2many:AssignedVariantAttributes"`
+	WishlistItems     WishlistItems               `json:"-" gorm:"many2many:WishlistItemProductVariants"`
 }
 
-func (p *ProductVariant) BeforeCreate(_ *gorm.DB) error {
-	p.commonPre()
-	return nil
-}
+func (c *ProductVariant) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductVariant) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductVariant) TableName() string             { return ProductVariantTableName }
 
 // ProductVariantFilterOption is used to build sql queries
 type ProductVariantFilterOption struct {
-	Id        squirrel.Sqlizer
-	Name      squirrel.Sqlizer
-	ProductID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	WishlistItemID squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
 	WishlistID     squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...
@@ -75,11 +67,9 @@ func (p *ProductVariant) WeightString() string {
 	}
 
 	u := p.WeightUnit
-
 	if measurement.WEIGHT_UNIT_STRINGS[u] == "" {
 		u = measurement.G
 	}
-
 	return fmt.Sprintf("%f %s", *p.Weight, u)
 }
 
@@ -89,26 +79,12 @@ func (p ProductVariants) DeepCopy() ProductVariants {
 	return lo.Map(p, func(v *ProductVariant, _ int) *ProductVariant { return v.DeepCopy() })
 }
 
-func (s *ProductVariant) SetStocks(stk Stocks) {
-	s.stocks = stk
-}
-func (p *ProductVariant) GetStocks() Stocks {
-	return p.stocks
-}
-
-func (s *ProductVariant) SetProduct(prd *Product) {
-	s.product = prd
-}
-func (p *ProductVariant) GetProduct() *Product {
-	return p.product
-}
-
-func (s *ProductVariant) SetDigitalContent(d *DigitalContent) {
-	s.digitalContent = d
-}
-func (p *ProductVariant) GetDigitalContent() *DigitalContent {
-	return p.digitalContent
-}
+func (s *ProductVariant) SetStocks(stk Stocks)                { s.stocks = stk }
+func (p *ProductVariant) GetStocks() Stocks                   { return p.stocks }
+func (s *ProductVariant) SetProduct(prd *Product)             { s.product = prd }
+func (p *ProductVariant) GetProduct() *Product                { return p.product }
+func (s *ProductVariant) SetDigitalContent(d *DigitalContent) { s.digitalContent = d }
+func (p *ProductVariant) GetDigitalContent() *DigitalContent  { return p.digitalContent }
 
 func (s *ProductVariant) SetVariantChannelListings(d ProductVariantChannelListings) {
 	s.variantChannelListings = d
@@ -135,30 +111,14 @@ func (p ProductVariants) ProductIDs() []string {
 }
 
 func (p *ProductVariant) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product_variant.is_valid.%s.app_error",
-		"product_variant_id=",
-		"ProductVariant.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.ProductID) {
-		return outer("product_id", &p.Id)
-	}
-	if len(p.Sku) > PRODUCT_VARIANT_SKU_MAX_LENGTH {
-		return outer("sku", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Name) > PRODUCT_VARIANT_NAME_MAX_LENGTH {
-		return outer("name", &p.Id)
+		return NewAppError("ProductVariant.IsValid", "model.product_variant.is_valid.product_id.app_error", nil, "please provide valid product id", http.StatusBadRequest)
 	}
 	if p.Weight != nil && *p.Weight <= 0 {
-		return outer("weight", &p.Id)
+		return NewAppError("ProductVariant.IsValid", "model.product_variant.is_valid.weight.app_error", nil, "please provide valid weight", http.StatusBadRequest)
 	}
-	if p.WeightUnit != "" {
-		if _, ok := measurement.WEIGHT_UNIT_CONVERSION[p.WeightUnit]; !ok {
-			return outer("weight_unit", &p.Id)
-		}
+	if _, ok := measurement.WEIGHT_UNIT_CONVERSION[p.WeightUnit]; !ok {
+		return NewAppError("ProductVariant.IsValid", "model.product_variant.is_valid.weight_unit.app_error", nil, "please provide valid weight unit", http.StatusBadRequest)
 	}
 
 	return nil
@@ -175,19 +135,6 @@ func (p *ProductVariant) String() string {
 
 func (p *ProductVariant) IsPreorderActive() bool {
 	return p.IsPreOrder && (p.PreorderEndDate == nil || (p.PreorderEndDate != nil && GetMillis() <= *p.PreorderEndDate))
-
-}
-
-func (p *ProductVariant) ToJSON() string {
-	return ModelToJson(p)
-}
-
-func (p *ProductVariant) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	p.commonPre()
-	p.ModelMetadata.PopulateFields()
 }
 
 func (p *ProductVariant) commonPre() {
@@ -196,13 +143,10 @@ func (p *ProductVariant) commonPre() {
 		p.TrackInventory = NewPrimitive(true)
 	}
 	if p.Weight != nil && p.WeightUnit == "" {
-		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
+		p.WeightUnit = measurement.G
 	}
-}
-
-func (p *ProductVariant) PreUpdate() {
-	p.commonPre()
 	p.ModelMetadata.PopulateFields()
+
 }
 
 func (p *ProductVariant) DeepCopy() *ProductVariant {
@@ -212,24 +156,13 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 
 	res := *p
 
-	if p.Weight != nil {
-		res.Weight = NewPrimitive(*p.Weight)
-	}
-	if p.TrackInventory != nil {
-		res.TrackInventory = NewPrimitive(*p.TrackInventory)
-	}
-	if p.PreorderEndDate != nil {
-		res.PreorderEndDate = NewPrimitive(*p.PreorderEndDate)
-	}
-	if p.PreOrderGlobalThreshold != nil {
-		res.PreOrderGlobalThreshold = NewPrimitive(*p.PreOrderGlobalThreshold)
-	}
-	if p.SortOrder != nil {
-		res.SortOrder = NewPrimitive(*p.SortOrder)
-	}
+	res.Weight = CopyPointer(p.Weight)
+	res.TrackInventory = CopyPointer(p.TrackInventory)
+	res.PreorderEndDate = CopyPointer(p.PreorderEndDate)
+	res.PreOrderGlobalThreshold = CopyPointer(p.PreOrderGlobalThreshold)
+	res.SortOrder = CopyPointer(p.SortOrder)
 
 	res.ModelMetadata = p.ModelMetadata.DeepCopy()
-
 	if p.product != nil {
 		res.product = p.product.DeepCopy()
 	}
@@ -244,18 +177,19 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 }
 
 type ProductVariantTranslation struct {
-	Id               string           `json:"id"`
-	LanguageCode     LanguageCodeEnum `json:"language_code"`
-	ProductVariantID string           `json:"product_variant_id"`
-	Name             string           `json:"name"`
+	Id               string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
+	ProductVariantID string           `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID"`
+	Name             string           `json:"name" gorm:"type:varchar(255);column:Name"`
 }
+
+func (c *ProductVariantTranslation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductVariantTranslation) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductVariantTranslation) TableName() string             { return ProductVariantTranslationTableName }
 
 // ProductVariantTranslationFilterOption is used to build squirrel sql queries
 type ProductVariantTranslationFilterOption struct {
-	Id               squirrel.Sqlizer
-	LanguageCode     squirrel.Sqlizer
-	ProductVariantID squirrel.Sqlizer
-	Name             squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (p *ProductVariantTranslation) String() string {
@@ -266,40 +200,17 @@ func (p *ProductVariantTranslation) String() string {
 	return p.ProductVariantID
 }
 
-func (p *ProductVariantTranslation) PreSave() {
-	if !IsValidId(p.Id) {
-		p.Id = NewId()
-	}
-	p.commonPre()
-}
-
 func (p *ProductVariantTranslation) commonPre() {
 	p.Name = SanitizeUnicode(p.Name)
 }
 
-func (p *ProductVariantTranslation) PreUpdate() {
-	p.commonPre()
-}
-
 func (p *ProductVariantTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product_variant_translation.is_valid.%s.app_error",
-		"product_variant_translation_id=",
-		"ProductVariantTranslation.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.ProductVariantID) {
-		return outer("product_variant_id", &p.Id)
+		return NewAppError("ProductVariantTranslation.IsValid", "model.product_variant_translation.is_valid.product_variant_id.app_error", nil, "please provide valid product variant id", http.StatusBadRequest)
 	}
 	if !p.LanguageCode.IsValid() {
-		return outer("language_code", &p.Id)
+		return NewAppError("ProductVariantTranslation.IsValid", "model.product_variant_translation.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (p *ProductVariantTranslation) ToJSON() string {
-	return ModelToJson(p)
 }

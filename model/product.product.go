@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
@@ -13,34 +14,35 @@ import (
 
 // ordering slug
 type Product struct {
-	Id                   string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	ProductTypeID        string                 `json:"product_type_id" gorm:"type:uuid;index:producttypeid_key"`
-	Name                 string                 `json:"name" gorm:"type:varchar(250)"`
-	Slug                 string                 `json:"slug" gorm:"type:varchar(255);uniqueIndex:product_slug_unique_key"`
-	Description          StringInterface        `json:"description"`
-	DescriptionPlainText string                 `json:"description_plaintext"`
-	CategoryID           *string                `json:"category_id" gorm:"type:uuid;index:"`
-	CreateAt             int64                  `json:"create_at"`
-	UpdateAt             int64                  `json:"update_at"`
-	ChargeTaxes          *bool                  `json:"charge_taxes"` // default true
-	Weight               *float32               `json:"weight"`
-	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
-	DefaultVariantID     *string                `json:"default_variant_id" gorm:"type:uuid;index"`
-	Rating               *float32               `json:"rating"`
+	Id                   string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	ProductTypeID        string                 `json:"product_type_id" gorm:"type:uuid;index:producttypeid_key;column:ProductTypeID"`
+	Name                 string                 `json:"name" gorm:"type:varchar(250);column:Name"`
+	Slug                 string                 `json:"slug" gorm:"type:varchar(255);uniqueIndex:product_slug_unique_key;column:Slug"`
+	Description          StringInterface        `json:"description" gorm:"type:jsonb;column:Description"`
+	DescriptionPlainText string                 `json:"description_plaintext" gorm:"column:DescriptionPlainText"`
+	CategoryID           *string                `json:"category_id" gorm:"type:uuid;index:categoryid_key;column:CategoryID"`
+	CreateAt             int64                  `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
+	UpdateAt             int64                  `json:"update_at" gorm:"type:bigint;autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
+	ChargeTaxes          *bool                  `json:"charge_taxes" gorm:"default:true;column:ChargeTaxes"` // default true
+	Weight               *float32               `json:"weight" gorm:"column:Weight"`
+	WeightUnit           measurement.WeightUnit `json:"weight_unit" gorm:"type:varchar(5);column:WeightUnit"`
+	DefaultVariantID     *string                `json:"default_variant_id" gorm:"type:uuid;index:defaultvariantid_key;column:DefaultVariantID"`
+	Rating               *float32               `json:"rating" gorm:"column:Rating"`
 	ModelMetadata
 	Seo
 
-	productType            *ProductType           `json:"-" gorm:"-"`
-	productVariants        ProductVariants        `json:"-" gorm:"-"`
-	category               *Category              `json:"-" gorm:"-"`
-	medias                 FileInfos              `json:"-" gorm:"-"`
-	productChannelListings ProductChannelListings `json:"-" gorm:"-"`
+	productType            *ProductType           `gorm:"-"`
+	productVariants        ProductVariants        `gorm:"-"`
+	category               *Category              `gorm:"-"`
+	medias                 FileInfos              `gorm:"-"`
+	productChannelListings ProductChannelListings `gorm:"-"`
 
-	Collections       Collections               `json:"-" gorm:"many2many:ProductCollections"`
-	Sales             Sales                     `json:"-" gorm:"many2many:SaleProducts"`
-	Vouchers          Vouchers                  `json:"-" gorm:"many2many:VoucherProducts"`
-	Attributes        AssignedProductAttributes `json:"-" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
-	AttributesRelated []*AttributeProduct       `json:"-" gorm:"many2many:AssignedProductAttributes"`
+	Collections             Collections               `json:"-" gorm:"many2many:ProductCollections"`
+	Sales                   Sales                     `json:"-" gorm:"many2many:SaleProducts"`
+	Vouchers                Vouchers                  `json:"-" gorm:"many2many:VoucherProducts"`
+	Attributes              AssignedProductAttributes `json:"-" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
+	AttributesRelated       []*AttributeProduct       `json:"-" gorm:"many2many:AssignedProductAttributes"`
+	ShippingMethodsExcluded ShippingMethods           `json:"-" gorm:"many2many:ShippingMethodExcludedProducts"`
 }
 
 func (p *Product) GetProductType() *ProductType                        { return p.productType }
@@ -65,8 +67,7 @@ type ProductCountByCategoryID struct {
 // ProductFilterOption is used to compose squirrel sql queries
 type ProductFilterOption struct {
 	// native fields
-	Id       squirrel.Sqlizer
-	CreateAt squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	Limit uint64
 
@@ -202,21 +203,15 @@ func SortByAttributeFields() []string {
 }
 
 func (p *Product) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product.is_valid.%s.app_error",
-		"product_id=",
-		"Product.IsValid",
-	)
-
 	if !IsValidId(p.ProductTypeID) {
-		return outer("product_type_id", &p.Id)
+		return NewAppError("Product.IsValid", "model.product.is_valid.product_type_id.app_error", nil, "please provide valid product type id", http.StatusBadRequest)
 	}
 	if p.CategoryID != nil && !IsValidId(*p.CategoryID) {
-		return outer("category_id", &p.Id)
+		return NewAppError("Product.IsValid", "model.product.is_valid.category_id.app_error", nil, "please provide valid category id", http.StatusBadRequest)
 	}
 	if p.Weight != nil {
 		if _, ok := measurement.WEIGHT_UNIT_STRINGS[p.WeightUnit]; !ok {
-			return outer("weight_unit", &p.Id)
+			return NewAppError("Product.IsValid", "model.product.is_valid.weight_unit.app_error", nil, "please provide valid weight unit", http.StatusBadRequest)
 		}
 	}
 
@@ -235,7 +230,7 @@ func (p *Product) PreUpdate() {
 func (p *Product) commonPre() {
 	p.Name = SanitizeUnicode(p.Name)
 	if p.WeightUnit == "" {
-		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
+		p.WeightUnit = measurement.G
 	}
 	if p.ChargeTaxes == nil {
 		p.ChargeTaxes = NewPrimitive(true)
@@ -251,18 +246,10 @@ func (p *Product) String() string {
 func (p *Product) DeepCopy() *Product {
 	res := *p
 
-	if p.CategoryID != nil {
-		*res.CategoryID = *p.CategoryID
-	}
-	if p.DefaultVariantID != nil {
-		*res.DefaultVariantID = *p.DefaultVariantID
-	}
-	if p.Weight != nil {
-		*res.Weight = *p.Weight
-	}
-	if p.Rating != nil {
-		*res.Rating = *p.Rating
-	}
+	res.CategoryID = CopyPointer(p.CategoryID)
+	res.DefaultVariantID = CopyPointer(p.DefaultVariantID)
+	res.Weight = CopyPointer(p.Weight)
+	res.Rating = CopyPointer(p.Rating)
 
 	if p.Collections != nil {
 		res.Collections = p.Collections.DeepCopy()
@@ -285,6 +272,7 @@ func (p *Product) DeepCopy() *Product {
 	if p.productChannelListings != nil {
 		res.productChannelListings = p.productChannelListings.DeepCopy()
 	}
+	res.ModelMetadata = p.ModelMetadata.DeepCopy()
 
 	return &res
 }

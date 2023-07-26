@@ -1,9 +1,10 @@
 package model
 
 import (
-	"strings"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 // valid values for product media's Type
@@ -17,29 +18,24 @@ var ProductMediaTypeChoices = map[string]string{
 	IMAGE: "An uploaded image or an URL to an image",
 }
 
-// max lengths limits for some fields
-const (
-	PRODUCT_MEDIA_TYPE_MAX_LENGTH         = 32
-	PRODUCT_MEDIA_EXTERNAL_URL_MAX_LENGTH = 256
-	PRODUCT_MEDIA_ALT_MAX_LENGTH          = 128
-	PRODUCT_MEDIA_PPOI_MAX_LENGTH         = 20
-	PRODUCT_MEDIA_IMAGE_LINK_MAX_LENGTH   = 100
-)
-
 type ProductMedia struct {
-	Id          string          `json:"id"`
-	CreateAt    int64           `json:"create_at"`
-	ProductID   string          `json:"product_id"`
-	Ppoi        string          `json:"ppoi"` // holds resolution for images
-	Image       string          `json:"image"`
-	Alt         string          `json:"alt"`
-	Type        string          `json:"type"`
-	ExternalUrl *string         `json:"external_url"`
-	OembedData  StringInterface `json:"oembed_data"`
+	Id          string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt    int64           `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	ProductID   string          `json:"product_id" gorm:"type:uuid;column:ProductID"`
+	Ppoi        string          `json:"ppoi" gorm:"type:varchar(20);column:Ppoi"` // holds resolution for images, not editable
+	Image       string          `json:"image" gorm:"type:varchar(500);column:Image"`
+	Alt         string          `json:"alt" gorm:"type:varchar(128);column:Alt"`
+	Type        string          `json:"type" gorm:"type:varchar(32);column:Type"` // default to "IMAGE"
+	ExternalUrl *string         `json:"external_url" gorm:"type:varchar(256);column:ExternalUrl"`
+	OembedData  StringInterface `json:"oembed_data" gorm:"type:jsonb;column:OembedData"`
 	Sortable
 
 	ProductVariants ProductVariants `json:"-" gorm:"many2many:VariantMedias"`
 }
+
+func (c *ProductMedia) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductMedia) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductMedia) TableName() string             { return ProductMediaTableName }
 
 type ProductMedias []*ProductMedia
 
@@ -51,51 +47,19 @@ type ProductMediaFilterOption struct {
 }
 
 func (p *ProductMedia) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product_media.is_valid.%s.app_error",
-		"product_media_id=",
-		"ProductMedia.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
-	if p.CreateAt == 0 {
-		return outer("create_at", &p.Id)
-	}
 	if !IsValidId(p.ProductID) {
-		return outer("product_id", &p.Id)
+		return NewAppError("ProductMedia.IsValid", "model.product_media.is_valid.product_id.app_error", nil, "please provide valid product id", http.StatusBadRequest)
 	}
-	if len(p.Ppoi) > PRODUCT_MEDIA_PPOI_MAX_LENGTH {
-		return outer("ppoi", &p.Id)
-	}
-	if len(p.Image) > PRODUCT_MEDIA_IMAGE_LINK_MAX_LENGTH {
-		return outer("image", &p.Id)
-	}
-	if len(p.Alt) > PRODUCT_MEDIA_ALT_MAX_LENGTH {
-		return outer("alt", &p.Id)
-	}
-	if ProductMediaTypeChoices[strings.ToUpper(p.Type)] == "" || len(p.Type) > PRODUCT_MEDIA_TYPE_MAX_LENGTH {
-		return outer("type", &p.Id)
-	}
-	if p.ExternalUrl != nil && len(*p.ExternalUrl) > PRODUCT_MEDIA_EXTERNAL_URL_MAX_LENGTH {
-		return outer("external_url", &p.Id)
+	if ProductMediaTypeChoices[p.Type] == "" {
+		return NewAppError("ProductMedia.IsValid", "model.product_media.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (p *ProductMedia) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	p.CreateAt = GetMillis()
-	p.commonPre()
-}
-
 func (p *ProductMedia) commonPre() {
 	p.Alt = SanitizeUnicode(p.Alt)
-}
-
-func (p *ProductMedia) PreUpdate() {
-	p.commonPre()
+	if ProductMediaTypeChoices[p.Type] == "" {
+		p.Type = IMAGE
+	}
 }

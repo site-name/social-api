@@ -4,7 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,28 +14,6 @@ type SqlProductChannelListingStore struct {
 
 func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListingStore {
 	return &SqlProductChannelListingStore{s}
-}
-
-func (ps *SqlProductChannelListingStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"ProductID",
-		"ChannelID",
-		"VisibleInListings",
-		"AvailableForPurchase",
-		"Currency",
-		"DiscountedPriceAmount",
-		"CreateAt",
-		"PublicationDate",
-		"IsPublished",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (ps *SqlProductChannelListingStore) ScanFields(prd *model.ProductChannelListing) []interface{} {

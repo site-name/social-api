@@ -9,30 +9,41 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 type ShippingMethodChannelListing struct {
-	Id                      string           `json:"id"`
-	ShippingMethodID        string           `json:"shipping_method_id"`
-	ChannelID               string           `json:"channel_id"`
-	MinimumOrderPriceAmount *decimal.Decimal `json:"minimum_order_price_amount"`
-	MinimumOrderPrice       *goprices.Money  `json:"minimum_order_price" db:"-"`
-	Currency                string           `json:"currency"`
-	MaximumOrderPriceAmount *decimal.Decimal `json:"maximum_order_price_amount"`
-	MaximumOrderPrice       *goprices.Money  `json:"maximum_order_price" db:"-"`
-	Price                   *goprices.Money  `json:"price" db:"-"`
-	PriceAmount             *decimal.Decimal `json:"price_amount"`
-	CreateAt                int64            `json:"create_at"`
+	Id                      string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ShippingMethodID        string           `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID;index:shippingmethodid_channelid_key"`
+	ChannelID               string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:shippingmethodid_channelid_key"`
+	MinimumOrderPriceAmount *decimal.Decimal `json:"minimum_order_price_amount" gorm:"default:0;column:MinimumOrderPriceAmount"` // default 0
+	Currency                string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
+	MaximumOrderPriceAmount *decimal.Decimal `json:"maximum_order_price_amount" gorm:"column:MaximumOrderPriceAmount"`
+	PriceAmount             *decimal.Decimal `json:"price_amount" gorm:"default:0;column:PriceAmount"`
+	CreateAt                int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+
+	MaximumOrderPrice *goprices.Money `json:"maximum_order_price" gorm:"-"`
+	Price             *goprices.Money `json:"price" gorm:"-"`
+	MinimumOrderPrice *goprices.Money `json:"minimum_order_price" gorm:"-"`
+}
+
+func (c *ShippingMethodChannelListing) BeforeCreate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+func (c *ShippingMethodChannelListing) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+func (c *ShippingMethodChannelListing) TableName() string {
+	return ShippingMethodChannelListingTableName
 }
 
 // ShippingMethodChannelListingFilterOption is used to build sql queries
 type ShippingMethodChannelListingFilterOption struct {
-	Id               squirrel.Sqlizer
-	ShippingMethodID squirrel.Sqlizer
-	ChannelID        squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
-	ChannelSlug squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels.Slug ...
-
+	ChannelSlug                         squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels.Slug ...
 	ShippingMethod_ShippingZoneID_Inner squirrel.Sqlizer // INNER JOIN ShippingMethods ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Id ...
 }
 
@@ -56,12 +67,6 @@ func (s *ShippingMethodChannelListing) IsValid() *AppError {
 		"shipping_method_channel_listing_id=",
 		"ShippingMethodChannelListing.IsValid",
 	)
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
-	if s.CreateAt == 0 {
-		return outer("create_at", &s.Id)
-	}
 	if !IsValidId(s.ShippingMethodID) {
 		return outer("shipping_method_id", &s.Id)
 	}
@@ -97,25 +102,22 @@ func (s *ShippingMethodChannelListing) PopulateNonDbFields() {
 	}
 }
 
-func (s *ShippingMethodChannelListing) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-	s.CreateAt = GetMillis()
-	s.commonPre()
-}
-
 func (s *ShippingMethodChannelListing) commonPre() {
 	if s.MinimumOrderPriceAmount == nil {
 		s.MinimumOrderPriceAmount = &decimal.Zero
+	} else if s.MinimumOrderPrice != nil {
+		s.MinimumOrderPriceAmount = &s.MinimumOrderPrice.Amount
 	}
+
 	if s.PriceAmount == nil {
 		s.PriceAmount = &decimal.Zero
+	} else if s.Price != nil {
+		s.PriceAmount = &s.Price.Amount
 	}
-}
 
-func (s *ShippingMethodChannelListing) PreUpdate() {
-	s.commonPre()
+	if s.MaximumOrderPrice != nil {
+		s.MaximumOrderPriceAmount = &s.MaximumOrderPrice.Amount
+	}
 }
 
 // GetTotal retuns current ShippingMethodChannelListing's Price fields

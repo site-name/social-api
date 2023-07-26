@@ -95,12 +95,9 @@ type RetryLayer struct {
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
-	ShippingMethodExcludedProductStore store.ShippingMethodExcludedProductStore
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
-	ShippingZoneChannelStore           store.ShippingZoneChannelStore
-	ShopStore                          store.ShopStore
 	ShopStaffStore                     store.ShopStaffStore
 	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
@@ -117,10 +114,8 @@ type RetryLayer struct {
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
-	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
-	WishlistItemProductVariantStore    store.WishlistItemProductVariantStore
 }
 
 func (s *RetryLayer) Address() store.AddressStore {
@@ -427,10 +422,6 @@ func (s *RetryLayer) ShippingMethodChannelListing() store.ShippingMethodChannelL
 	return s.ShippingMethodChannelListingStore
 }
 
-func (s *RetryLayer) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
-	return s.ShippingMethodExcludedProductStore
-}
-
 func (s *RetryLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
 	return s.ShippingMethodPostalCodeRuleStore
 }
@@ -441,14 +432,6 @@ func (s *RetryLayer) ShippingMethodTranslation() store.ShippingMethodTranslation
 
 func (s *RetryLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
-}
-
-func (s *RetryLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
-	return s.ShippingZoneChannelStore
-}
-
-func (s *RetryLayer) Shop() store.ShopStore {
-	return s.ShopStore
 }
 
 func (s *RetryLayer) ShopStaff() store.ShopStaffStore {
@@ -515,20 +498,12 @@ func (s *RetryLayer) Warehouse() store.WarehouseStore {
 	return s.WarehouseStore
 }
 
-func (s *RetryLayer) WarehouseShippingZone() store.WarehouseShippingZoneStore {
-	return s.WarehouseShippingZoneStore
-}
-
 func (s *RetryLayer) Wishlist() store.WishlistStore {
 	return s.WishlistStore
 }
 
 func (s *RetryLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
-}
-
-func (s *RetryLayer) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
-	return s.WishlistItemProductVariantStore
 }
 
 type RetryLayerAddressStore struct {
@@ -911,11 +886,6 @@ type RetryLayerShippingMethodChannelListingStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerShippingMethodExcludedProductStore struct {
-	store.ShippingMethodExcludedProductStore
-	Root *RetryLayer
-}
-
 type RetryLayerShippingMethodPostalCodeRuleStore struct {
 	store.ShippingMethodPostalCodeRuleStore
 	Root *RetryLayer
@@ -928,16 +898,6 @@ type RetryLayerShippingMethodTranslationStore struct {
 
 type RetryLayerShippingZoneStore struct {
 	store.ShippingZoneStore
-	Root *RetryLayer
-}
-
-type RetryLayerShippingZoneChannelStore struct {
-	store.ShippingZoneChannelStore
-	Root *RetryLayer
-}
-
-type RetryLayerShopStore struct {
-	store.ShopStore
 	Root *RetryLayer
 }
 
@@ -1021,11 +981,6 @@ type RetryLayerWarehouseStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerWarehouseShippingZoneStore struct {
-	store.WarehouseShippingZoneStore
-	Root *RetryLayer
-}
-
 type RetryLayerWishlistStore struct {
 	store.WishlistStore
 	Root *RetryLayer
@@ -1033,11 +988,6 @@ type RetryLayerWishlistStore struct {
 
 type RetryLayerWishlistItemStore struct {
 	store.WishlistItemStore
-	Root *RetryLayer
-}
-
-type RetryLayerWishlistItemProductVariantStore struct {
-	store.WishlistItemProductVariantStore
 	Root *RetryLayer
 }
 
@@ -7384,66 +7334,6 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.D
 
 }
 
-func (s *RetryLayerShippingMethodExcludedProductStore) Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error {
-
-	tries := 0
-	for {
-		err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShippingMethodExcludedProductStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShippingMethodExcludedProductStore.Save(instance)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
 
 	tries := 0
@@ -7589,146 +7479,6 @@ func (s *RetryLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone 
 	tries := 0
 	for {
 		result, err := s.ShippingZoneStore.Upsert(transaction, shippingZone)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShippingZoneChannelStore) BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error {
-
-	tries := 0
-	for {
-		err := s.ShippingZoneChannelStore.BulkDelete(transaction, options)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerShippingZoneChannelStore) BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShippingZoneChannelStore.BulkSave(transaction, relations)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShippingZoneChannelStore) FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShippingZoneChannelStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShopStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShopStore) Get(shopID string) (*model.Shop, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShopStore.Get(shopID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShopStore.GetByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
-
-	tries := 0
-	for {
-		result, err := s.ShopStore.Upsert(shop)
 		if err == nil {
 			return result, nil
 		}
@@ -9946,86 +9696,6 @@ func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 
 }
 
-func (s *RetryLayerWarehouseShippingZoneStore) Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error {
-
-	tries := 0
-	for {
-		err := s.WarehouseShippingZoneStore.Delete(transaction, options)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
-
-	tries := 0
-	for {
-		result, err := s.WarehouseShippingZoneStore.FilterByCountryCodeAndChannelID(countryCode, channelID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
-
-	tries := 0
-	for {
-		result, err := s.WarehouseShippingZoneStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerWarehouseShippingZoneStore) Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
-
-	tries := 0
-	for {
-		result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 
 	tries := 0
@@ -10166,86 +9836,6 @@ func (s *RetryLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilt
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.WishlistItemProductVariantStore.DeleteRelation(relation)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector *gorm.DB, id string) (*model.WishlistItemProductVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerWishlistItemProductVariantStore) Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.WishlistItemProductVariantStore.Save(wishlistVariant)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayer) Close() {
 	s.Store.Close()
 }
@@ -10351,12 +9941,9 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
-	newStore.ShippingMethodExcludedProductStore = &RetryLayerShippingMethodExcludedProductStore{ShippingMethodExcludedProductStore: childStore.ShippingMethodExcludedProduct(), Root: &newStore}
 	newStore.ShippingMethodPostalCodeRuleStore = &RetryLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &RetryLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
-	newStore.ShippingZoneChannelStore = &RetryLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
-	newStore.ShopStore = &RetryLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
 	newStore.ShopStaffStore = &RetryLayerShopStaffStore{ShopStaffStore: childStore.ShopStaff(), Root: &newStore}
 	newStore.ShopTranslationStore = &RetryLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &RetryLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
@@ -10373,9 +9960,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.VoucherCustomerStore = &RetryLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
-	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &RetryLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &RetryLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
-	newStore.WishlistItemProductVariantStore = &RetryLayerWishlistItemProductVariantStore{WishlistItemProductVariantStore: childStore.WishlistItemProductVariant(), Root: &newStore}
 	return &newStore
 }

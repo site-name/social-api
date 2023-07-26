@@ -51,7 +51,7 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *model.PluginKeyValue) (*model.PluginK
 		return nil, errors.Wrap(err, "plugin_tosql")
 	}
 
-	if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to upsert PluginKeyValue")
 	}
 
@@ -82,7 +82,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byt
 			return false, errors.Wrap(err, "plugin_tosql")
 		}
 
-		if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+		if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 			return false, errors.Wrap(err, "failed to delete PluginKeyValue")
 		}
 
@@ -94,7 +94,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byt
 		if err != nil {
 			return false, errors.Wrap(err, "plugin_tosql")
 		}
-		if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+		if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 			// If the error is from unique constraints violation, it's the result of a
 			// race condition, return false and no error. Otherwise we have a real error and
 			// need to return it.
@@ -124,19 +124,9 @@ func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byt
 			return false, errors.Wrap(err, "plugin_tosql")
 		}
 
-		updateResult, err := ps.GetMaster().Exec(queryString, args...)
+		err = ps.GetMaster().Raw(queryString, args...).Error
 		if err != nil {
 			return false, errors.Wrap(err, "failed to update PluginKeyValue")
-		}
-
-		if rowsAffected, err := updateResult.RowsAffected(); err != nil {
-			// Failed to update
-			return false, errors.Wrap(err, "unable to get rows affected")
-		} else if rowsAffected == 0 {
-
-			// No rows were affected by the update, where condition was not satisfied,
-			// return false, but no error.
-			return false, nil
 		}
 	}
 
@@ -168,15 +158,9 @@ func (ps SqlPluginStore) CompareAndDelete(kv *model.PluginKeyValue, oldValue []b
 		return false, errors.Wrap(err, "plugin_tosql")
 	}
 
-	deleteResult, err := ps.GetMaster().Exec(queryString, args...)
+	err = ps.GetMaster().Raw(queryString, args...).Error
 	if err != nil {
 		return false, errors.Wrap(err, "failed to delete PluginKeyValue")
-	}
-
-	if rowsAffected, err := deleteResult.RowsAffected(); err != nil {
-		return false, errors.Wrap(err, "unable to get rows affected")
-	} else if rowsAffected == 0 {
-		return false, nil
 	}
 
 	return true, nil
@@ -216,9 +200,10 @@ func (ps SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error
 		return nil, errors.Wrap(err, "plugin_tosql")
 	}
 
-	row := ps.GetReplica().QueryRow(queryString, args...)
 	var kv model.PluginKeyValue
-	if err := row.Scan(&kv.PluginId, &kv.Key, &kv.Value, &kv.ExpireAt); err != nil {
+
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&kv).Error
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("PluginKeyValue", fmt.Sprintf("pluginId=%s, key=%s", pluginId, key))
 		}
@@ -239,7 +224,7 @@ func (ps SqlPluginStore) Delete(pluginId, key string) error {
 		return errors.Wrap(err, "plugin_tosql")
 	}
 
-	if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 		return errors.Wrapf(err, "failed to delete PluginKeyValue with pluginId=%s and key=%s", pluginId, key)
 	}
 	return nil
@@ -255,7 +240,7 @@ func (ps SqlPluginStore) DeleteAllForPlugin(pluginId string) error {
 		return errors.Wrap(err, "plugin_tosql")
 	}
 
-	if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 		return errors.Wrapf(err, "failed to get all PluginKeyValues with pluginId=%s ", pluginId)
 	}
 	return nil
@@ -273,7 +258,7 @@ func (ps SqlPluginStore) DeleteAllExpired() error {
 		return errors.Wrap(err, "plugin_tosql")
 	}
 
-	if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+	if err := ps.GetMaster().Raw(queryString, args...).Error; err != nil {
 		return errors.Wrap(err, "failed to delete all expired PluginKeyValues")
 	}
 	return nil
@@ -307,7 +292,7 @@ func (ps SqlPluginStore) List(pluginId string, offset int, limit int) ([]string,
 		return nil, errors.Wrap(err, "plugin_tosql")
 	}
 
-	err = ps.GetReplica().Select(&keys, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&keys).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get PluginKeyValues with pluginId=%s", pluginId)
 	}

@@ -138,8 +138,8 @@ func buildStoreImplement() error {
 				"DigitalContent", "DigitalContentUrl", "ProductMedia", "VariantMedia",
 				"CollectionProduct", "Collection", "CollectionChannelListing", "CollectionTranslation":
 				return "product"
-			case "ShippingMethodTranslation", "ShippingMethodChannelListing", "ShippingMethodExcludedProduct",
-				"ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone", "ShippingZoneChannel":
+			case "ShippingMethodTranslation", "ShippingMethodChannelListing",
+				"ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone":
 				return "shipping"
 			case "Warehouse", "Stock", "Allocation", "WarehouseShippingZone", "PreorderAllocation":
 				return "warehouse"

@@ -1,8 +1,6 @@
 package order
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -94,52 +92,20 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine *model.OrderLine) []interface
 
 // Upsert depends on given orderLine's Id to decide to update or save it
 func (ols *SqlOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error) {
-	var upsertor *gorm.DB = ols.GetMaster()
-	if transaction != nil {
-		upsertor = transaction
+	if transaction == nil {
+		transaction = ols.GetMaster()
 	}
 
-	var isSaving bool
+	var err error
 
 	if orderLine.Id == "" {
-		orderLine.PreSave()
-		isSaving = true
+		err = transaction.Create(orderLine).Error
 	} else {
-		orderLine.PreUpdate()
+		orderLine.CreateAt = 0
+		err = transaction.Model(orderLine).Updates(orderLine).Error
 	}
-
-	if err := orderLine.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.OrderLineTableName + "(" + ols.ModelFields("").Join(",") + ") VALUES (" + ols.ModelFields(":").Join(",") + ")"
-		_, err = upsertor.NamedExec(query, orderLine)
-
-	} else {
-		query := "UPDATE " + model.OrderLineTableName + " SET " + ols.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = upsertor.NamedExec(query, orderLine)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
-
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert order line with id=%s", orderLine.Id)
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple order lines were updated: %d instead of 1", numUpdated)
+		return nil, errors.Wrap(err, "failed to upsert order line")
 	}
 
 	return orderLine, nil
@@ -159,7 +125,7 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*mod
 
 func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	var odl model.OrderLine
-	err := ols.GetReplica().Get(&odl, "SELECT * FROM "+model.OrderLineTableName+" WHERE Id = ?", id)
+	err := ols.GetReplica().First(&odl, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderLineTableName, id)
@@ -172,11 +138,7 @@ func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
-	query, args, err := ols.GetQueryBuilder().Delete("*").From(model.OrderLineTableName).Where(squirrel.Eq{"Id": orderLineIDs}).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "BulkDelete_ToSql")
-	}
-	_, err = ols.GetMaster().Exec(query, args...)
+	err := ols.GetMaster().Raw("DELETE FROM "+model.OrderLineTableName+" WHERE Id IN ?", orderLineIDs).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order lines with given ids")
 	}
@@ -195,34 +157,25 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 //     +) find all order lines that satisfy given option
 //     +) if above operation founds order lines, prefetch the product variants, digital products that are related to found order lines
 func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
-	selectFields := ols.ModelFields(model.OrderLineTableName + ".")
+	selectFields := []string{model.OrderLineTableName + ".*"}
 	if option.SelectRelatedOrder {
-		selectFields = append(selectFields, ols.Order().ModelFields(model.OrderTableName+".")...)
+		selectFields = append(selectFields, model.OrderTableName+".*")
 	}
 	if option.SelectRelatedVariant {
-		selectFields = append(selectFields, ols.ProductVariant().ModelFields(model.ProductVariantTableName+".")...)
+		selectFields = append(selectFields, model.ProductVariantTableName+".*")
 	}
 
 	query := ols.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.OrderLineTableName)
-
-	// parse option
-	for _, opt := range []squirrel.Sqlizer{
-		option.Id,
-		option.OrderID,
-		option.IsShippingRequired,
-		option.IsGiftcard,
-		option.OrderChannelID,
-		option.OrderChannelID,
-	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
+		From(model.OrderLineTableName).
+		Where(option.Conditions)
 
 	if option.SelectRelatedOrder || option.OrderChannelID != nil {
 		query = query.InnerJoin(model.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
+
+		if option.OrderChannelID != nil {
+			query = query.Where(option.OrderChannelID)
+		}
 	}
 
 	if option.VariantDigitalContentID != nil ||
@@ -247,7 +200,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		return nil, errors.Wrap(err, "OrderLineByOption_ToSql_1")
 	}
 
-	rows, err := ols.GetReplica().Query(queryString, args...)
+	rows, err := ols.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
 	}
@@ -303,7 +256,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			productVariants, err = ols.
 				ProductVariant().
 				FilterByOption(&model.ProductVariantFilterOption{
-					Id: squirrel.Eq{model.ProductVariantTableName + ".Id": orderLines.ProductVariantIDs()},
+					Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": orderLines.ProductVariantIDs()},
 				})
 			if err != nil {
 				return nil, err
@@ -315,7 +268,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			digitalContents, err = ols.
 				DigitalContent().
 				FilterByOption(&model.DigitalContentFilterOption{
-					ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": productVariants.IDs()},
+					Conditions: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": productVariants.IDs()},
 				})
 			if err != nil {
 				return nil, err
@@ -327,7 +280,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			products, err = ols.
 				Product().
 				FilterByOption(&model.ProductFilterOption{
-					Id: squirrel.Eq{model.ProductTableName + ".Id": productVariants.ProductIDs()},
+					Conditions: squirrel.Eq{model.ProductTableName + ".Id": productVariants.ProductIDs()},
 				})
 			if err != nil {
 				return nil, err

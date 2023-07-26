@@ -41,10 +41,10 @@ type Session struct {
 	CreateAt       int64     `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 	ExpiresAt      int64     `json:"expires_at" gorm:"type:bigint;column:ExpiresAt"`
 	LastActivityAt int64     `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt;autoUpdateTime:milli;autoCreateTime:milli"`
-	UserId         string    `json:"user_id" column:"type:uuid;column:UserId;index:userid_key"` // uuid, index
+	UserId         string    `json:"user_id" gorm:"type:uuid;column:UserId;index:userid_key"` // uuid, index
 	DeviceId       string    `json:"device_id" gorm:"type:varchar(512);column:DeviceId"`
 	Roles          string    `json:"roles" gorm:"type:varchar(256);column:Roles"`
-	IsOAuth        bool      `json:"is_oauth" gorm:"column:IsOauth"`
+	IsOAuth        bool      `json:"is_oauth" gorm:"column:IsOAuth"`
 	ExpiredNotify  bool      `json:"expired_notify" gorm:"column:ExpiredNotify"`
 	Props          StringMap `json:"props" gorm:"type:jsonb;column:Props"`
 	Local          bool      `json:"local" gorm:"-"` // this field is populated at some point

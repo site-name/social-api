@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -9,32 +10,43 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 type ProductVariantChannelListing struct {
-	Id                        string           `json:"id"`
-	VariantID                 string           `json:"variant_id"` // not null
-	ChannelID                 string           `json:"channel_id"` // not null
-	Currency                  string           `json:"currency"`
-	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty"` // can be NULL
-	Price                     *goprices.Money  `json:"price,omitempty" db:"-"`
-	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount"` // can be NULL
-	CostPrice                 *goprices.Money  `json:"cost_price,omitempty" db:"-"`
-	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold"`
-	CreateAt                  int64            `json:"create_at"`
+	Id                        string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	VariantID                 string           `json:"variant_id" gorm:"type:uuid;column:VariantID"` // not null
+	ChannelID                 string           `json:"channel_id" gorm:"type:uuid;column:ChannelID"` // not null
+	Currency                  string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
+	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty" gorm:"column:PriceAmount"` // can be NULL
+	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount" gorm:"column:CostPriceAmount"`  // can be NULL
+	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold" gorm:"column:PreorderQuantityThreshold"`
+	CreateAt                  int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 
-	preorderQuantityAllocated int             `db:"-"` // this field got populated in some db queries
-	availablePreorderQuantity int             `db:"-"`
-	channel                   *Channel        `db:"-"` // this field got populated in some db queries
-	variant                   *ProductVariant `db:"-"` // this field got populated in some store functions
+	Price     *goprices.Money `json:"price,omitempty" gorm:"-"`
+	CostPrice *goprices.Money `json:"cost_price,omitempty" gorm:"-"`
+
+	preorderQuantityAllocated int             `gorm:"-"` // this field got populated in some db queries
+	availablePreorderQuantity int             `gorm:"-"`
+	channel                   *Channel        `gorm:"-"` // this field got populated in some db queries
+	variant                   *ProductVariant `gorm:"-"` // this field got populated in some store functions
+}
+
+func (c *ProductVariantChannelListing) BeforeCreate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+func (c *ProductVariantChannelListing) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+func (c *ProductVariantChannelListing) TableName() string {
+	return ProductVariantChannelListingTableName
 }
 
 // ProductVariantChannelListingFilterOption is used to build sql queries
 type ProductVariantChannelListingFilterOption struct {
-	Id          squirrel.Sqlizer
-	VariantID   squirrel.Sqlizer
-	ChannelID   squirrel.Sqlizer
-	PriceAmount squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants ON ... WHERE ProductVariants.ProductID ...
 
@@ -90,44 +102,39 @@ func (ps ProductVariantChannelListings) DeepCopy() ProductVariantChannelListings
 }
 
 func (p *ProductVariantChannelListing) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product_variant_channel_listing.is_valid.%s.app_error",
-		"product_variant_channel_listing_id=",
-		"ProductVariantChannelListing.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.VariantID) {
-		return outer("variant_id", &p.Id)
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.variant_id.app_error", nil, "please provide valid variant id", http.StatusBadRequest)
 	}
 	if !IsValidId(p.ChannelID) {
-		return outer("channel_id", &p.Id)
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
 	if unit, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(unit.String(), p.Currency) {
-		return outer("currency", &p.Id)
+		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
+	}
+
+	for _, deci := range []struct {
+		name  string
+		value *decimal.Decimal
+	}{
+		{"CostPriceAmount", p.CostPriceAmount},
+		{"PriceAmount", p.PriceAmount},
+	} {
+		err := ValidateDecimal("ProductVariantChannelListing.IsValid."+deci.name, deci.value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
-}
-
-func (p *ProductVariantChannelListing) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	p.CreateAt = GetMillis()
-	p.commonPre()
 }
 
 func (p *ProductVariantChannelListing) commonPre() {
 	if p.Price != nil {
 		p.PriceAmount = &p.Price.Amount
 	}
-
 	if p.CostPrice != nil {
 		p.CostPriceAmount = &p.CostPrice.Amount
 	}
-
 	if p.Currency != "" {
 		p.Currency = strings.ToUpper(p.Currency)
 	} else {
@@ -153,15 +160,10 @@ func (p *ProductVariantChannelListing) PopulateNonDbFields() {
 func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing {
 	res := *p
 
-	if p.PriceAmount != nil {
-		res.PriceAmount = NewPrimitive(*p.PriceAmount)
-	}
-	if p.CostPriceAmount != nil {
-		res.CostPriceAmount = NewPrimitive(*p.CostPriceAmount)
-	}
-	if p.PreorderQuantityThreshold != nil {
-		res.PreorderQuantityThreshold = NewPrimitive(*p.PreorderQuantityThreshold)
-	}
+	res.PriceAmount = CopyPointer(p.PriceAmount)
+	res.CostPriceAmount = CopyPointer(p.CostPriceAmount)
+	res.PreorderQuantityThreshold = CopyPointer(p.PreorderQuantityThreshold)
+
 	if p.channel != nil {
 		res.channel = p.channel.DeepCopy()
 	}

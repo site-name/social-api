@@ -44,21 +44,16 @@ type WareHouse struct {
 	IsPrivate             *bool                          `json:"is_private"`               // default *true
 	ModelMetadata
 
-	address       *Address      `db:"-"` // this field hold data from select related queries
-	shippingZones ShippingZones `db:"-"` // this field hold data from prefetch_related queries
+	address       *Address      `json:"-" gorm:"-"` // this field hold data from select related queries
+	ShippingZones ShippingZones `json:"-" gorm:"many2many:WarehouseShippingZones"`
 }
 
 // WarehouseFilterOption is used to build squirrel queries
 type WarehouseFilterOption struct {
-	Id                     squirrel.Sqlizer
-	Name                   squirrel.Sqlizer
-	Slug                   squirrel.Sqlizer
-	AddressID              squirrel.Sqlizer
-	Email                  squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
+
 	ShippingZonesCountries squirrel.Sqlizer // INNER JOIN warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Countries ...
 	ShippingZonesId        squirrel.Sqlizer // INNER JOIN warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Id ...
-	IsPrivate              squirrel.Sqlizer
-	ClickAndCollectOption  squirrel.Sqlizer
 
 	// NOTE: If set, store will use OR ILIKE to check it against:
 	//
@@ -77,18 +72,6 @@ func (w *WareHouse) GetAddress() *Address {
 
 func (w *WareHouse) SetAddress(a *Address) {
 	w.address = a
-}
-
-func (w *WareHouse) GetShippingZones() ShippingZones {
-	return w.shippingZones
-}
-
-func (w *WareHouse) SetShippingZones(s ShippingZones) {
-	w.shippingZones = s
-}
-
-func (w *WareHouse) AppendShippingZone(s *ShippingZone) {
-	w.shippingZones = append(w.shippingZones, s)
 }
 
 type Warehouses []*WareHouse
@@ -171,6 +154,6 @@ func (w *WareHouse) DeepCopy() *WareHouse {
 		res.IsPrivate = NewPrimitive(*w.IsPrivate)
 	}
 	res.address = w.address.DeepCopy()
-	res.shippingZones = w.shippingZones.DeepCopy()
+	res.ShippingZones = w.ShippingZones.DeepCopy()
 	return &res
 }

@@ -113,16 +113,12 @@ type Store interface {
 	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore   //
 	ShippingMethod() ShippingMethodStore                               //
 	ShippingZone() ShippingZoneStore                                   //
-	ShippingZoneChannel() ShippingZoneChannelStore                     //
-	ShippingMethodExcludedProduct() ShippingMethodExcludedProductStore //
 	Warehouse() WarehouseStore                                         // warehouse
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
-	WarehouseShippingZone() WarehouseShippingZoneStore                 //
 	PreorderAllocation() PreorderAllocationStore                       //
 	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
-	WishlistItemProductVariant() WishlistItemProductVariantStore       //
 	PluginConfiguration() PluginConfigurationStore                     // plugin
 	Compliance() ComplianceStore                                       // Compliance
 	Attribute() AttributeStore                                         // attribute
@@ -141,8 +137,7 @@ type Store interface {
 	FileInfo() FileInfoStore                                           // upload session
 	UploadSession() UploadSessionStore                                 //
 	Plugin() PluginStore                                               //
-	Shop() ShopStore                                                   // shop
-	ShopTranslation() ShopTranslationStore                             //
+	ShopTranslation() ShopTranslationStore                             // shop
 	ShopStaff() ShopStaffStore                                         //
 	Vat() VatStore                                                     //
 	OpenExchangeRate() OpenExchangeRateStore                           // external services
@@ -156,14 +151,14 @@ type (
 		FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
 		GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error)
 	}
-	ShopStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
-		ScanFields(shop *model.Shop) []interface{}
-		Upsert(shop *model.Shop) (*model.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given model.
-		Get(shopID string) (*model.Shop, error)                                  // Get finds a shop with given id and returns it
-		FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) // FilterByOptions finds and returns shops with given options
-		GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error)      // GetByOptions finds and returns 1 shop with given options
-	}
+	// ShopStore interface {
+	// 	ModelFields(prefix string) util.AnyArray[string]
+	// 	ScanFields(shop *model.Shop) []interface{}
+	// 	Upsert(shop *model.Shop) (*model.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given model.
+	// 	Get(shopID string) (*model.Shop, error)                                  // Get finds a shop with given id and returns it
+	// 	FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) // FilterByOptions finds and returns shops with given options
+	// 	GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error)      // GetByOptions finds and returns 1 shop with given options
+	// }
 	ShopTranslationStore interface {
 		Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
 		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
@@ -337,12 +332,6 @@ type (
 		GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error)                 // GetByOption finds and returns a model item filtered by given option
 		DeleteItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, error) // DeleteItemsByOption finds and deletes model items that satisfy given filtering options and returns number of items deleted
 	}
-	WishlistItemProductVariantStore interface {
-		Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error)                           // Save inserts new model product variant relation into database and returns it
-		BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
-		GetById(selector *gorm.DB, id string) (*model.WishlistItemProductVariant, error)                                             // GetByID returns a model item product variant with given id
-		DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error)                                                    // DeleteRelation deletes a product variant-model item relation and counts numeber of relations left in database
-	}
 )
 
 // model
@@ -379,13 +368,6 @@ type (
 		FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error)              // FilterbyOption finds and returns a list of allocations based on given option
 		BulkDelete(transaction *gorm.DB, allocationIDs []string) error                                 // BulkDelete perform bulk deletes given allocations.
 		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                // CountAvailableQuantityForStock counts and returns available quantity of given stock
-	}
-	WarehouseShippingZoneStore interface {
-		Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error
-		ModelFields(prefix string) util.AnyArray[string]
-		Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) // Save inserts given model-model zone relation into database
-		FilterByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
-		FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error)
 	}
 	PreorderAllocationStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
@@ -431,16 +413,6 @@ type (
 	}
 	ShippingMethodTranslationStore interface {
 	}
-	ShippingZoneChannelStore interface {
-		BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error
-		BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error)
-		FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error)
-	}
-	ShippingMethodExcludedProductStore interface {
-		Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error
-		Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it
-		FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error)
-	}
 )
 
 // product
@@ -453,7 +425,6 @@ type (
 		FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error)
 	}
 	CollectionStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Upsert(collection *model.Collection) (*model.Collection, error)                   // Upsert depends on given collection's Id property to decide update or insert the collection
 		Get(collectionID string) (*model.Collection, error)                               // Get finds and returns collection with given collectionID
 		FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
@@ -476,7 +447,6 @@ type (
 		FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error)
 	}
 	DigitalContentStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(content *model.DigitalContent) []interface{}
 		Save(content *model.DigitalContent) (*model.DigitalContent, error)                        // Save inserts given digital content into database then returns it
 		GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error)      // GetByOption finds and returns 1 digital content filtered using given option
@@ -507,7 +477,6 @@ type (
 		AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error
 	}
 	ProductChannelListingStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings
 		Get(channelListingID string) (*model.ProductChannelListing, error)                                                // Get try finding a product channel listing, then returns it with an error
 		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error)           // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
@@ -529,7 +498,6 @@ type (
 	}
 	CategoryTranslationStore interface{}
 	CategoryStore            interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Upsert(category *model.Category) (*model.Category, error)                                 // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
 		GetByOption(option *model.CategoryFilterOption) (*model.Category, error)                  // GetByOption finds and returns 1 category satisfy given option
@@ -611,7 +579,6 @@ type (
 		FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error)
 	}
 	FulfillmentLineStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error)
 		Get(id string) (*model.FulfillmentLine, error)
 		FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error)                   // FilterbyOption finds and returns a list of fulfillment lines by given option
@@ -619,7 +586,6 @@ type (
 		DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 	}
 	FulfillmentStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(holder *model.Fulfillment) []interface{}
 		Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
 		Get(id string) (*model.Fulfillment, error)                                                                // Get finds and return a fulfillment by given id
@@ -764,7 +730,6 @@ type (
 		CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) // CheckoutLinesByOption finds and returns model lines filtered using given option
 	}
 	CheckoutStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error)                // Upsert depends on given model's Token property to decide to update or insert it
 		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
 		GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error)                            // GetByOption finds and returns 1 model based on given option

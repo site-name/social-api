@@ -17,7 +17,7 @@ import (
 func (a *ServiceProduct) getVariantPricesInChannelsDict(product model.Product) (map[string][]*goprices.Money, *model.AppError) {
 	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		VariantProductID: squirrel.Eq{model.ProductVariantTableName + ".ProductID": product.Id},
-		PriceAmount:      squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+		Conditions:       squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -129,7 +129,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 		defer wg.Done()
 
 		res, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ProductID:       squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": product.Id},
+			Conditions:      squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": product.Id},
 			PrefetchChannel: true, // this will populate `Channel` fields of every product channel listings
 		})
 		if appErr != nil {

@@ -1,30 +1,14 @@
 package model
 
-import (
-	"net/http"
-	"unicode/utf8"
-)
-
-const (
-	KEY_VALUE_PLUGIN_ID_MAX_RUNES = 190
-	KEY_VALUE_KEY_MAX_RUNES       = 50
-)
-
 type PluginKeyValue struct {
-	PluginId string `json:"plugin_id"`
-	Key      string `json:"key" db:"PKey"`
-	Value    []byte `json:"value" db:"PValue"`
-	ExpireAt int64  `json:"expire_at"`
+	PluginId string `json:"plugin_id" gorm:"type:varchar(190);primaryKey;column:PluginId"`
+	Key      string `json:"key" gorm:"type:varchar(50);column:Key"`
+	Value    []byte `json:"value" gorm:"column:Value"`
+	ExpireAt int64  `json:"expire_at" gorm:"type:bigint;column:ExpireAt"`
 }
 
 func (kv *PluginKeyValue) IsValid() *AppError {
-	if kv.PluginId == "" || utf8.RuneCountInString(kv.PluginId) > KEY_VALUE_PLUGIN_ID_MAX_RUNES {
-		return NewAppError("PluginKeyValue.IsValid", "plugin_key_value.is_valid.plugin_id.app_error", map[string]interface{}{"Max": KEY_VALUE_KEY_MAX_RUNES, "Min": 0}, "key="+kv.Key, http.StatusBadRequest)
-	}
-
-	if kv.Key == "" || utf8.RuneCountInString(kv.Key) > KEY_VALUE_KEY_MAX_RUNES {
-		return NewAppError("PluginKeyValue.IsValid", "plugin_key_value.is_valid.key.app_error", map[string]interface{}{"Max": KEY_VALUE_KEY_MAX_RUNES, "Min": 0}, "key="+kv.Key, http.StatusBadRequest)
-	}
-
 	return nil
 }
+
+func (p *PluginKeyValue) TableName() string { return PluginKeyValueStoreTableName }

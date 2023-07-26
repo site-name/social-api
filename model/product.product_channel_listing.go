@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 	"time"
 
@@ -10,45 +11,38 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 type ProductChannelListing struct {
-	Id                    string           `json:"id"`
-	ProductID             string           `json:"product_id"`
-	ChannelID             string           `json:"channel_id"`
-	VisibleInListings     bool             `json:"visible_in_listings"`
-	AvailableForPurchase  *time.Time       `json:"available_for_purchase"` // UTC time
-	Currency              string           `json:"currency"`
-	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`           // can be NULL
-	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"` // can be NULL
-	CreateAt              uint64           `json:"create_at"`
+	Id                    string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ProductID             string           `json:"product_id" gorm:"type:uuid;column:ProductID"`
+	ChannelID             string           `json:"channel_id" gorm:"type:uuid;column:ChannelID"`
+	VisibleInListings     bool             `json:"visible_in_listings" gorm:"column:VisibleInListings"`
+	AvailableForPurchase  *time.Time       `json:"available_for_purchase" gorm:"column:AvailableForPurchase"` // UTC time
+	Currency              string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
+	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount" gorm:"column:DiscountedPriceAmount"` // can be NULL
+	CreateAt              uint64           `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	Publishable
+
+	DiscountedPrice *goprices.Money `json:"discounted_price,omitempty" gorm:"-"` // can be NULL
 
 	channel *Channel `db:"-"` // this field may be populated when store performs prefetching
 }
 
-func (p *ProductChannelListing) GetChannel() *Channel {
-	return p.channel
-}
-
-func (p *ProductChannelListing) SetChannel(c *Channel) {
-	p.channel = c
-}
+func (c *ProductChannelListing) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductChannelListing) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductChannelListing) TableName() string             { return ProductChannelListingTableName }
+func (p *ProductChannelListing) GetChannel() *Channel          { return p.channel }
+func (p *ProductChannelListing) SetChannel(c *Channel)         { p.channel = c }
 
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
-	Id                   squirrel.Sqlizer
-	ProductID            squirrel.Sqlizer
-	ChannelID            squirrel.Sqlizer
-	AvailableForPurchase squirrel.Sqlizer
-	Currency             squirrel.Sqlizer
-	PublicationDate      squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	ProductVariantsId squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
 	ChannelSlug       *string          // INNER JOIN Channels ON ... WHERE Channels.Slug ...
-	VisibleInListings *bool
-	IsPublished       *bool
-	PrefetchChannel   bool // this tell store to prefetch channel instances also
+	PrefetchChannel   bool             // this tell store to prefetch channel instances also
 }
 
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
@@ -56,23 +50,17 @@ func (p *ProductChannelListing) IsAvailableForPurchase() bool {
 }
 
 func (p *ProductChannelListing) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product_channel_listing.is_valid.%s.app_error",
-		"product_channel_listing_id=",
-		"ProductChannelListing.IsValid",
-	)
-
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.ProductID) {
-		return outer("product_id", &p.Id)
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.product_id.app_error", nil, "please provide valid product id", http.StatusBadRequest)
 	}
 	if !IsValidId(p.ChannelID) {
-		return outer("channel_id", &p.Id)
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
 	if un, err := currency.ParseISO(p.Currency); !strings.EqualFold(un.String(), p.Currency) || err != nil {
-		return outer("currency", &p.Id)
+		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
+	}
+	if err := ValidateDecimal("ProductChannelListing.IsValid", p.DiscountedPriceAmount, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
+		return err
 	}
 	return nil
 }
@@ -96,20 +84,6 @@ func (p *ProductChannelListing) commonPre() {
 	}
 }
 
-func (p *ProductChannelListing) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	if p.CreateAt == 0 {
-		p.CreateAt = uint64(GetMillis())
-	}
-	p.commonPre()
-}
-
-func (p *ProductChannelListing) PreUpdate() {
-	p.commonPre()
-}
-
 func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 	if p == nil {
 		return nil
@@ -119,9 +93,8 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 	if p.channel != nil {
 		res.channel = p.channel.DeepCopy()
 	}
-	if p.AvailableForPurchase != nil {
-		res.AvailableForPurchase = NewPrimitive(*p.AvailableForPurchase)
-	}
+	res.AvailableForPurchase = CopyPointer(p.AvailableForPurchase)
+	res.Publishable = *p.Publishable.DeepCopy()
 	return &res
 }
 

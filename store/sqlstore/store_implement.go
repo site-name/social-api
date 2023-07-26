@@ -27,7 +27,6 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/plugin"
 	"github.com/sitename/sitename/store/sqlstore/preference"
 	"github.com/sitename/sitename/store/sqlstore/product"
-	"github.com/sitename/sitename/store/sqlstore/role"
 	"github.com/sitename/sitename/store/sqlstore/shipping"
 	"github.com/sitename/sitename/store/sqlstore/shop"
 	"github.com/sitename/sitename/store/sqlstore/system"
@@ -112,12 +111,9 @@ type SqlStoreStores struct {
 	session                       store.SessionStore
 	shippingMethod                store.ShippingMethodStore
 	shippingMethodChannelListing  store.ShippingMethodChannelListingStore
-	shippingMethodExcludedProduct store.ShippingMethodExcludedProductStore
 	shippingMethodPostalCodeRule  store.ShippingMethodPostalCodeRuleStore
 	shippingMethodTranslation     store.ShippingMethodTranslationStore
 	shippingZone                  store.ShippingZoneStore
-	shippingZoneChannel           store.ShippingZoneChannelStore
-	shop                          store.ShopStore
 	shopStaff                     store.ShopStaffStore
 	shopTranslation               store.ShopTranslationStore
 	staffNotificationRecipient    store.StaffNotificationRecipientStore
@@ -134,10 +130,8 @@ type SqlStoreStores struct {
 	voucherCustomer               store.VoucherCustomerStore
 	voucherTranslation            store.VoucherTranslationStore
 	warehouse                     store.WarehouseStore
-	warehouseShippingZone         store.WarehouseShippingZoneStore
 	wishlist                      store.WishlistStore
 	wishlistItem                  store.WishlistItemStore
-	wishlistItemProductVariant    store.WishlistItemProductVariantStore
 }
 
 // setup tables before performing database migration
@@ -219,12 +213,9 @@ func (store *SqlStore) setupTables() {
 		session:                       account.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),
-		shippingMethodExcludedProduct: shipping.NewSqlShippingMethodExcludedProductStore(store),
 		shippingMethodPostalCodeRule:  shipping.NewSqlShippingMethodPostalCodeRuleStore(store),
 		shippingMethodTranslation:     shipping.NewSqlShippingMethodTranslationStore(store),
 		shippingZone:                  shipping.NewSqlShippingZoneStore(store),
-		shippingZoneChannel:           shipping.NewSqlShippingZoneChannelStore(store),
-		shop:                          shop.NewSqlShopStore(store),
 		shopStaff:                     shop.NewSqlShopStaffStore(store),
 		shopTranslation:               shop.NewSqlShopTranslationStore(store),
 		staffNotificationRecipient:    account.NewSqlStaffNotificationRecipientStore(store),
@@ -241,10 +232,8 @@ func (store *SqlStore) setupTables() {
 		voucherCustomer:               discount.NewSqlVoucherCustomerStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
-		warehouseShippingZone:         warehouse.NewSqlWarehouseShippingZoneStore(store),
 		wishlist:                      wishlist.NewSqlWishlistStore(store),
 		wishlistItem:                  wishlist.NewSqlWishlistItemStore(store),
-		wishlistItemProductVariant:    wishlist.NewSqlWishlistItemProductVariantStore(store),
 	}
 }
 
@@ -552,10 +541,6 @@ func (ss *SqlStore) ShippingMethodChannelListing() store.ShippingMethodChannelLi
 	return ss.stores.shippingMethodChannelListing
 }
 
-func (ss *SqlStore) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
-	return ss.stores.shippingMethodExcludedProduct
-}
-
 func (ss *SqlStore) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
 	return ss.stores.shippingMethodPostalCodeRule
 }
@@ -566,14 +551,6 @@ func (ss *SqlStore) ShippingMethodTranslation() store.ShippingMethodTranslationS
 
 func (ss *SqlStore) ShippingZone() store.ShippingZoneStore {
 	return ss.stores.shippingZone
-}
-
-func (ss *SqlStore) ShippingZoneChannel() store.ShippingZoneChannelStore {
-	return ss.stores.shippingZoneChannel
-}
-
-func (ss *SqlStore) Shop() store.ShopStore {
-	return ss.stores.shop
 }
 
 func (ss *SqlStore) ShopStaff() store.ShopStaffStore {
@@ -640,18 +617,10 @@ func (ss *SqlStore) Warehouse() store.WarehouseStore {
 	return ss.stores.warehouse
 }
 
-func (ss *SqlStore) WarehouseShippingZone() store.WarehouseShippingZoneStore {
-	return ss.stores.warehouseShippingZone
-}
-
 func (ss *SqlStore) Wishlist() store.WishlistStore {
 	return ss.stores.wishlist
 }
 
 func (ss *SqlStore) WishlistItem() store.WishlistItemStore {
 	return ss.stores.wishlistItem
-}
-
-func (ss *SqlStore) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
-	return ss.stores.wishlistItemProductVariant
 }

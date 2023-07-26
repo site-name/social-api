@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 
 	"github.com/sitename/sitename/model"
@@ -14,17 +14,21 @@ import (
 )
 
 type Role struct {
-	Id            string
-	Name          string
-	DisplayName   string
-	Description   string
-	CreateAt      int64
-	UpdateAt      int64
-	DeleteAt      int64
-	Permissions   string //
-	SchemeManaged bool
-	BuiltIn       bool
+	Id            string `gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name          string `gorm:"type:varchar(64);column:Name;unique"`
+	DisplayName   string `gorm:"type:varchar(128);column:DisplayName"`
+	Description   string `gorm:"type:varchar(1024);column:Description"`
+	CreateAt      int64  `gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
+	UpdateAt      int64  `gorm:"type:bigint;autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
+	DeleteAt      int64  `gorm:"type:bigint;column:DeleteAt"`
+	Permissions   string `gorm:"type:varchar(5000);column:Permissions"`
+	SchemeManaged bool   `gorm:"column:SchemeManaged"`
+	BuiltIn       bool   `gorm:"column:Builtin"`
 }
+
+func (c *Role) BeforeCreate(_ *gorm.DB) error { return nil }
+func (c *Role) BeforeUpdate(_ *gorm.DB) error { return nil }
+func (c *Role) TableName() string             { return model.RoleTableName }
 
 func NewRoleFromModel(role *model.Role) *Role {
 	permissionsMap := make(map[string]bool)
@@ -82,40 +86,27 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	}
 
 	if role.Id == "" { // this means create new Role
-		transaction, err := s.GetMaster().Begin()
-		if err != nil {
-			return nil, errors.Wrap(err, "begin_transaction")
-		}
-		defer store.FinalizeTransaction(transaction)
+		transaction := s.GetMaster().Begin()
+		defer transaction.Rollback()
+
 		createdRole, err := s.createRole(role, transaction)
 		if err != nil {
 			_ = transaction.Rollback()
 			return nil, errors.Wrap(err, "unable to create Role")
-		} else if err := transaction.Commit(); err != nil {
+		} else if err := transaction.Commit().Error; err != nil {
 			return nil, errors.Wrap(err, "commit_transaction")
 		}
 		return createdRole, nil
 	}
 
+	// update
+
 	dbRole := NewRoleFromModel(role)
-	dbRole.UpdateAt = model.GetMillis()
+	dbRole.CreateAt = 0 // prevent update
 
-	res, err := s.GetMaster().NamedExec(`UPDATE Roles
-		SET UpdateAt=:UpdateAt, DeleteAt=:DeleteAt, CreateAt=:CreateAt,  Name=:Name, DisplayName=:DisplayName,
-		Description=:Description, Permissions=:Permissions, SchemeManaged=:SchemeManaged, BuiltIn=:BuiltIn
-		 WHERE Id=:Id`, &dbRole)
-
+	err := s.GetMaster().Model(&dbRole).Updates(dbRole).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Role")
-	}
-
-	rowsChanged, err := res.RowsAffected()
-	if err != nil {
-		return nil, errors.Wrap(err, "error while getting rows_affected")
-	}
-
-	if rowsChanged != 1 {
-		return nil, fmt.Errorf("invalid number of updated rows, expected 1 but got %d", rowsChanged)
 	}
 
 	return dbRole.ToModel(), nil
@@ -128,15 +119,7 @@ func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorm.DB) (*mode
 	}
 
 	dbRole := NewRoleFromModel(role)
-
-	dbRole.Id = model.NewId()
-	dbRole.CreateAt = model.GetMillis()
-	dbRole.UpdateAt = dbRole.CreateAt
-
-	if _, err := transaction.NamedExec(`INSERT INTO Roles
-		(Id, Name, DisplayName, Description, Permissions, CreateAt, UpdateAt, DeleteAt, SchemeManaged, BuiltIn)
-		VALUES
-		(:Id, :Name, :DisplayName, :Description, :Permissions, :CreateAt, :UpdateAt, :DeleteAt, :SchemeManaged, :BuiltIn)`, dbRole); err != nil {
+	if err := transaction.Create(dbRole).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to save Role")
 	}
 
@@ -145,7 +128,7 @@ func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorm.DB) (*mode
 
 func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 	var role Role
-	if err := s.GetReplica().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
+	if err := s.GetReplica().First(&role, "Id = ?", roleId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.RoleTableName, roleId)
 		}
@@ -156,22 +139,16 @@ func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 }
 
 func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
-	dbRoles := []Role{}
-
-	if err := s.GetReplica().Select(&dbRoles, "SELECT * from Roles"); err != nil {
+	dbRoles := []*Role{}
+	if err := s.GetReplica().Find(&dbRoles).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
-
-	roles := []*model.Role{}
-	for _, dbRole := range dbRoles {
-		roles = append(roles, dbRole.ToModel())
-	}
-	return roles, nil
+	return lo.Map(dbRoles, func(item *Role, _ int) *model.Role { return item.ToModel() }), nil
 }
 
 func (s *SqlRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
 	dbRole := Role{}
-	if err := s.DBXFromContext(ctx).Get(&dbRole, "SELECT * from Roles WHERE Name = ?", name); err != nil {
+	if err := s.DBXFromContext(ctx).First(&dbRole, "Name = ?", name).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Role", fmt.Sprintf("name=%s", name))
 		}
@@ -182,48 +159,18 @@ func (s *SqlRoleStore) GetByName(ctx context.Context, name string) (*model.Role,
 }
 
 func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
-	if len(names) == 0 {
-		return []*model.Role{}, nil
-	}
-
-	query := s.GetQueryBuilder().
-		Select("Id, Name, DisplayName, Description, CreateAt, UpdateAt, DeleteAt, Permissions, SchemeManaged, BuiltIn").
-		From("Roles").
-		Where(sq.Eq{"Name": names})
-	queryString, args, err := query.ToSql()
+	var roles []*Role
+	err := s.GetReplica().Find(&roles, "Name IN ?", names).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "role_tosql")
+		return nil, errors.Wrap(err, "failed to find roles by names")
 	}
-
-	rows, err := s.GetReplica().Query(queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find Roles")
-	}
-	defer rows.Close()
-
-	roles := []*model.Role{}
-	for rows.Next() {
-		var role Role
-		err = rows.Scan(
-			&role.Id, &role.Name, &role.DisplayName, &role.Description,
-			&role.CreateAt, &role.UpdateAt, &role.DeleteAt, &role.Permissions,
-			&role.SchemeManaged, &role.BuiltIn)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan values")
-		}
-		roles = append(roles, role.ToModel())
-	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "unable to iterate over rows")
-	}
-
-	return roles, nil
+	return lo.Map(roles, func(item *Role, _ int) *model.Role { return item.ToModel() }), nil
 }
 
 func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	// Get the role.
 	var role Role
-	if err := s.GetReplica().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
+	if err := s.GetReplica().First(&role, "Id = ?", roleId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Role", roleId)
 		}
@@ -231,32 +178,19 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	}
 
 	time := model.GetMillis()
+	role.CreateAt = 0 // prevent update
 	role.DeleteAt = time
-	role.UpdateAt = time
 
-	res, err := s.GetMaster().NamedExec(`UPDATE Roles
-		SET UpdateAt=:UpdateAt, DeleteAt=:DeleteAt, CreateAt=:CreateAt,  Name=:Name, DisplayName=:DisplayName,
-		Description=:Description, Permissions=:Permissions, SchemeManaged=:SchemeManaged, BuiltIn=:BuiltIn
-		 WHERE Id=:Id`, &role)
-
+	err := s.GetMaster().Model(role).Updates(role).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Role")
-	}
-
-	rowsChanged, err := res.RowsAffected()
-	if err != nil {
-		return nil, errors.Wrap(err, "error while getting rows_affected")
-	}
-
-	if rowsChanged != 1 {
-		return nil, fmt.Errorf("invalid number of updated rows, expected 1 but got %d", rowsChanged)
 	}
 
 	return role.ToModel(), nil
 }
 
 func (s *SqlRoleStore) PermanentDeleteAll() error {
-	if _, err := s.GetMaster().Exec("DELETE FROM Roles"); err != nil {
+	if err := s.GetMaster().Raw("DELETE FROM Roles").Error; err != nil {
 		return errors.Wrap(err, "failed to delete Roles")
 	}
 

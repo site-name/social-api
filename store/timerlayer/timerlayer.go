@@ -95,12 +95,9 @@ type TimerLayer struct {
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
-	ShippingMethodExcludedProductStore store.ShippingMethodExcludedProductStore
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
-	ShippingZoneChannelStore           store.ShippingZoneChannelStore
-	ShopStore                          store.ShopStore
 	ShopStaffStore                     store.ShopStaffStore
 	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
@@ -117,10 +114,8 @@ type TimerLayer struct {
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
-	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
-	WishlistItemProductVariantStore    store.WishlistItemProductVariantStore
 }
 
 func (s *TimerLayer) Address() store.AddressStore {
@@ -427,10 +422,6 @@ func (s *TimerLayer) ShippingMethodChannelListing() store.ShippingMethodChannelL
 	return s.ShippingMethodChannelListingStore
 }
 
-func (s *TimerLayer) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
-	return s.ShippingMethodExcludedProductStore
-}
-
 func (s *TimerLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
 	return s.ShippingMethodPostalCodeRuleStore
 }
@@ -441,14 +432,6 @@ func (s *TimerLayer) ShippingMethodTranslation() store.ShippingMethodTranslation
 
 func (s *TimerLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
-}
-
-func (s *TimerLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
-	return s.ShippingZoneChannelStore
-}
-
-func (s *TimerLayer) Shop() store.ShopStore {
-	return s.ShopStore
 }
 
 func (s *TimerLayer) ShopStaff() store.ShopStaffStore {
@@ -515,20 +498,12 @@ func (s *TimerLayer) Warehouse() store.WarehouseStore {
 	return s.WarehouseStore
 }
 
-func (s *TimerLayer) WarehouseShippingZone() store.WarehouseShippingZoneStore {
-	return s.WarehouseShippingZoneStore
-}
-
 func (s *TimerLayer) Wishlist() store.WishlistStore {
 	return s.WishlistStore
 }
 
 func (s *TimerLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
-}
-
-func (s *TimerLayer) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
-	return s.WishlistItemProductVariantStore
 }
 
 type TimerLayerAddressStore struct {
@@ -911,11 +886,6 @@ type TimerLayerShippingMethodChannelListingStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerShippingMethodExcludedProductStore struct {
-	store.ShippingMethodExcludedProductStore
-	Root *TimerLayer
-}
-
 type TimerLayerShippingMethodPostalCodeRuleStore struct {
 	store.ShippingMethodPostalCodeRuleStore
 	Root *TimerLayer
@@ -928,16 +898,6 @@ type TimerLayerShippingMethodTranslationStore struct {
 
 type TimerLayerShippingZoneStore struct {
 	store.ShippingZoneStore
-	Root *TimerLayer
-}
-
-type TimerLayerShippingZoneChannelStore struct {
-	store.ShippingZoneChannelStore
-	Root *TimerLayer
-}
-
-type TimerLayerShopStore struct {
-	store.ShopStore
 	Root *TimerLayer
 }
 
@@ -1021,11 +981,6 @@ type TimerLayerWarehouseStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerWarehouseShippingZoneStore struct {
-	store.WarehouseShippingZoneStore
-	Root *TimerLayer
-}
-
 type TimerLayerWishlistStore struct {
 	store.WishlistStore
 	Root *TimerLayer
@@ -1033,11 +988,6 @@ type TimerLayerWishlistStore struct {
 
 type TimerLayerWishlistItemStore struct {
 	store.WishlistItemStore
-	Root *TimerLayer
-}
-
-type TimerLayerWishlistItemProductVariantStore struct {
-	store.WishlistItemProductVariantStore
 	Root *TimerLayer
 }
 
@@ -6193,54 +6143,6 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.D
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodExcludedProductStore) Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error {
-	start := timemodule.Now()
-
-	err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.Delete", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShippingMethodExcludedProductStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShippingMethodExcludedProductStore.Save(instance)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
 	start := timemodule.Now()
 
@@ -6365,118 +6267,6 @@ func (s *TimerLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.Upsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShippingZoneChannelStore) BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error {
-	start := timemodule.Now()
-
-	err := s.ShippingZoneChannelStore.BulkDelete(transaction, options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.BulkDelete", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerShippingZoneChannelStore) BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShippingZoneChannelStore.BulkSave(transaction, relations)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.BulkSave", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShippingZoneChannelStore) FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShippingZoneChannelStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShopStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShopStore) Get(shopID string) (*model.Shop, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShopStore.Get(shopID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShopStore.GetByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.GetByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShopStore.Upsert(shop)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -8318,70 +8108,6 @@ func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 	return result, err
 }
 
-func (s *TimerLayerWarehouseShippingZoneStore) Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error {
-	start := timemodule.Now()
-
-	err := s.WarehouseShippingZoneStore.Delete(transaction, options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.Delete", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
-	start := timemodule.Now()
-
-	result, err := s.WarehouseShippingZoneStore.FilterByCountryCodeAndChannelID(countryCode, channelID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.FilterByCountryCodeAndChannelID", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
-	start := timemodule.Now()
-
-	result, err := s.WarehouseShippingZoneStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWarehouseShippingZoneStore) Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
-	start := timemodule.Now()
-
-	result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 	start := timemodule.Now()
 
@@ -8494,70 +8220,6 @@ func (s *TimerLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilt
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.BulkUpsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
-	start := timemodule.Now()
-
-	result, err := s.WishlistItemProductVariantStore.DeleteRelation(relation)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.DeleteRelation", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector *gorm.DB, id string) (*model.WishlistItemProductVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.GetById", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWishlistItemProductVariantStore) Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.WishlistItemProductVariantStore.Save(wishlistVariant)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayer) Close() {
 	s.Store.Close()
 }
@@ -8664,12 +8326,9 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &TimerLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &TimerLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
-	newStore.ShippingMethodExcludedProductStore = &TimerLayerShippingMethodExcludedProductStore{ShippingMethodExcludedProductStore: childStore.ShippingMethodExcludedProduct(), Root: &newStore}
 	newStore.ShippingMethodPostalCodeRuleStore = &TimerLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &TimerLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &TimerLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
-	newStore.ShippingZoneChannelStore = &TimerLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
-	newStore.ShopStore = &TimerLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
 	newStore.ShopStaffStore = &TimerLayerShopStaffStore{ShopStaffStore: childStore.ShopStaff(), Root: &newStore}
 	newStore.ShopTranslationStore = &TimerLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &TimerLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
@@ -8686,9 +8345,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.VoucherCustomerStore = &TimerLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
-	newStore.WarehouseShippingZoneStore = &TimerLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &TimerLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &TimerLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
-	newStore.WishlistItemProductVariantStore = &TimerLayerWishlistItemProductVariantStore{WishlistItemProductVariantStore: childStore.WishlistItemProductVariant(), Root: &newStore}
 	return &newStore
 }

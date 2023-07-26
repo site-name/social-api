@@ -47,9 +47,11 @@ const (
 )
 
 type System struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string `json:"name" gorm:"type:varchar(64);column:Name;primaryKey"`
+	Value string `json:"value" gorm:"type:varchar(1024);column:Value"`
 }
+
+func (s *System) TableName() string { return "Systems" }
 
 type SystemPostActionCookieSecret struct {
 	Secret []byte `json:"key,omitempty"`

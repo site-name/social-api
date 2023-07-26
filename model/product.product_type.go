@@ -1,11 +1,12 @@
 package model
 
 import (
-	"unicode/utf8"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/modules/measurement"
+	"gorm.io/gorm"
 )
 
 type ProductTypeKind string
@@ -25,25 +26,30 @@ var ProductTypeKindStrings = map[ProductTypeKind]string{
 	GIFT_CARD: "A gift card product type.",
 }
 
-// max lengths for some product type's fields
-const (
-	PRODUCT_TYPE_NAME_MAX_LENGTH = 250
-	PRODUCT_TYPE_SLUG_MAX_LENGTH = 255
-	PRODUCT_TYPE_KIND_MAX_LENGTH = 32
-)
-
 // Orderby Slug
 type ProductType struct {
-	Id                 string                 `json:"id"`
-	Name               string                 `json:"name"`
-	Slug               string                 `json:"slug"`
-	Kind               ProductTypeKind        `json:"kind"`
-	HasVariants        *bool                  `json:"has_variants"`         // default true
-	IsShippingRequired *bool                  `json:"is_shipping_required"` // default true
-	IsDigital          *bool                  `json:"is_digital"`           // default false
-	Weight             *float32               `json:"weight"`
-	WeightUnit         measurement.WeightUnit `json:"weight_unit"`
+	Id                 string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name               string                 `json:"name" gorm:"type:varchar(250);column:Name"`
+	Slug               string                 `json:"slug" gorm:"type:varchar(255);column:Slug;uniqueIndex:slug_key"`
+	Kind               ProductTypeKind        `json:"kind" gorm:"type:varchar(32);column:Kind"`
+	HasVariants        *bool                  `json:"has_variants" gorm:"column:HasVariants;default:true"`                // default true
+	IsShippingRequired *bool                  `json:"is_shipping_required" gorm:"column:IsShippingRequired;default:true"` // default true
+	IsDigital          *bool                  `json:"is_digital" gorm:"column:IsDigital;default:false"`                   // default false
+	Weight             *float32               `json:"weight" gorm:"column:Weight;default:0"`
+	WeightUnit         measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit;type:varchar(5)"`
 	ModelMetadata
+}
+
+func (c *ProductType) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *ProductType) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ProductType) TableName() string             { return ProductTypeTableName }
+
+// ProductTypeFilterOption is used to build squirrel sql queries
+type ProductTypeFilterOption struct {
+	Conditions squirrel.Sqlizer
+
+	AttributeProducts_AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
+	AttributeVariants_AttributeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON (...) WHERE AttributeVariants.AttributeID ...
 }
 
 func (p *ProductType) DeepCopy() *ProductType {
@@ -52,30 +58,13 @@ func (p *ProductType) DeepCopy() *ProductType {
 	}
 
 	res := *p
-	if p.HasVariants != nil {
-		res.HasVariants = NewPrimitive(*p.HasVariants)
-	}
-	if p.IsShippingRequired != nil {
-		res.IsShippingRequired = NewPrimitive(*p.IsShippingRequired)
-	}
-	if p.IsDigital != nil {
-		res.IsDigital = NewPrimitive(*p.IsDigital)
-	}
-	if p.Weight != nil {
-		res.Weight = NewPrimitive(*p.Weight)
-	}
+	res.HasVariants = CopyPointer(p.HasVariants)
+	res.IsShippingRequired = CopyPointer(p.IsShippingRequired)
+	res.IsDigital = CopyPointer(p.IsDigital)
+	res.Weight = CopyPointer(p.Weight)
+	res.ModelMetadata = p.ModelMetadata.DeepCopy()
 
 	return &res
-}
-
-// ProductTypeFilterOption is used to build squirrel sql queries
-type ProductTypeFilterOption struct {
-	Id   squirrel.Sqlizer
-	Name squirrel.Sqlizer
-
-	AttributeProducts_AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
-	AttributeVariants_AttributeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON (...) WHERE AttributeVariants.AttributeID ...
-	Extra                         squirrel.Sqlizer
 }
 
 func (p *ProductType) String() string {
@@ -83,48 +72,26 @@ func (p *ProductType) String() string {
 }
 
 func (p *ProductType) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.product_type.is_valid.%s.app_error",
-		"product_type_id=",
-		"ProductType.IsValid")
-
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
-	if utf8.RuneCountInString(p.Name) > PRODUCT_TYPE_NAME_MAX_LENGTH {
-		return outer("name", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Slug) > PRODUCT_TYPE_SLUG_MAX_LENGTH {
-		return outer("slug", &p.Id)
-	}
-	if ProductTypeKindStrings[p.Kind] == "" || len(p.Kind) > PRODUCT_TYPE_KIND_MAX_LENGTH {
-		return outer("kind", &p.Id)
+	if !p.Kind.IsValid() {
+		return NewAppError("ProductType.IsValid", "model.product_type.is_valid.kind.app_error", nil, "please provide valid product kind", http.StatusBadRequest)
 	}
 	if p.Weight != nil && *p.Weight < 0 {
-		return outer("weight", &p.Id)
+		return NewAppError("ProductType.IsValid", "model.product_type.is_valid.weight.app_error", nil, "please provide valid product weight", http.StatusBadRequest)
 	}
 	if _, ok := measurement.WEIGHT_UNIT_STRINGS[p.WeightUnit]; !ok {
-		return outer("weight_unit", &p.Id)
+		return NewAppError("ProductType.IsValid", "model.product_type.is_valid.weight_unit.app_error", nil, "please provide valid weight unit", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
 func (p *ProductType) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-
 	p.commonPre()
-}
-
-func (p *ProductType) PreUpdate() {
-	p.commonPre()
+	p.Slug = slug.Make(p.Name)
 }
 
 func (p *ProductType) commonPre() {
 	p.Name = SanitizeUnicode(p.Name)
-	p.Slug = slug.Make(p.Name)
 
 	if p.HasVariants == nil {
 		p.HasVariants = NewPrimitive(true)

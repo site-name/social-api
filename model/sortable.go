@@ -17,3 +17,9 @@ type Publishable struct {
 func (p *Publishable) IsVisible() bool {
 	return p.IsPublished && (p.PublicationDate == nil || p.PublicationDate.Before(time.Now()))
 }
+
+func (p *Publishable) DeepCopy() *Publishable {
+	res := *p
+	res.PublicationDate = CopyPointer(p.PublicationDate)
+	return &res
+}

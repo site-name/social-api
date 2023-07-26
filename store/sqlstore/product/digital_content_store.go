@@ -3,7 +3,6 @@ package product
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -14,28 +13,6 @@ type SqlDigitalContentStore struct {
 
 func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 	return &SqlDigitalContentStore{s}
-}
-
-func (ds *SqlDigitalContentStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"UseDefaultSettings",
-		"AutomaticFulfillment",
-		"ContentType",
-		"ProductVariantID",
-		"ContentFile",
-		"MaxDownloads",
-		"UrlValidDays",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (ds *SqlDigitalContentStore) ScanFields(content *model.DigitalContent) []interface{} {
@@ -55,13 +32,7 @@ func (ds *SqlDigitalContentStore) ScanFields(content *model.DigitalContent) []in
 
 // Save inserts given digital content into database then returns it
 func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.DigitalContent, error) {
-	content.PreSave()
-	if err := content.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.DigitalContentTableName + "(" + ds.ModelFields("").Join(",") + ") VALUES (" + ds.ModelFields(":").Join(",") + ")"
-	_, err := ds.GetMaster().NamedExec(query, content)
+	err := ds.GetMaster().Create(content).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save digital content with id=%s", content.Id)
 	}
@@ -69,31 +40,10 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 	return content, nil
 }
 
-func (ds *SqlDigitalContentStore) commonQueryBuilder(option *model.DigitalContentFilterOption) (string, []interface{}, error) {
-	query := ds.GetQueryBuilder().
-		Select(ds.ModelFields(model.DigitalContentTableName + ".")...).
-		From(model.DigitalContentTableName)
-
-	// parse option
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.ProductVariantID != nil {
-		query = query.Where(option.ProductVariantID)
-	}
-
-	return query.ToSql()
-}
-
 // GetByOption finds and returns 1 digital content filtered using given option
 func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
-	queryString, args, err := ds.commonQueryBuilder(option)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetbyOption_ToSql")
-	}
-
 	var res model.DigitalContent
-	err = ds.GetReplica().Get(&res, queryString, args...)
+	err := ds.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentTableName, "option")
@@ -105,13 +55,8 @@ func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilter
 }
 
 func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
-	queryString, args, err := ds.commonQueryBuilder(option)
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-
 	var res []*model.DigitalContent
-	err = ds.GetReplica().Select(&res, queryString, args...)
+	err := ds.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find digital contents with given options")
 	}

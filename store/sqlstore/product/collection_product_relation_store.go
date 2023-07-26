@@ -1,10 +1,8 @@
 package product
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,56 +15,28 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 	return &SqlCollectionProductStore{s}
 }
 
-func (ps *SqlCollectionProductStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CollectionID",
-		"ProductID",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 func (ps *SqlCollectionProductStore) ScanFields(rel *model.CollectionProduct) []interface{} {
 	return []interface{}{
 		&rel.Id,
 		&rel.CollectionID,
 		&rel.ProductID,
+		&rel.SortOrder,
 	}
 }
 
 func (ps *SqlCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
-	runner := ps.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = ps.GetMaster()
 	}
 
 	for _, rel := range relations {
-		if !model.IsValidId(rel.Id) {
-			rel.Id = ""
-			rel.PreSave()
-		}
+		err := transaction.Save(rel).Error
 
-		if err := rel.IsValid(); err != nil {
-			return nil, err
-		}
-
-		result, err := runner.Exec("INSERT INTO "+model.CollectionProductRelationTableName+" (Id, CollectionID, ProductID) VALUES (:Id, :CollectionID, :ProductID)", rel)
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"ProductID", "CollectionID", "productcollections_collectionid_productid_key"}) {
 				return nil, store.NewErrInvalidInput(model.CollectionProductRelationTableName, "CollectionID/ProductID", nil)
 			}
 			return nil, errors.Wrap(err, "failed to insert a collection product relation")
-		}
-
-		rowsAdded, _ := result.RowsAffected()
-		if rowsAdded != 1 {
-			return nil, errors.Errorf("%d relation(s) was/were added instead of 1", rowsAdded)
 		}
 	}
 
@@ -74,24 +44,19 @@ func (ps *SqlCollectionProductStore) BulkSave(transaction *gorm.DB, relations []
 }
 
 func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
-	selectFields := ps.ModelFields(model.CollectionProductRelationTableName + ".")
+	selectFields := []string{model.CollectionProductRelationTableName + ".*"}
 	if options.SelectRelatedCollection {
-		selectFields = append(selectFields, ps.Collection().ModelFields(model.CollectionTableName+".")...)
+		selectFields = append(selectFields, model.CollectionTableName+".*")
 	}
 	if options.SelectRelatedProduct {
-		selectFields = append(selectFields, ps.Product().ModelFields(model.ProductTableName+".")...)
+		selectFields = append(selectFields, model.ProductTableName+".*")
 	}
 
 	query := ps.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.CollectionProductRelationTableName)
+		From(model.CollectionProductRelationTableName).
+		Where(options.Conditions)
 
-	if options.ProductID != nil {
-		query = query.Where(options.ProductID)
-	}
-	if options.CollectionID != nil {
-		query = query.Where(options.CollectionID)
-	}
 	if options.SelectRelatedCollection {
 		query = query.InnerJoin(model.CollectionTableName + " ON Collections.Id = ProductCollections.CollectionID")
 	}
@@ -103,7 +68,7 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
-	rows, err := ps.GetReplica().Query(queryString, args...)
+	rows, err := ps.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product-collection relations")
 	}
@@ -144,25 +109,17 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 }
 
 func (s *SqlCollectionProductStore) Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error {
-	query := s.GetQueryBuilder().Delete(model.CollectionProductRelationTableName)
-
-	for _, opt := range []squirrel.Sqlizer{options.CollectionID, options.ProductID} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
-
+	query := s.GetQueryBuilder().Delete(model.CollectionProductRelationTableName).Where(options.Conditions)
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
 
-	_, err = runner.Exec(queryString, args...)
+	err = transaction.Raw(queryString, args...).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete collection product relations")
 	}

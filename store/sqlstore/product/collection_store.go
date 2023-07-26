@@ -1,12 +1,9 @@
 package product
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,28 +14,6 @@ type SqlCollectionStore struct {
 
 func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 	return &SqlCollectionStore{s}
-}
-
-func (ps *SqlCollectionStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Slug",
-		"BackgroundImage",
-		"BackgroundImageAlt",
-		"Description",
-		"Metadata",
-		"PrivateMetadata",
-		"SeoTitle",
-		"SeoDescription",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (ps *SqlCollectionStore) ScanFields(col *model.Collection) []interface{} {
@@ -58,56 +33,17 @@ func (ps *SqlCollectionStore) ScanFields(col *model.Collection) []interface{} {
 
 // Upsert depends on given collection's Id property to decide update or insert the collection
 func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
-	var isSaving bool
-
-	if collection.Id == "" {
-		isSaving = true
-		collection.PreSave()
-	} else {
-		collection.PreUpdate()
-	}
-
-	if err := collection.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.CollectionTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-		_, err = cs.GetMaster().NamedExec(query, collection)
-
-	} else {
-		query := "UPDATE " + model.CollectionTableName + " SET " + cs.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = cs.GetMaster().NamedExec(query, collection)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
-
+	err := cs.GetMaster().Save(collection).Error
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert collection with id=%s", collection.Id)
+		return nil, errors.Wrap(err, "failed to upsert collection")
 	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple collections were updated: %d instead of 1", numUpdated)
-	}
-
 	return collection, nil
 }
 
 // Get finds and returns collection with given collectionID
 func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error) {
 	var res model.Collection
-	err := cs.GetReplica().Get(&res, "SELECT * FROM "+model.CollectionTableName+" WHERE Id = ?", collectionID)
+	err := cs.GetReplica().First(&res, "Id = ?", collectionID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CollectionTableName, collectionID)
@@ -122,30 +58,11 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error
 //
 // NOTE: make sure to provide `ShopID` before calling me.
 func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
-	var res []*model.Collection
-
-	if option.SelectAll {
-		err := cs.GetReplica().Select(&res, "SELECT * FROM "+model.CollectionTableName)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find collections of given shop")
-		}
-		return res, nil
-	}
-
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields(model.CollectionTableName + ".")...).
-		From(model.CollectionTableName)
+		Select(model.CollectionTableName + ".*").
+		From(model.CollectionTableName).Where(option.Conditions)
 
 	// parse options
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.Name != nil {
-		query = query.Where(option.Name)
-	}
-	if option.Slug != nil {
-		query = query.Where(option.Slug)
-	}
 	if option.ProductID != nil {
 		query = query.
 			InnerJoin(model.CollectionProductRelationTableName + " ON Collections.Id = ProductCollections.CollectionID").
@@ -162,51 +79,31 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 			Where(option.SaleID)
 	}
 
-	var (
-		joined_CollectionChannelListingTable bool
-		joined_ChannelTable                  bool
-	)
-	if option.ChannelListingPublicationDate != nil {
+	if option.ChannelListingPublicationDate != nil ||
+		option.ChannelListingIsPublished != nil ||
+
+		option.ChannelListingChannelSlug != nil ||
+		option.ChannelListingChannelIsActive != nil {
 		query = query.
 			InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
 			Where(option.ChannelListingPublicationDate)
 
-		joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
-	}
-
-	if option.ChannelListingIsPublished != nil {
-		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
-
-			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
+		if option.ChannelListingIsPublished != nil {
+			query = query.Where(option.ChannelListingIsPublished)
 		}
-		query = query.Where(squirrel.Eq{"CollectionChannelListings.IsPublished": *option.ChannelListingIsPublished})
-	}
 
-	if option.ChannelListingChannelSlug != nil {
-		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
-
-			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
-		}
-		query = query.
-			InnerJoin(model.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)").
-			Where(option.ChannelListingChannelSlug)
-
-		joined_ChannelTable = true // indicate joined channel table
-	}
-
-	if option.ChannelListingChannelIsActive != nil {
-		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
-
-			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
-		}
-		if !joined_ChannelTable {
+		if option.ChannelListingChannelSlug != nil ||
+			option.ChannelListingChannelIsActive != nil {
 			query = query.InnerJoin(model.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
-			joined_ChannelTable = true //
+
+			if option.ChannelListingChannelSlug != nil {
+				query = query.Where(option.ChannelListingChannelSlug)
+			}
+			if option.ChannelListingChannelIsActive != nil {
+				query = query.Where(option.ChannelListingChannelIsActive)
+			}
 		}
-		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingChannelIsActive})
+
 	}
 
 	queryString, args, err := query.ToSql()
@@ -214,7 +111,9 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	err = cs.GetReplica().Select(&res, queryString, args...)
+	var res model.Collections
+
+	err = cs.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collections with given options")
 	}
@@ -228,14 +127,9 @@ func (s *SqlCollectionStore) Delete(ids ...string) error {
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	result, err := s.GetMaster().Exec(query, args...)
+	err = s.GetMaster().Raw(query, args...).Error
 	if err != nil {
 		errors.Wrap(err, "failed to delete collection(s) by given ids")
-	}
-
-	numDeleted, _ := result.RowsAffected()
-	if int(numDeleted) != len(ids) {
-		return errors.Errorf("%d collection(s) was/were deleted instead of %d", numDeleted, len(ids))
 	}
 
 	return nil

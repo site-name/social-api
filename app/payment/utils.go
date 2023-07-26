@@ -519,7 +519,7 @@ func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customer
 	if !model.IsValidId(userID) {
 		argumentErrFields = "userID"
 	}
-	if trimmedGateway := strings.TrimSpace(gateway); trimmedGateway == "" || len(trimmedGateway) > model.MAX_LENGTH_PAYMENT_GATEWAY {
+	if trimmedGateway := strings.TrimSpace(gateway); trimmedGateway == "" {
 		argumentErrFields += ", gateway"
 	}
 	if trimmedCustomerID := strings.TrimSpace(customerID); trimmedCustomerID == "" {

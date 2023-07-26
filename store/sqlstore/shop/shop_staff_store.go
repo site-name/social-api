@@ -1,10 +1,11 @@
 package shop
 
 import (
+	"database/sql"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,25 +16,6 @@ type SqlShopStaffStore struct {
 
 func NewSqlShopStaffStore(s store.Store) store.ShopStaffStore {
 	return &SqlShopStaffStore{s}
-}
-
-func (s *SqlShopStaffStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"StaffID",
-		"CreateAt",
-		"EndAt",
-		"SalaryPeriod",
-		"Salary",
-		"SalaryCurrency",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (s *SqlShopStaffStore) ScanFields(rel *model.ShopStaff) []interface{} {
@@ -50,13 +32,7 @@ func (s *SqlShopStaffStore) ScanFields(rel *model.ShopStaff) []interface{} {
 
 // Save inserts given shopStaff into database then returns it with an error
 func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
-	shopStaff.PreSave()
-	if err := shopStaff.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.ShopStaffTableName + "(" + sss.ModelFields("").Join(",") + ") VALUES (" + sss.ModelFields(":").Join(",") + ")"
-	if _, err := sss.GetMaster().NamedExec(query, shopStaff); err != nil {
+	if err := sss.GetMaster().Create(shopStaff).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to save shop-staff relation with id=%s", shopStaff.Id)
 	}
 
@@ -66,7 +42,7 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff
 // Get finds a shop staff with given id then returns it with an error
 func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 	var res model.ShopStaff
-	err := sss.GetReplica().Get(&res, "SELECT * FROM "+model.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
+	err := sss.GetReplica().First(&res, "Id = ?", shopStaffID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopStaffTableName, shopStaffID)
@@ -78,22 +54,14 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) 
 }
 
 func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffFilterOptions) squirrel.SelectBuilder {
-	selectFields := s.ModelFields(model.ShopStaffTableName + ".")
+	selectFields := []string{model.ShopStaffTableName + ".*"}
 	if options.SelectRelatedStaff {
-		selectFields = append(selectFields, s.User().ModelFields(model.UserTableName+".")...)
+		selectFields = append(selectFields, model.UserTableName+".*")
 	}
 
-	query := s.GetQueryBuilder().Select(selectFields...).From(model.ShopStaffTableName)
-
-	if options.StaffID != nil {
-		query = query.Where(options.StaffID)
-	}
-	if options.CreateAt != nil {
-		query = query.Where(options.CreateAt)
-	}
-	if options.EndAt != nil {
-		query = query.Where(options.EndAt)
-	}
+	query := s.GetQueryBuilder().Select(selectFields...).
+		From(model.ShopStaffTableName).
+		Where(options.Conditions)
 	if options.SelectRelatedStaff {
 		query = query.InnerJoin(model.UserTableName + " ON Users.Id = ShopStaffs.StaffID")
 	}
@@ -107,7 +75,7 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOption
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := s.GetReplica().Query(queryString, args...)
+	rows, err := s.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shop staff relations with given opsitons")
 	}
@@ -150,9 +118,9 @@ func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) 
 		scanFields = append(scanFields, s.User().ScanFields(&staff))
 	}
 
-	err = s.GetReplica().QueryRow(queryString, args...).Scan(scanFields...)
+	err = s.GetReplica().Raw(queryString, args...).Row().Scan(scanFields...)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.NewErrNotFound("ShopStaffs", "options")
 		}
 		return nil, errors.Wrap(err, "failed to scan shop-staff relation with given options")

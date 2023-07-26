@@ -1,57 +1,36 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 type Wishlist struct {
-	Id       string  `json:"id"`
-	Token    string  `json:"token"` // uuid, unique, not editable
-	UserID   *string `json:"user_id"`
-	CreateAt int64   `json:"create_at"`
+	Id       string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Token    string  `json:"token" gorm:"type:uuid;default:gen_random_uuid();column:Token;unique"` // uuid, unique, not editable
+	UserID   *string `json:"user_id" gorm:"type:uuid;column:UserID"`
+	CreateAt int64   `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 }
 
-// WishlistFilterOption is used to build squirrel sql queries
+func (t *Wishlist) TableName() string             { return WishlistTableName }
+func (t *Wishlist) BeforeCreate(_ *gorm.DB) error { return t.IsValid() }
+func (t *Wishlist) BeforeUpdate(_ *gorm.DB) error {
+	// prevent update
+	t.Token = ""
+	t.CreateAt = 0
+	return t.IsValid()
+}
+
 type WishlistFilterOption struct {
-	Id     squirrel.Sqlizer
-	Token  squirrel.Sqlizer
-	UserID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (w *Wishlist) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.wishlist.is_valid.%s.app_error",
-		"wishlist_id=",
-		"Wishlist.IsValid",
-	)
-	if !IsValidId(w.Id) {
-		return outer("id", nil)
-	}
-	if !IsValidId(w.Token) {
-		return outer("token", &w.Id)
-	}
 	if w.UserID != nil && !IsValidId(*w.UserID) {
-		return outer("user_id", &w.Id)
-	}
-	if w.CreateAt == 0 {
-		return outer("create_at", &w.Id)
+		return NewAppError("Wishlist.IsValid", "model.wishlist.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (w *Wishlist) PreSave() {
-	if !IsValidId(w.Id) {
-		w.Id = NewId()
-	}
-	if !IsValidId(w.Token) {
-		w.Token = NewId()
-	}
-	w.CreateAt = GetMillis()
-}
-
-func (w *Wishlist) PreUpdate() {
-	if !IsValidId(w.Token) {
-		w.Token = NewId()
-	}
 }

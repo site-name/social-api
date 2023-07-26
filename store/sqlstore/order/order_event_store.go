@@ -3,7 +3,6 @@ package order
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -16,38 +15,13 @@ func NewSqlOrderEventStore(s store.Store) store.OrderEventStore {
 	return &SqlOrderEventStore{s}
 }
 
-func (s *SqlOrderEventStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"Type",
-		"OrderID",
-		"Parameters",
-		"UserID",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 func (oes *SqlOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
-	var executor *gorm.DB = oes.GetMaster()
-	if transaction != nil {
-		executor = transaction
+	if transaction == nil {
+		transaction = oes.GetMaster()
 	}
 
-	orderEvent.PreSave()
-	if err := orderEvent.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.OrderEventTableName + "(" + oes.ModelFields("").Join(",") + ") VALUES (" + oes.ModelFields(":").Join(",") + ")"
-	if _, err := executor.NamedExec(query, orderEvent); err != nil {
-		return nil, errors.Wrapf(err, "failed to save order event with id=%s", orderEvent.Id)
+	if err := transaction.Create(orderEvent).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to save order event")
 	}
 
 	return orderEvent, nil
@@ -55,7 +29,7 @@ func (oes *SqlOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.Orde
 
 func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 	var res model.OrderEvent
-	err := oes.GetReplica().Get(&res, "SELECT * FROM "+model.OrderEventTableName+" WHERE Id = ?", orderEventID)
+	err := oes.GetReplica().First(&res, "Id = ?", orderEventID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderEventTableName, orderEventID)
@@ -67,28 +41,8 @@ func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, erro
 }
 
 func (s *SqlOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
-	query := s.GetQueryBuilder().
-		Select(s.ModelFields(model.OrderEventTableName + ".")...).
-		From(model.OrderEventTableName)
-
-	// parse options
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.OrderID != nil {
-		query = query.Where(options.OrderID)
-	}
-	if options.Type != nil {
-		query = query.Where(options.Type)
-	}
-
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
 	var res []*model.OrderEvent
-	err = s.GetReplica().Select(&res, queryStr, args...)
+	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order events by given options")
 	}

@@ -44,9 +44,7 @@ func (r *ShopStaff) SetStaff(u *User) {
 }
 
 type ShopStaffFilterOptions struct {
-	StaffID  squirrel.Sqlizer
-	CreateAt squirrel.Sqlizer
-	EndAt    squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	SelectRelatedStaff bool
 }

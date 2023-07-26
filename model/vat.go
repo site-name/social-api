@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 type Vat struct {
-	Id          string      `json:"id"`
-	CountryCode CountryCode `json:"country_code"` // db index
+	Id          string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CountryCode CountryCode `json:"country_code" gorm:"type:varchar(5);column:CountryCode;index:countrycode_key"` // db index
 	// NOTE:
 	//
 	// Data may contains keys of:
@@ -25,24 +26,18 @@ type Vat struct {
 	//    "admission to entertainment events": float64,
 	//    "foodstuffs": float64,
 	//  }
-	Data StringInterface `json:"data"`
+	Data StringInterface `json:"data" gorm:"type:jsonb;column:Data"`
 }
+
+func (t *Vat) TableName() string             { return VatTableName }
+func (t *Vat) BeforeCreate(_ *gorm.DB) error { t.commonPre(); return t.IsValid() }
+func (t *Vat) BeforeUpdate(_ *gorm.DB) error { t.commonPre(); return t.IsValid() }
 
 type VatFilterOptions struct {
-	Id          squirrel.Sqlizer
-	CountryCode squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
-func (v *Vat) PreSave() {
-	if !IsValidId(v.Id) {
-		v.Id = NewId()
-	}
-	if v.Data == nil {
-		v.Data = StringInterface{}
-	}
-}
-
-func (v *Vat) PreUpdate() {
+func (v *Vat) commonPre() {
 	if v.Data == nil {
 		v.Data = StringInterface{}
 	}
@@ -53,9 +48,6 @@ func (v *Vat) String() string {
 }
 
 func (v *Vat) IsValid() *AppError {
-	if !IsValidId(v.Id) {
-		return NewAppError("Vat.IsValid", "model.vat.is_valid.id.app_error", nil, v.Id+" is invalid id", http.StatusBadRequest)
-	}
 	if !v.CountryCode.IsValid() {
 		return NewAppError("Vat.IsValid", "model.vat.is_valid.country_code.app_error", nil, v.Id+" is invalid id", http.StatusBadRequest)
 	}

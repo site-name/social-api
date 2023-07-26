@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,32 +16,6 @@ type SqlCategoryStore struct {
 
 func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 	return &SqlCategoryStore{s}
-}
-
-func (cs *SqlCategoryStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Slug",
-		"Description",
-		"ParentID",
-		"Level",
-		"BackgroundImage",
-		"BackgroundImageAlt",
-		"Images",
-		"SeoTitle",
-		"SeoDescription",
-		"NameTranslation",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (cs *SqlCategoryStore) ScanFields(cate *model.Category) []interface{} {
@@ -66,34 +39,7 @@ func (cs *SqlCategoryStore) ScanFields(cate *model.Category) []interface{} {
 
 // Upsert depends on given category's Id field to decide update or insert it
 func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
-	var isSaving bool
-	if !model.IsValidId(category.Id) {
-		category.Id = ""
-		isSaving = true
-		category.PreSave()
-	} else {
-		category.PreUpdate()
-	}
-
-	if err := category.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var err error
-	if isSaving {
-		query := "INSERT INTO " + model.CategoryTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-		_, err = cs.GetMaster().NamedExec(query, category)
-
-	} else {
-		query := "UPDATE " + model.CategoryTableName + " SET " + cs.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		_, err = cs.GetMaster().NamedExec(query, category)
-	}
+	err := cs.GetMaster().Save(category).Error
 	if err != nil {
 		// this error may be caused by category slug duplicate
 		if cs.IsUniqueConstraintError(err, []string{"slug", "categories_slug_key"}) {
@@ -108,7 +54,7 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 // Get finds and returns a category with given id
 func (cs *SqlCategoryStore) Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) {
 	var res model.Category
-	err := cs.DBXFromContext(ctx).Get(&res, "SELECT * FROM "+model.CategoryTableName+" WHERE Id = ?", categoryID)
+	err := cs.DBXFromContext(ctx).First(&res, "Id = ?", categoryID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CategoryTableName, categoryID)
@@ -121,21 +67,17 @@ func (cs *SqlCategoryStore) Get(ctx context.Context, categoryID string, allowFro
 
 func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOption) squirrel.SelectBuilder {
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields(model.CategoryTableName + ".")...).
-		From(model.CategoryTableName)
+		Select(model.CategoryTableName + ".*").
+		From(model.CategoryTableName).
+		Where(option.Conditions)
 
-	if option.LockForUpdate {
+	if option.LockForUpdate && option.Transaction != nil {
 		query = query.Suffix("FOR UPDATE")
-	}
-
-	// parse option
-	if option.Conditions != nil {
-		query = query.Where(option.Conditions)
 	}
 
 	if option.VoucherID != nil {
 		query = query.
-			InnerJoin("VoucherCategories ON VoucherCategories.CategoryID = Categories.Id").
+			InnerJoin(model.VoucherCategoryTableName + " ON VoucherCategories.CategoryID = Categories.Id").
 			Where(option.VoucherID)
 	}
 	if option.SaleID != nil {
@@ -145,7 +87,7 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOptio
 	}
 	if option.ProductID != nil {
 		query = query.
-			InnerJoin(model.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
+			InnerJoin(model.ProductTableName + " ON Categories.Id = Products.CategoryID").
 			Where(option.ProductID)
 	}
 
@@ -169,8 +111,13 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
+	runner := cs.GetMaster()
+	if option.Transaction != nil {
+		runner = option.Transaction
+	}
+
 	var res model.Categories
-	err = cs.GetReplica().Select(&res, queryString, args...)
+	err = runner.Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
 	}
@@ -185,10 +132,15 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
+	runner := cs.GetMaster()
+	if option.Transaction != nil {
+		runner = option.Transaction
+	}
+
 	var cate model.Category
-	err = cs.GetReplica().
-		QueryRow(queryString, args...).
-		Scan(cs.ScanFields(&cate)...)
+	err = runner.
+		Raw(queryString, args...).
+		Scan(&cate).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CategoryTableName, "option")

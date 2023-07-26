@@ -2,12 +2,9 @@
 package plugin
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -20,61 +17,14 @@ func NewSqlPluginConfigurationStore(s store.Store) store.PluginConfigurationStor
 	return &SqlPluginConfigurationStore{s}
 }
 
-func (s *SqlPluginConfigurationStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Identifier",
-		"Name",
-		"ChannelID",
-		"Description",
-		"Active",
-		"Configuration",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 // Upsert inserts or updates given plugin configuration and returns it
 func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
-	var isSaving bool
+	var err error
 
 	if config.Id == "" {
-		isSaving = true
-		config.PreSave()
+		err = p.GetMaster().Create(config).Error
 	} else {
-		config.PreUpdate()
-	}
-
-	if err := config.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.PluginConfigurationTableName + "(" + p.ModelFields("").Join(",") + ") VALUES (" + p.ModelFields(":").Join(",") + ")"
-		_, err = p.GetMaster().NamedExec(query, config)
-
-	} else {
-		query := "UPDATE " + model.PluginConfigurationTableName + " SET " + p.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = p.GetMaster().NamedExec(query, config)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
+		err = p.GetMaster().Model(config).Updates(config).Error
 	}
 
 	if err != nil {
@@ -83,9 +33,6 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 		}
 		return nil, errors.Wrapf(err, "failed to upsert plugin configuration with id=%s", config.Id)
 	}
-	if numUpdated != 1 {
-		return nil, errors.Errorf("%d configuration(s) were/was updated instewad of 1", numUpdated)
-	}
 
 	return config, nil
 }
@@ -93,7 +40,7 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 // Get finds a plugin configuration with given id then returns it
 func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
 	var res model.PluginConfiguration
-	err := p.GetReplica().Get(&res, "SELECT * FROM "+model.PluginConfigurationTableName+" WHERE Id = ?", id)
+	err := p.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, id)
@@ -104,34 +51,10 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration
 	return &res, nil
 }
 
-func (p *SqlPluginConfigurationStore) optionsParse(options *model.PluginConfigurationFilterOptions) (string, []interface{}, error) {
-	query := p.GetQueryBuilder().
-		Select("*").
-		From(model.PluginConfigurationTableName)
-
-	// parse options
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.Identifier != nil {
-		query = query.Where(options.Identifier)
-	}
-	if options.ChannelID != nil {
-		query = query.Where(options.ChannelID)
-	}
-
-	return query.ToSql()
-}
-
 // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
 func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
-	queryStr, args, err := p.optionsParse(&options)
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterPluginConfigurations_ToSql")
-	}
-
 	var configs model.PluginConfigurations
-	err = p.GetReplica().Select(&configs, queryStr, args...)
+	err := p.GetReplica().Find(&configs, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
 	}
@@ -139,7 +62,7 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 	// check if we need to prefetch
 	if options.PrefetchRelatedChannel && len(configs) != 0 {
 		channels, err := p.Channel().FilterByOption(&model.ChannelFilterOption{
-			Id: squirrel.Eq{model.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
+			Conditions: squirrel.Eq{model.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
 		})
 
 		if err != nil {
@@ -160,13 +83,8 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 
 // GetByOptions finds and returns 1 plugin configuration with given options
 func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
-	queryStr, args, err := p.optionsParse(options)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOptions_ToSql")
-	}
-
 	var res model.PluginConfiguration
-	err = p.GetReplica().Get(&res, queryStr, args...)
+	err := p.GetReplica().First(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, "options")

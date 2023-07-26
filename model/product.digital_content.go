@@ -1,9 +1,11 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 const (
@@ -16,37 +18,29 @@ var ContentTypeString = map[string]string{
 }
 
 type DigitalContent struct {
-	Id                   string `json:"id"`
-	UseDefaultSettings   *bool  `json:"use_defaults_settings"` // default true
-	AutomaticFulfillment *bool  `json:"automatic_fulfillment"` // default false
-	ContentType          string `json:"content_type"`
-	ProductVariantID     string `json:"product_variant_id"`
-	ContentFile          string `json:"content_file"`
-	MaxDownloads         *int   `json:"max_downloads"`
-	UrlValidDays         *int   `json:"url_valid_days"`
+	Id                   string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	UseDefaultSettings   *bool  `json:"use_defaults_settings" gorm:"column:UseDefaultSettings"`   // default true
+	AutomaticFulfillment *bool  `json:"automatic_fulfillment" gorm:"column:AutomaticFulfillment"` // default false
+	ContentType          string `json:"content_type" gorm:"type:varchar(128);column:ContentType"`
+	ProductVariantID     string `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID"`
+	ContentFile          string `json:"content_file" gorm:"type:varchar(300);column:ContentFile"`
+	MaxDownloads         *int   `json:"max_downloads" gorm:"column:MaxDownloads"`
+	UrlValidDays         *int   `json:"url_valid_days" gorm:"column:UrlValidDays"`
 	ModelMetadata
 }
 
+func (c *DigitalContent) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *DigitalContent) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *DigitalContent) TableName() string             { return DigitalContentTableName }
+
 // DigitalContentFilterOption is used for building sql queries
 type DigitalContentFilterOption struct {
-	Id               squirrel.Sqlizer
-	ProductVariantID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (d *DigitalContent) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.digital_content.is_valid.%s.app_error",
-		"digital_content_id=",
-		"DigitalContent.IsValid",
-	)
-	if !IsValidId(d.Id) {
-		return outer("id", nil)
-	}
-	if len(d.ContentType) > DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH {
-		return outer("content_type", &d.Id)
-	}
 	if ContentTypeString[strings.ToLower(d.ContentType)] == "" {
-		return outer("content_type", &d.Id)
+		return NewAppError("DigitalContent.IsValid", "model.digital_content.is_valid.content_type.app_error", nil, "please provide valid content type", http.StatusBadRequest)
 	}
 
 	return nil
@@ -69,75 +63,51 @@ func (d *DigitalContent) DeepCopy() *DigitalContent {
 	return &res
 }
 
-func (d *DigitalContent) PreSave() {
-	if d.Id == "" {
-		d.Id = NewId()
-	}
+func (d *DigitalContent) commonPre() {
 	if d.UseDefaultSettings == nil {
 		d.UseDefaultSettings = NewPrimitive(true)
 	}
 	if d.AutomaticFulfillment == nil {
 		d.AutomaticFulfillment = NewPrimitive(false)
 	}
-	if d.ContentType == "" {
+	if d.ContentType != FILE {
 		d.ContentType = FILE
 	}
 }
 
-// max lengths for some fields of DigitalContentUrl
-const (
-	DIGITAL_CONTENT_URL_TOKEN_MAX_LENGTH = 36
-)
-
 type DigitalContentUrl struct {
-	Id          string  `json:"id"`
-	Token       string  `json:"token"` // uuid field, not editable, unique
-	ContentID   string  `json:"content_id"`
-	CreateAt    int64   `json:"create_at"`    // DEFAULT UTC now
-	DownloadNum int     `json:"download_num"` //
-	LineID      *string `json:"line_id"`      // 1-1 order line, unique
+	Id          string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Token       string  `json:"token" gorm:"type:uuid;uniqueIndex:token_key;column:Token"` // uuid field, not editable, unique
+	ContentID   string  `json:"content_id" gorm:"type:uuid;column:ContentID"`
+	CreateAt    int64   `json:"create_at" gorm:"type:bigint;column:CreateAt"` // DEFAULT UTC now
+	DownloadNum int     `json:"download_num" gorm:"column:DownloadNum"`       //
+	LineID      *string `json:"line_id" gorm:"type:uuid;column:LineID"`       // 1-1 order line, unique
 }
 
+func (c *DigitalContentUrl) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *DigitalContentUrl) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent update
+	c.Token = ""
+	return c.IsValid()
+}
+func (c *DigitalContentUrl) TableName() string { return DigitalContentURLTableName }
+
 type DigitalContentUrlFilterOptions struct {
-	Id        squirrel.Sqlizer
-	Token     squirrel.Sqlizer
-	ContentID squirrel.Sqlizer
-	LineID    squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (d *DigitalContentUrl) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"digital_content_url.is_valid.%s.app_error",
-		"digital_content_url_id=",
-		"DigitalContentUrl.IsValid",
-	)
-	if !IsValidId(d.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(d.ContentID) {
-		return outer("content_id", &d.Id)
+		return NewAppError("DigitalContentUrl.IsValid", "model.digital_content_url.is_valid.content_id.app_error", nil, "please provide valid content id", http.StatusBadRequest)
 	}
 	if d.LineID != nil && !IsValidId(*d.LineID) {
-		return outer("line_id", &d.Id)
+		return NewAppError("DigitalContentUrl.IsValid", "model.digital_content_url.is_valid.line_id.app_error", nil, "please provide valid line id", http.StatusBadRequest)
 	}
-	if len(d.Token) > DIGITAL_CONTENT_URL_TOKEN_MAX_LENGTH {
-		return outer("token", &d.Id)
-	}
-
 	return nil
 }
 
-func (d *DigitalContentUrl) ToJSON() string {
-	return ModelToJson(d)
-}
-
-func (d *DigitalContentUrl) PreSave() {
-	if d.Id == "" {
-		d.Id = NewId()
-	}
-	if d.CreateAt == 0 {
-		d.CreateAt = GetMillis()
-	}
+func (d *DigitalContentUrl) commonPre() {
 	if d.Token == "" {
 		d.NewToken(true)
 	}

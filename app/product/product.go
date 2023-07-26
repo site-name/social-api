@@ -33,7 +33,7 @@ func init() {
 // ProductById returns 1 product by given id
 func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model.AppError) {
 	return a.ProductByOption(&model.ProductFilterOption{
-		Id: squirrel.Eq{model.ProductTableName + ".Id": productID},
+		Conditions: squirrel.Eq{model.ProductTableName + ".Id": productID},
 	})
 }
 

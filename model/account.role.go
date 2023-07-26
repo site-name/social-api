@@ -295,20 +295,6 @@ type RolePermissions struct {
 	Permissions []string
 }
 
-// PreSave set `Id`, `CreateAt` and `PermissionsStr`
-func (r *Role) PreSave() {
-	if r.Id == "" {
-		r.Id = NewId()
-	}
-	r.CreateAt = GetMillis()
-	r.UpdateAt = r.CreateAt
-}
-
-// PreUpdate set `UpdateAt` and `PermissionsStr`
-func (r *Role) PreUpdate() {
-	r.UpdateAt = GetMillis()
-}
-
 func (r *Role) ToJSON() string {
 	return ModelToJson(r)
 }

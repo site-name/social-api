@@ -64,7 +64,7 @@ func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) ([]
 
 func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError) {
 	payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
+		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
 	})
 	if appError != nil {
 		return nil, appError
@@ -166,7 +166,7 @@ func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Paym
 // GetAllPaymentsByCheckout returns all payments that belong to given checkout
 func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model.AppError) {
 	payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutID: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkoutToken},
+		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkoutToken},
 	})
 	if appErr != nil {
 		return nil, appErr

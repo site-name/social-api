@@ -96,12 +96,9 @@ type OpenTracingLayer struct {
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
-	ShippingMethodExcludedProductStore store.ShippingMethodExcludedProductStore
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
-	ShippingZoneChannelStore           store.ShippingZoneChannelStore
-	ShopStore                          store.ShopStore
 	ShopStaffStore                     store.ShopStaffStore
 	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
@@ -118,10 +115,8 @@ type OpenTracingLayer struct {
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
-	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
-	WishlistItemProductVariantStore    store.WishlistItemProductVariantStore
 }
 
 func (s *OpenTracingLayer) Address() store.AddressStore {
@@ -428,10 +423,6 @@ func (s *OpenTracingLayer) ShippingMethodChannelListing() store.ShippingMethodCh
 	return s.ShippingMethodChannelListingStore
 }
 
-func (s *OpenTracingLayer) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
-	return s.ShippingMethodExcludedProductStore
-}
-
 func (s *OpenTracingLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
 	return s.ShippingMethodPostalCodeRuleStore
 }
@@ -442,14 +433,6 @@ func (s *OpenTracingLayer) ShippingMethodTranslation() store.ShippingMethodTrans
 
 func (s *OpenTracingLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
-}
-
-func (s *OpenTracingLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
-	return s.ShippingZoneChannelStore
-}
-
-func (s *OpenTracingLayer) Shop() store.ShopStore {
-	return s.ShopStore
 }
 
 func (s *OpenTracingLayer) ShopStaff() store.ShopStaffStore {
@@ -516,20 +499,12 @@ func (s *OpenTracingLayer) Warehouse() store.WarehouseStore {
 	return s.WarehouseStore
 }
 
-func (s *OpenTracingLayer) WarehouseShippingZone() store.WarehouseShippingZoneStore {
-	return s.WarehouseShippingZoneStore
-}
-
 func (s *OpenTracingLayer) Wishlist() store.WishlistStore {
 	return s.WishlistStore
 }
 
 func (s *OpenTracingLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
-}
-
-func (s *OpenTracingLayer) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
-	return s.WishlistItemProductVariantStore
 }
 
 type OpenTracingLayerAddressStore struct {
@@ -912,11 +887,6 @@ type OpenTracingLayerShippingMethodChannelListingStore struct {
 	Root *OpenTracingLayer
 }
 
-type OpenTracingLayerShippingMethodExcludedProductStore struct {
-	store.ShippingMethodExcludedProductStore
-	Root *OpenTracingLayer
-}
-
 type OpenTracingLayerShippingMethodPostalCodeRuleStore struct {
 	store.ShippingMethodPostalCodeRuleStore
 	Root *OpenTracingLayer
@@ -929,16 +899,6 @@ type OpenTracingLayerShippingMethodTranslationStore struct {
 
 type OpenTracingLayerShippingZoneStore struct {
 	store.ShippingZoneStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerShippingZoneChannelStore struct {
-	store.ShippingZoneChannelStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerShopStore struct {
-	store.ShopStore
 	Root *OpenTracingLayer
 }
 
@@ -1022,11 +982,6 @@ type OpenTracingLayerWarehouseStore struct {
 	Root *OpenTracingLayer
 }
 
-type OpenTracingLayerWarehouseShippingZoneStore struct {
-	store.WarehouseShippingZoneStore
-	Root *OpenTracingLayer
-}
-
 type OpenTracingLayerWishlistStore struct {
 	store.WishlistStore
 	Root *OpenTracingLayer
@@ -1034,11 +989,6 @@ type OpenTracingLayerWishlistStore struct {
 
 type OpenTracingLayerWishlistItemStore struct {
 	store.WishlistItemStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerWishlistItemProductVariantStore struct {
-	store.WishlistItemProductVariantStore
 	Root *OpenTracingLayer
 }
 
@@ -6802,60 +6752,6 @@ func (s *OpenTracingLayerShippingMethodChannelListingStore) Upsert(transaction *
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodExcludedProductStore) Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodExcludedProductStore.Delete")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodExcludedProductStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShippingMethodExcludedProductStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodExcludedProductStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShippingMethodExcludedProductStore.Save(instance)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.Delete")
@@ -6992,132 +6888,6 @@ func (s *OpenTracingLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippin
 
 	defer span.Finish()
 	result, err := s.ShippingZoneStore.Upsert(transaction, shippingZone)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShippingZoneChannelStore) BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneChannelStore.BulkDelete")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.ShippingZoneChannelStore.BulkDelete(transaction, options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerShippingZoneChannelStore) BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneChannelStore.BulkSave")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShippingZoneChannelStore.BulkSave(transaction, relations)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShippingZoneChannelStore) FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneChannelStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShippingZoneChannelStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShopStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShopStore) Get(shopID string) (*model.Shop, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShopStore.Get(shopID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.GetByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShopStore.GetByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.Upsert")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShopStore.Upsert(shop)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9161,78 +8931,6 @@ func (s *OpenTracingLayerWarehouseStore) WarehouseByStockID(stockID string) (*mo
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseShippingZoneStore) Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.Delete")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.WarehouseShippingZoneStore.Delete(transaction, options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.FilterByCountryCodeAndChannelID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WarehouseShippingZoneStore.FilterByCountryCodeAndChannelID(countryCode, channelID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WarehouseShippingZoneStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWarehouseShippingZoneStore) Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.GetByOption")
@@ -9359,78 +9057,6 @@ func (s *OpenTracingLayerWishlistItemStore) GetByOption(option *model.WishlistIt
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.BulkUpsert")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.DeleteRelation")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WishlistItemProductVariantStore.DeleteRelation(relation)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWishlistItemProductVariantStore) GetById(selector *gorm.DB, id string) (*model.WishlistItemProductVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.GetById")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWishlistItemProductVariantStore) Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WishlistItemProductVariantStore.Save(wishlistVariant)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayer) Close() {
 	s.Store.Close()
 }
@@ -9536,12 +9162,9 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.SessionStore = &OpenTracingLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &OpenTracingLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &OpenTracingLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
-	newStore.ShippingMethodExcludedProductStore = &OpenTracingLayerShippingMethodExcludedProductStore{ShippingMethodExcludedProductStore: childStore.ShippingMethodExcludedProduct(), Root: &newStore}
 	newStore.ShippingMethodPostalCodeRuleStore = &OpenTracingLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &OpenTracingLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &OpenTracingLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
-	newStore.ShippingZoneChannelStore = &OpenTracingLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
-	newStore.ShopStore = &OpenTracingLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
 	newStore.ShopStaffStore = &OpenTracingLayerShopStaffStore{ShopStaffStore: childStore.ShopStaff(), Root: &newStore}
 	newStore.ShopTranslationStore = &OpenTracingLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &OpenTracingLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
@@ -9558,9 +9181,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.VoucherCustomerStore = &OpenTracingLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherTranslationStore = &OpenTracingLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &OpenTracingLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
-	newStore.WarehouseShippingZoneStore = &OpenTracingLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &OpenTracingLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &OpenTracingLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
-	newStore.WishlistItemProductVariantStore = &OpenTracingLayerWishlistItemProductVariantStore{WishlistItemProductVariantStore: childStore.WishlistItemProductVariant(), Root: &newStore}
 	return &newStore
 }

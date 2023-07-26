@@ -40,8 +40,8 @@ type CollectionFilterOption struct {
 
 	ChannelListingPublicationDate squirrel.Sqlizer // INNER JOIN `CollectionChannelListings`
 	ChannelListingChannelSlug     squirrel.Sqlizer // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`
-	ChannelListingChannelIsActive *bool            // INNER JOIN `CollectionChannelListing` INNER JOIN `Channels`
-	ChannelListingIsPublished     *bool            // INNER JOIN `CollectionChannelListing`
+	ChannelListingChannelIsActive squirrel.Sqlizer // INNER JOIN `CollectionChannelListing` INNER JOIN `Channels`
+	ChannelListingIsPublished     squirrel.Sqlizer // INNER JOIN `CollectionChannelListing`
 }
 
 type Collections []*Collection

@@ -1,12 +1,8 @@
 package product
 
 import (
-	"database/sql"
-
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -19,97 +15,18 @@ func NewSqlCollectionChannelListingStore(s store.Store) store.CollectionChannelL
 	return &SqlCollectionChannelListingStore{s}
 }
 
-func (s *SqlCollectionChannelListingStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id", "CreateAt", "CollectionID", "ChannelID", "PublicationDate", "IsPublished",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
-}
-
-func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
-	query := s.GetQueryBuilder().Select(s.ModelFields(model.CollectionChannelListingTableName + ".")...).From(model.CollectionChannelListingTableName)
-
-	for _, opt := range []squirrel.Sqlizer{options.Id, options.ChannelID, options.CollectionID} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
-
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	var res []*model.CollectionChannelListing
-	err = s.GetReplica().Select(&res, queryStr, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find collection channel listings by given options")
-	}
-
-	return res, nil
-}
-
-func (s *SqlCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
-	query := s.GetQueryBuilder().Delete(model.CollectionChannelListingTableName)
-
-	for _, opt := range []squirrel.Sqlizer{options.Id, options.ChannelID, options.CollectionID} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
-
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "Delete_ToSql")
-	}
-
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
-	}
-
-	_, err = runner.Exec(queryStr, args...)
-	if err != nil {
-		return errors.Wrap(err, "failed to delete collection channel listing relations")
-	}
-
-	return nil
-}
-
 func (s *SqlCollectionChannelListingStore) Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
-	saveQuery := "INSERT INTO " + model.CollectionChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-	updateQuery := "UPDATE " + model.CollectionChannelListingTableName + " SET " + s.ModelFields("").Map(func(_ int, item string) string { return item + ":=" + item }).Join(",") + " WHERE Id=:Id"
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
 
+	var err error
 	for _, rel := range relations {
-		isSaving := false
-
 		if rel.Id == "" {
-			rel.PreSave()
-			isSaving = true
-		}
-
-		if err := rel.IsValid(); err != nil {
-			return nil, err
-		}
-
-		var (
-			result sql.Result
-			err    error
-		)
-		if isSaving {
-			result, err = runner.NamedExec(saveQuery, rel)
+			err = transaction.Create(rel).Error
 		} else {
-			result, err = runner.NamedExec(updateQuery, rel)
+			rel.CreateAt = 0 // prevent update
+			err = transaction.Model(rel).Updates(rel).Error
 		}
 
 		if err != nil {
@@ -118,12 +35,36 @@ func (s *SqlCollectionChannelListingStore) Upsert(transaction *gorm.DB, relation
 			}
 			return nil, errors.Wrap(err, "failed to upsert collection channel listing relation")
 		}
-
-		numUpserted, _ := result.RowsAffected()
-		if numUpserted != 1 {
-			return nil, errors.Errorf("%d relation upserted instead of 1", numUpserted)
-		}
 	}
 
 	return relations, nil
+}
+
+func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
+	var res []*model.CollectionChannelListing
+	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find collection channel listings by given options")
+	}
+
+	return res, nil
+}
+
+func (s *SqlCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
+	query := s.GetQueryBuilder().Delete(model.CollectionChannelListingTableName).Where(options.Conditions)
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	err = transaction.Raw(queryStr, args...).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to delete collection channel listing relations")
+	}
+
+	return nil
 }

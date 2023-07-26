@@ -50,14 +50,16 @@ func (f FulfillmentStatus) IsValid() bool {
 
 type Fulfillment struct {
 	Id                   string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	FulfillmentOrder     int               `json:"fulfillment_order" gorm:"column:FulfillmentOrder"` // > 0
-	OrderID              string            `json:"order_id" gorm:"type:uuid;column:OrderID"`         // not null nor editable
-	Status               FulfillmentStatus `json:"status" gorm:"type:varchar(32);column:Status"`     // default "fulfilled"
+	FulfillmentOrder     int               `json:"fulfillment_order" gorm:"column:FulfillmentOrder;check:FulfillmentOrder >= 0"` // >= 0; not editable
+	OrderID              string            `json:"order_id" gorm:"type:uuid;column:OrderID"`                                     // not null nor editable
+	Status               FulfillmentStatus `json:"status" gorm:"type:varchar(32);column:Status"`                                 // default "fulfilled"
 	TrackingNumber       string            `json:"tracking_numdber" gorm:"type:varchar(255);column:TrackingNumber"`
 	CreateAt             int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	ShippingRefundAmount *decimal.Decimal  `json:"shipping_refund_amount" gorm:"column:ShippingRefundAmount"` // max digits 12, decimal places 3
 	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount" gorm:"column:TotalRefundAmount"`       // max digits 12, decimal places 3
 	ModelMetadata
+
+	FulfillmentLines FulfillmentLines `json:"-" gorm:"foreignKey:FulfillmentID;constraint:OnDelete:CASCADE"`
 
 	order *Order // this field get populated in queries that require select related data
 }
@@ -69,12 +71,17 @@ func (f *Fulfillment) GetOrder() *Order              { return f.order }
 func (f *Fulfillment) SetOrder(o *Order)             { f.order = o }
 
 // FulfillmentFilterOption is used to build squirrel sql queries
+// NOTE: `FulfillmentLineID` and `HaveNoFulfillmentLines` fields are evaluated exclusively. if ... else if
 type FulfillmentFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	SelectRelatedOrder bool             // if true, tells store to select related order also
-	FulfillmentLineID  squirrel.Sqlizer // LEFT/INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
-	SelectForUpdate    bool             // if true, add `FOR UPDATE`to the end of sql queries
+	// INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
+	FulfillmentLineID squirrel.Sqlizer
+	// LEFT JOIN FulfillmentLines ON ... WHERE FulfillmentLines.FulfillmentID = NULL
+	HaveNoFulfillmentLines bool
+
+	SelectRelatedOrder bool // if true, tells store to select related order also
+	SelectForUpdate    bool // if true, add `FOR UPDATE`to the end of sql queries.
 }
 
 type Fulfillments []*Fulfillment

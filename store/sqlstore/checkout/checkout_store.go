@@ -1,10 +1,11 @@
 package checkout
 
 import (
+	"database/sql"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,41 +16,6 @@ type SqlCheckoutStore struct {
 
 func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 	return &SqlCheckoutStore{sqlStore}
-}
-
-func (cs *SqlCheckoutStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Token",
-		"CreateAt",
-		"UpdateAt",
-		"UserID",
-		"Email",
-		"Quantity",
-		"ChannelID",
-		"BillingAddressID",
-		"ShippingAddressID",
-		"ShippingMethodID",
-		"CollectionPointID",
-		"Note",
-		"Currency",
-		"Country",
-		"DiscountAmount",
-		"DiscountName",
-		"TranslatedDiscountName",
-		"VoucherCode",
-		"RedirectURL",
-		"TrackingCode",
-		"LanguageCode",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (cs *SqlCheckoutStore) ScanFields(checkOut *model.Checkout) []interface{} {
@@ -114,15 +80,15 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 		andCondition = append(andCondition, option.Conditions)
 	}
 	if option.ChannelIsActive != nil {
-		andCondition = append(andCondition, squirrel.Expr("Channels.IsActive = ?", *option.ChannelIsActive))
+		andCondition = append(andCondition, option.ChannelIsActive)
 	}
 
-	selectFields := cs.ModelFields(model.CheckoutTableName + ".")
+	selectFields := []string{model.CheckoutTableName + ".*"}
 	if option.SelectRelatedChannel {
-		selectFields = append(selectFields, cs.Channel().ModelFields(model.ChannelTableName+".")...)
+		selectFields = append(selectFields, model.ChannelTableName+".*")
 	}
 	if option.SelectRelatedBillingAddress {
-		selectFields = append(selectFields, cs.Address().ModelFields(model.AddressTableName+".")...)
+		selectFields = append(selectFields, model.AddressTableName+".*")
 	}
 
 	query := cs.GetQueryBuilder().
@@ -166,9 +132,9 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	err = cs.GetReplica().Raw(query, args...).Row().Scan(scanFields...)
+	err = cs.GetReplica().Raw(query, args...).Row().Scan(scanFields)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.NewErrNotFound(model.CheckoutTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to scan a checkout")
@@ -289,15 +255,13 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	)
 	// check if we can proceed
 	if len(productIDs) > 0 {
-		query, args, _ := cs.GetQueryBuilder().
-			Select(cs.Collection().ModelFields(model.CollectionTableName + ".")...).
-			From(model.CollectionTableName).
-			Column("ProductCollections.ProductID AS PrefetchRelatedValProductID"). // extra collumn
-			InnerJoin(model.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
-			Where(squirrel.Eq{"ProductCollections.ProductID": productIDs}).
-			ToSql()
+		err = cs.GetReplica().
+			Table(model.CollectionTableName).
+			Where("ProductCollections.ProductID IN ?", productIDs).
+			Select("Collections.*", "ProductCollections.ProductID AS PrefetchRelatedValProductID").
+			Joins("INNER JOIN " + model.CollectionProductRelationTableName + " ON ProductCollections.CollectionID = Collections.Id").
+			Scan(&collectionXs).Error
 
-		err = cs.GetReplica().Select(&collectionXs, query, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections")
 		}
@@ -308,22 +272,13 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 
 	// fetch product variant channel listing
 	var (
-		productVariantChannelListings []*model.ProductVariantChannelListing
-		channelIDs                    []string
-		// productVariantChannelListingsByProductVariant has keys are product variant ids
-		productVariantChannelListingsByProductVariant = map[string][]*model.ProductVariantChannelListing{}
+		productVariantChannelListings                 []*model.ProductVariantChannelListing
+		channelIDs                                    []string
+		productVariantChannelListingsByProductVariant = map[string][]*model.ProductVariantChannelListing{} // productVariantChannelListingsByProductVariant has keys are product variant ids
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
-		query, args, _ := cs.GetQueryBuilder().Select("*").
-			From(model.ProductVariantChannelListingTableName).
-			Where(squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs}).
-			ToSql()
-
-		err = cs.GetReplica().Select(
-			&productVariantChannelListings,
-			query, args...,
-		)
+		err := cs.GetReplica().Find(&productVariantChannelListings, "VariantID IN ?", productVariantIDs).Error
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find product variant channel listing")
 		}
@@ -337,11 +292,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	var channels []*model.Channel
 	// check if we can proceed
 	if len(channelIDs) > 0 {
-		err = cs.GetReplica().Select(
-			&channels,
-			"SELECT * FROM "+model.ChannelTableName+" WHERE Id in ? ORDER BY Slug ASC",
-			channelIDs,
-		)
+		err = cs.GetReplica().Find(&channels, "Id in ? ORDER BY Slug ASC", channelIDs).Error
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find channels")
 		}
@@ -349,21 +300,12 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 
 	// fetch product types
 	var (
-		productTypes []*model.ProductType
-		// productTypeMap has keys are product type ids
-		productTypeMap = map[string]*model.ProductType{}
+		productTypes   []*model.ProductType
+		productTypeMap = map[string]*model.ProductType{} // productTypeMap has keys are product type ids
 	)
 	// check if we can proceed
 	if len(productTypeIDs) > 0 {
-		query, args, _ := cs.GetQueryBuilder().
-			Select("*").
-			From(model.ProductTypeTableName).
-			Where(squirrel.Eq{"Id": productTypeIDs}).
-			ToSql()
-		err = cs.GetReplica().Select(
-			&productTypes,
-			query, args...,
-		)
+		err = cs.GetReplica().Find(&productTypes, "Id IN ?", productTypeIDs).Error
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to finds product types")
 		}
@@ -420,12 +362,12 @@ func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, option
 		transaction = cs.GetMaster()
 	}
 
-	query, args, err := cs.commonFilterQueryBuilder(option, delete).(squirrel.DeleteBuilder).ToSql()
+	query, args, err := cs.GetQueryBuilder().Delete(model.CheckoutTableName).Where(option.Conditions).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "DeleteCheckoutsByOption_ToSql")
 	}
 
-	_, err = runner.Exec(query, args...)
+	err = transaction.Raw(query, args...).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete checkout(s) by given options")
 	}
@@ -440,7 +382,7 @@ func (cs *SqlCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) 
 		options.Conditions,
 	}
 	if options.ChannelIsActive != nil {
-		conditions = append(conditions, squirrel.Eq{"Channels.IsActive": *options.ChannelIsActive})
+		conditions = append(conditions, options.ChannelIsActive)
 		db = db.Joins("INNER JOIN Channels ON Checkouts.ChannelID = Channels.Id")
 	}
 

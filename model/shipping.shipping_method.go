@@ -50,9 +50,11 @@ type ShippingMethod struct {
 	Description         StringInterface        `json:"description"`
 	ModelMetadata
 
-	shippingZone                  *ShippingZone                 `db:"-"` // this field is used for holding prefetched related instances
-	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `db:"-"` // this field is used for holding prefetched related instances
-	price                         *goprices.Money               `db:"-"` // this field is populated in some graphql resolvers
+	ExcludedProducts Products `json:"-" gorm:"many2many:ShippingMethodExcludedProducts"`
+
+	shippingZone                  *ShippingZone                 `gorm:"-"` // this field is used for holding prefetched related instances
+	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `gorm:"-"` // this field is used for holding prefetched related instances
+	price                         *goprices.Money               `gorm:"-"` // this field is populated in some graphql resolvers
 }
 
 func (s *ShippingMethod) GetPrice() *goprices.Money {

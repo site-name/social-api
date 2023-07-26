@@ -1,7 +1,6 @@
 package system
 
 import (
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -25,7 +24,7 @@ func NewSqlSystemStore(sqlStore store.Store) store.SystemStore {
 }
 
 func (s *SqlSystemStore) Save(system *model.System) error {
-	if _, err := s.GetMaster().NamedExec("INSERT INTO Systems (Name, Value) VALUES (:Name, :Value)", system); err != nil {
+	if err := s.GetMaster().Create(system).Error; err != nil {
 		return errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
 	}
 	return nil
@@ -42,7 +41,7 @@ func (s *SqlSystemStore) SaveOrUpdate(system *model.System) error {
 		return errors.Wrap(err, "SaveOrUpdate_ToSql")
 	}
 
-	_, err = s.GetMaster().Exec(query, args...)
+	err = s.GetMaster().Raw(query, args...).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to upsert system property")
 	}
@@ -68,7 +67,7 @@ func (s *SqlSystemStore) SaveOrUpdateWithWarnMetricHandling(system *model.System
 }
 
 func (s *SqlSystemStore) Update(system *model.System) error {
-	if _, err := s.GetMaster().NamedExec("UPDATE Systems SET Value=:Value WHERE Name=:Name", system); err != nil {
+	if err := s.GetMaster().Raw("UPDATE Systems SET Value=? WHERE Name=?", system.Value, system.Name).Error; err != nil {
 		return errors.Wrapf(err, "failed to update system property with name=%s", system.Name)
 	}
 	return nil
@@ -77,7 +76,7 @@ func (s *SqlSystemStore) Update(system *model.System) error {
 func (s *SqlSystemStore) Get() (model.StringMap, error) {
 	var systems []model.System
 	props := make(model.StringMap)
-	if err := s.GetReplica().Select(&systems, "SELECT * FROM Systems"); err != nil {
+	if err := s.GetReplica().Find(&systems).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to system properties")
 	}
 	for _, prop := range systems {
@@ -89,7 +88,7 @@ func (s *SqlSystemStore) Get() (model.StringMap, error) {
 
 func (s *SqlSystemStore) GetByName(name string) (*model.System, error) {
 	var system model.System
-	if err := s.GetMaster().Get(&system, "SELECT * FROM Systems WHERE Name = ?", name); err != nil {
+	if err := s.GetMaster().First(&system, "Name = ?", name).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("System", fmt.Sprintf("name=%s", system.Name))
 		}
@@ -100,26 +99,21 @@ func (s *SqlSystemStore) GetByName(name string) (*model.System, error) {
 }
 
 func (s *SqlSystemStore) PermanentDeleteByName(name string) (*model.System, error) {
-	var system model.System
-	if _, err := s.GetMaster().Exec("DELETE FROM Systems WHERE Name = ?", name); err != nil {
-		return nil, errors.Wrapf(err, "failed to permanent delete system property with name=%s", system.Name)
+	if err := s.GetMaster().Raw("DELETE FROM Systems WHERE Name = ?", name).Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to permanent delete system property with name=%s", name)
 	}
 
-	return &system, nil
+	return &model.System{Name: name}, nil
 }
 
 // InsertIfExists inserts a given system value if it does not already exist. If a value
 // already exists, it returns the old one, else returns the new one.
 func (s *SqlSystemStore) InsertIfExists(system *model.System) (*model.System, error) {
-	tx, err := s.GetMaster().Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "begin_transaction")
-	}
-	defer store.FinalizeTransaction(tx)
+	tx := s.GetMaster().Begin()
+	defer tx.Rollback()
 
 	var origSystem model.System
-	if err := tx.Get(&origSystem, `SELECT * FROM Systems
-		WHERE Name = ?`, system.Name); err != nil && err != sql.ErrNoRows {
+	if err := tx.First(&origSystem, `Name = ?`, system.Name).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, errors.Wrapf(err, "failed to get system property with name=%s", system.Name)
 	}
 
@@ -129,11 +123,11 @@ func (s *SqlSystemStore) InsertIfExists(system *model.System) (*model.System, er
 	}
 
 	// Key does not exist, need to insert.
-	if _, err := tx.NamedExec("INSERT INTO Systems (Name, Value) VALUES (:Name, :Value)", system); err != nil {
+	if err := tx.Create(system).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit().Error; err != nil {
 		return nil, errors.Wrap(err, "commit_transaction")
 	}
 	return system, nil

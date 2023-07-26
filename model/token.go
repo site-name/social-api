@@ -1,8 +1,6 @@
 package model
 
 import (
-	"net/http"
-
 	"gorm.io/gorm"
 )
 
@@ -10,7 +8,6 @@ const (
 	TOKEN_SIZE            = 64
 	MAX_TOKEN_EXIPRY_TIME = 1000 * 60 * 60 * 48 // 48 hour
 	TOKEN_TYPE_OAUTH      = "oauth"
-	// MAX_EXTRA             = 2048
 )
 
 // all possible token types
@@ -43,17 +40,9 @@ type Token struct {
 	Extra    string    `json:"extra" gorm:"type:varchar(2048);column:Extra"`
 }
 
-func (t *Token) TableName() string {
-	return TokenTableName
-}
-
-func (t *Token) BeforeCreate(_ *gorm.DB) error {
-	return t.IsValid()
-}
-
-func (t *Token) BeforeUpdate(_ *gorm.DB) error {
-	return t.IsValid()
-}
+func (t *Token) TableName() string             { return TokenTableName }
+func (t *Token) BeforeCreate(_ *gorm.DB) error { return t.IsValid() }
+func (t *Token) BeforeUpdate(_ *gorm.DB) error { return t.IsValid() }
 
 func NewToken(tokentype TokenType, extra string) *Token {
 	return &Token{
@@ -64,10 +53,6 @@ func NewToken(tokentype TokenType, extra string) *Token {
 }
 
 func (t *Token) IsValid() *AppError {
-	if len(t.Token) >= TOKEN_SIZE {
-		return NewAppError("Token.IsValid", "model.token.is_valid.size", nil, "", http.StatusInternalServerError)
-	}
-
 	return nil
 }
 

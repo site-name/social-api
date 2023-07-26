@@ -1,30 +1,31 @@
 package model
 
 import (
+	"net/http"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-)
-
-// max length for some fields
-const (
-	SHIPPING_ZONE_NAME_MAX_LENGTH = 100
+	"gorm.io/gorm"
 )
 
 // order by CreateAt
 type ShippingZone struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Countries   string `json:"countries"` // multiple allowed. E.g: VN USA CN
-	Default     *bool  `json:"default"`   // default false
-	Description string `json:"description"`
-	CreateAt    int64  `json:"create_at"`
+	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name        string `json:"name" gorm:"type:varchar(100);column:Name"`
+	Countries   string `json:"countries" gorm:"type:varchar(2000);column:Countries"` // multiple allowed. E.g: VN USA CN
+	Default     *bool  `json:"default" gorm:"default:false;column:Default"`          // default false
+	Description string `json:"description" gorm:"column:Description"`
+	CreateAt    int64  `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 	ModelMetadata
 
-	RelativeWarehouseIDs []string `json:"-" db:"-"`
+	Channels   Channels   `json:"-" gorm:"many2many:ShippingZoneChannels"`
+	Warehouses Warehouses `json:"-" gorm:"many2many:WarehouseShippingZones"`
 }
+
+func (c *ShippingZone) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShippingZone) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShippingZone) TableName() string             { return ShippingZoneTableName }
 
 // ShippingZoneFilterOption is used to build sql queries to finds shipping zones
 type ShippingZoneFilterOption struct {
@@ -32,8 +33,6 @@ type ShippingZoneFilterOption struct {
 
 	WarehouseID squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
 	ChannelID   squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
-
-	SelectRelatedWarehouseIDs bool // if true, `RelativeWarehouseIDs` property get populated with related data
 }
 
 type ShippingZones []*ShippingZone
@@ -55,36 +54,13 @@ func (s *ShippingZone) String() string {
 }
 
 func (s *ShippingZone) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shipping_zone.is_valid.%s.app_error",
-		"shipping_zone_id=",
-		"ShippingZone.IsValid",
-	)
-
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
-	if s.CreateAt == 0 {
-		return outer("create_at", &s.Id)
-	}
-	if utf8.RuneCountInString(s.Name) > SHIPPING_ZONE_NAME_MAX_LENGTH {
-		return outer("name", &s.Id)
-	}
 	for _, country := range strings.Fields(s.Countries) {
 		if !CountryCode(country).IsValid() {
-			return outer("country", &s.Id)
+			return NewAppError("ShippingZone.IsValid", "model.shipping_zone.is_valid.shipping_zone_id.app_error", nil, "please provide valid shipping zone id", http.StatusBadRequest)
 		}
 	}
 
 	return nil
-}
-
-func (s *ShippingZone) PreSave() {
-	if IsValidId(s.Id) {
-		s.Id = NewId()
-	}
-	s.CreateAt = GetMillis()
-	s.commonPre()
 }
 
 func (s *ShippingZone) commonPre() {
@@ -96,10 +72,6 @@ func (s *ShippingZone) commonPre() {
 	s.Countries = strings.ToUpper(s.Countries)
 }
 
-func (s *ShippingZone) PreUpdate() {
-	s.commonPre()
-}
-
 func (s *ShippingZone) DeepCopy() *ShippingZone {
 	res := *s
 
@@ -107,8 +79,5 @@ func (s *ShippingZone) DeepCopy() *ShippingZone {
 		res.Default = NewPrimitive(*s.Default)
 	}
 	res.ModelMetadata = s.ModelMetadata.DeepCopy()
-	if len(s.RelativeWarehouseIDs) > 0 {
-		copy(res.RelativeWarehouseIDs, s.RelativeWarehouseIDs)
-	}
 	return &res
 }

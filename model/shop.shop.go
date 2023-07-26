@@ -81,9 +81,8 @@ func (s *Shop) SetCompanyAddress(a *Address) {
 }
 
 type ShopFilterOptions struct {
-	Id      squirrel.Sqlizer
-	OwnerID squirrel.Sqlizer
-	Name    squirrel.Sqlizer
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
 
 	SelectRelatedCompanyAddress bool
 }

@@ -65,7 +65,7 @@ func (c *Checkout) GetBilingAddress() *Address     { return c.billingAddress }
 type CheckoutFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	ChannelIsActive *bool // INNER JOIN Channels ON ... WHERE Channels.IsActive = ?
+	ChannelIsActive squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels.IsActive = ?
 
 	SelectRelatedChannel        bool // this will populate the field `channel`
 	SelectRelatedBillingAddress bool // this will populate the field 'billingAddress'

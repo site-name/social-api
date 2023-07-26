@@ -1,7 +1,9 @@
 package model
 
 import (
-	"unicode/utf8"
+	"net/http"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -10,51 +12,30 @@ const (
 )
 
 type ShopTranslation struct {
-	Id           string           `json:"id"`
-	LanguageCode LanguageCodeEnum `json:"language_code"`
-	Name         string           `json:"name"`
-	Description  string           `json:"description"`
-	CreateAt     int64            `json:"create_at"`
-	UpdateAt     int64            `json:"update_at"`
+	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
+	Name         string           `json:"name" gorm:"type:varchar(250);column:Name"`
+	Description  string           `json:"description" gorm:"type:varchar(1000);column:Description"`
+	CreateAt     int64            `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
+	UpdateAt     int64            `json:"update_at" gorm:"type:bigint;autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
 }
 
-func (s *ShopTranslation) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-	if s.CreateAt == 0 {
-		s.CreateAt = GetMillis()
-	}
-	s.UpdateAt = s.CreateAt
-	s.Name = SanitizeUnicode(s.Name)
-	s.Description = SanitizeUnicode(s.Description)
+func (c *ShopTranslation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShopTranslation) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent update manually
+	return c.IsValid()
 }
+func (c *ShopTranslation) TableName() string { return ShopTranslationTableName }
 
-func (s *ShopTranslation) PreUpdate() {
-	s.UpdateAt = GetMillis()
+func (s *ShopTranslation) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 	s.Description = SanitizeUnicode(s.Description)
 }
 
 func (s *ShopTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shop_translation.is_valid.%s.app_error",
-		"shop_translation_id=",
-		"ShopTranslation.IsValid",
-	)
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
-
 	if !s.LanguageCode.IsValid() {
-		return outer("language_code", &s.Id)
+		return NewAppError("ShopTranslation.IsValid", "model.shop_translation.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
 	}
-	if utf8.RuneCountInString(s.Name) > SHOP_TRANSLATION_NAME_MAX_LENGTH {
-		return outer("name", &s.Id)
-	}
-	if utf8.RuneCountInString(s.Description) > SHOP_TRANSLATION_DESCRIPTION_MAX_LENGTH {
-		return outer("description", &s.Id)
-	}
-
 	return nil
 }

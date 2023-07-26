@@ -134,7 +134,8 @@ type OrderFilterOption struct {
 
 	ChannelSlug squirrel.Sqlizer // for comparing the channel of this order's slug
 
-	SelectForUpdate bool // if true, add FOR UPDATE to the end of sql queries
+	SelectForUpdate bool // if true, add FOR UPDATE to the end of sql queries. NOTE: Only applies if Transaction is set
+	Transaction     *gorm.DB
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.

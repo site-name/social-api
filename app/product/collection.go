@@ -44,9 +44,9 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string) ([]*model.Coll
 			squirrel.LtOrEq{model.CollectionChannelListingTableName + ".PublicationDate": today},
 			squirrel.Eq{model.CollectionChannelListingTableName + ".PublicationDate": nil},
 		},
-		ChannelListingIsPublished:     model.NewPrimitive(true),
+		ChannelListingIsPublished:     squirrel.Eq{model.CollectionChannelListingTableName + "IsPublished": true},
 		ChannelListingChannelSlug:     squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
-		ChannelListingChannelIsActive: model.NewPrimitive(true),
+		ChannelListingChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
 	})
 }
 
@@ -58,9 +58,7 @@ func (a *ServiceProduct) VisibleCollectionsToUser(userID, channelSlug string) ([
 		})
 	}
 
-	return a.CollectionsByOption(&model.CollectionFilterOption{
-		SelectAll: true,
-	})
+	return a.CollectionsByOption(&model.CollectionFilterOption{})
 }
 
 func (a *ServiceProduct) CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError) {

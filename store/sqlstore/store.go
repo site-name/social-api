@@ -2,8 +2,11 @@ package sqlstore
 
 import (
 	"context"
+	"database/sql"
 	dbsql "database/sql"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -20,7 +23,9 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type migrationDirection string
@@ -621,9 +626,21 @@ func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 	return migrations, nil
 }
 
-// finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
-// func (s *SqlStore) FinalizeTransaction(transaction driver.Tx) {
-// 	if err := transaction.Rollback(); err != nil && err != sql.ErrTxDone {
-// 		slog.Error("Failed to rollback transaction", slog.Err(err))
-// 	}
-// }
+func newGormDBWrapper(handle *sql.DB, sqlSettings *model.SqlSettings) (*gorm.DB, error) {
+	var gormLog logger.Interface
+	if *sqlSettings.Trace {
+		gormLog = logger.New(
+			log.New(os.Stderr, "\r", log.LstdFlags),
+			logger.Config{
+				SlowThreshold:             time.Second,
+				LogLevel:                  logger.Info,
+				Colorful:                  true,
+				IgnoreRecordNotFoundError: true,
+			},
+		)
+	}
+
+	return gorm.Open(postgres.New(postgres.Config{Conn: handle}), &gorm.Config{
+		Logger: gormLog,
+	})
+}

@@ -1,7 +1,6 @@
 package order
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -108,78 +107,33 @@ func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
 
 // BulkUpsert performs bulk upsert given orders
 func (os *SqlOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
-	var (
-		saveQuery   = "INSERT INTO " + model.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + model.OrderTableName + " SET " +
-			os.ModelFields("").
-				Map(func(_ int, s string) string {
-					return s + "=:" + s
-				}).
-				Join(",") + " WHERE Id=:Id"
-		runner = os.GetMaster()
-	)
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = os.GetMaster()
 	}
 
 	for _, ord := range orders {
-		var (
-			err      error
-			isSaving bool
-		)
-
-		if !model.IsValidId(ord.Id) {
-			ord.Id = ""
-			isSaving = true
-			ord.PreSave()
+		var err error
+		if ord.Id == "" {
+			err = transaction.Create(ord).Error
 		} else {
-			ord.PreUpdate()
-		}
+			// prevent update non-editable fields
+			ord.CreateAt = 0
+			ord.TrackingClientID = ""
+			ord.BillingAddressID = nil
+			ord.ShippingAddressID = nil
+			ord.CollectionPointName = nil
+			ord.ShippingMethodName = nil
+			ord.ShippingPriceNetAmount = nil
+			ord.ShippingPriceGrossAmount = nil
 
-		if err := ord.IsValid(); err != nil {
-			return nil, err
-		}
-
-		if isSaving {
-			for {
-				_, err = runner.NamedExec(saveQuery, ord)
-				if err != nil {
-					if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key"}) {
-						ord.NewToken()
-						continue
-					}
-					break // system error, break right now to return
-				}
-				break // no error, break
-			}
-
-		} else {
-			var oldOrder model.Order
-			// try finding if order exist
-			err = runner.Get(&oldOrder, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", ord.Id)
-			if err != nil {
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					return nil, err
-				}
-				return nil, errors.Wrapf(err, "failed to find order with id=%s", ord.Id)
-			}
-
-			// set all NOT editable fields for newOrder:
-			// NOTE: order's Token can be updated too
-			ord.CreateAt = oldOrder.CreateAt
-			ord.TrackingClientID = oldOrder.TrackingClientID
-			ord.BillingAddressID = oldOrder.BillingAddressID
-			ord.ShippingAddressID = oldOrder.ShippingAddressID
-			ord.CollectionPointName = oldOrder.CollectionPointName
-			ord.ShippingMethodName = oldOrder.ShippingMethodName
-			ord.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
-			ord.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
-
-			_, err = runner.NamedExec(updateQuery, ord)
+			err = transaction.Model(ord).Updates(ord).Error
 		}
 
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to upsert order with id=%s", ord.Id)
+			if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key"}) {
+				return nil, store.NewErrInvalidInput(model.OrderTableName, "Token", ord.Token)
+			}
+			return nil, errors.Wrap(err, "failed to upsert order")
 		}
 	}
 
@@ -189,7 +143,7 @@ func (os *SqlOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order)
 // Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 	var order model.Order
-	err := os.GetReplica().Get(&order, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", id)
+	err := os.GetReplica().First(&order, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderTableName, id)
@@ -201,31 +155,21 @@ func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 
 // FilterByOption returns a list of orders, filtered by given option
 func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
+	runner := os.GetMaster()
+	if option.Transaction != nil {
+		runner = option.Transaction
+	}
+
 	query := os.GetQueryBuilder().
 		Select(os.ModelFields(model.OrderTableName + ".")...).
-		From(model.OrderTableName)
-
-		// parse options:
-	for _, cond := range []squirrel.Sqlizer{
-		option.Id,
-		option.Status,
-		option.CheckoutToken,
-		option.UserEmail,
-		option.UserID,
-		option.ChannelID,
-		option.ShippingMethodID,
-	} {
-		if cond != nil {
-			query = query.Where(cond)
-		}
-	}
+		From(model.OrderTableName).Where(option.Conditions)
 
 	if option.ChannelSlug != nil {
 		query = query.
 			InnerJoin(model.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
 			Where(option.ChannelSlug)
 	}
-	if option.SelectForUpdate {
+	if option.SelectForUpdate && option.Transaction != nil {
 		query = query.Suffix("FOR UPDATE")
 	}
 
@@ -235,7 +179,7 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	}
 
 	var res model.Orders
-	err = os.GetReplica().Select(&res, queryString, args...)
+	err = runner.Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find orders with given option")
 	}

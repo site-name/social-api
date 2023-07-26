@@ -2,7 +2,6 @@ package model
 
 import (
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
@@ -10,22 +9,13 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
+	"gorm.io/gorm"
 )
 
-// Max lengths for some payment's fields
 const (
-	MAX_LENGTH_PAYMENT_GATEWAY              = 255
-	MAX_LENGTH_PAYMENT_CHARGE_STATUS        = 20
-	MAX_LENGTH_PAYMENT_TOKEN                = 512
-	PAYMENT_PSP_REFERENCE_MAX_LENGTH        = 512
-	MAX_LENGTH_CC_FIRST_DIGITS              = 6
-	MAX_LENGTH_CC_LAST_DIGITS               = 4
-	MAX_LENGTH_CC_BRAND                     = 40
-	MIN_CC_EXP_MONTH                        = 1
-	MAX_CC_EXP_MONTH                        = 12
-	MIN_CC_EXP_YEAR                         = 1000
-	MAX_LENGTH_PAYMENT_COMMON_256           = 256
-	PAYMENT_STORE_PAYMENT_METHOD_MAX_LENGTH = 11
+	MIN_CC_EXP_MONTH = 1
+	MAX_CC_EXP_MONTH = 12
+	MIN_CC_EXP_YEAR  = 1000
 
 	// Payment Gateways
 	GATE_WAY_MANUAL = "manual"
@@ -62,47 +52,51 @@ var ChargeStatuString = map[PaymentChargeStatus]string{
 
 // Payment represents payment from user to shop
 type Payment struct {
-	Id                 string              `json:"id"`
-	GateWay            string              `json:"gate_way"`
-	IsActive           *bool               `json:"is_active"` // default true
-	ToConfirm          bool                `json:"to_confirm"`
-	CreateAt           int64               `json:"create_at"`
-	UpdateAt           int64               `json:"update_at"`
-	ChargeStatus       PaymentChargeStatus `json:"charge_status"`
-	Token              string              `json:"token"`
-	Total              *decimal.Decimal    `json:"total"`           // DEFAULT decimal(0)
-	CapturedAmount     *decimal.Decimal    `json:"captured_amount"` // DEFAULT decimal(0)
-	Currency           string              `json:"currency"`        // default 'USD'
-	CheckoutID         *string             `json:"checkout_id"`     // foreign key to checkout
-	OrderID            *string             `json:"order_id"`        // foreign key to order
-	BillingEmail       string              `json:"billing_email"`
-	BillingFirstName   string              `json:"billing_first_name"`
-	BillingLastName    string              `json:"billing_last_name"`
-	BillingCompanyName string              `json:"billing_company_name"`
-	BillingAddress1    string              `json:"billing_address_1"`
-	BillingAddress2    string              `json:"billing_address_2"`
-	BillingCity        string              `json:"billing_city"`
-	BillingCityArea    string              `json:"billing_city_area"`
-	BillingPostalCode  string              `json:"billing_postal_code"`
-	BillingCountryCode CountryCode         `json:"billing_country_code"`
-	BillingCountryArea string              `json:"billing_country_area"`
-	CcFirstDigits      string              `json:"cc_first_digits"`
-	CcLastDigits       string              `json:"cc_last_digits"`
-	CcBrand            string              `json:"cc_brand"`
-	CcExpMonth         *int32              `json:"cc_exp_month"`
-	CcExpYear          *int32              `json:"cc_exp_year"`
-	PaymentMethodType  string              `json:"payment_method_type"`
-	CustomerIpAddress  *string             `json:"customer_ip_address"`
-	ExtraData          string              `json:"extra_data"`
-	ReturnUrl          *string             `json:"return_url_url"`
-	PspReference       *string             `json:"psp_reference"`        // db index
-	StorePaymentMethod StorePaymentMethod  `json:"store_payment_method"` // default to "none"
+	Id                 string              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	GateWay            string              `json:"gate_way" gorm:"type:varchar(255);column:GateWay"`
+	IsActive           *bool               `json:"is_active" gorm:"default:true;column:IsActive;index:isactive_key"` // default true
+	ToConfirm          bool                `json:"to_confirm" gorm:"column:ToConfirm"`
+	CreateAt           int64               `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	UpdateAt           int64               `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
+	ChargeStatus       PaymentChargeStatus `json:"charge_status" gorm:"type:varchar(20);column:ChargeStatus;index:chargestatus_key"` // default 'not_charged'
+	Token              string              `json:"token" gorm:"type:varchar(512);column:Token"`
+	Total              *decimal.Decimal    `json:"total" gorm:"default:0;column:Total"`                        // DEFAULT decimal(0)
+	CapturedAmount     *decimal.Decimal    `json:"captured_amount" gorm:"default:0;column:CapturedAmount"`     // DEFAULT decimal(0)
+	Currency           string              `json:"currency" gorm:"type:varchar(5);column:Currency"`            // default 'USD'
+	CheckoutID         *string             `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`             // foreign key to checkout
+	OrderID            *string             `json:"order_id" gorm:"type:uuid;column:OrderID;index:orderid_key"` // foreign key to order
+	BillingEmail       string              `json:"billing_email" gorm:"type:varchar(128);column:BillingEmail"`
+	BillingFirstName   string              `json:"billing_first_name" gorm:"type:varchar(256);column:BillingFirstName"`
+	BillingLastName    string              `json:"billing_last_name" gorm:"type:varchar(256);column:BillingLastName"`
+	BillingCompanyName string              `json:"billing_company_name" gorm:"type:varchar(256);column:BillingCompanyName"`
+	BillingAddress1    string              `json:"billing_address_1" gorm:"type:varchar(256);column:BillingAddress1"`
+	BillingAddress2    string              `json:"billing_address_2" gorm:"type:varchar(256);column:BillingAddress2"`
+	BillingCity        string              `json:"billing_city" gorm:"type:varchar(256);column:BillingCity"`
+	BillingCityArea    string              `json:"billing_city_area" gorm:"type:varchar(128);column:BillingCityArea"`
+	BillingPostalCode  string              `json:"billing_postal_code" gorm:"type:varchar(256);column:BillingPostalCode"`
+	BillingCountryCode CountryCode         `json:"billing_country_code" gorm:"type:varchar(3);column:BillingCountryCode"`
+	BillingCountryArea string              `json:"billing_country_area" gorm:"type:varchar(256);column:BillingCountryArea"`
+	CcFirstDigits      string              `json:"cc_first_digits" gorm:"type:varchar(6);column:CcFirstDigits"`
+	CcLastDigits       string              `json:"cc_last_digits" gorm:"type:varchar(4);column:CcLastDigits"`
+	CcBrand            string              `json:"cc_brand" gorm:"type:varchar(40);column:CcBrand"`
+	CcExpMonth         *int32              `json:"cc_exp_month" gorm:"column:CcExpMonth"`
+	CcExpYear          *int32              `json:"cc_exp_year" gorm:"column:CcExpYear"`
+	PaymentMethodType  string              `json:"payment_method_type" gorm:"type:varchar(256);column:PaymentMethodType"`
+	CustomerIpAddress  *string             `json:"customer_ip_address" gorm:"type:varchar(40);column:CustomerIpAddress"`
+	ExtraData          string              `json:"extra_data" gorm:"column:ExtraData"`
+	ReturnUrl          *string             `json:"return_url_url" gorm:"type:varchar(500);column:ReturnUrl"`
+	PspReference       *string             `json:"psp_reference" gorm:"type:varchar(512);column:PspReference;index:pspreference_key"` // db index
+	StorePaymentMethod StorePaymentMethod  `json:"store_payment_method" gorm:"type:varchar(11);column:StorePaymentMethod"`            // default to "none"
 	ModelMetadata
 }
 
-// PaymentFilterOption is used to build sql queries
+func (c *Payment) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Payment) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Payment) TableName() string             { return PaymentTableName }
+
 type PaymentFilterOption struct {
-	Conditions                 squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
+
 	TransactionsKind           squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.Kind ...
 	TransactionsActionRequired squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.ActionRequired ...
 	TransactionsIsSuccess      squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.IsSuccess ...
@@ -180,29 +174,15 @@ func (p *Payment) IsValid() *AppError {
 		"payment_id=",
 		"Payment.IsValid",
 	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
+
 	if p.OrderID != nil && !IsValidId(*p.OrderID) {
 		return outer("order_id", &p.Id)
 	}
 	if p.CheckoutID != nil && !IsValidId(*p.CheckoutID) {
 		return outer("checkout_id", &p.Id)
 	}
-	if p.CreateAt == 0 {
-		return outer("create_at", &p.Id)
-	}
-	if p.UpdateAt == 0 {
-		return outer("update_at", &p.Id)
-	}
-	if utf8.RuneCountInString(p.GateWay) > MAX_LENGTH_PAYMENT_GATEWAY {
-		return outer("gateway", &p.Id)
-	}
 	if !p.ChargeStatus.IsValid() {
 		return outer("charge_status", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
-		return outer("token", &p.Id)
 	}
 	if p.Total == nil {
 		return outer("total", &p.Id)
@@ -219,40 +199,14 @@ func (p *Payment) IsValid() *AppError {
 	if !IsValidNamePart(p.BillingLastName, LastName) {
 		return outer("billing_last_name", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingCompanyName) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return outer("billing_company_name", &p.Id)
-	}
-	if utf8.RuneCountInString(p.BillingAddress1) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return outer("billing_address_1", &p.Id)
-	}
-	if utf8.RuneCountInString(p.BillingAddress2) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return outer("billing_address_2", &p.Id)
-	}
-	if utf8.RuneCountInString(p.BillingCity) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return outer("billing_city", &p.Id)
-	}
-	if utf8.RuneCountInString(p.BillingCityArea) > ADDRESS_CITY_AREA_MAX_LENGTH {
-		return outer("billing_city_area", &p.Id)
-	}
-	if utf8.RuneCountInString(p.BillingPostalCode) > ADDRESS_POSTAL_CODE_MAX_LENGTH {
-		return outer("billing_postal_code", &p.Id)
-	}
-	// make sure country code and currency code are match:
-	region, err := language.ParseRegion(string(p.BillingCountryCode))
-	if err != nil || !strings.EqualFold(region.String(), string(p.BillingCountryCode)) {
+	if !p.BillingCountryCode.IsValid() {
 		return outer("billing_country_code", &p.Id)
 	}
+
+	// make sure country code and currency code are match:
+	region, _ := language.ParseRegion(string(p.BillingCountryCode))
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
 		return outer("currency", &p.Id)
-	}
-	if utf8.RuneCountInString(p.BillingCountryArea) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return outer("billing_country_area", &p.Id)
-	}
-	if len(p.CcFirstDigits) > MAX_LENGTH_CC_FIRST_DIGITS {
-		return outer("cc_first_digits", &p.Id)
-	}
-	if len(p.CcFirstDigits) > MAX_LENGTH_CC_LAST_DIGITS {
-		return outer("cc_last_digits", &p.Id)
 	}
 	if *p.CcExpMonth < MIN_CC_EXP_MONTH || *p.CcExpMonth > MAX_CC_EXP_MONTH {
 		return outer("cc_exp_month", &p.Id)
@@ -260,30 +214,24 @@ func (p *Payment) IsValid() *AppError {
 	if *p.CcExpYear < MIN_CC_EXP_YEAR {
 		return outer("cc_exp_year", &p.Id)
 	}
-	if len(p.PaymentMethodType) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return outer("payment_method_type", &p.Id)
-	}
-	if len(p.CcBrand) > MAX_LENGTH_CC_BRAND {
-		return outer("cc_brand", &p.Id)
-	}
-	if p.PspReference != nil && len(*p.PspReference) > PAYMENT_PSP_REFERENCE_MAX_LENGTH {
-		return outer("psp_reference", &p.Id)
-	}
-	if len(p.StorePaymentMethod) > PAYMENT_STORE_PAYMENT_METHOD_MAX_LENGTH || StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
+	if StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
 		return outer("store_payment_method", &p.Id)
 	}
 
-	return nil
-}
-
-// populate some fields if empty and perform some sanitizes
-func (p *Payment) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
+	for _, deci := range []struct {
+		name  string
+		value *decimal.Decimal
+	}{
+		{"CapturedAmount", p.CapturedAmount},
+		{"Total", p.Total},
+	} {
+		err := ValidateDecimal("Product.IsValid."+deci.name, deci.value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
+		if err != nil {
+			return err
+		}
 	}
-	p.CreateAt = GetMillis()
-	p.UpdateAt = p.CreateAt
-	p.commonPre()
+
+	return nil
 }
 
 func (p *Payment) commonPre() {
@@ -308,13 +256,4 @@ func (p *Payment) commonPre() {
 	if StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
 		p.StorePaymentMethod = NONE
 	}
-}
-
-func (p *Payment) PreUpdate() {
-	p.UpdateAt = GetMillis()
-	p.commonPre()
-}
-
-func (p *Payment) ToJSON() string {
-	return ModelToJson(p)
 }
