@@ -1,12 +1,10 @@
 package model
 
 import (
-	"github.com/Masterminds/squirrel"
-)
+	"net/http"
 
-// max lengths for some fields
-const (
-	SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH = 32
+	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 type InclusionType string
@@ -27,11 +25,23 @@ var PostalCodeRuleInclusionTypeString = map[InclusionType]string{
 }
 
 type ShippingMethodPostalCodeRule struct {
-	Id               string        `json:"id"`
-	ShippingMethodID string        `json:"shipping_method_id"`
-	Start            string        `json:"start"`
-	End              string        `json:"end"`
-	InclusionType    InclusionType `json:"inclusion_type"`
+	Id               string        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ShippingMethodID string        `json:"shipping_method_id" gorm:"index:shippingmethodid_start_end_key;type:uuid;column:ShippingMethodID"`
+	Start            string        `json:"start" gorm:"index:shippingmethodid_start_end_key;type:varchar(32);column:Start"`
+	End              string        `json:"end" gorm:"index:shippingmethodid_start_end_key;type:varchar(32);column:End"`
+	InclusionType    InclusionType `json:"inclusion_type" gorm:"type:varchar(32);column:InclusionType"`
+}
+
+func (c *ShippingMethodPostalCodeRule) BeforeCreate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+func (c *ShippingMethodPostalCodeRule) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+func (c *ShippingMethodPostalCodeRule) TableName() string {
+	return ShippingMethodPostalCodeRuleTableName
 }
 
 type ShippingMethodPostalCodeRules []*ShippingMethodPostalCodeRule
@@ -45,14 +55,10 @@ func (rs ShippingMethodPostalCodeRules) DeepCopy() ShippingMethodPostalCodeRules
 }
 
 type ShippingMethodPostalCodeRuleFilterOptions struct {
-	Id               squirrel.Sqlizer
-	ShippingMethodID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
-func (r *ShippingMethodPostalCodeRule) PreSave() {
-	if r.Id == "" {
-		r.Id = NewId()
-	}
+func (r *ShippingMethodPostalCodeRule) commonPre() {
 	if !r.InclusionType.IsValid() {
 		r.InclusionType = EXCLUDE
 	}
@@ -68,30 +74,12 @@ func (r *ShippingMethodPostalCodeRule) DeepCopy() *ShippingMethodPostalCodeRule 
 }
 
 func (s *ShippingMethodPostalCodeRule) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shipping_method_postal_code.is_valid.%s.app_error",
-		"shipping_method_postal_code_id=",
-		"ShippingMethodPostalCodeRule.IsValid",
-	)
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(s.ShippingMethodID) {
-		return outer("shipping_method_is", &s.Id)
-	}
-	if len(s.Start) > SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH {
-		return outer("start", &s.Id)
-	}
-	if len(s.End) > SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH {
-		return outer("end", &s.Id)
+		return NewAppError("ShippingMethodPostalCodeRule.IsValid", "model.shipping_method_postal_code_rule.is_valid.shippingMethod_id.app_error", nil, "please provide valid shipping method id", http.StatusBadRequest)
 	}
 	if !s.InclusionType.IsValid() {
-		return outer("inclusion_type", &s.Id)
+		return NewAppError("ShippingMethodPostalCodeRule.IsValid", "model.shipping_method_postal_code_rule.is_valid.inclusion_type.app_error", nil, "please provide valid inclusion type", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (s *ShippingMethodPostalCodeRule) ToJSON() string {
-	return ModelToJson(s)
 }

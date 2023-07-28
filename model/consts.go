@@ -3,6 +3,8 @@ package model
 import (
 	"regexp"
 	"unsafe"
+
+	"gorm.io/gorm"
 )
 
 // constants for access http(s) requests's headers
@@ -2223,6 +2225,12 @@ const (
 type TaxType struct {
 	Code         string
 	Descriptiton string
+}
+
+type TableModel interface {
+	TableName() string
+	BeforeCreate(*gorm.DB) error
+	BeforeUpdate(*gorm.DB) error
 }
 
 // all system product related table names

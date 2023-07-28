@@ -329,7 +329,7 @@ func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*datal
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	events, appErr := embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
-		OrderID: squirrel.Eq{model.OrderEventTableName + ".OrderID": orderIDs},
+		Conditions: squirrel.Eq{model.OrderEventTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {

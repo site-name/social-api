@@ -50,7 +50,7 @@ func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataload
 
 	invoices, appErr := embedCtx.App.Srv().
 		InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
-		OrderID: squirrel.Eq{model.InvoiceTableName + ".OrderID": orderIDs},
+		Conditions: squirrel.Eq{model.InvoiceTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {

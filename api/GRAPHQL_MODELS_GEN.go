@@ -438,7 +438,7 @@ type AttributeError struct {
 type AttributeFilterInput struct {
 	ValueRequired          *bool                `json:"valueRequired"`
 	IsVariantOnly          *bool                `json:"isVariantOnly"`
-	VisibleInStorefront    *bool                `json:"visibleInStorefront"`
+	VisibleInStoreFront    *bool                `json:"visibleInStorefront"`
 	FilterableInStorefront *bool                `json:"filterableInStorefront"`
 	FilterableInDashboard  *bool                `json:"filterableInDashboard"`
 	AvailableInGrid        *bool                `json:"availableInGrid"`
@@ -452,16 +452,37 @@ type AttributeFilterInput struct {
 }
 
 func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeFilterOption {
+	conditions := squirrel.Eq{}
+	if a.VisibleInStoreFront != nil {
+		conditions[model.AttributeTableName+".VisibleInStoreFront"] = *a.VisibleInStoreFront
+	}
+	if a.ValueRequired != nil {
+		conditions[model.AttributeTableName+".ValueRequired"] = *a.ValueRequired
+	}
+	if a.IsVariantOnly != nil {
+		conditions[model.AttributeTableName+".IsVariantOnly"] = *a.IsVariantOnly
+	}
+	if a.FilterableInStorefront != nil {
+		conditions[model.AttributeTableName+".FilterableInStorefront"] = *a.FilterableInStorefront
+	}
+	if a.FilterableInDashboard != nil {
+		conditions[model.AttributeTableName+".FilterableInDashboard"] = *a.FilterableInDashboard
+	}
+	if a.AvailableInGrid != nil {
+		conditions[model.AttributeTableName+".AvailableInGrid"] = *a.AvailableInGrid
+	}
+	if len(a.Ids) > 0 {
+		conditions[model.AttributeTableName+".Id"] = a.Ids
+	}
+	if a.Type != nil && a.Type.IsValid() {
+		conditions[model.AttributeTableName+".Type"] = *a.Type
+	}
+
 	res := &model.AttributeFilterOption{
-		VisibleInStoreFront:    a.VisibleInStorefront,
-		ValueRequired:          a.ValueRequired,
-		IsVariantOnly:          a.IsVariantOnly,
-		FilterableInStorefront: a.FilterableInStorefront,
-		FilterableInDashboard:  a.FilterableInDashboard,
-		AvailableInGrid:        a.AvailableInGrid,
-		InCollection:           a.InCollection,
-		InCategory:             a.InCategory,
-		Channel:                a.Channel,
+		Conditions:   conditions,
+		InCollection: a.InCollection,
+		InCategory:   a.InCategory,
+		Channel:      a.Channel,
 	}
 
 	if len(a.Metadata) > 0 {
@@ -471,12 +492,6 @@ func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeF
 				res.Metadata[meta.Key] = meta.Value
 			}
 		}
-	}
-	if len(a.Ids) > 0 {
-		res.Id = squirrel.Eq{model.AttributeTableName + ".Id": a.Ids}
-	}
-	if a.Type != nil && a.Type.IsValid() {
-		res.Type = squirrel.Eq{model.AttributeTableName + ".Type": *a.Type}
 	}
 
 	return res
@@ -3491,7 +3506,7 @@ func (s *ShippingPriceInput) Patch(method *model.ShippingMethod) (updated bool) 
 		fallthrough
 
 	case s.MinimumOrderWeight != nil:
-		method.MinimumOrderWeight = float32(s.MinimumOrderWeight.Value)
+		method.MinimumOrderWeight = model.NewPrimitive(float32(s.MinimumOrderWeight.Value))
 		fallthrough
 
 	case s.MaximumOrderWeight != nil:

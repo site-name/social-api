@@ -1,7 +1,9 @@
 package model
 
 import (
-	"io"
+	"net/http"
+
+	"gorm.io/gorm"
 )
 
 type Audit struct {
@@ -14,19 +16,16 @@ type Audit struct {
 	SessionId string `json:"session_id" gorm:"type:uuid;column:SessionId"`
 }
 
-func (*Audit) TableName() string { return AuditTableName }
+func (a *Audit) TableName() string             { return AuditTableName }
+func (a *Audit) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }
+func (a *Audit) BeforeUpdate(_ *gorm.DB) error { a.CreateAt = 0; return a.IsValid() }
 
 func (a *Audit) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.audit.is_valid.%s.app_error",
-		"audit_id=",
-		"Audit.IsValid",
-	)
 	if !IsValidId(a.UserId) {
-		return outer("user_id", &a.Id)
+		return NewAppError("Audit.IsValid", "model.audit.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if !IsValidId(a.SessionId) {
-		return outer("session_id", &a.Id)
+		return NewAppError("Audit.IsValid", "model.audit.is_valid.session_id.app_error", nil, "please provide valid session id", http.StatusBadRequest)
 	}
 	return nil
 }
@@ -43,10 +42,4 @@ func (o Audits) Etag() string {
 
 func (o Audits) ToJSON() string {
 	return ModelToJson(&o)
-}
-
-func AuditsFromJson(data io.Reader) Audits {
-	var o Audits
-	ModelFromJson(&o, data)
-	return o
 }

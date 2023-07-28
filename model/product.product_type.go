@@ -38,6 +38,10 @@ type ProductType struct {
 	Weight             *float32               `json:"weight" gorm:"column:Weight;default:0"`
 	WeightUnit         measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit;type:varchar(5)"`
 	ModelMetadata
+
+	ProductAttributes Attributes `json:"-" gorm:"many2many:AttributeProducts"`
+	VariantAttributes Attributes `json:"-" gorm:"many2many:AttributeVariants"`
+	PageAttributes    Attributes `json:"-" gorm:"many2many:AttributePages"`
 }
 
 func (c *ProductType) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }

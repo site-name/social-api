@@ -88,7 +88,7 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 	warehouses, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehousesByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{model.WarehouseTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for i := range ids {
@@ -107,51 +107,30 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 }
 
 func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[model.Warehouses] {
-	var (
-		res                    = make([]*dataloader.Result[model.Warehouses], len(shippingZoneIDs))
-		warehouseShippingZones []*model.WarehouseShippingZone
-		warehouseMap           = map[string]*model.WareHouse{} // keys are shipping zone ids
-		shippingZoneWarehouses = map[string]model.Warehouses{} // keys are shipping zone ids
-		err                    error
-	)
-
+	var res = make([]*dataloader.Result[model.Warehouses], len(shippingZoneIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	warehouses, appErr := embedCtx.App.Srv().
-		WarehouseService().
-		WarehousesByOption(&model.WarehouseFilterOption{
-			ShippingZonesId: squirrel.Eq{model.WarehouseShippingZoneTableName + ".ShippingZoneID": shippingZoneIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	warehouseShippingZones, err = embedCtx.App.Srv().Store.WarehouseShippingZone().
-		FilterByOptions(&model.WarehouseShippingZoneFilterOption{
-			Conditions: squirrel.Eq{model.WarehouseShippingZoneTableName + ".ShippingZoneID": shippingZoneIDs},
-		})
+	var shippingZones model.ShippingZones
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Warehouses").Find(&shippingZones, "Id IN ?", shippingZoneIDs).Error
 	if err != nil {
-		goto errorLabel
-	}
-
-	for _, warehouse := range warehouses {
-		warehouseMap[warehouse.Id] = warehouse
-	}
-	for _, rel := range warehouseShippingZones {
-		warehouse, ok := warehouseMap[rel.WarehouseID]
-		if ok {
-			shippingZoneWarehouses[rel.ShippingZoneID] = append(shippingZoneWarehouses[rel.ShippingZoneID], warehouse)
+		appErr := model.NewAppError("warehousesByShippingZoneIDLoader", "api.warehouse.shipping_zones_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+		for i := range shippingZoneIDs {
+			res[i] = &dataloader.Result[model.Warehouses]{Error: appErr}
 		}
+		return res
 	}
-	for idx, id := range shippingZoneIDs {
-		res[idx] = &dataloader.Result[model.Warehouses]{Data: shippingZoneWarehouses[id]}
-	}
-	return res
 
-errorLabel:
-	for i := range shippingZoneIDs {
-		res[i] = &dataloader.Result[model.Warehouses]{Error: err}
+	shippingZoneMap := map[string]*model.ShippingZone{}
+	for _, zone := range shippingZones {
+		shippingZoneMap[zone.Id] = zone
+	}
+
+	for idx, id := range shippingZoneIDs {
+		zone := shippingZoneMap[id]
+		if zone == nil {
+			zone = new(model.ShippingZone)
+		}
+		res[idx] = &dataloader.Result[model.Warehouses]{Data: zone.Warehouses}
 	}
 	return res
 }
@@ -225,7 +204,7 @@ func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*datal
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
-		StockID: squirrel.Eq{model.AllocationTableName + ".StockID": stockIDs},
+		Conditions: squirrel.Eq{model.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
 		for idx := range stockIDs {
@@ -324,7 +303,7 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
-		OrderLineID: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLineIDs},
+		Conditions: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLineIDs},
 	})
 	if appErr != nil {
 		for idx := range orderLineIDs {

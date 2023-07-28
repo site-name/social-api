@@ -53,8 +53,10 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model.Ch
 
 	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.ShippingService().
 		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethod.Id},
-			ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": checkoutInfo.Checkout.ChannelID},
+			Conditions: squirrel.Eq{
+				model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethod.Id,
+				model.ShippingMethodChannelListingTableName + ".ChannelID":        checkoutInfo.Checkout.ChannelID,
+			},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -63,7 +65,7 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *model.Ch
 	shippingPrice := shippingMethodChannelListingsOfShippingMethod[0].GetTotal()
 	taxedMoney, _ := goprices.NewTaxedMoney(shippingPrice, shippingPrice)
 
-	quantizedPrice, _ := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedPrice, _ := taxedMoney.Quantize(goprices.Up, -1)
 	return quantizedPrice, nil
 }
 
@@ -121,8 +123,8 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *model.Checkout
 		return nil, appErr
 	}
 
-	amount, _ := variantPrice.Mul(int(checkoutLineInfo.Line.Quantity))
-	amount, _ = amount.Quantize(nil, goprices.Up)
+	amount := variantPrice.Mul(float64(checkoutLineInfo.Line.Quantity))
+	amount, _ = amount.Quantize(goprices.Up, -1)
 
 	return &goprices.TaxedMoney{
 		Net:      amount,
@@ -134,8 +136,8 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *model.Checkout
 func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model.AppError) {
 	orderLine.PopulateNonDbFields()
 	if orderLine.UnitPrice != nil {
-		unitPrice, _ := orderLine.UnitPrice.Mul(int(orderLine.Quantity))
-		unitPrice, _ = unitPrice.Quantize(nil, goprices.Up)
+		unitPrice := orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
+		unitPrice, _ = unitPrice.Quantize(goprices.Up, -1)
 
 		return unitPrice, nil
 	}
@@ -146,8 +148,8 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *model.OrderLine) (*gopri
 func (a *ServiceCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
 	taxRate := decimal.Zero
 	if price != nil && price.Gross != nil && !price.Gross.Amount.IsZero() {
-		tax, _ := price.Tax()
-		div, _ := tax.TrueDiv(price.Net)
+		tax := price.Tax()
+		div := tax.TrueDiv(price.Net.Amount.InexactFloat64())
 		taxRate = div.Amount
 	}
 
@@ -155,11 +157,6 @@ func (a *ServiceCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Deci
 }
 
 // BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
-func (a *ServiceCheckout) BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) (*goprices.TaxedMoney, *model.AppError) {
-	div, err := totalLinePrice.TrueDiv(quantity)
-	if err != nil {
-		return nil, model.NewAppError("BaseCheckoutLineUnitPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return div, nil
+func (a *ServiceCheckout) BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) *goprices.TaxedMoney {
+	return totalLinePrice.TrueDiv(float64(quantity))
 }

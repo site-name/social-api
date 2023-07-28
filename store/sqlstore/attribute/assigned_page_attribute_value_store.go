@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,22 +16,6 @@ var assignedPageAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", "va
 
 func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttributeValueStore {
 	return &SqlAssignedPageAttributeValueStore{s}
-}
-
-func (as *SqlAssignedPageAttributeValueStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"ValueID",
-		"AssignmentID",
-		"SortOrder",
-	}
-
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue *model.AssignedPageAttributeValue) []interface{} {

@@ -2,6 +2,7 @@ package shipping
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -9,7 +10,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -20,30 +20,6 @@ type SqlShippingMethodStore struct {
 
 func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	return &SqlShippingMethodStore{s}
-}
-
-func (s *SqlShippingMethodStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Type",
-		"ShippingZoneID",
-		"MinimumOrderWeight",
-		"MaximumOrderWeight",
-		"WeightUnit",
-		"MaximumDeliveryDays",
-		"MinimumDeliveryDays",
-		"Description",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (s *SqlShippingMethodStore) ScanFields(shippingMethod *model.ShippingMethod) []interface{} {
@@ -65,47 +41,13 @@ func (s *SqlShippingMethodStore) ScanFields(shippingMethod *model.ShippingMethod
 
 // Upsert bases on given method's Id to decide update or insert it
 func (s *SqlShippingMethodStore) Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error) {
-	isSaving := false
-	if method.Id == "" {
-		isSaving = true
-		method.PreSave()
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
 
-	if err := method.IsValid(); err != nil {
-		return nil, err
-	}
-
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
-	}
-
-	var (
-		result sql.Result
-		err    error
-	)
-
-	if isSaving {
-		query := "INSERT INTO " + model.ShippingMethodTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-		result, err = runner.NamedExec(query, method)
-
-	} else {
-		query := "UPDATE " + model.ShippingMethodTableName + " SET " +
-			s.ModelFields("").
-				Map(func(_ int, item string) string {
-					return item + ":=" + item
-				}).
-				Join(",") + " WHERE Id:=Id"
-
-		result, err = runner.NamedExec(query, method)
-	}
-
+	err := transaction.Save(method).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to upsert shipping method with id=%s", method.Id)
-	}
-	numUpserted, _ := result.RowsAffected()
-	if numUpserted != 1 {
-		return nil, errors.Errorf("%d shipping method(s) upserted instead of 1", numUpserted)
 	}
 
 	return method, nil
@@ -114,7 +56,7 @@ func (s *SqlShippingMethodStore) Upsert(transaction *gorm.DB, method *model.Ship
 // Get finds and returns a shipping method with given id
 func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
 	return s.GetbyOption(&model.ShippingMethodFilterOption{
-		Id: squirrel.Eq{model.ShippingMethodTableName + ".Id": methodID},
+		Conditions: squirrel.Eq{model.ShippingMethodTableName + ".Id": methodID},
 	})
 }
 
@@ -126,8 +68,12 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		NOTE: we also prefetch postal_code_rules, shipping zones for later use
 		please refer to saleor/shipping/models for details
 	*/
-	selectFields := append(s.ModelFields(model.ShippingMethodTableName+"."), s.ShippingZone().ModelFields(model.ShippingZoneTableName+".")...)
-	selectFields = append(selectFields, s.ShippingMethodPostalCodeRule().ModelFields(model.ShippingMethodPostalCodeRuleTableName+".")...)
+
+	selectFields := []string{
+		model.ShippingMethodTableName + ".*",
+		model.ShippingZoneTableName + ".*",
+		model.ShippingMethodPostalCodeRuleTableName + ".*",
+	}
 
 	priceAmount := price.Amount.InexactFloat64()
 
@@ -163,7 +109,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		params["ExcludedProductIDs"] = productIDs
 	}
 
-	query := `SELECT ` + selectFields.Join(",") + `,
+	query := `SELECT ` + strings.Join(selectFields, ",") + `,
 	(
 		SELECT
 			ShippingMethodChannelListings.PriceAmount
@@ -252,7 +198,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 
 	// use Select() here since it can inteprets map[string]interface{} value mapping
 	// Query() cannot understand.
-	rows, err := s.GetReplica().NamedQuery(query, params)
+	rows, err := s.GetReplica().Raw(query, params).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds shipping methods for given conditions")
 	}
@@ -286,28 +232,21 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 }
 
 func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMethodFilterOption) squirrel.SelectBuilder {
-	selectFields := ss.ModelFields(model.ShippingMethodTableName + ".")
+	selectFields := []string{model.ShippingMethodTableName + ".*"}
 	if options.SelectRelatedShippingZone {
-		selectFields = append(selectFields, ss.ShippingZone().ModelFields(model.ShippingZoneTableName+".")...)
+		selectFields = append(selectFields, model.ShippingZoneTableName+".*")
 	}
 
 	query := ss.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.ShippingMethodTableName)
+		From(model.ShippingMethodTableName).Where(options.Conditions)
 
 	for _, opt := range []squirrel.Sqlizer{
-		options.Id,
-		options.Type,
-		options.MinimumOrderWeight,
-		options.MaximumOrderWeight,
-		options.ShippingZoneID,
 		options.ShippingZoneChannelSlug,
 		options.ShippingZoneCountries,
 		options.ChannelListingsChannelSlug,
 	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+		query = query.Where(opt)
 	}
 
 	if options.ShippingZoneChannelSlug != nil ||
@@ -346,9 +285,9 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilte
 		scanFields = append(scanFields, ss.ShippingZone().ScanFields(&shippingZone)...)
 	}
 
-	err = ss.GetReplica().QueryRow(queryString, args...).Scan(scanFields...)
+	err = ss.GetReplica().Raw(queryString, args...).Row().Scan(scanFields...)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.NewErrNotFound(model.ShippingMethodTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find shipping method by given options")
@@ -367,7 +306,7 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	rows, err := ss.GetReplica().Query(queryString, args...)
+	rows, err := ss.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping methods with given options.")
 	}
@@ -401,19 +340,13 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 }
 
 func (s *SqlShippingMethodStore) Delete(transaction *gorm.DB, ids ...string) error {
-	query := "DELETE FROM " + model.ShippingMethodTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
 
-	result, err := runner.Exec(query, lo.Map(ids, func(id string, _ int) any { return id })...)
+	err := transaction.Raw("DELETE FROM "+model.ShippingMethodTableName+" WHERE Id IN ?", ids).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete shipping methods")
-	}
-	rowsAfft, _ := result.RowsAffected()
-	if int(rowsAfft) != len(ids) {
-		return errors.Errorf("%d shipping methods deleted instead of %d", rowsAfft, len(ids))
 	}
 
 	return nil

@@ -16,8 +16,8 @@ import (
 
 type ProductChannelListing struct {
 	Id                    string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ProductID             string           `json:"product_id" gorm:"type:uuid;column:ProductID"`
-	ChannelID             string           `json:"channel_id" gorm:"type:uuid;column:ChannelID"`
+	ProductID             string           `json:"product_id" gorm:"type:uuid;column:ProductID;index:productid_channelid_key"`
+	ChannelID             string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:productid_channelid_key"`
 	VisibleInListings     bool             `json:"visible_in_listings" gorm:"column:VisibleInListings"`
 	AvailableForPurchase  *time.Time       `json:"available_for_purchase" gorm:"column:AvailableForPurchase"` // UTC time
 	Currency              string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
@@ -31,17 +31,21 @@ type ProductChannelListing struct {
 }
 
 func (c *ProductChannelListing) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *ProductChannelListing) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *ProductChannelListing) TableName() string             { return ProductChannelListingTableName }
-func (p *ProductChannelListing) GetChannel() *Channel          { return p.channel }
-func (p *ProductChannelListing) SetChannel(c *Channel)         { p.channel = c }
+func (c *ProductChannelListing) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent updating
+	return c.IsValid()
+}
+func (c *ProductChannelListing) TableName() string     { return ProductChannelListingTableName }
+func (p *ProductChannelListing) GetChannel() *Channel  { return p.channel }
+func (p *ProductChannelListing) SetChannel(c *Channel) { p.channel = c }
 
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
 	Conditions squirrel.Sqlizer
 
 	ProductVariantsId squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
-	ChannelSlug       *string          // INNER JOIN Channels ON ... WHERE Channels.Slug ...
+	ChannelSlug       squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels.Slug ...
 	PrefetchChannel   bool             // this tell store to prefetch channel instances also
 }
 

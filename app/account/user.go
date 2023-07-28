@@ -915,7 +915,13 @@ func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user *model.Use
 		return model.NewAppError("PermanentDeleteUser", "app.user_access_token.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	infos, err := a.srv.Store.FileInfo().GetForUser(user.Id)
+	infos, err := a.srv.Store.FileInfo().GetWithOptions(&model.GetFileInfosOptions{
+		Conditions: squirrel.Eq{
+			model.FileInfoTableName + ".CreatorId": user.Id,
+			model.FileInfoTableName + ".DeleteAt":  0,
+		},
+		OrderBy: "CreateAt ASC",
+	})
 	if err != nil {
 		slog.Warn("Error getting file list for user from FileInfoStore", slog.Err(err))
 	}

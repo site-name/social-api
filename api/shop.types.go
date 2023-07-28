@@ -220,7 +220,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 	}
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Slug: squirrel.Eq{model.ChannelTableName + ".Slug": args.Channel},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Slug": args.Channel},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -263,7 +263,7 @@ func (s *Shop) DefaultCountry(ctx context.Context) (*CountryDisplay, error) {
 
 	if defaultCountryName != "" {
 		vats, err := embedCtx.App.Srv().Store.Vat().FilterByOptions(&model.VatFilterOptions{
-			CountryCode: squirrel.Eq{model.VatTableName + ".CountryCode": model.DEFAULT_COUNTRY},
+			Conditions: squirrel.Eq{model.VatTableName + ".CountryCode": model.DEFAULT_COUNTRY},
 		})
 		if err != nil {
 			return nil, model.NewAppError("Shop.DefaultCountry", "app.shop.error_finding_vats.app_error", nil, err.Error(), http.StatusInternalServerError)

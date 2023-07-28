@@ -10,9 +10,9 @@ import (
 
 type PluginConfiguration struct {
 	Id            string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Identifier    string          `json:"identifier" gorm:"type:varchar(128);column:Identifier;uniqueIndex:identifier_channelid_key"`
+	Identifier    string          `json:"identifier" gorm:"type:varchar(128);column:Identifier;index:identifier_channelid_key"`
 	Name          string          `json:"name" gorm:"type:varchar(128);column:Name"`
-	ChannelID     string          `json:"channel_id" gorm:"type:uuid;column:ChannelID;uniqueIndex:identifier_channelid_key"`
+	ChannelID     string          `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:identifier_channelid_key"`
 	Description   string          `json:"description" gorm:"column:Description"`
 	Active        bool            `json:"active" gorm:"column:Active"`
 	Configuration StringInterface `json:"configuration" gorm:"type:jsonb;column:Configuration"`

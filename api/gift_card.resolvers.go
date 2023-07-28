@@ -15,7 +15,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -222,7 +221,7 @@ func (r *Resolver) GiftCardResend(ctx context.Context, args struct{ Input GiftCa
 	}
 
 	receiver, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Email: squirrel.Eq{model.UserTableName + ".Email": targetEmail},
+		Conditions: squirrel.Eq{model.UserTableName + ".Email": targetEmail},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -314,18 +313,20 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		IsActive: squirrel.Eq{model.GiftcardTableName + ".IsActive": false},
-		Id:       squirrel.Eq{model.GiftcardTableName + ".Id": args.Ids},
+		Conditions: squirrel.Eq{
+			model.GiftcardTableName + ".IsActive": false,
+			model.GiftcardTableName + ".Id":       args.Ids,
+		},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	// update
 	for _, gc := range giftcards {
@@ -336,7 +337,7 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 		return nil, appErr
 	}
 
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -355,18 +356,20 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		IsActive: squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
-		Id:       squirrel.Eq{model.GiftcardTableName + ".Id": args.Ids},
+		Conditions: squirrel.Eq{
+			model.GiftcardTableName + ".IsActive": true,
+			model.GiftcardTableName + ".Id":       args.Ids,
+		},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	// update
 	for _, gc := range giftcards {
@@ -377,7 +380,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 		return nil, appErr
 	}
 
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

@@ -100,7 +100,7 @@ func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id str
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	invoice, appErr := embedCtx.App.Srv().InvoiceService().GetInvoiceByOptions(&model.InvoiceFilterOptions{
-		Id: squirrel.Eq{model.InvoiceTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.InvoiceTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -263,8 +263,8 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	invoice, appErr := embedCtx.App.Srv().InvoiceService().GetInvoiceByOptions(&model.InvoiceFilterOptions{
-		Id:    squirrel.Eq{model.InvoiceTableName + ".Id": args.Id},
-		Limit: 1,
+		Conditions: squirrel.Eq{model.InvoiceTableName + ".Id": args.Id},
+		Limit:      1,
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -324,7 +324,7 @@ func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	invoice, appErr := embedCtx.App.Srv().InvoiceService().GetInvoiceByOptions(&model.InvoiceFilterOptions{
-		Id:                 squirrel.Eq{model.InvoiceTableName + ".Id": args.Id},
+		Conditions:         squirrel.Eq{model.InvoiceTableName + ".Id": args.Id},
 		SelectRelatedOrder: true,
 	})
 	if appErr != nil {

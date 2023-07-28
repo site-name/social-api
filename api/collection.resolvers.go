@@ -36,7 +36,7 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 
 	/* check if there is at least 1 product that has no variant */
 	productVariants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		ProductID: squirrel.Eq{model.ProductVariantTableName + ".ProductID": args.Products},
+		Conditions: squirrel.Eq{model.ProductVariantTableName + ".ProductID": args.Products},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -48,9 +48,9 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 		return nil, model.NewAppError("CollectionAddProducts", "api.collection.cannot_add_products_without_variants.app_error", nil, "Cannot manage products without variants.", http.StatusBadRequest)
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("CollectionAddProducts", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("CollectionAddProducts", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 
 	// add collection-product relations:
@@ -63,15 +63,12 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	}
 
 	// check if the collection has some sale
-	saleCollections, appErr := embedCtx.App.Srv().
-		DiscountService().
-		SaleCollectionsByOptions(&model.SaleCollectionRelationFilterOption{
-			CollectionID: squirrel.Eq{store.SaleCollectionRelationTableName + ".CollectionID": args.CollectionID},
-		})
-	if appErr != nil {
-		return nil, appErr
-	}
-	if len(saleCollections) > 0 {
+	collectionHasSales := embedCtx.App.Srv().Store.GetReplica().
+		Model(&model.Collection{Id: args.CollectionID}).
+		Association("Sales").
+		Count() > 0
+
+	if collectionHasSales {
 		appErr = embedCtx.App.Srv().ProductService().UpdateProductsDiscountedPricesOfCatalogues(transaction, args.Products, nil, nil, nil)
 		if appErr != nil {
 			return nil, appErr
@@ -79,11 +76,11 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("CollectionAddProducts", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	store.FinalizeTransaction(transaction)
+	transaction.Rollback()
 
 	// TODO: Determine if we need call plugins' product updated methods
 
@@ -133,6 +130,8 @@ func (r *Resolver) CollectionReorderProducts(ctx context.Context, args struct {
 	if !model.IsValidId(args.CollectionID) {
 		return nil, model.NewAppError("CollectionReorderProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CollectionID"}, "please provide valid collection id", http.StatusBadRequest)
 	}
+
+	panic("not implemented")
 }
 
 // NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
@@ -169,8 +168,10 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	err := embedCtx.App.Srv().Store.CollectionProduct().Delete(nil, &model.CollectionProductFilterOptions{
-		CollectionID: squirrel.Eq{model.CollectionProductRelationTableName + ".CollectionID": args.CollectionID},
-		ProductID:    squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": args.Products},
+		Conditions: squirrel.Eq{
+			model.CollectionProductRelationTableName + ".CollectionID": args.CollectionID,
+			model.CollectionProductRelationTableName + ".ProductID":    args.Products,
+		},
 	})
 	if err != nil {
 		return nil, model.NewAppError("CollectionRemoveProducts", "app.product.remove_collection_products.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -178,13 +179,13 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 
 	// TODO: check if we need to call plugins' productUpdated methods
 
-	saleCollections, appErr := embedCtx.App.Srv().DiscountService().SaleCollectionsByOptions(&model.SaleCollectionRelationFilterOption{
-		CollectionID: squirrel.Eq{store.SaleCollectionRelationTableName + ".CollectionID": args.CollectionID},
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-	if len(saleCollections) > 0 {
+	collectionHasSales := embedCtx.App.Srv().Store.
+		GetReplica().
+		Model(&model.Collection{Id: args.CollectionID}).
+		Association("Sales").
+		Count() > 0
+
+	if collectionHasSales {
 		// Updated the db entries, recalculating discounts of affected products
 		embedCtx.App.Srv().Go(func() {
 			appErr := embedCtx.App.Srv().ProductService().UpdateProductsDiscountedPricesOfCatalogues(nil, args.Products, nil, nil, nil)
@@ -195,7 +196,7 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 	}
 
 	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
-		Id: squirrel.Eq{model.CollectionTableName + ".Id": args.CollectionID},
+		Conditions: squirrel.Eq{model.CollectionTableName + ".Id": args.CollectionID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -254,16 +255,18 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	// delete collection-channel listings
-	err = embedCtx.App.Srv().Store.CollectionChannelListing().Delete(transaction, &model.CollectionChannelListingFilterOptions{
-		CollectionID: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": args.Id},
-		ChannelID:    squirrel.Eq{model.CollectionChannelListingTableName + ".ChannelID": removeChannelIds},
+	err := embedCtx.App.Srv().Store.CollectionChannelListing().Delete(transaction, &model.CollectionChannelListingFilterOptions{
+		Conditions: squirrel.Eq{
+			model.CollectionChannelListingTableName + ".CollectionID": args.Id,
+			model.CollectionChannelListingTableName + ".ChannelID":    removeChannelIds,
+		},
 	})
 	if err != nil {
 		return nil, model.NewAppError("CollectionChannelListingUpdate", "app.product.error_deleting_collection_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -301,13 +304,13 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err = transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
-		Id: squirrel.Eq{model.CollectionTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.CollectionTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr

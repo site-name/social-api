@@ -60,7 +60,7 @@ func (s *ServiceCsv) ExportProductsInBatches(
 		createAtGt = prds[len(prds)-1].CreateAt
 
 		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
-			Id:                                       squirrel.Eq{model.ProductTableName + ".Id": prds.IDs()},
+			Conditions:                               squirrel.Eq{model.ProductTableName + ".Id": prds.IDs()},
 			PrefetchRelatedAssignedProductAttributes: true,
 			PrefetchRelatedVariants:                  true,
 			PrefetchRelatedCollections:               true,

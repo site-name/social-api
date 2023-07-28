@@ -60,7 +60,7 @@ func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
-			Id: squirrel.Eq{model.ChannelTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.ChannelTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -84,7 +84,7 @@ func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Resu
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
-			Slug: squirrel.Eq{model.ChannelTableName + ".Slug": slugs},
+			Conditions: squirrel.Eq{model.ChannelTableName + ".Slug": slugs},
 		})
 	if appErr != nil {
 		for idx := range slugs {

@@ -10,6 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	CATEGORY_MIN_LEVEL = 0
+)
+
 type Category struct {
 	Id                 string          `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
 	Name               string          `json:"name" gorm:"unique;type:varchar(250);column:Name"`                      // unique, English

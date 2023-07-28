@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,36 +14,9 @@ type SqlAddressStore struct {
 	store.Store
 }
 
-var modelFields = util.AnyArray[string]{
-	"Id",
-	"FirstName",
-	"LastName",
-	"CompanyName",
-	"StreetAddress1",
-	"StreetAddress2",
-	"City",
-	"CityArea",
-	"PostalCode",
-	"Country",
-	"CountryArea",
-	"Phone",
-	"CreateAt",
-	"UpdateAt",
-}
-
 // new address database store
 func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 	return &SqlAddressStore{Store: sqlStore}
-}
-
-func (as *SqlAddressStore) ModelFields(prefix string) util.AnyArray[string] {
-	if prefix == "" {
-		return modelFields
-	}
-
-	return modelFields.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (as *SqlAddressStore) ScanFields(addr *model.Address) []interface{} {

@@ -86,11 +86,9 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 		defer wg.Done()
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
-			Distinct: true,
-			Conditions: squirrel.And{
-				squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
-				squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
-			},
+			Distinct:                       true,
+			Conditions:                     squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
+			AttributeProduct_ProductTypeID: squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
 		})
 		if appErr != nil {
 			syncSetAppError(appErr)
@@ -103,11 +101,9 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 		defer wg.Done()
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
-			Distinct: true,
-			Conditions: squirrel.And{
-				squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
-				squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
-			},
+			Distinct:                       true,
+			Conditions:                     squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
+			AttributeVariant_ProductTypeID: squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
 		})
 		if appErr != nil {
 			syncSetAppError(appErr)
@@ -148,7 +144,7 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo struct {
 	}
 
 	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-		Id: squirrel.Eq{model.WarehouseTableName + ".Id": exportInfo.Warehouses},
+		Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": exportInfo.Warehouses},
 	})
 	if appErr != nil {
 		return nil, appErr

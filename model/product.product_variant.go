@@ -32,7 +32,7 @@ type ProductVariant struct {
 
 	Sales             Sales                       `json:"-" gorm:"many2many:SaleProductVariants"`
 	Vouchers          Vouchers                    `json:"-" gorm:"many2many:VoucherVariants"`
-	ProductMedias     ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
+	Medias            ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
 	Attributes        []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:VariantID"`
 	AttributesRelated []*AttributeVariant         `json:"-" gorm:"many2many:AssignedVariantAttributes"`
 	WishlistItems     WishlistItems               `json:"-" gorm:"many2many:WishlistItemProductVariants"`
@@ -178,8 +178,8 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 
 type ProductVariantTranslation struct {
 	Id               string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
-	ProductVariantID string           `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID"`
+	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode;index:languagecode_productvariantid_key"`
+	ProductVariantID string           `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID;index:languagecode_productvariantid_key"`
 	Name             string           `json:"name" gorm:"type:varchar(255);column:Name"`
 }
 

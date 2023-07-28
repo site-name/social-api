@@ -105,7 +105,7 @@ func (r *Resolver) User(ctx context.Context, args struct {
 		user, appErr = embedCtx.App.Srv().AccountService().UserById(ctx, userID)
 	} else {
 		user, appErr = embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-			Email: squirrel.Eq{model.UserTableName + ".Email": *args.Email},
+			Conditions: squirrel.Eq{model.UserTableName + ".Email": *args.Email},
 		})
 	}
 	if appErr != nil {

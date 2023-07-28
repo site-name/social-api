@@ -3,29 +3,11 @@ package account
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 type SqlStaffNotificationRecipientStore struct {
 	store.Store
-}
-
-var staffNotificationRecipientModelFields = util.AnyArray[string]{
-	"Id",
-	"UserID",
-	"StaffEmail",
-	"Active",
-}
-
-func (ss *SqlStaffNotificationRecipientStore) ModelFields(prefix string) util.AnyArray[string] {
-	if prefix == "" {
-		return staffNotificationRecipientModelFields
-	}
-
-	return staffNotificationRecipientModelFields.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func NewSqlStaffNotificationRecipientStore(s store.Store) store.StaffNotificationRecipientStore {

@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,23 +16,6 @@ type SqlUserAccessTokenStore struct {
 
 func NewSqlUserAccessTokenStore(sqlStore store.Store) store.UserAccessTokenStore {
 	return &SqlUserAccessTokenStore{sqlStore}
-}
-
-func (s *SqlUserAccessTokenStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Token",
-		"UserID",
-		"Description",
-		"IsActive",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (s *SqlUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {

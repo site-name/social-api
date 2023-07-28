@@ -21,36 +21,6 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	return &SqlProductStore{s}
 }
 
-func (ps *SqlProductStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"ProductTypeID",
-		"Name",
-		"Slug",
-		"Description",
-		"DescriptionPlainText",
-		"CategoryID",
-		"CreateAt",
-		"UpdateAt",
-		"ChargeTaxes",
-		"Weight",
-		"WeightUnit",
-		"DefaultVariantID",
-		"Rating",
-		"Metadata",
-		"PrivateMetadata",
-		"SeoTitle",
-		"SeoDescription",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 func (ps *SqlProductStore) ScanFields(prd *model.Product) []interface{} {
 	return []interface{}{
 		&prd.Id,
@@ -76,13 +46,7 @@ func (ps *SqlProductStore) ScanFields(prd *model.Product) []interface{} {
 
 // Save inserts given product into database then returns it
 func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) {
-	product.PreSave()
-	if err := product.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.ProductTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-	if _, err := ps.GetMaster().NamedExec(query, product); err != nil {
+	if err := ps.GetMaster().Create(product).Error; err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Name", "products_name_key", "idx_products_name_unique"}) {
 			return nil, store.NewErrInvalidInput("Product", "name", product.Name)
 		}
@@ -97,25 +61,24 @@ func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) 
 
 func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption) (string, []interface{}, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.ProductTableName + ".")...).
-		From(model.ProductTableName)
+		Select(model.ProductTableName + ".*").
+		From(model.ProductTableName).Where(option.Conditions)
 
 	// parse option
 	if option.Limit > 0 {
 		query = query.Limit(option.Limit)
 	}
-	if option.CreateAt != nil {
-		query = query.Where(option.CreateAt)
-	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
+
 	if option.ProductVariantID != nil {
-		option.HasNoProductVariants = false //
 		query = query.
 			InnerJoin(model.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID").
 			Where(option.ProductVariantID)
+	} else if option.HasNoProductVariants {
+		query = query.
+			LeftJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
+			Where(model.ProductVariantTableName + ".ProductID IS NULL")
 	}
+
 	if option.VoucherID != nil {
 		query = query.
 			InnerJoin(model.VoucherProductTableName + " ON Products.Id = VoucherProducts.ProductID").
@@ -125,11 +88,6 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 		query = query.
 			InnerJoin(model.SaleProductTableName + " ON Products.Id = SaleProducts.ProductID").
 			Where(option.SaleID)
-	}
-	if option.HasNoProductVariants {
-		query = query.
-			LeftJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
-			Where(model.ProductVariantTableName + ".ProductID IS NULL")
 	}
 	if option.CollectionID != nil {
 		query = query.InnerJoin(model.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
@@ -147,24 +105,27 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 	}
 
 	var products model.Products
-	err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given option")
 	}
 
 	var (
-		productIDs  = make([]string, len(products))
+		productIDs  = make([]string, 0, len(products))
 		productsMap = map[string]*model.Product{} // productsMap has keys are product ids
 	)
-	for idx, product := range products {
-		productsMap[product.Id] = product
-		productIDs[idx] = product.Id
+	for _, product := range products {
+		_, met := productsMap[product.Id]
+		if !met {
+			productsMap[product.Id] = product
+			productIDs = append(productIDs, product.Id)
+		}
 	}
 
 	// check if need prefetch related assigned product attribute
 	if option.PrefetchRelatedAssignedProductAttributes && len(productIDs) > 0 {
 		assignedAttributes, err := ps.AssignedProductAttribute().FilterByOptions(&model.AssignedProductAttributeFilterOption{
-			ProductID: squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": productIDs},
+			Conditions: squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": productIDs},
 		})
 		if err != nil {
 			return nil, err
@@ -173,7 +134,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		for _, attr := range assignedAttributes {
 			product, ok := productsMap[attr.ProductID]
 			if ok && product != nil {
-				product.SetAssignedProductAttributes(append(product.GetAssignedProductAttributes(), attr))
+				product.Attributes = append(product.Attributes, attr)
 			}
 		}
 	}
@@ -202,7 +163,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 	// check if need prefetch related collections
 	if option.PrefetchRelatedCollections && len(productIDs) > 0 {
 		collectionProducts, err := ps.CollectionProduct().FilterByOptions(&model.CollectionProductFilterOptions{
-			ProductID:               squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productIDs},
+			Conditions:              squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productIDs},
 			SelectRelatedCollection: true,
 		})
 		if err != nil {
@@ -212,7 +173,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		for _, rel := range collectionProducts {
 			product, ok := productsMap[rel.ProductID]
 			if ok && product != nil {
-				product.SetCollections(append(product.GetCollections(), rel.GetCollection()))
+				product.Collections = append(product.Collections, rel.GetCollection())
 			}
 		}
 	}
@@ -236,8 +197,8 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 
 	// check if we need to prefetch related file infos
 	if option.PrefetchRelatedMedia && len(productIDs) > 0 {
-		fileInfos, err := ps.FileInfo().GetWithOptions(nil, nil, &model.GetFileInfosOptions{
-			ParentID: productIDs,
+		fileInfos, err := ps.FileInfo().GetWithOptions(&model.GetFileInfosOptions{
+			Conditions: squirrel.Eq{model.FileInfoTableName + ".ParentID": productIDs},
 		})
 		if err != nil {
 			return nil, err
@@ -262,7 +223,7 @@ func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*mode
 	}
 
 	var res model.Product
-	err = ps.GetReplica().Get(&res, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTableName, "option")
@@ -321,7 +282,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 
 	query := ps.
 		GetQueryBuilder().
-		Select("*").
+		Select(model.ProductTableName + ".*").
 		From(model.ProductTableName).
 		Where(productChannelListingQuery)
 
@@ -331,7 +292,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 	}
 
 	var res model.Products
-	err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published products with channel slug=%s", channelSlug)
 	}
@@ -367,7 +328,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.ProductTableName + ".")...).
+		Select(model.ProductTableName + ".*").
 		Column(squirrel.Alias(isPublishedColumnSelect, "IsPublished")).
 		Column(squirrel.Alias(publicationDateColumnSelect, "PublicationDate")).
 		From(model.ProductTableName).
@@ -391,7 +352,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		PublicationDate *time.Time
 	}
 
-	err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find not published product with channel slug=%s", channelSlug)
 	}
@@ -440,7 +401,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 		Limit(1)
 
 	return ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.ProductTableName + ".")...).
+		Select(model.ProductTableName + ".*").
 		From(model.ProductTableName).
 		Where(productChannelListingQuery).
 		Where(productVariantQuery)
@@ -457,7 +418,7 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 	// check if requesting user has right to view products
 	if userHasOneOfProductpermissions {
 		if channelSlugOrID == "" {
-			return ps.GetQueryBuilder().Select(ps.ModelFields(model.ProductTableName + ".")...).From(model.ProductTableName) // find all
+			return ps.GetQueryBuilder().Select(model.ProductTableName + ".*").From(model.ProductTableName) // find all
 		}
 
 		channelQuery := ps.channelQuery(channelSlugOrID, nil, model.ProductChannelListingTableName)
@@ -473,7 +434,7 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 
 		return ps.
 			GetQueryBuilder().
-			Select(ps.ModelFields(model.ProductTableName + ".")...).
+			Select(model.ProductTableName + ".*").
 			From(model.ProductTableName).
 			Where(productChannelListingQuery)
 	}
@@ -484,7 +445,7 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.ProductTableName + ".")...).
+		Select(model.ProductTableName + ".*").
 		Distinct().
 		From(model.ProductTableName)
 
@@ -515,7 +476,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 	}
 
 	var products model.Products
-	err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given params")
 	}
@@ -526,7 +487,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.ProductTableName + ".")...).
+		Select(model.ProductTableName + ".*").
 		From(model.ProductTableName)
 
 	if input.Scope == "all" {
@@ -691,7 +652,7 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 	}
 
 	var products model.Products
-	err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products with given query and conditions")
 	}
@@ -699,19 +660,8 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 }
 
 func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
-	query, args, err := s.GetQueryBuilder().
-		Select("P.CategoryID", "COUNT(P.Id) AS ProductCount").
-		From(model.ProductTableName + " P").
-		Distinct().
-		Where("P.CategoryID IS NOT NULL").
-		Where(squirrel.Eq{"P.CategoryID": categoryIDs}).
-		GroupBy("P.CategoryID").ToSql()
-
-	if err != nil {
-		return nil, errors.Wrap(err, "CountByCategoryIDs_ToSql")
-	}
 	var res []*model.ProductCountByCategoryID
-	err = s.GetMaster().Select(&res, query, args...)
+	err := s.GetMaster().Raw("SELECT P.CategoryID, COUNT(p.Id) AS ProductCount FROM Products P WHERE P.CategoryID IN ? GROUP BY P.CategoryID", categoryIDs).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to count products by given category ids")
 	}

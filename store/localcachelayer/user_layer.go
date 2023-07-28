@@ -124,7 +124,7 @@ func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*model.User, 
 	s.userProfileByIdsMut.Unlock()
 
 	user, err := s.UserStore.GetByOptions(ctx, &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": id},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": id},
 	})
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 			ctx = sqlstore.WithMaster(ctx)
 		}
 		dbUsers, err := s.UserStore.FilterByOptions(ctx, &model.UserFilterOptions{
-			Id: squirrel.Eq{model.UserTableName + ".Id": notCachedUserIds},
+			Conditions: squirrel.Eq{model.UserTableName + ".Id": notCachedUserIds},
 		})
 		if err != nil {
 			return nil, err

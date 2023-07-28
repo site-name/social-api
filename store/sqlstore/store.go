@@ -526,26 +526,100 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 }
 
 type m2mRelation struct {
-	model     tableModel
+	model     model.TableModel
 	field     string
-	joinTable tableModel
-}
-
-type tableModel interface {
-	TableName() string
+	joinTable model.TableModel
 }
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
-	// account
-	for _, model := range []tableModel{
-		&model.User{},
-		&model.Address{},
-		&model.Status{},
-		&model.UserAccessToken{},
-		&model.CustomerEvent{},
-		&model.CustomerNote{},
-		&model.AppToken{},
-		&model.Session{},
+	// 1) migrating tables
+	for _, model := range []model.TableModel{
+		&model.User{},                         // account
+		&model.Address{},                      //
+		&model.Status{},                       //
+		&model.UserAccessToken{},              //
+		&model.CustomerEvent{},                //
+		&model.CustomerNote{},                 //
+		&model.AppToken{},                     //
+		&model.Session{},                      //
+		&model.Attribute{},                    // attribute
+		&model.AttributeValue{},               //
+		&model.AttributeTranslation{},         //
+		&model.AttributeValueTranslation{},    //
+		&model.AttributeVariant{},             //
+		&model.AttributePage{},                //
+		&model.AttributeProduct{},             //
+		&model.Audit{},                        // audit
+		&model.Channel{},                      // channel
+		&model.CheckoutLine{},                 // checkout
+		&model.Checkout{},                     //
+		&model.ClusterDiscovery{},             // cluster
+		&model.Compliance{},                   // compliance
+		&model.ExportEvent{},                  // csv
+		&model.ExportFile{},                   //
+		&model.OrderDiscount{},                // discount
+		&model.Sale{},                         //
+		&model.VoucherChannelListing{},        //
+		&model.SaleChannelListing{},           //
+		&model.Voucher{},                      //
+		&model.VoucherCustomer{},              //
+		&model.OpenExchangeRate{},             // 3rd party
+		&model.FileInfo{},                     // file info
+		&model.UploadSession{},                //
+		&model.GiftCardEvent{},                // giftcard
+		&model.GiftCard{},                     //
+		&model.InvoiceEvent{},                 // invoice
+		&model.Invoice{},                      //
+		&model.Job{},                          // job
+		&model.MenuItemTranslation{},          // menu
+		&model.MenuItem{},                     //
+		&model.Menu{},                         //
+		&model.Order{},                        // order
+		&model.OrderLine{},                    //
+		&model.FulfillmentLine{},              //
+		&model.Fulfillment{},                  //
+		&model.OrderEvent{},                   //
+		&model.PageType{},                     // page
+		&model.PageTranslation{},              //
+		&model.Page{},                         //
+		&model.Payment{},                      // payment
+		&model.PaymentTransaction{},           //
+		&model.PluginConfiguration{},          // plugin
+		&model.PluginKeyValue{},               //
+		&model.Preference{},                   // preference
+		&model.Category{},                     // product
+		&model.CategoryTranslation{},          //
+		&model.Product{},                      //
+		&model.ProductVariant{},               //
+		&model.Collection{},                   //
+		&model.CollectionChannelListing{},     //
+		&model.CollectionProduct{},            //
+		&model.CollectionTranslation{},        //
+		&model.DigitalContent{},               //
+		&model.DigitalContentUrl{},            //
+		&model.ProductChannelListing{},        //
+		&model.ProductMedia{},                 //
+		&model.ProductTranslation{},           //
+		&model.ProductType{},                  //
+		&model.ProductVariantChannelListing{}, //
+		&model.ProductVariantTranslation{},    //
+		&model.ShippingMethod{},               // shipping
+		&model.ShippingMethodChannelListing{}, //
+		&model.ShippingMethodPostalCodeRule{}, //
+		&model.ShippingMethodTranslation{},    //
+		&model.ShippingZone{},                 //
+		&model.ShopStaff{},                    // shop
+		&model.ShopTranslation{},              //
+		&model.System{},                       // system
+		&model.TermsOfService{},               //
+		&model.Token{},                        //
+		&model.Vat{},                          // vat
+		&model.Allocation{},                   // warehouse
+		&model.Stock{},                        //
+		&model.WareHouse{},                    //
+		&model.PreorderAllocation{},           //
+		&model.Wishlist{},                     // wishlist
+		&model.WishlistItem{},                 //
 	} {
 		slog.Debug("migrating table", slog.String("model", model.TableName()))
 		if err := ss.master.AutoMigrate(model); err != nil {
@@ -553,7 +627,7 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		}
 	}
 
-	// attribute
+	// 2) setup intermediate tables
 	for _, m2mRel := range []m2mRelation{
 		{&model.AttributeVariant{}, "AssignedVariants", &model.AssignedVariantAttribute{}},
 		{&model.AssignedVariantAttribute{}, "Values", &model.AssignedVariantAttributeValue{}},
@@ -561,23 +635,14 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		{&model.AssignedPageAttribute{}, "Values", &model.AssignedPageAttributeValue{}},
 		{&model.AttributeProduct{}, "AssignedProducts", &model.AssignedProductAttribute{}},
 		{&model.AssignedProductAttribute{}, "Values", &model.AssignedProductAttributeValue{}},
+
+		{&model.Attribute{}, "ProductTypes", &model.AttributeProduct{}},
+		{&model.Attribute{}, "ProductVariantTypes", &model.AttributeVariant{}},
+		{&model.Attribute{}, "PageTypes", &model.AttributePage{}},
+		{&model.Collection{}, "Products", &model.CollectionProduct{}},
 	} {
 		slog.Debug("setting up intermediate table", slog.String("model", m2mRel.model.TableName()), slog.String("joinModel", m2mRel.joinTable.TableName()))
 		if err := ss.master.SetupJoinTable(m2mRel.model, m2mRel.field, m2mRel.joinTable); err != nil {
-			return err
-		}
-	}
-	for _, model := range []tableModel{
-		&model.Attribute{},
-		&model.AttributeValue{},
-		&model.AttributeTranslation{},
-		&model.AttributeValueTranslation{},
-		&model.AttributeVariant{},
-		&model.AttributePage{},
-		&model.AttributeProduct{},
-	} {
-		slog.Debug("migrating table", slog.String("model", model.TableName()))
-		if err := ss.master.AutoMigrate(model); err != nil {
 			return err
 		}
 	}

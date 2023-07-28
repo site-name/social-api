@@ -282,8 +282,10 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&model.ProductTranslationFilterOption{
-		ProductID:    squirrel.Eq{model.ProductTranslationTableName + ".ProductID": products.IDs()},
-		LanguageCode: squirrel.Eq{model.ProductTranslationTableName + ".LanguageCode": translationLanguageCode},
+		Conditions: squirrel.Eq{
+			model.ProductTranslationTableName + ".ProductID":    products.IDs(),
+			model.ProductTranslationTableName + ".LanguageCode": translationLanguageCode,
+		},
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -299,8 +301,10 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&model.ProductVariantTranslationFilterOption{
-		ProductVariantID: squirrel.Eq{model.ProductVariantTranslationTableName + ".ProductVariantID": variants.IDs()},
-		LanguageCode:     squirrel.Eq{model.ProductVariantTranslationTableName + ".LanguageCode": translationLanguageCode},
+		Conditions: squirrel.Eq{
+			model.ProductVariantTranslationTableName + ".ProductVariantID": variants.IDs(),
+			model.ProductVariantTranslationTableName + ".LanguageCode":     translationLanguageCode,
+		},
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr

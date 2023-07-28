@@ -1,8 +1,11 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
+	"gorm.io/gorm"
 )
 
 type StaffSalaryPeriod string
@@ -24,24 +27,25 @@ func (s StaffSalaryPeriod) IsValid() bool {
 
 // ShopStaff represents a relation between a shop and an staff user
 type ShopStaff struct {
-	Id             string            `json:"id"`
-	StaffID        string            `json:"staff_id"` //
-	CreateAt       int64             `json:"create_at"`
-	EndAt          *int64            `json:"end_at"`
-	SalaryPeriod   StaffSalaryPeriod `json:"salary_period"`
-	Salary         decimal.Decimal   `json:"salary"` // default 0
-	SalaryCurrency string            `json:"salary_currency"`
+	Id             string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	StaffID        string            `json:"staff_id" gorm:"type:uuid;column:StaffID;unique"`
+	CreateAt       int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	EndAt          *int64            `json:"end_at" gorm:"type:bigint;column:EndAt"`
+	SalaryPeriod   StaffSalaryPeriod `json:"salary_period" gorm:"type:varchar(20);column:SalaryPeriod"`
+	Salary         decimal.Decimal   `json:"salary" gorm:"default:0;column:Salary"` // default 0
+	SalaryCurrency string            `json:"salary_currency" gorm:"type:varchar(5);column:SalaryCurrency"`
 
 	staff *User
 }
 
-func (r *ShopStaff) GetStaff() *User {
-	return r.staff
+func (r *ShopStaff) GetStaff() *User               { return r.staff }
+func (r *ShopStaff) SetStaff(u *User)              { r.staff = u }
+func (c *ShopStaff) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ShopStaff) BeforeUpdate(_ *gorm.DB) error {
+	c.CreateAt = 0 // prevent update
+	return c.IsValid()
 }
-
-func (r *ShopStaff) SetStaff(u *User) {
-	r.staff = u
-}
+func (c *ShopStaff) TableName() string { return ShopStaffTableName }
 
 type ShopStaffFilterOptions struct {
 	Conditions squirrel.Sqlizer
@@ -49,34 +53,15 @@ type ShopStaffFilterOptions struct {
 	SelectRelatedStaff bool
 }
 
-func (s *ShopStaff) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-	s.CreateAt = GetMillis()
-}
-
 func (s *ShopStaff) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shop_staff_relation.is_valid.%s.app_error",
-		"shop_staff_relation_id=",
-		"ShopStaff.IsValid",
-	)
-
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(s.StaffID) {
-		return outer("staff_id", &s.Id)
+		return NewAppError("ShopStaff.IsValid", "model.shop_staff_relation.is_valid.staff_id.app_error", nil, "please provide valid shop staff id", http.StatusBadRequest)
 	}
 	if !s.SalaryPeriod.IsValid() {
-		return outer("salary_period", &s.Id)
-	}
-	if s.CreateAt == 0 {
-		return outer("create_at", &s.Id)
+		return NewAppError("ShopStaff.IsValid", "model.shop_staff_relation.is_valid.salary_period.app_error", nil, "please provide valid salary period", http.StatusBadRequest)
 	}
 	if s.EndAt != nil && *s.EndAt == 0 {
-		return outer("end_at", &s.Id)
+		return NewAppError("ShopStaff.IsValid", "model.shop_staff_relation.is_valid.end_at.app_error", nil, "please provide valid end time", http.StatusBadRequest)
 	}
 
 	return nil
@@ -85,6 +70,7 @@ func (s *ShopStaff) IsValid() *AppError {
 func (s *ShopStaff) DeepCopy() *ShopStaff {
 	res := *s
 
+	res.EndAt = CopyPointer(s.EndAt)
 	if s.staff != nil {
 		res.staff = s.staff.DeepCopy()
 	}

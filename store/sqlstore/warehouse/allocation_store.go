@@ -1,12 +1,8 @@
 package warehouse
 
 import (
-	"database/sql"
-
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,23 +13,6 @@ type SqlAllocationStore struct {
 
 func NewSqlAllocationStore(s store.Store) store.AllocationStore {
 	return &SqlAllocationStore{s}
-}
-
-func (as *SqlAllocationStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"OrderLineID",
-		"StockID",
-		"QuantityAllocated",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAllocationStore) ScanFields(allocation *model.Allocation) []interface{} {
@@ -48,59 +27,18 @@ func (as *SqlAllocationStore) ScanFields(allocation *model.Allocation) []interfa
 
 // BulkUpsert performs update, insert given allocations then returns them afterward
 func (as *SqlAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) {
-	var executor *gorm.DB = as.GetMaster()
-	if transaction != nil {
-		executor = transaction
+	if transaction == nil {
+		transaction = as.GetMaster()
 	}
 
-	var (
-		saveQuery   = "INSERT INTO " + model.AllocationTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + model.AllocationTableName + " SET " + as.
-				ModelFields("").
-				Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-	)
-
 	for _, allocation := range allocations {
-		isSaving := false
-
-		if allocation.Id == "" {
-			allocation.PreSave()
-			isSaving = true
-		} else {
-			allocation.PreUpdate()
-		}
-
-		if err := allocation.IsValid(); err != nil {
-			return nil, err
-		}
-
-		var (
-			err        error
-			numUpdated int64
-		)
-		if isSaving {
-			_, err = executor.NamedExec(saveQuery, allocation)
-
-		} else {
-			var result sql.Result
-			result, err = executor.NamedExec(updateQuery, allocation)
-			if err == nil && result != nil {
-				numUpdated, _ = result.RowsAffected()
-			}
-		}
+		err := transaction.Save(allocation).Error
 
 		if err != nil {
 			if as.IsUniqueConstraintError(err, []string{"OrderLineID", "StockID", "allocations_orderlineid_stockid_key"}) {
 				return nil, store.NewErrInvalidInput(model.AllocationTableName, "OrderLineID/StockID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert allocation with id=%s", allocation.Id)
-		}
-
-		if numUpdated > 1 {
-			return nil, errors.Errorf("multiple allocations were updated: %d instead of 1 for allocation with id=%s", numUpdated, allocation.Id)
 		}
 	}
 
@@ -110,7 +48,7 @@ func (as *SqlAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*mo
 // Get finds an allocation with given id then returns it with an error
 func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
 	var res model.Allocation
-	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AllocationTableName+" WHERE Id = ?", id)
+	err := as.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AllocationTableName, id)
@@ -147,17 +85,18 @@ GROUP BY
 // FilterByOption finds and returns a list of allocation based on given option
 func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	// define fields to select:
-	selectFields := as.ModelFields(model.AllocationTableName + ".")
+	selectFields := []string{model.AllocationTableName + ".*"}
 	if option.SelectedRelatedStock {
-		selectFields = append(selectFields, as.Stock().ModelFields(model.StockTableName+".")...)
+		selectFields = append(selectFields, model.StockTableName+".*")
 	}
 	if option.SelectRelatedOrderLine {
-		selectFields = append(selectFields, as.OrderLine().ModelFields(model.OrderLineTableName+".")...)
+		selectFields = append(selectFields, model.OrderLineTableName+".*")
 	}
 
 	query := as.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.AllocationTableName)
+		From(model.AllocationTableName).
+		Where(option.Conditions)
 
 	if option.AnnotateStockAvailableQuantity || option.SelectedRelatedStock {
 		query = query.InnerJoin(model.StockTableName + " ON Stocks.Id = Allocations.StockID")
@@ -171,23 +110,15 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 	}
 
 	// parse options
-	if option.SelectRelatedOrderLine || option.OrderLineOrderID != nil {
+	if option.SelectRelatedOrderLine ||
+		option.OrderLineOrderID != nil {
 		query = query.InnerJoin(model.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
-	}
-
-	for _, opt := range []squirrel.Sqlizer{
-		option.Id,
-		option.OrderLineID,
-		option.StockID,
-		option.QuantityAllocated,
-		option.OrderLineOrderID,
-	} {
-		if opt != nil {
-			query = query.Where(opt)
+		if option.OrderLineOrderID != nil {
+			query = query.Where(option.OrderLineOrderID)
 		}
 	}
 
-	if option.LockForUpdate {
+	if option.LockForUpdate && option.Transaction != nil {
 		suf := "FOR UPDATE"
 		if option.ForUpdateOf != "" {
 			suf += " OF " + option.ForUpdateOf
@@ -200,7 +131,12 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	rows, err := as.GetReplica().Query(queryString, args...)
+	runner := as.GetReplica()
+	if option.Transaction != nil {
+		runner = option.Transaction
+	}
+
+	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find allocations with given option")
 	}
@@ -250,25 +186,13 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 
 // BulkDelete perform bulk deletes given allocations.
 func (as *SqlAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []string) error {
-	var executor = as.GetMaster()
-	if transaction != nil {
-		executor = transaction
+	if transaction == nil {
+		transaction = as.GetMaster()
 	}
 
-	query, args, err := as.GetQueryBuilder().Delete(model.AllocationTableName).Where(squirrel.Eq{"Id": allocationIDs}).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "BulkDelete_ToSql")
-	}
-	result, err := executor.Exec(query, args...)
+	err := transaction.Raw("DELETE FROM "+model.AllocationTableName+" WHERE Id IN ?", allocationIDs).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete allocations")
-	}
-	numDeleted, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to count number of allocations were deleted")
-	}
-	if numDeleted != int64(len(allocationIDs)) {
-		return errors.Errorf("%d allocations were deleted instead of %d", numDeleted, len(allocationIDs))
 	}
 
 	return nil
@@ -277,8 +201,7 @@ func (as *SqlAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []s
 // CountAvailableQuantityForStock counts and returns available quantity of given stock
 func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
 	var count int
-	err := as.GetReplica().Select(
-		&count,
+	err := as.GetReplica().Raw(
 		`SELECT COALESCE(
 			SUM (
 				Allocations.QuantityAllocated
@@ -288,7 +211,9 @@ func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *model.Stock)
 			Allocations 
 		WHERE StockID = ?`,
 		stock.Id,
-	)
+	).
+		Scan(&count).
+		Error
 	if err != nil {
 		return 0, errors.Wrapf(err, "failed to count allocated quantity of stock with id=%s", stock.Id)
 	}

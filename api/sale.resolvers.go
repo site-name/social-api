@@ -49,6 +49,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 
 	embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
 
+	panic("not implemented")
 }
 
 func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*SaleDelete, error) {

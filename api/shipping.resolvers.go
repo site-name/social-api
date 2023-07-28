@@ -44,13 +44,13 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// find channels that requester want to add
 	channels, appErr := embedCtx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": channelIdsRequesterWantToAdd},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": channelIdsRequesterWantToAdd},
 	})
 	channelsAboutToAddMap := lo.SliceToMap(channels, func(ch *model.Channel) (string, *model.Channel) { return ch.Id, ch })
 
 	// find shipping method given by user
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-		Id: squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -70,10 +70,14 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 	}
 
 	// keep only add channels that have ShippingMethodChannelListing relations with shipping method
-	shippingMethodChannelListings, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id},
-		ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channelIdsRequesterWantToAdd},
-	})
+	shippingMethodChannelListings, appErr := embedCtx.App.Srv().
+		ShippingService().
+		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
+			Conditions: squirrel.Eq{
+				model.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id,
+				model.ShippingMethodChannelListingTableName + ".ChannelID":        channelIdsRequesterWantToAdd,
+			},
+		})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -104,11 +108,8 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 	}
 
 	// update
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer store.FinalizeTransaction(transaction)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	// add channels:
 	shippingMethodChannelListingsToAdd := lo.Map(args.Input.AddChannels, func(item *ShippingMethodChannelListingAddInput, _ int) *model.ShippingMethodChannelListing {
@@ -123,7 +124,7 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 				money := &goprices.Money{Amount: decimal.Decimal(*price), Currency: channel.Currency}
 				// NOTE: we don't validate price amount precisions for currencies here.
 				// call Quantize() to round prices for currencies properly
-				money, _ = money.Quantize(nil, goprices.Up)
+				money, _ = money.Quantize(goprices.Up, -1)
 				*price = *(*PositiveDecimal)(unsafe.Pointer(&money.Amount))
 			}
 		}
@@ -146,15 +147,17 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// remove:
 	appErr = embedCtx.App.Srv().ShippingService().DeleteShippingMethodChannelListings(transaction, &model.ShippingMethodChannelListingFilterOption{
-		ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
-		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id},
+		Conditions: squirrel.Eq{
+			model.ShippingMethodChannelListingTableName + ".ChannelID":        args.Input.RemoveChannels,
+			model.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id,
+		},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -177,11 +180,8 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// start transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("ShippingPriceCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer store.FinalizeTransaction(transaction)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	shippingMethod, appErr = embedCtx.App.Srv().ShippingService().UpsertShippingMethod(transaction, shippingMethod)
 	if appErr != nil {
@@ -189,16 +189,14 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 	}
 
 	shippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingMethod.ShippingZoneID},
-		},
+		Conditions: squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingMethod.ShippingZoneID},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingPriceCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -218,7 +216,7 @@ func (r *Resolver) ShippingPriceDelete(ctx context.Context, args struct{ Id stri
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-		Id:                        squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
+		Conditions:                squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
 		SelectRelatedShippingZone: true,
 	})
 	if appErr != nil {
@@ -272,14 +270,11 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// start transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("ShippingPriceUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer store.FinalizeTransaction(transaction)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-		Id:                        squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
+		Conditions:                squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
 		SelectRelatedShippingZone: true, //
 	})
 	if appErr != nil {
@@ -287,13 +282,13 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	}
 	if args.Input.Patch(shippingMethod) {
 		shippingMethod, appErr = embedCtx.App.Srv().Shipping.UpsertShippingMethod(transaction, shippingMethod)
-		if err != nil {
+		if appErr != nil {
 			return nil, appErr
 		}
 	}
 
 	if len(args.Input.DeletePostalCodeRules) > 0 {
-		err = embedCtx.App.Srv().Store.ShippingMethodPostalCodeRule().Delete(transaction, args.Input.DeletePostalCodeRules...)
+		err := embedCtx.App.Srv().Store.ShippingMethodPostalCodeRule().Delete(transaction, args.Input.DeletePostalCodeRules...)
 		if err != nil {
 			return nil, model.NewAppError("ShippingPriceUpdate", "app.shipping.error_delete_shipping_method_postal_code_rules.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
@@ -322,7 +317,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingPriceUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -418,11 +413,8 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("ShippingZoneCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer store.FinalizeTransaction(transaction)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	shippingZone := &model.ShippingZone{
 		Default:   args.Input.Default,
@@ -655,7 +647,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 		}
 	}
 	if len(args.Input.RemoveChannels) > 0 {
-		appErr = embedCtx.App.Srv().ChannelService().BulkDeleteShippingZoneChannels(transaction, &model.ShippingZoneChannelFilterOptions{
+		appErr = embedCtx.App.Srv().ChannelService().RemoveShippingZoneRelations(transaction, &model.ShippingZoneChannelFilterOptions{
 			Conditions: squirrel.And{
 				squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": args.Id},
 				squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": args.Input.RemoveChannels},
@@ -667,14 +659,14 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 
 		shippingChannelListings, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
 			ShippingMethod_ShippingZoneID_Inner: squirrel.Eq{model.ShippingZoneTableName + ".Id": args.Id},
-			ChannelID:                           squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
+			Conditions:                          squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
 		})
 		if appErr != nil {
 			return nil, appErr
 		}
 
 		appErr = embedCtx.App.Srv().ShippingService().DeleteShippingMethodChannelListings(transaction, &model.ShippingMethodChannelListingFilterOption{
-			Id: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".Id": shippingChannelListings.IDs()},
+			Conditions: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".Id": shippingChannelListings.IDs()},
 		})
 		if appErr != nil {
 			return nil, appErr

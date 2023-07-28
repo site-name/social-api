@@ -4,7 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,19 +14,6 @@ type SqlAttributeProductStore struct {
 
 func NewSqlAttributeProductStore(s store.Store) store.AttributeProductStore {
 	return &SqlAttributeProductStore{s}
-}
-
-func (as *SqlAttributeProductStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id", "AttributeID", "ProductTypeID", "SortOrder",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
@@ -57,7 +43,7 @@ func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, err
 
 func (s *SqlAttributeProductStore) commonQueryBuilder(option *model.AttributeProductFilterOption) squirrel.SelectBuilder {
 	query := s.GetQueryBuilder().
-		Select(s.ModelFields(model.AttributeProductTableName + ".")...).
+		Select(model.AttributeProductTableName + ".*").
 		From(model.AttributeProductTableName).
 		Where(option.Conditions)
 

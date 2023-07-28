@@ -87,7 +87,7 @@ func (a *AttributeMixin[T]) cleanValues(cleanedInput AttributeUpsertInputIface, 
 
 func (a *AttributeMixin[T]) checkValuesAreUnique(valuesInput []attributeValueInputIface, attribute *model.Attribute) *model.AppError {
 	attributeValues, appErr := a.srv.AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attribute.Id},
+		Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attribute.Id},
 	})
 	if appErr != nil {
 		return appErr

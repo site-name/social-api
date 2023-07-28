@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -9,13 +10,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
 	"gorm.io/gorm"
-)
-
-// max lengths for order discount
-const (
-	ORDER_DISCOUNT_NAME_MAX_LENGTH       = 255
-	ORDER_DISCOUNT_TYPE_MAX_LENGTH       = 10
-	ORDER_DISCOUNT_VALUE_TYPE_MAX_LENGTH = 10
 )
 
 type OrderDiscountType string
@@ -78,23 +72,18 @@ func (o *OrderDiscount) DeepCopy() *OrderDiscount {
 }
 
 func (o *OrderDiscount) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.order_dicount.is_valid.%s.app_error",
-		"order_discount_id=",
-		"OrderDiscount.IsValid",
-	)
-
 	if o.OrderID != nil && !IsValidId(*o.OrderID) {
-		return outer("order_id", &o.Id)
+		return NewAppError("OrderDiscount.IsValid", "model.order_discount.is_valid.order_id.app_error", nil, "please provide valid order id", http.StatusBadRequest)
 	}
 	if !o.Type.IsValid() {
-		return outer("type", &o.Id)
+		return NewAppError("OrderDiscount.IsValid", "model.order_discount.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 	if !o.ValueType.IsValid() {
-		return outer("value_type", &o.Id)
+		return NewAppError("OrderDiscount.IsValid", "model.order_discount.is_valid.value_type.app_error", nil, "please provide valid value type", http.StatusBadRequest)
 	}
-	if unit, err := currency.ParseISO(o.Currency); err != nil || !strings.EqualFold(unit.String(), o.Currency) {
-		return outer("currency", &o.Id)
+	if unit, err := currency.ParseISO(o.Currency); err != nil ||
+		!strings.EqualFold(unit.String(), o.Currency) {
+		return NewAppError("OrderDiscount.IsValid", "model.order_discount.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
 	}
 	if err := ValidateDecimal("OrderDiscount.IsValid.Value", o.Value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
 		return err
@@ -107,9 +96,11 @@ func (o *OrderDiscount) IsValid() *AppError {
 }
 
 func (o *OrderDiscount) PopulateNonDbFields() {
-	o.Amount = &goprices.Money{
-		Amount:   *o.AmountValue,
-		Currency: o.Currency,
+	if o.AmountValue != nil {
+		o.Amount = &goprices.Money{
+			Amount:   *o.AmountValue,
+			Currency: o.Currency,
+		}
 	}
 }
 

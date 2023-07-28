@@ -4,7 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,19 +14,6 @@ type SqlAttributeVariantStore struct {
 
 func NewSqlAttributeVariantStore(s store.Store) store.AttributeVariantStore {
 	return &SqlAttributeVariantStore{s}
-}
-
-func (as *SqlAttributeVariantStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id", "AttributeID", "ProductTypeID", "VariantSelection", "SortOrder",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {

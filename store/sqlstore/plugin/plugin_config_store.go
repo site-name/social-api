@@ -62,7 +62,7 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 	// check if we need to prefetch
 	if options.PrefetchRelatedChannel && len(configs) != 0 {
 		channels, err := p.Channel().FilterByOption(&model.ChannelFilterOption{
-			Conditions: squirrel.Eq{model.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
+			Conditions: squirrel.Eq{model.ChannelTableName + ".Id": configs.ChannelIDs()},
 		})
 
 		if err != nil {

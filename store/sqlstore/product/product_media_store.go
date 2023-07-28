@@ -1,11 +1,8 @@
 package product
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -18,71 +15,11 @@ func NewSqlProductMediaStore(s store.Store) store.ProductMediaStore {
 	return &SqlProductMediaStore{s}
 }
 
-func (s *SqlProductMediaStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"ProductID",
-		"Ppoi",
-		"Image",
-		"Alt",
-		"Type",
-		"ExternalUrl",
-		"OembedData",
-		"SortOrder",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 // Upsert depends on given media's Id property to decide insert or update it
 func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
-	var isSaving bool
-
-	if media.Id == "" {
-		media.PreSave()
-		isSaving = true
-	} else {
-		media.PreUpdate()
-	}
-
-	if err := media.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.ProductMediaTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-		_, err = ps.GetMaster().NamedExec(query, media)
-
-	} else {
-		query := "UPDATE " + model.ProductMediaTableName + " SET " + ps.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = ps.GetMaster().NamedExec(query, media)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
-
+	err := ps.GetMaster().Save(media).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to upsert product media with id=%s", media.Id)
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple product medias were updated: %d instead of 1", numUpdated)
 	}
 
 	return media, nil
@@ -91,12 +28,7 @@ func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.Produc
 // Get finds and returns 1 product media with given id
 func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 	var res model.ProductMedia
-	err := ps.GetReplica().Get(
-		&res,
-		"SELECT * FROM "+model.ProductMediaTableName+" WHERE Id = ?",
-		id,
-	)
-
+	err := ps.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductMediaTableName, id)
@@ -110,13 +42,10 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 // FilterByOption finds and returns a list of product medias with given id
 func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.ProductMediaTableName + ".")...).
-		From(model.ProductMediaTableName)
+		Select(model.ProductMediaTableName + ".*").
+		From(model.ProductMediaTableName).Where(option.Conditions)
 
 	// parse options
-	if option.Conditions != nil {
-		query = query.Where(option.Conditions)
-	}
 	if option.VariantID != nil {
 		query = query.
 			LeftJoin("VariantMedias ON VariantMedias.MediaID = ProductMedias.Id").
@@ -129,7 +58,7 @@ func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterO
 	}
 
 	var res []*model.ProductMedia
-	err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product medias by given option")
 	}

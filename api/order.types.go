@@ -154,7 +154,7 @@ func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataload
 		Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			Id: squirrel.Eq{model.OrderLineTableName + ".Id": orderLineIDs},
+			Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": orderLineIDs},
 		})
 	if appErr != nil {
 		for idx := range orderLineIDs {
@@ -180,7 +180,7 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderIDs},
+			Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderIDs},
 		})
 	if appErr != nil {
 		for idx := range orderIDs {
@@ -223,7 +223,7 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			VariantID:          squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
+			Conditions:         squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
 			OrderChannelID:     squirrel.Eq{model.OrderTableName + ".ChannelID": channelIDs},
 			SelectRelatedOrder: true,
 		})
@@ -807,7 +807,7 @@ func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mo
 	orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
-			Id: squirrel.Eq{model.OrderTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.OrderTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -834,7 +834,7 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 	orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
-			UserID: squirrel.Eq{model.OrderTableName + ".UserID": userIDs},
+			Conditions: squirrel.Eq{model.OrderTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {

@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,22 +14,6 @@ type SqlTokenStore struct {
 
 func NewSqlTokenStore(sqlStore store.Store) store.TokenStore {
 	return &SqlTokenStore{sqlStore}
-}
-
-func (s *SqlTokenStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Token",
-		"CreateAt",
-		"Type",
-		"Extra",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (s *SqlTokenStore) Save(token *model.Token) error {

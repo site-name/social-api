@@ -16,7 +16,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -71,9 +70,7 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 
 		shippingZones, appErr := embedCtx.App.Srv().
 			ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-			Conditions: squirrel.And{
-				squirrel.Eq{model.ShippingZoneTableName + ".Id": input.ShippingZones},
-			},
+			Conditions: squirrel.Eq{model.ShippingZoneTableName + ".Id": input.ShippingZones},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -102,12 +99,15 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 		return nil, appErr
 	}
 
-	warehouseShippingZones := lo.Map(input.ShippingZones, func(id string, _ int) *model.WarehouseShippingZone {
-		return &model.WarehouseShippingZone{WarehouseID: savedWarehouse.Id, ShippingZoneID: id}
+	shippingZonesToAdd := lo.Map(input.ShippingZones, func(id string, _ int) *model.ShippingZone {
+		return &model.ShippingZone{Id: id}
 	})
-	_, appErr = embedCtx.App.Srv().Warehouse.CreateWarehouseShippingZones(nil, warehouseShippingZones)
-	if appErr != nil {
-		return nil, appErr
+	err := embedCtx.App.Srv().Store.GetMaster().
+		Model(savedWarehouse).
+		Association("ShippingZones").
+		Append(shippingZonesToAdd)
+	if err != nil {
+		return nil, model.NewAppError("UnassignWarehouseShippingZone", "app.warehouse.error_adding_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &WarehouseCreate{
@@ -129,7 +129,7 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	warehouse, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehouseByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
+			Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -202,28 +202,28 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	warehouse, appErr := embedCtx.App.Srv().WarehouseService().WarehouseByOption(&model.WarehouseFilterOption{
-		Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("DeleteWarehouse", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("DeleteWarehouse", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 
-	err = embedCtx.App.Srv().Store.Warehouse().Delete(transaction, args.Id)
+	err := embedCtx.App.Srv().Store.Warehouse().Delete(transaction, args.Id)
 	if err != nil {
 		return nil, model.NewAppError("DeleteWarehouse", "app.warehouse.delete_warehouse_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err = transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("DeleteWarehouse", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	store.FinalizeTransaction(transaction)
+	transaction.Rollback()
 
 	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 	stocks, appErr := embedCtx.App.Srv().
@@ -263,21 +263,21 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	warehouseShippingZoneRelations := lo.Map(args.ShippingZoneIds, func(id string, _ int) *model.WarehouseShippingZone {
-		return &model.WarehouseShippingZone{
-			WarehouseID:    args.Id,
-			ShippingZoneID: id,
-		}
+	shippingZonesToAdd := lo.Map(args.ShippingZoneIds, func(id string, _ int) *model.ShippingZone {
+		return &model.ShippingZone{Id: id}
 	})
-	_, appErr := embedCtx.App.Srv().WarehouseService().CreateWarehouseShippingZones(nil, warehouseShippingZoneRelations)
-	if appErr != nil {
-		return nil, appErr
+	err := embedCtx.App.Srv().Store.GetMaster().
+		Model(&model.WareHouse{Id: args.Id}).
+		Association("ShippingZones").
+		Append(shippingZonesToAdd)
+	if err != nil {
+		return nil, model.NewAppError("UnassignWarehouseShippingZone", "app.warehouse.error_adding_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	warehouse, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehouseByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
+			Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -302,12 +302,12 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	err := embedCtx.App.Srv().Store.WarehouseShippingZone().Delete(nil, &model.WarehouseShippingZoneFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Eq{model.WarehouseShippingZoneTableName + ".WarehouseID": args.Id},
-			squirrel.Eq{model.WarehouseShippingZoneTableName + ".ShippingZoneID": args.ShippingZoneIds},
-		},
-	})
+
+	shippingZonesToRemove := lo.Map(args.ShippingZoneIds, func(id string, _ int) *model.ShippingZone { return &model.ShippingZone{Id: id} })
+	err := embedCtx.App.Srv().Store.GetMaster().
+		Model(&model.WareHouse{Id: args.Id}).
+		Association("ShippingZones").
+		Delete(shippingZonesToRemove)
 	if err != nil {
 		return nil, model.NewAppError("UnassignWarehouseShippingZone", "app.warehouse.error_deleting_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -315,7 +315,7 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	warehouse, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehouseByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
+			Conditions: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -352,6 +352,7 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 	}
 
 	warehouseFilterOpts := &model.WarehouseFilterOption{}
+	andConds := squirrel.And{}
 
 	if filter := args.Filter; filter != nil {
 		if filter.Search != nil && strings.TrimSpace(*filter.Search) != "" {
@@ -361,14 +362,18 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 			if !lo.EveryBy(filter.Ids, model.IsValidId) {
 				return nil, model.NewAppError("Warehouses", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid warehouse ids", http.StatusBadRequest)
 			}
-			warehouseFilterOpts.Id = squirrel.Eq{model.WarehouseTableName + ".Id": filter.Ids}
+			andConds = append(andConds, squirrel.Eq{model.WarehouseTableName + ".Id": filter.Ids})
 		}
 		if filter.IsPrivate != nil {
-			warehouseFilterOpts.IsPrivate = squirrel.Eq{model.WarehouseTableName + ".IsPrivate": *filter.IsPrivate}
+			andConds = append(andConds, squirrel.Eq{model.WarehouseTableName + ".IsPrivate": *filter.IsPrivate})
 		}
 		if filter.ClickAndCollectOption != nil && filter.ClickAndCollectOption.IsValid() {
-			warehouseFilterOpts.ClickAndCollectOption = squirrel.Eq{model.WarehouseTableName + ".ClickAndCollectOption": *filter.ClickAndCollectOption}
+			andConds = append(andConds, squirrel.Eq{model.WarehouseTableName + ".ClickAndCollectOption": *filter.ClickAndCollectOption})
 		}
+	}
+
+	if len(andConds) > 0 {
+		warehouseFilterOpts.Conditions = andConds
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

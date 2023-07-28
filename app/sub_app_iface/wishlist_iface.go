@@ -14,14 +14,8 @@ type WishlistService interface {
 	AddProduct(wishlistID string, productID string) (*model.WishlistItem, *model.AppError)
 	// AddProductVariant add given product variant into given wishlist
 	AddProductVariant(wishlistID string, productVariant *model.ProductVariant) (*model.WishlistItem, *model.AppError)
-	// AddWishlistItemProductVariantRelation adds given wishlist item-product variant relation into database and returns it
-	AddWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, *model.AppError)
-	// BulkUpsertWishlistItemProductVariantRelations
-	BulkUpsertWishlistItemProductVariantRelations(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
 	BulkUpsertWishlistItems(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError)
-	// DeleteWishlistItemProductVariantRelation deletes a wishlist item-product variant relation and returns a number of remaining relations in database
-	DeleteWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (int64, *model.AppError)
 	// DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
 	DeleteWishlistItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, *model.AppError)
 	// GetAllVariants returns all product variants in child wishlist items of given wishlist

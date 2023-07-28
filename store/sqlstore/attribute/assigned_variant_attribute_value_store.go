@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -21,22 +20,6 @@ var assignedVariantAttrValueDuplicateKeys = []string{
 
 func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVariantAttributeValueStore {
 	return &SqlAssignedVariantAttributeValueStore{s}
-}
-
-func (as *SqlAssignedVariantAttributeValueStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"ValueID",
-		"AssignmentID",
-		"SortOrder",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{} {

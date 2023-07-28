@@ -52,7 +52,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/samber/lo v1.38.1
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v1.4.1
+	github.com/site-name/go-prices v1.4.2-0.20230727053713-cee2990f2f91
 	github.com/site-name/i18naddress v0.0.4
 	github.com/spf13/cobra v1.7.0
 	github.com/splitio/go-client/v6 v6.3.3

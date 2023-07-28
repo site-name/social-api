@@ -5,7 +5,6 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -13,23 +12,6 @@ import (
 type SqlTermsOfServiceStore struct {
 	store.Store
 	metrics einterfaces.MetricsInterface
-}
-
-func (s *SqlTermsOfServiceStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"UserID",
-		"Text",
-	}
-
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func NewSqlTermsOfServiceStore(sqlStore store.Store, metrics einterfaces.MetricsInterface) store.TermsOfServiceStore {

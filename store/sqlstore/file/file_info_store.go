@@ -79,26 +79,18 @@ func (fs *SqlFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, er
 
 // GetWithOptions finds and returns fileinfos with given options.
 // Leave page, perPage nil to get all result.
-func (fs *SqlFileInfoStore) GetWithOptions(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
-	if perPage < 0 {
-		return nil, store.NewErrLimitExceeded("perPage", perPage, "value used in pagination while getting FileInfos")
-	} else if page < 0 {
-		return nil, store.NewErrLimitExceeded("page", page, "value used in pagination while getting FileInfos")
-	}
-	if perPage == 0 {
-		return nil, nil
-	}
-	if opt == nil {
-		opt = &model.GetFileInfosOptions{}
-	}
-
+func (fs *SqlFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
 		From(model.FileInfoTableName).
-		Where(opt.Conditions).
-		Limit(uint64(perPage)).
-		Offset(uint64(perPage * page))
+		Where(opt.Conditions)
 
+	if opt.Limit > 0 {
+		query = query.Limit(opt.Limit)
+	}
+	if opt.Offset > 0 {
+		query = query.Offset(opt.Offset)
+	}
 	if len(opt.OrderBy) > 0 {
 		query = query.OrderBy(opt.OrderBy)
 	}
@@ -118,12 +110,7 @@ func (fs *SqlFileInfoStore) InvalidateFileInfosForPostCache(postId string, delet
 }
 
 func (fs *SqlFileInfoStore) PermanentDelete(fileId string) error {
-	if err := fs.GetMaster().Raw(
-		`DELETE FROM
-				FileInfos
-			WHERE
-				Id = ?`,
-		fileId).Error; err != nil {
+	if err := fs.GetMaster().Raw(`DELETE FROM FileInfos WHERE Id = ?`, fileId).Error; err != nil {
 		return errors.Wrapf(err, "failed to delete FileInfos with id=%s", fileId)
 	}
 	return nil

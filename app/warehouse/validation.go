@@ -14,11 +14,9 @@ import (
 // If not there would be issue with automatically selecting stock for operation.
 func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.WareHouse) (bool, *model.AppError) {
 	shippingZones, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		SelectRelatedWarehouseIDs: true,
-		Conditions: squirrel.And{
-			squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingZones.IDs()},
-			squirrel.NotEq{model.WarehouseShippingZoneTableName + ".WarehouseID": nil},
-		},
+		SelectRelatedWarehouses: true,
+		Conditions:              squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingZones.IDs()},
+		WarehouseID:             squirrel.NotEq{model.WarehouseShippingZoneTableName + ".WarehouseID": nil},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -29,8 +27,8 @@ func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZo
 
 	warehouseIdMap := map[string]bool{}
 	for _, zone := range shippingZones {
-		for _, warehouseId := range zone.RelativeWarehouseIDs {
-			warehouseIdMap[warehouseId] = true
+		for _, warehouse := range zone.Warehouses {
+			warehouseIdMap[warehouse.Id] = true
 		}
 	}
 

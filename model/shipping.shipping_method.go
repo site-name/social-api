@@ -2,20 +2,13 @@ package model
 
 import (
 	"fmt"
-	"strings"
-	"unicode/utf8"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/measurement"
-	"golang.org/x/text/language"
-)
-
-// max lengths for some fields
-const (
-	SHIPPING_METHOD_NAME_MAX_LENGTH = 100
-	SHIPPING_METHOD_TYPE_MAX_LENGTH = 30
+	"gorm.io/gorm"
 )
 
 type ShippingMethodType string
@@ -36,67 +29,36 @@ var ShippingMethodTypeString = map[ShippingMethodType]string{
 }
 
 type ShippingMethod struct {
-	Id                  string                 `json:"id"`
-	Name                string                 `json:"name"`
-	Type                ShippingMethodType     `json:"type"`
-	ShippingZoneID      string                 `json:"shipping_zone_id"`
-	MinimumOrderWeight  float32                `json:"minimum_order_weight"` // default0 0
-	MaximumOrderWeight  *float32               `json:"maximum_order_weight"`
-	WeightUnit          measurement.WeightUnit `json:"weight_unit"`
-	MinOrderWeight      *measurement.Weight    `json:"min_order_weight" db:"-"`
-	MaxOrderWeight      *measurement.Weight    `json:"max_order_weight" db:"-"`
-	MaximumDeliveryDays *int                   `json:"maximum_delivery_days"`
-	MinimumDeliveryDays *int                   `json:"minimum_delivery_days"`
-	Description         StringInterface        `json:"description"`
+	Id                  string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name                string                 `json:"name" gorm:"type:varchar(100);column:Name"`
+	Type                ShippingMethodType     `json:"type" gorm:"type:varchar(30);column:Type"`
+	ShippingZoneID      string                 `json:"shipping_zone_id" gorm:"type:uuid;column:ShippingZoneID"`
+	MinimumOrderWeight  *float32               `json:"minimum_order_weight" gorm:"column:MinimumOrderWeight;default:0"` // default 0
+	MaximumOrderWeight  *float32               `json:"maximum_order_weight" gorm:"column:MaximumOrderWeight"`
+	WeightUnit          measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
+	MaximumDeliveryDays *int                   `json:"maximum_delivery_days" gorm:"column:MaximumDeliveryDays"`
+	MinimumDeliveryDays *int                   `json:"minimum_delivery_days" gorm:"column:MinimumDeliveryDays"`
+	Description         StringInterface        `json:"description" gorm:"type:jsonb;column:Description"`
 	ModelMetadata
 
 	ExcludedProducts Products `json:"-" gorm:"many2many:ShippingMethodExcludedProducts"`
+
+	MinOrderWeight *measurement.Weight `json:"min_order_weight" gorm:"-"`
+	MaxOrderWeight *measurement.Weight `json:"max_order_weight" gorm:"-"`
 
 	shippingZone                  *ShippingZone                 `gorm:"-"` // this field is used for holding prefetched related instances
 	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `gorm:"-"` // this field is used for holding prefetched related instances
 	price                         *goprices.Money               `gorm:"-"` // this field is populated in some graphql resolvers
 }
 
-func (s *ShippingMethod) GetPrice() *goprices.Money {
-	return s.price
-}
-
-func (s *ShippingMethod) SetPrice(p *goprices.Money) {
-	s.price = p
-}
-
-type ShippingMethods []*ShippingMethod
-
-func (ss ShippingMethods) IDs() []string {
-	return lo.Map(ss, func(item *ShippingMethod, _ int) string { return item.Id })
-}
-
-func (s *ShippingMethod) GetShippingZone() *ShippingZone {
-	return s.shippingZone
-}
-
-func (s *ShippingMethod) SetShippingZone(zone *ShippingZone) {
-	s.shippingZone = zone
-}
-
-func (s *ShippingMethod) GetshippingMethodPostalCodeRules() ShippingMethodPostalCodeRules {
-	return s.shippingMethodPostalCodeRules
-}
-
-func (s *ShippingMethod) SetshippingMethodPostalCodeRules(r ShippingMethodPostalCodeRules) {
-	s.shippingMethodPostalCodeRules = r
-}
-
-func (s *ShippingMethod) AppendShippingMethodPostalCodeRule(rule *ShippingMethodPostalCodeRule) {
-	s.shippingMethodPostalCodeRules = append(s.shippingMethodPostalCodeRules, rule)
-}
+func (c *ShippingMethod) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShippingMethod) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShippingMethod) TableName() string             { return ShippingMethodTableName }
 
 // ShippingMethodFilterOption is used for filtering shipping methods
 type ShippingMethodFilterOption struct {
-	Id                 squirrel.Sqlizer
-	Type               squirrel.Sqlizer
-	MinimumOrderWeight squirrel.Sqlizer
-	MaximumOrderWeight squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
+
 	// INNER JOIN ShippingZones ON ...
 	//
 	// INNER JOIN ShippingZoneChannels ON ...
@@ -115,15 +77,40 @@ type ShippingMethodFilterOption struct {
 	//
 	// WHERE ShippingZones.Countries ...
 	ShippingZoneCountries     squirrel.Sqlizer
-	ShippingZoneID            squirrel.Sqlizer
 	SelectRelatedShippingZone bool
 }
 
+func (s *ShippingMethod) GetPrice() *goprices.Money          { return s.price }
+func (s *ShippingMethod) SetPrice(p *goprices.Money)         { s.price = p }
+func (s *ShippingMethod) GetShippingZone() *ShippingZone     { return s.shippingZone }
+func (s *ShippingMethod) SetShippingZone(zone *ShippingZone) { s.shippingZone = zone }
+
+type ShippingMethods []*ShippingMethod
+
+func (ss ShippingMethods) IDs() []string {
+	return lo.Map(ss, func(item *ShippingMethod, _ int) string { return item.Id })
+}
+
+func (s *ShippingMethod) GetshippingMethodPostalCodeRules() ShippingMethodPostalCodeRules {
+	return s.shippingMethodPostalCodeRules
+}
+
+func (s *ShippingMethod) SetshippingMethodPostalCodeRules(r ShippingMethodPostalCodeRules) {
+	s.shippingMethodPostalCodeRules = r
+}
+
+func (s *ShippingMethod) AppendShippingMethodPostalCodeRule(rule *ShippingMethodPostalCodeRule) {
+	s.shippingMethodPostalCodeRules = append(s.shippingMethodPostalCodeRules, rule)
+}
+
 func (s *ShippingMethod) PopulateNonDbFields() {
-	s.MinOrderWeight = &measurement.Weight{
-		Amount: s.MinimumOrderWeight,
-		Unit:   s.WeightUnit,
+	if s.MinimumOrderWeight != nil {
+		s.MinOrderWeight = &measurement.Weight{
+			Amount: *s.MinimumOrderWeight,
+			Unit:   s.WeightUnit,
+		}
 	}
+
 	if s.MaximumOrderWeight != nil {
 		s.MaxOrderWeight = &measurement.Weight{
 			Amount: *s.MaximumOrderWeight,
@@ -158,74 +145,46 @@ func (s *ShippingMethod) getWeightTypeDisplay() string {
 	return fmt.Sprintf("%s to %s", s.MinOrderWeight.String(), s.MaxOrderWeight.String())
 }
 
-func (s *ShippingMethod) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
+func (s *ShippingMethod) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
+	if s.MinimumOrderWeight == nil {
+		s.MinimumOrderWeight = NewPrimitive[float32](0)
+	}
 }
 
 func (s *ShippingMethod) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shipping_method.is_valid.%s.app_error",
-		"shipping_method_id=",
-		"ShippingMethod.IsValid",
-	)
-
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(s.ShippingZoneID) {
-		return outer("shipping_zone_id", &s.Id)
+		return NewAppError("ShippingMethod.IsValid", "model.shipping_method.is_valid.shipping_zone_id.app_error", nil, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
-	if utf8.RuneCountInString(s.Name) > SHIPPING_METHOD_NAME_MAX_LENGTH {
-		return outer("name", &s.Id)
-	}
-	if !s.Type.IsValid() || len(s.Type) > SHIPPING_METHOD_TYPE_MAX_LENGTH {
-		return outer("type", &s.Id)
+	if !s.Type.IsValid() {
+		return NewAppError("ShippingMethod.IsValid", "model.shipping_method.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 	return nil
 }
-
-const SHIPPING_METHOD_TRANSLATION_NAME_MAX_LENGTH = 255
 
 type ShippingMethodTranslation struct {
-	Id               string           `json:"id"`
-	ShippingMethodID string           `json:"shipping_method_id"`
-	LanguageCode     string           `json:"language_code"`
-	Name             string           `json:"name"`
-	Description      *StringInterface `json:"description"`
+	Id               string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ShippingMethodID string           `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID"`
+	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
+	Name             string           `json:"name" gorm:"type:varchar(255);column:Name"`
+	Description      StringInterface  `json:"description" gorm:"type:jsonb;column:Description"`
 }
 
+func (c *ShippingMethodTranslation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShippingMethodTranslation) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *ShippingMethodTranslation) TableName() string             { return ShippingMethodTranslationTableName }
+
 func (s *ShippingMethodTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shipping_method_translation.is_valid.%s.app_error",
-		"shipping_method_translation_id=",
-		"ShippingMethodTranslation.IsValid",
-	)
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(s.ShippingMethodID) {
-		return outer("shipping_method_id", &s.Id)
+		return NewAppError("ShippingMethodTranslation.IsValid", "model.shipping_method_translation.is_valid.shipping_method_id.app_error", nil, "please provide valid shipping method id", http.StatusBadRequest)
 	}
-	if utf8.RuneCountInString(s.Name) > SHIPPING_METHOD_TRANSLATION_NAME_MAX_LENGTH {
-		return outer("name", &s.Id)
-	}
-	if tag, err := language.Parse(s.LanguageCode); err != nil || !strings.EqualFold(tag.String(), s.LanguageCode) {
-		return outer("language_code", &s.Id)
+	if !s.LanguageCode.IsValid() {
+		return NewAppError("ShippingMethodTranslation.IsValid", "model.shipping_method_translation.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (s *ShippingMethodTranslation) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-	s.Name = SanitizeUnicode(s.Name)
-}
-
-func (s *ShippingMethodTranslation) PreUpdate() {
+func (s *ShippingMethodTranslation) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 }

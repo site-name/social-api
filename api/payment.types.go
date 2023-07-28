@@ -206,7 +206,7 @@ func paymentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataload
 	payments, appErr := embedCtx.App.Srv().
 		PaymentService().
 		PaymentsByOption(&model.PaymentFilterOption{
-			OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": orderIDs},
+			Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orderIDs},
 		})
 	if appErr != nil {
 		for idx := range orderIDs {
@@ -234,7 +234,7 @@ func paymentByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	payments, appErr := embedCtx.App.Srv().PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		Id: squirrel.Eq{model.PaymentTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.PaymentTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -303,7 +303,7 @@ func transactionsByPaymentIdLoader(ctx context.Context, paymentIDs []string) []*
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	transactions, appErr := embedCtx.App.Srv().PaymentService().TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		PaymentID: squirrel.Eq{model.TransactionTableName + ".PaymentID": paymentIDs},
+		Conditions: squirrel.Eq{model.TransactionTableName + ".PaymentID": paymentIDs},
 	})
 	if appErr != nil {
 		for idx := range paymentIDs {

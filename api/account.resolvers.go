@@ -188,7 +188,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": currentSession.UserId},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": currentSession.UserId},
 	})
 	if appErr != nil {
 		return nil, appErr

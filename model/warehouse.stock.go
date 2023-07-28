@@ -1,8 +1,11 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 type StockAvailability string
@@ -17,24 +20,44 @@ const (
 )
 
 type Stock struct {
-	Id               string `json:"id"`
-	CreateAt         int64  `json:"create_at"`
-	WarehouseID      string `json:"warehouse_id"`       // NOT NULL
-	ProductVariantID string `json:"product_variant_id"` // NOT NULL
-	Quantity         int    `json:"quantity"`           // DEFAULT 0
+	Id               string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt         int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	WarehouseID      string `json:"warehouse_id" gorm:"type:uuid;column:WarehouseID;index:warehouseid_productvariantid_key"`            // NOT NULL
+	ProductVariantID string `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID;index:warehouseid_productvariantid_key"` // NOT NULL
+	Quantity         int    `json:"quantity" gorm:"check:Quantity >= 0;column:Quantity"`                                                // DEFAULT 0
 
-	AvailableQuantity int             `json:"-" db:"-"` // this field will be populated in same queries
-	warehouse         *WareHouse      `db:"-"`          // this foreign field is populated with select related data
-	productVariant    *ProductVariant `db:"-"`          // this foreign field is populated with select related data
+	AvailableQuantity int             `json:"-" gorm:"-"` // this field will be populated in same queries
+	warehouse         *WareHouse      `gorm:"-"`          // this foreign field is populated with select related data
+	productVariant    *ProductVariant `gorm:"-"`          // this foreign field is populated with select related data
+}
+
+func (s *Stock) GetWarehouse() *WareHouse            { return s.warehouse }
+func (s *Stock) SetWarehouse(w *WareHouse)           { s.warehouse = w }
+func (s *Stock) GetProductVariant() *ProductVariant  { return s.productVariant }
+func (s *Stock) SetProductVariant(p *ProductVariant) { s.productVariant = p }
+func (c *Stock) BeforeCreate(_ *gorm.DB) error       { c.commonPre(); return c.IsValid() }
+func (c *Stock) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent updating
+	return c.IsValid()
+}
+func (c *Stock) TableName() string { return StockTableName }
+
+func (s *Stock) IsValid() *AppError {
+	if !IsValidId(s.WarehouseID) {
+		return NewAppError("Stock.IsValid", "model.stock.is_valid.warehouse_id.app_error", nil, "please provide valid warehouse id", http.StatusBadRequest)
+	}
+	if !IsValidId(s.ProductVariantID) {
+		return NewAppError("Stock.IsValid", "model.stock.is_valid.product_variant_id.app_error", nil, "please provide valid product variant id", http.StatusBadRequest)
+	}
+
+	return nil
 }
 
 // StockFilterForChannelOption is used by a filter function at store/sqlstore/channel/channel_store.go
 type StockFilterForChannelOption struct {
-	ChannelID string
-
-	Id               squirrel.Sqlizer // WHERE Id ...
-	WarehouseID      squirrel.Sqlizer // WHERE WarehouseID ...
-	ProductVariantID squirrel.Sqlizer // WHERE ProductVariantID ...
+	ChannelID  string
+	Conditions squirrel.Sqlizer
 
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
 
@@ -43,11 +66,6 @@ type StockFilterForChannelOption struct {
 
 // StockFilterOption is used for build squirrel sql queries
 type StockFilterOption struct {
-	// Id               squirrel.Sqlizer
-	// WarehouseID      squirrel.Sqlizer
-	// ProductVariantID squirrel.Sqlizer
-	// Quantity         squirrel.Sqlizer
-
 	Conditions squirrel.Sqlizer // all stock's native field lookup should be put here
 
 	Warehouse_ShippingZone_countries squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
@@ -71,7 +89,9 @@ type StockFilterOption struct {
 
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries
+	// NOTE: only apply if `Transaction` field is set
 	LockForUpdate bool
+	Transaction   *gorm.DB
 	// adds something after `FOR UPDATE` to the end of sql queries.
 	// It tells the database to lock accesses to specific rows instead of both selecting rows and relative rows (foreign key rows)
 	//
@@ -99,7 +119,9 @@ type StockFilterForCountryAndChannel struct {
 
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries
+	// NOTE: Ony apply if `Transaction` field is set
 	LockForUpdate bool
+	Transaction   *gorm.DB
 	// adds something after `FOR UPDATE` to the end of sql queries.
 	// It tells the database to lock accesses to specific rows instead of both selecting rows and relative rows (foreign key rows)
 	//
@@ -120,48 +142,10 @@ func (s Stocks) DeepCopy() Stocks {
 	return lo.Map(s, func(st *Stock, _ int) *Stock { return st.DeepCopy() })
 }
 
-func (s *Stock) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.stock.is_valid.%s.app_error",
-		"stock_id=",
-		"Stock.IsValid",
-	)
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
-	if s.CreateAt == 0 {
-		return outer("create_at", &s.Id)
-	}
-	if !IsValidId(s.WarehouseID) {
-		return outer("warehouse_id", &s.Id)
-	}
-	if !IsValidId(s.ProductVariantID) {
-		return outer("product_variant_id", &s.Id)
-	}
-
-	return nil
-}
-
-func (s *Stock) ToJSON() string {
-	return ModelToJson(s)
-}
-
-func (s *Stock) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-	s.CreateAt = GetMillis()
-	s.commonPre()
-}
-
 func (s *Stock) commonPre() {
 	if s.Quantity < 0 {
 		s.Quantity = 0
 	}
-}
-
-func (s *Stock) PreUpdate() {
-	s.commonPre()
 }
 
 func (s *Stock) DeepCopy() *Stock {
@@ -170,26 +154,9 @@ func (s *Stock) DeepCopy() *Stock {
 	if s.warehouse != nil {
 		res.warehouse = s.warehouse.DeepCopy()
 	}
-
 	if s.productVariant != nil {
 		res.productVariant = s.productVariant.DeepCopy()
 	}
 
 	return &res
-}
-
-func (s *Stock) GetWarehouse() *WareHouse {
-	return s.warehouse
-}
-
-func (s *Stock) SetWarehouse(w *WareHouse) {
-	s.warehouse = w
-}
-
-func (s *Stock) GetProductVariant() *ProductVariant {
-	return s.productVariant
-}
-
-func (s *Stock) SetProductVariant(p *ProductVariant) {
-	s.productVariant = p
 }

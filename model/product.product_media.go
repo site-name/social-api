@@ -34,8 +34,12 @@ type ProductMedia struct {
 }
 
 func (c *ProductMedia) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *ProductMedia) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *ProductMedia) TableName() string             { return ProductMediaTableName }
+func (c *ProductMedia) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent updating
+	return c.IsValid()
+}
+func (c *ProductMedia) TableName() string { return ProductMediaTableName }
 
 type ProductMedias []*ProductMedia
 

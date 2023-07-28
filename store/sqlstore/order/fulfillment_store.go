@@ -105,9 +105,10 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(transaction *gorm.DB, option *mo
 }
 
 // GetByOption returns 1 fulfillment, filtered by given option
-func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
-	if transaction == nil {
-		transaction = fs.GetMaster()
+func (fs *SqlFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+	runner := fs.GetMaster()
+	if option.Transaction != nil {
+		runner = option.Transaction
 	}
 
 	var (
@@ -119,12 +120,12 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.F
 		scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
 	}
 
-	queryString, args, err := fs.commonQueryBuild(transaction, option).ToSql()
+	queryString, args, err := fs.commonQueryBuild(option.Transaction, option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	err = transaction.Raw(queryString, args...).Row().Scan(scanFields)
+	err = runner.Raw(queryString, args...).Row().Scan(scanFields)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.NewErrNotFound(model.FulfillmentTableName, "option")
@@ -140,17 +141,18 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.F
 }
 
 // FilterByOption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
-	if transaction == nil {
-		transaction = fs.GetMaster()
+func (fs *SqlFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+	runner := fs.GetMaster()
+	if option.Transaction != nil {
+		runner = option.Transaction
 	}
 
-	queryString, args, err := fs.commonQueryBuild(transaction, option).ToSql()
+	queryString, args, err := fs.commonQueryBuild(option.Transaction, option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := transaction.Raw(queryString, args...).Rows()
+	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}

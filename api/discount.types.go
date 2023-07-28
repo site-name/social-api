@@ -115,9 +115,10 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 	listings, appErr := embedCtx.App.Srv().
 		DiscountService().
 		SaleChannelListingsByOptions(&model.SaleChannelListingFilterOption{
-			SaleID:    squirrel.Eq{model.SaleChannelListingTableName + ".SaleID": saleIDs},
-			ChannelID: squirrel.Eq{model.SaleChannelListingTableName + ".ChannelID": channelIDs},
-			// SelectRelatedChannel: true,
+			Conditions: squirrel.Eq{
+				model.SaleChannelListingTableName + ".SaleID":    saleIDs,
+				model.SaleChannelListingTableName + ".ChannelID": channelIDs,
+			},
 		})
 	if appErr != nil {
 		for idx := range saleIDChannelIDPairs {
@@ -146,7 +147,7 @@ func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*
 	listings, appErr := embedCtx.App.Srv().
 		DiscountService().
 		SaleChannelListingsByOptions(&model.SaleChannelListingFilterOption{
-			SaleID: squirrel.Eq{model.SaleChannelListingTableName + ".SaleID": saleIDs},
+			Conditions: squirrel.Eq{model.SaleChannelListingTableName + ".SaleID": saleIDs},
 		})
 	if appErr != nil {
 		for idx := range saleIDs {
@@ -213,7 +214,7 @@ func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*da
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	orderDiscounts, appErr := embedCtx.App.Srv().DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-		OrderID: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": orderIDs},
+		Conditions: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {
@@ -477,8 +478,10 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 
 	voucherChannelListings, appErr := embedCtx.App.Srv().DiscountService().
 		VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
-			VoucherID: squirrel.Eq{model.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
-			ChannelID: squirrel.Eq{model.VoucherChannelListingTableName + ".ChannelID": channelIDs},
+			Conditions: squirrel.Eq{
+				model.VoucherChannelListingTableName + ".VoucherID": voucherIDs,
+				model.VoucherChannelListingTableName + ".ChannelID": channelIDs,
+			},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -506,7 +509,7 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	voucherChannelListings, appErr := embedCtx.App.Srv().DiscountService().
 		VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
-			VoucherID: squirrel.Eq{model.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
+			Conditions: squirrel.Eq{model.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
 		})
 	if appErr != nil {
 		for idx := range voucherIDs {

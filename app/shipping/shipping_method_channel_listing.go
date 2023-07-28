@@ -24,8 +24,8 @@ func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *model.Sh
 // Prepare mapping shipping method to price from channel listings
 func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError) {
 	listings, appErr := a.ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethods.IDs()},
-		ChannelSlug:      squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
+		Conditions:  squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethods.IDs()},
+		ChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
 	})
 	if appErr != nil {
 		return nil, appErr

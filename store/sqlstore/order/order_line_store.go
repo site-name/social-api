@@ -4,7 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,46 +14,6 @@ type SqlOrderLineStore struct {
 
 func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 	return &SqlOrderLineStore{sqlStore}
-}
-
-func (ols *SqlOrderLineStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"OrderID",
-		"VariantID",
-		"ProductName",
-		"VariantName",
-		"TranslatedProductName",
-		"TranslatedVariantName",
-		"ProductSku",
-		"ProductVariantID",
-		"IsShippingRequired",
-		"IsGiftcard",
-		"Quantity",
-		"QuantityFulfilled",
-		"Currency",
-		"UnitDiscountAmount",
-		"UnitDiscountType",
-		"UnitDiscountReason",
-		"UnitPriceNetAmount",
-		"UnitDiscountValue",
-		"UnitPriceGrossAmount",
-		"TotalPriceNetAmount",
-		"TotalPriceGrossAmount",
-		"UnDiscountedUnitPriceGrossAmount",
-		"UnDiscountedUnitPriceNetAmount",
-		"UnDiscountedTotalPriceGrossAmount",
-		"UnDiscountedTotalPriceNetAmount",
-		"TaxRate",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (ols *SqlOrderLineStore) ScanFields(orderLine *model.OrderLine) []interface{} {
@@ -292,7 +251,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			allocations, err = ols.
 				Allocation().
 				FilterByOption(&model.AllocationFilterOption{
-					OrderLineID: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLines.IDs()},
+					Conditions: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLines.IDs()},
 				})
 			if err != nil {
 				return nil, err

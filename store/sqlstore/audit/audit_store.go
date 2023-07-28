@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -14,25 +13,6 @@ type SqlAuditStore struct {
 
 func NewSqlAuditStore(sqlStore store.Store) store.AuditStore {
 	return &SqlAuditStore{sqlStore}
-}
-
-func (s SqlAuditStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"UserId",
-		"Action",
-		"ExtraInfo",
-		"IpAddress",
-		"SessionId",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (s *SqlAuditStore) Save(audit *model.Audit) error {

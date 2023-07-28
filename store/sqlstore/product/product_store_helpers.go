@@ -426,7 +426,7 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 	}
 
 	var attributeValues model.AttributeValues
-	err = ps.GetReplica().Select(&attributeValues, "SELECT * FROM "+model.AttributeValueTableName)
+	err = ps.GetReplica().Find(&attributeValues).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attribute values")
 	}
@@ -469,7 +469,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 
 	attributeValues, err := ps.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
 		SelectRelatedAttribute: true,
-		Extra:                  attributeQuery,
+		Conditions:             attributeQuery,
 	})
 	if err != nil {
 		return err
@@ -481,7 +481,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		valuesMap     = map[string]map[float64]string{}
 	)
 	for _, attrValue := range attributeValues {
-		attributesMap[attrValue.GetAttribute().Slug] = attrValue.AttributeID
+		attributesMap[attrValue.Attribute.Slug] = attrValue.AttributeID
 
 		// we can parse strings into float64 here since:
 		// all found attribute values have parent attributes's input type is 'numeric'
@@ -489,7 +489,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		if err != nil {
 			return errors.Wrap(err, "failed to parse attribute value's name to float64")
 		}
-		valuesMap[attrValue.GetAttribute().Slug][numericName] = attrValue.Id
+		valuesMap[attrValue.Attribute.Slug][numericName] = attrValue.Id
 	}
 
 	for _, vlRange := range filterValue {
@@ -526,7 +526,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 
 func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filterRange timeRangeList, queries *safeMap, isDate bool) error {
 	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
-		Slug:                           squirrel.Eq{model.AttributeTableName + ".Slug": filterRange.Slugs()},
+		Conditions:                     squirrel.Eq{model.AttributeTableName + ".Slug": filterRange.Slugs()},
 		PrefetchRelatedAttributeValues: true,
 	})
 	if err != nil {
@@ -543,7 +543,7 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 	for _, attr := range attributes {
 		values := map[*time.Time]string{}
 
-		for _, attrValue := range attr.GetAttributeValues() {
+		for _, attrValue := range attr.AttributeValues {
 			values[attrValue.Datetime] = attrValue.Id
 		}
 
@@ -588,8 +588,10 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue booleanList, queries *safeMap) error {
 	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
 		PrefetchRelatedAttributeValues: true,
-		Slug:                           squirrel.Eq{model.AttributeTableName + ".Slug": filterValue.Slugs()},
-		InputType:                      squirrel.Eq{model.AttributeTableName + ".InputType": model.AttributeInputTypeBoolean},
+		Conditions: squirrel.Eq{
+			model.AttributeTableName + ".Slug":      filterValue.Slugs(),
+			model.AttributeTableName + ".InputType": model.AttributeInputTypeBoolean,
+		},
 	})
 	if err != nil {
 		return err
@@ -605,7 +607,7 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	for _, attr := range attributes {
 		values := map[bool]string{}
 
-		for _, attrValue := range attr.GetAttributeValues() {
+		for _, attrValue := range attr.AttributeValues {
 			if attrValue.Boolean != nil {
 				values[*attrValue.Boolean] = attrValue.Id
 			}
@@ -728,14 +730,14 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	var products model.Products
-	err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
 	if err != nil {
 		slog.Error("failed to find products", slog.Err(err))
 		return query
 	}
 
 	productVariantQuery := ps.GetQueryBuilder().
-		Select(ps.ProductVariant().ModelFields(model.ProductVariantTableName + ".")...).
+		Select(model.ProductVariantTableName + ".*").
 		From(model.ProductVariantTableName).
 		Where(squirrel.Eq{"ProductVariants.ProductID": products.IDs()})
 
@@ -768,7 +770,7 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	var variants model.ProductVariants
-	err = ps.GetReplica().Select(&variants, queryString, args...)
+	err = ps.GetReplica().Raw(queryString, args...).Scan(&variants).Error
 	if err != nil {
 		slog.Error("failed to find product variants", slog.Err(err))
 		return query

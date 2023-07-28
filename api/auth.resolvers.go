@@ -134,7 +134,7 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 
 	// validate if given email already used
 	userWithEmail, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Email: squirrel.Eq{model.UserTableName + ".Email": args.NewEmail},
+		Conditions: squirrel.Eq{model.UserTableName + ".Email": args.NewEmail},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -187,7 +187,7 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	}
 
 	userByEmail, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Email: squirrel.Eq{model.UserTableName + ".Email": extra.NewEmail},
+		Conditions: squirrel.Eq{model.UserTableName + ".Email": extra.NewEmail},
 	})
 	if appErr != nil {
 		return nil, appErr

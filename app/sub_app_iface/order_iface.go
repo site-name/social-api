@@ -113,7 +113,7 @@ type OrderService interface {
 	// FulfillmentTrackingUpdated
 	FulfillmentTrackingUpdated(fulfillment *model.Fulfillment, user *model.User, _ interface{}, trackingNumber string, manager interfaces.PluginManagerInterface) *model.AppError
 	// FulfillmentsByOption returns a list of fulfillments be given options
-	FulfillmentsByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError)
+	FulfillmentsByOption(option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError)
 	// Get prices of variants belonging to the discounted specific products.
 	//
 	// Specific products are products, collections and categories.
@@ -122,9 +122,6 @@ type OrderService interface {
 	GetPricesOfDiscountedSpecificProduct(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*goprices.Money, *model.AppError)
 	// GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
 	GetDiscountedLines(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError)
-	// GetOrCreateFulfillment take a filtering option, trys finding a fulfillment with given option.
-	// If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
-	GetOrCreateFulfillment(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError)
 	// GetOrderCountry Return country to which order will be shipped
 	GetOrderCountry(ord *model.Order) (model.CountryCode, *model.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
@@ -275,8 +272,6 @@ type OrderService interface {
 	SendOrderConfirmed(orDer model.Order, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface)
 	// SendPaymentConfirmation sends notification with the payment confirmation
 	SendPaymentConfirmation(orDer model.Order, manager interfaces.PluginManagerInterface) *model.AppError
-	// SetGiftcardUser Set user when the gift card is used for the first time.
-	SetGiftcardUser(giftCard *model.GiftCard, usedByUser *model.User, usedByEmail string)
 	// UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 	//
 	// `reason`, `valueType` can be empty. `value` can be nil

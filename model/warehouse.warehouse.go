@@ -1,18 +1,12 @@
 package model
 
 import (
-	"unicode/utf8"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
-)
-
-// max lengths for some warehouse's fields
-const (
-	WAREHOUSE_NAME_MAX_LENGTH                     = 250
-	WAREHOUSE_SLUG_MAX_LENGTH                     = 255
-	WAREHOUSE_CLICK_AND_COLLECT_OPTION_MAX_LENGTH = 30
+	"gorm.io/gorm"
 )
 
 type WarehouseClickAndCollectOption string
@@ -35,25 +29,30 @@ var ValidWarehouseClickAndCollectOptionMap = map[WarehouseClickAndCollectOption]
 }
 
 type WareHouse struct {
-	Id                    string                         `json:"id"`
-	Name                  string                         `json:"name"`                     // unique
-	Slug                  string                         `json:"slug"`                     // unique
-	AddressID             *string                        `json:"address_id"`               // nullable
-	Email                 string                         `json:"email"`                    //
-	ClickAndCollectOption WarehouseClickAndCollectOption `json:"click_and_collect_option"` // default to "disabled"
-	IsPrivate             *bool                          `json:"is_private"`               // default *true
+	Id                    string                         `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name                  string                         `json:"name" gorm:"type:varchar(250);column:Name"`
+	Slug                  string                         `json:"slug" gorm:"type:varchar(255);column:Slug;unique"`                              // unique
+	AddressID             *string                        `json:"address_id" gorm:"type:uuid;column:AddressID"`                                  // nullable
+	Email                 string                         `json:"email" gorm:"type:varchar(254);column:Email"`                                   //
+	ClickAndCollectOption WarehouseClickAndCollectOption `json:"click_and_collect_option" gorm:"column:ClickAndCollectOption;type:varchar(30)"` // default to "disabled"
+	IsPrivate             *bool                          `json:"is_private" gorm:"default:true;column:IsPrivate"`                               // default *true
+	CreateAt              int64                          `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	ModelMetadata
 
 	address       *Address      `json:"-" gorm:"-"` // this field hold data from select related queries
 	ShippingZones ShippingZones `json:"-" gorm:"many2many:WarehouseShippingZones"`
 }
 
+func (c *WareHouse) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *WareHouse) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *WareHouse) TableName() string             { return WarehouseTableName }
+
 // WarehouseFilterOption is used to build squirrel queries
 type WarehouseFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	ShippingZonesCountries squirrel.Sqlizer // INNER JOIN warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Countries ...
-	ShippingZonesId        squirrel.Sqlizer // INNER JOIN warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Id ...
+	ShippingZonesCountries squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Countries ...
+	ShippingZonesId        squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Id ...
 
 	// NOTE: If set, store will use OR ILIKE to check it against:
 	//
@@ -66,13 +65,8 @@ type WarehouseFilterOption struct {
 	Distinct              bool // SELECT DISTINCT
 }
 
-func (w *WareHouse) GetAddress() *Address {
-	return w.address
-}
-
-func (w *WareHouse) SetAddress(a *Address) {
-	w.address = a
-}
+func (w *WareHouse) GetAddress() *Address  { return w.address }
+func (w *WareHouse) SetAddress(a *Address) { w.address = a }
 
 type Warehouses []*WareHouse
 
@@ -85,44 +79,22 @@ func (w *WareHouse) String() string {
 }
 
 func (w *WareHouse) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.warehouse.is_valid.%s.app_error",
-		"warehouse_id=",
-		"WareHouse.IsValid",
-	)
-	if !IsValidId(w.Id) {
-		return outer("id", nil)
-	}
 	if w.AddressID != nil && !IsValidId(*w.AddressID) {
-		return outer("address_id", nil)
-	}
-	if utf8.RuneCountInString(w.Name) > WAREHOUSE_NAME_MAX_LENGTH {
-		return outer("name", &w.Id)
-	}
-	if len(w.Slug) > WAREHOUSE_SLUG_MAX_LENGTH {
-		return outer("slug", &w.Id)
+		return NewAppError("Warehouse.IsValid", "model.warehouse.is_valid.address_id.app_error", nil, "please provide valid address id", http.StatusBadRequest)
 	}
 	if w.Email != "" && !IsValidEmail(w.Email) {
-		return outer("email", &w.Id)
+		return NewAppError("Warehouse.IsValid", "model.warehouse.is_valid.email.app_error", nil, "please provide valid email", http.StatusBadRequest)
 	}
-	if len(w.ClickAndCollectOption) > WAREHOUSE_CLICK_AND_COLLECT_OPTION_MAX_LENGTH ||
-		ValidWarehouseClickAndCollectOptionMap[w.ClickAndCollectOption] == "" {
-		return outer("click_and_collect_option", &w.Id)
-	}
-	if w.IsPrivate == nil { // this must be set to true if is left not set
-		return outer("is_private", &w.Id)
+	if !w.ClickAndCollectOption.IsValid() {
+		return NewAppError("Warehouse.IsValid", "model.warehouse.is_valid.click_and_collect_option.app_error", nil, "please provide valid click and collect option", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
 func (w *WareHouse) PreSave() {
-	if w.Id == "" {
-		w.Id = NewId()
-	}
-	w.Slug = slug.Make(w.Name)
-	w.ModelMetadata.PopulateFields()
 	w.commonPre()
+	w.Slug = slug.Make(w.Name)
 }
 
 func (w *WareHouse) commonPre() {
@@ -133,27 +105,24 @@ func (w *WareHouse) commonPre() {
 	if w.IsPrivate == nil {
 		w.IsPrivate = NewPrimitive(true)
 	}
+	w.ModelMetadata.PopulateFields()
+
 }
 
 func (w *WareHouse) PreUpdate() {
-	w.ModelMetadata.PopulateFields()
 	w.commonPre()
-}
-
-func (w *WareHouse) ToJSON() string {
-	return ModelToJson(w)
+	w.CreateAt = 0 // prevent updating
 }
 
 func (w *WareHouse) DeepCopy() *WareHouse {
 	res := *w
 
-	if w.AddressID != nil {
-		res.AddressID = NewPrimitive(*w.AddressID)
+	res.AddressID = CopyPointer(w.AddressID)
+	res.IsPrivate = CopyPointer(w.IsPrivate)
+
+	if w.address != nil {
+		res.address = w.address.DeepCopy()
 	}
-	if w.IsPrivate != nil {
-		res.IsPrivate = NewPrimitive(*w.IsPrivate)
-	}
-	res.address = w.address.DeepCopy()
 	res.ShippingZones = w.ShippingZones.DeepCopy()
 	return &res
 }

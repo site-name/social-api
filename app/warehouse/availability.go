@@ -30,7 +30,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks model.Stocks) (int, *mode
 	}
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		StockID: squirrel.Eq{model.AllocationTableName + ".StockID": stockIDs},
+		Conditions: squirrel.Eq{model.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -254,7 +254,7 @@ type structObject struct {
 // :raises InsufficientStock: when there is not enough available items for a variant.
 func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model.AppError) {
 	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-		VariantID:                         squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+		Conditions:                        squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 		SelectRelatedChannel:              true,
 		AnnotatePreorderQuantityAllocated: true,
 		AnnotateAvailablePreorderQuantity: true,

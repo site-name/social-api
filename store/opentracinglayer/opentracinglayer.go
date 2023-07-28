@@ -3502,7 +3502,7 @@ func (s *OpenTracingLayerFileInfoStore) Get(id string, fromMaster bool) (*model.
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetWithOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -3511,7 +3511,7 @@ func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, op
 	}()
 
 	defer span.Finish()
-	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
+	result, err := s.FileInfoStore.GetWithOptions(opt)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3623,7 +3623,7 @@ func (s *OpenTracingLayerFulfillmentStore) BulkDeleteFulfillments(transaction *g
 	return err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3632,7 +3632,7 @@ func (s *OpenTracingLayerFulfillmentStore) FilterByOption(transaction *gorm.DB, 
 	}()
 
 	defer span.Finish()
-	result, err := s.FulfillmentStore.FilterByOption(transaction, option)
+	result, err := s.FulfillmentStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3659,7 +3659,7 @@ func (s *OpenTracingLayerFulfillmentStore) Get(id string) (*model.Fulfillment, e
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3668,7 +3668,7 @@ func (s *OpenTracingLayerFulfillmentStore) GetByOption(transaction *gorm.DB, opt
 	}()
 
 	defer span.Finish()
-	result, err := s.FulfillmentStore.GetByOption(transaction, option)
+	result, err := s.FulfillmentStore.GetByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6876,6 +6876,24 @@ func (s *OpenTracingLayerShippingZoneStore) Get(shippingZoneID string) (*model.S
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneStore.ToggleRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, relations, delete)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {

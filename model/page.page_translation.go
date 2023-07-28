@@ -9,8 +9,8 @@ import (
 // unique together language_code, page_id
 type PageTranslation struct {
 	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode;uniqueIndex:languagecode_pageid_key"` // unique with page_id
-	PageID       string           `json:"page_id" gorm:"type:uuid;column:PageID;uniqueIndex:languagecode_pageid_key"`
+	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode;index:languagecode_pageid_key"` // unique with page_id
+	PageID       string           `json:"page_id" gorm:"type:uuid;column:PageID;index:languagecode_pageid_key"`
 	Title        string           `json:"title" gorm:"type:varchar(255);column:Title"`
 	Content      *StringInterface `json:"content" gorm:"type:jsonb;column:Content"`
 	SeoTranslation

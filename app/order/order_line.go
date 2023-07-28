@@ -58,7 +58,7 @@ func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model.AppError) {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -139,7 +139,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 
 	// check if there is a digital content accompanies order line's product variant:
 	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
-		ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
+		Conditions: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {

@@ -95,12 +95,11 @@ func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney
 	if money == nil {
 		return nil
 	}
-	tax, _ := money.Tax()
 	return &TaxedMoney{
 		Currency: money.Currency,
 		Gross:    SystemMoneyToGraphqlMoney(money.Gross),
 		Net:      SystemMoneyToGraphqlMoney(money.Net),
-		Tax:      SystemMoneyToGraphqlMoney(tax),
+		Tax:      SystemMoneyToGraphqlMoney(money.Tax()),
 	}
 }
 

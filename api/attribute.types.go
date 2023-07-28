@@ -49,7 +49,7 @@ func SystemAttributeValueToGraphqlAttributeValue(attrValue *model.AttributeValue
 		attributeID: attrValue.AttributeID,
 	}
 
-	if attr := attrValue.GetAttribute(); attr != nil && attrValue.Datetime != nil {
+	if attr := attrValue.Attribute; attr != nil && attrValue.Datetime != nil {
 		switch attr.InputType {
 		case model.AttributeInputTypeDate:
 			res.Date = &Date{DateTime{*attrValue.Datetime}}
@@ -318,7 +318,7 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 		Srv().
 		AttributeService().
 		AttributesByOption(&model.AttributeFilterOption{
-			Id: squirrel.Eq{model.AttributeTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.AttributeTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -345,7 +345,7 @@ func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []stri
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeIDs},
+			Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeIDs},
 		})
 	if appErr != nil {
 		for idx := range attributeIDs {
@@ -374,7 +374,7 @@ func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			Id: squirrel.Eq{model.AttributeValueTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.AttributeValueTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {

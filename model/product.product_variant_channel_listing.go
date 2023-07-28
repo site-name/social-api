@@ -38,6 +38,7 @@ func (c *ProductVariantChannelListing) BeforeCreate(_ *gorm.DB) error {
 }
 func (c *ProductVariantChannelListing) BeforeUpdate(_ *gorm.DB) error {
 	c.commonPre()
+	c.CreateAt = 0 // prevent updating
 	return c.IsValid()
 }
 func (c *ProductVariantChannelListing) TableName() string {

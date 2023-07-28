@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -41,56 +40,45 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	// note: we are providing field names explicitly here to maintain order of columns (needed when using raw queries)
 	us.usersQuery = us.
 		GetQueryBuilder().
-		Select(us.ModelFields("u.")...).
+		Select(
+			"u.Id",
+			"u.Email",
+			"u.Username",
+			"u.FirstName",
+			"u.LastName",
+			"u.DefaultShippingAddressID",
+			"u.DefaultBillingAddressID",
+			"u.Password",
+			"u.AuthData",
+			"u.AuthService",
+			"u.EmailVerified",
+			"u.Nickname",
+			"u.Roles",
+			"u.Props",
+			"u.NotifyProps",
+			"u.LastPasswordUpdate",
+			"u.LastPictureUpdate",
+			"u.FailedAttempts",
+			"u.Locale",
+			"u.Timezone",
+			"u.MfaActive",
+			"u.MfaSecret",
+			"u.CreateAt",
+			"u.UpdateAt",
+			"u.DeleteAt",
+			"u.IsActive",
+			"u.Note",
+			"u.JwtTokenKey",
+			"u.LastActivityAt",
+			"u.TermsOfServiceId",
+			"u.TermsOfServiceCreateAt",
+			"u.DisableWelcomeEmail",
+			"u.Metadata",
+			"u.PrivateMetadata",
+		).
 		From(model.UserTableName + " u")
 
 	return us
-}
-
-func (us *SqlUserStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Email",
-		"Username",
-		"FirstName",
-		"LastName",
-		"DefaultShippingAddressID",
-		"DefaultBillingAddressID",
-		"Password",
-		"AuthData",
-		"AuthService",
-		"EmailVerified",
-		"Nickname",
-		"Roles",
-		"Props",
-		"NotifyProps",
-		"LastPasswordUpdate",
-		"LastPictureUpdate",
-		"FailedAttempts",
-		"Locale",
-		"Timezone",
-		"MfaActive",
-		"MfaSecret",
-		"CreateAt",
-		"UpdateAt",
-		"DeleteAt",
-		"IsActive",
-		"Note",
-		"JwtTokenKey",
-		"LastActivityAt",
-		"TermsOfServiceId",
-		"TermsOfServiceCreateAt",
-		"DisableWelcomeEmail",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
@@ -775,29 +763,21 @@ func (us *SqlUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.
 func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions) squirrel.SelectBuilder {
 	query := s.
 		GetQueryBuilder().
-		Select(s.ModelFields(model.UserTableName + ".")...).
-		From(model.UserTableName)
+		Select(model.UserTableName + ".*").
+		From(model.UserTableName).Where(options.Conditions)
 
-	for _, opt := range []squirrel.Sqlizer{
-		options.Id,
-		options.Email,
-		options.Username,
-		options.FirstName,
-		options.LastName,
-		options.OrderID,
-		options.AuthData,
-		options.AuthService,
-		options.Extra,
-	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+	if options.OrderID != nil {
+		query = query.Where(options.OrderID)
 	}
 
 	if options.HasNoOrder {
 		query = query.
 			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
 			Where("Orders.UserID IS NULL")
+	} else if options.OrderID != nil {
+		query = query.
+			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+			Where(options.OrderID)
 	}
 	if options.ExcludeBoardMembers {
 		query = query.

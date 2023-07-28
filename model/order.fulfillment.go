@@ -81,7 +81,8 @@ type FulfillmentFilterOption struct {
 	HaveNoFulfillmentLines bool
 
 	SelectRelatedOrder bool // if true, tells store to select related order also
-	SelectForUpdate    bool // if true, add `FOR UPDATE`to the end of sql queries.
+	SelectForUpdate    bool // if true, add `FOR UPDATE`to the end of sql queries. NOTE: Only applied when Transaction field is set
+	Transaction        *gorm.DB
 }
 
 type Fulfillments []*Fulfillment

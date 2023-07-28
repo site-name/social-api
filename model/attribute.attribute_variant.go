@@ -20,12 +20,12 @@ type AttributeVariant struct {
 
 func (a *AttributeVariant) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AttributeVariant) BeforeUpdate(_ *gorm.DB) error { return a.IsValid() }
-func (*AttributeVariant) TableName() string               { return AttributeVariantTableName }
+func (a *AttributeVariant) TableName() string             { return AttributeVariantTableName }
 
 // AttributeVariantFilterOption is used to find `AttributeVariant`.
 type AttributeVariantFilterOption struct {
 	Conditions                   squirrel.Sqlizer
-	AttributeVisibleInStoreFront *bool
+	AttributeVisibleInStoreFront *bool // INNER JOIN Attributes ON ... WHERE Attributes.VisibleInStoreFront ...
 }
 
 func (a *AttributeVariant) IsValid() *AppError {
@@ -51,7 +51,7 @@ type AssignedVariantAttribute struct {
 
 func (a *AssignedVariantAttribute) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AssignedVariantAttribute) BeforeUpdate(_ *gorm.DB) error { return a.IsValid() }
-func (*AssignedVariantAttribute) TableName() string               { return AssignedVariantAttributeTableName }
+func (a *AssignedVariantAttribute) TableName() string             { return AssignedVariantAttributeTableName }
 
 // AssignedVariantAttributeFilterOption is used for lookup, if cannot found, creating new instance
 type AssignedVariantAttributeFilterOption struct {
@@ -104,8 +104,6 @@ func (a *AssignedVariantAttributeValue) IsValid() *AppError {
 
 func (a *AssignedVariantAttributeValue) DeepCopy() *AssignedVariantAttributeValue {
 	res := *a
-	if a.SortOrder != nil {
-		res.SortOrder = NewPrimitive(*a.SortOrder)
-	}
+	res.SortOrder = CopyPointer(a.SortOrder)
 	return &res
 }

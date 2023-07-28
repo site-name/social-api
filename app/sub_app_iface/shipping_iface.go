@@ -38,4 +38,8 @@ type ShippingService interface {
 	DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
 	UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError)
 	DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError)
+	// NOTE: relations must be []*model.Channel or []*model.Warehouse
+	AddShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError 
+	// NOTE: relations must be []*model.Channel or []*model.Warehouse
+	RemoveShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError
 }

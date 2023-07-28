@@ -3,7 +3,6 @@ package file
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -14,26 +13,6 @@ type SqlUploadSessionStore struct {
 
 func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
 	return &SqlUploadSessionStore{sqlStore}
-}
-
-func (s *SqlUploadSessionStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Type",
-		"CreateAt",
-		"UserID",
-		"FileName",
-		"Path",
-		"FileSize",
-		"FileOffset",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {

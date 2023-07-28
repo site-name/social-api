@@ -10,7 +10,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
 
@@ -151,14 +150,6 @@ type (
 		FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
 		GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error)
 	}
-	// ShopStore interface {
-	// 	ModelFields(prefix string) util.AnyArray[string]
-	// 	ScanFields(shop *model.Shop) []interface{}
-	// 	Upsert(shop *model.Shop) (*model.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given model.
-	// 	Get(shopID string) (*model.Shop, error)                                  // Get finds a shop with given id and returns it
-	// 	FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) // FilterByOptions finds and returns shops with given options
-	// 	GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error)      // GetByOptions finds and returns 1 shop with given options
-	// }
 	ShopTranslationStore interface {
 		Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
 		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
@@ -194,7 +185,7 @@ type UploadSessionStore interface {
 type FileInfoStore interface {
 	Upsert(info *model.FileInfo) (*model.FileInfo, error)
 	Get(id string, fromMaster bool) (*model.FileInfo, error)
-	GetWithOptions(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) // Leave perPage and page nil to get all result
+	GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) // Leave perPage and page nil to get all result
 	InvalidateFileInfosForPostCache(postID string, deleted bool)
 	PermanentDelete(fileID string) error
 	PermanentDeleteBatch(endTime int64, limit int64) (int64, error)
@@ -212,7 +203,6 @@ type FileInfoStore interface {
 // model
 type (
 	AttributeStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Delete(ids ...string) (int64, error)
 		ScanFields(attr *model.Attribute) []interface{}
 		Upsert(attr *model.Attribute) (*model.Attribute, error)                       // Upsert inserts or updates given model then returns it
@@ -224,7 +214,6 @@ type (
 	}
 	AttributeValueStore interface {
 		ScanFields(attributeValue *model.AttributeValue) []interface{}
-		ModelFields(prefix string) util.AnyArray[string]
 		Count(options *model.AttributeValueFilterOptions) (int64, error)
 		Delete(ids ...string) (int64, error)
 		Upsert(av *model.AttributeValue) (*model.AttributeValue, error)
@@ -235,7 +224,6 @@ type (
 	AttributeValueTranslationStore interface {
 	}
 	AssignedPageAttributeValueStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error)                                                 // Save insert given value into database then returns it with an error
 		Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error)                                                                           // Get try finding an value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error)                                                 // SaveInBulk inserts multiple values into database then returns them with an error
@@ -243,19 +231,16 @@ type (
 		UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error                                                                                  // UpdateInBulk use transaction to update all given assigned page model values
 	}
 	AssignedPageAttributeStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(assignedPageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error)          // Save inserts given assigned page model into database and returns it with an error
 		Get(id string) (*model.AssignedPageAttribute, error)                                               // Get returns an assigned page model with an error
 		GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) // GetByOption try to find an assigned page model with given option. If nothing found, creats new instance with that option and returns such value with an error
 	}
 	AttributePageStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(page *model.AttributePage) (*model.AttributePage, error)
 		Get(pageID string) (*model.AttributePage, error)
 		GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error)
 	}
 	AssignedVariantAttributeValueStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
 		Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                   // Get try finding a value with given id then returns it with an error
@@ -271,14 +256,12 @@ type (
 		FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
 	}
 	AttributeVariantStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error)
 		Get(attributeVariantID string) (*model.AttributeVariant, error)
 		GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) // GetByOption finds 1 model variant with given option.
 		FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error)
 	}
 	AssignedProductAttributeValueStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []interface{}
 		Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                              // Get try finding an instance with given id then returns the value with an error
@@ -339,7 +322,6 @@ type (
 	WarehouseStore interface {
 		Delete(transaction *gorm.DB, ids ...string) error
 		Update(warehouse *model.WareHouse) (*model.WareHouse, error)
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(wh *model.WareHouse) []interface{}
 		Save(model *model.WareHouse) (*model.WareHouse, error)                          // Save inserts given model into database then returns it.
 		FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
@@ -351,7 +333,6 @@ type (
 	}
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}
-		ModelFields(prefix string) util.AnyArray[string]
 		CountByOptions(options *model.StockFilterOption) (int32, error)
 		Get(stockID string) (*model.Stock, error)                                                                       // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
@@ -370,7 +351,6 @@ type (
 		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	PreorderAllocationStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
 		ScanFields(preorderAllocation *model.PreorderAllocation) []interface{}
 		FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
@@ -381,7 +361,7 @@ type (
 // model
 type (
 	ShippingZoneStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
+		ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
 		ScanFields(shippingZone *model.ShippingZone) []interface{}
 		Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error)
 		Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) // Upsert depends on given model zone's Id to decide update or insert the zone
@@ -390,7 +370,6 @@ type (
 		CountByOptions(options *model.ShippingZoneFilterOption) (int64, error)
 	}
 	ShippingMethodStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                                           // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                                 // Get finds and returns a model method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
@@ -401,7 +380,6 @@ type (
 	ShippingMethodPostalCodeRuleStore interface {
 		Delete(transaction *gorm.DB, ids ...string) error
 		Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error)
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(rule *model.ShippingMethodPostalCodeRule) []interface{}
 		FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error)
 	}
@@ -453,7 +431,6 @@ type (
 		FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) //
 	}
 	ProductVariantChannelListingStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(listing *model.ProductVariantChannelListing) []interface{}
 		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                  // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                              // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
@@ -466,7 +443,6 @@ type (
 		FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(variant *model.ProductVariant) []interface{}
 		Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
 		Get(id string) (*model.ProductVariant, error)                                              // Get returns a product variant with given id
@@ -487,7 +463,6 @@ type (
 		FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) // FilterByOption finds and returns product translations filtered using given options
 	}
 	ProductTypeStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error)
 		Save(productType *model.ProductType) (*model.ProductType, error)                      // Save try inserting new product type into database then returns it
 		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) // FilterProductTypesByCheckoutToken is used to check if a model requires model
@@ -504,7 +479,6 @@ type (
 		FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error)             // FilterByOption finds and returns a list of categories satisfy given option
 	}
 	ProductStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(prd *model.Product) []interface{}
 		Save(prd *model.Product) (*model.Product, error)
 		GetByOption(option *model.ProductFilterOption) (*model.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
@@ -559,7 +533,6 @@ type (
 type (
 	OrderLineStore interface {
 		ScanFields(orderLine *model.OrderLine) []interface{}
-		ModelFields(prefix string) util.AnyArray[string]
 		Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*model.OrderLine, error)                                                    // Get returns a order line with id of given id
 		BulkDelete(orderLineIDs []string) error                                                     // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
@@ -567,7 +540,6 @@ type (
 		BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(holder *model.Order) []interface{}
 		Get(id string) (*model.Order, error)                                            // Get find order in database with given id
 		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)         // FilterByOption returns a list of orders, filtered by given option
@@ -587,11 +559,11 @@ type (
 	}
 	FulfillmentStore interface {
 		ScanFields(holder *model.Fulfillment) []interface{}
-		Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
-		Get(id string) (*model.Fulfillment, error)                                                                // Get finds and return a fulfillment by given id
-		GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
-		FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
-		BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
+		Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) // Upsert depends on given fulfillment's Id to decide update or insert it
+		Get(id string) (*model.Fulfillment, error)                                               // Get finds and return a fulfillment by given id
+		GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error)           // GetByOption returns 1 fulfillment, filtered by given option
+		FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error)      // FilterByOption finds and returns a slice of fulfillments by given option
+		BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error      // BulkDeleteFulfillments deletes given fulfillments
 	}
 )
 
@@ -658,7 +630,6 @@ type (
 	DiscountSaleTranslationStore interface {
 	}
 	DiscountSaleChannelListingStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) // Save insert given instance into database then returns it
 		Get(saleChannelListingID string) (*model.SaleChannelListing, error)                   // Get finds and returns sale channel listing with given id
 		SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error)
@@ -681,7 +652,6 @@ type (
 		FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
 	}
 	DiscountVoucherStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(voucher *model.Voucher) []interface{}
 		Upsert(voucher *model.Voucher) (*model.Voucher, error)                                  // Upsert saves or updates given voucher then returns it with an error
 		Get(voucherID string) (*model.Voucher, error)                                           // Get finds a voucher with given id, then returns it with an error
@@ -713,7 +683,6 @@ type (
 // model
 type (
 	CheckoutLineStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(line *model.CheckoutLine) []interface{}
 		Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error)          // Upsert checks whether to update or insert given model line then performs according operation
 		Get(id string) (*model.CheckoutLine, error)                                    // Get returns a model line with given id
@@ -741,7 +710,6 @@ type (
 
 // channel
 type ChannelStore interface {
-	ModelFields(prefix string) util.AnyArray[string]
 	ScanFields(chanNel *model.Channel) []interface{}
 	Get(id string) (*model.Channel, error)                                      // Get returns channel by given id
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
@@ -769,7 +737,6 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
-	ModelFields(prefix string) util.AnyArray[string]
 	Save(audit *model.Audit) error
 	Get(userID string, offset int, limit int) (model.Audits, error)
 	PermanentDeleteByUser(userID string) error
@@ -823,7 +790,6 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(addr *model.Address) []interface{}
 		Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error)
 		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
@@ -836,7 +802,6 @@ type (
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
 		AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
 		ClearCaches()
-		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(user *model.User) []interface{}
 		Save(user *model.User) (*model.User, error)                               // Save takes an user struct and save into database
 		Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) // Update update given user
@@ -895,7 +860,6 @@ type (
 		UpdateTokenDisable(tokenID string) error
 	}
 	CustomerEventStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
@@ -906,7 +870,6 @@ type (
 		FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error)
 	}
 	CustomerNoteStore interface {
-		ModelFields(prefix string) util.AnyArray[string]
 		Save(note *model.CustomerNote) (*model.CustomerNote, error) // Save insert given customer note into database and returns it
 		Get(id string) (*model.CustomerNote, error)                 // Get find customer note with given id and returns it
 	}

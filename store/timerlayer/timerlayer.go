@@ -3230,10 +3230,10 @@ func (s *TimerLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileIn
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	start := timemodule.Now()
 
-	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
+	result, err := s.FileInfoStore.GetWithOptions(opt)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3341,10 +3341,10 @@ func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB
 	return err
 }
 
-func (s *TimerLayerFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.FilterByOption(transaction, option)
+	result, err := s.FulfillmentStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3373,10 +3373,10 @@ func (s *TimerLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) 
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.GetByOption(transaction, option)
+	result, err := s.FulfillmentStore.GetByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6253,6 +6253,22 @@ func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.Get", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+	start := timemodule.Now()
+
+	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, relations, delete)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.ToggleRelations", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {

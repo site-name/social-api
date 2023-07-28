@@ -344,10 +344,7 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 }
 
 func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, checkoutLineInfo model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
-	defaultValue, appErr := m.Srv.CheckoutService().BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
-	if appErr != nil {
-		return nil, appErr
-	}
+	defaultValue := m.Srv.CheckoutService().BaseCheckoutLineUnitPrice(&totalLinePrice, quantity)
 
 	var taxedMoney *goprices.TaxedMoney
 

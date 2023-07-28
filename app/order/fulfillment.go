@@ -11,8 +11,8 @@ import (
 )
 
 // FulfillmentsByOption returns a list of fulfillments be given options
-func (a *ServiceOrder) FulfillmentsByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError) {
-	fulfillments, err := a.srv.Store.Fulfillment().FilterByOption(transaction, option)
+func (a *ServiceOrder) FulfillmentsByOption(option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError) {
+	fulfillments, err := a.srv.Store.Fulfillment().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("FulfillmentsByOption", "app.model.error_finding_fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -24,8 +24,8 @@ func (a *ServiceOrder) FulfillmentsByOption(transaction *gorm.DB, option *model.
 func (a *ServiceOrder) UpsertFulfillment(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, *model.AppError) {
 	// Assign an auto incremented value as a fulfillment order.
 	if fulfillment.Id == "" {
-		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-			OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": fulfillment.OrderID},
+		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(&model.FulfillmentFilterOption{
+			Conditions: squirrel.Eq{model.FulfillmentTableName + ".OrderID": fulfillment.OrderID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError { // returns immediately if error was caused by system
@@ -61,7 +61,8 @@ func (a *ServiceOrder) UpsertFulfillment(transaction *gorm.DB, fulfillment *mode
 
 // FulfillmentByOption returns 1 fulfillment filtered using given options
 func (a *ServiceOrder) FulfillmentByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
-	fulfillment, err := a.srv.Store.Fulfillment().GetByOption(transaction, option)
+	option.Transaction = transaction
+	fulfillment, err := a.srv.Store.Fulfillment().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
@@ -71,61 +72,6 @@ func (a *ServiceOrder) FulfillmentByOption(transaction *gorm.DB, option *model.F
 	}
 
 	return fulfillment, nil
-}
-
-// GetOrCreateFulfillment take a filtering option, trys finding a fulfillment with given option.
-// If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
-func (a *ServiceOrder) GetOrCreateFulfillment(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
-	fulfillmentByOption, appErr := a.FulfillmentByOption(transaction, option)
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-
-		upsertFulfillment := &model.Fulfillment{}
-
-		// parse options. if any option is provided, take its Eq property:
-		if option.Id != nil {
-			eq, isEqual := option.Id.(squirrel.Eq)
-			if isEqual && eq != nil {
-				eqExpr := eq[model.FulfillmentTableName+".Id"]
-				if eqExpr != nil {
-					if strID, ok := eqExpr.(string); ok {
-						upsertFulfillment.Id = strID
-					}
-				}
-			}
-		}
-
-		if option.OrderID != nil {
-			if eq, isEqual := option.OrderID.(squirrel.Eq); isEqual && eq != nil {
-				if eqExpr := eq[model.FulfillmentTableName+".OrderID"]; eqExpr != nil {
-					if strEq, ok := eqExpr.(string); ok {
-						upsertFulfillment.OrderID = strEq
-					}
-				}
-			}
-		}
-
-		if option.Status != nil {
-			if eq, isEqual := option.Status.(squirrel.Eq); isEqual && eq != nil {
-				if eqExpr := eq[model.FulfillmentTableName+".Status"]; eqExpr != nil {
-					if strEq, ok := eqExpr.(string); ok {
-						upsertFulfillment.Status = model.FulfillmentStatus(strEq)
-					}
-				}
-			}
-		}
-
-		fulfillmentByOption, appErr = a.UpsertFulfillment(transaction, upsertFulfillment)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return fulfillmentByOption, nil
-	}
-
-	return fulfillmentByOption, nil
 }
 
 // BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option

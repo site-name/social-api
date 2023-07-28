@@ -124,7 +124,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// get attribute
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
-		Id: squirrel.Eq{model.AttributeTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.AttributeTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -149,7 +149,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	// clean remove values
 	if len(args.Input.RemoveValues) > 0 {
 		removeValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			Id: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Input.RemoveValues},
+			Conditions: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Input.RemoveValues},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -263,7 +263,7 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
-		Id: squirrel.Eq{model.AttributeTableName + ".Id": args.AttributeID},
+		Conditions: squirrel.Eq{model.AttributeTableName + ".Id": args.AttributeID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -316,7 +316,7 @@ func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id str
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		Id: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -349,7 +349,7 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		Id: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Id},
+		Conditions: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -408,13 +408,13 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// find attribute with given id
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
-		Id:                             squirrel.Eq{model.AttributeTableName + ".Id": args.AttributeID},
+		Conditions:                     squirrel.Eq{model.AttributeTableName + ".Id": args.AttributeID},
 		PrefetchRelatedAttributeValues: true,
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
-	attributeValues := attribute.GetAttributeValues()
+	attributeValues := attribute.AttributeValues
 	attributeValueMap := lo.SliceToMap(attributeValues, func(a *model.AttributeValue) (string, bool) { return a.Id, true })
 	operations := map[string]*int{}
 
@@ -470,15 +470,17 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
-	attrFilter := &model.AttributeFilterOption{}
+	conditions := squirrel.Eq{}
 	if attrId != "" {
-		attrFilter.Id = squirrel.Eq{model.AttributeTableName + ".Id": *args.Id}
+		conditions[model.AttributeTableName+".Id"] = *args.Id
 	} else {
-		attrFilter.Slug = squirrel.Eq{model.AttributeTableName + ".Slug": *args.Slug}
+		conditions[model.AttributeTableName+".Slug"] = *args.Slug
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(attrFilter)
+	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
+		Conditions: conditions,
+	})
 	if appErr != nil {
 		return nil, appErr
 	}

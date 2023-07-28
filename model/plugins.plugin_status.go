@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"io"
 )
 
 const (
@@ -30,10 +29,4 @@ type PluginStatuses []*PluginStatus
 func (m *PluginStatuses) ToJSON() string {
 	b, _ := json.Marshal(m)
 	return string(b)
-}
-
-func PluginStatusesFromJson(data io.Reader) PluginStatuses {
-	var m PluginStatuses
-	json.NewDecoder(data).Decode(&m)
-	return m
 }

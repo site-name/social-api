@@ -24,15 +24,20 @@ type ShippingZone struct {
 }
 
 func (c *ShippingZone) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *ShippingZone) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *ShippingZone) TableName() string             { return ShippingZoneTableName }
+func (c *ShippingZone) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent update
+	return c.IsValid()
+}
+func (c *ShippingZone) TableName() string { return ShippingZoneTableName }
 
 // ShippingZoneFilterOption is used to build sql queries to finds shipping zones
 type ShippingZoneFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	WarehouseID squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
-	ChannelID   squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
+	WarehouseID             squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
+	ChannelID               squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
+	SelectRelatedWarehouses bool
 }
 
 type ShippingZones []*ShippingZone

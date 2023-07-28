@@ -21,36 +21,6 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 
 }
 
-func (vs *SqlVoucherStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Type",
-		"Name",
-		"Code",
-		"UsageLimit",
-		"Used",
-		"StartDate",
-		"EndDate",
-		"ApplyOncePerOrder",
-		"ApplyOncePerCustomer",
-		"OnlyForStaff",
-		"DiscountValueType",
-		"Countries",
-		"MinCheckoutItemsQuantity",
-		"CreateAt",
-		"UpdateAt",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
 	return []interface{}{
 		&voucher.Id,
@@ -112,7 +82,7 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption) squirrel.SelectBuilder {
 	query := vs.
 		GetQueryBuilder().
-		Select(vs.ModelFields(model.VoucherTableName + ".")...).
+		Select(model.VoucherTableName + ".*").
 		From(model.VoucherTableName).
 		Where(option.Conditions)
 

@@ -31,8 +31,8 @@ type Compliance struct {
 	Emails   string `json:"emails" gorm:"type:varchar(1024);column:Emails"`
 }
 
-func (c *Compliance) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
-func (c *Compliance) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *Compliance) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Compliance) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Compliance) TableName() string             { return ComplianceTableName }
 
 type Compliances []Compliance
@@ -54,7 +54,7 @@ func (c *Compliance) ToJSON() string {
 	return ModelToJson(c)
 }
 
-func (c *Compliance) PreSave() {
+func (c *Compliance) commonPre() {
 	if c.Status == "" {
 		c.Status = ComplianceStatusCreated
 	}

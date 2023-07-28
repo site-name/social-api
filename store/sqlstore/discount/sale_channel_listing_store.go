@@ -3,7 +3,6 @@ package discount
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -14,24 +13,6 @@ type SqlSaleChannelListingStore struct {
 
 func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountSaleChannelListingStore {
 	return &SqlSaleChannelListingStore{sqlStore}
-}
-
-func (scls *SqlSaleChannelListingStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"SaleID",
-		"ChannelID",
-		"DiscountValue",
-		"Currency",
-		"CreateAt",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (scls *SqlSaleChannelListingStore) ScanFields(listing *model.SaleChannelListing) []interface{} {
@@ -74,9 +55,9 @@ func (scls *SqlSaleChannelListingStore) Get(id string) (*model.SaleChannelListin
 
 // SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
 func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
-	selectFields := scls.ModelFields(model.SaleChannelListingTableName + ".")
+	selectFields := []string{model.SaleChannelListingTableName + ".*"}
 	if option.SelectRelatedChannel {
-		selectFields = append(selectFields, scls.Channel().ModelFields(model.ChannelTableName+".")...)
+		selectFields = append(selectFields, model.ChannelTableName+".*")
 	}
 
 	query := scls.GetQueryBuilder().

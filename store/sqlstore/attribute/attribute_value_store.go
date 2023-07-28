@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -16,29 +15,6 @@ type SqlAttributeValueStore struct {
 
 func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	return &SqlAttributeValueStore{s}
-}
-
-func (as *SqlAttributeValueStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Value",
-		"Slug",
-		"FileUrl",
-		"ContentType",
-		"AttributeID",
-		"RichText",
-		"Boolean",
-		"Datetime",
-		"SortOrder",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAttributeValueStore) ScanFields(attributeValue *model.AttributeValue) []interface{} {
@@ -84,14 +60,14 @@ func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) 
 
 // FilterByOptions finds and returns all matched attribute values based on given options
 func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
-	var executor *gorm.DB = as.GetReplica()
+	var executor *gorm.DB = as.GetMaster()
 	if options.Transaction != nil {
 		executor = options.Transaction
 	}
 
-	selectFields := as.ModelFields(model.AttributeValueTableName + ".")
+	selectFields := []string{model.AttributeValueTableName + ".*"}
 	if options.SelectRelatedAttribute {
-		selectFields = append(selectFields, as.Attribute().ModelFields(model.AttributeTableName+".")...)
+		selectFields = append(selectFields, model.AttributeTableName+".*")
 	}
 
 	query := as.GetQueryBuilder().

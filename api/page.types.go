@@ -72,7 +72,7 @@ func pageByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mod
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	pages, appErr := embedCtx.App.Srv().PageService().FindPagesByOptions(&model.PageFilterOptions{
-		Id: squirrel.Eq{model.PageTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.PageTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {

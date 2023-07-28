@@ -122,8 +122,11 @@ type Attribute struct {
 	AvailableInGrid          bool                 `json:"available_in_grid" gorm:"column:AvailableInGrid"`
 	ModelMetadata
 
-	AttributeValues AttributeValues  `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
-	AttributePages  []*AttributePage `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
+	AttributeValues     AttributeValues  `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
+	AttributePages      []*AttributePage `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
+	ProductTypes        []*ProductType   `json:"-" gorm:"many2many:AttributeProducts"`
+	ProductVariantTypes []*ProductType   `json:"-" gorm:"many2many:AttributeVariants"`
+	PageTypes           []*PageType      `json:"-" gorm:"many2many:AttributePages"`
 }
 
 func (a *Attribute) BeforeCreate(_ *gorm.DB) error { a.PreSave(); return a.IsValid() }

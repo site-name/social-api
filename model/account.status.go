@@ -2,6 +2,8 @@ package model
 
 import (
 	"io"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -20,9 +22,9 @@ type Status struct {
 	LastActivityAt int64  `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt"`
 }
 
-func (*Status) TableName() string {
-	return StatusTableName
-}
+func (*Status) TableName() string           { return StatusTableName }
+func (*Status) BeforeCreate(*gorm.DB) error { return nil }
+func (*Status) BeforeUpdate(*gorm.DB) error { return nil }
 
 func (o *Status) ToClusterJson() string {
 	oCopy := *o
@@ -33,25 +35,4 @@ func StatusFromJson(data io.Reader) *Status {
 	var o *Status
 	ModelFromJson(&o, data)
 	return o
-}
-
-func StatusListToJson(u []*Status) string {
-	uCopy := make([]Status, len(u))
-	for i, s := range u {
-		sCopy := *s
-		uCopy[i] = sCopy
-	}
-
-	return ModelToJson(uCopy)
-}
-
-func StatusMapToInterfaceMap(statusMap map[string]*Status) map[string]interface{} {
-	interfaceMap := map[string]interface{}{}
-	for _, s := range statusMap {
-		// Omitted statues mean offline
-		if s.Status != STATUS_OFFLINE {
-			interfaceMap[s.UserId] = s.Status
-		}
-	}
-	return interfaceMap
 }

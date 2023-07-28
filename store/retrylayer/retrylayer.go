@@ -3774,11 +3774,11 @@ func (s *RetryLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileIn
 
 }
 
-func (s *RetryLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetWithOptions(opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 
 	tries := 0
 	for {
-		result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
+		result, err := s.FileInfoStore.GetWithOptions(opt)
 		if err == nil {
 			return result, nil
 		}
@@ -3900,11 +3900,11 @@ func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.FilterByOption(transaction, option)
+		result, err := s.FulfillmentStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -3940,11 +3940,11 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.GetByOption(transaction, option)
+		result, err := s.FulfillmentStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -7469,6 +7469,26 @@ func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+
+	tries := 0
+	for {
+		err := s.ShippingZoneStore.ToggleRelations(transaction, zones, relations, delete)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

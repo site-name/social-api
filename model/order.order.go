@@ -88,7 +88,7 @@ type Order struct {
 	ShippingMethodName  *string                `json:"shipping_method_name" gorm:"type:varchar(255);column:ShippingMethodName"`   // NUL, NOT editable
 	CollectionPointName *string                `json:"collection_point_name" gorm:"type:varchar(255);column:CollectionPointName"` // NUL, NOTE editable
 	ChannelID           string                 `json:"channel_id" gorm:"type:uuid;column:ChannelID"`                              //
-	Token               string                 `json:"token" gorm:"type:varchar(36);column:Token;uniqueIndex:token_key"`          // unique
+	Token               string                 `json:"token" gorm:"type:varchar(36);column:Token;uniqueIndex:token_unique_key"`   // unique
 	CheckoutToken       string                 `json:"checkout_token" gorm:"type:varchar(36);column:CheckoutToken"`               //
 	VoucherID           *string                `json:"voucher_id" gorm:"type:uuid;column:VoucherID"`
 	DisplayGrossPrices  *bool                  `json:"display_gross_prices" gorm:"column:DisplayGrossPrices"` // default *true

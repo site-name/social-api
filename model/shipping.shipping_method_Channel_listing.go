@@ -33,6 +33,7 @@ func (c *ShippingMethodChannelListing) BeforeCreate(_ *gorm.DB) error {
 }
 func (c *ShippingMethodChannelListing) BeforeUpdate(_ *gorm.DB) error {
 	c.commonPre()
+	c.CreateAt = 0 // prevent update
 	return c.IsValid()
 }
 func (c *ShippingMethodChannelListing) TableName() string {

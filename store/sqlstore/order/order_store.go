@@ -3,7 +3,6 @@ package order
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -14,54 +13,6 @@ type SqlOrderStore struct {
 
 func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 	return &SqlOrderStore{sqlStore}
-}
-
-func (os *SqlOrderStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"Status",
-		"UserID",
-		"LanguageCode",
-		"TrackingClientID",
-		"BillingAddressID",
-		"ShippingAddressID",
-		"UserEmail",
-		"OriginalID",
-		"Origin",
-		"Currency",
-		"ShippingMethodID",
-		"CollectionPointID",
-		"ShippingMethodName",
-		"CollectionPointName",
-		"ChannelID",
-		"ShippingPriceNetAmount",
-		"ShippingPriceGrossAmount",
-		"ShippingTaxRate",
-		"Token",
-		"CheckoutToken",
-		"TotalNetAmount",
-		"UnDiscountedTotalNetAmount",
-		"TotalGrossAmount",
-		"UnDiscountedTotalGrossAmount",
-		"TotalPaidAmount",
-		"VoucherID",
-		"DisplayGrossPrices",
-		"CustomerNote",
-		"WeightAmount",
-		"WeightUnit",
-		"Weight",
-		"RedirectUrl",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
@@ -161,7 +112,7 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	}
 
 	query := os.GetQueryBuilder().
-		Select(os.ModelFields(model.OrderTableName + ".")...).
+		Select(model.OrderTableName + ".*").
 		From(model.OrderTableName).Where(option.Conditions)
 
 	if option.ChannelSlug != nil {

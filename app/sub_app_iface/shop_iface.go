@@ -7,9 +7,6 @@ import "github.com/sitename/sitename/model"
 
 // ShopService contains methods for working with shops
 type ShopService interface {
-	// ShopById finds shop by given id
-	ShopById(shopID string) (*model.Shop, *model.AppError)
-	ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError)
 	ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model.AppError)
 	StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model.AppError)
 	UserIsStaffOfShop(userID string) bool

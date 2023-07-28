@@ -1,11 +1,12 @@
 package product
 
 import (
+	"database/sql"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -16,31 +17,6 @@ type SqlProductVariantStore struct {
 
 func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	return &SqlProductVariantStore{s}
-}
-
-func (ps *SqlProductVariantStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"ProductID",
-		"Sku",
-		"Weight",
-		"WeightUnit",
-		"TrackInventory",
-		"IsPreOrder",
-		"PreorderEndDate",
-		"PreOrderGlobalThreshold",
-		"SortOrder",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (ps *SqlProductVariantStore) ScanFields(variant *model.ProductVariant) []interface{} {
@@ -62,18 +38,11 @@ func (ps *SqlProductVariantStore) ScanFields(variant *model.ProductVariant) []in
 }
 
 func (ps *SqlProductVariantStore) Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	var executor *gorm.DB = ps.GetMaster()
-	if transaction != nil {
-		executor = transaction
+	if transaction == nil {
+		transaction = ps.GetMaster()
 	}
 
-	variant.PreSave()
-	if err := variant.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.ProductVariantTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-	if _, err := executor.NamedExec(query, variant); err != nil {
+	if err := transaction.Create(variant).Error; err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(model.ProductVariantTableName, "Sku", variant.Sku)
 		}
@@ -85,32 +54,16 @@ func (ps *SqlProductVariantStore) Save(transaction *gorm.DB, variant *model.Prod
 
 // Update updates given product variant and returns it
 func (ps *SqlProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	variant.PreUpdate()
-	if err := variant.IsValid(); err != nil {
-		return nil, err
+	if transaction == nil {
+		transaction = ps.GetMaster()
 	}
 
-	var executor *gorm.DB = ps.GetMaster()
-	if transaction != nil {
-		executor = transaction
-	}
-
-	query := "UPDATE " + model.ProductVariantTableName + " SET " + ps.
-		ModelFields("").
-		Map(func(_ int, s string) string {
-			return s + "=:" + s
-		}).
-		Join(",") + " WHERE Id=:Id"
-
-	result, err := executor.NamedExec(query, variant)
+	err := transaction.Model(variant).Updates(variant).Error
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(model.ProductVariantTableName, "Sku", variant.Sku)
 		}
 		return nil, errors.Wrapf(err, "failed to update product variant with id=%s", variant.Id)
-	}
-	if numUpdated, _ := result.RowsAffected(); numUpdated > 1 {
-		return nil, errors.Errorf("%d product variant(s) were/was updated instead of 1", numUpdated)
 	}
 
 	return variant, nil
@@ -118,11 +71,7 @@ func (ps *SqlProductVariantStore) Update(transaction *gorm.DB, variant *model.Pr
 
 func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) {
 	var variant model.ProductVariant
-	err := ps.GetReplica().Get(
-		&variant,
-		"SELECT * FROM "+model.ProductVariantTableName+" WHERE Id = ?",
-		id,
-	)
+	err := ps.GetReplica().First(&variant, "Id = ?", id).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -167,7 +116,8 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 	)
 	err = ps.
 		GetReplica().
-		QueryRow(queryString, args...).
+		Raw(queryString, args...).
+		Row().
 		Scan(
 			&variantWeightAmount,
 			&variantWeightUnit,
@@ -177,7 +127,7 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 			&productTypeWeightUnit,
 		)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, store.NewErrNotFound(model.ProductVariantTableName, productVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
@@ -201,12 +151,12 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.P
 	var res model.ProductVariant
 
 	query := "SELECT " +
-		vs.ModelFields(model.ProductVariantTableName+".").Join(",") +
+		model.ProductVariantTableName + ".*" +
 		" FROM " + model.ProductVariantTableName +
 		" INNER JOIN " + model.OrderLineTableName +
 		" ON ProductVariants.Id = Orderlines.VariantID WHERE Orderlines.Id = ?"
 
-	err := vs.GetReplica().Get(&res, query, orderLineID)
+	err := vs.GetReplica().Raw(query, orderLineID).Scan(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTableName, "orderLineID="+orderLineID)
@@ -219,20 +169,17 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.P
 
 // FilterByOption finds and returns product variants based on given option
 func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
-	selectFields := vs.ModelFields(model.ProductVariantTableName + ".")
+	selectFields := []string{model.ProductVariantTableName + ".*"}
 	if option.SelectRelatedDigitalContent {
-		selectFields = append(selectFields, vs.DigitalContent().ModelFields(model.DigitalContentTableName+".")...)
+		selectFields = append(selectFields, model.DigitalContentTableName+".*")
 	}
 
 	query := vs.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.ProductVariantTableName)
+		From(model.ProductVariantTableName).Where(option.Conditions)
 
 	// parse option
 	for _, opt := range []squirrel.Sqlizer{
-		option.Id,
-		option.Name,
-		option.ProductID,
 		option.ProductVariantChannelListingPriceAmount,
 		option.ProductVariantChannelListingChannelID,
 		option.ProductVariantChannelListingChannelSlug,
@@ -277,7 +224,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := vs.GetReplica().Query(queryString, args...)
+	rows, err := vs.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variants by options")
 	}

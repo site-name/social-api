@@ -1,12 +1,9 @@
 package warehouse
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -19,22 +16,6 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
 }
 
-func (ss *SqlStockStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"WarehouseID",
-		"ProductVariantID",
-		"Quantity",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
 func (ss *SqlStockStore) ScanFields(stock *model.Stock) []interface{} {
 	return []interface{}{
 		&stock.Id,
@@ -47,58 +28,17 @@ func (ss *SqlStockStore) ScanFields(stock *model.Stock) []interface{} {
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
 func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
-	var executor = ss.GetMaster()
-	if transaction != nil {
-		executor = transaction
+	if transaction == nil {
+		transaction = ss.GetMaster()
 	}
 
-	var (
-		saveQuery   = "INSERT INTO " + model.StockTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + model.StockTableName + " SET " + ss.
-				ModelFields("").
-				Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-	)
-
 	for _, stock := range stocks {
-		isSaving := false // reset
-
-		if stock.Id == "" {
-			isSaving = true
-			stock.PreSave()
-		} else {
-			stock.PreUpdate()
-		}
-
-		if err := stock.IsValid(); err != nil {
-			return nil, err
-		}
-
-		var (
-			err       error
-			numUpdate int64
-		)
-		if isSaving {
-			_, err = executor.NamedExec(saveQuery, stock)
-
-		} else {
-			var result sql.Result
-			result, err = executor.NamedExec(updateQuery, stock)
-			if err == nil && result != nil {
-				numUpdate, _ = result.RowsAffected()
-			}
-		}
-
+		err := transaction.Save(stock).Error
 		if err != nil {
-			if ss.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
+			if ss.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "warehouseid_productvariantid_key"}) {
 				return nil, store.NewErrInvalidInput(model.StockTableName, "WarehouseID/ProductVariantID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert a stock with id=%s", stock.Id)
-		}
-		if numUpdate > 1 {
-			return nil, errors.Errorf("multiple stocks with id=%s were updated: %d instead of 1", stock.Id, numUpdate)
 		}
 	}
 
@@ -107,7 +47,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock)
 
 func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 	var res model.Stock
-	if err := ss.GetReplica().Get(&res, "SELECT * FROM "+model.StockTableName+" WHERE Id = ?", stockID); err != nil {
+	if err := ss.GetReplica().First(&res, "Id = ?", stockID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.StockTableName, stockID)
 		}
@@ -145,29 +85,20 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 		Limit(1).
 		Suffix(")")
 
-	selectFields := ss.ModelFields(model.StockTableName + ".")
+	selectFields := []string{model.StockTableName + ".*"}
 	// check if we need select related data:
 	if options.SelectRelatedProductVariant {
-		selectFields = append(selectFields, ss.ProductVariant().ModelFields(model.ProductVariantTableName+".")...)
+		selectFields = append(selectFields, model.ProductVariantTableName+".*")
 	}
 
 	query := ss.GetQueryBuilder().
 		Select(selectFields...).
 		From(model.StockTableName).
-		Where(warehouseShippingZoneQuery)
+		Where(warehouseShippingZoneQuery).Where(options.Conditions)
 
 	// parse options
 	if options.SelectRelatedProductVariant {
 		query = query.InnerJoin(model.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)")
-	}
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.WarehouseID != nil {
-		query = query.Where(options.WarehouseID)
-	}
-	if options.ProductVariantID != nil {
-		query = query.Where(options.ProductVariantID)
 	}
 
 	if options.ReturnQueryOnly {
@@ -179,7 +110,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 		return nil, nil, errors.Wrap(err, "FilterForChannel_ToSql")
 	}
 
-	rows, err := ss.GetReplica().Query(queryString, args...)
+	rows, err := ss.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
 	}
@@ -234,9 +165,7 @@ func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32,
 		options.Warehouse_ShippingZone_ChannelID,
 		stockSearchOpts, //
 	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+		query = query.Where(opt)
 	}
 
 	if options.Search != "" ||
@@ -267,7 +196,7 @@ func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32,
 	}
 
 	var res int32
-	err = s.GetReplica().Select(&res, queryStr, args...)
+	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count stocks by given options")
 	}
@@ -277,12 +206,12 @@ func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32,
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
 func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
-	selectFields := ss.ModelFields(model.StockTableName + ".")
+	selectFields := []string{model.StockTableName + ".*"}
 	if options.SelectRelatedProductVariant {
-		selectFields = append(selectFields, ss.ProductVariant().ModelFields(model.ProductVariantTableName+".")...)
+		selectFields = append(selectFields, model.ProductVariantTableName+".*")
 	}
 	if options.SelectRelatedWarehouse {
-		selectFields = append(selectFields, ss.Warehouse().ModelFields(model.WarehouseTableName+".")...)
+		selectFields = append(selectFields, model.WarehouseTableName+".*")
 	}
 
 	query := ss.GetQueryBuilder().
@@ -308,12 +237,10 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		options.Warehouse_ShippingZone_ChannelID,
 		stockSearchOpts, //
 	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+		query = query.Where(opt)
 	}
 
-	if options.LockForUpdate {
+	if options.LockForUpdate && options.Transaction != nil {
 		forUpdate := "FOR UPDATE"
 		if options.ForUpdateOf != "" {
 			forUpdate += " OF " + options.ForUpdateOf
@@ -374,7 +301,12 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	rows, err := ss.GetReplica().Query(queryString, args...)
+	runner := ss.GetReplica()
+	if options.Transaction != nil {
+		runner = options.Transaction
+	}
+
+	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
@@ -429,12 +361,9 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 		PlaceholderFormat(squirrel.Question)
 
 	// remember the order when scan
-	selectFields := ss.ModelFields(model.StockTableName + ".")
-	selectFields = append(selectFields, ss.Warehouse().ModelFields(model.WarehouseTableName+".")...)
-	selectFields = append(selectFields, ss.ProductVariant().ModelFields(model.ProductVariantTableName+".")...)
 
 	query := ss.GetQueryBuilder().
-		Select(selectFields...).
+		Select(model.StockTableName+".*", model.WarehouseTableName+".*", model.ProductVariantTableName+".*").
 		From(model.StockTableName).
 		InnerJoin(model.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
 		InnerJoin(model.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
@@ -467,7 +396,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 	if options.ProductVariantIDFilter != nil {
 		query = query.Where(options.ProductVariantIDFilter)
 	}
-	if options.LockForUpdate {
+	if options.LockForUpdate && options.Transaction != nil {
 		suffix := "FPR UPDATE"
 		if options.ForUpdateOf != "" {
 			suffix += " OF " + options.ForUpdateOf
@@ -483,7 +412,12 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 
 	var returningStocks model.Stocks
 
-	rows, err := ss.GetReplica().Query(queryString, args...)
+	runner := ss.GetReplica()
+	if options.Transaction != nil {
+		runner = options.Transaction
+	}
+
+	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
@@ -558,7 +492,7 @@ func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, c
 
 // ChangeQuantity reduce or increase the quantity of given stock
 func (ss *SqlStockStore) ChangeQuantity(stockID string, quantity int) error {
-	_, err := ss.GetMaster().Exec("UPDATE Stocks SET Quantity = Quantity + ? WHERE Id = ?", quantity, stockID)
+	err := ss.GetMaster().Raw("UPDATE Stocks SET Quantity = Quantity + ? WHERE Id = ?", quantity, stockID).Error
 	if err != nil {
 		return errors.Wrapf(err, "failed to change stock quantity for stock with id=%s", stockID)
 	}

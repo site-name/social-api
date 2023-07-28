@@ -4,7 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -13,27 +12,8 @@ type SqlCustomerEventStore struct {
 	store.Store
 }
 
-var customerModelFields = util.AnyArray[string]{
-	"Id",
-	"Date",
-	"Type",
-	"OrderID",
-	"UserID",
-	"Parameters",
-}
-
 func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	return &SqlCustomerEventStore{s}
-}
-
-func (cs *SqlCustomerEventStore) ModelFields(prefix string) util.AnyArray[string] {
-	if prefix == "" {
-		return customerModelFields
-	}
-
-	return customerModelFields.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.CustomerEvent, error) {

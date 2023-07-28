@@ -146,5 +146,4 @@ type WarehouseService interface {
 	// WarehouseCountries returns countries of given warehouse
 	WarehouseCountries(warehouseID string) ([]string, *model.AppError)
 	CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError)
-	CreateWarehouseShippingZones(transaction *gorm.DB, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError)
 }

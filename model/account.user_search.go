@@ -69,15 +69,7 @@ type UserGetByIdsOptions struct {
 }
 
 type UserFilterOptions struct {
-	Id          squirrel.Sqlizer
-	Email       squirrel.Sqlizer
-	Username    squirrel.Sqlizer
-	FirstName   squirrel.Sqlizer
-	LastName    squirrel.Sqlizer
-	AuthData    squirrel.Sqlizer
-	AuthService squirrel.Sqlizer
-
-	Extra squirrel.Sqlizer // support for query AND, OR
+	Conditions squirrel.Sqlizer
 
 	OrderID             squirrel.Sqlizer // INNER JOIN Orders ON Orders.UserID = Users.Id WHERE Orders.Id...
 	HasNoOrder          bool             // LEFT JOIN Orders ON ... WHERE Orders.UserID IS NULL

@@ -1,58 +1,52 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 type Allocation struct {
-	Id                string `json:"id"`
-	CreateAt          int64  `json:"create_at"`
-	OrderLineID       string `json:"order_ldine_id"`     // NOT NULL
-	StockID           string `json:"stock_id"`           // NOT NULL
-	QuantityAllocated int    `json:"quantity_allocated"` // default 0
+	Id                string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt          int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	OrderLineID       string `json:"order_line_id" gorm:"type:uuid;column:OrderLineID;index:orderlineid_stockid_key"` // NOT NULL
+	StockID           string `json:"stock_id" gorm:"type:uuid;column:StockID;index:orderlineid_stockid_key"`          // NOT NULL
+	QuantityAllocated int    `json:"quantity_allocated" gorm:"column:QuantityAllocated"`                              // default 0
 
 	stockAvailableQuantity int        // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
 	stock                  *Stock     // this field is populated with related stock
 	orderLine              *OrderLine //
 }
 
-func (s *Allocation) SetStock(stk *Stock) {
-	s.stock = stk
-}
+func (s *Allocation) SetStock(stk *Stock)                 { s.stock = stk }
+func (s *Allocation) GetStock() *Stock                    { return s.stock }
+func (s *Allocation) SetOrderLine(line *OrderLine)        { s.orderLine = line }
+func (s *Allocation) GetOrderLine() *OrderLine            { return s.orderLine }
+func (s *Allocation) SetStockAvailableQuantity(value int) { s.stockAvailableQuantity = value }
+func (s *Allocation) GetStockAvailableQuantity() int      { return s.stockAvailableQuantity }
 
-func (s *Allocation) GetStock() *Stock {
-	return s.stock
+func (c *Allocation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Allocation) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent updating
+	return c.IsValid()
 }
-
-func (s *Allocation) SetOrderLine(line *OrderLine) {
-	s.orderLine = line
-}
-
-func (s *Allocation) GetOrderLine() *OrderLine {
-	return s.orderLine
-}
-
-func (s *Allocation) SetStockAvailableQuantity(value int) {
-	s.stockAvailableQuantity = value
-}
-
-func (s *Allocation) GetStockAvailableQuantity() int {
-	return s.stockAvailableQuantity
-}
+func (c *Allocation) TableName() string { return AllocationTableName }
 
 // AllocationFilterOption is used to build sql queries to filtering warehouse allocations
 type AllocationFilterOption struct {
-	Id                squirrel.Sqlizer
-	OrderLineID       squirrel.Sqlizer
-	OrderLineOrderID  squirrel.Sqlizer // INNER JOIN OrderLines ON (...) WHERE OrderLines.OrderID = ...
-	StockID           squirrel.Sqlizer
-	QuantityAllocated squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
-	LockForUpdate bool   // if true, `FOR UPDATE` will be placed in the end of sqlqueries
+	OrderLineOrderID squirrel.Sqlizer // INNER JOIN OrderLines ON (...) WHERE OrderLines.OrderID ...
+
+	// if true, `FOR UPDATE` will be placed in the end of sqlqueries.
+	// NOTE: Only apply if `Transaction` is set
+	LockForUpdate bool
 	ForUpdateOf   string // this is placed after `FOR UPDATE`. E.g: "Warehouses" => `FOR UPDATE OF Warehouses`
+	Transaction   *gorm.DB
 
 	SelectedRelatedStock   bool
 	SelectRelatedOrderLine bool
@@ -75,43 +69,20 @@ func (a Allocations) Len() int {
 }
 
 func (a *Allocation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.allocation.is_valid.%s.app_error",
-		"allocation_id=",
-		"Allocation.isValid",
-	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
-	if a.CreateAt == 0 {
-		return outer("create_at", &a.Id)
-	}
 	if !IsValidId(a.OrderLineID) {
-		return outer("order_line_id", &a.Id)
+		return NewAppError("Allocation.IsValid", "model.allocation.is_valid.orderline_id.app_error", nil, "please provide valid order line id", http.StatusBadRequest)
 	}
 	if !IsValidId(a.StockID) {
-		return outer("stock_id", &a.Id)
+		return NewAppError("Allocation.IsValid", "model.allocation.is_valid.stock_id.app_error", nil, "please provide valid stock id", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (a *Allocation) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	a.CreateAt = GetMillis()
-	a.commonPre()
 }
 
 func (a *Allocation) commonPre() {
 	if a.QuantityAllocated < 0 {
 		a.QuantityAllocated = 0
 	}
-}
-
-func (a *Allocation) PreUpdate() {
-	a.commonPre()
 }
 
 type AllocationError struct {

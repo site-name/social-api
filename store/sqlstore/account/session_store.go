@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -23,30 +22,6 @@ type SqlSessionStore struct {
 
 func NewSqlSessionStore(sqlStore store.Store) store.SessionStore {
 	return &SqlSessionStore{sqlStore}
-}
-
-func (s *SqlSessionStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Token",
-		"CreateAt",
-		"ExpiresAt ",
-		"LastActivityAt",
-		"UserId",
-		"DeviceId ",
-		"Roles",
-		"IsOAuth",
-		"ExpiredNotify",
-		"Props",
-		"Local",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (me *SqlSessionStore) Save(session *model.Session) (*model.Session, error) {

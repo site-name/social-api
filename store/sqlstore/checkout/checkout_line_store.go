@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -16,23 +15,6 @@ type SqlCheckoutLineStore struct {
 
 func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutLineStore {
 	return &SqlCheckoutLineStore{sqlStore}
-}
-
-func (cls *SqlCheckoutLineStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"CheckoutID",
-		"VariantID",
-		"Quantity",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (cls *SqlCheckoutLineStore) ScanFields(line *model.CheckoutLine) []interface{} {
@@ -105,13 +87,11 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*model.CheckoutLine) ([]*mod
 //
 // this borrows the idea from Django's prefetch_related() method
 func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
-	selectFields := append(
-		cls.ModelFields(model.CheckoutLineTableName+"."),
-		append(
-			cls.ProductVariant().ModelFields(model.ProductVariantTableName+"."),
-			cls.Product().ModelFields(model.ProductTableName+".")...,
-		)...,
-	)
+	selectFields := []string{
+		model.CheckoutLineTableName + ".*",
+		model.ProductVariantTableName + ".*",
+		model.ProductTableName + ".*",
+	}
 
 	query, args, err := cls.
 		GetQueryBuilder().

@@ -11,7 +11,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -31,21 +30,20 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// create transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	// NOTE: delete does not return error on wrong values provided.
-	err = embedCtx.App.Srv().Store.ProductVariant().AddProductVariantMedias()(transaction, &model.VariantMediaFilterOptions{
-		Conditions: squirrel.And{
-			squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": args.VariantID},
-			squirrel.Eq{model.ProductVariantMediaTableName + ".MediaID": args.MediaID},
-		},
-	})
+	err := transaction.Model(&model.ProductVariant{Id: args.VariantID}).Association("ProductMedias").Delete(&model.ProductMedia{Id: args.MediaID})
 	if err != nil {
 		return nil, model.NewAppError("VariantMediaUnassign", "app.product.delete_variant_media_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if err := transaction.Commit().Error; err != nil {
+		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// TODO: check if this logic is needed, since the system doesn't have support for wekhook yet
@@ -91,19 +89,17 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	media := productMedias[0]
 
 	// create transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	if media != nil && productVariant != nil {
 		// check if the given image and variant can be matched together
 		if media.ProductID == productVariant.ProductID {
-			_, err := embedCtx.App.Srv().Store.VariantMedia().Upsert(transaction, &model.VariantMedia{VariantID: args.VariantID, MediaID: args.MediaID})
+			err := transaction.Model(&model.ProductVariant{Id: args.VariantID}).Association("ProductMedias").Append(&model.ProductMedia{Id: args.MediaID})
 			if err != nil {
-				// NOTE: SQL logic for handle uniqueness violation is added in upsert process.
-				// So this error is internal system error
 				return nil, model.NewAppError("VariantMediaAssign", "app.product.upsert_variant_media.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 		} else {
@@ -112,7 +108,7 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -18,34 +17,6 @@ type SqlAttributeStore struct {
 
 func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	return &SqlAttributeStore{s}
-}
-
-var attributeFieldNames = util.AnyArray[string]{
-	"Id",
-	"Slug",
-	"Name",
-	"Type",
-	"InputType",
-	"EntityType",
-	"Unit",
-	"ValueRequired",
-	"IsVariantOnly",
-	"VisibleInStoreFront",
-	"FilterableInStorefront",
-	"FilterableInDashboard",
-	"StorefrontSearchPosition",
-	"AvailableInGrid",
-	"Metadata",
-	"PrivateMetadata",
-}
-
-func (as *SqlAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
-	if prefix == "" {
-		return attributeFieldNames
-	}
-	return attributeFieldNames.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
@@ -85,7 +56,7 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 
 func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields(model.AttributeTableName + ".")...).
+		Select(model.AttributeTableName + ".*").
 		From(model.AttributeTableName).
 		Where(option.Conditions)
 
@@ -288,8 +259,7 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 		)`
 
 	if !unassigned {
-		query = `SELECT ` + s.ModelFields("A.").Join(",") +
-			` FROM ` + model.AttributeTableName +
+		query = `SELECT A.* FROM ` + model.AttributeTableName +
 			` A INNER JOIN ` + model.AttributePageTableName +
 			` AP ON AP.AttributeID = A.Id
 			WHERE A.Type = $1

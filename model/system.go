@@ -2,6 +2,8 @@ package model
 
 import (
 	"math/big"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -51,7 +53,9 @@ type System struct {
 	Value string `json:"value" gorm:"type:varchar(1024);column:Value"`
 }
 
-func (s *System) TableName() string { return "Systems" }
+func (s *System) TableName() string           { return "Systems" }
+func (s *System) BeforeCreate(*gorm.DB) error { return nil }
+func (s *System) BeforeUpdate(*gorm.DB) error { return nil }
 
 type SystemPostActionCookieSecret struct {
 	Secret []byte `json:"key,omitempty"`

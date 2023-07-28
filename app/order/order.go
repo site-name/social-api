@@ -82,7 +82,7 @@ func (a *ServiceOrder) OrderById(id string) (*model.Order, *model.AppError) {
 // OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -94,7 +94,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 // OrderTotalQuantity return total quantity of given order
 func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return 0, appErr
@@ -111,7 +111,7 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 // UpdateOrderTotalPaid update given order's total paid amount
 func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.Order) *model.AppError {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": orDer.Id},
+		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orDer.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -137,11 +137,14 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.O
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID:                    squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
-		IsActive:                   model.NewPrimitive(true),
 		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.AUTH},
-		TransactionsActionRequired: model.NewPrimitive(false),
-		TransactionsIsSuccess:      model.NewPrimitive(true),
+		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
+		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
+
+		Conditions: squirrel.Eq{
+			model.PaymentTableName + ".OrderID":  orderID,
+			model.PaymentTableName + ".IsActive": true,
+		},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -153,11 +156,14 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID:                    squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
-		IsActive:                   model.NewPrimitive(true),
 		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.CAPTURE},
-		TransactionsActionRequired: model.NewPrimitive(false),
-		TransactionsIsSuccess:      model.NewPrimitive(true),
+		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
+		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
+
+		Conditions: squirrel.Eq{
+			model.PaymentTableName + ".OrderID":  orderID,
+			model.PaymentTableName + ".IsActive": true,
+		},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -169,7 +175,7 @@ func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 func (a *ServiceOrder) OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -180,15 +186,17 @@ func (a *ServiceOrder) OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *m
 
 // OrderCanCalcel checks if given order can be canceled
 func (a *ServiceOrder) OrderCanCancel(ord *model.Order) (bool, *model.AppError) {
-	fulfillments, err := a.FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-		OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": ord.Id},
-		Status: squirrel.NotEq{model.FulfillmentTableName + ".Status": []string{
-			string(model.FULFILLMENT_CANCELED),
-			string(model.FULFILLMENT_REFUNDED),
-			string(model.FULFILLMENT_RETURNED),
-			string(model.FULFILLMENT_REFUNDED_AND_RETURNED),
-			string(model.FULFILLMENT_REPLACED),
-		}},
+	fulfillments, err := a.FulfillmentsByOption(&model.FulfillmentFilterOption{
+		Conditions: squirrel.And{
+			squirrel.Eq{model.FulfillmentTableName + ".OrderID": ord.Id},
+			squirrel.NotEq{model.FulfillmentTableName + ".Status": []model.FulfillmentStatus{
+				model.FULFILLMENT_CANCELED,
+				model.FULFILLMENT_REFUNDED,
+				model.FULFILLMENT_RETURNED,
+				model.FULFILLMENT_REFUNDED_AND_RETURNED,
+				model.FULFILLMENT_REPLACED,
+			}},
+		},
 	})
 
 	if err != nil {
@@ -263,7 +271,7 @@ func (a *ServiceOrder) CanMarkOrderAsPaid(ord *model.Order, payments []*model.Pa
 	var appErr *model.AppError
 	if len(payments) == 0 {
 		payments, appErr = a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-			OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": ord.Id},
+			Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": ord.Id},
 		})
 	}
 

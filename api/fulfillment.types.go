@@ -88,8 +88,8 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	fulfillments, appErr := embedCtx.App.Srv().OrderService().FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-		OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": orderIDs},
+	fulfillments, appErr := embedCtx.App.Srv().OrderService().FulfillmentsByOption(&model.FulfillmentFilterOption{
+		Conditions: squirrel.Eq{model.FulfillmentTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {
@@ -146,7 +146,7 @@ func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	lines, appErr := embedCtx.App.Srv().OrderService().FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		Id: squirrel.Eq{model.FulfillmentLineTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -174,7 +174,7 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 		Srv().
 		OrderService().
 		FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-			FulfillmentID: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
+			Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
 		})
 	if appErr != nil {
 		for idx := range fulfillmentIDs {

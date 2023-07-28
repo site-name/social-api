@@ -55,19 +55,21 @@ func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction *gorm.DB, wishlist
 
 // GetOrCreateWishlistItem insert or get wishlist items
 func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *model.WishlistItem) (*model.WishlistItem, *model.AppError) {
-	option := &model.WishlistItemFilterOption{}
+	conditions := squirrel.And{}
 
 	if model.IsValidId(wishlistItem.Id) {
-		option.Id = squirrel.Eq{model.WishlistItemTableName + ".Id": wishlistItem.Id}
+		conditions = append(conditions, squirrel.Eq{model.WishlistItemTableName + ".Id": wishlistItem.Id})
 	}
 	if model.IsValidId(wishlistItem.WishlistID) {
-		option.WishlistID = squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistItem.WishlistID}
+		conditions = append(conditions, squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistItem.WishlistID})
 	}
 	if model.IsValidId(wishlistItem.ProductID) {
-		option.ProductID = squirrel.Eq{model.WishlistItemTableName + ".ProductID": wishlistItem.ProductID}
+		conditions = append(conditions, squirrel.Eq{model.WishlistItemTableName + ".ProductID": wishlistItem.ProductID})
 	}
 
-	item, appErr := a.WishlistItemByOption(option)
+	item, appErr := a.WishlistItemByOption(&model.WishlistItemFilterOption{
+		Conditions: conditions,
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -99,7 +101,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 	defer transaction.Rollback()
 
 	itemsFromBothWishlists, appErr := a.WishlistItemsByOption(&model.WishlistItemFilterOption{
-		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": []string{srcWishlist.Id, dstWishlist.Id}},
+		Conditions: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": []string{srcWishlist.Id, dstWishlist.Id}},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -178,7 +180,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 			}
 
 			_, appErr = a.DeleteWishlistItemsByOption(transaction, &model.WishlistItemFilterOption{
-				Id: squirrel.Eq{model.WishlistItemTableName + ".Id": srcItem.Id},
+				Conditions: squirrel.Eq{model.WishlistItemTableName + ".Id": srcItem.Id},
 			})
 			if appErr != nil {
 				return appErr

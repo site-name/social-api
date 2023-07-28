@@ -73,7 +73,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, ord *model.Order, kwa
 
 	// avoid using prefetched order lines
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return appErr

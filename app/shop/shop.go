@@ -5,12 +5,7 @@ so the init() function get the chance to register a function to create `ServiceA
 package shop
 
 import (
-	"net/http"
-
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 type ServiceShop struct {
@@ -18,30 +13,29 @@ type ServiceShop struct {
 }
 
 func init() {
-	// app.RegisterShopService(func(s *app.Server) (sub_app_iface.ShopService, error) {
-	// 	return &ServiceShop{
-	// 		srv: s,
-	// 	}, nil
-	// })
-}
-
-// ShopById finds shop by given id
-func (a *ServiceShop) ShopById(shopID string) (*model.Shop, *model.AppError) {
-	return a.ShopByOptions(&model.ShopFilterOptions{
-		Id: squirrel.Eq{model.ShopTableName + ".Id": shopID},
+	app.RegisterService(func(s *app.Server) error {
+		s.Shop = &ServiceShop{srv: s}
+		return nil
 	})
 }
 
-func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError) {
-	shop, err := a.srv.Store.Shop().GetByOptions(options)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
+// ShopById finds shop by given id
+// func (a *ServiceShop) ShopById(shopID string) (*model.Shop, *model.AppError) {
+// 	return a.ShopByOptions(&model.ShopFilterOptions{
+// 		Id: squirrel.Eq{model.ShopTableName + ".Id": shopID},
+// 	})
+// }
 
-		return nil, model.NewAppError("ShopByOptions", "app.shop.error_finding_shop_by_options.app_error", nil, err.Error(), statusCode)
-	}
+// func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError) {
+// 	shop, err := a.srv.Store.Shop().GetByOptions(options)
+// 	if err != nil {
+// 		statusCode := http.StatusInternalServerError
+// 		if _, ok := err.(*store.ErrNotFound); ok {
+// 			statusCode = http.StatusNotFound
+// 		}
 
-	return shop, nil
-}
+// 		return nil, model.NewAppError("ShopByOptions", "app.shop.error_finding_shop_by_options.app_error", nil, err.Error(), statusCode)
+// 	}
+
+// 	return shop, nil
+// }

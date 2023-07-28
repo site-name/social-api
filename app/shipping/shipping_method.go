@@ -94,7 +94,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, 
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
+			Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 			PrefetchRelated: model.OrderLinePrefetchRelated{
 				VariantProduct: true, // this tells store to prefetch related product variants, products too
 			},
@@ -175,9 +175,14 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 	}
 
 	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
-		Status:           squirrel.Eq{model.OrderTableName + ".Status": []string{string(model.ORDER_STATUS_UNCONFIRMED), string(model.ORDER_STATUS_DRAFT)}},
-		ShippingMethodID: squirrel.Eq{model.OrderTableName + ".ShippingMethodID": shippingMethodIds},
-		ChannelID:        squirrel.Eq{model.OrderTableName + ".ChannelID": channelIds},
+		Conditions: squirrel.Eq{
+			model.OrderTableName + ".Status": []model.OrderStatus{
+				model.ORDER_STATUS_UNCONFIRMED,
+				model.ORDER_STATUS_DRAFT,
+			},
+			model.OrderTableName + ".ShippingMethodID": shippingMethodIds,
+			model.OrderTableName + ".ChannelID":        channelIds,
+		},
 	})
 	if appErr != nil {
 		return appErr

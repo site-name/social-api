@@ -55,7 +55,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 	if digitalContent == nil {
 		var appErr *model.AppError
 		digitalContent, appErr = a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
-			ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
+			Conditions: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -190,7 +190,7 @@ func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order
 // ReCalculateOrderWeight
 func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorm.DB, order *model.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -304,10 +304,10 @@ func (a *ServiceOrder) UpdateTaxesForOrderLine(line model.OrderLine, ord model.O
 	line.UnDiscountedUnitPrice, _ = line.UnitPrice.Add(line.UnitDiscount)
 	line.UnDiscountedTotalPrice = totalPrice
 	if line.UnitDiscount != nil && !line.UnitDiscount.Amount.Equal(decimal.Zero) {
-		line.UnDiscountedTotalPrice, _ = line.UnDiscountedUnitPrice.Mul(line.Quantity)
+		line.UnDiscountedTotalPrice = line.UnDiscountedUnitPrice.Mul(float64(line.Quantity))
 	}
 
-	unitPriceTax, _ := unitPrice.Tax()
+	unitPriceTax := unitPrice.Tax()
 	if !unitPriceTax.Amount.Equal(decimal.Zero) && !unitPrice.Net.Amount.Equal(decimal.Zero) {
 		line.TaxRate, appErr = manager.GetOrderLineTaxRate(ord, *product, *variant, nil, *unitPrice)
 		if appErr != nil {
@@ -333,7 +333,7 @@ func (a *ServiceOrder) UpdateTaxesForOrderLines(lines model.OrderLines, ord mode
 // UpdateOrderPrices Update prices in order with given discounts and proper taxes.
 func (a *ServiceOrder) UpdateOrderPrices(ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -569,7 +569,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *model.Order) (result inte
 	}
 
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return
@@ -609,7 +609,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *model.Order) (result inte
 
 func (a *ServiceOrder) calculateQuantityIncludingReturns(ord model.Order) (int, int, int, *model.AppError) {
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -627,8 +627,8 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord model.Order) (int, 
 		quantityFulfilled += line.QuantityFulfilled
 	}
 
-	fulfillmentsOfOrder, appErr := a.FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-		OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": ord.Id},
+	fulfillmentsOfOrder, appErr := a.FulfillmentsByOption(&model.FulfillmentFilterOption{
+		Conditions: squirrel.Eq{model.FulfillmentTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -651,7 +651,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord model.Order) (int, 
 
 	// finds all fulfillment lines belong to filtered fulfillments
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		FulfillmentID: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": filteredFulfillmentIDs},
+		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": filteredFulfillmentIDs},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -722,8 +722,10 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 	}
 
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID:   squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
-		VariantID: squirrel.Eq{model.OrderLineTableName + ".VariantID": variant.Id},
+		Conditions: squirrel.Eq{
+			model.OrderLineTableName + ".OrderID":   order.Id,
+			model.OrderLineTableName + ".VariantID": variant.Id,
+		},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -760,8 +762,10 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 		}
 
 		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variant.Id},
-			ChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": chanNel.Id},
+			Conditions: squirrel.Eq{
+				model.ProductVariantChannelListingTableName + ".VariantID": variant.Id,
+				model.ProductVariantChannelListingTableName + ".ChannelID": chanNel.Id,
+			},
 		})
 		if appErr != nil {
 			return nil, nil, appErr // NOTE: does not care what type of error, just return
@@ -778,15 +782,18 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 			Currency: price.Currency,
 		}
 
-		totalPrice, _ := taxedUnitPrice.Mul(quantity)
+		totalPrice := taxedUnitPrice.Mul(float64(quantity))
 		productName := product.String()
 		variantName := variant.String()
 
 		var translatedProductName string
-		productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&model.ProductTranslationFilterOption{
-			LanguageCode: squirrel.Eq{model.ProductTranslationTableName + ".LanguageCode": user.Locale},
-			ProductID:    squirrel.Eq{model.ProductTranslationTableName + ".ProductID": product.Id},
-		})
+		productTranslations, appErr := s.srv.ProductService().
+			ProductTranslationsByOption(&model.ProductTranslationFilterOption{
+				Conditions: squirrel.Eq{
+					model.ProductTranslationTableName + ".LanguageCode": user.Locale,
+					model.ProductTranslationTableName + ".ProductID":    product.Id,
+				},
+			})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, nil, appErr
@@ -797,8 +804,10 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 
 		var translatedVariantName string
 		variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&model.ProductVariantTranslationFilterOption{
-			LanguageCode:     squirrel.Eq{model.ProductVariantTranslationTableName + ".LanguageCode": user.Locale},
-			ProductVariantID: squirrel.Eq{model.ProductVariantTranslationTableName + ".ProductVariantID": variant.Id},
+			Conditions: squirrel.Eq{
+				model.ProductVariantTranslationTableName + ".LanguageCode":     user.Locale,
+				model.ProductVariantTranslationTableName + ".ProductVariantID": variant.Id,
+			},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -820,7 +829,7 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 			return nil, nil, appErr
 		}
 		productType, appErr := s.srv.ProductService().ProductTypeByOption(&model.ProductTypeFilterOption{
-			Id: squirrel.Eq{model.ProductTypeTableName + ".Id": product.ProductTypeID},
+			Conditions: squirrel.Eq{model.ProductTypeTableName + ".Id": product.ProductTypeID},
 		})
 		if appErr != nil {
 			return nil, nil, appErr
@@ -900,8 +909,9 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 		balanceData       = model.BalanceData{}
 		usedByUser        = checkoutInfo.User
 		usedByEmail       = checkoutInfo.GetCustomerEmail()
-		orderGiftcards    = []*model.OrderGiftCard{}
 		giftcardsToUpdate = []*model.GiftCard{}
+
+		giftcardsToAddToOrder []*model.GiftCard
 	)
 
 	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
@@ -916,27 +926,32 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 
 	for _, giftCard := range giftcards {
 		if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
-			orderGiftcards = append(orderGiftcards, &model.OrderGiftCard{
-				OrderID:    order.Id,
-				GiftCardID: giftCard.Id,
-			})
+			giftcardsToAddToOrder = append(giftcardsToAddToOrder, giftCard)
 
 			balanceData = append(balanceData, s.UpdateGiftcardBalance(giftCard, totalPriceLeft))
-			s.SetGiftcardUser(giftCard, usedByUser, usedByEmail)
+
+			if giftCard.UsedByEmail == nil {
+				if usedByUser != nil {
+					giftCard.UsedByID = &usedByUser.Id
+				}
+				giftCard.UsedByEmail = &usedByEmail
+			}
 
 			giftCard.LastUsedOn = model.NewPrimitive(model.GetMillis())
 			giftcardsToUpdate = append(giftcardsToUpdate, giftCard)
 		}
 	}
 
-	_, appErr = s.srv.GiftcardService().UpsertOrderGiftcardRelations(transaction, orderGiftcards...)
+	appErr = s.srv.GiftcardService().AddGiftcardRelations(transaction, giftcardsToAddToOrder, model.Orders{order})
 	if appErr != nil {
 		return appErr
 	}
 
-	_, appErr = s.srv.GiftcardService().UpsertGiftcards(transaction, giftcardsToUpdate...)
-	if appErr != nil {
-		return appErr
+	if len(giftcardsToUpdate) > 0 {
+		_, appErr = s.srv.GiftcardService().UpsertGiftcards(transaction, giftcardsToUpdate...)
+		if appErr != nil {
+			return appErr
+		}
 	}
 
 	_, appErr = s.srv.GiftcardService().GiftcardsUsedInOrderEvent(transaction, balanceData, order.Id, user, nil)
@@ -958,16 +973,6 @@ func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *model.GiftCard, totalPric
 	return model.BalanceObject{
 		Giftcard:        *giftCard,
 		PreviousBalance: &previousBalance.Amount,
-	}
-}
-
-// SetGiftcardUser Set user when the gift card is used for the first time.
-func (s *ServiceOrder) SetGiftcardUser(giftCard *model.GiftCard, usedByUser *model.User, usedByEmail string) {
-	if giftCard.UsedByEmail == nil {
-		if usedByUser != nil {
-			giftCard.UsedByID = &usedByUser.Id
-		}
-		giftCard.UsedByEmail = &usedByEmail
 	}
 }
 
@@ -1120,7 +1125,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *model.Order, manager interfaces.Pl
 	defaultWarehouse := warehouses[0]
 
 	orderLinesOfOrder, appError := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appError != nil {
 		return appError
@@ -1168,7 +1173,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *model.Order, manager interfaces.Pl
 
 					if anOrderLine.QuantityFulfilled > 0 {
 						allocations, appErr := a.srv.WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
-							OrderLineID: squirrel.Eq{model.AllocationTableName + ".OrderLineID": anOrderLine.Id},
+							Conditions: squirrel.Eq{model.AllocationTableName + ".OrderLineID": anOrderLine.Id},
 						})
 						if appErr != nil {
 							setAppError(appErr)
@@ -1215,14 +1220,14 @@ func (a *ServiceOrder) RestockOrderLines(ord *model.Order, manager interfaces.Pl
 // Return products to stocks and update order lines quantity fulfilled values.
 func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorm.DB, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		FulfillmentID: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
+		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 	})
 	if appErr != nil {
 		return appErr
 	}
 
 	orderLinesOfFulfillmentLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		Id: squirrel.Eq{model.OrderLineTableName + ".Id": fulfillmentLines.OrderLineIDs()},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": fulfillmentLines.OrderLineIDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1239,7 +1244,7 @@ func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorm.DB, fulfillment
 	}
 
 	productVariantsOfOrderLines, appErr := a.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		Id: squirrel.Eq{model.ProductVariantTableName + ".Id": orderLinesOfFulfillmentLines.ProductVariantIDs()},
+		Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": orderLinesOfFulfillmentLines.ProductVariantIDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1408,7 +1413,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *model.Order) (*go
 		} else {
 			if voucher.Type == model.SPECIFIC_PRODUCT {
 				orderLinesOfOrder, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-					OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+					Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 				})
 				if appErr != nil {
 					return nil, appErr
@@ -1433,9 +1438,11 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *model.Order) (*go
 
 func (a *ServiceOrder) MatchOrdersWithNewUser(user *model.User) *model.AppError {
 	ordersByOption, appErr := a.FilterOrdersByOptions(&model.OrderFilterOption{
-		Status:    squirrel.NotEq{model.OrderTableName + ".Status": []string{string(model.ORDER_STATUS_DRAFT), string(model.ORDER_STATUS_UNCONFIRMED)}},
-		UserEmail: squirrel.Eq{model.OrderTableName + ".UserEmail": user.Email},
-		UserID:    squirrel.Eq{model.OrderTableName + ".UserID": nil},
+		Conditions: squirrel.And{
+			squirrel.Eq{model.OrderTableName + ".UserID": nil},
+			squirrel.Eq{model.OrderTableName + ".UserEmail": user.Email},
+			squirrel.NotEq{model.OrderTableName + ".Status": []model.OrderStatus{(model.ORDER_STATUS_DRAFT), (model.ORDER_STATUS_UNCONFIRMED)}},
+		},
 	})
 	if appErr != nil {
 		return appErr
@@ -1585,9 +1592,9 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord
 		orderLine.UnitPrice = unitPriceWithDiscount.(*goprices.TaxedMoney)
 		orderLine.UnitDiscountType = valueType
 		orderLine.UnitDiscountValue = value
-		orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
+		orderLine.TotalPrice = orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
 		orderLine.UnDiscountedUnitPrice, _ = orderLine.UnitPrice.Sub(orderLine.UnitDiscount)
-		orderLine.UnDiscountedTotalPrice, _ = orderLine.UnDiscountedUnitPrice.Mul(orderLine.Quantity)
+		orderLine.UnDiscountedTotalPrice = orderLine.UnDiscountedUnitPrice.Mul(float64(orderLine.Quantity))
 
 	}
 
@@ -1614,7 +1621,7 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine model.OrderLine, or
 	orderLine.UnitDiscountAmount = &decimal.Zero
 	orderLine.UnitDiscountValue = &decimal.Zero
 	orderLine.UnitDiscountReason = model.NewPrimitive("")
-	orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
+	orderLine.TotalPrice = orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
 
 	_, appErr := a.UpsertOrderLine(nil, &orderLine)
 	if appErr != nil {
@@ -1665,7 +1672,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 
 	// validate order lines
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID:              squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
+		Conditions:           squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 		SelectRelatedVariant: true,
 	})
 	if appErr != nil {
@@ -1742,8 +1749,10 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	productChannelListings, appErr := s.srv.
 		ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ChannelID: squirrel.Eq{model.ProductChannelListingTableName + ".ChannelID": order.ChannelID},
-			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": lo.Keys(productIDsMap)},
+			Conditions: squirrel.Eq{
+				model.ProductChannelListingTableName + ".ChannelID": order.ChannelID,
+				model.ProductChannelListingTableName + ".ProductID": lo.Keys(productIDsMap),
+			},
 		})
 	if appErr != nil {
 		return appErr
@@ -1756,9 +1765,13 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 
 	// validate variants is available:
 	variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-		VariantID:   squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs},
-		ChannelID:   squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": order.ChannelID},
-		PriceAmount: squirrel.Expr(model.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NULL"),
+		Conditions: squirrel.And{
+			squirrel.Eq{
+				model.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs,
+				model.ProductVariantChannelListingTableName + ".ChannelID": order.ChannelID,
+			},
+			squirrel.Expr(model.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NULL"),
+		},
 	})
 	if appErr != nil {
 		return appErr

@@ -48,7 +48,7 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	}
 
 	checkout, appErr := checkoutService.CheckoutByOption(&model.CheckoutFilterOption{
-		Token: squirrel.Eq{model.CheckoutTableName + ".Token": args.Token},
+		Conditions: squirrel.Eq{model.CheckoutTableName + ".Token": args.Token},
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,17 +16,6 @@ type SqlAssignedProductAttributeStore struct {
 
 func NewSqlAssignedProductAttributeStore(s store.Store) store.AssignedProductAttributeStore {
 	return &SqlAssignedProductAttributeStore{s}
-}
-
-func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{"Id", "ProductID", "AssignmentID"}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {

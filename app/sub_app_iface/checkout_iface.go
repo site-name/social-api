@@ -40,7 +40,7 @@ type CheckoutService interface {
 	// `discounts` can be nil
 	BaseCheckoutLineTotal(checkoutLineInfo *model.CheckoutLineInfo, channel *model.Channel, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
-	BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) (*goprices.TaxedMoney, *model.AppError)
+	BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) *goprices.TaxedMoney
 	// BaseCheckoutShippingPrice
 	BaseCheckoutShippingPrice(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutTotal returns the total cost of the checkout

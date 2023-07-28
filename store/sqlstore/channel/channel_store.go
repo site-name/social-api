@@ -3,7 +3,6 @@ package channel
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -14,24 +13,6 @@ type SqlChannelStore struct {
 
 func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 	return &SqlChannelStore{sqlStore}
-}
-
-func (cs *SqlChannelStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"IsActive",
-		"Slug",
-		"Currency",
-		"DefaultCountry",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
@@ -72,7 +53,7 @@ func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 
 // FilterByOption returns a list of channels with given option
 func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
-	selectFields := cs.ModelFields(model.ChannelTableName + ".")
+	selectFields := []string{model.ChannelTableName + ".*"}
 	if option.AnnotateHasOrders {
 		selectFields = append(selectFields, `EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
 	}

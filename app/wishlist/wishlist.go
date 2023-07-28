@@ -85,8 +85,10 @@ func (a *ServiceWishlist) AddProduct(wishlistID string, productID string) (*mode
 // RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
 func (a *ServiceWishlist) RemoveProduct(wishlistID string, productID string) *model.AppError {
 	_, appErr := a.DeleteWishlistItemsByOption(nil, &model.WishlistItemFilterOption{
-		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistID},
-		ProductID:  squirrel.Eq{model.WishlistItemTableName + ".ProductID": productID},
+		Conditions: squirrel.Eq{
+			model.WishlistItemTableName + ".WishlistID": wishlistID,
+			model.WishlistItemTableName + ".ProductID":  productID,
+		},
 	})
 
 	return appErr
@@ -99,12 +101,9 @@ func (a *ServiceWishlist) AddProductVariant(wishlistID string, productVariant *m
 		return nil, appErr
 	}
 
-	_, appErr = a.AddWishlistItemProductVariantRelation(&model.WishlistItemProductVariant{
-		WishlistItemID:   item.Id,
-		ProductVariantID: productVariant.Id,
-	})
-	if appErr != nil {
-		return nil, appErr
+	err := a.srv.Store.GetMaster().Model(item).Association("ProductVariants").Append(productVariant)
+	if err != nil {
+		return nil, model.NewAppError("AddProductVariant", "app.wishlist.add_variant_to_wishlist_item.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return item, nil
@@ -113,27 +112,25 @@ func (a *ServiceWishlist) AddProductVariant(wishlistID string, productVariant *m
 // RemoveProductVariant remove a wishlist item from given wishlist
 func (a *ServiceWishlist) RemoveProductVariant(wishlistID string, productVariant *model.ProductVariant) *model.AppError {
 	wishlistItem, appErr := a.WishlistItemByOption(&model.WishlistItemFilterOption{
-		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistID},
-		ProductID:  squirrel.Eq{model.WishlistItemTableName + ".ProductID": productVariant.ProductID},
-	})
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return appErr
-		}
-		return nil
-	}
-
-	numOfRelationsLeft, appErr := a.DeleteWishlistItemProductVariantRelation(&model.WishlistItemProductVariant{
-		ProductVariantID: productVariant.Id,
-		WishlistItemID:   wishlistItem.Id,
+		Conditions: squirrel.Eq{
+			model.WishlistItemTableName + ".WishlistID": wishlistID,
+			model.WishlistItemTableName + ".ProductID":  productVariant.ProductID,
+		},
 	})
 	if appErr != nil {
 		return appErr
 	}
 
-	if numOfRelationsLeft == 0 {
+	err := a.srv.Store.GetMaster().Model(wishlistItem).Association("ProductVariants").Delete(productVariant)
+	if err != nil {
+		return model.NewAppError("RemoveProductVariant", "app.wishlist.remove_product_variant_from_wishlist_item.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	numOfProductVariantsInWishlistItem := a.srv.Store.GetMaster().Model(wishlistItem).Association("ProductVariants").Count()
+
+	if numOfProductVariantsInWishlistItem == 0 {
 		_, appErr = a.DeleteWishlistItemsByOption(nil, &model.WishlistItemFilterOption{
-			Id: squirrel.Eq{model.WishlistItemTableName + ".Id": wishlistItem.Id},
+			Conditions: squirrel.Eq{model.WishlistItemTableName + ".Id": wishlistItem.Id},
 		})
 	}
 

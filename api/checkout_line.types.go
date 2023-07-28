@@ -114,7 +114,7 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 	checkoutLines, appErr := embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			CheckoutID: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": tokens},
+			Conditions: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": tokens},
 		})
 	if appErr != nil {
 		for idx := range tokens {
@@ -145,7 +145,7 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	checkoutLines, appErr := embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			Id: squirrel.Eq{model.CheckoutLineTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.CheckoutLineTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {

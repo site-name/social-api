@@ -87,8 +87,10 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo,
 
 	checkout := checkoutInfo.Checkout
 	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-		ChannelID: squirrel.Eq{model.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID},
-		ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": variant.ProductID},
+		Conditions: squirrel.Eq{
+			model.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID,
+			model.ProductChannelListingTableName + ".ProductID": variant.ProductID,
+		},
 	})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -190,8 +192,10 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 	}
 	channelListings, appErr := a.srv.ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ChannelID: squirrel.Eq{model.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID},
-			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
+			Conditions: squirrel.Eq{
+				model.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID,
+				model.ProductChannelListingTableName + ".ProductID": productIDs,
+			},
 		})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -675,8 +679,10 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		// check if the owner of this checkout has ther primary language:
 		if checkoutInfo.User != nil && model.Languages[model.LanguageCodeEnum(checkoutInfo.User.Locale)] != "" {
 			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
-				LanguageCode: squirrel.Eq{model.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale},
-				VoucherID:    squirrel.Eq{model.VoucherTranslationTableName + ".VoucherID": voucher.Id},
+				Conditions: squirrel.Eq{
+					model.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale,
+					model.VoucherTranslationTableName + ".VoucherID":    voucher.Id,
+				},
 			})
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError {
@@ -770,7 +776,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 
 	if user := checkoutInfo.User; user != nil && model.Languages[model.LanguageCodeEnum(user.Locale)] != "" {
 		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
-			LanguageCode: squirrel.Eq{model.VoucherTranslationTableName + ".LanguageCode": user.Locale},
+			Conditions: squirrel.Eq{model.VoucherTranslationTableName + ".LanguageCode": user.Locale},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -928,8 +934,10 @@ func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *
 func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError) {
 	checkout := checkoutInfo.Checkout
 	payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		IsActive:   model.NewPrimitive(true),
-		CheckoutID: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
+		Conditions: squirrel.Eq{
+			model.PaymentTableName + ".CheckoutID": checkout.Token,
+			model.PaymentTableName + ".IsActive":   true,
+		},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

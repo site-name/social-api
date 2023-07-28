@@ -10,8 +10,8 @@ import (
 
 type Page struct {
 	Id         string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Title      string          `json:"title" gorm:"type:varchar(250);column:Title"`                    //
-	Slug       string          `json:"slug" gorm:"type:varchar(255);column:Slug;uniqueIndex:slug_key"` // unique
+	Title      string          `json:"title" gorm:"type:varchar(250);column:Title"`                           //
+	Slug       string          `json:"slug" gorm:"type:varchar(255);column:Slug;uniqueIndex:slug_unique_key"` // unique
 	PageTypeID string          `json:"page_type_id" gorm:"type:uuid;column:PageTypeID"`
 	Content    StringInterface `json:"content" gorm:"column:Content"`
 	CreateAt   int64           `json:"create_at" gorm:"type:bigint;column:CreateAt"`

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -20,7 +21,7 @@ type Channel struct {
 	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name           string      `json:"name" gorm:"type:varchar(250);column:Name"`
 	IsActive       bool        `json:"is_active" gorm:"column:IsActive"`
-	Slug           string      `json:"slug" gorm:"type:varchar(250);column:Slug;uniqueIndex:idx_slug"` // unique
+	Slug           string      `json:"slug" gorm:"type:varchar(250);column:Slug;uniqueIndex:slug_unique_key"` // unique
 	Currency       string      `json:"currency" gorm:"column:Currency;type:varchar(3)"`
 	DefaultCountry CountryCode `json:"default_country" gorm:"column:DefaultCountry;type:varchar(10)"` // default "US"
 
@@ -61,16 +62,11 @@ func (c *Channel) String() string {
 }
 
 func (c *Channel) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.channel.is_valid.%s.app_error",
-		"channel_id=",
-		"Channel.IsValid",
-	)
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
-		return outer("currency", &c.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
 	}
 	if !c.DefaultCountry.IsValid() {
-		return outer("default_country", &c.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.default_country.app_error", nil, "please provide valid default country", http.StatusBadRequest)
 	}
 
 	return nil

@@ -527,9 +527,11 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			ChannelIsActive: model.NewPrimitive(true),
-			UserID:          squirrel.Eq{model.CheckoutTableName + ".UserID": userIDs},
-			ChannelID:       squirrel.Eq{model.CheckoutTableName + ".ChannelID": channelIDs},
+			ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
+			Conditions: squirrel.Eq{
+				model.CheckoutTableName + ".UserID":    userIDs,
+				model.CheckoutTableName + ".ChannelID": channelIDs,
+			},
 		})
 	if appErr != nil {
 		for idx := range keys {
@@ -563,8 +565,8 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			ChannelIsActive: model.NewPrimitive(true),
-			UserID:          squirrel.Eq{model.CheckoutTableName + ".UserID": userIDs},
+			ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
+			Conditions:      squirrel.Eq{model.CheckoutTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {
@@ -593,7 +595,7 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			Token: squirrel.Eq{model.CheckoutTableName + ".Token": tokens},
+			Conditions: squirrel.Eq{model.CheckoutTableName + ".Token": tokens},
 		})
 	if appErr != nil {
 		for idx := range tokens {

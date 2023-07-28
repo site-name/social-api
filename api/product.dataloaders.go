@@ -10,7 +10,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -67,7 +66,7 @@ func productByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Srv().
 		ProductService().
 		ProductsByOption(&model.ProductFilterOption{
-			Id: squirrel.Eq{model.ProductTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.ProductTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -106,7 +105,7 @@ func productChannelListingByProductIDAnhChannelSlugLoader(ctx context.Context, i
 
 	productChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
+			Conditions: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -297,7 +296,7 @@ func collectionsByProductIdLoader(ctx context.Context, productIDs []string) []*d
 	collectionProductRelations, appErr := embedCtx.App.Srv().
 		ProductService().
 		CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
-			ProductID:               squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productIDs},
+			Conditions:              squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productIDs},
 			SelectRelatedCollection: true,
 		})
 	if appErr != nil {
@@ -334,7 +333,7 @@ func collectionByIdLoader(ctx context.Context, collectionIDs []string) []*datalo
 	collections, appErr := embedCtx.App.Srv().
 		ProductService().
 		CollectionsByOption(&model.CollectionFilterOption{
-			Id: squirrel.Eq{model.CollectionTableName + ".Id": collectionIDs},
+			Conditions: squirrel.Eq{model.CollectionTableName + ".Id": collectionIDs},
 		})
 	if appErr != nil {
 		for idx := range collectionIDs {
@@ -375,8 +374,10 @@ func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, var
 	variantChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID:                         squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
-			PriceAmount:                       squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			Conditions: squirrel.And{
+				squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+				squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			},
 			AnnotatePreorderQuantityAllocated: true,
 		})
 	if appErr != nil {
@@ -420,7 +421,7 @@ func variantsChannelListingByProductIdAndChannelSlugLoader(ctx context.Context, 
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 			VariantProductID:            squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
-			PriceAmount:                 squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			Conditions:                  squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 			SelectRelatedProductVariant: true,
 		})
 	if appErr != nil {
@@ -499,7 +500,7 @@ func productChannelListingByIdLoader(ctx context.Context, ids []string) []*datal
 
 	productChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			Id: squirrel.Eq{model.ProductChannelListingTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.ProductChannelListingTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -527,7 +528,7 @@ func productChannelListingByProductIdLoader(ctx context.Context, productIDs []st
 	productChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
+			Conditions: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
 	if appErr != nil {
 		for idx := range productIDs {
@@ -553,7 +554,7 @@ func productTypeByIdLoader(ctx context.Context, ids []string) []*dataloader.Resu
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(&model.ProductTypeFilterOption{
-		Id: squirrel.Eq{model.ProductTypeTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.ProductTypeTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -579,7 +580,7 @@ func productVariantsByProductIdLoader(ctx context.Context, productIDs []string) 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	variants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		ProductID: squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+		Conditions: squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
 	})
 	if appErr != nil {
 		for idx := range productIDs {
@@ -607,7 +608,7 @@ func productVariantChannelListingByIdLoader(ctx context.Context, ids []string) [
 	listings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			Id: squirrel.Eq{model.ProductVariantChannelListingTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.ProductVariantChannelListingTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -649,7 +650,7 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 	variants, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			ProductID:                             squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+			Conditions:                            squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
 			ProductVariantChannelListingChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
@@ -659,9 +660,11 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 	variantChannelListings, appErr = embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
-			// TODO: check if below condition needed
-			ChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			Conditions: squirrel.Eq{
+				model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs(),
+				// TODO: check if below condition needed
+				model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs,
+			},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -711,7 +714,7 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	variants, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			ProductID:                               squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+			Conditions:                              squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
 			ProductVariantChannelListingChannelID:   squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 			ProductVariantChannelListingPriceAmount: squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 		})
@@ -722,9 +725,11 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	variantChannelListings, appErr = embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
-			// TODO: check if below condition needed
-			ChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			Conditions: squirrel.Eq{
+				model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs(),
+				// TODO: check if below condition needed
+				model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs,
+			},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -762,7 +767,7 @@ func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []st
 	variantChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID:                         squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+			Conditions:                        squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
 			AnnotatePreorderQuantityAllocated: true,
 		})
 	if appErr != nil {
@@ -783,49 +788,29 @@ func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []st
 
 func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*dataloader.Result[[]*model.ProductMedia] {
 	var (
-		res                 = make([]*dataloader.Result[[]*model.ProductMedia], len(variantIDs))
-		medias              []*model.ProductMedia
-		appErr              *model.AppError
-		variantIDMediasMap  = map[string][]*model.ProductMedia{} // keys are product variant ids
-		mediaIDVariantIDmap = map[string]string{}                // keys are product media ids, values are product variant ids
+		res         = make([]*dataloader.Result[[]*model.ProductMedia], len(variantIDs))
+		variantsMap = map[string]*model.ProductVariant{} // keys are product variant ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	variantMedias, err := embedCtx.App.Srv().Store.
-		VariantMedia().
-		FilterByOptions(&model.VariantMediaFilterOptions{
-			Conditions: squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": variantIDs},
-		})
+	var variants model.ProductVariants
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("ProductMedias").Find(&variants, "Id IN ?", variantIDs).Error
 	if err != nil {
-		appErr = model.NewAppError("mediaByProductVariantIdLoader", "app.product.variant_medias_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-
-	medias, appErr = embedCtx.App.Srv().ProductService().
-		ProductMediasByOption(&model.ProductMediaFilterOption{
-			VariantID: squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": variantIDs},
-		})
-	if appErr != nil {
-		goto errorLabel
-	}
-
-	for _, rel := range variantMedias {
-		mediaIDVariantIDmap[rel.MediaID] = rel.VariantID
-	}
-	for _, media := range medias {
-		variantID, ok := mediaIDVariantIDmap[media.Id]
-		if ok {
-			variantIDMediasMap[variantID] = append(variantIDMediasMap[variantID], media)
+		for idx := range variantIDs {
+			res[idx] = &dataloader.Result[[]*model.ProductMedia]{Error: err}
 		}
+		return res
+	}
+
+	for _, rel := range variants {
+		variantsMap[rel.Id] = rel
 	}
 	for idx, id := range variantIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductMedia]{Data: variantIDMediasMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range variantIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductMedia]{Error: appErr}
+		variant := variantsMap[id]
+		if variant == nil {
+			variant = new(model.ProductVariant)
+		}
+		res[idx] = &dataloader.Result[[]*model.ProductMedia]{Data: variant.ProductMedias}
 	}
 	return res
 }
@@ -851,7 +836,7 @@ func collectionChannelListingByIdLoader(ctx context.Context, ids []string) []*da
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	collectionChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		CollectionChannelListingsByOptions(&model.CollectionChannelListingFilterOptions{
-			Id: squirrel.Eq{model.CollectionChannelListingTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.CollectionChannelListingTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -879,7 +864,7 @@ func collectionChannelListingByCollectionIdLoader(ctx context.Context, ids []str
 
 	collectionChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		CollectionChannelListingsByOptions(&model.CollectionChannelListingFilterOptions{
-			CollectionID: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": ids},
+			Conditions: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -917,8 +902,10 @@ func collectionChannelListingByCollectionIdAndChannelSlugLoader(ctx context.Cont
 
 	collectionChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		CollectionChannelListingsByOptions(&model.CollectionChannelListingFilterOptions{
-			CollectionID: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": collectionIDs},
-			ChannelID:    squirrel.Eq{model.CollectionChannelListingTableName + ".ChannelID": channelIDs},
+			Conditions: squirrel.Eq{
+				model.CollectionChannelListingTableName + ".CollectionID": collectionIDs,
+				model.CollectionChannelListingTableName + ".ChannelID":    channelIDs,
+			},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -956,421 +943,231 @@ func categoryByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 }
 
 func categoriesByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.Category] {
-	var (
-		res                = make([]*dataloader.Result[[]*model.Category], len(voucherIDs))
-		voucherCategories  []*model.VoucherCategory
-		voucherCategoryMap = map[string]string{}           // values are voucher ids, keys are category ids
-		categoryMap        = map[string]model.Categories{} // keys are voucher ids
-		err                error
-	)
+	var res = make([]*dataloader.Result[[]*model.Category], len(voucherIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	categories, appErr := embedCtx.
-		App.
-		Srv().
-		ProductService().
-		CategoriesByOption(&model.CategoryFilterOption{
-			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucherIDs},
-		})
-	if appErr != nil {
-		goto errorLabel
-	}
-
-	voucherCategories, err = embedCtx.
-		App.
-		Srv().
-		Store.
-		VoucherCategory().
-		FilterByOptions(&model.VoucherCategoryFilterOption{
-			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucherIDs},
-		})
+	var vouchers model.Vouchers
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Categories").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
-		appErr = model.NewAppError("categoriesByVoucherIDLoader", "app.discount.voucher_categories_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
+		for idx := range voucherIDs {
+			res[idx] = &dataloader.Result[[]*model.Category]{Error: err}
+		}
+		return res
 	}
 
-	for _, rel := range voucherCategories {
-		voucherCategoryMap[rel.CategoryID] = rel.VoucherID
-	}
-	for _, cate := range categories {
-		voucherID, ok := voucherCategoryMap[cate.Id]
-		if ok {
-			categoryMap[voucherID] = append(categoryMap[voucherID], cate)
-		}
+	var voucherMap = map[string]*model.Voucher{} // keys are voucher ids
+	for _, voucher := range vouchers {
+		voucherMap[voucher.Id] = voucher
 	}
 	for idx, id := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.Category]{Data: categoryMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.Category]{Error: appErr}
+		voucher := voucherMap[id]
+		if voucher == nil {
+			voucher = new(model.Voucher)
+		}
+		res[idx] = &dataloader.Result[[]*model.Category]{Data: voucher.Categories}
 	}
 	return res
 }
 
 func collectionsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.Collection] {
-	var (
-		res                  = make([]*dataloader.Result[[]*model.Collection], len(voucherIDs))
-		voucherCollections   []*model.VoucherCollection
-		collectionMap        = map[string]model.Collections{} // keys are voucher ids
-		voucherCollectionMap = map[string]string{}            // keys are collection ids, values are voucher ids
-		err                  error
-	)
+	var res = make([]*dataloader.Result[[]*model.Collection], len(voucherIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	collections, appErr := embedCtx.App.Srv().
-		ProductService().
-		CollectionsByOption(&model.CollectionFilterOption{
-			VoucherID: squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": voucherIDs},
-		})
-	if appErr != nil {
-		goto errorLabel
-	}
-
-	voucherCollections, err = embedCtx.App.Srv().Store.VoucherCollection().FilterByOptions(&model.VoucherCollectionFilterOptions{
-		VoucherID: squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": voucherIDs},
-	})
+	var vouchers model.Vouchers
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Collections").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
-		appErr = model.NewAppError("collectionsByVoucherIDLoader", "app.discount.voucher_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-
-	for _, rel := range voucherCollections {
-		voucherCollectionMap[rel.CollectionID] = rel.VoucherID
-	}
-	for _, col := range collections {
-		voucherID, ok := voucherCollectionMap[col.Id]
-		if ok {
-			collectionMap[voucherID] = append(collectionMap[voucherID], col)
+		for idx := range voucherIDs {
+			res[idx] = &dataloader.Result[[]*model.Collection]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.Collection]{Data: collectionMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.Collection]{Error: appErr}
+	voucherMap := map[string]*model.Voucher{}
+	for _, voucher := range vouchers {
+		voucherMap[voucher.Id] = voucher
+	}
+
+	for idx, id := range voucherIDs {
+		voucher := voucherMap[id]
+		if voucher == nil {
+			voucher = new(model.Voucher)
+		}
+		res[idx] = &dataloader.Result[[]*model.Collection]{Data: voucher.Collections}
 	}
 	return res
 }
 
 func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.Product] {
-	var (
-		res               = make([]*dataloader.Result[[]*model.Product], len(voucherIDs))
-		voucherProducts   []*model.VoucherProduct
-		err               error
-		voucherProductMap = map[string]string{}         // keys are product ids, values are voucher ids
-		productMap        = map[string]model.Products{} // keys are voucher ids
-	)
+	var res = make([]*dataloader.Result[[]*model.Product], len(voucherIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	products, appErr := embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
-		VoucherID: squirrel.Eq{model.VoucherProductTableName + ".VoucherID": voucherIDs},
-	})
-	if appErr != nil {
-		goto errorLabel
-	}
-
-	voucherProducts, err = embedCtx.App.Srv().Store.VoucherProduct().FilterByOptions(&model.VoucherProductFilterOptions{
-		VoucherID: squirrel.Eq{model.VoucherProductTableName + ".VoucherID": voucherIDs},
-	})
+	var vouchers model.Vouchers
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Products").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
-		appErr = model.NewAppError("productsByVoucherIDLoader", "app.discount.voucher_products_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-
-	for _, rel := range voucherProducts {
-		voucherProductMap[rel.ProductID] = rel.VoucherID
-	}
-	for _, prd := range products {
-		voucherID, ok := voucherProductMap[prd.Id]
-		if ok {
-			productMap[voucherID] = append(productMap[voucherID], prd)
+		for idx := range voucherIDs {
+			res[idx] = &dataloader.Result[[]*model.Product]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.Product]{Data: productMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.Product]{Error: appErr}
+	voucherMap := map[string]*model.Voucher{}
+	for _, voucher := range vouchers {
+		voucherMap[voucher.Id] = voucher
+	}
+
+	for idx, id := range voucherIDs {
+		voucher := voucherMap[id]
+		if voucher == nil {
+			voucher = new(model.Voucher)
+		}
+		res[idx] = &dataloader.Result[[]*model.Product]{Data: voucher.Products}
 	}
 	return res
 }
 
 func productVariantsByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
-	var (
-		res        = make([]*dataloader.Result[[]*model.ProductVariant], len(voucherIDs))
-		variants   model.ProductVariants
-		appErr     *model.AppError
-		variantMap = map[string]model.ProductVariants{} // keys are voucher ids
-
-		variantVouchers   []*model.VoucherProductVariant
-		variantVoucherMap = map[string]string{} // keys are variant ids, values are voucher ids
-		err               error
-	)
+	var res = make([]*dataloader.Result[[]*model.ProductVariant], len(voucherIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	variants, appErr = embedCtx.App.Srv().ProductService().
-		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			VoucherID: squirrel.Eq{store.VoucherProductVariantTableName + ".VoucherID": voucherIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	variantVouchers, err = embedCtx.App.Srv().Store.VoucherProductVariant().FilterByOptions(&model.VoucherProductVariantFilterOption{
-		VoucherID: squirrel.Eq{store.VoucherProductVariantTableName + ".VoucherID": voucherIDs},
-	})
+	var vouchers model.Vouchers
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("ProductVariants").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
-		err = model.NewAppError("productVariantsByVoucherIdLoader", "app.discount.voucher_variants_reations_by_options", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-
-	for _, rel := range variantVouchers {
-		variantVoucherMap[rel.ProductVariantID] = rel.VoucherID
-	}
-	for _, variant := range variants {
-		voucherID, ok := variantVoucherMap[variant.Id]
-		if ok {
-			variantMap[voucherID] = append(variantMap[voucherID], variant)
+		for idx := range voucherIDs {
+			res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variantMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
+	voucherMap := map[string]*model.Voucher{}
+	for _, voucher := range vouchers {
+		voucherMap[voucher.Id] = voucher
+	}
+
+	for idx, id := range voucherIDs {
+		voucher := voucherMap[id]
+		if voucher == nil {
+			voucher = new(model.Voucher)
+		}
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: voucher.ProductVariants}
 	}
 	return res
 }
 
 func categoriesBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.Category] {
-	var (
-		res             = make([]*dataloader.Result[[]*model.Category], len(saleIDs))
-		categories      model.Categories
-		appErr          *model.AppError
-		saleCategories  []*model.SaleCategoryRelation
-		categoryMap     = map[string]model.Categories{} // keys are sale ids
-		saleCategoryMap = map[string]string{}           // keys are category ids, values are sale ids
-		err             error
-	)
+	var res = make([]*dataloader.Result[[]*model.Category], len(saleIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	categories, appErr = embedCtx.App.Srv().
-		ProductService().
-		CategoriesByOption(&model.CategoryFilterOption{
-			SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	saleCategories, appErr = embedCtx.App.Srv().
-		DiscountService().
-		SaleCategoriesByOption(&model.SaleCategoryRelationFilterOption{
-			SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	for _, rel := range saleCategories {
-		saleCategoryMap[rel.CategoryID] = rel.SaleID
-	}
-	for _, cate := range categories {
-		saleID, ok := saleCategoryMap[cate.Id]
-		if ok {
-			categoryMap[saleID] = append(categoryMap[saleID], cate)
+	var sales model.Sales
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Categories").Find(&sales, "Id IN ?", saleIDs).Error
+	if err != nil {
+		for idx := range saleIDs {
+			res[idx] = &dataloader.Result[[]*model.Category]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.Category]{Data: categoryMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.Category]{Error: err}
+	saleMap := map[string]*model.Sale{}
+	for _, sale := range sales {
+		saleMap[sale.Id] = sale
+	}
+
+	for idx, id := range saleIDs {
+		sale := saleMap[id]
+		if sale == nil {
+			sale = new(model.Sale)
+		}
+		res[idx] = &dataloader.Result[[]*model.Category]{Data: sale.Categories}
 	}
 	return res
 }
 
 func collectionsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.Collection] {
-	var (
-		res               = make([]*dataloader.Result[[]*model.Collection], len(saleIDs))
-		collections       model.Collections
-		appErr            *model.AppError
-		saleCollections   []*model.SaleCollectionRelation
-		collectionMap     = map[string]model.Collections{} // keys are sale ids
-		saleCollectionMap = map[string]string{}            // keys are collection ids, values are sale ids
-		err               error
-	)
+	var res = make([]*dataloader.Result[[]*model.Collection], len(saleIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	collections, appErr = embedCtx.App.Srv().
-		ProductService().
-		CollectionsByOption(&model.CollectionFilterOption{
-			SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	saleCollections, appErr = embedCtx.App.Srv().
-		DiscountService().
-		SaleCollectionsByOptions(&model.SaleCollectionRelationFilterOption{
-			SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	for _, rel := range saleCollections {
-		saleCollectionMap[rel.CollectionID] = rel.SaleID
-	}
-	for _, collection := range collections {
-		saleID, ok := saleCollectionMap[collection.Id]
-		if ok {
-			collectionMap[saleID] = append(collectionMap[saleID], collection)
+	var sales model.Sales
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Collections").Find(&sales, "Id IN ?", saleIDs).Error
+	if err != nil {
+		for idx := range saleIDs {
+			res[idx] = &dataloader.Result[[]*model.Collection]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.Collection]{Data: collectionMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.Collection]{Error: err}
+	saleMap := map[string]*model.Sale{}
+	for _, sale := range sales {
+		saleMap[sale.Id] = sale
+	}
+
+	for idx, id := range saleIDs {
+		sale := saleMap[id]
+		if sale == nil {
+			sale = new(model.Sale)
+		}
+		res[idx] = &dataloader.Result[[]*model.Collection]{Data: sale.Collections}
 	}
 	return res
 }
 
 func productsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.Product] {
-	var (
-		res            = make([]*dataloader.Result[[]*model.Product], len(saleIDs))
-		products       model.Products
-		appErr         *model.AppError
-		saleProducts   []*model.SaleProductRelation
-		productMap     = map[string]model.Products{} // keys are sale ids
-		saleProductMap = map[string]string{}         // keys are product ids, values are sale ids
-		err            error
-	)
+	var res = make([]*dataloader.Result[[]*model.Product], len(saleIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	products, appErr = embedCtx.App.Srv().
-		ProductService().
-		ProductsByOption(&model.ProductFilterOption{
-			SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	saleProducts, appErr = embedCtx.App.Srv().
-		DiscountService().
-		SaleProductsByOptions(&model.SaleProductRelationFilterOption{
-			SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	for _, rel := range saleProducts {
-		saleProductMap[rel.ProductID] = rel.SaleID
-	}
-	for _, product := range products {
-		saleID, ok := saleProductMap[product.Id]
-		if ok {
-			productMap[saleID] = append(productMap[saleID], product)
+	var sales model.Sales
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("Products").Find(&sales, "Id IN ?", saleIDs).Error
+	if err != nil {
+		for idx := range saleIDs {
+			res[idx] = &dataloader.Result[[]*model.Product]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.Product]{Data: productMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.Product]{Error: err}
+	saleMap := map[string]*model.Sale{}
+	for _, sale := range sales {
+		saleMap[sale.Id] = sale
+	}
+
+	for idx, id := range saleIDs {
+		sale := saleMap[id]
+		if sale == nil {
+			sale = new(model.Sale)
+		}
+		res[idx] = &dataloader.Result[[]*model.Product]{Data: sale.Products}
 	}
 	return res
 }
 
 func productVariantsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
-	var (
-		res                   = make([]*dataloader.Result[[]*model.ProductVariant], len(saleIDs))
-		variants              model.ProductVariants
-		appErr                *model.AppError
-		saleVariants          []*model.SaleProductVariant
-		productVariantMap     = map[string]model.ProductVariants{} // keys are sale ids
-		saleProductVariantMap = map[string]string{}                // keys are product variant ids, values are sale ids
-		err                   error
-	)
+	var res = make([]*dataloader.Result[[]*model.ProductVariant], len(saleIDs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	variants, appErr = embedCtx.App.Srv().
-		ProductService().
-		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			SaleID: squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	saleVariants, appErr = embedCtx.App.Srv().
-		DiscountService().
-		SaleProductVariantsByOptions(&model.SaleProductVariantFilterOption{
-			Conditions: squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": saleIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	for _, rel := range saleVariants {
-		saleProductVariantMap[rel.ProductVariantID] = rel.SaleID
-	}
-	for _, product := range variants {
-		saleID, ok := saleProductVariantMap[product.Id]
-		if ok {
-			productVariantMap[saleID] = append(productVariantMap[saleID], product)
+	var sales model.Sales
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("ProductVariants").Find(&sales, "Id IN ?", saleIDs).Error
+	if err != nil {
+		for idx := range saleIDs {
+			res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
 		}
+		return res
 	}
-	for idx, id := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: productVariantMap[id]}
-	}
-	return res
 
-errorLabel:
-	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
+	saleMap := map[string]*model.Sale{}
+	for _, sale := range sales {
+		saleMap[sale.Id] = sale
+	}
+
+	for idx, id := range saleIDs {
+		sale := saleMap[id]
+		if sale == nil {
+			sale = new(model.Sale)
+		}
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: sale.ProductVariants}
 	}
 	return res
 }
@@ -1384,7 +1181,7 @@ func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			Id: squirrel.Eq{model.ProductVariantTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": ids},
 		})
 
 	if appErr != nil {
@@ -1438,7 +1235,7 @@ func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	filterOptions := &model.AttributeProductFilterOption{
-		ProductTypeID: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
+		Conditions: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	// only shop's members can see all
@@ -1991,7 +1788,7 @@ func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []s
 
 	digitalContents, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentsbyOptions(&model.DigitalContentFilterOption{
-			ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": variantIDs},
+			Conditions: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": variantIDs},
 		})
 	if appErr != nil {
 		for idx := range variantIDs {
@@ -2000,7 +1797,7 @@ func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []s
 		return res
 	}
 
-	digitalContentMap := lo.SliceToMap(digitalContents, func(d *model.DigitalContent) (string, *model.DigitalContent) { return d.Id, d })
+	digitalContentMap := lo.SliceToMap(digitalContents, func(d *model.DigitalContent) (string, *model.DigitalContent) { return d.ProductVariantID, d })
 	for idx, id := range variantIDs {
 		res[idx] = &dataloader.Result[*model.DigitalContent]{Data: digitalContentMap[id]}
 	}
@@ -2026,7 +1823,7 @@ func digitalContentUrlByOrderLineID(ctx context.Context, orderLineIDs []string) 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	contentURLs, appErr := embedCtx.App.Srv().ProductService().DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
-		LineID: squirrel.Eq{model.DigitalContentURLTableName + ".LineID": orderLineIDs},
+		Conditions: squirrel.Eq{model.DigitalContentURLTableName + ".LineID": orderLineIDs},
 	})
 	if appErr != nil {
 		for idx := range orderLineIDs {

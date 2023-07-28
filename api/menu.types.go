@@ -201,7 +201,7 @@ func menuByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mod
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	menus, appErr := embedCtx.App.Srv().MenuService().MenusByOptions(&model.MenuFilterOptions{
-		Id: squirrel.Eq{model.MenuTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.MenuTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -223,7 +223,7 @@ func menuItemByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
-		Id: squirrel.Eq{model.MenuItemTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.MenuItemTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -247,7 +247,7 @@ func menuItemsByParentMenuLoader(ctx context.Context, menuIDs []string) []*datal
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
-		MenuID: squirrel.Eq{model.MenuItemTableName + ".MenuID": menuIDs},
+		Conditions: squirrel.Eq{model.MenuItemTableName + ".MenuID": menuIDs},
 	})
 	if appErr != nil {
 		for idx := range menuIDs {
@@ -273,7 +273,7 @@ func menuItemChildrenLoader(ctx context.Context, parentIDs []string) []*dataload
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
-		ParentID: squirrel.Eq{model.MenuItemTableName + ".ParentID": parentIDs},
+		Conditions: squirrel.Eq{model.MenuItemTableName + ".ParentID": parentIDs},
 	})
 	if appErr != nil {
 		for idx := range parentIDs {

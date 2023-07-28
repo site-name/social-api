@@ -18,8 +18,6 @@ type ChannelService interface {
 	CleanChannel(channelID *string) (*model.Channel, *model.AppError)
 	// ValidateChannel check if a channel with given id is active
 	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
-	BulkDeleteShippingZoneChannels(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) *model.AppError
-	BulkUpsertShippingZoneChannels(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, *model.AppError)
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
 	UpsertChannel(transaction *gorm.DB, channel *model.Channel) (*model.Channel, *model.AppError)

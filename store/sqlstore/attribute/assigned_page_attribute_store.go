@@ -3,7 +3,6 @@ package attribute
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -16,17 +15,6 @@ func NewSqlAssignedPageAttributeStore(s store.Store) store.AssignedPageAttribute
 	return &SqlAssignedPageAttributeStore{
 		Store: s,
 	}
-}
-
-func (as *SqlAssignedPageAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{"Id", "PageID", "AssignmentID"}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, item string) string {
-		return prefix + item
-	})
 }
 
 func (as *SqlAssignedPageAttributeStore) Save(pageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {

@@ -22,7 +22,7 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManager
 		return nil, appErr
 	}
 
-	calculatedCheckoutShipping, err := calculatedCheckoutShipping.Quantize(nil, goprices.Up)
+	calculatedCheckoutShipping, err := calculatedCheckoutShipping.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CheckoutShippingPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -40,7 +40,7 @@ func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInter
 		return nil, appErr
 	}
 
-	calculatedCheckoutSubTotal, err := calculatedCheckoutSubTotal.Quantize(nil, goprices.Up)
+	calculatedCheckoutSubTotal, err := calculatedCheckoutSubTotal.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CheckoutSubTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -88,7 +88,7 @@ func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterfac
 		return nil, appErr
 	}
 
-	calculatedCheckoutTotal, err := calculatedCheckoutTotal.Quantize(nil, goprices.Up)
+	calculatedCheckoutTotal, err := calculatedCheckoutTotal.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -114,7 +114,7 @@ func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInte
 		return nil, appErr
 	}
 
-	calculatedLineTotal, err := calculatedLineTotal.Quantize(nil, goprices.Up)
+	calculatedLineTotal, err := calculatedLineTotal.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CheckoutLineTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

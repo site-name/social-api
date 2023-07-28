@@ -201,6 +201,7 @@ type Server struct {
 	Invoice   sub_app_iface.InvoiceService
 	File      sub_app_iface.FileService
 	Plugin    sub_app_iface.PluginService
+	Shop      sub_app_iface.ShopService
 }
 
 // NewServer create new system server

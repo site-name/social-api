@@ -3,7 +3,9 @@ package shipping
 import (
 	"net/http"
 
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
@@ -34,4 +36,30 @@ func (s *ServiceShipping) DeleteShippingZones(transaction *gorm.DB, conditions *
 		return 0, model.NewAppError("DeleteShippingZones", "app.shipping.delete_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return numDeleted, nil
+}
+
+// NOTE: relations must be []*model.Channel or []*model.Warehouse
+func (s *ServiceShipping) AddShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError {
+	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, relations, false)
+	if err != nil {
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			return model.NewAppError("AddShippingZoneRelations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
+		}
+		return model.NewAppError("AddShippingZoneRelations", "app.channel.add_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
+// NOTE: relations must be []*model.Channel or []*model.Warehouse
+func (s *ServiceShipping) RemoveShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError {
+	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, relations, true)
+	if err != nil {
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			return model.NewAppError("RemoveShippingZoneRelations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
+		}
+		return model.NewAppError("RemoveShippingZoneRelations", "app.channel.remove_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

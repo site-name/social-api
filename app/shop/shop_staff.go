@@ -32,7 +32,7 @@ func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) 
 
 func (s *ServiceShop) UserIsStaffOfShop(userID string) bool {
 	relation, appErr := s.ShopStaffByOptions(&model.ShopStaffFilterOptions{
-		StaffID: squirrel.Eq{model.ShopStaffTableName + ".StaffID": userID},
+		Conditions: squirrel.Eq{model.ShopStaffTableName + ".StaffID": userID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {

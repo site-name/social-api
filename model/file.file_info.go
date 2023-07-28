@@ -23,6 +23,9 @@ const (
 type GetFileInfosOptions struct {
 	Conditions squirrel.Sqlizer
 	OrderBy    string // E.g "CreateAt ASC"
+
+	Limit  uint64 // if 0, no limit
+	Offset uint64 // if 0, no offset
 }
 
 type FileForIndexing struct {
@@ -53,7 +56,7 @@ type FileInfo struct {
 }
 
 func (c *FileInfo) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
-func (c *FileInfo) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *FileInfo) BeforeUpdate(_ *gorm.DB) error { c.CreateAt = 0; return c.IsValid() }
 func (c *FileInfo) TableName() string             { return FileInfoTableName }
 
 type FileInfos []*FileInfo

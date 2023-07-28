@@ -1,12 +1,11 @@
 package shipping
 
 import (
-	"database/sql"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,25 +16,6 @@ type SqlShippingZoneStore struct {
 
 func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 	return &SqlShippingZoneStore{s}
-}
-
-func (s *SqlShippingZoneStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Countries",
-		"Default",
-		"Description",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []interface{} {
@@ -52,59 +32,21 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []in
 
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 func (s *SqlShippingZoneStore) Upsert(tran *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
-	var isSaving bool
-
-	if shippingZone.Id == "" {
-		isSaving = true
-		shippingZone.PreSave()
-	} else {
-		shippingZone.PreUpdate()
+	if tran == nil {
+		tran = s.GetMaster()
 	}
 
-	if err := shippingZone.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err    error
-		result sql.Result
-		runner = s.GetMaster()
-	)
-	if tran != nil {
-		runner = tran
-	}
-
-	if isSaving {
-		query := "INSERT INTO " + model.ShippingZoneTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-		result, err = runner.NamedExec(query, shippingZone)
-
-	} else {
-		query := "UPDATE " + model.ShippingZoneTableName + " SET " + s.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		result, err = runner.NamedExec(query, shippingZone)
-	}
-
+	err := tran.Save(shippingZone).Error
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert shipping zone with id=%s", shippingZone.Id)
+		return nil, errors.Wrap(err, "failed to upsert shipping zone")
 	}
-	numUpserted, _ := result.RowsAffected()
-
-	if numUpserted > 1 {
-		return nil, errors.Errorf("%d shipping zone(s) upserted instead of 1", numUpserted)
-	}
-
 	return shippingZone, nil
 }
 
 // Get finds 1 shipping zone for given shippingZoneID
 func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
 	var res model.ShippingZone
-	err := s.GetReplica().Get(&res, "SELECT * FROM "+model.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
+	err := s.GetReplica().First(&res, "Id = ?", shippingZoneID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingZoneTableName, shippingZoneID)
@@ -117,9 +59,9 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, 
 
 // FilterByOption finds a list of shipping zones based on given option
 func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
-	selectFields := s.ModelFields(model.ShippingZoneTableName + ".")
-	if option.SelectRelatedWarehouseIDs {
-		selectFields = append(selectFields, "WarehouseShippingZones.WarehouseID")
+	selectFields := []string{model.ShippingZoneTableName + ".*"}
+	if option.SelectRelatedWarehouses {
+		selectFields = append(selectFields, model.WarehouseTableName+".*")
 	}
 
 	query := s.GetQueryBuilder().
@@ -132,12 +74,10 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 		option.WarehouseID,
 		option.ChannelID,
 	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+		query = query.Where(opt)
 	}
 
-	if option.WarehouseID != nil || option.SelectRelatedWarehouseIDs {
+	if option.WarehouseID != nil || option.SelectRelatedWarehouses {
 		query = query.InnerJoin(model.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
 	}
 	if option.ChannelID != nil {
@@ -148,7 +88,7 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
-	rows, err := s.GetReplica().Query(queryString, args...)
+	rows, err := s.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
 	}
@@ -162,11 +102,11 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 	for rows.Next() {
 		var (
 			shippingZone model.ShippingZone
-			warehouseID  string
+			warehouse    model.WareHouse
 			scanFields   = s.ScanFields(&shippingZone)
 		)
-		if option.SelectRelatedWarehouseIDs {
-			scanFields = append(scanFields, &warehouseID)
+		if option.SelectRelatedWarehouses {
+			scanFields = append(scanFields, s.Warehouse().ScanFields(&warehouse)...)
 		}
 
 		err = rows.Scan(scanFields...)
@@ -178,8 +118,8 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 			returningShippingZones = append(returningShippingZones, &shippingZone)
 			shippingZonesMap[shippingZone.Id] = &shippingZone
 		}
-		if option.SelectRelatedWarehouseIDs {
-			shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs, warehouseID)
+		if option.SelectRelatedWarehouses {
+			shippingZonesMap[shippingZone.Id].Warehouses = append(shippingZonesMap[shippingZone.Id].Warehouses, &warehouse)
 		}
 	}
 
@@ -195,9 +135,7 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 		options.WarehouseID,
 		options.ChannelID,
 	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+		query = query.Where(opt)
 	}
 
 	if options.WarehouseID != nil {
@@ -213,7 +151,7 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 	}
 
 	var res int64
-	err = s.GetReplica().Select(&res, queryStr, args...)
+	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of shipping zone by given options")
 	}
@@ -222,26 +160,57 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 }
 
 func (s *SqlShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error) {
-	if conditions.Conditions == nil {
-		return 0, errors.New("please provide conditions to delete")
-	}
-
 	query, args, err := s.GetQueryBuilder().Delete(model.ShippingZoneTableName).Where(conditions.Conditions).ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
 
-	result, err := runner.Exec(query, args...)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to delete shipping zones by given options")
+	result := transaction.Raw(query, args...)
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "failed to delete shipping zones by given options")
 	}
 
-	numDeleted, _ := result.RowsAffected()
+	return result.RowsAffected, nil
+}
 
-	return numDeleted, nil
+func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+	if len(zones) == 0 || relations == nil {
+		return store.NewErrInvalidInput("ShippingZones.ToggleRelations", "zones/relations", "empty")
+	}
+
+	var associationName string
+
+	switch relations.(type) {
+	case []*model.Channel:
+		associationName = "Channels"
+	case []*model.WareHouse:
+		associationName = "Warehouses"
+	default:
+		return store.NewErrInvalidInput("channel.AddRelations", "relations", relations)
+	}
+
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	for _, zone := range zones {
+		if zone != nil {
+			association := transaction.Model(zone).Association(associationName)
+			var err error
+			if delete {
+				err = association.Delete(relations)
+			} else {
+				err = association.Append(relations)
+			}
+			if err != nil {
+				return errors.Wrap(err, "failed to add "+strings.ToLower(associationName)+" to shipping zone with id = "+zone.Id)
+			}
+		}
+	}
+
+	return nil
 }

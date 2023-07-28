@@ -52,7 +52,7 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 		s:               m,
 		MinimumOrderWeight: &Weight{
 			Unit:  m.WeightUnit,
-			Value: float64(m.MinimumOrderWeight),
+			Value: float64(*m.MinimumOrderWeight),
 		},
 		MaximumDeliveryDays: (*int32)(unsafe.Pointer(m.MaximumDeliveryDays)),
 		MinimumDeliveryDays: (*int32)(unsafe.Pointer(m.MinimumDeliveryDays)),
@@ -258,7 +258,7 @@ func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channel
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	listings, appErr := embedCtx.App.Srv().ShippingService().
 		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ChannelID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
+			Conditions: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		for idx := range channelIDs {

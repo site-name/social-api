@@ -173,8 +173,8 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryC
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
 func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout) (*goprices.Money, *model.AppError) {
 	giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
+		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
 		Conditions: squirrel.And{
-			squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
 			squirrel.Or{
 				squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
 				squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": util.StartOfDay(time.Now().UTC())},
@@ -221,7 +221,7 @@ func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *model.Checkout, prod
 // CheckoutLastActivePayment returns the most recent payment made for given checkout
 func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*model.Payment, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutID: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
+		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {

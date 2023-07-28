@@ -367,7 +367,7 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 		Srv().
 		GiftcardService().
 		GiftcardsByOption(&model.GiftCardFilterOption{
-			UsedByID: squirrel.Eq{model.GiftcardTableName + ".UsedByID": userIDs},
+			Conditions: squirrel.Eq{model.GiftcardTableName + ".UsedByID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {
@@ -398,7 +398,7 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 	events, appErr := embedCtx.App.Srv().
 		GiftcardService().
 		GiftcardEventsByOptions(&model.GiftCardEventFilterOption{
-			GiftcardID: squirrel.Eq{model.GiftcardTableName + ".GiftcardID": giftcardIDs},
+			Conditions: squirrel.Eq{model.GiftcardTableName + ".GiftcardID": giftcardIDs},
 		})
 	if appErr != nil {
 		for idx := range giftcardIDs {
@@ -419,47 +419,23 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 
 func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.GiftCard] {
 	var (
-		res         = make([]*dataloader.Result[[]*model.GiftCard], len(orderIDs))
-		giftcards   []*model.GiftCard
-		appErr      *model.AppError
-		giftcardMap = map[string]*model.GiftCard{} // keys are giftcard ids
-
-		giftcardIDs []string
-		cardMap     = map[string][]*model.GiftCard{} // keys are order ids
+		res      = make([]*dataloader.Result[[]*model.GiftCard], len(orderIDs))
+		orderMap = map[string]*model.Order{} // keys are order ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	orderGiftcardRelations, err := embedCtx.App.Srv().Store.GiftCardOrder().FilterByOptions(&model.OrderGiftCardFilterOptions{
-		OrderID: squirrel.Eq{model.OrderGiftCardTableName + ".OrderID": orderIDs},
-	})
+	var orders model.Orders
+	err := embedCtx.App.Srv().Store.GetReplica().Preload("GiftCards").Find(&orders, "Id IN ?", orderIDs).Error
 	if err != nil {
-		err = model.NewAppError("giftcardsByOrderIDsLoader", "app.giftcard.giftcard-order-relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		goto errorLabel
 	}
 
-	giftcardIDs = lo.Map(orderGiftcardRelations, func(r *model.OrderGiftCard, _ int) string { return r.GiftCardID })
-
-	giftcards, appErr = embedCtx.App.
-		Srv().
-		GiftcardService().
-		GiftcardsByOption(&model.GiftCardFilterOption{
-			Id: squirrel.Eq{model.OrderGiftCardTableName + ".Id": giftcardIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
+	for _, order := range orders {
+		orderMap[order.Id] = order
 	}
-
-	for _, gc := range giftcards {
-		giftcardMap[gc.Id] = gc
-	}
-	for _, rel := range orderGiftcardRelations {
-		cardMap[rel.OrderID] = append(cardMap[rel.OrderID], giftcardMap[rel.GiftCardID])
-	}
-
 	for idx, id := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCard]{Data: cardMap[id]}
+		res[idx] = &dataloader.Result[[]*model.GiftCard]{Data: orderMap[id].GiftCards}
 	}
 	return res
 
@@ -517,9 +493,11 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 
 // NOTE: Call me after calling validate()
 func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOption {
-	res := &model.GiftCardFilterOption{}
+
+	andConditions := squirrel.And{}
+
 	if g.IsActive != nil {
-		res.IsActive = squirrel.Eq{model.GiftcardTableName + ".IsActive": *g.IsActive}
+		andConditions = append(andConditions, squirrel.Eq{model.GiftcardTableName + ".IsActive": *g.IsActive})
 	}
 
 	var tagFilter = squirrel.And{}
@@ -530,21 +508,21 @@ func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOpti
 		tagFilter = append(tagFilter, squirrel.Eq{model.GiftcardTableName + ".Tag": g.Tags})
 	}
 	if len(tagFilter) > 0 {
-		res.Tag = tagFilter
+		andConditions = append(andConditions, tagFilter)
 	}
 
 	if len(g.Products) > 0 {
-		res.ProductID = squirrel.Eq{model.GiftcardTableName + ".ProductID": g.Products}
+		andConditions = append(andConditions, squirrel.Eq{model.GiftcardTableName + ".ProductID": g.Products})
 	}
 	if len(g.UsedBy) > 0 {
-		res.UsedByID = squirrel.Eq{model.GiftcardTableName + ".UsedByID": g.UsedBy}
+		andConditions = append(andConditions, squirrel.Eq{model.GiftcardTableName + ".UsedByID": g.UsedBy})
 	}
 	if g.Currency != nil {
-		res.Currency = squirrel.Eq{model.GiftcardTableName + ".Currency": strings.ToUpper(*g.Currency)}
+		andConditions = append(andConditions, squirrel.Eq{model.GiftcardTableName + ".Currency": strings.ToUpper(*g.Currency)})
 	}
 	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
 		if priceRange != nil {
-			conditions := squirrel.And{}
+			balanceConditions := squirrel.And{}
 
 			fieldName := ".CurrentBalanceAmount"
 			if idx == 1 {
@@ -552,22 +530,15 @@ func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOpti
 			}
 
 			if gte := priceRange.Gte; gte != nil {
-				conditions = append(conditions, squirrel.GtOrEq{model.GiftcardTableName + fieldName: *gte})
+				balanceConditions = append(balanceConditions, squirrel.GtOrEq{model.GiftcardTableName + fieldName: *gte})
 			}
 			if lte := priceRange.Lte; lte != nil {
-				conditions = append(conditions, squirrel.LtOrEq{model.GiftcardTableName + fieldName: *lte})
+				balanceConditions = append(balanceConditions, squirrel.LtOrEq{model.GiftcardTableName + fieldName: *lte})
 			}
 
-			if len(conditions) > 0 {
-				switch idx {
-				case 0:
-					res.CurrentBalanceAmount = conditions
-				case 1:
-					res.InitialBalanceAmount = conditions
-				}
-			}
+			andConditions = append(andConditions, balanceConditions)
 		}
 	}
 
-	return res
+	return &model.GiftCardFilterOption{Conditions: andConditions}
 }
