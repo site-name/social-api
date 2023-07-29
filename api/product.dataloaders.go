@@ -788,13 +788,17 @@ func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []st
 
 func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*dataloader.Result[[]*model.ProductMedia] {
 	var (
-		res         = make([]*dataloader.Result[[]*model.ProductMedia], len(variantIDs))
-		variantsMap = map[string]*model.ProductVariant{} // keys are product variant ids
+		res      = make([]*dataloader.Result[[]*model.ProductMedia], len(variantIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		variants model.ProductVariants
 	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	var variants model.ProductVariants
-	err := embedCtx.App.Srv().Store.GetReplica().Preload("ProductMedias").Find(&variants, "Id IN ?", variantIDs).Error
+	err := embedCtx.App.Srv().
+		Store.
+		GetReplica().
+		Preload("Medias").
+		Find(&variants, "Id IN ?", variantIDs).
+		Error
 	if err != nil {
 		for idx := range variantIDs {
 			res[idx] = &dataloader.Result[[]*model.ProductMedia]{Error: err}
@@ -802,15 +806,19 @@ func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*
 		return res
 	}
 
-	for _, rel := range variants {
-		variantsMap[rel.Id] = rel
+	variantsMap := map[string]*model.ProductVariant{}
+	for _, variant := range variants {
+		variantsMap[variant.Id] = variant
 	}
+
 	for idx, id := range variantIDs {
+		var medias model.ProductMedias
+
 		variant := variantsMap[id]
-		if variant == nil {
-			variant = new(model.ProductVariant)
+		if variant != nil {
+			medias = variant.Medias
 		}
-		res[idx] = &dataloader.Result[[]*model.ProductMedia]{Data: variant.ProductMedias}
+		res[idx] = &dataloader.Result[[]*model.ProductMedia]{Data: medias}
 	}
 	return res
 }
@@ -943,11 +951,18 @@ func categoryByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 }
 
 func categoriesByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.Category] {
-	var res = make([]*dataloader.Result[[]*model.Category], len(voucherIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.Category], len(voucherIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		vouchers model.Vouchers
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	var vouchers model.Vouchers
-	err := embedCtx.App.Srv().Store.GetReplica().Preload("Categories").Find(&vouchers, "Id IN ?", voucherIDs).Error
+	err := embedCtx.App.Srv().
+		Store.
+		GetReplica().
+		Preload("Categories").
+		Find(&vouchers, "Id IN ?", voucherIDs).
+		Error
 	if err != nil {
 		for idx := range voucherIDs {
 			res[idx] = &dataloader.Result[[]*model.Category]{Error: err}
@@ -960,11 +975,13 @@ func categoriesByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*da
 		voucherMap[voucher.Id] = voucher
 	}
 	for idx, id := range voucherIDs {
+		var categories model.Categories
+
 		voucher := voucherMap[id]
-		if voucher == nil {
-			voucher = new(model.Voucher)
+		if voucher != nil {
+			categories = voucher.Categories
 		}
-		res[idx] = &dataloader.Result[[]*model.Category]{Data: voucher.Categories}
+		res[idx] = &dataloader.Result[[]*model.Category]{Data: categories}
 	}
 	return res
 }
@@ -1300,7 +1317,7 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	)
 
 	filterOptions := &model.AttributeVariantFilterOption{
-		ProductTypeID: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+		Conditions: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1364,7 +1381,7 @@ func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	)
 
 	filterOptions := &model.AttributeProductFilterOption{
-		ProductTypeID: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
+		Conditions: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1397,7 +1414,7 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	)
 
 	filterOptions := &model.AttributeVariantFilterOption{
-		ProductTypeID: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+		Conditions: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1429,7 +1446,7 @@ func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs 
 		assignedProductAttributeMap = map[string][]*model.AssignedProductAttribute{} // keys are product ids
 	)
 	filterOptions := model.AssignedProductAttributeFilterOption{
-		ProductID: squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": productIDs},
+		Conditions: squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": productIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1463,7 +1480,7 @@ func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs
 	)
 
 	filterOptions := &model.AssignedVariantAttributeFilterOption{
-		VariantID: squirrel.Eq{model.AssignedVariantAttributeTableName + ".VariantID": variantIDs},
+		Conditions: squirrel.Eq{model.AssignedVariantAttributeTableName + ".VariantID": variantIDs},
 	}
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoleAny("assignedVariantAttributesByProductVariantId", model.ShopStaffRoleId, model.ShopAdminRoleId)
@@ -1503,7 +1520,7 @@ func attributeValuesByAssignedProductAttributeIdLoader(ctx context.Context, ids 
 	assignedProductAttributeValues, err := embedCtx.App.Srv().
 		Store.AssignedProductAttributeValue().
 		FilterByOptions(&model.AssignedProductAttributeValueFilterOptions{
-			AssignmentID: squirrel.Eq{model.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
+			Conditions: squirrel.Eq{model.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
 		err = model.NewAppError("attributeValuesByAssignedProductAttributeIdLoader", "app.attribute.assigned_product_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1552,7 +1569,7 @@ func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids 
 	assignedVariantAttributeValues, err := embedCtx.App.Srv().
 		Store.AssignedVariantAttributeValue().
 		FilterByOptions(&model.AssignedVariantAttributeValueFilterOptions{
-			AssignmentID: squirrel.Eq{model.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
+			Conditions: squirrel.Eq{model.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
 		err = model.NewAppError("attributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)

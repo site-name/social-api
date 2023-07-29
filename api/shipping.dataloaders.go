@@ -81,12 +81,17 @@ func shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader(ctx cont
 }
 
 func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.ShippingZone] {
-	res := make([]*dataloader.Result[[]*model.ShippingZone], len(ids))
+	var (
+		res      = make([]*dataloader.Result[[]*model.ShippingZone], len(ids))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		channels model.Channels
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var channels model.Channels
-	err := embedCtx.App.Srv().Store.GetReplica().Preload("ShippingZones").Find(&channels, "Id IN ?", ids).Error
+	err := embedCtx.App.Srv().
+		Store.
+		GetReplica().
+		Preload("ShippingZones").
+		Find(&channels, "Id IN ?", ids).Error
 	if err != nil {
 		for idx := range ids {
 			res[idx] = &dataloader.Result[[]*model.ShippingZone]{Error: err}
@@ -100,11 +105,13 @@ func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*datalo
 	}
 
 	for idx, id := range ids {
+		var zones model.ShippingZones
+
 		channel := channelMap[id]
-		if channel == nil {
-			channel = new(model.Channel)
+		if channel != nil {
+			zones = channel.ShippingZones
 		}
-		res[idx] = &dataloader.Result[[]*model.ShippingZone]{Data: channel.ShippingZones}
+		res[idx] = &dataloader.Result[[]*model.ShippingZone]{Data: zones}
 	}
 	return res
 }
@@ -185,10 +192,12 @@ func postalCodeRulesByShippingMethodIdLoader(ctx context.Context, shippingMethod
 }
 
 func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Product] {
-	res := make([]*dataloader.Result[[]*model.Product], len(ids))
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	var (
+		res      = make([]*dataloader.Result[[]*model.Product], len(ids))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		methods  model.ShippingMethods
+	)
 
-	var methods model.ShippingMethods
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("").Find(&methods, "Id IN ?", ids).Error
 	if err != nil {
 		err = model.NewAppError("excludedProductByShippingMethodIDLoader", "app.shipping.shipping_method_excluded_product_relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -204,65 +213,49 @@ func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) 
 	}
 
 	for idx, id := range ids {
+		var products model.Products
+
 		method := methodMap[id]
-		if method == nil {
-			method = new(model.ShippingMethod)
+		if method != nil {
+			products = method.ExcludedProducts
 		}
-		res[idx] = &dataloader.Result[[]*model.Product]{Data: method.ExcludedProducts}
+		res[idx] = &dataloader.Result[[]*model.Product]{Data: products}
 	}
 	return res
 }
 
 func channelsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[[]*model.Channel] {
 	var (
-		res                           = make([]*dataloader.Result[[]*model.Channel], len(shippingZoneIDs))
-		channelAndShippingZoneIDPairs = map[string][]string{} // keys are shipping zone ids, values are slices of channel ids
-		channelIDs                    []string
-		channels                      []*model.Channel
-		channelMap                    = map[string]*model.Channel{} // keys are channel ids
-		errs                          []error
+		res           = make([]*dataloader.Result[[]*model.Channel], len(shippingZoneIDs))
+		embedCtx      = GetContextValue[*web.Context](ctx, WebCtx)
+		shippingZones model.ShippingZones
 	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	shippingZoneChannels, err := embedCtx.
-		App.
-		Srv().
-		Store.
-		ShippingZoneChannel().
-		FilterByOptions(&model.ShippingZoneChannelFilterOptions{
-			Conditions: squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": shippingZoneIDs},
-		})
+	err := embedCtx.App.Srv().Store.
+		GetReplica().
+		Preload("Channels").
+		Find(&shippingZones, "Id IN ?", shippingZoneIDs).
+		Error
 	if err != nil {
-		err = model.NewAppError("channelsByShippingZoneIdLoader", "app.shipping.shipping_zone_channels_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-	channelIDs = lo.Map(shippingZoneChannels, func(r *model.ShippingZoneChannel, _ int) string { return r.ChannelID })
-
-	for _, rel := range shippingZoneChannels {
-		channelAndShippingZoneIDPairs[rel.ShippingZoneID] = append(channelAndShippingZoneIDPairs[rel.ShippingZoneID], rel.ChannelID)
+		for idx := range shippingZoneIDs {
+			res[idx] = &dataloader.Result[[]*model.Channel]{Error: err}
+		}
+		return res
 	}
 
-	channels, errs = ChannelByIdLoader.LoadMany(ctx, channelIDs)()
-	if len(errs) > 0 && errs[0] != nil {
-		err = errs[0]
-		goto errorLabel
-	}
-	for _, channel := range channels {
-		channelMap[channel.Id] = channel
+	zonesMap := map[string]*model.ShippingZone{}
+	for _, zone := range shippingZones {
+		zonesMap[zone.Id] = zone
 	}
 
 	for idx, id := range shippingZoneIDs {
-		channels := lo.Map(channelAndShippingZoneIDPairs[id], func(channelID string, _ int) *model.Channel { return channelMap[channelID] })
-		channels = lo.Filter(channels, func(c *model.Channel, _ int) bool { return c != nil })
+		var channels model.Channels
+		zone := zonesMap[id]
+		if zone != nil {
+			channels = zone.Channels
+		}
 
 		res[idx] = &dataloader.Result[[]*model.Channel]{Data: channels}
-	}
-	return res
-
-errorLabel:
-	for idx := range shippingZoneIDs {
-		res[idx] = &dataloader.Result[[]*model.Channel]{Error: err}
 	}
 	return res
 }
@@ -355,54 +348,35 @@ func shippingMethodChannelListingByShippingMethodIdLoader(ctx context.Context, s
 
 func shippingZonesByWarehouseIDLoader(ctx context.Context, warehouseIDs []string) []*dataloader.Result[model.ShippingZones] {
 	var (
-		res                       = make([]*dataloader.Result[model.ShippingZones], len(warehouseIDs))
-		shippingZoneIDs           []string
-		shippingZones             model.ShippingZones
-		appErr                    *model.AppError
-		warehouseShippingZonesMap = map[string]model.ShippingZones{} // keys are warehouse ids
-		shippingZoneMap           = map[string]*model.ShippingZone{} // keys are shipping zone ids
+		res        = make([]*dataloader.Result[model.ShippingZones], len(warehouseIDs))
+		embedCtx   = GetContextValue[*web.Context](ctx, WebCtx)
+		warehouses model.Warehouses
 	)
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	warehouseShippingZones, err := embedCtx.
-		App.
-		Srv().
-		Store.
-		WarehouseShippingZone().
-		FilterByOptions(&model.WarehouseShippingZoneFilterOption{
-			Conditions: squirrel.Eq{model.WarehouseShippingZoneTableName + ".WarehouseID": warehouseIDs},
-		})
+	err := embedCtx.App.Srv().Store.
+		GetReplica().
+		Preload("ShippingZones").
+		Find(&warehouses, "Id IN ?", warehouseIDs).
+		Error
 	if err != nil {
-		appErr = model.NewAppError("shippingZonesByWarehouseIDLoader", "app.shipping.warehouse_shipping_zones_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-
-	shippingZoneIDs = lo.Map(warehouseShippingZones, func(r *model.WarehouseShippingZone, _ int) string { return r.ShippingZoneID })
-	shippingZones, appErr = embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingZoneIDs},
-		},
-	})
-	if appErr != nil {
-		goto errorLabel
-	}
-	shippingZoneMap = lo.SliceToMap(shippingZones, func(s *model.ShippingZone) (string, *model.ShippingZone) { return s.Id, s })
-
-	for _, rel := range warehouseShippingZones {
-		zone, exist := shippingZoneMap[rel.ShippingZoneID]
-		if exist {
-			warehouseShippingZonesMap[rel.WarehouseID] = append(warehouseShippingZonesMap[rel.WarehouseID], zone)
+		for idx := range warehouseIDs {
+			res[idx] = &dataloader.Result[model.ShippingZones]{Error: err}
 		}
+		return res
+	}
+
+	warehouseMap := map[string]*model.WareHouse{}
+	for _, warehouse := range warehouses {
+		warehouseMap[warehouse.Id] = warehouse
 	}
 
 	for idx, id := range warehouseIDs {
-		res[idx] = &dataloader.Result[model.ShippingZones]{Data: warehouseShippingZonesMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range warehouseIDs {
-		res[idx] = &dataloader.Result[model.ShippingZones]{Error: appErr}
+		var zones model.ShippingZones
+		warehouse := warehouseMap[id]
+		if warehouse != nil {
+			zones = warehouse.ShippingZones
+		}
+		res[idx] = &dataloader.Result[model.ShippingZones]{Data: zones}
 	}
 	return res
 }

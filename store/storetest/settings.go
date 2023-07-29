@@ -5,27 +5,112 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"os"
 	"path"
+	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 )
 
-type SqlStore interface {
-	GetMasterX() SqlXExecutor
-	DriverName() string
+const (
+	defaultPostgresqlDSN = "postgres://minh:anhyeuem98@localhost:5432/sitename_test?sslmode=disable&connect_timeout=10"
+)
+
+func getDefaultPostgresqlDSN() string {
+	if os.Getenv("IS_CI") == "true" {
+		return strings.ReplaceAll(defaultPostgresqlDSN, "localhost", "postgres")
+	}
+	return defaultPostgresqlDSN
 }
 
-type SqlXExecutor interface {
-	Get(dest any, query string, args ...any) error
-	NamedExec(query string, arg any) (sql.Result, error)
-	Exec(query string, args ...any) (sql.Result, error)
-	ExecRaw(query string, args ...any) (sql.Result, error)
-	NamedQuery(query string, arg any) (*sqlx.Rows, error)
-	QueryRowX(query string, args ...any) *sqlx.Row
-	QueryX(query string, args ...any) (*sqlx.Rows, error)
-	Select(dest any, query string, args ...any) error
+// PostgresSQLSettings returns the database settings to connect to the PostgreSQL unittesting database.
+// The database name is generated randomly and must be created before use.
+func PostgreSQLSettings() *model.SqlSettings {
+	dsn := os.Getenv("TEST_DATABASE_POSTGRESQL_DSN")
+	if dsn == "" {
+		dsn = getDefaultPostgresqlDSN()
+		slog.Info("No TEST_DATABASE_POSTGRESQL_DSN override, using default", slog.String("default_dsn", dsn))
+	} else {
+		slog.Info("Using TEST_DATABASE_POSTGRESQL_DSN override", slog.String("dsn", dsn))
+	}
+
+	dsnURL, err := url.Parse(dsn)
+	if err != nil {
+		panic("failed to parse dsn " + dsn + ": " + err.Error())
+	}
+
+	// Generate a random database name
+	dsnURL.Path = "db" + model.NewId()
+
+	return databaseSettings("postgres", dsnURL.String())
+}
+
+func databaseSettings(driver, dataSource string) *model.SqlSettings {
+	settings := &model.SqlSettings{
+		DriverName:                        &driver,
+		DataSource:                        &dataSource,
+		DataSourceReplicas:                []string{},
+		DataSourceSearchReplicas:          []string{},
+		MaxIdleConns:                      new(int),
+		ConnMaxLifetimeMilliseconds:       new(int),
+		ConnMaxIdleTimeMilliseconds:       new(int),
+		MaxOpenConns:                      new(int),
+		Trace:                             model.NewPrimitive(false),
+		AtRestEncryptKey:                  model.NewPrimitive(model.NewRandomString(32)),
+		QueryTimeout:                      new(int),
+		MigrationsStatementTimeoutSeconds: new(int),
+	}
+	*settings.MaxIdleConns = 10
+	*settings.ConnMaxLifetimeMilliseconds = 3600000
+	*settings.ConnMaxIdleTimeMilliseconds = 300000
+	*settings.MaxOpenConns = 100
+	*settings.QueryTimeout = 60
+	*settings.MigrationsStatementTimeoutSeconds = 60
+
+	return settings
+}
+
+func postgreSQLRootDSN(dsn string) string {
+	dsnURL, err := url.Parse(dsn)
+	if err != nil {
+		panic("failed to parse dsn " + dsn + ": " + err.Error())
+	}
+
+	// // Assume the unittesting database has the same password.
+	// password := ""
+	// if dsnUrl.User != nil {
+	// 	password, _ = dsnUrl.User.Password()
+	// }
+
+	// dsnUrl.User = url.UserPassword("", password)
+	dsnURL.Path = "postgres"
+
+	return dsnURL.String()
+}
+
+func execAsRoot(settings *model.SqlSettings, sqlCommand string) error {
+	dsn := postgreSQLRootDSN(*settings.DataSource)
+	db, err := sql.Open(*settings.DriverName, dsn)
+	if err != nil {
+		return errors.Wrapf(err, "failed to connect to %s database as root", *settings.DriverName)
+	}
+	defer db.Close()
+	if _, err = db.Exec(sqlCommand); err != nil {
+		return errors.Wrapf(err, "failed to execute `%s` against %s database as root", sqlCommand, *settings.DriverName)
+	}
+
+	return nil
+}
+
+func postgreSQLDSNDatabase(dsn string) string {
+	dsnURL, err := url.Parse(dsn)
+	if err != nil {
+		panic("failed to parse dsn " + dsn + ": " + err.Error())
+	}
+
+	return path.Base(dsnURL.Path)
 }
 
 func log(message string) {
@@ -42,44 +127,22 @@ func log(message string) {
 	}
 }
 
-func postgreSQLDSNDatabase(dsn string) string {
-	dsnURL, err := url.Parse(dsn)
-	if err != nil {
-		panic("failed to parse dsn " + dsn + ": " + err.Error())
+func MakeSqlSettings(driver string, withReplica bool) *model.SqlSettings {
+	settings := PostgreSQLSettings()
+	dbName := postgreSQLDSNDatabase(*settings.DataSource)
+
+	if err := execAsRoot(settings, "GRANT ALL PRIVILEGES ON DATABASE \""+dbName+"\" TO minh"); err != nil {
+		panic("failed to grant minh permission to " + dbName + ":" + err.Error())
 	}
 
-	return path.Base(dsnURL.Path)
-}
+	log("Created temporary " + driver + " database " + dbName)
+	// settings.ReplicaMonitorIntervalSeconds = model.NewInt(5)
 
-func postgreSQLRootDSN(dsn string) string {
-	dsnURL, err := url.Parse(dsn)
-	if err != nil {
-		panic("failed to parse dsn " + dsn + ": " + err.Error())
-	}
-	dsnURL.Path = "postgres"
-
-	return dsnURL.String()
-}
-
-// execAsRoot executes the given sql as root against the testing database
-func execAsRoot(settings *model.SqlSettings, sqlCommand string) error {
-	dsn := postgreSQLRootDSN(*settings.DataSource)
-
-	db, err := sql.Open(model.DATABASE_DRIVER_POSTGRES, dsn)
-	if err != nil {
-		return errors.Wrapf(err, "failed to connect to %s database as root", model.DATABASE_DRIVER_POSTGRES)
-	}
-	defer db.Close()
-	if _, err = db.Exec(sqlCommand); err != nil {
-		return errors.Wrapf(err, "failed to execute `%s` against %s database as root", sqlCommand, model.DATABASE_DRIVER_POSTGRES)
-	}
-
-	return nil
+	return settings
 }
 
 func CleanupSqlSettings(settings *model.SqlSettings) {
 	dbName := postgreSQLDSNDatabase(*settings.DataSource)
-
 	if err := execAsRoot(settings, "DROP DATABASE "+dbName); err != nil {
 		panic("failed to drop temporary database " + dbName + ": " + err.Error())
 	}

@@ -58,7 +58,7 @@ type SqlStore struct {
 	srCounter int64
 
 	master         *gorm.DB
-	replicas       []*gorm.DB
+	Replicas       []*gorm.DB
 	searchReplicas []*gorm.DB
 
 	// masterX         *sqlxDBWrapper
@@ -176,7 +176,7 @@ func (ss *SqlStore) initConnection() error {
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
 		// ss.replicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
-		ss.replicas = make([]*gorm.DB, len(ss.settings.DataSourceReplicas))
+		ss.Replicas = make([]*gorm.DB, len(ss.settings.DataSourceReplicas))
 
 		for i, replica := range ss.settings.DataSourceReplicas {
 			replicaName := fmt.Sprintf("replica-%v", i)
@@ -185,7 +185,7 @@ func (ss *SqlStore) initConnection() error {
 				return errors.Wrapf(err, "failed to setup replica connection: %s", replicaName)
 			}
 			// ss.replicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
-			ss.replicas[i], err = newGormDBWrapper(handle, ss.settings)
+			ss.Replicas[i], err = newGormDBWrapper(handle, ss.settings)
 			if err != nil {
 				return err
 			}
@@ -275,8 +275,8 @@ func (ss *SqlStore) GetReplica(noTimeout ...bool) *gorm.DB {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
 		return ss.GetMaster(noTimeout...)
 	}
-	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.replicas))
-	db := ss.replicas[rrNum]
+	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
+	db := ss.Replicas[rrNum]
 
 	if len(noTimeout) > 0 && noTimeout[0] {
 		return db
@@ -350,7 +350,7 @@ func (ss *SqlStore) TotalReadDbConnections() int {
 	}
 
 	count := 0
-	for _, gormDB := range ss.replicas {
+	for _, gormDB := range ss.Replicas {
 		db, err := gormDB.DB()
 		if err != nil {
 			slog.Error("failed to retrieve underlying replica *sql.DB instance", slog.Err(err))
@@ -445,9 +445,9 @@ func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool
 
 // Get all databases connections
 func (ss *SqlStore) GetAllConns() []*gorm.DB {
-	all := make([]*gorm.DB, len(ss.replicas)+1)
-	copy(all, ss.replicas)
-	all[len(ss.replicas)] = ss.master
+	all := make([]*gorm.DB, len(ss.Replicas)+1)
+	copy(all, ss.Replicas)
+	all[len(ss.Replicas)] = ss.master
 	return all
 }
 
@@ -476,7 +476,7 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 
 // close all database connections
 func (ss *SqlStore) Close() {
-	connections := append(ss.replicas, ss.searchReplicas...)
+	connections := append(ss.Replicas, ss.searchReplicas...)
 	connections = append(connections, ss.master)
 
 	for _, conn := range connections {
@@ -492,7 +492,7 @@ func (ss *SqlStore) LockToMaster() {
 	ss.lockedToMaster = true
 }
 
-// let db queries free to call any db replicas
+// let db queries free to call any db Replicas
 func (ss *SqlStore) UnlockFromMaster() {
 	ss.lockedToMaster = false
 }

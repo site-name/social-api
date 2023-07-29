@@ -144,13 +144,13 @@ func (api *PluginAPI) GetUser(userID string) (*model.User, *model.AppError) {
 
 func (api *PluginAPI) GetUserByEmail(email string) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Extra: squirrel.Expr("Users.Email = lower(?)", email),
+		Conditions: squirrel.Expr("Users.Email = lower(?)", email),
 	})
 }
 
 func (api *PluginAPI) GetUserByUsername(name string) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Extra: squirrel.Expr("Users.Username = ?", name),
+		Conditions: squirrel.Expr("Users.Username = ?", name),
 	})
 }
 

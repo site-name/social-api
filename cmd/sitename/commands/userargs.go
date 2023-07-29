@@ -19,7 +19,7 @@ func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
 
 func getUserFromUserArg(a *app.App, userArg string) *model.User {
 	user, _ := a.Srv().Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
-		Extra: squirrel.Expr("Users.Email = lower(?) OR Users.Username = ? OR Users.Id = ?", userArg, userArg, userArg),
+		Conditions: squirrel.Expr("Users.Email = lower(?) OR Users.Username = ? OR Users.Id = ?", userArg, userArg, userArg),
 	})
 
 	return user

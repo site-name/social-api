@@ -24,7 +24,7 @@ const (
 	actionSymlink
 )
 
-const root = "___sitename-server"
+const root = "___mattermost-server"
 
 type testResourceDetails struct {
 	src     string
@@ -70,7 +70,7 @@ func getTestResourcesToSetup() []testResourceDetails {
 		{"templates", "templates", resourceTypeFolder, actionSymlink},
 		{"tests", "tests", resourceTypeFolder, actionSymlink},
 		{"fonts", "fonts", resourceTypeFolder, actionSymlink},
-		{"utils/policies-roles-mapping.json", "utils/policies-roles-mapping.json", resourceTypeFile, actionSymlink},
+		{"channels/utils/policies-roles-mapping.json", "channels/utils/policies-roles-mapping.json", resourceTypeFile, actionSymlink},
 	}
 
 	// Finding resources and setting full path to source to be used for further processing

@@ -18,25 +18,6 @@ func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 	return &SqlCategoryStore{s}
 }
 
-func (cs *SqlCategoryStore) ScanFields(cate *model.Category) []interface{} {
-	return []interface{}{
-		&cate.Id,
-		&cate.Name,
-		&cate.Slug,
-		&cate.Description,
-		&cate.ParentID,
-		&cate.Level,
-		&cate.BackgroundImage,
-		&cate.BackgroundImageAlt,
-		&cate.Images,
-		&cate.SeoTitle,
-		&cate.SeoDescription,
-		&cate.NameTranslation,
-		&cate.Metadata,
-		&cate.PrivateMetadata,
-	}
-}
-
 // Upsert depends on given category's Id field to decide update or insert it
 func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	err := cs.GetMaster().Save(category).Error
@@ -111,7 +92,7 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	runner := cs.GetMaster()
+	runner := cs.GetReplica()
 	if option.Transaction != nil {
 		runner = option.Transaction
 	}
@@ -132,7 +113,7 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	runner := cs.GetMaster()
+	runner := cs.GetReplica()
 	if option.Transaction != nil {
 		runner = option.Transaction
 	}

@@ -17,7 +17,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -354,15 +353,13 @@ func (r *Resolver) ShippingPriceExcludeProducts(ctx context.Context, args struct
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	for _, productID := range args.Input.Products {
-		// NOTE: no need to worry unique constraint violation since it's handled in store layer.
-		_, err := embedCtx.App.Srv().Store.ShippingMethodExcludedProduct().Save(&model.ShippingMethodExcludedProduct{
-			ShippingMethodID: args.Id,
-			ProductID:        productID,
-		})
-		if err != nil {
-			return nil, model.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+	productsToExclude := lo.Map(args.Input.Products, func(id string, _ int) *model.Product { return &model.Product{Id: id} })
+	err := embedCtx.App.Srv().Store.GetMaster().
+		Model(&model.ShippingMethod{Id: args.Id}).
+		Association("ExcludedProducts").
+		Append(productsToExclude)
+	if err != nil {
+		return nil, model.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceExcludeProducts{
@@ -385,12 +382,13 @@ func (r *Resolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, ar
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	err := embedCtx.App.Srv().Store.ShippingMethodExcludedProduct().Delete(nil, &model.ShippingMethodExcludedProductFilterOptions{
-		ShippingMethodID: squirrel.Eq{model.ShippingMethodExcludedProductTableName + ".ShippingMethodID": args.Id},
-		ProductID:        squirrel.Eq{model.ShippingMethodExcludedProductTableName + ".ProductID": args.Products},
-	})
+	productsToRemove := lo.Map(args.Products, func(id string, _ int) *model.Product { return &model.Product{Id: id} })
+	err := embedCtx.App.Srv().Store.GetMaster().
+		Model(&model.ShippingMethod{Id: args.Id}).
+		Association("ExcludedProducts").
+		Delete(productsToRemove)
 	if err != nil {
-		return nil, model.NewAppError("ShippingPriceRemoveProductFromExclude", "app.shipping.delete_shipping_method_excluded_products.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("ShippingPriceExcludeProducts", "app.shipping.insert_shipping_method_excluded_product.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ShippingPriceRemoveProductFromExclude{
@@ -434,34 +432,24 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 
 	// save m2m warehouse shipping zones
 	if len(args.Input.AddWarehouses) > 0 {
-		warehouseShippingZonesToCreate := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WarehouseShippingZone {
-			return &model.WarehouseShippingZone{
-				WarehouseID:    id,
-				ShippingZoneID: shippingZone.Id,
-			}
-		})
-		warehouseShippingZonesToCreate, appErr = embedCtx.App.Srv().WarehouseService().CreateWarehouseShippingZones(transaction, warehouseShippingZonesToCreate)
-		if appErr != nil {
-			return nil, appErr
+		warehousesToAdd := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
+		err := transaction.Model(shippingZone).Association("Warehouses").Append(warehousesToAdd)
+		if err != nil {
+			return nil, model.NewAppError("ShippingZoneCreate", "app.shipping.add_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
 	// save m2m shipping zone channels
 	if len(args.Input.AddChannels) > 0 {
-		shippingZoneChannelsToSave := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.ShippingZoneChannel {
-			return &model.ShippingZoneChannel{
-				ShippingZoneID: shippingZone.Id,
-				ChannelID:      id,
-			}
-		})
-		shippingZoneChannelsToSave, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, shippingZoneChannelsToSave)
-		if appErr != nil {
-			return nil, appErr
+		channelsToAdd := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} })
+		err := transaction.Model(shippingZone).Association("Channels").Append(channelsToAdd)
+		if err != nil {
+			return nil, model.NewAppError("ShippingZoneCreate", "app.shipping.add_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingZoneCreate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -546,11 +534,11 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("ShippingZoneUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	// find all shipping zones
 	allShippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{})

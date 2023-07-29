@@ -266,8 +266,8 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, r
 		} else {
 
 			stocks, appErr := s.srv.WarehouseService().FilterStocksForChannel(&model.StockFilterForChannelOption{
-				Id:        squirrel.Eq{model.StockTableName + ".Id": orderLine.GetProductVariant().GetStocks().IDs()},
-				ChannelID: order.ChannelID,
+				Conditions: squirrel.Eq{model.StockTableName + ".Id": orderLine.GetProductVariant().GetStocks().IDs()},
+				ChannelID:  order.ChannelID,
 			})
 			if appErr != nil {
 				if appErr.StatusCode != http.StatusNotFound {

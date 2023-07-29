@@ -41,7 +41,7 @@ func (s *ServicePlugin) newPluginManager() (interfaces.PluginManagerInterface, *
 	pluginConfigsOfChannels, appErr := manager.Srv.
 		PluginService().
 		FilterPluginConfigurations(&model.PluginConfigurationFilterOptions{
-			ChannelID: squirrel.Eq{model.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
+			Conditions: squirrel.Eq{model.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -140,7 +140,7 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, 
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -164,7 +164,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInf
 		}
 	}
 
-	quantizedTaxedMoney, _ := lineTotalSum.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, _ := lineTotalSum.Quantize(goprices.Up, -1)
 	return quantizedTaxedMoney, nil
 }
 
@@ -188,7 +188,7 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInf
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateCheckoutShipping", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -216,7 +216,7 @@ func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutIn
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateCheckoutLineTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -231,8 +231,10 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 	}
 
 	shippingMethodChannelListings, appErr := m.Srv.ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": orDer.ShippingMethodID},
-		ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": orDer.ChannelID},
+		Conditions: squirrel.Eq{
+			model.ShippingMethodChannelListingTableName + ".ShippingMethodID": orDer.ShippingMethodID,
+			model.ShippingMethodChannelListingTableName + ".ChannelID":        orDer.ChannelID,
+		},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -245,7 +247,7 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 		Gross:    firstItem.Price,
 		Currency: firstItem.Currency,
 	}).
-		Quantize(nil, goprices.Up)
+		Quantize(goprices.Up, -1)
 
 	var taxedMoney *goprices.TaxedMoney
 
@@ -261,7 +263,7 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateOrderShipping", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -335,7 +337,7 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateOrderlineTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -349,7 +351,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 	var taxedMoney *goprices.TaxedMoney
 
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
-		taxedMoney, appErr = plg.CalculateCheckoutLineUnitPrice(checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
+		taxedMoney, appErr := plg.CalculateCheckoutLineUnitPrice(checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusNotImplemented {
 				taxedMoney = defaultValue
@@ -360,7 +362,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateCheckoutLineUnitPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -370,7 +372,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 
 func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model.AppError) {
 	orderLine.PopulateNonDbFields() // this is needed
-	defaultValue, err := orderLine.UnitPrice.Quantize(nil, goprices.Up)
+	defaultValue, err := orderLine.UnitPrice.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateOrderLineUnit", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -391,7 +393,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("CalculateOrderLineUnit", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -494,7 +496,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprice
 		Net:      &price,
 		Gross:    &price,
 		Currency: price.Currency,
-	}).Quantize(nil, goprices.Up)
+	}).Quantize(goprices.Up, -1)
 
 	var (
 		taxedMoney *goprices.TaxedMoney
@@ -512,7 +514,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprice
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("ApplyTaxesToProduct", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -524,7 +526,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 		Net:      &price,
 		Gross:    &price,
 		Currency: price.Currency,
-	}).Quantize(nil, goprices.Up)
+	}).Quantize(goprices.Up, -1)
 
 	var (
 		taxedMoney *goprices.TaxedMoney
@@ -542,7 +544,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 		defaultValue = taxedMoney
 	}
 
-	quantizedTaxedMoney, err := taxedMoney.Quantize(nil, goprices.Up)
+	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
 		return nil, model.NewAppError("ApplyTaxesToShipping", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -1581,8 +1583,10 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 
 			// try get or create plugin configuration
 			pluginConfig, appErr := m.Srv.PluginService().GetPluginConfiguration(&model.PluginConfigurationFilterOptions{
-				Identifier: squirrel.Eq{model.PluginConfigurationTableName + ".Identifier": pluginID},
-				ChannelID:  squirrel.Eq{model.PluginConfigurationTableName + ".ChannelID": channelID},
+				Conditions: squirrel.Eq{
+					model.PluginConfigurationTableName + ".Identifier": pluginID,
+					model.PluginConfigurationTableName + ".ChannelID":  channelID,
+				},
 			})
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError {
