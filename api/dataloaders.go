@@ -152,8 +152,8 @@ var (
 	// or the maximum allowed checkout quantity, whichever is lower.
 	//
 	// NOTE: keys have format of variantID__countryCode__channelID
-	AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader = dataloader.NewBatchedLoader(availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader, dataloader.WithBatchCapacity[string, int](batchCapacity))
-	WarehousesByShippingZoneIDLoader                                   = dataloader.NewBatchedLoader(warehousesByShippingZoneIDLoader, dataloader.WithBatchCapacity[string, model.Warehouses](batchCapacity))
+	AvailableQuantityByProductVariantIdCountryCodeAndChannelIDLoader = dataloader.NewBatchedLoader(availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader, dataloader.WithBatchCapacity[string, int](batchCapacity))
+	WarehousesByShippingZoneIDLoader                                 = dataloader.NewBatchedLoader(warehousesByShippingZoneIDLoader, dataloader.WithBatchCapacity[string, model.Warehouses](batchCapacity))
 
 	// menu
 	MenuByIdLoader              = dataloader.NewBatchedLoader(menuByIdLoader, dataloader.WithBatchCapacity[string, *model.Menu](batchCapacity))

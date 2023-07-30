@@ -2991,6 +2991,22 @@ func (s *TimerLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sal
 	return err
 }
 
+func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.DiscountSaleStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 	start := timemodule.Now()
 
@@ -8120,6 +8136,22 @@ func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.WarehouseByStockID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.WarehouseShipingZonesByCountryCodeAndChannelID", success, elapsed)
 	}
 	return result, err
 }

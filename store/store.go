@@ -320,6 +320,7 @@ type (
 // model
 type (
 	WarehouseStore interface {
+		WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
 		Delete(transaction *gorm.DB, ids ...string) error
 		Update(warehouse *model.WareHouse) (*model.WareHouse, error)
 		ScanFields(wh *model.WareHouse) []interface{}
@@ -641,6 +642,7 @@ type (
 		GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error)      // GetByOption finds and returns 1 voucher translation by given options
 	}
 	DiscountSaleStore interface {
+		Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error)
 		Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error)            // Upsert bases on sale's Id to decide to update or insert given sale
 		Get(saleID string) (*model.Sale, error)                                        // Get finds and returns a sale with given saleID
 		FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error)     // FilterSalesByOption filter sales by option

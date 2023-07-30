@@ -53,7 +53,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, address
 
 	// get user with given id
 	user, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": userID},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": userID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -293,7 +293,7 @@ func (a *ServiceAccount) VerifyEmailFromToken(userSuppliedTokenString string) *m
 	}
 
 	user, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": tokenData.UserId},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": tokenData.UserId},
 	})
 	if err != nil {
 		return err
@@ -343,7 +343,7 @@ func (a *ServiceAccount) VerifyUserEmail(userID, email string) *model.AppError {
 	a.InvalidateCacheForUser(userID)
 
 	_, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": userID},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": userID},
 	})
 	if err != nil {
 		return err
@@ -376,7 +376,7 @@ func (a *ServiceAccount) IsUsernameTaken(name string) bool {
 	}
 
 	if _, err := a.srv.Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
-		Username: squirrel.Eq{model.UserTableName + ".Username": name},
+		Conditions: squirrel.Eq{model.UserTableName + ".Username": name},
 	}); err != nil {
 		return false
 	}
@@ -395,7 +395,7 @@ func (a *ServiceAccount) GetUsers(options *model.UserGetOptions) ([]*model.User,
 
 func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError) {
 	user, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": userID},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": userID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -419,7 +419,7 @@ func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *mo
 
 func (a *ServiceAccount) ActivateMfa(userID, token string) *model.AppError {
 	user, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": userID},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": userID},
 	})
 	if appErr != nil {
 		return appErr
@@ -649,7 +649,7 @@ func (a *ServiceAccount) UpdateActive(c *request.Context, user *model.User, acti
 
 func (a *ServiceAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError {
 	user, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": userID},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": userID},
 	})
 	if err != nil {
 		return err
@@ -730,7 +730,7 @@ func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppE
 
 func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.User, *model.AppError) {
 	return a.GetUserByOptions(ctx, &model.UserFilterOptions{
-		Id: squirrel.Eq{model.UserTableName + ".Id": userID},
+		Conditions: squirrel.Eq{model.UserTableName + ".Id": userID},
 	})
 }
 
@@ -761,7 +761,7 @@ func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*
 			// Don't set new eMail on user account if email verification is required, this will be done as a post-verification action
 			// to avoid users being able to set non-controlled eMails as their account email
 			if _, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
-				Extra: squirrel.Expr("Users.Email = lower(?)", newEmail),
+				Conditions: squirrel.Expr("Users.Email = lower(?)", newEmail),
 			}); appErr == nil {
 				return nil, model.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
 			}
@@ -1100,7 +1100,7 @@ func (a *ServiceAccount) GetUsersByIds(userIDs []string, options *store.UserGetB
 
 func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*model.User, *model.AppError) {
 	users, err := a.FidUsersByOptions(context.Background(), &model.UserFilterOptions{
-		Username: squirrel.Eq{model.UserTableName + ".Username": usernames},
+		Conditions: squirrel.Eq{model.UserTableName + ".Username": usernames},
 	})
 	if err != nil {
 		return nil, err
@@ -1142,7 +1142,7 @@ func (a *ServiceAccount) UpdateUserRoles(userID string, newRoles string, sendWeb
 
 func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, *model.AppError) {
 	user, err := a.GetUserByOptions(context.TODO(), &model.UserFilterOptions{
-		Email: squirrel.Eq{model.UserTableName + ".Email": email},
+		Conditions: squirrel.Eq{model.UserTableName + ".Email": email},
 	})
 	if err != nil {
 		return false, err

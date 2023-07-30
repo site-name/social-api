@@ -65,6 +65,11 @@ type WarehouseFilterOption struct {
 	Distinct              bool // SELECT DISTINCT
 }
 
+type WarehouseShippingZone struct {
+	WarehouseID    string
+	ShippingZoneID string
+}
+
 func (w *WareHouse) GetAddress() *Address  { return w.address }
 func (w *WareHouse) SetAddress(a *Address) { w.address = a }
 

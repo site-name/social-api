@@ -16,6 +16,7 @@ import (
 
 // DiscountService contains methods for working with discounts
 type DiscountService interface {
+	UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model.AppError)
 	// ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 	//
 	//	(end_date == NULL || end_date >= date) && start_date <= date

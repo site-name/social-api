@@ -343,7 +343,7 @@ func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *Address
 		keys := lo.Map(variants, func(v *model.ProductVariant, _ int) string {
 			return fmt.Sprintf("%s__%s__%s", v.Id, countryCode, embedCtx.CurrentChannelID)
 		})
-		quantities, errs := AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader.LoadMany(ctx, keys)()
+		quantities, errs := AvailableQuantityByProductVariantIdCountryCodeAndChannelIDLoader.LoadMany(ctx, keys)()
 		if len(errs) > 0 && errs[0] != nil {
 			return nil, errs[0]
 		}

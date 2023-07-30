@@ -987,11 +987,12 @@ func categoriesByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*da
 }
 
 func collectionsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.Collection] {
-	var res = make([]*dataloader.Result[[]*model.Collection], len(voucherIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.Collection], len(voucherIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		vouchers model.Vouchers
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var vouchers model.Vouchers
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Collections").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
 		for idx := range voucherIDs {
@@ -1016,11 +1017,12 @@ func collectionsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*d
 }
 
 func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.Product] {
-	var res = make([]*dataloader.Result[[]*model.Product], len(voucherIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.Product], len(voucherIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		vouchers model.Vouchers
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var vouchers model.Vouchers
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Products").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
 		for idx := range voucherIDs {
@@ -1045,11 +1047,12 @@ func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*data
 }
 
 func productVariantsByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
-	var res = make([]*dataloader.Result[[]*model.ProductVariant], len(voucherIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.ProductVariant], len(voucherIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		vouchers model.Vouchers
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var vouchers model.Vouchers
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("ProductVariants").Find(&vouchers, "Id IN ?", voucherIDs).Error
 	if err != nil {
 		for idx := range voucherIDs {
@@ -1074,11 +1077,12 @@ func productVariantsByVoucherIdLoader(ctx context.Context, voucherIDs []string) 
 }
 
 func categoriesBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.Category] {
-	var res = make([]*dataloader.Result[[]*model.Category], len(saleIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.Category], len(saleIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		sales    model.Sales
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var sales model.Sales
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Categories").Find(&sales, "Id IN ?", saleIDs).Error
 	if err != nil {
 		for idx := range saleIDs {
@@ -1103,11 +1107,12 @@ func categoriesBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataload
 }
 
 func collectionsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.Collection] {
-	var res = make([]*dataloader.Result[[]*model.Collection], len(saleIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.Collection], len(saleIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		sales    model.Sales
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var sales model.Sales
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Collections").Find(&sales, "Id IN ?", saleIDs).Error
 	if err != nil {
 		for idx := range saleIDs {
@@ -1132,11 +1137,12 @@ func collectionsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloa
 }
 
 func productsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.Product] {
-	var res = make([]*dataloader.Result[[]*model.Product], len(saleIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.Product], len(saleIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		sales    model.Sales
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var sales model.Sales
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("Products").Find(&sales, "Id IN ?", saleIDs).Error
 	if err != nil {
 		for idx := range saleIDs {
@@ -1161,11 +1167,12 @@ func productsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader
 }
 
 func productVariantsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
-	var res = make([]*dataloader.Result[[]*model.ProductVariant], len(saleIDs))
+	var (
+		res      = make([]*dataloader.Result[[]*model.ProductVariant], len(saleIDs))
+		embedCtx = GetContextValue[*web.Context](ctx, WebCtx)
+		sales    model.Sales
+	)
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	var sales model.Sales
 	err := embedCtx.App.Srv().Store.GetReplica().Preload("ProductVariants").Find(&sales, "Id IN ?", saleIDs).Error
 	if err != nil {
 		for idx := range saleIDs {

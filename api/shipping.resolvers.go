@@ -598,51 +598,33 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 
 	// save m2m warehouse shipping zones
 	if len(args.Input.AddWarehouses) > 0 {
-		warehouseShippingZonesToCreate := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WarehouseShippingZone {
-			return &model.WarehouseShippingZone{
-				WarehouseID:    id,
-				ShippingZoneID: args.Id,
-			}
-		})
-		warehouseShippingZonesToCreate, appErr = embedCtx.App.Srv().WarehouseService().CreateWarehouseShippingZones(transaction, warehouseShippingZonesToCreate)
-		if appErr != nil {
-			return nil, appErr
+		warehousesToAdd := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
+		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Warehouses").Append(warehousesToAdd)
+		if err != nil {
+			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.add_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 	if len(args.Input.RemoveWarehouses) > 0 {
-		err = embedCtx.App.Srv().Store.WarehouseShippingZone().Delete(transaction, &model.WarehouseShippingZoneFilterOption{
-			Conditions: squirrel.And{
-				squirrel.Eq{model.WarehouseShippingZoneTableName + ".ShippingZoneID": args.Id},
-				squirrel.Eq{model.WarehouseShippingZoneTableName + ".WarehouseID": args.Input.RemoveWarehouses},
-			},
-		})
+		warehousesToRemove := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
+		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Warehouses").Delete(warehousesToRemove)
 		if err != nil {
-			return nil, model.NewAppError("ShippingZoneUpdate", "app.warehouse.error_deleting_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.remove_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
 	// save m2m shipping zone channels
 	if len(args.Input.AddChannels) > 0 {
-		shippingZoneChannelsToSave := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.ShippingZoneChannel {
-			return &model.ShippingZoneChannel{
-				ShippingZoneID: args.Id,
-				ChannelID:      id,
-			}
-		})
-		shippingZoneChannelsToSave, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, shippingZoneChannelsToSave)
-		if appErr != nil {
-			return nil, appErr
+		channelsToAdd := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} })
+		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Channels").Append(channelsToAdd)
+		if err != nil {
+			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.add_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 	if len(args.Input.RemoveChannels) > 0 {
-		appErr = embedCtx.App.Srv().ChannelService().RemoveShippingZoneRelations(transaction, &model.ShippingZoneChannelFilterOptions{
-			Conditions: squirrel.And{
-				squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": args.Id},
-				squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": args.Input.RemoveChannels},
-			},
-		})
-		if appErr != nil {
-			return nil, appErr
+		channelsToRemove := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} })
+		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Channels").Delete(channelsToRemove)
+		if err != nil {
+			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.remove_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		shippingChannelListings, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
@@ -667,7 +649,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	}
 
 	// commit transaction
-	err = transaction.Commit()
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingZoneUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

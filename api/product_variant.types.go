@@ -158,7 +158,7 @@ func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
 		return int32(defaultMaxCheckoutLineQuantity), nil
 	}
 
-	value, err := AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s__%s", p.ID, *args.CountryCode, embedCtx.CurrentChannelID))()
+	value, err := AvailableQuantityByProductVariantIdCountryCodeAndChannelIDLoader.Load(ctx, fmt.Sprintf("%s__%s__%s", p.ID, *args.CountryCode, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return 0, err
 	}

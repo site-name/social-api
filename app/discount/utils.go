@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -553,79 +554,84 @@ func (a *ServiceDiscount) FetchActiveDiscounts() ([]*model.DiscountInfo, *model.
 // values are slices of uuid strings
 func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]string, *model.AppError) {
 	var (
-		wg       sync.WaitGroup
-		mut      sync.Mutex
-		appError *model.AppError
-
-		categorieIDs  []string
-		collectionIDs []string
-		productIDs    []string
-		variantIDs    []string
-
-		trySetAppError = func(err *model.AppError) {
-			mut.Lock()
-			defer mut.Unlock()
-
-			if err != nil && appError == nil {
-				appError = err
-			}
-		}
+		res        = map[string][]string{}
+		appError   = make(chan *model.AppError)
+		val        = make(chan any)
+		atmicValue atomic.Int32
 	)
+	defer func() {
+		close(appError)
+		close(val)
+	}()
 
-	wg.Add(4)
+	atmicValue.Add(4)
 
 	go func() {
-		defer wg.Done()
-
-		cates, appErr := s.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
+		categories, appErr := s.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
 			SaleID: squirrel.Eq{model.SaleCategoryTableName + ".SaleID": instance.Id},
 		})
-		trySetAppError(appErr)
-		categorieIDs = cates.IDs(false)
+		if appErr != nil {
+			appError <- appErr
+		} else {
+			val <- categories
+		}
 	}()
 
 	go func() {
-		defer wg.Done()
-
-		collecs, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
+		collections, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
 			SaleID: squirrel.Eq{model.SaleCollectionTableName + ".SaleID": instance.Id},
 		})
-		trySetAppError(appErr)
-		collectionIDs = collecs.IDs()
+		if appErr != nil {
+			appError <- appErr
+		} else {
+			val <- collections
+		}
 	}()
 
 	go func() {
-		defer wg.Done()
-
 		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
 			SaleID: squirrel.Eq{model.SaleProductTableName + ".SaleID": instance.Id},
 		})
-		trySetAppError(appErr)
-		productIDs = products.IDs()
+		if appErr != nil {
+			appError <- appErr
+		} else {
+			val <- products
+		}
 	}()
 
 	go func() {
-		defer wg.Done()
-
 		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-			SaleID: squirrel.Eq{model.VoucherProductVariantTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleProductVariantTableName + ".SaleID": instance.Id},
 		})
-		trySetAppError(appErr)
-		variantIDs = productVariants.IDs()
+		if appErr != nil {
+			appError <- appErr
+		} else {
+			val <- productVariants
+		}
 	}()
 
-	wg.Wait()
+	for atmicValue.Load() != 0 {
+		select {
+		case err := <-appError:
+			return nil, err
 
-	if appError != nil {
-		return nil, appError
+		case v := <-val:
+			atmicValue.Add(-1)
+
+			switch t := v.(type) {
+			case model.Categories:
+				res["categories"] = t.IDs(false)
+			case model.Products:
+				res["products"] = t.IDs()
+			case model.ProductVariants:
+				res["variants"] = t.IDs()
+			case model.Collections:
+				res["collections"] = t.IDs()
+			}
+		}
 	}
 
-	return map[string][]string{
-		"categories":  categorieIDs,
-		"collections": collectionIDs,
-		"products":    productIDs,
-		"variants":    variantIDs,
-	}, nil
+	return res, nil
 }
 
 // IsValidPromoCode checks if given code is valid giftcard code or voucher code

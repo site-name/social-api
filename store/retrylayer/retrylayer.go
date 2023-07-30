@@ -3488,6 +3488,26 @@ func (s *RetryLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sal
 
 }
 
+func (s *RetryLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) error {
+
+	tries := 0
+	for {
+		err := s.DiscountSaleStore.Delete(transaction, options)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 
 	tries := 0
@@ -9701,6 +9721,26 @@ func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 	tries := 0
 	for {
 		result, err := s.WarehouseStore.WarehouseByStockID(stockID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID)
 		if err == nil {
 			return result, nil
 		}

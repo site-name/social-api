@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -281,6 +282,65 @@ func (w *SqlWareHouseStore) Delete(transaction *gorm.DB, ids ...string) error {
 	}
 
 	return nil
+}
+
+func (s *SqlWareHouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error) {
+	countryCode = strings.ToUpper(countryCode)
+
+	query := s.
+		GetQueryBuilder().
+		Select(model.WarehouseShippingZoneTableName + ".*")
+
+	if countryCode != "" {
+		shippingZoneQuery := s.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			Suffix(")").
+			From(model.ShippingZoneTableName).
+			Where("ShippingZones.Countries::text LIKE ?", "%"+countryCode+"%").
+			Where("ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Limit(1)
+
+		query = query.Where(shippingZoneQuery)
+	}
+
+	if channelID != "" {
+		channelQuery := s.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			Suffix(")").
+			From(model.ChannelTableName).
+			Where("Channels.Id = ?", channelID).
+			Where("Channels.Id = ShippingZoneChannels.ChannelID").
+			Limit(1)
+
+		shippingZoneChannelQuery := s.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			Suffix(")").
+			From(model.ShippingZoneChannelTableName).
+			Where(channelQuery).
+			Where("ShippingZoneChannels.ShippingZoneID = WarehouseShippingZones.ShippingZoneID").
+			Limit(1)
+
+		query = query.Where(shippingZoneChannelQuery)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByCountryCodeAndChannelID_ToSql")
+	}
+
+	var res []*model.WarehouseShippingZone
+	err = s.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find warehouse shipping zones by options")
+	}
+
+	return res, nil
 }
 
 func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {

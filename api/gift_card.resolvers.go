@@ -20,7 +20,6 @@ import (
 
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string }) (*GiftCardActivate, error) {
-
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("GiftCardActivate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}

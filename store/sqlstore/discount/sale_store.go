@@ -25,8 +25,8 @@ func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (
 	if sale.Id == "" {
 		err = transaction.Create(sale).Error
 	} else {
-		sale.CreateAt = 0
-		err = transaction.Table(model.SaleTableName).Updates(sale).Error
+		sale.CreateAt = 0 // prevent update
+		err = transaction.Model(sale).Updates(sale).Error
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to upsert sale")
@@ -57,6 +57,19 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 	}
 
 	return sales, nil
+}
+
+func (s *SqlDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	result := transaction.Raw("DELETE FROM "+model.SaleTableName, store.BuildSqlizer(options.Conditions)...)
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "failed to delete sale(s) by given options")
+	}
+
+	return result.RowsAffected, nil
 }
 
 func (s *SqlDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {

@@ -3237,6 +3237,24 @@ func (s *OpenTracingLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.D
 	return err
 }
 
+func (s *OpenTracingLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.DiscountSaleStore.Delete(transaction, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.FilterSalesByOption")
@@ -8941,6 +8959,24 @@ func (s *OpenTracingLayerWarehouseStore) WarehouseByStockID(stockID string) (*mo
 
 	defer span.Finish()
 	result, err := s.WarehouseStore.WarehouseByStockID(stockID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.WarehouseShipingZonesByCountryCodeAndChannelID")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

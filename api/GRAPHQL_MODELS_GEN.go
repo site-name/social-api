@@ -748,6 +748,23 @@ type CatalogueInput struct {
 	Collections []string `json:"collections"`
 }
 
+func (c *CatalogueInput) Validate(api string) *model.AppError {
+	for _, item := range []struct {
+		name  string
+		value []string
+	}{
+		{"Products", c.Products},
+		{"Categories", c.Categories},
+		{"Collections", c.Collections},
+	} {
+		if !lo.EveryBy(item.value, model.IsValidId) {
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": item.name}, "please provide valid "+item.name+" ids", http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
 type CategoryBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
@@ -3302,12 +3319,12 @@ type SaleInput struct {
 	EndDate     *DateTime              `json:"endDate"`
 }
 
-func (s *SaleInput) Validate() *model.AppError {
+func (s *SaleInput) Validate(api string) *model.AppError {
 	if s.Type != nil && !s.Type.IsValid() {
-		return model.NewAppError("SaleInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
 	}
 	if s.StartDate != nil && s.EndDate != nil && s.EndDate.Before(s.StartDate.Time) {
-		return model.NewAppError("SaleInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
 	}
 	for key, value := range map[string][]string{
 		"Products":    s.Products,
@@ -3316,7 +3333,7 @@ func (s *SaleInput) Validate() *model.AppError {
 		"Collections": s.Collections,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError("SaleInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
 		}
 	}
 
@@ -3783,9 +3800,9 @@ type StaffNotificationRecipientDelete struct {
 }
 
 type StaffNotificationRecipientInput struct {
-	User   *string `json:"user"`
-	Email  *string `json:"email"`
-	Active *bool   `json:"active"`
+	User   *string `json:"user"`   // id of the user subscribed to email notification.
+	Email  *string `json:"email"`  // email of the user subscribed to email notification.
+	Active *bool   `json:"active"` // Determines if a notification active.
 }
 
 type StaffNotificationRecipientUpdate struct {

@@ -3,7 +3,7 @@ package product
 import (
 	"net/http"
 	"strings"
-	"sync"
+	"sync/atomic"
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
@@ -40,7 +40,6 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 	chanNel model.Channel,
 
 ) (*goprices.Money, *model.AppError) {
-
 	// validate variantPrices have same currencies
 	var (
 		standardCurrency        string
@@ -77,73 +76,63 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 //
 // NOTE: `discounts` can be nil
 func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, product model.Product, discounts []*model.DiscountInfo) *model.AppError {
-	var appError *model.AppError
 	if len(discounts) == 0 {
-		discounts, appError = a.srv.DiscountService().FetchActiveDiscounts()
-		if appError != nil {
-			return appError
+		var appErr *model.AppError
+		discounts, appErr = a.srv.DiscountService().FetchActiveDiscounts()
+		if appErr != nil {
+			return appErr
 		}
 	}
 
 	var (
-		collectionsContainProduct   []*model.Collection
+		collectionsContainProduct   model.Collections
 		variantPricesInChannelsDict map[string][]*goprices.Money
-		productChannelListings      []*model.ProductChannelListing
-		wg                          sync.WaitGroup
-		mut                         sync.Mutex
+		productChannelListings      model.ProductChannelListings
+		atomicValue                 atomic.Int32
+		appError                    = make(chan *model.AppError)
 	)
-
-	syncSetAppErr := func(err *model.AppError) {
-		mut.Lock()
-		defer mut.Unlock()
-		if err != nil && appError == nil {
-			appError = err
-		}
-	}
-
-	wg.Add(3)
+	defer close(appError)
+	atomicValue.Add(3)
 
 	go func() {
-		defer wg.Done()
-
-		res, appErr := a.CollectionsByProductID(product.Id)
+		collections, appErr := a.CollectionsByProductID(product.Id)
 		if appErr != nil {
-			syncSetAppErr(appErr)
+			appError <- appErr
 			return
 		}
-		collectionsContainProduct = res
+		collectionsContainProduct = collections
+		atomicValue.Add(-1)
 	}()
 
 	go func() {
-		defer wg.Done()
-
 		res, appErr := a.getVariantPricesInChannelsDict(product)
 		if appErr != nil {
-			syncSetAppErr(appErr)
+			appError <- appErr
 			return
 		}
 		variantPricesInChannelsDict = res
+		atomicValue.Add(-1)
 	}()
 
 	go func() {
-		defer wg.Done()
-
-		res, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
+		listings, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 			Conditions:      squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": product.Id},
 			PrefetchChannel: true, // this will populate `Channel` fields of every product channel listings
 		})
 		if appErr != nil {
-			syncSetAppErr(appErr)
+			appError <- appErr
 			return
 		}
-		productChannelListings = res
+		productChannelListings = listings
+		atomicValue.Add(-1)
 	}()
 
-	wg.Wait()
-
-	// check appError:
-	if appError != nil {
-		return appError
+	for atomicValue.Load() != 0 {
+		select {
+		case err := <-appError:
+			return err
+		default:
+		}
 	}
 
 	var productChannelListingsToUpdate []*model.ProductChannelListing
@@ -180,47 +169,57 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 	}
 
 	if len(productChannelListingsToUpdate) > 0 {
-		_, appError = a.BulkUpsertProductChannelListings(transaction, productChannelListingsToUpdate)
+		_, appErr := a.BulkUpsertProductChannelListings(transaction, productChannelListingsToUpdate)
+		if appErr != nil {
+			return appErr
+		}
 	}
 
-	return appError
+	return nil
 }
 
 // UpdateProductsDiscountedPrices
 func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
-	var (
-		appError *model.AppError
-		wg       sync.WaitGroup
-		mut      sync.Mutex
-	)
 	if len(discounts) == 0 {
-		discounts, appError = a.srv.DiscountService().FetchActiveDiscounts()
-		if appError != nil {
-			return appError
+		var appErr *model.AppError
+		discounts, appErr = a.srv.DiscountService().FetchActiveDiscounts()
+		if appErr != nil {
+			return appErr
 		}
 	}
 
-	wg.Add(len(products))
+	var (
+		appError    = make(chan *model.AppError)
+		atomicValue atomic.Int32
+	)
+	defer close(appError)
 
-	syncSetAppError := func(err *model.AppError) {
-		mut.Lock()
-		defer mut.Unlock()
-
-		if err != nil && appError == nil {
-			appError = err
-		}
-	}
+	atomicValue.Add(int32(len(products)))
 
 	for _, product := range products {
 		go func(prd *model.Product) {
-			defer wg.Done()
-			syncSetAppError(a.UpdateProductDiscountedPrice(transaction, *prd, discounts))
+			appErr := a.UpdateProductDiscountedPrice(transaction, *prd, discounts)
+			if appErr != nil {
+				appError <- appErr
+				return
+			}
+
+			atomicValue.Add(-1)
 		}(product)
 	}
 
-	wg.Wait()
+	for {
+		select {
+		case err := <-appError:
+			return err
+		default:
+		}
+		if atomicValue.Load() == 0 {
+			break
+		}
+	}
 
-	return appError
+	return nil
 }
 
 func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
@@ -259,66 +258,81 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 	}
 
 	var (
+		atomicInt32   atomic.Int32
+		appError      = make(chan *model.AppError)
+		value         = make(chan any)
 		productIDs    []string
 		categoryIDs   []string
 		collectionIDs []string
 		variantIDs    []string
-		appError      *model.AppError
-		wg            sync.WaitGroup
-		mut           sync.Mutex
 	)
+	defer func() {
+		close(appError)
+		close(value)
+	}()
 
-	syncSetAppError := func(err *model.AppError) {
-		mut.Lock()
-		defer mut.Unlock()
-		if err != nil && appError == nil {
-			appError = err
-		}
-	}
-
-	wg.Add(4)
+	atomicInt32.Add(4) // specify there are 4 goroutines to run
 
 	go func() {
-		defer wg.Done()
 		products, appErr := a.ProductsByOption(&productFilterOption)
 		if appErr != nil {
-			syncSetAppError(appErr)
+			appError <- appErr
 			return
 		}
-		productIDs = products.IDs()
+		value <- products
 	}()
 
 	go func() {
-		defer wg.Done()
 		categories, appErr := a.CategoriesByOption(&categoryFilterOption)
 		if appErr != nil {
-			syncSetAppError(appErr)
+			appError <- appErr
 			return
 		}
-		categoryIDs = categories.IDs(false)
+		value <- categories
 	}()
 
 	go func() {
-		defer wg.Done()
 		collections, appErr := a.CollectionsByOption(&collectionFilterOption)
 		if appErr != nil {
-			syncSetAppError(appErr)
+			appError <- appErr
 			return
 		}
-		collectionIDs = collections.IDs()
+		value <- collections
 	}()
 
 	go func() {
-		defer wg.Done()
 		variants, appErr := a.ProductVariantsByOption(&variantFilterOptions)
 		if appErr != nil {
-			syncSetAppError(appErr)
+			appError <- appErr
 			return
 		}
-		variantIDs = variants.IDs()
+		value <- variants
 	}()
 
-	wg.Wait()
+	for {
+		select {
+		case err := <-appError:
+			return err
+		case val := <-value:
+			atomicInt32.Add(-1)
+
+			switch t := val.(type) {
+			case model.Products:
+				productIDs = t.IDs()
+			case model.Categories:
+				categoryIDs = t.IDs(false)
+			case model.ProductVariants:
+				variantIDs = t.IDs()
+			case model.Collections:
+				collectionIDs = t.IDs()
+			}
+		default:
+		}
+
+		if atomicInt32.Load() == 0 {
+			break
+		}
+	}
 
 	return a.UpdateProductsDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 }

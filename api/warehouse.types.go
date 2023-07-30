@@ -321,15 +321,16 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 	return res
 }
 
-func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx context.Context, idTripple []string) []*dataloader.Result[int] {
+func availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader(ctx context.Context, idTripple []string) []*dataloader.Result[int] {
 	var (
 		res                          = make([]*dataloader.Result[int], len(idTripple))
-		variantsByCountryAndChannels = map[[2]string][]string{}
-		quantityByVariantAndCountry  = map[string]int{} // keys have format of: variantID__countryCode__channelID
+		variantsByCountryAndChannels = map[[2]string][]string{} // keys have format of [2]string{countryCode, channelID}, values are variant ids
+		quantityByVariantAndCountry  = map[string]int{}         // keys have format of: variantID__countryCode__channelID
 		embedCtx                     = GetContextValue[*web.Context](ctx, WebCtx)
 	)
 
-	batchLoadQuantitiesByCountry := func(countryCode, channelID string, variantIDs []string) (map[string]int, *model.AppError) {
+	// the result map has keys are variant ids
+	var batchLoadQuantitiesByCountry = func(countryCode, channelID string, variantIDs []string) (map[string]int, *model.AppError) {
 		stockFilterOptions := &model.StockFilterOption{
 			AnnotateAvailabeQuantity: true,
 		}
@@ -338,10 +339,10 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 		}
 
 		warehouseShippingZones, err := embedCtx.App.Srv().Store.
-			WarehouseShippingZone().
-			FilterByCountryCodeAndChannelID(countryCode, channelID)
+			Warehouse().
+			WarehouseShipingZonesByCountryCodeAndChannelID(countryCode, channelID)
 		if err != nil {
-			return nil, model.NewAppError("availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader", "app.warehouse.warehouse_shipping_zones_by_country_code_and_channel_id.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return nil, model.NewAppError("availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader", "app.warehouse.warehouse_shipping_zones_by_country_code_and_channel_id.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		var warehouseShippingZonesMap = map[string][]string{} // keys are warehouse ids, values are shipping zone ids
@@ -399,8 +400,8 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 	for _, tripple := range idTripple {
 		split := strings.Split(tripple, "__")
 		if len(split) == 3 {
-			key := [2]string{split[0], split[1]}
-			variantsByCountryAndChannels[key] = append(variantsByCountryAndChannels[key], split[2])
+			key := [2]string{split[1], split[2]}
+			variantsByCountryAndChannels[key] = append(variantsByCountryAndChannels[key], split[0])
 		}
 	}
 

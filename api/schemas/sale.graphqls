@@ -1,12 +1,12 @@
 extend type Mutation {
   saleCreate(input: SaleInput!): SaleCreate @hasRoleAny(roles: [shop_admin, shop_staff])
-  saleDelete(id: String!): SaleDelete
-  saleBulkDelete(ids: [String!]!): SaleBulkDelete
-  saleUpdate(id: String!, input: SaleInput!): SaleUpdate
-  saleCataloguesAdd(id: String!, input: CatalogueInput!): SaleAddCatalogues
-  saleCataloguesRemove(id: String!, input: CatalogueInput!): SaleRemoveCatalogues
+  saleDelete(id: String!): SaleDelete @hasRoles(roles: [shop_admin])
+  saleBulkDelete(ids: [String!]!): SaleBulkDelete @hasRoles(roles: [shop_admin])
+  saleUpdate(id: String!, input: SaleInput!): SaleUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  saleCataloguesAdd(id: String!, input: CatalogueInput!): SaleAddCatalogues @hasRoleAny(roles: [shop_admin, shop_staff])
+  saleCataloguesRemove(id: String!, input: CatalogueInput!): SaleRemoveCatalogues @hasRoleAny(roles: [shop_admin, shop_staff])
   saleTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): SaleTranslate
-  saleChannelListingUpdate(id: String!, input: SaleChannelListingInput!): SaleChannelListingUpdate
+  saleChannelListingUpdate(id: String!, input: SaleChannelListingInput!): SaleChannelListingUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {
