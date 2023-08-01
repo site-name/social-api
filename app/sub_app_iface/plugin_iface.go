@@ -15,7 +15,6 @@ import (
 
 // PluginService contains methods for working with plugins
 type PluginService interface {
-	GetPluginManager() interfaces.PluginManagerInterface
 	// AddPublicKey will add plugin public key to the config. Overwrites the previous file
 	AddPublicKey(name string, key io.Reader) *model.AppError
 	// DeletePublicKey will delete plugin public key from the config.
@@ -59,6 +58,7 @@ type PluginService interface {
 	DeletePluginKey(pluginID string, key string) *model.AppError
 	GetActivePluginManifests() ([]*model.Manifest, *model.AppError)
 	GetPluginKey(pluginID string, key string) ([]byte, *model.AppError)
+	GetPluginManager() interfaces.PluginManagerInterface
 	GetPluginPublicKeyFiles() ([]string, *model.AppError)
 	GetPluginStatus(id string) (*model.PluginStatus, *model.AppError)
 	GetPlugins() (*model.PluginsResponse, *model.AppError)

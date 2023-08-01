@@ -3219,25 +3219,7 @@ func (s *OpenTracingLayerDigitalContentUrlStore) Upsert(contentURL *model.Digita
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.AddSaleRelations")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.DiscountSaleStore.AddSaleRelations(transaction, sales, relations)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) error {
+func (s *OpenTracingLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -3246,13 +3228,13 @@ func (s *OpenTracingLayerDiscountSaleStore) Delete(transaction *gorm.DB, options
 	}()
 
 	defer span.Finish()
-	err := s.DiscountSaleStore.Delete(transaction, options)
+	result, err := s.DiscountSaleStore.Delete(transaction, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return err
+	return result, err
 }
 
 func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
@@ -3291,6 +3273,24 @@ func (s *OpenTracingLayerDiscountSaleStore) Get(saleID string) (*model.Sale, err
 	return result, err
 }
 
+func (s *OpenTracingLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.ToggleSaleRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.DiscountSaleStore.ToggleSaleRelations(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.Upsert")
@@ -3307,6 +3307,24 @@ func (s *OpenTracingLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *m
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerDiscountSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.DiscountSaleChannelListingStore.Delete(transaction, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
@@ -3345,40 +3363,22 @@ func (s *OpenTracingLayerDiscountSaleChannelListingStore) SaleChannelListingsWit
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
+func (s *OpenTracingLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.DiscountSaleChannelListingStore.Save(saleChannelListing)
+	result, err := s.DiscountSaleChannelListingStore.Upsert(transaction, listings)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerDiscountVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations any) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.AddVoucherRelations")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.DiscountVoucherStore.AddVoucherRelations(transaction, vouchers, relations)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
 }
 
 func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
@@ -3451,6 +3451,24 @@ func (s *OpenTracingLayerDiscountVoucherStore) GetByOptions(options *model.Vouch
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.ToggleVoucherRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.DiscountVoucherStore.ToggleVoucherRelations(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerDiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {

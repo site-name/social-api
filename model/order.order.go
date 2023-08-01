@@ -326,6 +326,9 @@ func (o *Order) commonPre() {
 	if o.CollectionPointName != nil {
 		o.CollectionPointName = NewPrimitive(SanitizeUnicode(*o.CollectionPointName))
 	}
+	if o.Weight != nil {
+		o.WeightAmount = o.Weight.Amount
+	}
 }
 
 // NewToken generates an uuid and assign it to current order's Id

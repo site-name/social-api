@@ -2,7 +2,7 @@ package order
 
 import (
 	"net/http"
-	"sync"
+	"sync/atomic"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
@@ -66,44 +66,38 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.Ord
 
 	var (
 		digitalOrderLines []*model.OrderLine
-		appError          *model.AppError
-		mut               sync.Mutex
-		wg                sync.WaitGroup
+		atomicValue       atomic.Int32
+		appErrChan        = make(chan *model.AppError)
+		dititalLineChan   = make(chan *model.OrderLine) // every digital orderlines are sent to this channel
 	)
-
-	setAppError := func(err *model.AppError) {
-		mut.Lock()
-		if err != nil && appError == nil {
-			appError = err
-		}
-		mut.Unlock()
-	}
-
-	wg.Add(len(orderLines))
+	defer close(appErrChan)
+	defer close(dititalLineChan)
+	atomicValue.Add(int32(len(orderLines)))
 
 	for _, orderLine := range orderLines {
 		go func(anOrderLine *model.OrderLine) {
+			defer atomicValue.Add(-1)
+
 			orderLineIsDigital, appErr := a.OrderLineIsDigital(anOrderLine)
 			if appErr != nil {
-				setAppError(appErr)
-			} else {
-				if orderLineIsDigital {
-
-					mut.Lock()
-					digitalOrderLines = append(digitalOrderLines, anOrderLine)
-					mut.Unlock()
-
-				}
+				appErrChan <- appErr
+				return
 			}
 
-			wg.Done()
+			if orderLineIsDigital {
+				dititalLineChan <- anOrderLine
+			}
+
 		}(orderLine)
 	}
 
-	wg.Wait()
-
-	if appError != nil {
-		return nil, appError
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		case line := <-dititalLineChan:
+			digitalOrderLines = append(digitalOrderLines, line)
+		}
 	}
 
 	return digitalOrderLines, nil

@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -28,7 +27,7 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 }) (*CheckoutBillingAddressUpdate, error) {
 	// validate params
 	if !model.IsValidId(args.Token) {
-		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	if appErr := args.BillingAddress.Validate("CheckoutBillingAddressUpdate"); appErr != nil {
 		return nil, appErr
@@ -51,7 +50,7 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	// create transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer transaction.Rollback()
 
@@ -74,7 +73,7 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	// commit transaction
 	transaction.Commit()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCommittingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", model.ErrorCommittingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 
 	return &CheckoutBillingAddressUpdate{
@@ -147,10 +146,10 @@ func (r *Resolver) CheckoutLanguageCodeUpdate(ctx context.Context, args struct {
 }) (*CheckoutLanguageCodeUpdate, error) {
 	// validate arguments
 	if !model.IsValidId(args.Token) {
-		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid token", http.StatusBadRequest)
+		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid token", http.StatusBadRequest)
 	}
 	if !args.LanguageCode.IsValid() {
-		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "language code"}, "please provide valid language code", http.StatusBadRequest)
+		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "language code"}, "please provide valid language code", http.StatusBadRequest)
 	}
 
 	// find checkout
@@ -173,7 +172,7 @@ func (r *Resolver) CheckoutLanguageCodeUpdate(ctx context.Context, args struct {
 
 func (r *Resolver) Checkout(ctx context.Context, args struct{ Token string }) (*Checkout, error) {
 	if !model.IsValidId(args.Token) {
-		return nil, model.NewAppError("Checkout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+		return nil, model.NewAppError("Checkout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 
 	checkout, err := CheckoutByTokenLoader.Load(ctx, args.Token)()

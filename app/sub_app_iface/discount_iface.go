@@ -16,7 +16,6 @@ import (
 
 // DiscountService contains methods for working with discounts
 type DiscountService interface {
-	UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model.AppError)
 	// ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 	//
 	//	(end_date == NULL || end_date >= date) && start_date <= date
@@ -56,7 +55,7 @@ type DiscountService interface {
 	// FetchSaleChannelListings returns a map with keys are sale ids, values are maps with keys are channel slugs
 	FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*model.SaleChannelListing, *model.AppError)
 	// FetchVariants returns a map with keys are sale ids and values are slice of UNIQUE product variant ids
-	FetchVariants(salePKs []string) (map[string][]string, *model.AppError)
+	FetchVariants(saleIDs []string) (map[string][]string, *model.AppError)
 	// FilterActiveVouchers returns a list of vouchers that are active.
 	//
 	// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
@@ -64,8 +63,6 @@ type DiscountService interface {
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
 	FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, *model.AppError)
-	// GeneratePromoCode randomly generate promo code
-	GeneratePromoCode() string
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 	//
 	//	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
@@ -75,7 +72,7 @@ type DiscountService interface {
 	// GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
 	GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
 	// GetProductDiscounts Return discount values for all discounts applicable to a product.
-	GetProductDiscounts(product model.Product, collections []*model.Collection, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
+	GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
 	// GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)
 	// GetVoucherDiscount
@@ -126,11 +123,13 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, *model.AppError)
+	// NOTE: if `isDelete` is true, system will add sale relations, otherwise if false
+	ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError
 	FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model.AppError)
+	FilterVats(options *model.VatFilterOptions) ([]*model.Vat, *model.AppError)
 	GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
 	SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model.AppError)
+	UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model.AppError)
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
-	FilterVats(options *model.VatFilterOptions) ([]*model.Vat, *model.AppError)
-	AddSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string) *model.AppError
 }

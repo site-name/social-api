@@ -25,17 +25,17 @@ type ProductVariant struct {
 	Sortable
 	ModelMetadata
 
-	digitalContent         *DigitalContent               `gorm:"-"` // for storing value returned by prefetching
-	product                *Product                      `gorm:"-"`
-	stocks                 Stocks                        `gorm:"-"`
-	variantChannelListings ProductVariantChannelListings `gorm:"-"`
-
-	Sales             Sales                       `json:"-" gorm:"many2many:SaleProductVariants"`
-	Vouchers          Vouchers                    `json:"-" gorm:"many2many:VoucherVariants"`
-	Medias            ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
-	Attributes        []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:VariantID"`
-	AttributesRelated []*AttributeVariant         `json:"-" gorm:"many2many:AssignedVariantAttributes"`
-	WishlistItems     WishlistItems               `json:"-" gorm:"many2many:WishlistItemProductVariants"`
+	variantChannelListings ProductVariantChannelListings `json:"-" gorm:"-"`
+	Stocks                 Stocks                        `json:"-" gorm:"foreignKey:ProductVariantID"`
+	DigitalContent         *DigitalContent               `json:"-"` // for storing value returned by prefetching
+	Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
+	Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
+	Medias                 ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
+	Attributes             []*AssignedVariantAttribute   `json:"-" gorm:"foreignKey:VariantID"`
+	AttributesRelated      []*AttributeVariant           `json:"-" gorm:"many2many:AssignedVariantAttributes"`
+	WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
+	OrderLines             OrderLines                    `json:"-" gorm:"foreignKey:VariantID"`
+	Product                *Product                      `json:"-"`
 }
 
 func (c *ProductVariant) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -79,12 +79,14 @@ func (p ProductVariants) DeepCopy() ProductVariants {
 	return lo.Map(p, func(v *ProductVariant, _ int) *ProductVariant { return v.DeepCopy() })
 }
 
-func (s *ProductVariant) SetStocks(stk Stocks)                { s.stocks = stk }
-func (p *ProductVariant) GetStocks() Stocks                   { return p.stocks }
-func (s *ProductVariant) SetProduct(prd *Product)             { s.product = prd }
-func (p *ProductVariant) GetProduct() *Product                { return p.product }
-func (s *ProductVariant) SetDigitalContent(d *DigitalContent) { s.digitalContent = d }
-func (p *ProductVariant) GetDigitalContent() *DigitalContent  { return p.digitalContent }
+// func (s *ProductVariant) SetStocks(stk Stocks) { s.stocks = stk }
+// func (p *ProductVariant) GetStocks() Stocks    { return p.stocks }
+
+// func (s *ProductVariant) SetProduct(prd *Product) { s.product = prd }
+// func (p *ProductVariant) GetProduct() *Product    { return p.product }
+
+// func (s *ProductVariant) SetDigitalContent(d *DigitalContent) { s.digitalContent = d }
+// func (p *ProductVariant) GetDigitalContent() *DigitalContent  { return p.digitalContent }
 
 func (s *ProductVariant) SetVariantChannelListings(d ProductVariantChannelListings) {
 	s.variantChannelListings = d
@@ -163,14 +165,14 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 	res.SortOrder = CopyPointer(p.SortOrder)
 
 	res.ModelMetadata = p.ModelMetadata.DeepCopy()
-	if p.product != nil {
-		res.product = p.product.DeepCopy()
+	if p.Product != nil {
+		res.Product = p.Product.DeepCopy()
 	}
-	if p.digitalContent != nil {
-		res.digitalContent = p.digitalContent.DeepCopy()
+	if p.DigitalContent != nil {
+		res.DigitalContent = p.DigitalContent.DeepCopy()
 	}
-	if p.stocks != nil {
-		res.stocks = p.stocks.DeepCopy()
+	if p.Stocks != nil {
+		res.Stocks = p.Stocks.DeepCopy()
 	}
 
 	return &res

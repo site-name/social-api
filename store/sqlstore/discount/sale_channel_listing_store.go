@@ -27,15 +27,28 @@ func (scls *SqlSaleChannelListingStore) ScanFields(listing *model.SaleChannelLis
 }
 
 // Save insert given instance into database then returns it
-func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
-	err := scls.GetMaster().Create(saleChannelListing).Error
-	if err != nil {
-		if scls.IsUniqueConstraintError(err, []string{"SaleID", "ChannelID", "salechannellistings_saleid_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(model.SaleChannelListingTableName, "SaleID/ChannelID", "duplicate")
-		}
-		return nil, errors.Wrapf(err, "failed to save sale channel listing with id=%s", saleChannelListing.Id)
+func (scls *SqlSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
+	if transaction == nil {
+		transaction = scls.GetMaster()
 	}
-	return saleChannelListing, nil
+
+	for _, listing := range listings {
+		var err error
+		if listing.Id == "" {
+			err = transaction.Create(listing).Error
+		} else {
+			err = transaction.Model(listing).Updates(listing).Error
+		}
+
+		if err != nil {
+			if scls.IsUniqueConstraintError(err, []string{"saleid", "channelid", "saleid_channelid_key"}) {
+				return nil, store.NewErrInvalidInput(model.SaleChannelListingTableName, "SaleID/ChannelID", "duplicate")
+			}
+			return nil, errors.Wrap(err, "failed to upsert sale channel listing ")
+		}
+	}
+
+	return listings, nil
 }
 
 // Get finds and returns sale channel listing with given id
@@ -103,4 +116,24 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 	}
 
 	return res, nil
+}
+
+func (s *SqlSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+	if options.Conditions == nil {
+		return store.NewErrInvalidInput("Delete", "conditions", nil)
+	}
+
+	conds, args, err := options.Conditions.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	err = transaction.Raw("DELETE FROM "+model.SaleChannelListingTableName+" WHERE "+conds, args...).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to delete sale channel listings by given options")
+	}
+	return nil
 }

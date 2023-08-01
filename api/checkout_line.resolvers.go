@@ -11,7 +11,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -22,10 +21,10 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 }) (*CheckoutLineDelete, error) {
 	// validate arguments
 	if !model.IsValidId(args.Token) {
-		return nil, model.NewAppError("CheckoutLineDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+		return nil, model.NewAppError("CheckoutLineDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	if !model.IsValidId(args.LineID) {
-		return nil, model.NewAppError("CheckoutLineDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineId"}, "please provide valid checkout line id", http.StatusBadRequest)
+		return nil, model.NewAppError("CheckoutLineDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineId"}, "please provide valid checkout line id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -38,7 +37,7 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	}
 
 	if !lo.SomeBy(checkoutLinesOfGivenCheckout, func(l *model.CheckoutLine) bool { return l != nil && l.Id == args.LineID }) {
-		return nil, model.NewAppError("CheckoutLineDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineID"}, "provided checkout line does not belong to provided checkout", http.StatusBadRequest)
+		return nil, model.NewAppError("CheckoutLineDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineID"}, "provided checkout line does not belong to provided checkout", http.StatusBadRequest)
 	}
 
 	// delete checkout line

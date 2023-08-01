@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/site-name/decimal"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 )
 
@@ -42,7 +41,7 @@ func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*Payment, error) {
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("Payment", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid payment id", http.StatusBadRequest)
+		return nil, model.NewAppError("Payment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid payment id", http.StatusBadRequest)
 	}
 
 	payment, err := PaymentByIdLoader.Load(ctx, args.Id)()

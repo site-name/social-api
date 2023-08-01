@@ -31,11 +31,11 @@ type Product struct {
 	ModelMetadata
 	Seo
 
-	productType            *ProductType           `gorm:"-"`
-	productVariants        ProductVariants        `gorm:"-"`
-	category               *Category              `gorm:"-"`
-	medias                 FileInfos              `gorm:"-"`
-	productChannelListings ProductChannelListings `gorm:"-"`
+	productType            *ProductType           `json:"-" gorm:"-"`
+	productVariants        ProductVariants        `json:"-" gorm:"-"`
+	category               *Category              `json:"-" gorm:"-"`
+	medias                 FileInfos              `json:"-" gorm:"-"`
+	productChannelListings ProductChannelListings `json:"-" gorm:"-"`
 
 	Collections             Collections               `json:"-" gorm:"many2many:ProductCollections"`
 	Sales                   Sales                     `json:"-" gorm:"many2many:SaleProducts"`
@@ -102,6 +102,10 @@ func (ps Products) IDs() []string {
 	return lo.Map(ps, func(p *Product, _ int) string {
 		return p.Id
 	})
+}
+
+func (ps Products) Contains(p *Product) bool {
+	return p != nil && lo.SomeBy(ps, func(prd *Product) bool { return prd != nil && prd.Id == p.Id })
 }
 
 func (ps Products) ProductTypeIDs() []string {

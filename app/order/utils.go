@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
@@ -46,11 +46,11 @@ func (a *ServiceOrder) GetOrderCountry(order *model.Order) (model.CountryCode, *
 //
 // NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
 func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine) (bool, *model.AppError) {
-	if orderLine.VariantID == nil || orderLine.GetProductVariant() == nil {
+	if orderLine.VariantID == nil || orderLine.ProductVariant == nil {
 		return false, nil
 	}
 
-	digitalContent := orderLine.GetProductVariant().GetDigitalContent()
+	digitalContent := orderLine.ProductVariant.DigitalContent
 
 	if digitalContent == nil {
 		var appErr *model.AppError
@@ -190,78 +190,60 @@ func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order
 // ReCalculateOrderWeight
 func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorm.DB, order *model.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
+		Conditions: squirrel.Expr(model.OrderLineTableName+".OrderID = ? AND Orderlines.VariantID IS NOT NULL", order.Id),
 	})
 	if appErr != nil {
 		return appErr
 	}
 
 	var (
-		appError      *model.AppError
-		hasGoRoutines bool
-		weight        = measurement.ZeroWeight
-		mut           sync.Mutex
-		wg            sync.WaitGroup
+		weight       = measurement.ZeroWeight
+		atomicValue  atomic.Int32
+		appErrorChan = make(chan *model.AppError)
+		weightChan   = make(chan *measurement.Weight)
 	)
-
-	setWeight := func(w measurement.Weight) {
-		mut.Lock()
-		defer mut.Unlock()
-
-		weight = &w
-	}
-
-	setAppError := func(err *model.AppError) {
-		mut.Lock()
-		defer mut.Unlock()
-
-		if err != nil && appError == nil {
-			appError = err
-		}
-	}
+	defer func() {
+		close(appErrorChan)
+		close(weightChan)
+	}()
+	atomicValue.Add(int32(len(orderLines)))
 
 	for _, orderLine := range orderLines {
-		if orderLine.VariantID != nil {
+		go func(anOrderLine *model.OrderLine) {
+			defer atomicValue.Add(-1)
 
-			hasGoRoutines = true
-			wg.Add(1)
+			productVariantWeight, appErr := a.srv.ProductService().ProductVariantGetWeight(*anOrderLine.VariantID)
+			if appErr != nil {
+				appErrorChan <- appErr
+				return
+			}
 
-			go func(anOrderLine *model.OrderLine) {
-				productVariantWeight, appErr := a.srv.ProductService().ProductVariantGetWeight(*anOrderLine.VariantID)
-				if appErr != nil {
-					setAppError(appErr)
-				} else {
-					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(anOrderLine.Quantity)))
-					if err != nil {
-						setAppError(model.NewAppError("ReCalculateOrderWeight", app.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError))
-					} else {
-						setWeight(*addedWeight)
-					}
-				}
+			weightChan <- productVariantWeight.Mul(float32(anOrderLine.Quantity))
+		}(orderLine)
+	}
 
-				wg.Done()
-			}(orderLine)
-
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrorChan:
+			return appErr
+		case wg := <-weightChan:
+			addedWeight, err := weight.Add(wg)
+			if err != nil {
+				return model.NewAppError("ReCalculateOrderWeight", model.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError)
+			}
+			weight = addedWeight
 		}
-	}
-
-	if hasGoRoutines {
-		wg.Wait()
-	}
-
-	if appError != nil {
-		return appError
 	}
 
 	weight, _ = weight.ConvertTo(order.WeightUnit)
 	order.WeightAmount = weight.Amount
 
-	_, appError = a.UpsertOrder(transaction, order)
-	return appError
+	_, appErr = a.UpsertOrder(transaction, order)
+	return appErr
 }
 
 func (a *ServiceOrder) UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
-	variant := line.GetProductVariant()
+	variant := line.ProductVariant
 	if variant == nil {
 		var appErr *model.AppError
 		variant, appErr = a.srv.ProductService().ProductVariantById(*line.ProductVariantID)
@@ -383,144 +365,126 @@ func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, 
 }
 
 // GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-func (a *ServiceOrder) GetDiscountedLines(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError) {
-	var (
-		discountedProducts    []*model.Product
-		discountedCategories  []*model.Category
-		discountedCollections []*model.Collection
-		firstAppError         *model.AppError
-		meetMap               = map[string]bool{}
-		wg                    sync.WaitGroup
-		mut                   sync.Mutex
-	)
-
-	setFirstAppErr := func(err *model.AppError) {
-		mut.Lock()
-		if err != nil {
-			firstAppError = err
-		}
-		mut.Unlock()
+func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLines, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError) {
+	if len(orderLines) == 0 {
+		return orderLines, nil
 	}
 
-	wg.Add(3)
+	var (
+		discountedProducts    model.Products
+		discountedCategories  model.Categories
+		discountedCollections model.Collections
+
+		atomicValue atomic.Int32
+		appErrChan  = make(chan *model.AppError)
+	)
+	defer func() {
+		close(appErrChan)
+	}()
+	atomicValue.Add(3)
 
 	go func() {
+		defer atomicValue.Add(-1)
+
 		products, appErr := a.srv.ProductService().ProductsByVoucherID(voucher.Id)
 		if appErr != nil {
-			setFirstAppErr(appErr)
-		} else {
-			discountedProducts = products
+			appErrChan <- appErr
+			return
 		}
-		wg.Done()
+
+		discountedProducts = products
 	}()
 
 	go func() {
+		defer atomicValue.Add(-1)
+
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
 			VoucherID: squirrel.Eq{model.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
-			setFirstAppErr(appErr)
-		} else {
-			// remove duplicate categories
-			for _, category := range categories {
-				if _, met := meetMap[category.Id]; !met {
-					discountedCategories = append(discountedCategories, category)
-					meetMap[category.Id] = true
-				}
-			}
+			appErrChan <- appErr
+			return
 		}
-		wg.Done()
+
+		discountedCategories = categories
 	}()
 
 	go func() {
+		defer atomicValue.Add(-1)
+
 		collections, appErr := a.srv.ProductService().CollectionsByVoucherID(voucher.Id)
 		if appErr != nil {
-			setFirstAppErr(appErr)
-		} else {
-			// remove duplicate collections
-			for _, collection := range collections {
-				if _, met := meetMap[collection.Id]; !met {
-					discountedCollections = append(discountedCollections, collection)
-					meetMap[collection.Id] = true
+			appErrChan <- appErr
+			return
+		}
+
+		discountedCollections = collections
+	}()
+
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		default:
+		}
+	}
+
+	// try prefetching related product variants, products, collections related to given orderlines
+	if orderLines[0].ProductVariant == nil {
+		var appErr *model.AppError
+		orderLines, appErr = a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+			Conditions:      squirrel.Expr(model.OrderLineTableName+".Id IN ?", orderLines.IDs()),
+			PrefetchRelated: []string{"ProductVariant.Product.Collections"}, // TODO: check if this works
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// filter duplicates
+	discountedCategories = lo.UniqBy(discountedCategories, func(c *model.Category) string { return c.Id })
+	discountedCollections = lo.UniqBy(discountedCollections, func(c *model.Collection) string { return c.Id })
+
+	if len(discountedProducts) > 0 ||
+		len(discountedCategories) > 0 ||
+		len(discountedCollections) > 0 {
+
+		var discountedOrderLines []*model.OrderLine
+
+		for _, orderLine := range orderLines {
+			if orderLine.ProductVariant != nil {
+				var (
+					lineProduct     = orderLine.ProductVariant.Product
+					lineCollections model.Collections
+					lineCategory    *model.Category
+				)
+				if lineProduct != nil {
+					lineCollections = lineProduct.Collections
+
+					if lineProduct.CategoryID != nil {
+						categories, appErr := a.srv.ProductService().CategoryByIds([]string{*lineProduct.CategoryID}, true)
+						if appErr != nil {
+							return nil, appErr
+						}
+						lineCategory = categories[0]
+					}
+				}
+
+				if (lineProduct != nil && discountedProducts.Contains(lineProduct)) ||
+					(lineCategory != nil && discountedCategories.Contains(lineCategory)) ||
+					lineCollections.IDs().InterSection(discountedCollections.IDs()).Len() > 0 {
+
+					discountedOrderLines = append(discountedOrderLines, orderLine)
 				}
 			}
 		}
-		wg.Done()
-	}()
 
-	wg.Wait()
-
-	// returns immediately if there is an system error occured
-	if firstAppError != nil {
-		return nil, firstAppError
+		return discountedOrderLines, nil
 	}
 
-	var (
-		discountedOrderLines []*model.OrderLine
-		appError             *model.AppError
-		hasGoRoutines        bool
-	)
-	setAppError := func(appErr *model.AppError) {
-		mut.Lock()
-		if appErr != nil && appError == nil {
-			appError = appErr
-		}
-		mut.Unlock()
-	}
-
-	if len(discountedProducts) > 0 || len(discountedCategories) > 0 || len(discountedCollections) > 0 {
-
-		for _, orderLine := range orderLines {
-			// we can
-			if orderLine != nil && orderLine.VariantID != nil {
-				hasGoRoutines = true
-				wg.Add(1)
-
-				go func(anOrderLine *model.OrderLine) {
-					orderLineProduct, appErr := a.srv.ProductService().ProductByOption(&model.ProductFilterOption{
-						ProductVariantID: squirrel.Eq{model.ProductVariantTableName + ".Id": *anOrderLine.VariantID},
-					})
-					if appErr != nil {
-						setAppError(appErr)
-					} else {
-						orderLineCategory, appErr := a.srv.ProductService().CategoryByOption(&model.CategoryFilterOption{
-							ProductID: squirrel.Eq{model.ProductTableName + ".Id": orderLineProduct.Id},
-						})
-						if appErr != nil {
-							setAppError(appErr)
-						} else {
-							orderLineCollections, appErr := a.srv.ProductService().CollectionsByProductID(orderLineProduct.Id)
-							if appErr != nil {
-								setAppError(appErr)
-							} else {
-								orderLineProductInDiscountedProducts := lo.SomeBy(discountedProducts, func(p *model.Product) bool { return p.Id == orderLineProduct.Id })
-								orderLineCategoryInDiscountedCategories := lo.SomeBy(discountedCategories, func(c *model.Category) bool { return c.Id == orderLineCategory.Id })
-								orderLineCollectionsIntersectDiscountedCollections := lo.Intersect(orderLineCollections, discountedCollections)
-
-								if orderLineProductInDiscountedProducts || orderLineCategoryInDiscountedCategories || len(orderLineCollectionsIntersectDiscountedCollections) > 0 {
-									mut.Lock()
-									discountedOrderLines = append(discountedOrderLines, anOrderLine)
-									mut.Unlock()
-								}
-							}
-						}
-					}
-
-					wg.Done()
-				}(orderLine)
-			}
-		}
-	} else {
-		// If there's no discounted products, collections or categories,
-		// it means that all products are discounted
-		return orderLines, nil
-	}
-
-	if hasGoRoutines {
-		wg.Wait()
-	}
-
-	return discountedOrderLines, nil
+	// If there's no discounted products, collections or categories,
+	// it means that all products are discounted
+	return orderLines, nil
 }
 
 // Get prices of variants belonging to the discounted specific products.
@@ -585,11 +549,11 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *model.Order) (result inte
 		return
 	}
 
-	if voucherOfDiscount.Type == model.ENTIRE_ORDER {
+	if voucherOfDiscount.Type == model.VOUCHER_TYPE_ENTIRE_ORDER {
 		result, appErr = a.srv.DiscountService().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, ord.ChannelID)
 		return
 	}
-	if voucherOfDiscount.Type == model.SHIPPING {
+	if voucherOfDiscount.Type == model.VOUCHER_TYPE_SHIPPING {
 		result, appErr = a.srv.DiscountService().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
 		return
 	}
@@ -897,7 +861,7 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model.NewAppError("AddVariantToOrder", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return orderLine, nil, nil
@@ -1289,7 +1253,7 @@ func (a *ServiceOrder) SumOrderTotals(orders []*model.Order, currencyCode string
 	// validate given `currencyCode` is valid
 	currencyCode = strings.ToUpper(currencyCode)
 	if _, err := goprices.GetCurrencyPrecision(currencyCode); err != nil || currencyCode != orders[0].Currency {
-		return nil, model.NewAppError("SumOrderTotals", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+		return nil, model.NewAppError("SumOrderTotals", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, order := range orders {
@@ -1351,11 +1315,11 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *mo
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, ord.Total.Net)
 	if err != nil {
-		return model.NewAppError("UpdateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("UpdateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	grossTotal, err := a.ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, ord.Total.Gross)
 	if err != nil {
-		return model.NewAppError("UpdateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("UpdateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	newAmount, _ := ord.Total.Sub(grossTotal)
@@ -1366,7 +1330,7 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *mo
 
 	newOrderTotal, err := goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
 	if err != nil {
-		return model.NewAppError("UpdateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("UpdateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	ord.Total = newOrderTotal
 
@@ -1411,7 +1375,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *model.Order) (*go
 			}
 			// ignore not found error
 		} else {
-			if voucher.Type == model.SPECIFIC_PRODUCT {
+			if voucher.Type == model.VOUCHER_TYPE_SPECIFIC_PRODUCT {
 				orderLinesOfOrder, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 					Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 				})
@@ -1469,7 +1433,7 @@ func (a *ServiceOrder) GetTotalOrderDiscount(ord *model.Order) (*goprices.Money,
 		orderDiscount.PopulateNonDbFields()
 		addedMoney, err := totalOrderDiscount.Add(orderDiscount.Amount)
 		if err != nil { // order's Currency != orderDiscount.Currency
-			return nil, model.NewAppError("GetTotalOrderDiscount", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model.NewAppError("GetTotalOrderDiscount", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		} else {
 			totalOrderDiscount = addedMoney
 		}
@@ -1503,11 +1467,11 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, ord *mo
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
 	if err != nil {
-		return nil, model.NewAppError("CreateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CreateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	grossTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Gross)
 	if err != nil {
-		return nil, model.NewAppError("CreateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CreateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	sub, _ := ord.Total.Sub(grossTotal.(*goprices.Money))
@@ -1524,7 +1488,7 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, ord *mo
 
 	newOrderTotal, err := goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
 	if err != nil {
-		return nil, model.NewAppError("CreateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CreateOrderDiscountForOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	ord.Total = newOrderTotal
@@ -1548,7 +1512,7 @@ func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorm.DB, ord *m
 
 	newOrderTotal, err := ord.Total.Add(orderDiscount.Amount)
 	if err != nil {
-		return model.NewAppError("RemoveOrderDiscountFromOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("RemoveOrderDiscountFromOrder", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	ord.Total = newOrderTotal
@@ -1580,12 +1544,12 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord
 	if orderLine.UnitDiscountValue != value || orderLine.UnitDiscountType != valueType {
 		unitPriceWithDiscount, err := a.ApplyDiscountToValue(value, valueType, orderLine.UnDiscountedUnitPrice.Currency, orderLine.UnDiscountedUnitPrice)
 		if err != nil {
-			return model.NewAppError("UpdateDiscountForOrderLine", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model.NewAppError("UpdateDiscountForOrderLine", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		newOrderLineUnitDiscount, err := orderLine.UnDiscountedUnitPrice.Sub(unitPriceWithDiscount)
 		if err != nil {
-			return model.NewAppError("UpdateDiscountForOrderLine", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model.NewAppError("UpdateDiscountForOrderLine", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		orderLine.UnitDiscount = newOrderLineUnitDiscount.Gross
@@ -1672,8 +1636,8 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 
 	// validate order lines
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions:           squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
-		SelectRelatedVariant: true,
+		Conditions:      squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
+		PrefetchRelated: []string{"ProductVariant"},
 	})
 	if appErr != nil {
 		return appErr
@@ -1698,10 +1662,10 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 		if line.VariantID == nil {
 			return model.NewAppError("app.order.ValidateDraftOrder", "app.order.variant_required_for_order_line.app_error", nil, "can not create orders without product", http.StatusNotAcceptable)
 
-		} else if *line.GetProductVariant().TrackInventory {
+		} else if *line.ProductVariant.TrackInventory {
 			insufficientStockErr, appErr := s.srv.
 				WarehouseService().
-				CheckStockAndPreorderQuantity(line.GetProductVariant(), countryCode, channel.Slug, line.Quantity)
+				CheckStockAndPreorderQuantity(line.ProductVariant, countryCode, channel.Slug, line.Quantity)
 
 			if appErr != nil {
 				return appErr
@@ -1718,7 +1682,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	productVariantIDs := util.AnyArray[string]{}
 
 	for _, line := range orderLinesOfOrder {
-		variant := line.GetProductVariant()
+		variant := line.ProductVariant
 		totalQuantity += line.Quantity
 		if variant != nil {
 			productIDsMap[variant.ProductID] = true

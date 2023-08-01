@@ -3,12 +3,11 @@ package checkout
 import (
 	"encoding/json"
 	"net/http"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -269,8 +268,6 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 		variants                model.ProductVariants
 		quantities              []int
 		products                model.Products
-		wg                      sync.WaitGroup
-		mutex                   sync.Mutex
 	)
 
 	lines = lines.FilterNils()
@@ -335,35 +332,39 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 
 	var (
 		orderLineDatas []*model.OrderLineData
-		appError       *model.AppError
+		appErrorChan   = make(chan *model.AppError)
+		dataChan       = make(chan *model.OrderLineData)
+		atomicValue    atomic.Int32
 	)
+	defer func() {
+		close(appErrorChan)
+		close(dataChan)
+	}()
+
+	atomicValue.Add(int32(len(lines))) // specify number of go-routines to wait
 
 	for _, item := range lines {
-		wg.Add(1)
-
 		go func(lineInfo *model.CheckoutLineInfo) {
-			mutex.Lock()
-			defer mutex.Unlock()
+			defer atomicValue.Add(-1)
 
 			orderLineData, appErr := s.createLineForOrder(manager, checkoutInfo, lines, *lineInfo, discounts, productTranslationMap, productVariantTranslationMap)
 			if appErr != nil {
-				if appErr.StatusCode == http.StatusInternalServerError && appError == nil {
-					appError = appErr
-				}
-			} else {
-				orderLineDatas = append(orderLineDatas, orderLineData)
+				appErrorChan <- appErr
+				return
 			}
 
-			wg.Done()
+			dataChan <- orderLineData
 		}(item)
 	}
 
-	if len(lines) > 0 {
-		wg.Wait()
-	}
-
-	if appError != nil {
-		return nil, nil, appErr
+	for atomicValue.Load() != 0 {
+		select {
+		case err := <-appErrorChan:
+			return nil, nil, err
+		case data := <-dataChan:
+			orderLineDatas = append(orderLineDatas, data)
+		default:
+		}
 	}
 
 	return orderLineDatas, nil, nil
@@ -401,7 +402,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 		} else {
 			errMsg = err2.Error()
 		}
-		return nil, nil, nil, nil, model.NewAppError("prepareOrderData", app.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
+		return nil, nil, nil, nil, model.NewAppError("prepareOrderData", model.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
 	}
 
 	taxedTotal.Gross = newTaxedTotalGross
@@ -530,14 +531,14 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 	*/
 	serializedOrderData, err := json.Marshal(orderData)
 	if err != nil {
-		return nil, nil, model.NewAppError("createOrder", app.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model.NewAppError("createOrder", model.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// define new order to create
 	var newOrder model.Order
 	err = json.Unmarshal(serializedOrderData, &newOrder)
 	if err != nil {
-		return nil, nil, model.NewAppError("createOrder", app.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model.NewAppError("createOrder", model.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	newOrder.Id = ""
@@ -633,7 +634,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return nil, nil, model.NewAppError("createOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model.NewAppError("createOrder", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	insufficientStock, appErr := s.srv.OrderService().OrderCreated(*createdNewOrder, user, nil, manager, false)

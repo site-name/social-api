@@ -23,7 +23,7 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 	var (
 		exportVariantID     = exportFields.Contains("variants__id")
 		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
-		productExportFields = exportFields.InterSection(productFields...)
+		productExportFields = exportFields.InterSection(productFields)
 	)
 
 	if !exportVariantID {
@@ -81,7 +81,7 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields, attr
 func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFields, attributeIDs, channelIDs util.AnyArray[string]) map[string]model.StringMap {
 	var (
 		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
-		relationFields   = exportFields.InterSection(manyToManyFields...)
+		relationFields   = exportFields.InterSection(manyToManyFields)
 	)
 
 	if len(relationFields) > 0 || len(attributeIDs) > 0 || len(channelIDs) > 0 {
@@ -159,7 +159,7 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 
 func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) map[string]model.StringMap {
 	manyToManyFields := ProductExportFields.HEADERS_TO_FIELDS_MAPPING["variant_many_to_many"].Values()
-	relationsFields := exportFields.InterSection(manyToManyFields...)
+	relationsFields := exportFields.InterSection(manyToManyFields)
 
 	if len(relationsFields) > 0 || len(attributeIDs) > 0 || len(channelIDs) > 0 {
 		return s.prepareVariantsRelationsData(products, relationsFields, attributeIDs, warehouseIDs, channelIDs)

@@ -11,7 +11,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -26,10 +25,10 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 }) (*CollectionAddProducts, error) {
 	// validate arguments
 	if !model.IsValidId(args.CollectionID) {
-		return nil, model.NewAppError("CollectionAddProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collectionID"}, fmt.Sprintf("%s is invalid collection id", args.CollectionID), http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionAddProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collectionID"}, fmt.Sprintf("%s is invalid collection id", args.CollectionID), http.StatusBadRequest)
 	}
 	if !lo.EveryBy(args.Products, model.IsValidId) {
-		return nil, model.NewAppError("CollectionAddProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionAddProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -50,7 +49,7 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("CollectionAddProducts", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CollectionAddProducts", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 
 	// add collection-product relations:
@@ -78,7 +77,7 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("CollectionAddProducts", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CollectionAddProducts", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	transaction.Rollback()
 
@@ -95,7 +94,7 @@ func (r *Resolver) CollectionCreate(ctx context.Context, args struct {
 }) (*CollectionCreate, error) {
 	// validate params
 	if !lo.EveryBy(args.Input.Products, model.IsValidId) {
-		return nil, model.NewAppError("CollectionCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 
 	panic(fmt.Errorf("not implemented"))
@@ -105,7 +104,7 @@ func (r *Resolver) CollectionCreate(ctx context.Context, args struct {
 func (r *Resolver) CollectionDelete(ctx context.Context, args struct{ Id string }) (*CollectionDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("CollectionDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -128,7 +127,7 @@ func (r *Resolver) CollectionReorderProducts(ctx context.Context, args struct {
 }) (*CollectionReorderProducts, error) {
 	// validate params
 	if !model.IsValidId(args.CollectionID) {
-		return nil, model.NewAppError("CollectionReorderProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CollectionID"}, "please provide valid collection id", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionReorderProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CollectionID"}, "please provide valid collection id", http.StatusBadRequest)
 	}
 
 	panic("not implemented")
@@ -138,7 +137,7 @@ func (r *Resolver) CollectionReorderProducts(ctx context.Context, args struct {
 func (r *Resolver) CollectionBulkDelete(ctx context.Context, args struct{ Ids []string }) (*CollectionBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model.NewAppError("CollectionBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid collection ids", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid collection ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -160,10 +159,10 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 }) (*CollectionRemoveProducts, error) {
 	// validate arguments
 	if !model.IsValidId(args.CollectionID) {
-		return nil, model.NewAppError("CollectionRemoveProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collection id"}, "please provide valid collection id", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionRemoveProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collection id"}, "please provide valid collection id", http.StatusBadRequest)
 	}
 	if !lo.EveryBy(args.Products, model.IsValidId) {
-		return nil, model.NewAppError("CollectionRemoveProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionRemoveProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -214,7 +213,7 @@ func (r *Resolver) CollectionUpdate(ctx context.Context, args struct {
 }) (*CollectionUpdate, error) {
 	// validate arguments
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("CollectionUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
 	}
 
 	panic(fmt.Errorf("not implemented"))
@@ -235,21 +234,21 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 }) (*CollectionChannelListingUpdate, error) {
 	// validate arguments
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
 	}
 
 	// validate input
 	var addChannelIds util.AnyArray[string] = lo.Map(args.Input.AddChannels, func(item *PublishableChannelListingInput, _ int) string { return item.ChannelID })
 	var removeChannelIds util.AnyArray[string] = args.Input.RemoveChannels
 
-	if addChannelIds.InterSection(removeChannelIds...).Len() > 0 {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input"}, "some channels are both being added and removed", http.StatusBadRequest)
+	if addChannelIds.InterSection(removeChannelIds).Len() > 0 {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input"}, "some channels are both being added and removed", http.StatusBadRequest)
 	}
 	if addChannelIds.HasDuplicates() || !lo.EveryBy(addChannelIds, model.IsValidId) {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
 	}
 	if removeChannelIds.HasDuplicates() || !lo.EveryBy(removeChannelIds, model.IsValidId) {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -257,7 +256,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	// begin transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CollectionChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer transaction.Rollback()
 
@@ -306,7 +305,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	// commit transaction
 	err = transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CollectionChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{

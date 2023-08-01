@@ -3,13 +3,13 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"time"
 	"unsafe"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
@@ -106,14 +106,14 @@ type AddressInput struct {
 func (a *AddressInput) Validate(where string) *model.AppError {
 	// validate input country
 	if country := a.Country; country == nil || !country.IsValid() {
-		return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
 	}
 
 	// validate input phone
 	if phone := a.Phone; phone != nil {
 		_, ok := util.ValidatePhoneNumber(*phone, a.Country.String())
 		if !ok {
-			return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
 	}
 
@@ -749,16 +749,13 @@ type CatalogueInput struct {
 }
 
 func (c *CatalogueInput) Validate(api string) *model.AppError {
-	for _, item := range []struct {
-		name  string
-		value []string
-	}{
-		{"Products", c.Products},
-		{"Categories", c.Categories},
-		{"Collections", c.Collections},
+	for key, value := range map[string][]string{
+		"Products":    c.Products,
+		"Categories":  c.Categories,
+		"Collections": c.Collections,
 	} {
-		if !lo.EveryBy(item.value, model.IsValidId) {
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": item.name}, "please provide valid "+item.name+" ids", http.StatusBadRequest)
+		if !lo.EveryBy(value, model.IsValidId) {
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
 		}
 	}
 
@@ -808,7 +805,7 @@ type CategoryInput struct {
 
 func (c *CategoryInput) Validate() *model.AppError {
 	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
-		return model.NewAppError("CategoryInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
+		return model.NewAppError("CategoryInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
 	}
 	return nil
 }
@@ -3273,6 +3270,27 @@ type SaleChannelListingInput struct {
 	RemoveChannels []string                      `json:"removeChannels"`
 }
 
+func (s *SaleChannelListingInput) Validate() *model.AppError {
+	// checks if given channel ids are valid uuids
+	if !lo.EveryBy(s.RemoveChannels, model.IsValidId) {
+		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
+	}
+	addChannelIDs := lo.Map(s.AddChannels, func(ac *SaleChannelListingAddInput, _ int) string { return ac.ChannelID })
+	if !lo.EveryBy(addChannelIDs, model.IsValidId) {
+		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids to add", http.StatusBadRequest)
+	}
+
+	// check if some channel(s) is/are designed to both add and remove
+	intersecChannelIds := lo.Intersect(s.RemoveChannels, addChannelIDs)
+	if len(intersecChannelIds) > 0 {
+		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
+	}
+
+	s.RemoveChannels = lo.Uniq(s.RemoveChannels)
+	s.AddChannels = lo.UniqBy(s.AddChannels, func(ac *SaleChannelListingAddInput) string { return ac.ChannelID })
+	return nil
+}
+
 type SaleChannelListingUpdate struct {
 	Sale   *Sale            `json:"sale"`
 	Errors []*DiscountError `json:"errors"`
@@ -3299,12 +3317,82 @@ type SaleDelete struct {
 	Sale   *Sale            `json:"sale"`
 }
 
+// TODO: Consider adding filter for saleChannelListing's DiscountValue field
 type SaleFilterInput struct {
 	Status   []*DiscountStatusEnum  `json:"status"`
 	SaleType *DiscountValueTypeEnum `json:"saleType"`
 	Started  *DateTimeRangeInput    `json:"started"`
-	Search   *string                `json:"search"`
+	Search   *string                `json:"search"` // filter against sale's name field
 	Metadata []*MetadataFilter      `json:"metadata"`
+}
+
+func (s *SaleFilterInput) Parse() (*model.SaleFilterOption, *model.AppError) {
+	conditions := squirrel.And{}
+	now := time.Now()
+
+	if len(s.Status) > 0 {
+		for _, st := range s.Status {
+			if st == nil {
+				continue
+			}
+			if !st.IsValid() {
+				return nil, model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
+			}
+
+			orConditions := squirrel.Or{}
+
+			switch *st {
+			case DiscountStatusEnumActive:
+				orConditions = append(orConditions, squirrel.And{
+					squirrel.Expr(model.SaleTableName+".EndDate IS NULL OR Sales.EndDate >= ?", now),
+					squirrel.Expr(model.SaleTableName+".StartDate <= ?", now),
+				})
+
+			case DiscountStatusEnumExpired:
+				orConditions = append(orConditions, squirrel.Expr(model.SaleTableName+".EndDate < ? AND Sales.StartDate < ?", now, now))
+
+			case DiscountStatusEnumScheduled:
+				orConditions = append(orConditions, squirrel.Expr(model.SaleTableName+".StartDate > ?", now))
+			}
+
+			if len(orConditions) > 0 {
+				conditions = append(conditions, orConditions)
+			}
+		}
+	}
+
+	if s.SaleType != nil {
+		if !s.SaleType.IsValid() {
+			return nil, model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sale type"}, "please provide valid sale type", http.StatusBadRequest)
+		}
+		conditions = append(conditions, squirrel.Expr(model.SaleTableName+".Type = ?", *s.SaleType))
+	}
+
+	// gte must <= lte
+	if s.Started != nil {
+		if s.Started.Gte != nil && s.Started.Lte != nil && s.Started.Gte.After(s.Started.Lte.Time) {
+			return nil, model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "started"}, "gte must be <= lte", http.StatusBadRequest)
+		}
+
+		if s.Started.Gte != nil {
+			conditions = append(conditions, squirrel.Expr(model.SaleTableName+".StartDate >= ?", s.Started.Gte.Time))
+		}
+		if s.Started.Lte != nil {
+			conditions = append(conditions, squirrel.Expr(model.SaleTableName+".StartDate <= ?", s.Started.Lte.Time))
+		}
+	}
+
+	if s.Search != nil && *s.Search != "" {
+		if stringsContainSqlExpr.MatchString(*s.Search) {
+			return nil, model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "search phrase cannot contain sql commands", http.StatusBadRequest)
+		}
+
+		conditions = append(conditions, squirrel.Expr(model.SaleTableName+".Name ILIKE ?", "%"+*s.Search+"%"))
+	}
+
+	return &model.SaleFilterOption{
+		Conditions: conditions,
+	}, nil
 }
 
 type SaleInput struct {
@@ -3321,10 +3409,10 @@ type SaleInput struct {
 
 func (s *SaleInput) Validate(api string) *model.AppError {
 	if s.Type != nil && !s.Type.IsValid() {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
 	}
 	if s.StartDate != nil && s.EndDate != nil && s.EndDate.Before(s.StartDate.Time) {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
 	}
 	for key, value := range map[string][]string{
 		"Products":    s.Products,
@@ -3333,7 +3421,7 @@ func (s *SaleInput) Validate(api string) *model.AppError {
 		"Collections": s.Collections,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
 		}
 	}
 
@@ -3371,7 +3459,6 @@ type SaleRemoveCatalogues struct {
 
 type SaleSortingInput struct {
 	Direction OrderDirection `json:"direction"`
-	Channel   *string        `json:"channel"`
 	Field     SaleSortField  `json:"field"`
 }
 
@@ -3556,55 +3643,55 @@ func (s *ShippingPriceInput) Validate(api string) *model.AppError {
 	// clean weights:
 	if s.MinimumOrderWeight != nil {
 		if s.MinimumOrderWeight.Value < 0 {
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
 		}
 		if measurement.WEIGHT_UNIT_STRINGS[s.MinimumOrderWeight.Unit] == "" { // invalid unit
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
 		}
 	}
 	if s.MaximumOrderWeight != nil {
 		if s.MaximumOrderWeight.Value < 0 {
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
 		}
 		if measurement.WEIGHT_UNIT_STRINGS[s.MaximumOrderWeight.Unit] == "" { // invalid unit
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
 		}
 	}
 
 	if s.MinimumOrderWeight != nil &&
 		s.MaximumOrderWeight != nil &&
 		(s.MinimumOrderWeight.Unit == s.MaximumOrderWeight.Unit || s.MinimumOrderWeight.Value >= s.MaximumOrderWeight.Value) {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight / MinimumOrderWeight"}, "weight units must be the same and min weight must less than (<) max weight", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight / MinimumOrderWeight"}, "weight units must be the same and min weight must less than (<) max weight", http.StatusBadRequest)
 	}
 
 	// clean delivery time
 	// - check if minimum_delivery_days is not higher than maximum_delivery_days
 	// - check if minimum_delivery_days and maximum_delivery_days are positive values
 	if s.MinimumDeliveryDays != nil && *s.MinimumDeliveryDays < 0 {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
 	}
 	if s.MaximumDeliveryDays != nil && *s.MaximumDeliveryDays < 0 {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
 	}
 	if s.MinimumDeliveryDays != nil && s.MaximumDeliveryDays != nil && *s.MinimumDeliveryDays >= *s.MaximumDeliveryDays {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays, MaximumDeliveryDays"}, "min delivery day must less than max delivery days", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays, MaximumDeliveryDays"}, "min delivery day must less than max delivery days", http.StatusBadRequest)
 	}
 
 	// clean postal code rules
 	if !lo.EveryBy(s.DeletePostalCodeRules, model.IsValidId) {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "delete postal code rules"}, "please provide valid delete postal code rule ids", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "delete postal code rules"}, "please provide valid delete postal code rule ids", http.StatusBadRequest)
 	}
 	if len(s.AddPostalCodeRules) > 0 && (s.InclusionType == nil || !s.InclusionType.IsValid()) {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "inclusion type"}, "inclusion type is required when add postal code rules are provided", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "inclusion type"}, "inclusion type is required when add postal code rules are provided", http.StatusBadRequest)
 	}
 
 	if s.Type != nil && !s.Type.IsValid() {
-		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
 	}
 
 	if s.ShippingZone != nil {
 		if !model.IsValidId(*s.ShippingZone) {
-			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone"}, "please provide valid shipping zone id", http.StatusBadRequest)
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone"}, "please provide valid shipping zone id", http.StatusBadRequest)
 		}
 	}
 
@@ -4069,7 +4156,7 @@ type VoucherFilterInput struct {
 type VoucherInput struct {
 	Type                     *VoucherTypeEnum       `json:"type"`
 	Name                     *string                `json:"name"`
-	Code                     *string                `json:"code"`
+	Code                     *string                `json:"code"` // format of: XXXX-XXXX-XXXX
 	StartDate                *DateTime              `json:"startDate"`
 	EndDate                  *DateTime              `json:"endDate"`
 	DiscountValueType        *DiscountValueTypeEnum `json:"discountValueType"`
@@ -4078,10 +4165,91 @@ type VoucherInput struct {
 	Collections              []string               `json:"collections"`
 	Categories               []string               `json:"categories"`
 	MinCheckoutItemsQuantity *int32                 `json:"minCheckoutItemsQuantity"`
-	Countries                []string               `json:"countries"`
+	Countries                []CountryCode          `json:"countries"`
 	ApplyOncePerOrder        *bool                  `json:"applyOncePerOrder"`
 	ApplyOncePerCustomer     *bool                  `json:"applyOncePerCustomer"`
+	OnlyForStaff             *bool                  `json:"onlyForStaff"`
 	UsageLimit               *int32                 `json:"usageLimit"`
+}
+
+func (v *VoucherInput) Validate(api string) *model.AppError {
+	if v.Type != nil && !v.Type.IsValid() {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid voucher type", http.StatusBadRequest)
+	}
+	if v.Code != nil && !model.PromoCodeRegex.MatchString(*v.Code) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "code"}, "code must look like UH78-GHUY-98RG", http.StatusBadRequest)
+	}
+	if v.StartDate != nil && v.EndDate != nil && v.StartDate.After(v.EndDate.Time) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "dates"}, "start date must less than end date", http.StatusBadRequest)
+	}
+	if v.MinCheckoutItemsQuantity != nil && *v.MinCheckoutItemsQuantity <= 0 {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "minCheckoutQuantity"}, "minimum checkout quantity must >= 1", http.StatusBadRequest)
+	}
+
+	for name, value := range map[string][]string{
+		"products":    v.Products,
+		"variants":    v.Variants,
+		"collections": v.Collections,
+		"categories":  v.Categories,
+	} {
+		if !lo.EveryBy(value, model.IsValidId) {
+			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" ids", http.StatusBadRequest)
+		}
+	}
+	if lo.SomeBy(v.Countries, func(c CountryCode) bool { return !c.IsValid() }) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countries"}, "please provide valid country codes", http.StatusBadRequest)
+	}
+	if v.UsageLimit != nil && *v.UsageLimit < 0 {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usageLimit"}, "please provide valid usage limit", http.StatusBadRequest)
+	}
+	if v.DiscountValueType != nil && !v.DiscountValueType.IsValid() {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValueType"}, "please provide valid discount value type", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+// PatchVoucher must be called after calling Validate()
+func (v *VoucherInput) PatchVoucher(voucher *model.Voucher) {
+	switch {
+	case v.Type != nil:
+		voucher.Type = *v.Type
+		fallthrough
+	case v.Name != nil:
+		*voucher.Name = *v.Name
+		fallthrough
+	case v.Code != nil && *v.Code != voucher.Code:
+		voucher.Code = *v.Code
+		fallthrough
+	case v.UsageLimit != nil:
+		voucher.UsageLimit = (*int)(unsafe.Pointer(v.UsageLimit))
+		fallthrough
+	case v.StartDate != nil:
+		voucher.StartDate = v.StartDate.Time
+		fallthrough
+	case v.EndDate != nil:
+		voucher.EndDate = &v.EndDate.Time
+		fallthrough
+	case v.ApplyOncePerOrder != nil:
+		voucher.ApplyOncePerOrder = *v.ApplyOncePerCustomer
+		fallthrough
+	case v.ApplyOncePerCustomer != nil:
+		voucher.ApplyOncePerCustomer = *v.ApplyOncePerCustomer
+		fallthrough
+	case v.OnlyForStaff != nil:
+		voucher.OnlyForStaff = v.OnlyForStaff
+		fallthrough
+	case v.DiscountValueType != nil:
+		voucher.DiscountValueType = *v.DiscountValueType
+		fallthrough
+	case len(v.Countries) > 0:
+		for _, country := range v.Countries {
+			voucher.Countries += country.String() + " "
+		}
+		fallthrough
+	case v.MinCheckoutItemsQuantity != nil:
+		voucher.MinCheckoutItemsQuantity = *(*int)(unsafe.Pointer(v.MinCheckoutItemsQuantity))
+	}
 }
 
 type VoucherRemoveCatalogues struct {
@@ -5572,13 +5740,7 @@ const (
 	VoucherSortFieldMinimumSpentAmount VoucherSortField = "MINIMUM_SPENT_AMOUNT"
 )
 
-type VoucherTypeEnum string
-
-const (
-	VoucherTypeEnumShipping        VoucherTypeEnum = model.SHIPPING
-	VoucherTypeEnumEntireOrder     VoucherTypeEnum = model.ENTIRE_ORDER
-	VoucherTypeEnumSpecificProduct VoucherTypeEnum = model.SPECIFIC_PRODUCT
-)
+type VoucherTypeEnum = model.VoucherType
 
 type WarehouseErrorCode string
 

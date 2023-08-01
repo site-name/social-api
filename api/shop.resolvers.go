@@ -12,7 +12,6 @@ import (
 	"unsafe"
 
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -31,7 +30,7 @@ func (r *Resolver) ShopSettingsUpdate(ctx context.Context, args struct{ Input Sh
 
 		urlParse, err := url.Parse(*inputUrl)
 		if err != nil || !lo.Contains(allowedClientHosts, urlParse.Host) {
-			return nil, model.NewAppError("ShopSettingsUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer_set_password_url"}, err.Error(), http.StatusBadRequest)
+			return nil, model.NewAppError("ShopSettingsUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer_set_password_url"}, err.Error(), http.StatusBadRequest)
 		}
 	}
 

@@ -53,7 +53,8 @@ type SaleProductVariant struct {
 
 // SaleFilterOption can be used to
 type SaleFilterOption struct {
-	Conditions squirrel.Sqlizer
+	Conditions                   squirrel.Sqlizer
+	SaleChannelListing_ChannelID squirrel.Sqlizer // INNER JOIN SaleChannelListings ON ... WHERE SaleChannelListings.ChannelID ...
 }
 
 type Sales []*Sale
@@ -67,20 +68,17 @@ func (s *Sale) String() string {
 }
 
 func (s *Sale) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.sale.is_valid.%s.app_error",
-		"sale_id=",
-		"Sale.IsValid",
-	)
-
 	if !s.Type.IsValid() {
-		return outer("type", &s.Id)
+		return NewAppError("Sale.IsValid", "model.sale.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 	if s.StartDate.IsZero() {
-		return outer("start_date", &s.Id)
+		return NewAppError("Sale.IsValid", "model.sale.is_valid.start_date.app_error", nil, "please provide valid start date", http.StatusBadRequest)
 	}
 	if s.EndDate != nil && s.EndDate.IsZero() {
-		return outer("end_date", &s.Id)
+		return NewAppError("Sale.IsValid", "model.sale.is_valid.end_date.app_error", nil, "please provide valid end date", http.StatusBadRequest)
+	}
+	if s.EndDate != nil && s.EndDate.Before(s.StartDate) {
+		return NewAppError("Sale.IsValid", "model.sale.is_valid.dates.app_error", nil, "start date must be before end date", http.StatusBadRequest)
 	}
 
 	return nil

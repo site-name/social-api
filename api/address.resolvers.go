@@ -10,7 +10,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/site-name/i18naddress"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -70,7 +69,7 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 }) (*AddressUpdate, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("AddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+		return nil, model.NewAppError("AddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
 	appErr := args.Input.Validate("AddressUpdate")
@@ -124,7 +123,7 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
 	// validate id input
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("AddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+		return nil, model.NewAppError("AddressDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
 	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
@@ -167,10 +166,10 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 }) (*AddressSetDefault, error) {
 	// validate params
 	if !model.IsValidId(args.AddressID) {
-		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
+		return nil, model.NewAppError("AddressSetDefault", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
 	}
 	if !args.Type.IsValid() {
-		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
+		return nil, model.NewAppError("AddressSetDefault", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -222,7 +221,7 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 	}
 	validationRules, err := i18naddress.GetValidationRules(addressParam)
 	if err != nil {
-		return nil, model.NewAppError("AddressValidationRules", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
+		return nil, model.NewAppError("AddressValidationRules", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
 	}
 
 	return &AddressValidationData{
@@ -250,7 +249,7 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
 	// validate params:
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("Address", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+		return nil, model.NewAppError("Address", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

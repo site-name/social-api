@@ -85,7 +85,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, ord *model.Order, kwa
 
 		addedPrice, err := totalPrice.Add(orderLine.TotalPrice)
 		if err != nil {
-			return model.NewAppError("RecalculateOrderPrices", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return model.NewAppError("RecalculateOrderPrices", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 		totalPrice = addedPrice
 		// reassign value here since `addedPrice` can be nil if error occurs.
@@ -107,7 +107,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, ord *model.Order, kwa
 	}
 	subResult, err := totalPrice.Sub(voucherDiscount)
 	if err != nil {
-		return model.NewAppError("RecalculateOrderPrices", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("RecalculateOrderPrices", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	totalPrice = subResult
 

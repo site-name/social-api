@@ -94,24 +94,16 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, 
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
-			PrefetchRelated: model.OrderLinePrefetchRelated{
-				VariantProduct: true, // this tells store to prefetch related product variants, products too
-			},
+			Conditions:      squirrel.Expr(model.OrderLineTableName+".OrderID = ?", order.Id),
+			PrefetchRelated: []string{"ProductVariant"},
 		})
 		if appErr != nil {
 			return nil, appErr
 		}
 
-		for _, orderLine := range orderLines {
-			if variant := orderLine.GetProductVariant(); variant != nil && variant.GetProduct() != nil {
-				orderProductIDs = append(orderProductIDs, variant.GetProduct().Id)
-			}
-		}
+		orderProductIDs = lo.Map(orderLines, func(o *model.OrderLine, _ int) string { return o.ProductVariant.ProductID })
 	} else {
-		for _, line := range lines {
-			orderProductIDs = append(orderProductIDs, line.Product.Id)
-		}
+		orderProductIDs = lo.Map(lines, func(item *model.CheckoutLineInfo, _ int) string { return item.Product.Id })
 	}
 
 	applicableShippingMethods, err := a.srv.Store.ShippingMethod().ApplicableShippingMethods(

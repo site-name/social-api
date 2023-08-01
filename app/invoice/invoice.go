@@ -39,7 +39,7 @@ func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, 
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrNotFound); ok {
-			return nil, model.NewAppError("UpsertInvoice", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoice.Id"}, "", http.StatusBadRequest)
+			return nil, model.NewAppError("UpsertInvoice", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoice.Id"}, "", http.StatusBadRequest)
 		}
 		return nil, model.NewAppError("UpsertInvoice", "app.invoice.upserting_invoice.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

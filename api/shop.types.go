@@ -9,7 +9,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -113,7 +112,7 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 }) ([]*PaymentGateway, error) {
 	// validate params
 	if !model.IsValidId(args.ChannelID) {
-		return nil, model.NewAppError("Shop.AvailablePaymentGateways", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model.NewAppError("Shop.AvailablePaymentGateways", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -172,7 +171,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 }) ([]*ShippingMethod, error) {
 	// validate argument(s)
 	if !slug.IsSlug(args.Channel) {
-		return nil, model.NewAppError("Shop.AvailableShippingMethods", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
+		return nil, model.NewAppError("Shop.AvailableShippingMethods", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 	if args.Address != nil {
 		err := args.Address.Validate("AvailableShippingMethods")

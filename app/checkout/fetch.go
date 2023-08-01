@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 )
@@ -38,7 +37,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 		}, nil
 
 	default:
-		return nil, model.NewAppError("GetDeliveryMethodInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("GetDeliveryMethodInfo", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 	}
 }
 
@@ -57,7 +56,7 @@ func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) ([]*model
 func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model.AppError) {
 	// validate arguments:
 	if checkOut == nil {
-		return nil, model.NewAppError("FetchCheckoutInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("FetchCheckoutInfo", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
 	}
 
 	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
@@ -235,7 +234,7 @@ func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo
 	checkoutInfo.Checkout.PopulateNonDbFields() // this is important
 	subTotal, err := subTotal.Sub(checkoutInfo.Checkout.Discount)
 	if err != nil {
-		return nil, model.NewAppError("GetValidShippingMethodListForCheckoutInfo", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("GetValidShippingMethodListForCheckoutInfo", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return a.GetValidShippingMethodsForCheckout(checkoutInfo, lines, subTotal, countryCode)
@@ -262,7 +261,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.Ch
 		switch deliveryMethod.(type) {
 		case *model.WareHouse, *model.ShippingMethod:
 		default:
-			return model.NewAppError("UpdateCheckoutInfoDeliveryMethod", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+			return model.NewAppError("UpdateCheckoutInfoDeliveryMethod", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 		}
 	}
 

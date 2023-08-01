@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
@@ -93,7 +92,7 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	}
 
 	if args.CountryCode == nil || !args.CountryCode.IsValid() {
-		return nil, model.NewAppError("ProductVariant.Stocks", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("ProductVariant.Stocks", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
 	}
 
 	if embedCtx.CurrentChannelID == "" {

@@ -210,12 +210,10 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 
 	for _, pair := range idPairs {
 		index := strings.Index(pair, "__")
-		if index < 0 {
-			continue
+		if index >= 0 {
+			variantIDs = append(variantIDs, pair[:index])
+			channelIDs = append(channelIDs, pair[index+2:])
 		}
-
-		variantIDs = append(variantIDs, pair[:index])
-		channelIDs = append(channelIDs, pair[index+2:])
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -223,9 +221,9 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			Conditions:         squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
-			OrderChannelID:     squirrel.Eq{model.OrderTableName + ".ChannelID": channelIDs},
-			SelectRelatedOrder: true,
+			Conditions:      squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
+			OrderChannelID:  squirrel.Eq{model.OrderTableName + ".ChannelID": channelIDs},
+			PrefetchRelated: []string{"Order"},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -238,7 +236,7 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 		if line.VariantID == nil {
 			continue
 		}
-		key := *line.VariantID + "__" + line.GetOrder().ChannelID
+		key := *line.VariantID + "__" + line.Order.ChannelID
 		lineMap[key] = append(lineMap[key], line)
 	}
 
@@ -373,7 +371,7 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 	canSeeBillingAddress := (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0
 
 	if canSeeBillingAddress {
@@ -396,7 +394,7 @@ func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
 	canSeeShippingAddress := (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0
 
 	if canSeeShippingAddress {
@@ -613,7 +611,7 @@ func (o *Order) UserEmail(ctx context.Context) (*string, error) {
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
 
 		return &o.order.UserEmail, nil
@@ -747,7 +745,7 @@ func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
 		invoices, err := InvoicesByOrderIDLoader.Load(ctx, o.ID)()
 		if err != nil {

@@ -11,7 +11,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
@@ -276,7 +275,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 		Type:                     VoucherTypeEnum(v.Type),
 		Code:                     v.Code,
 		Used:                     int32(v.Used),
-		StartDate:                DateTime{util.TimeFromMillis(v.StartDate)},
+		StartDate:                DateTime{v.StartDate},
 		ApplyOncePerOrder:        v.ApplyOncePerOrder,
 		ApplyOncePerCustomer:     v.ApplyOncePerCustomer,
 		DiscountValueType:        DiscountValueTypeEnum(v.DiscountValueType),
@@ -296,7 +295,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 	}
 
 	if v.EndDate != nil {
-		res.EndDate = &DateTime{util.TimeFromMillis(*v.EndDate)}
+		res.EndDate = &DateTime{*v.EndDate}
 	}
 	if v.UsageLimit != nil {
 		res.UsageLimit = model.NewPrimitive(int32(*v.UsageLimit))

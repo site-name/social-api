@@ -84,12 +84,12 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 		fromCurrency = t.MyCurrency()
 
 	default:
-		return nil, model.NewAppError("ToLocalCurrency", InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
+		return nil, model.NewAppError("ToLocalCurrency", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
 	}
 	// validate provided currency is valid:
 	currency = strings.ToUpper(currency)
 	if goprices.CurrenciesMap[currency] == "" {
-		return nil, model.NewAppError("ToLocalCurrency", InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "unknown currency", http.StatusBadRequest)
+		return nil, model.NewAppError("ToLocalCurrency", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "unknown currency", http.StatusBadRequest)
 	}
 
 	if !strings.EqualFold(currency, fromCurrency) {
@@ -120,7 +120,7 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 			}
 		}
 	} else {
-		return nil, model.NewAppError("ExchangeCurrency", InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "base"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("ExchangeCurrency", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "base"}, "", http.StatusBadRequest)
 	}
 
 	if conversionRate == nil {

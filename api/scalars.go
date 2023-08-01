@@ -79,13 +79,13 @@ func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
 // LessThanOrEqual checks if current decimal <= given other.
 //
 // NOTE: LessThanOrEqual returns false if given other is nil
-func (p *PositiveDecimal) LessThanOrEqual(other *PositiveDecimal) bool {
-	if other == nil {
-		return false
-	}
-
+func (p *PositiveDecimal) LessThanOrEqual(other PositiveDecimal) bool {
 	return (*decimal.Decimal)(unsafe.Pointer(p)).
-		LessThanOrEqual(*(*decimal.Decimal)(unsafe.Pointer(other)))
+		LessThanOrEqual(*(*decimal.Decimal)(unsafe.Pointer(&other)))
+}
+
+func (p *PositiveDecimal) IsZero() bool {
+	return (*decimal.Decimal)(unsafe.Pointer(p)).Equal(decimal.Zero)
 }
 
 // Date implementes custom graphql scalar Date

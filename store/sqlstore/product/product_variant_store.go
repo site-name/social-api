@@ -248,7 +248,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		}
 
 		if option.SelectRelatedDigitalContent {
-			variant.SetDigitalContent(&digitalContent)
+			variant.DigitalContent = &digitalContent
 		}
 		res = append(res, &variant)
 	}

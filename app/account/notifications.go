@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -34,7 +33,7 @@ func (s *ServiceAccount) SendPasswordResetNotification(redirectURL string, user 
 		resetURL, err = util.PrepareUrl(params, redirectURL)
 	)
 	if err != nil {
-		return model.NewAppError("SendPasswordResetNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectURL"}, err.Error(), http.StatusBadRequest)
+		return model.NewAppError("SendPasswordResetNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectURL"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := model.StringInterface{
@@ -59,7 +58,7 @@ func (s *ServiceAccount) SendAccountConfirmation(redirectUrl string, user model.
 		confirmUrl, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model.NewAppError("SendAccountConfirmation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model.NewAppError("SendAccountConfirmation", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := model.StringInterface{
@@ -83,7 +82,7 @@ func (s *ServiceAccount) SendRequestUserChangeEmailNotification(redirectUrl stri
 		parsedRedirectUrl, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model.NewAppError("SendRequestUserChangeEmailNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model.NewAppError("SendRequestUserChangeEmailNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := model.StringInterface{
@@ -123,7 +122,7 @@ func (s *ServiceAccount) SendAccountDeleteConfirmationNotification(redirectUrl s
 		deleteUrl, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model.NewAppError("SendAccountDeleteConfirmationNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model.NewAppError("SendAccountDeleteConfirmationNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := model.StringInterface{
@@ -148,7 +147,7 @@ func (s *ServiceAccount) SendSetPasswordNotification(redirectUrl string, user mo
 		passwordSetURL, err = util.PrepareUrl(params, redirectUrl)
 	)
 	if err != nil {
-		return model.NewAppError("SendSetPasswordNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
+		return model.NewAppError("SendSetPasswordNotification", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "redirectUrl"}, err.Error(), http.StatusBadRequest)
 	}
 
 	payload := model.StringInterface{

@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -21,10 +20,10 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 }) (*VariantMediaUnassign, error) {
 	// validate params
 	if !model.IsValidId(args.MediaID) {
-		return nil, model.NewAppError("VariantMediaUnassign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
+		return nil, model.NewAppError("VariantMediaUnassign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
 	}
 	if !model.IsValidId(args.VariantID) {
-		return nil, model.NewAppError("VariantMediaUnassign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+		return nil, model.NewAppError("VariantMediaUnassign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -32,7 +31,7 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	// create transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("VariantMediaUnassign", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer transaction.Rollback()
 
@@ -43,7 +42,7 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	}
 
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("VariantMediaUnassign", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// TODO: check if this logic is needed, since the system doesn't have support for wekhook yet
@@ -67,10 +66,10 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 }) (*VariantMediaAssign, error) {
 	// validate params
 	if !model.IsValidId(args.MediaID) {
-		return nil, model.NewAppError("VariantMediaAssign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
+		return nil, model.NewAppError("VariantMediaAssign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
 	}
 	if !model.IsValidId(args.VariantID) {
-		return nil, model.NewAppError("VariantMediaAssign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+		return nil, model.NewAppError("VariantMediaAssign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -91,7 +90,7 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	// create transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("VariantMediaAssign", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer transaction.Rollback()
 
@@ -110,7 +109,7 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("VariantMediaAssign", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// TODO: check if this logic is needed, since the system doesn't have support for wekhook yet

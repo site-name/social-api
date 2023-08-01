@@ -3468,41 +3468,21 @@ func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalConte
 
 }
 
-func (s *RetryLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {
+func (s *RetryLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
 
 	tries := 0
 	for {
-		err := s.DiscountSaleStore.AddSaleRelations(transaction, sales, relations)
+		result, err := s.DiscountSaleStore.Delete(transaction, options)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) error {
-
-	tries := 0
-	for {
-		err := s.DiscountSaleStore.Delete(transaction, options)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
 		}
 	}
 
@@ -3548,6 +3528,26 @@ func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 }
 
+func (s *RetryLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+
+	tries := 0
+	for {
+		err := s.DiscountSaleStore.ToggleSaleRelations(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
 
 	tries := 0
@@ -3563,6 +3563,26 @@ func (s *RetryLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.S
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+
+	tries := 0
+	for {
+		err := s.DiscountSaleChannelListingStore.Delete(transaction, options)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 
@@ -3608,11 +3628,11 @@ func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOptio
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
+func (s *RetryLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleChannelListingStore.Save(saleChannelListing)
+		result, err := s.DiscountSaleChannelListingStore.Upsert(transaction, listings)
 		if err == nil {
 			return result, nil
 		}
@@ -3623,26 +3643,6 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *mod
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerDiscountVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations any) error {
-
-	tries := 0
-	for {
-		err := s.DiscountVoucherStore.AddVoucherRelations(transaction, vouchers, relations)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
 		}
 	}
 
@@ -3723,6 +3723,26 @@ func (s *RetryLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilt
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+
+	tries := 0
+	for {
+		err := s.DiscountVoucherStore.ToggleVoucherRelations(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

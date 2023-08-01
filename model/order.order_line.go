@@ -61,44 +61,40 @@ type OrderLine struct {
 	UnitPriceGross         *goprices.Money      `json:"unit_price_gross" gorm:"-"`
 	UnitPriceNet           *goprices.Money      `json:"unit_price_net" gorm:"-"`
 
-	productVariant *ProductVariant `gorm:"-"` // for storing value returned by prefetching
-	order          *Order          `gorm:"-"` // related data, get popularized in some calls to database
-	allocations    Allocations     `gorm:"-"`
+	ProductVariant *ProductVariant `json:"-"` // for storing value returned by prefetching
+	Order          *Order          `json:"-"` // related data, get popularized in some calls to database
+	Allocations    Allocations     `json:"-" gorm:"foreignKey:OrderLineID"`
 }
 
-func (c *OrderLine) BeforeCreate(_ *gorm.DB) error             { c.commonPre(); return c.IsValid() }
-func (c *OrderLine) BeforeUpdate(_ *gorm.DB) error             { c.commonPre(); return c.IsValid() }
-func (c *OrderLine) TableName() string                         { return OrderLineTableName }
-func (o *OrderLine) SetAllocations(allocations Allocations)    { o.allocations = allocations }
-func (o *OrderLine) GetAllocations() Allocations               { return o.allocations }
-func (o *OrderLine) SetOrder(order *Order)                     { o.order = order }
-func (o *OrderLine) GetOrder() *Order                          { return o.order }
-func (o *OrderLine) GetProductVariant() *ProductVariant        { return o.productVariant }
-func (o *OrderLine) SetProductVariant(variant *ProductVariant) { o.productVariant = variant }
+func (c *OrderLine) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *OrderLine) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *OrderLine) TableName() string             { return OrderLineTableName }
 
 // OrderLinePrefetchRelated
-type OrderLinePrefetchRelated struct {
-	VariantProduct        bool // This tells store to prefetch related ProductVariant(s) and Product(s) as well
-	VariantDigitalContent bool
-	VariantStocks         bool
-	AllocationsStock      bool
-}
+// type OrderLinePrefetchRelated struct {
+// 	VariantProduct        bool // This tells store to prefetch related ProductVariant(s) and Product(s) as well
+// 	VariantDigitalContent bool
+// 	VariantStocks         bool
+// 	AllocationsStock      bool
+// }
 
 // OrderLineFilterOption is used for build sql queries
 type OrderLineFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	OrderChannelID   squirrel.Sqlizer // INNER JOIN Orders ON Orders.Id = OrderLines.OrderID WHERE Orders.ChannelID ...
-	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN Products WHERE Products.Id ...
+	OrderChannelID   squirrel.Sqlizer // INNER JOIN Orders ON ... WHERE Orders.ChannelID ...
+	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants ON ... WHERE ProductVariants.ProductID ...
 
 	// INNER JOIN ProductVariants ON OrderLines.VariantID = ProductVariants.Id
 	// INNER JOIN DigitalContents ON ProductVariants.Id = DigitalContents.ProductVariantID WHERE DigitalContents.Id ...
 	VariantDigitalContentID squirrel.Sqlizer
 
-	PrefetchRelated OrderLinePrefetchRelated
-
-	SelectRelatedOrder   bool
-	SelectRelatedVariant bool
+	// Thanks to Gorm's Preload feature, we can select related values easily
+	//
+	// E.g
+	//  "ProductVariant" // will fetch related product variant(s)
+	//  "ProductVariant.Product" // will fetch related variants, product
+	PrefetchRelated []string
 }
 
 func (o *OrderLine) String() string {
@@ -349,16 +345,13 @@ func (o *OrderLine) DeepCopy() *OrderLine {
 	if o.TaxRate != nil {
 		orderLine.TaxRate = NewPrimitive(*o.TaxRate)
 	}
-
-	if o.productVariant != nil {
-		orderLine.productVariant = o.productVariant.DeepCopy()
+	if o.ProductVariant != nil {
+		orderLine.ProductVariant = o.ProductVariant.DeepCopy()
 	}
-	if o.order != nil {
-		orderLine.order = o.order.DeepCopy()
+	if o.Order != nil {
+		orderLine.Order = o.Order.DeepCopy()
 	}
-	for _, allo := range o.allocations {
-		o.allocations = append(o.allocations, allo.DeepCopy())
-	}
+	orderLine.Allocations = o.Allocations.DeepCopy()
 
 	return &orderLine
 }

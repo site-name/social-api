@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 	"unsafe"
 
 	"github.com/google/uuid"
@@ -451,6 +452,25 @@ func NewRandomString(length int) string {
 	rand.Read(data)
 	return encoding.EncodeToString(data)[:length]
 }
+
+// NewPromoCode generates promo codes for Voucher, Giftcard. Codes have format of XXXX-XXXX-XXXX (length 14)
+func NewPromoCode() string {
+	raw := uuid.NewString()
+	raw = strings.Map(func(r rune) rune {
+		switch {
+		case r == '-':
+			return 0x0
+		case unicode.IsLetter(r):
+			return unicode.ToUpper(r)
+		default:
+			return r
+		}
+	}, raw)
+	return fmt.Sprintf("%s-%s-%s", raw[:4], raw[4:8], raw[8:12])
+}
+
+// code must has format of XXXX-XXXX-XXXX to satify this pattern
+var PromoCodeRegex = regexp.MustCompile(`^([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$`)
 
 // NewId generate new uuid string value
 func NewId() string {

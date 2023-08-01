@@ -14,12 +14,11 @@ type ChannelService interface {
 	ChannelByOption(option *model.ChannelFilterOption) (*model.Channel, *model.AppError)
 	// ChannelsByOption returns a list of channels by given options
 	ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model.AppError)
-	// CleanChannel
-	CleanChannel(channelID *string) (*model.Channel, *model.AppError)
 	// ValidateChannel check if a channel with given id is active
 	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
+	CleanChannel(channelID *string) (*model.Channel, *model.AppError)
+	DeleteChannels(transaction *gorm.DB, ids ...string) *model.AppError
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
 	UpsertChannel(transaction *gorm.DB, channel *model.Channel) (*model.Channel, *model.AppError)
-	DeleteChannels(transaction *gorm.DB, ids ...string) *model.AppError
 }

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -140,7 +139,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 	}
 
 	if err := transaction.Commit().Error; err != nil {
-		return model.NewAppError("MoveItemsBetweenWishlists", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("MoveItemsBetweenWishlists", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

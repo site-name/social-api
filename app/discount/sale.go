@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -26,7 +24,7 @@ func (a *ServiceDiscount) UpsertSale(transaction *gorm.DB, sale *model.Sale) (*m
 
 func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError) {
 	if saleChannelListing == nil {
-		return nil, model.NewAppError("GetSaleDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("GetSaleDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
 
 	if sale.Type == model.FIXED {
@@ -110,37 +108,10 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 	return expiredSalesByDate, nil
 }
 
-func (s *ServiceDiscount) AddSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string) *model.AppError {
-	if len(productIDs) > 0 {
-		products := lo.Map(productIDs, func(id string, _ int) *model.Product { return &model.Product{Id: id} })
-		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, products)
-		if err != nil {
-			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.product.app_error", nil, "failed to insert sale-product relations", http.StatusInternalServerError)
-		}
-	}
-
-	if len(variantIDs) > 0 {
-		variants := lo.Map(variantIDs, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} })
-		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, variants)
-		if err != nil {
-			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.product_variant.app_error", nil, "failed to insert sale-variant relations", http.StatusInternalServerError)
-		}
-	}
-
-	if len(collectionIDs) > 0 {
-		collections := lo.Map(collectionIDs, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} })
-		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, collections)
-		if err != nil {
-			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.collection.app_error", nil, "failed to insert sale-collection relations", http.StatusInternalServerError)
-		}
-	}
-
-	if len(categoryIDs) > 0 {
-		categories := lo.Map(categoryIDs, func(id string, _ int) *model.Category { return &model.Category{Id: id} })
-		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, categories)
-		if err != nil {
-			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.category.app_error", nil, "failed to insert sale-collection relations", http.StatusInternalServerError)
-		}
+func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError {
+	err := s.srv.Store.DiscountSale().ToggleSaleRelations(transaction, model.Sales{{Id: saleID}}, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
+	if err != nil {
+		return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.category.app_error", nil, "failed to insert sale-collection relations", http.StatusInternalServerError)
 	}
 
 	return nil

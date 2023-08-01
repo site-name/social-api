@@ -142,7 +142,7 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, 
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -160,7 +160,7 @@ func (m *PluginManager) CalculateCheckoutSubTotal(checkoutInfo model.CheckoutInf
 
 		lineTotalSum, err = lineTotalSum.Add(taxedMoney)
 		if err != nil {
-			return nil, model.NewAppError("CalculateCheckoutSubTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model.NewAppError("CalculateCheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -190,7 +190,7 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo model.CheckoutInf
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutShipping", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateCheckoutShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -218,7 +218,7 @@ func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo model.CheckoutIn
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutLineTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateCheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -265,7 +265,7 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderShipping", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateOrderShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -339,7 +339,7 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine mod
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderlineTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateOrderlineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -364,7 +364,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutLineUnitPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateCheckoutLineUnitPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -374,7 +374,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 	orderLine.PopulateNonDbFields() // this is needed
 	defaultValue, err := orderLine.UnitPrice.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderLineUnit", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (
@@ -395,7 +395,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer model.Order, orderLine mode
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CalculateOrderLineUnit", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateOrderLineUnit", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -516,7 +516,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprice
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("ApplyTaxesToProduct", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("ApplyTaxesToProduct", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	return quantizedTaxedMoney, nil
 }
@@ -546,7 +546,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 
 	quantizedTaxedMoney, err := taxedMoney.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("ApplyTaxesToShipping", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("ApplyTaxesToShipping", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return quantizedTaxedMoney, nil
@@ -1474,7 +1474,7 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode strin
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model.NewAppError("AssignTaxCodeToObjectMeta", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model.NewAppError("AssignTaxCodeToObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	var (
@@ -1508,7 +1508,7 @@ func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxTyp
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model.NewAppError("GetTaxCodeFromObjectMeta", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model.NewAppError("GetTaxCodeFromObjectMeta", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	var (
@@ -1541,7 +1541,7 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country strin
 		*model.Product,
 		*model.ProductType:
 	default:
-		return nil, model.NewAppError("GetTaxRatePercentageValue", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
+		return nil, model.NewAppError("GetTaxRatePercentageValue", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "obj"}, "obj must be either Product or ProductType", http.StatusBadRequest)
 	}
 
 	defaultValue := decimal.Zero.Round(0)
@@ -1567,7 +1567,7 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country strin
 
 func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, cleanedData model.StringInterface) (*model.PluginConfiguration, *model.AppError) {
 	if !model.IsValidId(channelID) {
-		return nil, model.NewAppError("SavePluginConfiguration", app.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
+		return nil, model.NewAppError("SavePluginConfiguration", model.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
 	}
 
 	var pluginList []interfaces.BasePluginInterface

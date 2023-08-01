@@ -9,7 +9,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -175,7 +174,7 @@ func (a *ServicePayment) CreatePayment(
 ) (*model.Payment, *model.PaymentError, *model.AppError) {
 	// must at least provide either checkout or order, both is best :))
 	if checkOut == nil && orDer == nil {
-		return nil, nil, model.NewAppError("CreatePayment", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("CreatePayment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "", http.StatusBadRequest)
 	}
 
 	if extraData == nil {
@@ -486,7 +485,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return model.NewAppError("GatewayPostProcess", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("GatewayPostProcess", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -505,7 +504,7 @@ func (a *ServicePayment) FetchCustomerId(user *model.User, gateway string) (stri
 	}
 
 	if argumentErrorFields != "" {
-		return "", model.NewAppError("FetchCustomerId", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argumentErrorFields}, "", http.StatusBadRequest)
+		return "", model.NewAppError("FetchCustomerId", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argumentErrorFields}, "", http.StatusBadRequest)
 	}
 
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
@@ -527,7 +526,7 @@ func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customer
 	}
 
 	if argumentErrFields != "" {
-		return model.NewAppError("StoreCustomerId", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argumentErrFields}, "", http.StatusBadRequest)
+		return model.NewAppError("StoreCustomerId", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argumentErrFields}, "", http.StatusBadRequest)
 	}
 
 	metaKey := prepareKeyForGatewayCustomerId(gateway)

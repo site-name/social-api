@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -46,14 +47,13 @@ func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
 
 // Upsert saves or updates given voucher then returns it with an error
 func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
-
 	var err error
 	if voucher.Id == "" {
 		err = vs.GetMaster().Create(voucher).Error
 	} else {
 		voucher.Used = 0 // prevent updates by gorm
 		voucher.CreateAt = 0
-		err = vs.GetMaster().Table(model.VoucherTableName).Updates(voucher).Error
+		err = vs.GetMaster().Model(voucher).Updates(voucher).Error
 	}
 	if err != nil {
 		if vs.IsUniqueConstraintError(err, []string{"Code", "vouchers_code_key"}) {
@@ -155,33 +155,37 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, e
 	return res, nil
 }
 
-func (s *SqlVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations any) error {
-	if len(vouchers) == 0 || relations == nil {
+func (s *SqlVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error {
+	if len(vouchers) == 0 {
 		return errors.New("please speficy relations")
 	}
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	var association string
-
-	switch relations.(type) {
-	case model.Collections:
-		association = "Collections"
-	case model.Products:
-		association = "Products"
-	case model.ProductVariants:
-		association = "ProductVariants"
-	case model.Categories:
-		association = "Categories"
-	default:
-		return errors.New("only *model.(Product|Category|ProductVariant|Collection) types are supported")
+	relationsMap := map[string]any{
+		"Products":        lo.Map(productIds, func(id string, _ int) *model.Product { return &model.Product{Id: id} }),
+		"Collections":     lo.Map(collectionIds, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} }),
+		"ProductVariants": lo.Map(variantIds, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
+		"Categories":      lo.Map(categoryIds, func(id string, _ int) *model.Category { return &model.Category{Id: id} }),
 	}
 
-	for _, voucher := range vouchers {
-		err := transaction.Model(voucher).Association(association).Append(relations)
-		if err != nil {
-			return errors.Wrap(err, "failed to insert voucher "+strings.ToLower(association)+" relations")
+	for associationName, relations := range relationsMap {
+		for _, voucher := range vouchers {
+			if voucher != nil {
+				switch {
+				case isDelete:
+					err := transaction.Model(voucher).Association(associationName).Delete(relations)
+					if err != nil {
+						return errors.Wrap(err, "failed to delete voucher "+strings.ToLower(associationName)+" relations")
+					}
+				default:
+					err := transaction.Model(voucher).Association(associationName).Append(relations)
+					if err != nil {
+						return errors.Wrap(err, "failed to insert voucher "+strings.ToLower(associationName)+" relations")
+					}
+				}
+			}
 		}
 	}
 

@@ -13,7 +13,7 @@ import (
 func (s *Server) SaveToken(tokenType model.TokenType, extraData interface{}) (*model.Token, *model.AppError) {
 	data, err := json.Marshal(extraData)
 	if err != nil {
-		return nil, model.NewAppError("SaveToken", ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("SaveToken", model.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	token := model.NewToken(tokenType, string(data))

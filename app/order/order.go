@@ -12,7 +12,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -28,7 +27,7 @@ func (a *ServiceOrder) UpsertOrder(transaction *gorm.DB, order *model.Order) (*m
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return nil, model.NewAppError("UpsertOrder", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, err.Error(), http.StatusBadRequest)
+			return nil, model.NewAppError("UpsertOrder", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, err.Error(), http.StatusBadRequest)
 		}
 
 		return nil, model.NewAppError("UpsertOrder", "app.order.error_upserting_order.app_error", nil, err.Error(), http.StatusInternalServerError)

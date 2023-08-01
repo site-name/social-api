@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -287,7 +286,7 @@ func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, opera
 
 	err := transaction.Commit().Error
 	if err != nil {
-		return model.NewAppError("PerformReordering", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("PerformReordering", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

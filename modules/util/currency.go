@@ -33,7 +33,7 @@ func MinMaxMoneyInMoneySlice(moneys []*goprices.Money) (min *goprices.Money, max
 		return nil, nil
 	}
 
-	sort.Slice(moneys, func(i, j int) bool {
+	sort.SliceStable(moneys, func(i, j int) bool {
 		return moneys[i].LessThan(moneys[j])
 	})
 

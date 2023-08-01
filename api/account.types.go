@@ -8,7 +8,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -159,7 +158,7 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 
 	if currentSession.UserId == u.ID || currentSession.
 		GetUserRoles().
-		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 		Len() > 0 {
 		if u.DefaultShippingAddressID == nil {
 			return nil, nil
@@ -182,7 +181,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	if currentSession.UserId == u.ID ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
 		if u.DefaultBillingAddressID == nil {
 			return nil, nil
@@ -200,7 +199,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID string }) ([]*PaymentSource, error) {
 	if !model.IsValidId(args.ChannelID) {
-		return nil, model.NewAppError("User.StoredPaymentSources", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+		return nil, model.NewAppError("User.StoredPaymentSources", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -265,7 +264,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 	if currentSession.UserId == u.ID ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
 		var checkouts []*model.Checkout
 		var err error
@@ -274,7 +273,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 			checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 		} else {
 			if !model.IsValidId(*args.ChannelID) {
-				return nil, model.NewAppError("User.CheckoutTokens", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+				return nil, model.NewAppError("User.CheckoutTokens", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
 			}
 			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.ChannelID)()
 		}
@@ -296,7 +295,7 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	if currentSession.UserId == u.ID ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId).
+			InterSection([]string{model.ShopStaffRoleId}).
 			Len() > 0 {
 
 		addresses, appErr := embedCtx.
@@ -323,7 +322,7 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 	if currentSession.UserId == u.ID ||
 		currentSession.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
 		if appErr := args.Validate("User.GiftCards"); appErr != nil {
 			return nil, appErr
@@ -355,7 +354,7 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	requesterCanSeeUserOrders := session.UserId == u.ID ||
 		session.
 			GetUserRoles().
-			InterSection(model.ShopStaffRoleId).
+			InterSection([]string{model.ShopStaffRoleId}).
 			Len() > 0
 	if requesterCanSeeUserOrders {
 		if appErr := args.Validate("User.Orders"); appErr != nil {

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -51,7 +50,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction *gorm.DB, fulfillment *mode
 			return nil, appErr
 		}
 		if errNotFound, ok := err.(*store.ErrNotFound); ok { // this happens when update an unexisted instance
-			return nil, model.NewAppError("UpsertFulfillment", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, errNotFound.Error(), http.StatusBadRequest)
+			return nil, model.NewAppError("UpsertFulfillment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, errNotFound.Error(), http.StatusBadRequest)
 		}
 		return nil, model.NewAppError("UpsertFulfillment", "app.order.error_saving_fulfillment.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

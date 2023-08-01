@@ -8,7 +8,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -85,7 +84,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 		*goprices.TaxedMoneyRange:
 
 	default:
-		return nil, model.NewAppError("GetDiscountAmountFor", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
+		return nil, model.NewAppError("GetDiscountAmountFor", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
 	}
 
 	discountCalculator, appErr := a.GetVoucherDiscount(voucher, channelID)
@@ -237,7 +236,7 @@ func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*
 // PromoCodeIsVoucher checks if given code is belong to a voucher
 func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
 	vouchers, appErr := a.VouchersByOption(&model.VoucherFilterOption{
-		Conditions: squirrel.Eq{model.VoucherTableName + ".Code": code},
+		Conditions: squirrel.Expr(model.VoucherTableName+".Code = ?", code),
 	})
 	if appErr != nil {
 		return false, appErr

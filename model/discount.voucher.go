@@ -4,20 +4,29 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
 
+type VoucherType string
+
+func (t *VoucherType) IsValid() bool {
+	switch *t {
+	case VOUCHER_TYPE_SHIPPING, VOUCHER_TYPE_ENTIRE_ORDER, VOUCHER_TYPE_SPECIFIC_PRODUCT:
+		return true
+	default:
+		return false
+	}
+}
+
 // Applicable values for Voucher type
 const (
-	SHIPPING         = "shipping"
-	ENTIRE_ORDER     = "entire_order"
-	SPECIFIC_PRODUCT = "specific_product"
+	VOUCHER_TYPE_SHIPPING         VoucherType = "shipping"
+	VOUCHER_TYPE_ENTIRE_ORDER     VoucherType = "entire_order"
+	VOUCHER_TYPE_SPECIFIC_PRODUCT VoucherType = "specific_product"
 )
-
-var AllVoucherTypes = util.AnyArray[string]{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}
 
 type DiscountType string
 
@@ -37,13 +46,13 @@ func (e DiscountType) IsValid() bool {
 
 type Voucher struct {
 	Id                       string       `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Type                     string       `json:"type" gorm:"type:varchar(20);column:Type"` // default to "entire_order"
+	Type                     VoucherType  `json:"type" gorm:"type:varchar(20);column:Type"` // default to "entire_order"
 	Name                     *string      `json:"name" gorm:"type:varchar(255);column:Name"`
-	Code                     string       `json:"code" gorm:"type:varchar(16);column:Code"` // UNIQUE
+	Code                     string       `json:"code" gorm:"type:varchar(16);column:Code"` // UNIQUE, has format of XXXX-XXXX-XXXX
 	UsageLimit               *int         `json:"usage_limit" gorm:"column:UsageLimit"`
 	Used                     int          `json:"used" gorm:"column:Used"` // not editable
-	StartDate                int64        `json:"start_date" gorm:"type:bigint;column:StartDate;autoCreateTime:milli"`
-	EndDate                  *int64       `json:"end_date" gorm:"type:bigint;column:EndDate"`
+	StartDate                time.Time    `json:"start_date" gorm:"column:StartDate;autoCreateTime:milli"`
+	EndDate                  *time.Time   `json:"end_date" gorm:"column:EndDate"`
 	ApplyOncePerOrder        bool         `json:"apply_once_per_order" gorm:"column:ApplyOncePerOrder"`
 	ApplyOncePerCustomer     bool         `json:"apply_once_per_customer" gorm:"column:ApplyOncePerCustomer"`
 	OnlyForStaff             *bool        `json:"only_for_staff" gorm:"default:false;column:OnlyForStaff"` // default false
@@ -54,10 +63,11 @@ type Voucher struct {
 	UpdateAt                 int64        `json:"update_at" gorm:"autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
 	ModelMetadata
 
-	Products        Products        `json:"-" gorm:"many2many:VoucherProducts"`
-	Categories      Categories      `json:"-" gorm:"many2many:VoucherCategories"`
-	ProductVariants ProductVariants `json:"-" gorm:"many2many:VoucherVariants"`
-	Collections     Collections     `json:"-" gorm:"many2many:VoucherCollections"`
+	Products               Products                `json:"-" gorm:"many2many:VoucherProducts"`
+	Categories             Categories              `json:"-" gorm:"many2many:VoucherCategories"`
+	ProductVariants        ProductVariants         `json:"-" gorm:"many2many:VoucherVariants"`
+	Collections            Collections             `json:"-" gorm:"many2many:VoucherCollections"`
+	VoucherChannelListings []VoucherChannelListing `json:"-" gorm:"foreignKey:VoucherID;constraint:OnDelete:CASCADE"`
 }
 
 func (c *Voucher) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -89,7 +99,7 @@ func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *NotAppli
 type Vouchers []*Voucher
 
 func (v *Voucher) IsValid() *AppError {
-	if !AllVoucherTypes.Contains(v.Type) {
+	if !v.Type.IsValid() {
 		return NewAppError("Voucher.IsValid", "model.voucher.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 	if !v.DiscountValueType.IsValid() {
@@ -99,6 +109,18 @@ func (v *Voucher) IsValid() *AppError {
 		if !CountryCode(country).IsValid() {
 			return NewAppError("Voucher.IsValid", "model.voucher.is_valid.countries.app_error", nil, "please provide valid countries", http.StatusBadRequest)
 		}
+	}
+	if !PromoCodeRegex.MatchString(v.Code) {
+		return NewAppError("Voucher.IsValid", "model.voucher.is_valid.code.app_error", nil, "code must look like 78GH-UJKI-90RD", http.StatusBadRequest)
+	}
+	if v.EndDate != nil && v.StartDate.After(*v.EndDate) {
+		return NewAppError("Voucher.IsValid", "model.voucher.is_valid.date.app_error", nil, "end date must be after start date", http.StatusBadRequest)
+	}
+	if v.StartDate.IsZero() {
+		return NewAppError("Sale.IsValid", "model.voucher.is_valid.start_date.app_error", nil, "please provide valid start date", http.StatusBadRequest)
+	}
+	if v.EndDate != nil && v.EndDate.IsZero() {
+		return NewAppError("Sale.IsValid", "model.voucher.is_valid.end_date.app_error", nil, "please provide valid end date", http.StatusBadRequest)
 	}
 
 	return nil
@@ -114,13 +136,16 @@ func (v *Voucher) commonPre() {
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
 	}
-	if v.Type == "" {
-		v.Type = ENTIRE_ORDER
+	if !v.Type.IsValid() {
+		v.Type = VOUCHER_TYPE_ENTIRE_ORDER
 	}
 	if v.UsageLimit != nil && *v.UsageLimit < 0 {
 		*v.UsageLimit = 0
 	}
 	v.Countries = strings.ToUpper(v.Countries)
+	if v.Code == "" {
+		v.Code = NewPromoCode()
+	}
 }
 
 // VoucherTranslation represents translation for a voucher

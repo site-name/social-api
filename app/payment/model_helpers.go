@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -32,7 +31,7 @@ func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Paymen
 func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError) {
 	zeroMoney, err := util.ZeroMoney(fallbackCurrency)
 	if err != nil {
-		return nil, model.NewAppError("GetTotalAuthorized", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+		return nil, model.NewAppError("GetTotalAuthorized", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 	}
 
 	lastPayment := a.GetLastpayment(payments)
@@ -52,7 +51,7 @@ func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackC
 func (a *ServicePayment) GetSubTotal(orderLines []*model.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError) {
 	total, err := util.ZeroTaxedMoney(fallbackCurrency)
 	if err != nil {
-		return nil, model.NewAppError("GetSubTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+		return nil, model.NewAppError("GetSubTotal", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, line := range orderLines {
@@ -60,7 +59,7 @@ func (a *ServicePayment) GetSubTotal(orderLines []*model.OrderLine, fallbackCurr
 
 		total, err = total.Add(line.TotalPrice)
 		if err != nil {
-			return nil, model.NewAppError("GetSubTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+			return nil, model.NewAppError("GetSubTotal", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
 		}
 	}
 

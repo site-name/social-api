@@ -16,13 +16,13 @@ type Allocation struct {
 	StockID           string `json:"stock_id" gorm:"type:uuid;column:StockID;index:orderlineid_stockid_key"`          // NOT NULL
 	QuantityAllocated int    `json:"quantity_allocated" gorm:"column:QuantityAllocated"`                              // default 0
 
-	stockAvailableQuantity int        // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
-	stock                  *Stock     // this field is populated with related stock
-	orderLine              *OrderLine //
+	stockAvailableQuantity int        `json:"-"` // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
+	Stock                  *Stock     `json:"-"` // this field is populated with related stock
+	orderLine              *OrderLine `json:"-"` //
 }
 
-func (s *Allocation) SetStock(stk *Stock)                 { s.stock = stk }
-func (s *Allocation) GetStock() *Stock                    { return s.stock }
+// func (s *Allocation) SetStock(stk *Stock)                 { s.stock = stk }
+// func (s *Allocation) GetStock() *Stock                    { return s.stock }
 func (s *Allocation) SetOrderLine(line *OrderLine)        { s.orderLine = line }
 func (s *Allocation) GetOrderLine() *OrderLine            { return s.orderLine }
 func (s *Allocation) SetStockAvailableQuantity(value int) { s.stockAvailableQuantity = value }
@@ -68,6 +68,10 @@ func (a Allocations) Len() int {
 	return len(a)
 }
 
+func (as Allocations) DeepCopy() Allocations {
+	return lo.Map(as, func(a *Allocation, _ int) *Allocation { return a.DeepCopy() })
+}
+
 func (a *Allocation) IsValid() *AppError {
 	if !IsValidId(a.OrderLineID) {
 		return NewAppError("Allocation.IsValid", "model.allocation.is_valid.orderline_id.app_error", nil, "please provide valid order line id", http.StatusBadRequest)
@@ -109,8 +113,8 @@ func (a *AllocationError) Error() string {
 func (a *Allocation) DeepCopy() *Allocation {
 	res := *a
 
-	if a.stock != nil {
-		res.stock = a.stock.DeepCopy()
+	if a.Stock != nil {
+		res.Stock = a.Stock.DeepCopy()
 	}
 	if a.orderLine != nil {
 		res.orderLine = a.orderLine.DeepCopy()

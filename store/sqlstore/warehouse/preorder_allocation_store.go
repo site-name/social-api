@@ -100,7 +100,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 			preorderAllocation.SetOrderLine(&orderLine)
 
 			if options.SelectRelated_OrderLine_Order {
-				orderLine.SetOrder(&orDer)
+				orderLine.Order = &orDer
 			}
 		}
 

@@ -65,6 +65,10 @@ func (cs Categories) IDs(flat bool) util.AnyArray[string] {
 	return lo.Map(cs, func(g *Category, _ int) string { return g.Id })
 }
 
+func (ps Categories) Contains(c *Category) bool {
+	return c != nil && lo.SomeBy(ps, func(ct *Category) bool { return ct != nil && ct.Id == c.Id })
+}
+
 func (cs Categories) DeepCopy() Categories {
 	return lo.Map(cs, func(g *Category, _ int) *Category { return g.DeepCopy() })
 }

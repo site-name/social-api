@@ -1,7 +1,10 @@
 package discount
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -50,8 +53,23 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 // FilterSalesByOption filter sales by option
 func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
-	var sales []*model.Sale
-	err := ss.GetReplica().Find(&sales, store.BuildSqlizer(option.Conditions)...).Error
+	query := ss.GetQueryBuilder().
+		Select(model.SaleTableName + ".*").
+		From(model.SaleTableName).
+		Where(option.Conditions)
+
+	if option.SaleChannelListing_ChannelID != nil {
+		query = query.
+			InnerJoin(model.SaleChannelListingTableName + " ON SaleChannelListings.SaleID = Sales.Id").
+			Where(option.SaleChannelListing_ChannelID)
+	}
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterSalesByOption_ToSql")
+	}
+
+	var sales model.Sales
+	err = ss.GetReplica().Raw(queryString, args...).Scan(&sales).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sales with given condition.")
 	}
@@ -72,35 +90,36 @@ func (s *SqlDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleF
 	return result.RowsAffected, nil
 }
 
-func (s *SqlDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {
-	if relations == nil || len(sales) == 0 {
-		return errors.New("please specify relations")
+func (s *SqlDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error {
+	if len(sales) == 0 {
+		return errors.New("please speficy relations")
 	}
-
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	var association string
-
-	switch relations.(type) {
-	case model.Products:
-		association = "Products"
-	case model.Categories:
-		association = "Categories"
-	case model.Collections:
-		association = "Collections"
-	case model.ProductVariants:
-		association = "ProductVariants"
-	default:
-		return errors.New("only *model.(Product|Category|ProductVariant|Collection) types are supported")
+	relationsMap := map[string]any{
+		"Products":        lo.Map(productIds, func(id string, _ int) *model.Product { return &model.Product{Id: id} }),
+		"Collections":     lo.Map(collectionIds, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} }),
+		"ProductVariants": lo.Map(variantIds, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
+		"Categories":      lo.Map(categoryIds, func(id string, _ int) *model.Category { return &model.Category{Id: id} }),
 	}
 
-	for _, sale := range sales {
-		if sale != nil && sale.Id != "" {
-			err := transaction.Model(sale).Association(association).Append(relations)
-			if err != nil {
-				return errors.Wrap(err, "failed to insert sale-collection relations")
+	for associationName, relations := range relationsMap {
+		for _, sale := range sales {
+			if sale != nil {
+				switch {
+				case isDelete:
+					err := transaction.Model(sale).Association(associationName).Delete(relations)
+					if err != nil {
+						return errors.Wrap(err, "failed to delete sale "+strings.ToLower(associationName)+" relations")
+					}
+				default:
+					err := transaction.Model(sale).Association(associationName).Append(relations)
+					if err != nil {
+						return errors.Wrap(err, "failed to insert sale "+strings.ToLower(associationName)+" relations")
+					}
+				}
 			}
 		}
 	}

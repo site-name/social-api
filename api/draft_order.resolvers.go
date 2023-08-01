@@ -8,7 +8,7 @@ import (
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id string }) (*DraftOrderComplete, error) {
 	// if !model.IsValidId(args.Id) {
-	// 	return nil, model.NewAppError("DraftOrderComplete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id + " is not a valid order id", http.StatusBadRequest)
+	// 	return nil, model.NewAppError("DraftOrderComplete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id + " is not a valid order id", http.StatusBadRequest)
 	// }
 
 	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

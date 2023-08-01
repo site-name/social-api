@@ -7,7 +7,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
@@ -50,7 +49,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 		if i == 0 {
 			standardCurrency = item.Currency
 		} else if !strings.EqualFold(standardCurrency, item.Currency) {
-			return nil, model.NewAppError("getProductDiscountedPrice", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantPrices"}, "", http.StatusBadRequest)
+			return nil, model.NewAppError("getProductDiscountedPrice", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantPrices"}, "", http.StatusBadRequest)
 		}
 
 		discoutnedvariantPrice, appErr := a.srv.DiscountService().CalculateDiscountedPrice(
@@ -95,26 +94,30 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 	atomicValue.Add(3)
 
 	go func() {
+		defer atomicValue.Add(-1)
+
 		collections, appErr := a.CollectionsByProductID(product.Id)
 		if appErr != nil {
 			appError <- appErr
 			return
 		}
 		collectionsContainProduct = collections
-		atomicValue.Add(-1)
 	}()
 
 	go func() {
+		defer atomicValue.Add(-1)
+
 		res, appErr := a.getVariantPricesInChannelsDict(product)
 		if appErr != nil {
 			appError <- appErr
 			return
 		}
 		variantPricesInChannelsDict = res
-		atomicValue.Add(-1)
 	}()
 
 	go func() {
+		defer atomicValue.Add(-1)
+
 		listings, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 			Conditions:      squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": product.Id},
 			PrefetchChannel: true, // this will populate `Channel` fields of every product channel listings
@@ -124,7 +127,6 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 			return
 		}
 		productChannelListings = listings
-		atomicValue.Add(-1)
 	}()
 
 	for atomicValue.Load() != 0 {
@@ -197,25 +199,21 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, pr
 	atomicValue.Add(int32(len(products)))
 
 	for _, product := range products {
-		go func(prd *model.Product) {
-			appErr := a.UpdateProductDiscountedPrice(transaction, *prd, discounts)
+		go func(product *model.Product) {
+			defer atomicValue.Add(-1)
+
+			appErr := a.UpdateProductDiscountedPrice(transaction, *product, discounts)
 			if appErr != nil {
 				appError <- appErr
-				return
 			}
-
-			atomicValue.Add(-1)
 		}(product)
 	}
 
-	for {
+	for atomicValue.Load() != 0 {
 		select {
 		case err := <-appError:
 			return err
 		default:
-		}
-		if atomicValue.Load() == 0 {
-			break
 		}
 	}
 
@@ -254,7 +252,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 		variantFilterOptions.VoucherID = squirrel.Eq{model.VoucherProductVariantTableName + ".VoucherID": t.Id}
 
 	default:
-		return model.NewAppError("UpdateProductsDiscountedPricesOfDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)
+		return model.NewAppError("UpdateProductsDiscountedPricesOfDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)
 	}
 
 	var (
@@ -309,7 +307,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 		value <- variants
 	}()
 
-	for {
+	for atomicInt32.Load() != 0 {
 		select {
 		case err := <-appError:
 			return err
@@ -327,10 +325,6 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 				collectionIDs = t.IDs()
 			}
 		default:
-		}
-
-		if atomicInt32.Load() == 0 {
-			break
 		}
 	}
 

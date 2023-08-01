@@ -1,6 +1,6 @@
 extend type Mutation {
-  voucherCreate(input: VoucherInput!): VoucherCreate
-  voucherDelete(id: String!): VoucherDelete
+  voucherCreate(input: VoucherInput!): VoucherCreate @hasRoles(roles: [shop_admin])
+  voucherDelete(id: String!): VoucherDelete @hasRoles(roles: [shop_admin])
   voucherBulkDelete(ids: [String!]!): VoucherBulkDelete
   voucherUpdate(id: String!, input: VoucherInput!): VoucherUpdate
   voucherCataloguesAdd(id: String!, input: CatalogueInput!): VoucherAddCatalogues
@@ -51,11 +51,12 @@ input VoucherInput {
   products: [String!]!
   variants: [String!]!
   collections: [String!]!
-  categories: [String!]!
+  categories: [CountryCode!]!
   minCheckoutItemsQuantity: Int
   countries: [String!]!
   applyOncePerOrder: Boolean
   applyOncePerCustomer: Boolean
+  onlyForStaff: Boolean
   usageLimit: Int
 }
 
@@ -192,7 +193,7 @@ enum DiscountStatusEnum {
 }
 
 enum VoucherDiscountType {
-  fixed
-  percentage
-  shipping
+  FIXED
+  PERCENTAGE
+  SHIPPING
 }

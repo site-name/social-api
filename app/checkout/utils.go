@@ -3,14 +3,13 @@ package checkout
 import (
 	"net/http"
 	"strings"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
@@ -82,7 +81,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo,
 		invalidArgs += ", variant"
 	}
 	if invalidArgs != "" {
-		return nil, nil, model.NewAppError("AddVariantToCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("AddVariantToCheckout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
 	}
 
 	checkout := checkoutInfo.Checkout
@@ -97,7 +96,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo,
 	}
 
 	if len(productChannelListings) == 0 || !productChannelListings[0].IsPublished {
-		return nil, nil, model.NewAppError("AddVariantToCheckout", app.ProductNotPublishedAppErrID, nil, "Please publish the product first.", http.StatusNotAcceptable)
+		return nil, nil, model.NewAppError("AddVariantToCheckout", model.ProductNotPublishedAppErrID, nil, "Please publish the product first.", http.StatusNotAcceptable)
 	}
 
 	newQuantity, line, insufficientErr, appErr := a.CheckVariantInStock(&checkoutInfo.Checkout, variant, checkoutInfo.Channel.Slug, quantity, replace, checkQuantity)
@@ -168,7 +167,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 		invlArgs += ", variants"
 	}
 	if invlArgs != "" {
-		return nil, nil, model.NewAppError("AddVariantsToCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invlArgs}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("AddVariantsToCheckout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invlArgs}, "", http.StatusBadRequest)
 	}
 
 	// check quantities
@@ -208,7 +207,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 
 	for _, productID := range productIDs {
 		if listingMap[productID] == nil || !listingMap[productID].IsPublished {
-			return nil, nil, model.NewAppError("AddVariantsToCheckout", app.ProductNotPublishedAppErrID, nil, "", http.StatusNotAcceptable)
+			return nil, nil, model.NewAppError("AddVariantsToCheckout", model.ProductNotPublishedAppErrID, nil, "", http.StatusNotAcceptable)
 		}
 	}
 
@@ -388,7 +387,7 @@ func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfac
 func (s *ServiceCheckout) getProductsVoucherDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucher *model.Voucher, discounts []*model.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model.AppError) {
 	var prices []*goprices.Money
 
-	if voucher.Type == model.SPECIFIC_PRODUCT {
+	if voucher.Type == model.VOUCHER_TYPE_SPECIFIC_PRODUCT {
 		moneys, appErr := s.GetPricesOfDiscountedSpecificProduct(manager, checkoutInfo, lines, voucher, discounts)
 		if appErr != nil {
 			return nil, nil, appErr
@@ -449,7 +448,7 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 	if notApplicable != nil || appErr != nil {
 		return nil, notApplicable, appErr
 	}
-	if voucher.Type == model.ENTIRE_ORDER {
+	if voucher.Type == model.VOUCHER_TYPE_ENTIRE_ORDER {
 		checkoutSubTotal, appErr := s.CheckoutSubTotal(manager, checkoutInfo, lines, address, discounts)
 		if appErr != nil {
 			return nil, nil, appErr
@@ -460,15 +459,15 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 		}
 		return money.(*goprices.Money), nil, nil
 	}
-	if voucher.Type == model.SHIPPING {
+	if voucher.Type == model.VOUCHER_TYPE_SHIPPING {
 		return s.getShippingVoucherDiscountForCheckout(manager, voucher, checkoutInfo, lines, address, discounts)
 	}
-	if voucher.Type == model.SPECIFIC_PRODUCT {
+	if voucher.Type == model.VOUCHER_TYPE_SPECIFIC_PRODUCT {
 		return s.getProductsVoucherDiscount(manager, checkoutInfo, lines, voucher, discounts)
 	}
 
-	s.srv.Log.Warn("Unknown discount type", slog.String("discount_type", voucher.Type))
-	return nil, nil, model.NewAppError("GetVoucherDiscountForCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
+	s.srv.Log.Warn("Unknown discount type", slog.String("discount_type", string(voucher.Type)))
+	return nil, nil, model.NewAppError("GetVoucherDiscountForCheckout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
 }
 
 func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model.AppError) {
@@ -476,61 +475,53 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.Checkout
 		discountedProducts    []*model.Product
 		discountedCategories  []*model.Category
 		discountedCollections []*model.Collection
-		appError              *model.AppError
-		mut                   sync.Mutex
-		wg                    sync.WaitGroup
 	)
 
-	setErr := func(err *model.AppError) {
-		mut.Lock()
-		if err != nil {
-			appError = err
-		}
-		mut.Unlock()
-	}
-
-	// starting 3 go routines
-	wg.Add(3)
+	var (
+		atomicValue atomic.Int32
+		appErrChan  = make(chan *model.AppError)
+	)
+	defer close(appErrChan)
+	atomicValue.Add(3) //
 
 	go func() {
+		defer atomicValue.Add(-1)
 		products, appErr := a.srv.ProductService().ProductsByVoucherID(voucher.Id)
 		if appErr != nil {
-			setErr(appErr)
-		} else {
-			discountedProducts = products
+			appErrChan <- appErr
+			return
 		}
-
-		wg.Done()
+		discountedProducts = products
 	}()
 
 	go func() {
+		defer atomicValue.Add(-1)
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
 			VoucherID: squirrel.Eq{model.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
-			setErr(appErr)
-		} else {
-			discountedCategories = categories
+			appErrChan <- appErr
+			return
 		}
-
-		wg.Done()
+		discountedCategories = categories
 	}()
 
 	go func() {
+		defer atomicValue.Add(-1)
 		collections, appErr := a.srv.ProductService().CollectionsByVoucherID(voucher.Id)
 		if appErr != nil {
-			setErr(appErr)
-		} else {
-			discountedCollections = collections
+			appErrChan <- appErr
+			return
 		}
-
-		wg.Done()
+		discountedCollections = collections
 	}()
 
-	wg.Done()
-
-	if appError != nil {
-		return nil, appError
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		default:
+		}
 	}
 
 	var discountedProductIDs, discountedCategoryIDs, discountedCollectionIDs util.AnyArray[string]
@@ -665,7 +656,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		if appErr != nil {
 			return appErr
 		}
-		if voucher.Type != model.SHIPPING {
+		if voucher.Type != model.VOUCHER_TYPE_SHIPPING {
 			if checkoutSubTotal.Gross.LessThan(discount) {
 				checkout.Discount = checkoutSubTotal.Gross
 			} else {
@@ -966,7 +957,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 
 	sub, err := checkoutTotal.Sub(checkoutTotalGiftcardBalance)
 	if err != nil {
-		return false, model.NewAppError("IsFullyPaid", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return false, model.NewAppError("IsFullyPaid", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	checkoutTotal = sub
 

@@ -301,7 +301,7 @@ func (s AnyArray[T]) GetMinMax() MinMax[T] {
 }
 
 // InterSection returns items that appear in both current array and given others
-func (s AnyArray[T]) InterSection(others ...T) AnyArray[T] {
+func (s AnyArray[T]) InterSection(others []T) AnyArray[T] {
 	var res AnyArray[T]
 	meetMap := map[T]struct{}{}
 

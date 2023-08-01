@@ -15,11 +15,11 @@ import (
 // OrderService contains methods for working with orders
 type OrderService interface {
 	// AddGiftcardsToOrder
-	AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, orDer *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError
+	AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError
 	// AddVariantToOrder Add total_quantity of variant to order.
 	//
 	// Returns an order line the variant was added to.
-	AddVariantToOrder(orDer model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError)
+	AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError)
 	// AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 	AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model.AppError)
 	// AnAddressOfOrder returns shipping address of given order if presents
@@ -121,9 +121,9 @@ type OrderService interface {
 	// product to child category won't work
 	GetPricesOfDiscountedSpecificProduct(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*goprices.Money, *model.AppError)
 	// GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-	GetDiscountedLines(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError)
+	GetDiscountedLines(orderLines model.OrderLines, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError)
 	// GetOrderCountry Return country to which order will be shipped
-	GetOrderCountry(ord *model.Order) (model.CountryCode, *model.AppError)
+	GetOrderCountry(order *model.Order) (model.CountryCode, *model.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
 	GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscount, *model.AppError)
 	// GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
@@ -180,7 +180,7 @@ type OrderService interface {
 	// OrderLinesByOption returns a list of order lines by given option
 	OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model.AppError)
 	// OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
-	OrderNeedsAutomaticFulfillment(ord model.Order) (bool, *model.AppError)
+	OrderNeedsAutomaticFulfillment(order model.Order) (bool, *model.AppError)
 	// OrderRefunded
 	OrderRefunded(ord model.Order, user *model.User, _ interface{}, amount decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) *model.AppError
 	// OrderReturned
@@ -237,11 +237,11 @@ type OrderService interface {
 	// order create the draft order with all user details, and requested lines.
 	ProcessReplace(requester *model.User, ord model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.Order, *model.AppError)
 	// ReCalculateOrderWeight
-	ReCalculateOrderWeight(transaction *gorm.DB, ord *model.Order) *model.AppError
+	ReCalculateOrderWeight(transaction *gorm.DB, order *model.Order) *model.AppError
 	// Recalculate all order discounts assigned to order.
 	//
 	// It returns the list of tuples which contains order discounts where the amount has been changed.
-	RecalculateOrderDiscounts(transaction *gorm.DB, ord *model.Order) ([][2]*model.OrderDiscount, *model.AppError)
+	RecalculateOrderDiscounts(transaction *gorm.DB, order *model.Order) ([][2]*model.OrderDiscount, *model.AppError)
 	// Recalculate and assign total price of order.
 	//
 	// Total price is a sum of items in order and order shipping price minus
@@ -251,7 +251,7 @@ type OrderService interface {
 	// update_voucher_discount argument set to False.
 	//
 	// NOTE: `kwargs` can be nil
-	RecalculateOrder(transaction *gorm.DB, ord *model.Order, kwargs map[string]interface{}) *model.AppError
+	RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model.AppError
 	// RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
 	RemoveDiscountFromOrderLine(orderLine model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
@@ -291,7 +291,7 @@ type OrderService interface {
 	// UpsertFulfillment performs some actions then save given fulfillment
 	UpsertFulfillment(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, *model.AppError)
 	// UpsertOrder depends on given order's Id property to decide update/save it
-	UpsertOrder(transaction *gorm.DB, ord *model.Order) (*model.Order, *model.AppError)
+	UpsertOrder(transaction *gorm.DB, order *model.Order) (*model.Order, *model.AppError)
 	// UpsertOrderLine depends on given orderLine's Id property to decide update order save it
 	UpsertOrderLine(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError)
 	// ValidateDraftOrder checks if the given order contains the proper data.
@@ -313,7 +313,7 @@ type OrderService interface {
 	FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError)
 	FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ interface{}, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError)
 	GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode model.CountryCode) (model.Warehouses, *model.AppError)
-	GetVoucherDiscountAssignedToOrder(ord *model.Order) (*model.OrderDiscount, *model.AppError)
+	GetVoucherDiscountAssignedToOrder(order *model.Order) (*model.OrderDiscount, *model.AppError)
 	MatchOrdersWithNewUser(user *model.User) *model.AppError
 	OrderConfirmedEvent(orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError)
 	OrderCreatedEvent(orDer model.Order, user *model.User, _ interface{}, fromDraft bool) (*model.OrderEvent, *model.AppError)

@@ -172,6 +172,7 @@ type AccountService interface {
 	DisableUserAccessToken(token *model.UserAccessToken) *model.AppError
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *model.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	EnableUserAccessToken(token *model.UserAccessToken) *model.AppError
+	FidUsersByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, *model.AppError)
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError)
@@ -191,6 +192,7 @@ type AccountService interface {
 	GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*model.UserAccessToken, *model.AppError)
+	GetUserByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, *model.AppError)
 	GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model.AppError)
 	GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
 	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*model.User, *model.AppError)
@@ -240,10 +242,8 @@ type AccountService interface {
 	UpdateUserAuth(userID string, userAuth *model.UserAuth) (*model.UserAuth, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError)
 	UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError)
+	UserById(ctx context.Context, userID string) (*model.User, *model.AppError)
 	UserSetDefaultAddress(userID, addressID string, addressType model.AddressTypeEnum) (*model.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
-	GetUserByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, *model.AppError)
-	FidUsersByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, *model.AppError)
-	UserById(ctx context.Context, userID string) (*model.User, *model.AppError)
 }

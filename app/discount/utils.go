@@ -1,15 +1,13 @@
 package discount
 
 import (
-	"fmt"
 	"net/http"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
@@ -74,7 +72,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, produc
 	// this checks whether the given product is on sale
 	isProductOnSale := discountInfo.ProductIDs.Contains(product.Id) ||
 		(product.CategoryID != nil && discountInfo.CategoryIDs.Contains(*product.CategoryID)) ||
-		discountInfo.CollectionIDs.InterSection(productCollectionIDs...).Len() > 0
+		discountInfo.CollectionIDs.InterSection(productCollectionIDs).Len() > 0
 
 	isVariantOnSale := model.IsValidId(variantID) && discountInfo.VariantsIDs.Contains(variantID)
 
@@ -91,50 +89,42 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, produc
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections []*model.Collection, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
-	// filter duplicate collections
+func (a *ServiceDiscount) GetProductDiscounts(product model.Product, collections model.Collections, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
 	var (
-		uniqueCollectionIDs = []string{}
-		meetMap             = map[string]bool{}
-		wg                  sync.WaitGroup
-		mut                 sync.Mutex
-	)
-
-	for _, collection := range collections {
-		if _, met := meetMap[collection.Id]; !met {
-			uniqueCollectionIDs = append(uniqueCollectionIDs, collection.Id)
-			meetMap[collection.Id] = true
-		}
-	}
-
-	wg.Add(len(uniqueCollectionIDs))
-
-	var (
-		appError                    *model.AppError
+		atomicValue                 atomic.Int32
+		appErrChan                  = make(chan *model.AppError)
+		valueChan                   = make(chan types.DiscountCalculator)
 		discountCalculatorFunctions []types.DiscountCalculator
 	)
+	defer close(appErrChan)
+	defer close(valueChan)
+	atomicValue.Add(int32(len(discountInfos)))
+
+	// filter duplicate collections
+	uniqueCollectionIDs := lo.Uniq(collections.IDs())
 
 	for _, discountInfo := range discountInfos {
 		go func(info *model.DiscountInfo) {
+			defer atomicValue.Add(-1)
+
 			discountCalFunc, appErr := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL, variantID)
-
-			mut.Lock()
-			if appErr != nil && appError == nil {
-				appError = appErr
-			} else {
-				discountCalculatorFunctions = append(discountCalculatorFunctions, discountCalFunc)
+			if appErr != nil {
+				appErrChan <- appErr
+				return
 			}
-			mut.Unlock()
 
-			wg.Done()
-
+			valueChan <- discountCalFunc
 		}(discountInfo)
 	}
 
-	wg.Wait()
-
-	if appError != nil {
-		return nil, appError
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		case value := <-valueChan:
+			discountCalculatorFunctions = append(discountCalculatorFunctions, value)
+		default:
+		}
 	}
 
 	return discountCalculatorFunctions, nil
@@ -244,34 +234,12 @@ func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *go
 
 // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) {
-	// validate given prices are valid:
-	var (
-		invalidArg   bool
-		minPrice     *goprices.Money
-		appErrDetail string
-		mut          sync.Mutex
-		wg           sync.WaitGroup
-	)
-
+	// validate params
 	if len(prices) == 0 {
-		invalidArg = true
-		appErrDetail = "len(prices) == 0"
+		return nil, model.NewAppError("GetProductsVoucherDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, "please provide prices list", http.StatusBadRequest)
 	}
 
-	for index, price := range prices {
-		// check if prices's currencies is supported by system and are the same
-		if _, err := goprices.GetCurrencyPrecision(price.Currency); err != nil || price.Currency != prices[0].Currency {
-			invalidArg = true
-			appErrDetail = fmt.Sprintf("a price has invalid currency unit: index: %d, currency unit: %s", index+1, price.Currency)
-			break
-		}
-		if minPrice == nil || minPrice.Amount.GreaterThan(price.Amount) {
-			minPrice = price
-		}
-	}
-	if invalidArg {
-		return nil, model.NewAppError("GetProductsVoucherDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, appErrDetail, http.StatusBadRequest)
-	}
+	minPrice, _ := util.MinMaxMoneyInMoneySlice(prices)
 
 	if voucher.ApplyOncePerOrder {
 		price, appErr := a.GetDiscountAmountFor(voucher, minPrice, channelID)
@@ -282,46 +250,45 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, pri
 	}
 
 	totalAmount, _ := util.ZeroMoney(prices[0].Currency) // ignore error since channels's Currencies are validated before saving
-	var appErr *model.AppError
 
-	setAppErr := func(err *model.AppError) {
-		if err != nil {
-			mut.Lock()
-			if appErr == nil {
-				appErr = err
-			}
-			mut.Unlock()
-		}
-	}
+	var (
+		atomicValue atomic.Int32
+		appErrChan  = make(chan *model.AppError)
+		valueChan   = make(chan *goprices.Money)
+	)
+	defer func() {
+		close(appErrChan)
+		close(valueChan)
+	}()
 
-	wg.Add(len(prices))
+	atomicValue.Add(int32(len(prices)))
 
 	for _, price := range prices {
 		go func(aPrice *goprices.Money) {
+			defer atomicValue.Add(-1)
 
-			money, err := a.GetDiscountAmountFor(voucher, aPrice, channelID)
-			if err != nil {
-				setAppErr(err)
-			} else {
-				addedAmount, err := totalAmount.Add(money.(*goprices.Money))
-				if err != nil {
-					setAppErr(
-						model.NewAppError("GetProductsVoucherDiscount", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError),
-					)
-				} else {
-					mut.Lock()
-					totalAmount = addedAmount
-					mut.Unlock()
-				}
+			money, appErr := a.GetDiscountAmountFor(voucher, aPrice, channelID)
+			if appErr != nil {
+				appErrChan <- appErr
+				return
 			}
 
+			valueChan <- money.(*goprices.Money)
 		}(price)
 	}
 
-	wg.Wait()
-
-	if appErr != nil {
-		return nil, appErr
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		case money := <-valueChan:
+			addedMoney, err := totalAmount.Add(money)
+			if err != nil {
+				return nil, model.NewAppError("GetProductsVoucherDiscount", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			}
+			totalAmount = addedMoney
+		default:
+		}
 	}
 
 	return totalAmount, nil
@@ -459,9 +426,9 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 
 func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model.AppError) {
 	// finds active sales
-	activeSales, apErr := a.ActiveSales(&date)
-	if apErr != nil {
-		return nil, apErr
+	activeSales, appErr := a.ActiveSales(&date)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	activeSaleIDs := activeSales.IDs()
@@ -471,61 +438,69 @@ func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*model.DiscountInfo,
 		products            map[string][]string
 		categories          map[string][]string
 		variants            map[string][]string
-		appError            *model.AppError
 		saleChannelListings map[string]map[string]*model.SaleChannelListing
-		mut                 sync.Mutex
-		wg                  sync.WaitGroup
+		atomicValue         atomic.Int32
+		appErrChan          = make(chan *model.AppError)
 	)
+	defer close(appErrChan)
+	atomicValue.Add(5) //
 
-	safelySetAppError := func(err *model.AppError) {
-		mut.Lock()
-		if err != nil && appError == nil {
-			appError = err
+	go func() {
+		defer atomicValue.Add(-1)
+		clts, apErr := a.FetchCollections(activeSaleIDs)
+		if apErr != nil {
+			appErrChan <- apErr
 		}
-		mut.Unlock()
-	}
 
-	wg.Add(5)
-
-	go func() {
-		collections, apErr = a.FetchCollections(activeSaleIDs)
-		safelySetAppError(apErr)
-
-		wg.Done()
+		collections = clts
 	}()
 
 	go func() {
-		saleChannelListings, apErr = a.FetchSaleChannelListings(activeSaleIDs)
-		safelySetAppError(apErr)
+		defer atomicValue.Add(-1)
+		scls, apErr := a.FetchSaleChannelListings(activeSaleIDs)
+		if apErr != nil {
+			appErrChan <- apErr
+		}
 
-		wg.Done()
+		saleChannelListings = scls
 	}()
 
 	go func() {
-		products, apErr = a.FetchProducts(activeSaleIDs)
-		safelySetAppError(apErr)
+		defer atomicValue.Add(-1)
+		prds, apErr := a.FetchProducts(activeSaleIDs)
+		if apErr != nil {
+			appErrChan <- apErr
+		}
 
-		wg.Done()
+		products = prds
 	}()
 
 	go func() {
-		categories, apErr = a.FetchCategories(activeSaleIDs)
-		safelySetAppError(apErr)
+		defer atomicValue.Add(-1)
+		ctgrs, apErr := a.FetchCategories(activeSaleIDs)
+		if apErr != nil {
+			appErrChan <- apErr
+		}
 
-		wg.Done()
+		categories = ctgrs
 	}()
 
 	go func() {
-		variants, apErr = a.FetchVariants(activeSaleIDs)
-		safelySetAppError(apErr)
+		defer atomicValue.Add(-1)
+		vras, apErr := a.FetchVariants(activeSaleIDs)
+		if apErr != nil {
+			appErrChan <- apErr
+		}
 
-		wg.Done()
+		variants = vras
 	}()
 
-	wg.Wait()
-
-	if appError != nil {
-		return nil, appError
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		default:
+		}
 	}
 
 	var discountInfos []*model.DiscountInfo
@@ -647,14 +622,4 @@ func (s *ServiceDiscount) IsValidPromoCode(code string) bool {
 	}
 
 	return !(codeIsGiftcard || codeIsVoucher)
-}
-
-// GeneratePromoCode randomly generate promo code
-func (s *ServiceDiscount) GeneratePromoCode() string {
-	code := model.NewId()
-	for !s.IsValidPromoCode(code) {
-		code = model.NewId()
-	}
-
-	return code
 }

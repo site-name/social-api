@@ -11,7 +11,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
@@ -459,22 +458,22 @@ type GiftCardFilterInput struct {
 
 func (g *GiftCardFilterInput) validate() *model.AppError {
 	if g.Tag != nil && *g.Tag == "" {
-		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "tag"}, "tag must not be empty", http.StatusBadRequest)
+		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "tag"}, "tag must not be empty", http.StatusBadRequest)
 	}
 	if len(g.Products) > 0 && !lo.EveryBy(g.Products, model.IsValidId) {
-		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
 	}
 	if len(g.UsedBy) > 0 && !lo.EveryBy(g.UsedBy, model.IsValidId) {
-		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usedBy"}, "please provide valid user ids", http.StatusBadRequest)
+		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usedBy"}, "please provide valid user ids", http.StatusBadRequest)
 	}
 	if g.Currency != nil {
 		_, err := currency.ParseISO(*g.Currency)
 		if err != nil {
-			return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, *g.Currency+" is not a valid currency", http.StatusBadRequest)
+			return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, *g.Currency+" is not a valid currency", http.StatusBadRequest)
 		}
 	}
 	if g.Currency == nil && (g.CurrentBalance != nil || g.InitialBalance != nil) {
-		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "please provide a currency", http.StatusBadRequest)
+		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "please provide a currency", http.StatusBadRequest)
 	}
 
 	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
@@ -484,7 +483,7 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 			if idx == 1 {
 				errorField = "initialBalance"
 			}
-			return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": errorField}, "Lte must be greater than Gte", http.StatusBadRequest)
+			return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": errorField}, "Lte must be greater than Gte", http.StatusBadRequest)
 		}
 	}
 

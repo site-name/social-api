@@ -7,11 +7,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
+	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -31,7 +34,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("Resolver.SaleCreate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("Resolver.SaleCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer transaction.Rollback()
 
@@ -42,7 +45,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 	}
 
 	// save m2m relations
-	appErr = embedCtx.App.Srv().DiscountService().AddSaleRelations(transaction, sale.Id, args.Input.Products, args.Input.Variants, args.Input.Categories, args.Input.Collections)
+	appErr = embedCtx.App.Srv().DiscountService().ToggleSaleRelations(transaction, sale.Id, args.Input.Products, args.Input.Variants, args.Input.Categories, args.Input.Collections, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -55,7 +58,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 	// commit transaction
 	err = transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("SaleCreate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("SaleCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	catalogInfo, appErr := embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
@@ -77,7 +80,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 // NOTE: Refer to ./schemas/sale.graphqls for details on directives used.
 func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*SaleDelete, error) {
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("SaleDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model.NewAppError("SaleDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -85,7 +88,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
-		return nil, model.NewAppError("Resolver.SaleDelete", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("Resolver.SaleDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 	defer transaction.Rollback()
 
@@ -106,7 +109,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 	// commit transaction
 	err = transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("SaleCreate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("SaleCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	catalogInfo, appErr := embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
@@ -129,7 +132,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []string }) (*SaleBulkDelete, error) {
 	// validate params
 	if !lo.EveryBy(args.Ids, model.IsValidId) {
-		return nil, model.NewAppError("SaleBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid sale ids", http.StatusBadRequest)
+		return nil, model.NewAppError("SaleBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid sale ids", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -158,22 +161,8 @@ func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	// begin transaction
-	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if transaction.Error != nil {
-		return nil, model.NewAppError("Resolver.SaleDelete", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
-	}
-	defer transaction.Rollback()
-
-	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
-		Conditions: squirrel.Expr(model.SaleTableName+".Id = ?", args.Id),
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-
 	// really update sale
-	sale := sales[0]
+	sale := &model.Sale{Id: args.Id}
 	args.Input.PatchSale(sale)
 
 	// fetch catalogue before updating sale
@@ -181,6 +170,13 @@ func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 	if appErr != nil {
 		return nil, appErr
 	}
+
+	// begin transaction
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("Resolver.SaleDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer transaction.Rollback()
 
 	sale, appErr = embedCtx.App.Srv().DiscountService().UpsertSale(transaction, sale)
 	if appErr != nil {
@@ -195,7 +191,7 @@ func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("SaleCreate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("SaleCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// fetch catalogue after updating sale
@@ -221,7 +217,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	Input CatalogueInput
 }) (*SaleAddCatalogues, error) {
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("SaleCataloguesAdd", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model.NewAppError("SaleCataloguesAdd", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 	appErr := args.Input.Validate("SaleCataloguesAdd")
 	if appErr != nil {
@@ -245,13 +241,6 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 		}
 	}
 
-	// begin transaction
-	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if transaction.Error != nil {
-		return nil, model.NewAppError("Resolver.SaleCataloguesAdd", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
-	}
-	defer transaction.Rollback()
-
 	sale := &model.Sale{Id: args.Id}
 
 	// fetch catalogue before updating sale
@@ -260,7 +249,15 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	appErr = embedCtx.App.Srv().DiscountService().AddSaleRelations(transaction, args.Id, args.Input.Products, nil, args.Input.Categories, args.Input.Collections)
+	// begin transaction
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("Resolver.SaleCataloguesAdd", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer transaction.Rollback()
+
+	// add sale relations
+	appErr = embedCtx.App.Srv().DiscountService().ToggleSaleRelations(transaction, args.Id, args.Input.Products, nil, args.Input.Categories, args.Input.Collections, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -273,7 +270,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	// commit transaction
 	err := transaction.Commit().Error
 	if err != nil {
-		return nil, model.NewAppError("SaleCataloguesAdd", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("SaleCataloguesAdd", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// fetch catalogue after updating sale
@@ -289,7 +286,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	}
 
 	return &SaleAddCatalogues{
-		Sale: systemSaleToGraphqlSale(sale),
+		Sale: &Sale{ID: args.Id},
 	}, nil
 }
 
@@ -298,7 +295,64 @@ func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 	Id    string
 	Input CatalogueInput
 }) (*SaleRemoveCatalogues, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("SaleCataloguesRemove", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+	}
+	appErr := args.Input.Validate("SaleCataloguesRemove")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	sale := &model.Sale{Id: args.Id}
+
+	// fetch catalogue before updating sale
+	catalogBeforeUpdate, appErr := embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// create transaction
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("SaleCataloguesRemove", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer transaction.Rollback()
+
+	// remove sale relations
+	appErr = embedCtx.App.Srv().DiscountService().ToggleSaleRelations(transaction, args.Id, args.Input.Products, nil, args.Input.Categories, args.Input.Collections, true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().ProductService().UpdateProductsDiscountedPricesOfCatalogues(transaction, args.Input.Products, args.Input.Categories, args.Input.Collections, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit transaction
+	err := transaction.Commit().Error
+	if err != nil {
+		return nil, model.NewAppError("SaleCataloguesRemove", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// fetch catalogue after updating sale
+	catalogAfterUpdate, appErr := embedCtx.App.Srv().DiscountService().FetchCatalogueInfo(*sale)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginMng.SaleUpdated(*sale, catalogBeforeUpdate, catalogAfterUpdate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &SaleRemoveCatalogues{
+		Sale: &Sale{ID: args.Id},
+	}, nil
 }
 
 func (r *Resolver) SaleTranslate(ctx context.Context, args struct {
@@ -314,22 +368,121 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	Id    string
 	Input SaleChannelListingInput
 }) (*SaleChannelListingUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("SaleChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid sale id", http.StatusBadRequest)
+	}
+	appErr := args.Input.Validate()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// get sale by given id
+	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
+		Conditions: squirrel.Expr(model.SaleTableName+".Id = ?", args.Id),
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	sale := sales[0]
+
+	// clean discount values
+	// addChannelIds := lo.Map(args.Input.AddChannels, func(ac *SaleChannelListingAddInput, _ int) string { return ac.ChannelID })
+	allChannels, appErr := embedCtx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// keys are channel ids, values are channels' according currency units
+	channelCurrenciesMap := lo.SliceToMap(allChannels, func(c *model.Channel) (string, string) { return c.Id, c.Currency })
+
+	for _, addChannelObj := range args.Input.AddChannels {
+		if addChannelObj.DiscountValue.IsZero() {
+			continue // TODO: check if this is right
+		}
+
+		switch sale.Type {
+		case model.FIXED:
+			currencyPrecision, _ := goprices.GetCurrencyPrecision(channelCurrenciesMap[addChannelObj.ChannelID])
+			roundedDiscountValue := decimal.Decimal(addChannelObj.DiscountValue).Round(int32(currencyPrecision))
+			addChannelObj.DiscountValue = PositiveDecimal(roundedDiscountValue)
+
+		case model.PERCENTAGE:
+			hundred := decimal.NewFromInt32(100)
+			if !addChannelObj.DiscountValue.LessThanOrEqual(PositiveDecimal(hundred)) { // NOTE: > 100
+				// discount cannot be grater than 100. Raise error here
+				return nil, model.NewAppError("SaleChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "discount cannot be greater than 100%", http.StatusBadRequest)
+			}
+		}
+	}
+
+	// begin transaction
+	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tran.Error != nil {
+		return nil, model.NewAppError("SaleChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tran.Rollback()
+
+	// perform insert/delete in database:
+	err := embedCtx.App.Srv().Store.DiscountSaleChannelListing().Delete(tran, &model.SaleChannelListingFilterOption{
+		Conditions: squirrel.Eq{
+			model.SaleChannelListingTableName + ".SaleID":    args.Id,
+			model.SaleChannelListingTableName + ".ChannelID": args.Input.RemoveChannels,
+		},
+	})
+	if err != nil {
+		return nil, model.NewAppError("SaleChannelListingUpdate", "app.sale.error_delete_sale_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	listingsToAdd := lo.Map(args.Input.AddChannels, func(ac *SaleChannelListingAddInput, _ int) *model.SaleChannelListing {
+		return &model.SaleChannelListing{
+			SaleID:        args.Id,
+			ChannelID:     ac.ChannelID,
+			DiscountValue: (*decimal.Decimal)(unsafe.Pointer(&ac.DiscountValue)),
+		}
+	})
+
+	_, err = embedCtx.App.Srv().Store.DiscountSaleChannelListing().Upsert(tran, listingsToAdd)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("SaleChannelListingUpdate", "app.sale.add_sale_channel_listings.app_error", nil, err.Error(), statusCode)
+	}
+
+	appErr = embedCtx.App.Srv().ProductService().UpdateProductsDiscountedPricesOfDiscount(tran, sale)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit transaction:
+	err = tran.Commit().Error
+	if err != nil {
+		return nil, model.NewAppError("SaleChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &SaleChannelListingUpdate{
+		Sale: systemSaleToGraphqlSale(sale),
+	}, nil
 }
 
+// TODO: Check if we need any role or permission to see this
 func (r *Resolver) Sale(ctx context.Context, args struct {
 	Id      string
 	Channel *string // TODO: Consider removing this field
 }) (*Sale, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("Resolve.Sale", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
+		return nil, model.NewAppError("Resolve.Sale", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid sale id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
-		Conditions: squirrel.Eq{model.SaleTableName + ".Id": args.Id},
+		Conditions: squirrel.Expr(model.SaleTableName+".Id = ?", args.Id),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -338,12 +491,44 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 	return systemSaleToGraphqlSale(sales[0]), nil
 }
 
+// TODO: Check if we need any role or permission to see this
+// NOTE: Sales are ordered by Name
 func (r *Resolver) Sales(ctx context.Context, args struct {
 	Filter  *SaleFilterInput
 	SortBy  *SaleSortingInput
-	Query   *string
-	Channel *string
+	Channel *string // This is channel id
 	GraphqlParams
 }) (*SaleCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	appErr := args.GraphqlParams.Validate("Resolver.Sales")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var saleFilterOpts *model.SaleFilterOption
+	if args.Filter != nil {
+		var appErr *model.AppError
+		saleFilterOpts, appErr = args.Filter.Parse()
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	if args.Channel != nil && model.IsValidId(*args.Channel) {
+		saleFilterOpts.SaleChannelListing_ChannelID = squirrel.Expr(model.SaleChannelListingTableName+".ChannelID = ?", *args.Channel)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(saleFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	keyFunc := func(s *model.Sale) string { return s.Name }
+	res, appErr := newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Resolver.Sales")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
 }

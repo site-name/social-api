@@ -173,7 +173,7 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 			allocation.SetOrderLine(&orderLine)
 		}
 		if option.SelectedRelatedStock {
-			allocation.SetStock(&stock)
+			allocation.Stock = &stock
 		}
 		if option.AnnotateStockAvailableQuantity {
 			allocation.SetStockAvailableQuantity(stockAvailableQuantity)

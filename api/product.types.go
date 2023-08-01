@@ -145,7 +145,7 @@ func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
 
 	requesterIsShopStaff := embedCtx.AppContext.Session().
 		GetUserRoles().
-		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 		Len() > 0
 	if requesterIsShopStaff {
 		return systemRecordsToGraphql(collections, systemCollectionToGraphqlCollection), nil
@@ -318,7 +318,7 @@ func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *Address
 	requesterIsStaffOfShop := embedCtx.AppContext.
 		Session().
 		GetUserRoles().
-		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 		Len() > 0
 
 	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, embedCtx.CurrentChannelID))()

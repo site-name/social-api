@@ -252,7 +252,7 @@ func comparePrimitives[T util.Ordered](a, b T) int {
 
 // compareGraphqlOperands compares a and b and returns int.
 //
-// It returns -1 if a < b, 0 if a == b and +1 if a > b
+// It returns -1 if a < b, 0 if a == b and 1 if a > b
 func compareGraphqlOperands[K graphqlCursorType](a, b K) int {
 	anyB := any(b)
 	anyA := any(a)

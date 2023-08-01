@@ -133,7 +133,7 @@ type WarehouseService interface {
 	CheckStockQuantityBulk(variants model.ProductVariants, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterLookup model.StringInterface, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model.AppError)
 	// ValidateWarehouseCount
 	//
-	// Every ShippingZone can be assigned to only one warehouse.
+	//	Every ShippingZone can be assigned to only one warehouse.
 	//
 	// If not there would be issue with automatically selecting stock for operation.
 	ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.WareHouse) (bool, *model.AppError)

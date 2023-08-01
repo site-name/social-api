@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
@@ -162,14 +161,14 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo
 
 	sum, err := checkoutSubTotal.Add(checkoutShippingPrice)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	checkoutInfo.Checkout.PopulateNonDbFields() // this is needed
 	if checkoutInfo.Checkout.Discount != nil {
 		sum, err = sum.Sub(checkoutInfo.Checkout.Discount)
 		if err != nil {
-			return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model.NewAppError("CalculateCheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
 

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -38,13 +37,13 @@ func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscount
 	switch discounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	switch unDiscounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	localCurrency = strings.ToUpper(localCurrency)
@@ -128,7 +127,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 					continue
 				}
 				if !strings.EqualFold(currency, listing.Currency) {
-					return nil, model.NewAppError("GetProductPriceRange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
+					return nil, model.NewAppError("GetProductPriceRange", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantsChannelListing's currencies"}, "", http.StatusBadRequest)
 				}
 			}
 		}
@@ -290,7 +289,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 
 	discount, err := getTotalDiscount(undiscounted, discounted)
 	if err != nil {
-		return nil, model.NewAppError("GetVariantAvailability", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("GetVariantAvailability", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	var (

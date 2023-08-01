@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -24,7 +23,7 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManager
 
 	calculatedCheckoutShipping, err := calculatedCheckoutShipping.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutShippingPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CheckoutShippingPrice", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutShipping, nil
@@ -42,7 +41,7 @@ func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInter
 
 	calculatedCheckoutSubTotal, err := calculatedCheckoutSubTotal.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutSubTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CheckoutSubTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutSubTotal, nil
@@ -62,7 +61,7 @@ func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces
 
 	total, err := checkoutTotal.Sub(checkoutTotalGiftcardBalance)
 	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotalWithGiftcards", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CalculateCheckoutTotalWithGiftcards", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(total.Currency)
@@ -90,7 +89,7 @@ func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterfac
 
 	calculatedCheckoutTotal, err := calculatedCheckoutTotal.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CheckoutTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedCheckoutTotal, nil
@@ -116,7 +115,7 @@ func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInte
 
 	calculatedLineTotal, err := calculatedLineTotal.Quantize(goprices.Up, -1)
 	if err != nil {
-		return nil, model.NewAppError("CheckoutLineTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CheckoutLineTotal", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return calculatedLineTotal, nil

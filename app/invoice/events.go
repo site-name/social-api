@@ -3,7 +3,6 @@ package invoice
 import (
 	"net/http"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -32,7 +31,7 @@ func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventCreationOp
 			return nil, appErr
 		}
 		if _, ok := err.(*store.ErrNotFound); ok {
-			return nil, model.NewAppError("UpsertInvoiceEvent", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoiceEvent.Id"}, "", http.StatusBadRequest)
+			return nil, model.NewAppError("UpsertInvoiceEvent", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoiceEvent.Id"}, "", http.StatusBadRequest)
 		}
 		return nil, model.NewAppError("UpsertInvoiceEvent", "app.invoice.error_upserting_invoice_event.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

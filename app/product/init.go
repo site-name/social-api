@@ -5,7 +5,6 @@ import (
 	"time"
 
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -25,7 +24,7 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 	// validate given currencyCode is valid:
 	revenue, err := util.ZeroTaxedMoney(currencyCode)
 	if err != nil {
-		return nil, model.NewAppError("CalculateRevenueForVariant", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+		return nil, model.NewAppError("CalculateRevenueForVariant", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
 	}
 
 	for _, orderLine := range orderLines {
@@ -35,7 +34,7 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 		if orderValue != nil && orderValue.CreateAt >= util.MillisFromTime(*startDate) {
 			revenue, err = revenue.Add(orderLine.TotalPrice)
 			if err != nil {
-				return nil, model.NewAppError("CalculateRevenueForVariant", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+				return nil, model.NewAppError("CalculateRevenueForVariant", model.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
 	}

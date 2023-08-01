@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -24,7 +23,7 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 	switch instance.(type) {
 	case *model.Product, *model.ProductVariant, *model.Page:
 	default:
-		return nil, model.NewAppError("AssociateAttributeValuesToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("AssociateAttributeValuesToInstance", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 
 	if lo.SomeBy(values, func(item *model.AttributeValue) bool { return item.AttributeID != attributeID }) {
@@ -155,7 +154,7 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 		})
 
 	default:
-		return nil, model.NewAppError("associateAttributeToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("associateAttributeToInstance", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 }
 
@@ -170,7 +169,7 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 //	+) *Page           - *AssignedPageAttribute
 func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
 	if instance == nil || assignment == nil || len(valueIDs) == 0 {
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment or instance or valuesIDs"}, "", http.StatusBadRequest)
+		return model.NewAppError("sortAssignedAttributeValues", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment or instance or valuesIDs"}, "", http.StatusBadRequest)
 	}
 
 	switch instance.(type) {
@@ -194,7 +193,7 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			}
 		}
 		// other types are not accepted and returns an error:
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
+		return model.NewAppError("sortAssignedAttributeValues", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
 
 	case *model.ProductVariant:
 		if assignmentValue, ok := assignment.(*model.AssignedVariantAttribute); ok {
@@ -216,7 +215,7 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			}
 		}
 		// other types are not accepted and returns an error:
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
+		return model.NewAppError("sortAssignedAttributeValues", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
 
 	case *model.Page:
 		if assignmentValue, ok := assignment.(*model.AssignedPageAttribute); ok {
@@ -238,9 +237,9 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			}
 		}
 		// other types are not accepted and returns an error:
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
+		return model.NewAppError("sortAssignedAttributeValues", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
 
 	default:
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
+		return model.NewAppError("sortAssignedAttributeValues", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 }

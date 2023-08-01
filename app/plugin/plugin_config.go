@@ -3,7 +3,6 @@ package plugin
 import (
 	"net/http"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -29,7 +28,7 @@ func (s *ServicePlugin) UpsertPluginConfiguration(config *model.PluginConfigurat
 // FilterPluginConfigurations returns a list of plugin configurations filtered using given options
 func (s *ServicePlugin) FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model.AppError) {
 	if options == nil {
-		return nil, model.NewAppError("FilterPluginConfigurations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "options"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("FilterPluginConfigurations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "options"}, "", http.StatusBadRequest)
 	}
 
 	configs, err := s.srv.Store.PluginConfiguration().FilterPluginConfigurations(*options)

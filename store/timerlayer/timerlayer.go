@@ -2975,26 +2975,10 @@ func (s *TimerLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalConte
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {
+func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
 	start := timemodule.Now()
 
-	err := s.DiscountSaleStore.AddSaleRelations(transaction, sales, relations)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.AddSaleRelations", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) error {
-	start := timemodule.Now()
-
-	err := s.DiscountSaleStore.Delete(transaction, options)
+	result, err := s.DiscountSaleStore.Delete(transaction, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3004,7 +2988,7 @@ func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *mode
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.Delete", success, elapsed)
 	}
-	return err
+	return result, err
 }
 
 func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
@@ -3039,6 +3023,22 @@ func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	return result, err
 }
 
+func (s *TimerLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+	start := timemodule.Now()
+
+	err := s.DiscountSaleStore.ToggleSaleRelations(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.ToggleSaleRelations", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
 	start := timemodule.Now()
 
@@ -3053,6 +3053,22 @@ func (s *TimerLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.S
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.Upsert", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerDiscountSaleChannelListingStore) Delete(transaction *gorm.DB, options *model.SaleChannelListingFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.DiscountSaleChannelListingStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
@@ -3087,10 +3103,10 @@ func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOptio
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
+func (s *TimerLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB, listings []*model.SaleChannelListing) ([]*model.SaleChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountSaleChannelListingStore.Save(saleChannelListing)
+	result, err := s.DiscountSaleChannelListingStore.Upsert(transaction, listings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3098,25 +3114,9 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *mod
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.Upsert", success, elapsed)
 	}
 	return result, err
-}
-
-func (s *TimerLayerDiscountVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations any) error {
-	start := timemodule.Now()
-
-	err := s.DiscountVoucherStore.AddVoucherRelations(transaction, vouchers, relations)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.AddVoucherRelations", success, elapsed)
-	}
-	return err
 }
 
 func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
@@ -3181,6 +3181,22 @@ func (s *TimerLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilt
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.GetByOptions", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+	start := timemodule.Now()
+
+	err := s.DiscountVoucherStore.ToggleVoucherRelations(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.ToggleVoucherRelations", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerDiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {

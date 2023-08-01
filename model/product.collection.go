@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +47,10 @@ type CollectionFilterOption struct {
 
 type Collections []*Collection
 
+func (ps Collections) Contains(c *Collection) bool {
+	return c != nil && lo.SomeBy(ps, func(ct *Collection) bool { return ct != nil && ct.Id == c.Id })
+}
+
 func (c *Collection) DeepCopy() *Collection {
 	if c == nil {
 		return nil
@@ -63,7 +68,7 @@ func (c *Collection) DeepCopy() *Collection {
 	return &res
 }
 
-func (c Collections) IDs() []string {
+func (c Collections) IDs() util.AnyArray[string] {
 	return lo.Map(c, func(o *Collection, _ int) string { return o.Id })
 }
 func (c Collections) DeepCopy() Collections {

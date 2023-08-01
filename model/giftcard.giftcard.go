@@ -1,7 +1,7 @@
 package model
 
 import (
-	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -102,42 +102,44 @@ func (gc *GiftCard) PopulateNonDbFields() {
 }
 
 func (gc *GiftCard) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.gift_card.is_valid.%s.app_error",
-		"gift_card_id=",
-		"GiftCard.IsValid",
-	)
-
 	if gc.CreatedByID != nil && !IsValidId(*gc.CreatedByID) {
-		return outer("created_by_id", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.created_by.app_error", nil, "please provide valid created by id", http.StatusBadRequest)
 	}
 	if gc.UsedByID != nil && !IsValidId(*gc.UsedByID) {
-		return outer("used_by_id", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.usedby_id.app_error", nil, "please provide valid used by by id", http.StatusBadRequest)
 	}
 	if gc.CreatedByEmail != nil && !IsValidEmail(*gc.CreatedByEmail) {
-		return outer("created_by_email", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.created_by_email.app_error", nil, "please provide valid created by email", http.StatusBadRequest)
 	}
 	if gc.UsedByEmail != nil && !IsValidEmail(*gc.UsedByEmail) {
-		return outer("used_by_email", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.used_by_email.app_error", nil, "please provide valid used by email", http.StatusBadRequest)
 	}
 	if gc.ProductID != nil && !IsValidId(*gc.ProductID) {
-		return outer("product_id", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.product_id.app_error", nil, "please provide valid product id", http.StatusBadRequest)
 	}
 	if gc.LastUsedOn != nil && *gc.LastUsedOn <= 0 {
-		return outer("last_used_on", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.last_used_on.app_error", nil, "please provide valid last used on", http.StatusBadRequest)
 	}
 	if _, err := currency.ParseISO(gc.Currency); err != nil {
-		return outer("currency", &gc.Id)
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
+	}
+	if !PromoCodeRegex.MatchString(gc.Code) {
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.code.app_error", nil, "Code must look like DF6F-HGYG-78TU", http.StatusBadRequest)
+	}
+	if gc.StartDate != nil && gc.StartDate.IsZero() {
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.start_date.app_error", nil, "please provide valid start date", http.StatusBadRequest)
+	}
+	if gc.ExpiryDate != nil && gc.ExpiryDate.IsZero() {
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.expiry_date.app_error", nil, "please provide valid expiry date", http.StatusBadRequest)
+	}
+	if gc.StartDate != nil && gc.ExpiryDate != nil && gc.StartDate.After(*gc.ExpiryDate) {
+		return NewAppError("Giftcard.IsValid", "model.gift_card.is_valid.dates.app_error", nil, "start date must be before expiry date", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
 func (gc *GiftCard) PreSave() {
-	if gc.Code == "" {
-		rawString := NewRandomString(16)
-		gc.Code = fmt.Sprintf("%s-%s-%s-%s", rawString[:4], rawString[4:8], rawString[8:12], rawString[12:])
-	}
 	gc.commonPre()
 }
 
@@ -160,6 +162,9 @@ func (gc *GiftCard) commonPre() {
 	if gc.StartDate == nil {
 		today := util.StartOfDay(time.Now())
 		gc.StartDate = &today
+	}
+	if gc.Code == "" {
+		gc.Code = NewPromoCode()
 	}
 }
 

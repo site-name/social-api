@@ -15,7 +15,6 @@ import (
 
 // ProductService contains methods for working with products
 type ProductService interface {
-	CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError)
 	// BulkUpsertProductChannelListings bulk update/inserts given product channel listings and returns them
 	BulkUpsertProductChannelListings(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, *model.AppError)
 	// BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
@@ -95,7 +94,7 @@ type ProductService interface {
 	// ProductVariantByOrderLineID returns a product variant by given order line id
 	ProductVariantByOrderLineID(orderLineID string) (*model.ProductVariant, *model.AppError)
 	// ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-	ProductVariantChannelListingsByOption(option *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError)
+	ProductVariantChannelListingsByOption(options *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError)
 	// ProductVariantGetPrice returns price
 	ProductVariantGetPrice(productVariant *model.ProductVariant, product model.Product, collections []*model.Collection, channel model.Channel, channelListing *model.ProductVariantChannelListing, discounts []*model.DiscountInfo) (*goprices.Money, *model.AppError)
 	// ProductVariantGetWeight returns weight of given product variant
@@ -139,6 +138,7 @@ type ProductService interface {
 	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
 	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
 	CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError)
+	CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError)
 	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model.AppError)
 	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError)
 	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories

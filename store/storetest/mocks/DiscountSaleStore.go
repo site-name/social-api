@@ -15,8 +15,8 @@ type DiscountSaleStore struct {
 	mock.Mock
 }
 
-// AddSaleRelations provides a mock function with given fields: transaction, sales, relations
-func (_m *DiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations interface{}) error {
+// ToggleSaleRelations provides a mock function with given fields: transaction, sales, relations
+func (_m *DiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, relations interface{}) error {
 	ret := _m.Called(transaction, sales, relations)
 
 	var r0 error

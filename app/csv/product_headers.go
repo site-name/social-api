@@ -3,7 +3,7 @@ package csv
 import (
 	"fmt"
 	"strings"
-	"sync"
+	"sync/atomic"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
@@ -63,27 +63,17 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 	}
 
 	var (
-		appError      *model.AppError
 		attributes_01 []*model.Attribute
 		attributes_02 []*model.Attribute
-
-		wg  sync.WaitGroup
-		mut sync.Mutex
-
-		// syncSetAppError is used to safely set `appError`
-		syncSetAppError = func(err *model.AppError) {
-			mut.Lock()
-			defer mut.Unlock()
-			if err != nil && appError == nil {
-				appError = err
-			}
-		}
+		atomicValue   atomic.Int32
+		appErrChan    = make(chan *model.AppError)
 	)
+	defer close(appErrChan)
 
-	wg.Add(2)
+	atomicValue.Add(2) //
 
 	go func() {
-		defer wg.Done()
+		defer atomicValue.Add(-1)
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
 			Distinct:                       true,
@@ -91,14 +81,14 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 			AttributeProduct_ProductTypeID: squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
 		})
 		if appErr != nil {
-			syncSetAppError(appErr)
-		} else {
-			attributes_01 = attributes
+			appErrChan <- appErr
+			return
 		}
+		attributes_01 = attributes
 	}()
 
 	go func() {
-		defer wg.Done()
+		defer atomicValue.Add(-1)
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
 			Distinct:                       true,
@@ -106,16 +96,18 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 			AttributeVariant_ProductTypeID: squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
 		})
 		if appErr != nil {
-			syncSetAppError(appErr)
-		} else {
-			attributes_02 = attributes
+			appErrChan <- appErr
+			return
 		}
+		attributes_02 = attributes
 	}()
 
-	wg.Wait()
-
-	if appError != nil {
-		return nil, appError
+	for atomicValue.Load() != 0 {
+		select {
+		case appErr := <-appErrChan:
+			return nil, appErr
+		default:
+		}
 	}
 
 	productHeaders := []string{}

@@ -17,14 +17,18 @@ type SaleChannelListing struct {
 	Currency      string           `json:"currency" gorm:"type:varchar(3);column:Currency"`
 	CreateAt      int64            `json:"create_at" gorm:"autoCreateTime:milli;column:CreateAt"`
 
-	channel *Channel `db:"-"` // this field gets populated in queries that ask for select related channel
+	channel *Channel `json:"-"` // this field gets populated in queries that ask for select related channel
 }
 
 func (c *SaleChannelListing) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *SaleChannelListing) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *SaleChannelListing) TableName() string             { return SaleChannelListingTableName }
-func (s *SaleChannelListing) GetChannel() *Channel          { return s.channel }
-func (s *SaleChannelListing) SetChannel(c *Channel)         { s.channel = c }
+func (c *SaleChannelListing) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	c.CreateAt = 0 // prevent upda
+	return c.IsValid()
+}
+func (c *SaleChannelListing) TableName() string     { return SaleChannelListingTableName }
+func (s *SaleChannelListing) GetChannel() *Channel  { return s.channel }
+func (s *SaleChannelListing) SetChannel(c *Channel) { s.channel = c }
 
 func (s *SaleChannelListing) DeepCopy() *SaleChannelListing {
 	if s == nil {

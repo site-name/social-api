@@ -6,12 +6,41 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/voucher.graphqls for details on directives used
 func (r *Resolver) VoucherCreate(ctx context.Context, args struct{ Input VoucherInput }) (*VoucherCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	appErr := args.Input.Validate("VoucherCreate")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	voucher := &model.Voucher{}
+	args.Input.PatchVoucher(voucher)
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	newVoucher, appErr := embedCtx.App.Srv().DiscountService().UpsertVoucher(voucher)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// save relations
+	err := embedCtx.App.Srv().Store.DiscountVoucher().ToggleVoucherRelations(nil, model.Vouchers{newVoucher}, args.Input.Collections, args.Input.Products, args.Input.Variants, args.Input.Categories, false)
+	if err != nil {
+		return nil, model.NewAppError("VoucherCreate", "app.discount.save_voucher_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &VoucherCreate{
+		Voucher: systemVoucherToGraphqlVoucher(newVoucher),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/voucher.graphqls for details on directives used
 func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) (*VoucherDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }

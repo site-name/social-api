@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -161,7 +160,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("AllocateStocks", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("AllocateStocks", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	if len(outOfStocks) > 0 {
@@ -300,7 +299,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 
 	// commit transaction:
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("DeallocateStock", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("DeallocateStock", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// stockAndTotalQuantityAllocatedMap has keys are stock ids
@@ -310,10 +309,10 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	}
 
 	for _, allocation := range allocationsBeforeUpdate {
-		availableStockNow := util.GetMinMax(allocation.GetStock().Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0).Max
+		availableStockNow := util.GetMinMax(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0).Max
 
 		if allocation.GetStockAvailableQuantity() <= 0 && availableStockNow > 0 {
-			if appErr := manager.ProductVariantBackInStock(*allocation.GetStock()); appErr != nil {
+			if appErr := manager.ProductVariantBackInStock(*allocation.Stock); appErr != nil {
 				return nil, appErr
 			}
 		}
@@ -360,7 +359,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 	} else {
 		// validate given `orderLine` has VariantID property not nil
 		if orderLine.VariantID == nil {
-			return model.NewAppError("IncreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "orderLine must has VariantID property not nil", http.StatusBadRequest)
+			return model.NewAppError("IncreaseStock", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "orderLine must has VariantID property not nil", http.StatusBadRequest)
 		}
 
 		stock = &model.Stock{
@@ -408,7 +407,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 	}
 
 	if err := transaction.Commit().Error; err != nil {
-		return model.NewAppError("IncreaseStock", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("IncreaseStock", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
@@ -418,7 +417,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError) {
 	// validate lineInfos is not nil nor empty
 	if len(lineInfos) == 0 {
-		return nil, model.NewAppError("IncreaseAllocations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("IncreaseAllocations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
 	}
 
 	// start a transaction
@@ -473,7 +472,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 	}
 
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("IncreaseAllocations", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("IncreaseAllocations", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil, nil
@@ -504,7 +503,7 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*model.OrderLineData,
 func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*model.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if len(orderLineInfos) == 0 {
-		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("DecreaseStock", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
 	}
 
 	transaction := a.srv.Store.GetMaster().Begin()
@@ -593,7 +592,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("DecreaseStock", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("DecreaseStock", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	if updateStocks {
@@ -726,11 +725,11 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return model.NewAppError("DeAllocateStockForOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("DeAllocateStockForOrder", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	for _, allocation := range allocationsToHandleAfterCommit {
-		appErr = manager.ProductVariantBackInStock(*allocation.GetStock())
+		appErr = manager.ProductVariantBackInStock(*allocation.Stock)
 		if appErr != nil {
 			return appErr
 		}
@@ -840,7 +839,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas
 
 	// commit transaction.
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("AllocatePreorders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("AllocatePreorders", model.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil, nil
@@ -876,7 +875,7 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *model.OrderLineDat
 		invalidParams = append(invalidParams, "lineInfo.Variant")
 	}
 	if len(invalidParams) > 0 {
-		return nil, nil, model.NewAppError("createPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidParams, ", ")}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("createPreorderAllocation", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidParams, ", ")}, "", http.StatusBadRequest)
 	}
 
 	var (
@@ -1014,7 +1013,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 
 	// commit transaction
 	if err := transaction.Commit().Error; err != nil {
-		return nil, model.NewAppError("DeactivatePreorderForVariant", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("DeactivatePreorderForVariant", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil, nil
@@ -1030,14 +1029,14 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
 func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorm.DB, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model.AppError) {
 	if transaction == nil {
-		return nil, nil, model.NewAppError("getStockForPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("getStockForPreorderAllocation", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
 	}
 
 	var order *model.Order
 	if preorderAllocation != nil &&
 		preorderAllocation.GetOrderLine() != nil &&
-		preorderAllocation.GetOrderLine().GetOrder() != nil {
-		order = preorderAllocation.GetOrderLine().GetOrder()
+		preorderAllocation.GetOrderLine().Order != nil {
+		order = preorderAllocation.GetOrderLine().Order
 
 	} else {
 		preorderAllocations, appErr := s.srv.
@@ -1051,7 +1050,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorm.DB, p
 			return nil, nil, appErr
 		}
 		preorderAllocation = preorderAllocations[0]
-		order = preorderAllocation.GetOrderLine().GetOrder()
+		order = preorderAllocation.GetOrderLine().Order
 	}
 
 	var wareHouse *model.WareHouse

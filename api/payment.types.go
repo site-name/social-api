@@ -91,7 +91,7 @@ func (p *Payment) Metadata(ctx context.Context) ([]*MetadataItem, error) {
 	requesterIsShopStaff := embedCtx.AppContext.
 		Session().
 		GetUserRoles().
-		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 		Len() > 0
 
 	if !requesterIsShopStaff {
