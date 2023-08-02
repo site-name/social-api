@@ -25,7 +25,7 @@ type OrderService interface {
 	// AnAddressOfOrder returns shipping address of given order if presents
 	AnAddressOfOrder(orderID string, whichAddressID model.WhichOrderAddressID) (*model.Address, *model.AppError)
 	// ApplyDiscountToValue Calculate the price based on the provided values
-	ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountType, currency string, priceToDiscount interface{}) (interface{}, error)
+	ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountValueType, currency string, priceToDiscount interface{}) (interface{}, error)
 	// AutomaticallyFulfillDigitalLines
 	// Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
 	AutomaticallyFulfillDigitalLines(ord model.Order, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
@@ -60,7 +60,7 @@ type OrderService interface {
 	// CreateGiftcardsWhenApprovingFulfillment
 	CreateGiftcardsWhenApprovingFulfillment(orDer *model.Order, linesData []*model.OrderLineData, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop) *model.AppError
 	// CreateOrderDiscountForOrder Add new order discount and update the prices
-	CreateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError)
+	CreateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError)
 	// CreateReplaceOrder Create draft order with lines to replace
 	CreateReplaceOrder(user *model.User, _ interface{}, originalOrder model.Order, orderLinesToReplace []*model.OrderLineData, fulfillmentLinesToReplace []*model.FulfillmentLineData) (*model.Order, *model.AppError)
 	// CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
@@ -275,11 +275,11 @@ type OrderService interface {
 	// UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 	//
 	// `reason`, `valueType` can be empty. `value` can be nil
-	UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 	//
 	// `reason`, `valueType` and `value` can be nil
-	UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountType, value *decimal.Decimal) *model.AppError
+	UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model.AppError
 	// UpdateOrderPrices Update prices in order with given discounts and proper taxes.
 	UpdateOrderPrices(ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderStatus Update order status depending on fulfillments

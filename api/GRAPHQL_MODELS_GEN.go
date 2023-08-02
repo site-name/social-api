@@ -448,10 +448,10 @@ type AttributeFilterInput struct {
 	Type                   *model.AttributeType `json:"type"`
 	InCollection           *string              `json:"inCollection"`
 	InCategory             *string              `json:"inCategory"`
-	Channel                *string              `json:"channel"`
+	Channel                *string              `json:"channel"` // deprecated
 }
 
-func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeFilterOption {
+func (a *AttributeFilterInput) parse(api string) (*model.AttributeFilterOption, *model.AppError) {
 	conditions := squirrel.Eq{}
 	if a.VisibleInStoreFront != nil {
 		conditions[model.AttributeTableName+".VisibleInStoreFront"] = *a.VisibleInStoreFront
@@ -472,10 +472,25 @@ func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeF
 		conditions[model.AttributeTableName+".AvailableInGrid"] = *a.AvailableInGrid
 	}
 	if len(a.Ids) > 0 {
+		if !lo.EveryBy(a.Ids, model.IsValidId) {
+			return nil, model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid attribute ids", http.StatusBadRequest)
+		}
 		conditions[model.AttributeTableName+".Id"] = a.Ids
 	}
-	if a.Type != nil && a.Type.IsValid() {
+	if a.Type != nil {
+		if !a.Type.IsValid() {
+			return nil, model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid attribute type", http.StatusBadRequest)
+		}
 		conditions[model.AttributeTableName+".Type"] = *a.Type
+	}
+
+	for name, value := range map[string]*string{
+		"InCollection": a.InCollection,
+		"InCategory":   a.InCategory,
+	} {
+		if value != nil && !model.IsValidId(*value) {
+			return nil, model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid attribute "+name, http.StatusBadRequest)
+		}
 	}
 
 	res := &model.AttributeFilterOption{
@@ -483,6 +498,9 @@ func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeF
 		InCollection: a.InCollection,
 		InCategory:   a.InCategory,
 		Channel:      a.Channel,
+	}
+	if a.Search != nil && !stringsContainSqlExpr.MatchString(*a.Search) {
+		res.Search = *a.Search
 	}
 
 	if len(a.Metadata) > 0 {
@@ -494,7 +512,7 @@ func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeF
 		}
 	}
 
-	return res
+	return res, nil
 }
 
 type AttributeInput struct {
@@ -750,9 +768,9 @@ type CatalogueInput struct {
 
 func (c *CatalogueInput) Validate(api string) *model.AppError {
 	for key, value := range map[string][]string{
-		"Products":    c.Products,
-		"Categories":  c.Categories,
-		"Collections": c.Collections,
+		"products":    c.Products,
+		"categories":  c.Categories,
+		"collections": c.Collections,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
 			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
@@ -3271,6 +3289,8 @@ type SaleChannelListingInput struct {
 }
 
 func (s *SaleChannelListingInput) Validate() *model.AppError {
+	s.RemoveChannels = lo.Uniq(s.RemoveChannels)
+	s.AddChannels = lo.UniqBy(s.AddChannels, func(ac *SaleChannelListingAddInput) string { return ac.ChannelID })
 	// checks if given channel ids are valid uuids
 	if !lo.EveryBy(s.RemoveChannels, model.IsValidId) {
 		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
@@ -3286,8 +3306,6 @@ func (s *SaleChannelListingInput) Validate() *model.AppError {
 		return model.NewAppError("SaleChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
 	}
 
-	s.RemoveChannels = lo.Uniq(s.RemoveChannels)
-	s.AddChannels = lo.UniqBy(s.AddChannels, func(ac *SaleChannelListingAddInput) string { return ac.ChannelID })
 	return nil
 }
 
@@ -3331,6 +3349,8 @@ func (s *SaleFilterInput) Parse() (*model.SaleFilterOption, *model.AppError) {
 	now := time.Now()
 
 	if len(s.Status) > 0 {
+		orConditions := squirrel.Or{}
+
 		for _, st := range s.Status {
 			if st == nil {
 				continue
@@ -3338,8 +3358,6 @@ func (s *SaleFilterInput) Parse() (*model.SaleFilterOption, *model.AppError) {
 			if !st.IsValid() {
 				return nil, model.NewAppError("SaleFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
 			}
-
-			orConditions := squirrel.Or{}
 
 			switch *st {
 			case DiscountStatusEnumActive:
@@ -3354,10 +3372,10 @@ func (s *SaleFilterInput) Parse() (*model.SaleFilterOption, *model.AppError) {
 			case DiscountStatusEnumScheduled:
 				orConditions = append(orConditions, squirrel.Expr(model.SaleTableName+".StartDate > ?", now))
 			}
+		}
 
-			if len(orConditions) > 0 {
-				conditions = append(conditions, orConditions)
-			}
+		if len(orConditions) > 0 {
+			conditions = append(conditions, orConditions)
 		}
 	}
 
@@ -3388,6 +3406,21 @@ func (s *SaleFilterInput) Parse() (*model.SaleFilterOption, *model.AppError) {
 		}
 
 		conditions = append(conditions, squirrel.Expr(model.SaleTableName+".Name ILIKE ?", "%"+*s.Search+"%"))
+	}
+
+	// metadata
+	if len(s.Metadata) > 0 {
+		for _, metaItem := range s.Metadata {
+			if metaItem != nil && metaItem.Key != "" {
+				if metaItem.Value == nil {
+					expr := fmt.Sprintf(model.SaleTableName+".Metadata::jsonb ? '%s'", metaItem.Key)
+					conditions = append(conditions, squirrel.Expr(expr))
+				} else {
+					expr := fmt.Sprintf(model.SaleTableName+".Metadata::jsonb @> '{%q:%q}'", metaItem.Key, *metaItem.Value)
+					conditions = append(conditions, squirrel.Expr(expr))
+				}
+			}
+		}
 	}
 
 	return &model.SaleFilterOption{
@@ -4118,6 +4151,28 @@ type VoucherChannelListingInput struct {
 	RemoveChannels []string                         `json:"removeChannels"`
 }
 
+func (s *VoucherChannelListingInput) Validate() *model.AppError {
+	s.RemoveChannels = lo.Uniq(s.RemoveChannels)
+	s.AddChannels = lo.UniqBy(s.AddChannels, func(ac *VoucherChannelListingAddInput) string { return ac.ChannelID })
+
+	// checks if given channel ids are valid uuids
+	if !lo.EveryBy(s.RemoveChannels, model.IsValidId) {
+		return model.NewAppError("VoucherChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids to remove", http.StatusBadRequest)
+	}
+	addChannelIDs := lo.Map(s.AddChannels, func(ac *VoucherChannelListingAddInput, _ int) string { return ac.ChannelID })
+	if !lo.EveryBy(addChannelIDs, model.IsValidId) {
+		return model.NewAppError("VoucherChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids to add", http.StatusBadRequest)
+	}
+
+	// check if some channel(s) is/are designed to both add and remove
+	intersecChannelIds := lo.Intersect(s.RemoveChannels, addChannelIDs)
+	if len(intersecChannelIds) > 0 {
+		return model.NewAppError("VoucherChannelListingInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels, remove channels"}, "channels cannot only be added or removed", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
 type VoucherChannelListingUpdate struct {
 	Voucher *Voucher         `json:"voucher"`
 	Errors  []*DiscountError `json:"errors"`
@@ -4149,8 +4204,124 @@ type VoucherFilterInput struct {
 	TimesUsed    *IntRangeInput         `json:"timesUsed"`
 	DiscountType []*VoucherDiscountType `json:"discountType"`
 	Started      *DateTimeRangeInput    `json:"started"`
-	Search       *string                `json:"search"`
+	Search       *string                `json:"search"` // filter against voucher's name and code fields
 	Metadata     []*MetadataFilter      `json:"metadata"`
+}
+
+func (v *VoucherFilterInput) Parse() (*model.VoucherFilterOption, *model.AppError) {
+	now := time.Now()
+	conditions := squirrel.And{}
+
+	// parse status
+	if len(v.Status) > 0 {
+		orConditions := squirrel.Or{}
+
+		for _, st := range v.Status {
+			if st == nil {
+				continue
+			}
+			if !st.IsValid() {
+				return nil, model.NewAppError("VoucherFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
+			}
+
+			switch *st {
+			case DiscountStatusEnumActive:
+				orConditions = append(orConditions, squirrel.And{
+					squirrel.Expr(model.VoucherTableName + ".UsageLimit IS NULL OR Vouchers.UsageLimit > Vouchers.Used"),
+					squirrel.Expr(model.VoucherTableName+".EndDate IS NULL OR Sales.EndDate >= ?", now),
+					squirrel.Expr(model.VoucherTableName+".StartDate <= ?", now),
+				})
+
+			case DiscountStatusEnumExpired:
+				orConditions = append(orConditions, squirrel.And{
+					squirrel.Expr(model.VoucherTableName+".UsageLimit <= Vouchers.Used OR Vouchers.EndDate < ?", now),
+					squirrel.Expr(model.VoucherTableName+".StartDate < ?", now),
+				})
+
+			case DiscountStatusEnumScheduled:
+				orConditions = append(orConditions, squirrel.Expr(model.VoucherTableName+".StartDate > ?", now))
+			}
+		}
+
+		if len(orConditions) > 0 {
+			conditions = append(conditions, orConditions)
+		}
+	}
+
+	// parse time used:
+	if v.TimesUsed != nil {
+		if v.TimesUsed.Gte != nil && v.TimesUsed.Lte != nil && *v.TimesUsed.Gte >= *v.TimesUsed.Lte {
+			return nil, model.NewAppError("VoucherFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "timesUsed"}, "gte field must less than lte field", http.StatusBadRequest)
+		}
+
+		if gte := v.TimesUsed.Gte; gte != nil {
+			conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".Used >= ?", *gte))
+		}
+		if lte := v.TimesUsed.Lte; lte != nil {
+			conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".Used <= ?", *lte))
+		}
+	}
+
+	// parse discount type
+	if len(v.DiscountType) > 0 {
+		orConditions := squirrel.Or{}
+
+		for _, dcType := range v.DiscountType {
+			if dcType != nil && dcType.IsValid() {
+				switch *dcType {
+				case VoucherDiscountTypeFixed:
+					orConditions = append(orConditions, squirrel.Expr(model.VoucherTableName+".DiscountValueType = ?", model.DISCOUNT_VALUE_TYPE_FIXED))
+				case VoucherDiscountTypePercentage:
+					orConditions = append(orConditions, squirrel.Expr(model.VoucherTableName+".DiscountValueType = ?", model.DISCOUNT_VALUE_TYPE_PERCENTAGE))
+				case VoucherDiscountTypeShipping:
+					orConditions = append(orConditions, squirrel.Expr(model.VoucherTableName+".Type = ?", model.VOUCHER_TYPE_SHIPPING))
+				}
+			}
+		}
+
+		if len(orConditions) > 0 {
+			conditions = append(conditions, orConditions)
+		}
+	}
+
+	// start date
+	if v.Started != nil {
+		if v.Started.Gte != nil && v.Started.Lte != nil && v.Started.Gte.After(v.Started.Lte.Time) {
+			return nil, model.NewAppError("VoucherFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "started"}, "gte time must be after than lte time", http.StatusBadRequest)
+		}
+
+		if gte := v.Started.Gte; gte != nil {
+			conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".StartDate >= ?", gte.Time))
+		}
+		if lte := v.Started.Lte; lte != nil {
+			conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".StartDate <= ?", lte.Time))
+		}
+	}
+
+	// search
+	if v.Search != nil && *v.Search != "" && !stringsContainSqlExpr.MatchString(*v.Search) {
+		pattern := "%" + *v.Search + "%"
+		conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".Name ILIKE ? OR Vouchers.Code ILIKE ?", pattern, pattern))
+	}
+
+	// metadata
+	if len(v.Metadata) > 0 {
+		for _, metaItem := range v.Metadata {
+			if metaItem != nil && metaItem.Key != "" {
+				if metaItem.Value == nil {
+					expr := fmt.Sprintf(model.VoucherTableName+".Metadata::jsonb ? '%s'", metaItem.Key)
+					conditions = append(conditions, squirrel.Expr(expr))
+				} else {
+					expr := fmt.Sprintf(model.VoucherTableName+".Metadata::jsonb @> '{%q:%q}'", metaItem.Key, *metaItem.Value)
+					conditions = append(conditions, squirrel.Expr(expr))
+				}
+			}
+		}
+	}
+
+	return &model.VoucherFilterOption{
+		Conditions: conditions,
+	}, nil
 }
 
 type VoucherInput struct {
@@ -4839,7 +5010,7 @@ func (e DiscountStatusEnum) IsValid() bool {
 	return false
 }
 
-type DiscountValueTypeEnum = model.DiscountType
+type DiscountValueTypeEnum = model.DiscountValueType
 
 type DistanceUnitsEnum = measurement.DistanceUnit
 
@@ -5594,7 +5765,7 @@ const (
 	SaleSortFieldType      SaleSortField = "TYPE"
 )
 
-type SaleType = model.DiscountType
+type SaleType = model.DiscountValueType
 
 type ShippingErrorCode string
 
@@ -5727,6 +5898,15 @@ const (
 	VoucherDiscountTypePercentage VoucherDiscountType = "PERCENTAGE"
 	VoucherDiscountTypeShipping   VoucherDiscountType = "SHIPPING"
 )
+
+func (v *VoucherDiscountType) IsValid() bool {
+	switch *v {
+	case VoucherDiscountTypeFixed, VoucherDiscountTypePercentage, VoucherDiscountTypeShipping:
+		return true
+	default:
+		return false
+	}
+}
 
 type VoucherSortField string
 

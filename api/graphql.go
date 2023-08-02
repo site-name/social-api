@@ -35,6 +35,7 @@ func (api *API) InitGraphql() error {
 		graphql.UseStringDescriptions(),
 		graphql.Directives(
 			&HasRolesDirective{},
+			&HasRoleAnyDirective{},
 			&HasPermissionsDirective{},
 			&AuthenticatedDirective{},
 			&HasPermissionAnyDirective{},

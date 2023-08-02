@@ -22,34 +22,34 @@ const (
 )
 
 type OrderLine struct {
-	Id                                string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CreateAt                          int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"` // for database ordering
-	OrderID                           string           `json:"order_id" gorm:"type:uuid;column:OrderID"`                          // NOTE editable
-	VariantID                         *string          `json:"variant_id" gorm:"type:uuid;column:VariantID"`                      // FOREIGN KEY ProductVariant
-	ProductName                       string           `json:"product_name" gorm:"type:varchar(386);column:ProductName"`
-	VariantName                       string           `json:"variant_name" gorm:"type:varchar(255);column:VariantName"`
-	TranslatedProductName             string           `json:"translated_product_name" gorm:"type:varchar(386);column:TranslatedProductName"`
-	TranslatedVariantName             string           `json:"translated_variant_name" gorm:"type:varchar(255);column:TranslatedVariantName"`
-	ProductSku                        *string          `json:"product_sku" gorm:"type:varchar(255);column:ProductSKU"`
-	ProductVariantID                  *string          `json:"product_variant_id" gorm:"type:varchar(255);column:ProductVariantID"` // GraphQL ID used as fallback when product SKU is not available
-	IsShippingRequired                bool             `json:"is_shipping_required" gorm:"column:IsShippingRequired"`
-	IsGiftcard                        bool             `json:"is_gift_card" gorm:"column:IsGiftCard"`
-	Quantity                          int              `json:"quantity" gorm:"type:integer;check:Quantity >= 1;column:Quantity"`
-	QuantityFulfilled                 int              `json:"quantity_fulfilled" gorm:"type:integer;check:QuantityFulfilled >= 0;column:QuantityFulfilled"`
-	Currency                          string           `json:"currency" gorm:"type:varchar(3);column:Currency"`
-	UnitDiscountAmount                *decimal.Decimal `json:"unit_discount_amount" gorm:"default:0;column:UnitDiscountAmount"`    // default 0
-	UnitDiscountType                  DiscountType     `json:"unit_discount_type" gorm:"type:varchar(10);column:UnitDiscountType"` // default 'fixed'
-	UnitDiscountReason                *string          `json:"unit_discount_reason" gorm:"column:UnitDiscountReason"`
-	UnitPriceNetAmount                *decimal.Decimal `json:"unit_price_net_amount" gorm:"default:0;column:UnitPriceNetAmount"`     // default 0
-	UnitDiscountValue                 *decimal.Decimal `json:"unit_discount_value" gorm:"default:0;column:UnitDiscountValue"`        // store the value of the applied discount. Like 20%, default 0
-	UnitPriceGrossAmount              *decimal.Decimal `json:"unit_price_gross_amount" gorm:"default:0;column:UnitPriceGrossAmount"` // default 0
-	TotalPriceNetAmount               *decimal.Decimal `json:"total_price_net_amount" gorm:"column:TotalPriceNetAmount"`
-	TotalPriceGrossAmount             *decimal.Decimal `json:"total_price_gross_amount" gorm:"column:TotalPriceGrossAmount"`
-	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal `json:"undiscounted_unit_price_gross_amount" gorm:"column:UnDiscountedUnitPriceGrossAmount;default:0"`
-	UnDiscountedUnitPriceNetAmount    *decimal.Decimal `json:"undiscounted_unit_price_net_amount" gorm:"column:UnDiscountedUnitPriceNetAmount;default:0"`
-	UnDiscountedTotalPriceGrossAmount *decimal.Decimal `json:"undiscounted_total_price_gross_amount" gorm:"column:UnDiscountedTotalPriceGrossAmount;default:0"` // default 0
-	UnDiscountedTotalPriceNetAmount   *decimal.Decimal `json:"undiscounted_total_price_net_amount" gorm:"column:UnDiscountedTotalPriceNetAmount;default:0"`     // default 0
-	TaxRate                           *decimal.Decimal `json:"tax_rate" gorm:"column:TaxRate"`                                                                  // decimal places: 4, default: 0
+	Id                                string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt                          int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"` // for database ordering
+	OrderID                           string            `json:"order_id" gorm:"type:uuid;column:OrderID"`                          // NOTE editable
+	VariantID                         *string           `json:"variant_id" gorm:"type:uuid;column:VariantID"`                      // FOREIGN KEY ProductVariant
+	ProductName                       string            `json:"product_name" gorm:"type:varchar(386);column:ProductName"`
+	VariantName                       string            `json:"variant_name" gorm:"type:varchar(255);column:VariantName"`
+	TranslatedProductName             string            `json:"translated_product_name" gorm:"type:varchar(386);column:TranslatedProductName"`
+	TranslatedVariantName             string            `json:"translated_variant_name" gorm:"type:varchar(255);column:TranslatedVariantName"`
+	ProductSku                        *string           `json:"product_sku" gorm:"type:varchar(255);column:ProductSKU"`
+	ProductVariantID                  *string           `json:"product_variant_id" gorm:"type:varchar(255);column:ProductVariantID"` // GraphQL ID used as fallback when product SKU is not available
+	IsShippingRequired                bool              `json:"is_shipping_required" gorm:"column:IsShippingRequired"`
+	IsGiftcard                        bool              `json:"is_gift_card" gorm:"column:IsGiftCard"`
+	Quantity                          int               `json:"quantity" gorm:"type:integer;check:Quantity >= 1;column:Quantity"`
+	QuantityFulfilled                 int               `json:"quantity_fulfilled" gorm:"type:integer;check:QuantityFulfilled >= 0;column:QuantityFulfilled"`
+	Currency                          string            `json:"currency" gorm:"type:varchar(3);column:Currency"`
+	UnitDiscountAmount                *decimal.Decimal  `json:"unit_discount_amount" gorm:"default:0;column:UnitDiscountAmount"`    // default 0
+	UnitDiscountType                  DiscountValueType `json:"unit_discount_type" gorm:"type:varchar(10);column:UnitDiscountType"` // default 'fixed'
+	UnitDiscountReason                *string           `json:"unit_discount_reason" gorm:"column:UnitDiscountReason"`
+	UnitPriceNetAmount                *decimal.Decimal  `json:"unit_price_net_amount" gorm:"default:0;column:UnitPriceNetAmount"`     // default 0
+	UnitDiscountValue                 *decimal.Decimal  `json:"unit_discount_value" gorm:"default:0;column:UnitDiscountValue"`        // store the value of the applied discount. Like 20%, default 0
+	UnitPriceGrossAmount              *decimal.Decimal  `json:"unit_price_gross_amount" gorm:"default:0;column:UnitPriceGrossAmount"` // default 0
+	TotalPriceNetAmount               *decimal.Decimal  `json:"total_price_net_amount" gorm:"column:TotalPriceNetAmount"`
+	TotalPriceGrossAmount             *decimal.Decimal  `json:"total_price_gross_amount" gorm:"column:TotalPriceGrossAmount"`
+	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal  `json:"undiscounted_unit_price_gross_amount" gorm:"column:UnDiscountedUnitPriceGrossAmount;default:0"`
+	UnDiscountedUnitPriceNetAmount    *decimal.Decimal  `json:"undiscounted_unit_price_net_amount" gorm:"column:UnDiscountedUnitPriceNetAmount;default:0"`
+	UnDiscountedTotalPriceGrossAmount *decimal.Decimal  `json:"undiscounted_total_price_gross_amount" gorm:"column:UnDiscountedTotalPriceGrossAmount;default:0"` // default 0
+	UnDiscountedTotalPriceNetAmount   *decimal.Decimal  `json:"undiscounted_total_price_net_amount" gorm:"column:UnDiscountedTotalPriceNetAmount;default:0"`     // default 0
+	TaxRate                           *decimal.Decimal  `json:"tax_rate" gorm:"column:TaxRate"`                                                                  // decimal places: 4, default: 0
 
 	UnitDiscount           *goprices.Money      `json:"unit_dsicount" gorm:"-"`
 	UnDiscountedTotalPrice *goprices.TaxedMoney `json:"undiscounted_total_price" gorm:"-"`
@@ -245,7 +245,7 @@ func (o *OrderLine) commonPre() {
 		o.UnitDiscountReason = NewPrimitive(SanitizeUnicode(*o.UnitDiscountReason))
 	}
 	if !o.UnitDiscountType.IsValid() {
-		o.UnitDiscountType = FIXED
+		o.UnitDiscountType = DISCOUNT_VALUE_TYPE_FIXED
 	}
 	if o.UnitDiscountValue == nil {
 		o.UnitDiscountValue = &decimal.Zero

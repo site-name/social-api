@@ -479,7 +479,11 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 
 	filterOptions := &model.AttributeFilterOption{}
 	if args.Filter != nil {
-		filterOptions = args.Filter.toSystemAttributeFilterOption()
+		var appErr *model.AppError
+		filterOptions, appErr = args.Filter.parse("ProductType.AvailableAttributes")
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	// this is needed

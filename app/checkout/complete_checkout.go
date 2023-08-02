@@ -558,7 +558,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 		// relations
 		_, appErr := s.srv.DiscountService().UpsertOrderDiscount(transaction, &model.OrderDiscount{
 			Type:           model.VOUCHER,
-			ValueType:      model.FIXED,
+			ValueType:      model.DISCOUNT_VALUE_TYPE_FIXED,
 			Value:          checkout.DiscountAmount,
 			Name:           checkout.DiscountName,
 			TranslatedName: checkout.TranslatedDiscountName,

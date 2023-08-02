@@ -132,4 +132,5 @@ type DiscountService interface {
 	UpsertSale(transaction *gorm.DB, sale *model.Sale) (*model.Sale, *model.AppError)
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
+	ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError
 }

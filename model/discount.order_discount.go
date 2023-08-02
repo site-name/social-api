@@ -33,7 +33,7 @@ type OrderDiscount struct {
 	Id             string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	OrderID        *string           `json:"order_id" gorm:"type:uuid;column:OrderID"`
 	Type           OrderDiscountType `json:"type" gorm:"type:varchar(10);column:Type"`
-	ValueType      DiscountType      `json:"value_type" gorm:"type:varchar(10);column:ValueType"`
+	ValueType      DiscountValueType `json:"value_type" gorm:"type:varchar(10);column:ValueType"`
 	Value          *decimal.Decimal  `json:"value" gorm:"default:0;column:Value"`              // default 0
 	AmountValue    *decimal.Decimal  `json:"amount_value" gorm:"default:0;column:AmountValue"` // default 0
 	Currency       string            `json:"currency" gorm:"type:varchar(3);column:Currency"`
@@ -109,7 +109,7 @@ func (o *OrderDiscount) commonPre() {
 		o.Type = MANUAL
 	}
 	if o.ValueType == "" {
-		o.ValueType = FIXED
+		o.ValueType = DISCOUNT_VALUE_TYPE_FIXED
 	}
 	if o.Value == nil {
 		o.Value = &decimal.Zero

@@ -490,11 +490,11 @@ type (
 			IsPublished     bool
 			PublicationDate *timemodule.Time
 		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
-		PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder                                                              // PublishedWithVariants finds and returns products.
-		VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                    // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
-		SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                        // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                // FilterByQuery finds and returns products with given query, limit, createdAtGt
+		PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder                                                                                    // PublishedWithVariants finds and returns products.
+		VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                          // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
+		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                                              // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
+		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                                      // FilterByQuery finds and returns products with given query, limit, createdAtGt
 		CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error)
 	}
 )
@@ -650,9 +650,10 @@ type (
 		FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
-		Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error)        // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
-		Get(voucherChannelListingID string) (*model.VoucherChannelListing, error)                               // Get finds a listing with given id, then returns it with an error
-		FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
+		Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
+		Get(voucherChannelListingID string) (*model.VoucherChannelListing, error)                                                   // Get finds a listing with given id, then returns it with an error
+		FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error)                     // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
+		Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error
 	}
 	DiscountVoucherStore interface {
 		ScanFields(voucher *model.Voucher) []interface{}
@@ -662,6 +663,7 @@ type (
 		ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error)                    // ExpiredVouchers finds and returns vouchers that are expired before given date
 		GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
 		ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
+		Delete(transaction *gorm.DB, ids []string) error
 	}
 	VoucherCustomerStore interface {
 		Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error)                  // Save inserts given voucher customer instance into database ands returns it

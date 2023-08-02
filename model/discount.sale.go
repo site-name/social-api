@@ -12,13 +12,13 @@ import (
 )
 
 type Sale struct {
-	Id        string       `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
-	Name      string       `json:"name" gorm:"type:varchar(255);column:Name"`
-	Type      DiscountType `json:"type" gorm:"type:varchar(10);column:Type"` // DEFAULT `fixed`
-	StartDate time.Time    `json:"start_date" gorm:"column:StartDate"`
-	EndDate   *time.Time   `json:"end_date" gorm:"column:EndDate"`
-	CreateAt  int64        `json:"create_at" gorm:"autoCreateTime:milli;column:CreateAt"`
-	UpdateAt  int64        `json:"update_at" gorm:"autoUpdateTime:milli;autoCreateTime:milli;column:UpdateAt"`
+	Id        string            `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	Name      string            `json:"name" gorm:"type:varchar(255);column:Name"`
+	Type      DiscountValueType `json:"type" gorm:"type:varchar(10);column:Type"` // DEFAULT `fixed`
+	StartDate time.Time         `json:"start_date" gorm:"column:StartDate"`
+	EndDate   *time.Time        `json:"end_date" gorm:"column:EndDate"`
+	CreateAt  int64             `json:"create_at" gorm:"autoCreateTime:milli;column:CreateAt"`
+	UpdateAt  int64             `json:"update_at" gorm:"autoUpdateTime:milli;autoCreateTime:milli;column:UpdateAt"`
 	ModelMetadata
 
 	Categories      Categories      `json:"-" gorm:"many2many:SaleCategories"`
@@ -89,7 +89,7 @@ func (s *Sale) commonPre() {
 		s.StartDate = time.Now()
 	}
 	if !s.Type.IsValid() {
-		s.Type = FIXED
+		s.Type = DISCOUNT_VALUE_TYPE_FIXED
 	}
 	s.Name = SanitizeUnicode(s.Name)
 }

@@ -13,7 +13,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, channelId: String, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
+  attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, channel: String, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
   attribute(id: String, slug: String): Attribute
 }
 

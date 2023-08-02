@@ -3648,6 +3648,26 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB,
 
 }
 
+func (s *RetryLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+
+	tries := 0
+	for {
+		err := s.DiscountVoucherStore.Delete(transaction, ids)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
 
 	tries := 0
@@ -6102,11 +6122,11 @@ func (s *RetryLayerProductStore) Save(prd *model.Product) (*model.Product, error
 
 }
 
-func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
+		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 		if err == nil {
 			return result, nil
 		}
@@ -9356,6 +9376,26 @@ func (s *RetryLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]
 
 }
 
+func (s *RetryLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+
+	tries := 0
+	for {
+		err := s.VoucherChannelListingStore.Delete(transaction, option)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 
 	tries := 0
@@ -9396,11 +9436,11 @@ func (s *RetryLayerVoucherChannelListingStore) Get(voucherChannelListingID strin
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
+		result, err := s.VoucherChannelListingStore.Upsert(transaction, voucherChannelListings)
 		if err == nil {
 			return result, nil
 		}

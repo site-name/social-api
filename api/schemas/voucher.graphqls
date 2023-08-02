@@ -1,17 +1,25 @@
 extend type Mutation {
   voucherCreate(input: VoucherInput!): VoucherCreate @hasRoles(roles: [shop_admin])
   voucherDelete(id: String!): VoucherDelete @hasRoles(roles: [shop_admin])
-  voucherBulkDelete(ids: [String!]!): VoucherBulkDelete
-  voucherUpdate(id: String!, input: VoucherInput!): VoucherUpdate
-  voucherCataloguesAdd(id: String!, input: CatalogueInput!): VoucherAddCatalogues
-  voucherCataloguesRemove(id: String!, input: CatalogueInput!): VoucherRemoveCatalogues
-  voucherTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): VoucherTranslate
-  voucherChannelListingUpdate(id: String!, input: VoucherChannelListingInput!): VoucherChannelListingUpdate
+  voucherBulkDelete(ids: [String!]!): VoucherBulkDelete @hasRoles(roles: [shop_admin])
+  voucherUpdate(id: String!, input: VoucherInput!): VoucherUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  voucherCataloguesAdd(id: String!, input: CatalogueInput!): VoucherAddCatalogues @hasRoleAny(roles: [shop_admin, shop_staff])
+  voucherCataloguesRemove(id: String!, input: CatalogueInput!): VoucherRemoveCatalogues @hasRoleAny(roles: [shop_admin, shop_staff])
+  voucherTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): VoucherTranslate @authenticated
+  voucherChannelListingUpdate(id: String!, input: VoucherChannelListingInput!): VoucherChannelListingUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {
   voucher(id: String!, channel: String): Voucher
-  vouchers(filter: VoucherFilterInput, sortBy: VoucherSortingInput, query: String, channel: String, before: String, after: String, first: Int, last: Int): VoucherCountableConnection
+  vouchers(
+    filter: VoucherFilterInput, 
+    sortBy: VoucherSortingInput, 
+    channel: String, 
+    before: String, 
+    after: String, 
+    first: Int, 
+    last: Int
+  ): VoucherCountableConnection
 }
 
 type Voucher  {

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -389,30 +390,27 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	sale := sales[0]
 
 	// clean discount values
-	// addChannelIds := lo.Map(args.Input.AddChannels, func(ac *SaleChannelListingAddInput, _ int) string { return ac.ChannelID })
 	allChannels, appErr := embedCtx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{})
 	if appErr != nil {
 		return nil, appErr
 	}
-
 	// keys are channel ids, values are channels' according currency units
 	channelCurrenciesMap := lo.SliceToMap(allChannels, func(c *model.Channel) (string, string) { return c.Id, c.Currency })
 
 	for _, addChannelObj := range args.Input.AddChannels {
-		if addChannelObj.DiscountValue.IsZero() {
+		if addChannelObj == nil || decimal.Decimal(addChannelObj.DiscountValue).IsZero() {
 			continue // TODO: check if this is right
 		}
 
 		switch sale.Type {
-		case model.FIXED:
+		case model.DISCOUNT_VALUE_TYPE_FIXED:
 			currencyPrecision, _ := goprices.GetCurrencyPrecision(channelCurrenciesMap[addChannelObj.ChannelID])
 			roundedDiscountValue := decimal.Decimal(addChannelObj.DiscountValue).Round(int32(currencyPrecision))
 			addChannelObj.DiscountValue = PositiveDecimal(roundedDiscountValue)
 
-		case model.PERCENTAGE:
-			hundred := decimal.NewFromInt32(100)
-			if !addChannelObj.DiscountValue.LessThanOrEqual(PositiveDecimal(hundred)) { // NOTE: > 100
-				// discount cannot be grater than 100. Raise error here
+		case model.DISCOUNT_VALUE_TYPE_PERCENTAGE:
+			if decimal.Decimal(addChannelObj.DiscountValue).GreaterThan(decimal.NewFromInt(100)) {
+				// discount can't > 100%
 				return nil, model.NewAppError("SaleChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "discount cannot be greater than 100%", http.StatusBadRequest)
 			}
 		}
@@ -480,7 +478,6 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
 		Conditions: squirrel.Expr(model.SaleTableName+".Id = ?", args.Id),
 	})
@@ -492,7 +489,6 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 }
 
 // TODO: Check if we need any role or permission to see this
-// NOTE: Sales are ordered by Name
 func (r *Resolver) Sales(ctx context.Context, args struct {
 	Filter  *SaleFilterInput
 	SortBy  *SaleSortingInput
@@ -505,7 +501,7 @@ func (r *Resolver) Sales(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	var saleFilterOpts *model.SaleFilterOption
+	var saleFilterOpts = &model.SaleFilterOption{}
 	if args.Filter != nil {
 		var appErr *model.AppError
 		saleFilterOpts, appErr = args.Filter.Parse()
@@ -524,10 +520,33 @@ func (r *Resolver) Sales(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	keyFunc := func(s *model.Sale) string { return s.Name }
-	res, appErr := newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Resolver.Sales")
-	if appErr != nil {
-		return nil, appErr
+	// keyFunc := func(s *model.Sale) string { return s.Name }
+	// res, appErr := newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).
+	// 	parse("Resolver.Sales")
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	var res *CountableConnection[*Sale]
+
+	if args.SortBy != nil {
+		switch args.SortBy.Field {
+		case SaleSortFieldName:
+			keyFunc := func(s *model.Sale) string { return s.Name }
+			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+		case SaleSortFieldStartDate:
+			keyFunc := func(s *model.Sale) time.Time { return s.StartDate }
+			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+		case SaleSortFieldEndDate:
+			keyFunc := func(s *model.Sale) *time.Time { return s.EndDate }
+			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+		case SaleSortFieldValue:
+			keyFunc := func(s *model.Sale) string { return s.Name }
+			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+		case SaleSortFieldType:
+			keyFunc := func(s *model.Sale) string { return string(s.Type) }
+			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+		}
 	}
 
 	return (*SaleCountableConnection)(unsafe.Pointer(res)), nil

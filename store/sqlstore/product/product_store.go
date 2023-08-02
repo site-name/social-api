@@ -443,11 +443,15 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 }
 
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) {
+func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) {
 	query := ps.GetQueryBuilder().
 		Select(model.ProductTableName + ".*").
 		Distinct().
 		From(model.ProductTableName)
+
+	if transaction != nil {
+		query = query.Suffix("FOR UPDATE")
+	}
 
 	orCondition := squirrel.Or{}
 
@@ -475,8 +479,12 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 		return nil, errors.Wrap(err, "SelectForUpdateDiscountedPricesOfCatalogues_ToSql")
 	}
 
+	if transaction == nil {
+		transaction = ps.GetMaster()
+	}
+
 	var products model.Products
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
+	err = transaction.Raw(queryString, args...).Scan(&products).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given params")
 	}

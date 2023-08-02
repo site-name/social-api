@@ -41,8 +41,9 @@ type ChannelFilterOption struct {
 	ShippingZoneChannels_ShippingZoneID squirrel.Sqlizer // INNER JOIN ShippingZoneChannels ON ... WHERE ChannelShippingZones.ShippingZoneID ...
 	AnnotateHasOrders                   bool             // to check if there are at least 1 order associated to this channel
 
-	Conditions squirrel.Sqlizer
-	Limit      int
+	VoucherChannelListing_VoucherID squirrel.Sqlizer // INNER JOIN VoucherChannelListings ON ... WHERE VoucherChannelListings.VoucherID ...
+	Conditions                      squirrel.Sqlizer
+	Limit                           int
 }
 
 type Channels []*Channel

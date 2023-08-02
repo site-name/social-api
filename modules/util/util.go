@@ -3,7 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -50,18 +50,9 @@ func OptionalBoolOf(b bool) OptionalBool {
 }
 
 type Ordered interface {
-	uint8 |
-		int |
-		uint |
-		int8 |
-		int16 |
-		int32 |
-		int64 |
-		uint16 |
-		uint32 |
-		uint64 |
-		float32 |
-		float64 |
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+		~float32 | ~float64 |
 		~string
 }
 
@@ -176,7 +167,7 @@ func GetURLWithCache(url string, cache *RequestCache, skip bool) ([]byte, error)
 		return nil, errors.Errorf("Fetching notices failed with status code %d", resp.StatusCode)
 	}
 
-	cache.Data, err = ioutil.ReadAll(resp.Body)
+	cache.Data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		cache.Data = nil
 		return nil, err

@@ -27,7 +27,7 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *
 		return nil, model.NewAppError("GetSaleDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
 
-	if sale.Type == model.FIXED {
+	if sale.Type == model.DISCOUNT_VALUE_TYPE_FIXED {
 		discountAmount := &goprices.Money{ // can use directly here since sale channel listings are validated before saving
 			Amount:   *saleChannelListing.DiscountValue,
 			Currency: saleChannelListing.Currency,
@@ -111,7 +111,7 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError {
 	err := s.srv.Store.DiscountSale().ToggleSaleRelations(transaction, model.Sales{{Id: saleID}}, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
 	if err != nil {
-		return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.category.app_error", nil, "failed to insert sale-collection relations", http.StatusInternalServerError)
+		return model.NewAppError("ToggleSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale relations", http.StatusInternalServerError)
 	}
 
 	return nil

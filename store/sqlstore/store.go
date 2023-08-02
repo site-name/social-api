@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/store/sqlstore/account"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -542,6 +543,7 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		&model.CustomerNote{},                 //
 		&model.AppToken{},                     //
 		&model.Session{},                      //
+		&account.Role{},                       //
 		&model.Attribute{},                    // attribute
 		&model.AttributeValue{},               //
 		&model.AttributeTranslation{},         //

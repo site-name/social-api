@@ -190,7 +190,7 @@ func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, 
 	s.srv.Go(func() {
 		appErr := s.DoAnalyticCategories()
 		if appErr != nil {
-			slog.Error("failed to do category analytic", slog.Err(appErr))
+			slog.Error("failed to do category analyse", slog.Err(appErr))
 		}
 	})
 

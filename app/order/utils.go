@@ -142,7 +142,7 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorm.DB, order *mo
 		discountValue := orderDiscount.Value
 		amount := orderDiscount.Amount
 
-		if (orderDiscount.ValueType == model.PERCENTAGE || currentTotal.LessThan(*discountValue)) &&
+		if (orderDiscount.ValueType == model.DISCOUNT_VALUE_TYPE_PERCENTAGE || currentTotal.LessThan(*discountValue)) &&
 			!amount.Amount.Equal(previousOrderDiscount.Amount.Amount) {
 			changedOrderDiscounts = append(changedOrderDiscounts, [2]*model.OrderDiscount{
 				previousOrderDiscount,
@@ -1299,7 +1299,7 @@ func (a *ServiceOrder) GetValidShippingMethodsForOrder(ord *model.Order) ([]*mod
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountType, value *decimal.Decimal) *model.AppError {
+func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
@@ -1342,7 +1342,7 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *mo
 }
 
 // ApplyDiscountToValue Calculate the price based on the provided values
-func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountType, currency string, priceToDiscount interface{}) (interface{}, error) {
+func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountValueType, currency string, priceToDiscount interface{}) (interface{}, error) {
 	// validate currency
 	money := &goprices.Money{
 		Amount:   *value,
@@ -1351,7 +1351,7 @@ func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType mo
 	// MOTE: we can safely ignore the error here since OrderDiscounts's Currencies were validated before saving into database
 
 	var discountCalculator types.DiscountCalculator
-	if valueType == model.FIXED {
+	if valueType == model.DISCOUNT_VALUE_TYPE_FIXED {
 		discountCalculator = a.srv.DiscountService().Decorator(money)
 	} else {
 		discountCalculator = a.srv.DiscountService().Decorator(value)
@@ -1462,7 +1462,7 @@ func (a *ServiceOrder) GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscou
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError) {
 	ord.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
@@ -1527,7 +1527,7 @@ func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorm.DB, ord *m
 // UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 //
 // `reason`, `valueType` can be empty. `value` can be nil
-func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 	ord.PopulateNonDbFields()
 	orderLine.PopulateNonDbFields()
 

@@ -1,17 +1,21 @@
 package discount
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 // UpsertVoucher update or insert given voucher
@@ -59,7 +63,7 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher *model.Voucher, channelID s
 	// chose the first listing since these result is already sorted during database look up
 	firstListing := voucherChannelListings[0]
 
-	if voucher.DiscountValueType == model.FIXED {
+	if voucher.DiscountValueType == model.DISCOUNT_VALUE_TYPE_FIXED {
 		return a.Decorator(&goprices.Money{
 			Amount:   *firstListing.DiscountValue,
 			Currency: firstListing.Currency,
@@ -146,10 +150,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *gopric
 	}
 
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
-		Conditions: squirrel.Eq{
-			model.VoucherChannelListingTableName + ".VoucherID": voucher.Id,
-			model.VoucherChannelListingTableName + ".ChannelID": channelID,
-		},
+		Conditions: squirrel.Expr(model.VoucherChannelListingTableName+".VoucherID = ? AND VoucherChannelListings.ChannelID = ?", voucher.Id, channelID),
 	})
 	if appErr != nil {
 		return
@@ -180,15 +181,10 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *gopric
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	voucherCustomers, appErr := a.VoucherCustomersByOption(&model.VoucherCustomerFilterOption{
-		Conditions: squirrel.Eq{
-			model.VoucherCustomerTableName + ".VoucherID":     voucher.Id,
-			model.VoucherCustomerTableName + ".CustomerEmail": customerEmail,
-		},
+		Conditions: squirrel.Expr(model.VoucherCustomerTableName+".VoucherID = ? AND VoucherCustomers.CustomerEmail = ?", voucher.Id, customerEmail),
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError { // must returns here since it's system error
-			return
-		}
+		return nil, appErr
 	}
 	if len(voucherCustomers) >= 1 {
 		return &model.NotApplicable{
@@ -205,7 +201,15 @@ func (a *ServiceDiscount) ValidateOnlyForStaff(voucher *model.Voucher, customerI
 		return nil, nil
 	}
 
-	// TODO: add staff relations
+	customer, appErr := a.srv.AccountService().UserById(context.Background(), customerID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// NOTE: shop admin also has staff role
+	if !lo.Contains(strings.Fields(customer.Roles), model.ShopStaffRoleId) {
+		return model.NewNotApplicable("ValidateOnlyForStaff", "this offer is for shop staffs only", nil, 0), nil
+	}
 
 	return nil, nil
 }
@@ -252,21 +256,15 @@ func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug strin
 	startOfDay := util.StartOfDay(date)
 	filterOptions := &model.VoucherFilterOption{
 		Conditions: squirrel.And{
-			squirrel.Or{
-				squirrel.Eq{model.VoucherTableName + ".UsageLimit": nil},
-				squirrel.Gt{model.VoucherTableName + ".UsageLimit": model.VoucherTableName + ".Used"},
-			},
-			squirrel.Or{
-				squirrel.Eq{model.VoucherTableName + ".EndDate": nil},
-				squirrel.GtOrEq{model.VoucherTableName + ".EndDate": startOfDay},
-			},
-			squirrel.LtOrEq{model.VoucherTableName + ".StartDate": startOfDay},
+			squirrel.Expr(model.VoucherTableName + ".UsageLimit IS NULL OR Vouchers.UsageLimit > Vouchers.Used"),
+			squirrel.Expr(model.VoucherTableName+".EndDate IS NULL OR Vouchers.EndDate >= ?", startOfDay),
+			squirrel.Expr(model.VoucherTableName+".StartDate <= ?", startOfDay),
 		},
 	}
 
 	if channelSlug != "" {
-		filterOptions.VoucherChannelListing_ChannelSlug = squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug}
-		filterOptions.VoucherChannelListing_ChannelIsActive = squirrel.Eq{model.ChannelTableName + ".IsActive": true}
+		filterOptions.VoucherChannelListing_ChannelSlug = squirrel.Expr(model.ChannelTableName+".Slug = ?", channelSlug)
+		filterOptions.VoucherChannelListing_ChannelIsActive = squirrel.Expr(model.ChannelTableName + ".IsActive")
 	}
 
 	return s.VouchersByOption(filterOptions)
@@ -280,4 +278,13 @@ func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) ([]*model.Voucher, *m
 	}
 
 	return expiredVouchers, nil
+}
+
+func (s *ServiceDiscount) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError {
+	err := s.srv.Store.DiscountVoucher().ToggleVoucherRelations(transaction, vouchers, collectionIDs, productIDs, variantIDs, categoryIDs, isDelete)
+	if err != nil {
+		return model.NewAppError("ToggleVoucherRelations", "app.discount.insert_voucher_relations.app_error", nil, "failed to insert voucher relations", http.StatusInternalServerError)
+	}
+
+	return nil
 }

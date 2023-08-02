@@ -99,7 +99,7 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption)
 			query = query.Where(option.VoucherChannelListing_ChannelIsActive)
 		}
 	}
-	if option.ForUpdate && option.Trnsaction != nil {
+	if option.ForUpdate && option.Transaction != nil {
 		query = query.Suffix("FOR UPDATE")
 	}
 
@@ -114,8 +114,8 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 	}
 
 	runner := vs.GetReplica()
-	if option.Trnsaction != nil {
-		runner = option.Trnsaction
+	if option.Transaction != nil {
+		runner = option.Transaction
 	}
 
 	var vouchers []*model.Voucher
@@ -190,4 +190,13 @@ func (s *SqlVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers 
 	}
 
 	return nil
+}
+
+func (s *SqlVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	err := transaction.Raw("DELETE FROM "+model.VoucherTableName+" WHERE Id IN ?", ids).Error
+	return err
 }

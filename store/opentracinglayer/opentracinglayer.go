@@ -3381,6 +3381,24 @@ func (s *OpenTracingLayerDiscountSaleChannelListingStore) Upsert(transaction *go
 	return result, err
 }
 
+func (s *OpenTracingLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.DiscountVoucherStore.Delete(transaction, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.ExpiredVouchers")
@@ -5628,7 +5646,7 @@ func (s *OpenTracingLayerProductStore) Save(prd *model.Product) (*model.Product,
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
+func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.SelectForUpdateDiscountedPricesOfCatalogues")
 	s.Root.Store.SetContext(newCtx)
@@ -5637,7 +5655,7 @@ func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogu
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
+	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8625,6 +8643,24 @@ func (s *OpenTracingLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Va
 	return result, err
 }
 
+func (s *OpenTracingLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherChannelListingStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.VoucherChannelListingStore.Delete(transaction, option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherChannelListingStore.FilterbyOption")
@@ -8661,7 +8697,7 @@ func (s *OpenTracingLayerVoucherChannelListingStore) Get(voucherChannelListingID
 	return result, err
 }
 
-func (s *OpenTracingLayerVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
+func (s *OpenTracingLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherChannelListingStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -8670,7 +8706,7 @@ func (s *OpenTracingLayerVoucherChannelListingStore) Upsert(voucherChannelListin
 	}()
 
 	defer span.Finish()
-	result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
+	result, err := s.VoucherChannelListingStore.Upsert(transaction, voucherChannelListings)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

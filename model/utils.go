@@ -469,7 +469,7 @@ func NewPromoCode() string {
 	return fmt.Sprintf("%s-%s-%s", raw[:4], raw[4:8], raw[8:12])
 }
 
-// code must has format of XXXX-XXXX-XXXX to satify this pattern
+// code must has format of XXXX-XXXX-XXXX to satisfy this pattern
 var PromoCodeRegex = regexp.MustCompile(`^([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$`)
 
 // NewId generate new uuid string value

@@ -69,6 +69,11 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 			InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").
 			Where(option.ShippingZoneChannels_ShippingZoneID)
 	}
+	if option.VoucherChannelListing_VoucherID != nil {
+		query = query.
+			InnerJoin(model.VoucherChannelListingTableName + " ON VoucherChannelListings.ChannelID = Channels.Id").
+			Where(option.VoucherChannelListing_VoucherID)
+	}
 	if option.Limit > 0 {
 		query = query.Limit(uint64(option.Limit))
 	}

@@ -28,39 +28,39 @@ const (
 	VOUCHER_TYPE_SPECIFIC_PRODUCT VoucherType = "specific_product"
 )
 
-type DiscountType string
+type DiscountValueType string
 
 // Applicable values for voucher's discount value type
 const (
-	FIXED      DiscountType = "fixed"
-	PERCENTAGE DiscountType = "percentage"
+	DISCOUNT_VALUE_TYPE_FIXED      DiscountValueType = "fixed"
+	DISCOUNT_VALUE_TYPE_PERCENTAGE DiscountValueType = "percentage"
 )
 
-func (e DiscountType) IsValid() bool {
+func (e DiscountValueType) IsValid() bool {
 	switch e {
-	case FIXED, PERCENTAGE:
+	case DISCOUNT_VALUE_TYPE_FIXED, DISCOUNT_VALUE_TYPE_PERCENTAGE:
 		return true
 	}
 	return false
 }
 
 type Voucher struct {
-	Id                       string       `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Type                     VoucherType  `json:"type" gorm:"type:varchar(20);column:Type"` // default to "entire_order"
-	Name                     *string      `json:"name" gorm:"type:varchar(255);column:Name"`
-	Code                     string       `json:"code" gorm:"type:varchar(16);column:Code"` // UNIQUE, has format of XXXX-XXXX-XXXX
-	UsageLimit               *int         `json:"usage_limit" gorm:"column:UsageLimit"`
-	Used                     int          `json:"used" gorm:"column:Used"` // not editable
-	StartDate                time.Time    `json:"start_date" gorm:"column:StartDate;autoCreateTime:milli"`
-	EndDate                  *time.Time   `json:"end_date" gorm:"column:EndDate"`
-	ApplyOncePerOrder        bool         `json:"apply_once_per_order" gorm:"column:ApplyOncePerOrder"`
-	ApplyOncePerCustomer     bool         `json:"apply_once_per_customer" gorm:"column:ApplyOncePerCustomer"`
-	OnlyForStaff             *bool        `json:"only_for_staff" gorm:"default:false;column:OnlyForStaff"` // default false
-	DiscountValueType        DiscountType `json:"discount_value_type" gorm:"type:varchar(10);column:DiscountValueType"`
-	Countries                string       `json:"countries" gorm:"type:varchar(1000);column:Countries"` // multiple. E.g: "VN US CN"
-	MinCheckoutItemsQuantity int          `json:"min_checkout_items_quantity" gorm:"column:MinCheckoutItemsQuantity"`
-	CreateAt                 int64        `json:"create_at" gorm:"autoCreateTime:milli;column:CreateAt"` // this field is for ordering
-	UpdateAt                 int64        `json:"update_at" gorm:"autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
+	Id                       string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Type                     VoucherType       `json:"type" gorm:"type:varchar(20);column:Type"` // default to "entire_order"
+	Name                     *string           `json:"name" gorm:"type:varchar(255);column:Name"`
+	Code                     string            `json:"code" gorm:"type:varchar(16);column:Code"` // UNIQUE, has format of XXXX-XXXX-XXXX
+	UsageLimit               *int              `json:"usage_limit" gorm:"column:UsageLimit"`
+	Used                     int               `json:"used" gorm:"column:Used"` // not editable
+	StartDate                time.Time         `json:"start_date" gorm:"column:StartDate;autoCreateTime:milli"`
+	EndDate                  *time.Time        `json:"end_date" gorm:"column:EndDate"`
+	ApplyOncePerOrder        bool              `json:"apply_once_per_order" gorm:"column:ApplyOncePerOrder"`
+	ApplyOncePerCustomer     bool              `json:"apply_once_per_customer" gorm:"column:ApplyOncePerCustomer"`
+	OnlyForStaff             *bool             `json:"only_for_staff" gorm:"default:false;column:OnlyForStaff"` // default false
+	DiscountValueType        DiscountValueType `json:"discount_value_type" gorm:"type:varchar(10);column:DiscountValueType"`
+	Countries                string            `json:"countries" gorm:"type:varchar(1000);column:Countries"` // multiple. E.g: "VN US CN"
+	MinCheckoutItemsQuantity int               `json:"min_checkout_items_quantity" gorm:"column:MinCheckoutItemsQuantity"`
+	CreateAt                 int64             `json:"create_at" gorm:"autoCreateTime:milli;column:CreateAt"` // this field is for ordering
+	UpdateAt                 int64             `json:"update_at" gorm:"autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
 	ModelMetadata
 
 	Products               Products                `json:"-" gorm:"many2many:VoucherProducts"`
@@ -81,7 +81,7 @@ type VoucherFilterOption struct {
 	VoucherChannelListing_ChannelIsActive squirrel.Sqlizer // INNER JOIN VoucherChannelListings ON ... INNER JOIN Channels ON ... WHERE Channels.IsActive ...
 	VoucherChannelListing_ChannelSlug     squirrel.Sqlizer // INNER JOIN VoucherChannelListings ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
 	ForUpdate                             bool             // this add FOR UPDATE to sql queries, NOTE: Only applied if Transaction field is non-nil
-	Trnsaction                            *gorm.DB
+	Transaction                           *gorm.DB
 }
 
 // ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
@@ -134,7 +134,7 @@ func (v *Voucher) commonPre() {
 		*v.Name = SanitizeUnicode(*v.Name)
 	}
 	if v.DiscountValueType == "" {
-		v.DiscountValueType = FIXED
+		v.DiscountValueType = DISCOUNT_VALUE_TYPE_FIXED
 	}
 	if !v.Type.IsValid() {
 		v.Type = VOUCHER_TYPE_ENTIRE_ORDER

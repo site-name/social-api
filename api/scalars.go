@@ -84,10 +84,6 @@ func (p *PositiveDecimal) LessThanOrEqual(other PositiveDecimal) bool {
 		LessThanOrEqual(*(*decimal.Decimal)(unsafe.Pointer(&other)))
 }
 
-func (p *PositiveDecimal) IsZero() bool {
-	return (*decimal.Decimal)(unsafe.Pointer(p)).Equal(decimal.Zero)
-}
-
 // Date implementes custom graphql scalar Date
 // Date includes (Year, Month, Date) only
 type Date struct {

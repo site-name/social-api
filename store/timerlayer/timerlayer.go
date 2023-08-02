@@ -3119,6 +3119,22 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB,
 	return result, err
 }
 
+func (s *TimerLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+	start := timemodule.Now()
+
+	err := s.DiscountVoucherStore.Delete(transaction, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
 	start := timemodule.Now()
 
@@ -5136,10 +5152,10 @@ func (s *TimerLayerProductStore) Save(prd *model.Product) (*model.Product, error
 	return result, err
 }
 
-func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
+	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7836,6 +7852,22 @@ func (s *TimerLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]
 	return result, err
 }
 
+func (s *TimerLayerVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.VoucherChannelListingStore.Delete(transaction, option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 	start := timemodule.Now()
 
@@ -7868,10 +7900,10 @@ func (s *TimerLayerVoucherChannelListingStore) Get(voucherChannelListingID strin
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
+	result, err := s.VoucherChannelListingStore.Upsert(transaction, voucherChannelListings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

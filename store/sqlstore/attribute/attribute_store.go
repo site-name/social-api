@@ -145,8 +145,8 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 			LeftJoin(model.AttributeVariantTableName + " ON AttributeVariants.AttributeID = Attributes.Id").
 			LeftJoin(model.AttributeProductTableName + " ON AttributeProducts.AttributeID = Attributes.Id").
 			Where(squirrel.Or{
-				squirrel.Eq{"AttributeVariants.ProductTypeID": productTypeIDs},
-				squirrel.Eq{"AttributeProducts.ProductTypeID": productTypeIDs},
+				squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+				squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
 			})
 	}
 

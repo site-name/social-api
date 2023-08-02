@@ -12,7 +12,7 @@ type SqlVoucherChannelListingStore struct {
 }
 
 var VoucherChannelListingDuplicateList = []string{
-	"VoucherID", "ChannelID", "voucherchannellistings_voucherid_channelid_key",
+	"VoucherID", "ChannelID", "voucherid_channelid_key",
 }
 
 func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannelListingStore {
@@ -20,23 +20,30 @@ func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannel
 }
 
 // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
-func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
-	var err error
-	if voucherChannelListing.Id == "" {
-		err = vcls.GetMaster().Create(voucherChannelListing).Error
-	} else {
-		// keep non-editable fields intact
-		// Refer to https://gorm.io/docs/update.html#Updates-multiple-columns
-		voucherChannelListing.CreateAt = 0
-		err = vcls.GetMaster().Table(model.VoucherChannelListingTableName).Updates(voucherChannelListing).Error
+func (vcls *SqlVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) {
+	if transaction == nil {
+		transaction = vcls.GetMaster()
 	}
-	if err != nil {
-		if vcls.IsUniqueConstraintError(err, VoucherChannelListingDuplicateList) {
-			return nil, store.NewErrInvalidInput(model.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
+
+	for _, listing := range voucherChannelListings {
+		var err error
+		if listing.Id == "" {
+			err = transaction.Create(listing).Error
+		} else {
+			// keep non-editable fields intact
+			// Refer to https://gorm.io/docs/update.html#Updates-multiple-columns
+			listing.CreateAt = 0
+			err = transaction.Model(listing).Updates(listing).Error
 		}
-		return nil, errors.Wrap(err, "failed to upsert voucher channel listing")
+		if err != nil {
+			if vcls.IsUniqueConstraintError(err, VoucherChannelListingDuplicateList) {
+				return nil, store.NewErrInvalidInput(model.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
+			}
+			return nil, errors.Wrap(err, "failed to upsert voucher channel listing")
+		}
 	}
-	return voucherChannelListing, nil
+
+	return voucherChannelListings, nil
 }
 
 // Get finds a listing with given id, then returns it with an error
@@ -63,4 +70,13 @@ func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherC
 	}
 
 	return res, nil
+}
+
+func (s *SqlVoucherChannelListingStore) Delete(transaction *gorm.DB, option *model.VoucherChannelListingFilterOption) error {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	err := transaction.Raw("DELETE FROM "+model.VoucherChannelListingTableName, store.BuildSqlizer(option.Conditions)...).Error
+	return err
 }

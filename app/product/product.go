@@ -33,7 +33,7 @@ func init() {
 // ProductById returns 1 product by given id
 func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model.AppError) {
 	return a.ProductByOption(&model.ProductFilterOption{
-		Conditions: squirrel.Eq{model.ProductTableName + ".Id": productID},
+		Conditions: squirrel.Expr(model.ProductTableName+".Id = ?", productID),
 	})
 }
 
@@ -64,7 +64,7 @@ func (a *ServiceProduct) ProductByOption(option *model.ProductFilterOption) (*mo
 // ProductsByVoucherID finds all products that have relationships with given voucher
 func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*model.Product, *model.AppError) {
 	products, appErr := a.ProductsByOption(&model.ProductFilterOption{
-		VoucherID: squirrel.Eq{model.VoucherProductTableName + ".VoucherID": voucherID},
+		VoucherID: squirrel.Expr(model.VoucherProductTableName+".VoucherID = ?", voucherID),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -90,10 +90,7 @@ func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *mo
 // ProductGetFirstImage returns first media of given product
 func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductMedia, *model.AppError) {
 	productMedias, appErr := a.ProductMediasByOption(&model.ProductMediaFilterOption{
-		Conditions: squirrel.And{
-			squirrel.Eq{model.ProductMediaTableName + ".ProductID": productID},
-			squirrel.Eq{model.ProductMediaTableName + ".Type": model.IMAGE},
-		},
+		Conditions: squirrel.Expr(model.ProductMediaTableName+".ProductID = ? AND ProductMedias.Type = ?", productID, model.IMAGE),
 	})
 	if appErr != nil {
 		return nil, appErr

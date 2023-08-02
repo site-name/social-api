@@ -4,7 +4,7 @@ package util
 // 	"crypto/sha256"
 // 	"encoding/base64"
 // 	"fmt"
-// 	"io/ioutil"
+// 	"io"
 // 	"net/url"
 // 	"os"
 // 	"path"

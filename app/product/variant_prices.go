@@ -221,7 +221,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, pr
 }
 
 func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
-	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
+	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
 		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
