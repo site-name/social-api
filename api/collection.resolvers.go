@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
@@ -33,17 +34,15 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	/* check if there is at least 1 product that has no variant */
-	productVariants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		Conditions: squirrel.Eq{model.ProductVariantTableName + ".ProductID": args.Products},
+	// validate all given products have variants
+	productsWithNoVariants, appErr := embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
+		Conditions:           squirrel.Eq{model.ProductTableName + ".Id": args.Products},
+		HasNoProductVariants: true,
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
-	productsWithVariantsMap := lo.SliceToMap(productVariants, func(v *model.ProductVariant) (string, bool) { return v.ProductID, true })
-
-	if !lo.SomeBy(args.Products, func(pid string) bool { return !productsWithVariantsMap[pid] }) {
-		// meaning one of given products has no related productvariants
+	if len(productsWithNoVariants) > 0 {
 		return nil, model.NewAppError("CollectionAddProducts", "api.collection.cannot_add_products_without_variants.app_error", nil, "Cannot manage products without variants.", http.StatusBadRequest)
 	}
 
@@ -93,8 +92,9 @@ func (r *Resolver) CollectionCreate(ctx context.Context, args struct {
 	Input CollectionCreateInput
 }) (*CollectionCreate, error) {
 	// validate params
-	if !lo.EveryBy(args.Input.Products, model.IsValidId) {
-		return nil, model.NewAppError("CollectionCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+	appErr := args.Input.validate("CollectionCreate")
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	panic(fmt.Errorf("not implemented"))
@@ -129,8 +129,43 @@ func (r *Resolver) CollectionReorderProducts(ctx context.Context, args struct {
 	if !model.IsValidId(args.CollectionID) {
 		return nil, model.NewAppError("CollectionReorderProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CollectionID"}, "please provide valid collection id", http.StatusBadRequest)
 	}
+	for _, move := range args.Moves {
+		if !model.IsValidId(move.ProductID) {
+			return nil, model.NewAppError("CollectionReorderProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "moves"}, "please provide valid product ids for moving", http.StatusBadRequest)
+		}
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	collectionProducts, appErr := embedCtx.App.Srv().ProductService().CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
+		Conditions: squirrel.Expr(model.CollectionProductRelationTableName+".CollectionID = ?", args.CollectionID),
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// keys are product ids
+	var collectionProductsMap = lo.SliceToMap(collectionProducts, func(cp *model.CollectionProduct) (string, *model.CollectionProduct) { return cp.ProductID, cp })
+	var operations = map[string]*int32{}
+
+	for _, move := range args.Moves {
+		relation, found := collectionProductsMap[move.ProductID]
+		if !found {
+			return nil, model.NewAppError("CollectionReorderProducts", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "moves"}, "some products provided does not relate to the collection", http.StatusBadRequest)
+		}
+
+		operations[relation.Id] = move.SortOrder
+	}
+
+	// begin transaction
+	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tran.Error != nil {
+		return nil, model.NewAppError("CollectionReorderProducts", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tran.Rollback()
 
 	panic("not implemented")
+
+	return nil, nil
 }
 
 // NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
@@ -195,7 +230,7 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 	}
 
 	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
-		Conditions: squirrel.Eq{model.CollectionTableName + ".Id": args.CollectionID},
+		Conditions: squirrel.Expr(model.CollectionTableName+".Id = ?", args.CollectionID),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -215,6 +250,10 @@ func (r *Resolver) CollectionUpdate(ctx context.Context, args struct {
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("CollectionUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
 	}
+	appErr := args.Input.validate("CollectionUpdate")
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	panic(fmt.Errorf("not implemented"))
 }
@@ -227,28 +266,38 @@ func (r *Resolver) CollectionTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
-func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args struct {
+type CollectionChannelListingUpdateArgs struct {
 	Id    string
 	Input CollectionChannelListingUpdateInput
-}) (*CollectionChannelListingUpdate, error) {
-	// validate arguments
+}
+
+func (args *CollectionChannelListingUpdateArgs) validate() *model.AppError {
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+		return model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
 	}
 
-	// validate input
 	var addChannelIds util.AnyArray[string] = lo.Map(args.Input.AddChannels, func(item *PublishableChannelListingInput, _ int) string { return item.ChannelID })
 	var removeChannelIds util.AnyArray[string] = args.Input.RemoveChannels
 
 	if addChannelIds.InterSection(removeChannelIds).Len() > 0 {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input"}, "some channels are both being added and removed", http.StatusBadRequest)
+		return model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input"}, "some channels are both being added and removed", http.StatusBadRequest)
 	}
 	if addChannelIds.HasDuplicates() || !lo.EveryBy(addChannelIds, model.IsValidId) {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+		return model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
 	}
 	if removeChannelIds.HasDuplicates() || !lo.EveryBy(removeChannelIds, model.IsValidId) {
-		return nil, model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+		return model.NewAppError("CollectionChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+// NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
+func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args CollectionChannelListingUpdateArgs) (*CollectionChannelListingUpdate, error) {
+	// validate arguments
+	appErr := args.validate()
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -264,7 +313,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	err := embedCtx.App.Srv().Store.CollectionChannelListing().Delete(transaction, &model.CollectionChannelListingFilterOptions{
 		Conditions: squirrel.Eq{
 			model.CollectionChannelListingTableName + ".CollectionID": args.Id,
-			model.CollectionChannelListingTableName + ".ChannelID":    removeChannelIds,
+			model.CollectionChannelListingTableName + ".ChannelID":    args.Input.RemoveChannels,
 		},
 	})
 	if err != nil {
@@ -320,19 +369,41 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	}, nil
 }
 
-func (r *Resolver) Collection(ctx context.Context, args struct {
+type CollectionArgs struct {
 	Id      *string
 	Slug    *string
-	Channel *string
-}) (*Collection, error) {
+	Channel *string // this is channel slug
+}
+
+func (c *CollectionArgs) validate() *model.AppError {
+	if c.Id == nil && c.Slug == nil {
+		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id, slug"}, "please provide collection id or slug", http.StatusBadRequest)
+	}
+	if c.Id != nil && !model.IsValidId(*c.Id) {
+		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+	}
+	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
+		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid collection slug", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+func (r *Resolver) Collection(ctx context.Context, args CollectionArgs) (*Collection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Collections(ctx context.Context, args struct {
+type CollectionsArgs struct {
 	Filter  *CollectionFilterInput
 	SortBy  *CollectionSortingInput
 	Channel *string
 	GraphqlParams
-}) (*CollectionCountableConnection, error) {
+}
+
+func (c *CollectionsArgs) parse() (*model.CollectionFilterOption, *model.AppError) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *Resolver) Collections(ctx context.Context, args CollectionsArgs) (*CollectionCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

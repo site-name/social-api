@@ -112,7 +112,6 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
 	// validate params:
-
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid attribute id", http.StatusBadRequest)
 	}
@@ -395,10 +394,12 @@ func (r *Resolver) AttributeValueTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
+type AttributeReorderValuesArgs struct {
 	AttributeID string
 	Moves       []*ReorderInput
-}) (*AttributeReorderValues, error) {
+}
+
+func (r *Resolver) AttributeReorderValues(ctx context.Context, args AttributeReorderValuesArgs) (*AttributeReorderValues, error) {
 	// validate params
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeReorderValues", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
@@ -435,20 +436,53 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	}, nil
 }
 
-func (r *Resolver) Attributes(ctx context.Context, args struct {
-	Filter    *AttributeFilterInput
-	SortBy    *AttributeSortingInput
-	ChannelID *string
+type AttributesArgs struct {
+	Filter      *AttributeFilterInput
+	SortBy      *AttributeSortingInput
+	ChannelSlug *string
 	GraphqlParams
-}) (*AttributeCountableConnection, error) {
+}
+
+func (args *AttributesArgs) parse(where string) (*model.AttributeFilterOption, *model.AppError) {
+	where += "AttributesArgs.parse"
 	// validate params
-	var channelID string
-	if args.ChannelID != nil {
-		if !model.IsValidId(channelID) {
-			return nil, model.NewAppError("Attributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+	var attributeFilter = &model.AttributeFilterOption{}
+
+	if args.Filter != nil {
+		var appErr *model.AppError
+		attributeFilter, appErr = args.Filter.parse(where)
+		if appErr != nil {
+			return nil, appErr
 		}
 	}
 
+	if args.ChannelSlug != nil {
+		if !slug.IsSlug(*args.ChannelSlug) {
+			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
+		}
+		attributeFilter.ChannelSlug = args.ChannelSlug
+	}
+
+	// attributes are sorted by Names as default.
+	orderKey := model.AttributeTableName + ".Name"
+
+	if args.SortBy != nil {
+		if !args.SortBy.Field.IsValid() {
+			where += "SortBy"
+			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
+		}
+		orderKey = model.AttributeTableName + attributeSortFieldMap[args.SortBy.Field]
+	}
+
+	paginValue, appErr := args.GraphqlParams.parse(where, orderKey)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// NOTE: there are some cases that require to sort by
+}
+
+func (r *Resolver) Attributes(ctx context.Context, args AttributesArgs) (*AttributeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -459,21 +493,18 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 	if (args.Id == nil && args.Slug == nil) || (args.Id != nil && args.Slug != nil) {
 		return nil, model.NewAppError("Attribute", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/slug"}, "please provide id or slug, not both", http.StatusBadRequest)
 	}
-	var attrId string
-	if args.Id != nil {
-		if !model.IsValidId(attrId) {
-			return nil, model.NewAppError("Attribute", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
-		}
+	if args.Id != nil && !model.IsValidId(*args.Id) {
+		return nil, model.NewAppError("Attribute", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 	if args.Slug != nil && !slug.IsSlug(*args.Slug) {
 		return nil, model.NewAppError("Attribute", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
-	conditions := squirrel.Eq{}
-	if attrId != "" {
-		conditions[model.AttributeTableName+".Id"] = *args.Id
+	var conditions squirrel.Sqlizer
+	if args.Id != nil {
+		conditions = squirrel.Expr(model.AttributeTableName+".Id = ?", *args.Id)
 	} else {
-		conditions[model.AttributeTableName+".Slug"] = *args.Slug
+		conditions = squirrel.Expr(model.AttributeTableName+".Slug = ?", *args.Slug)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

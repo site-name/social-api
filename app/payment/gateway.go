@@ -20,6 +20,22 @@ const (
 	GENERIC_TRANSACTION_ERROR = "Transaction was unsuccessful."
 )
 
+// PaymentMethod is type for some methods of PluginManager.
+// They are:
+//
+// 1) AuthorizePayment
+//
+// 2) CapturePayment
+//
+// 3) ConfirmPayment
+//
+// 4) ProcessPayment
+//
+// 5) RefundPayment
+//
+// 6) VoidPayment
+type PaymentMethod func(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error)
+
 // raisePaymentError must be called right before function returns
 func (a *ServicePayment) raisePaymentError(where string, transaction model.PaymentTransaction) *model.PaymentError {
 	if !transaction.IsSuccess {
@@ -485,7 +501,7 @@ func (a *ServicePayment) ListGateways(
 	return manager.ListPaymentGateways("", nil, channelID, true)
 }
 
-func (a *ServicePayment) fetchGatewayResponse(paymentFunc interfaces.PaymentMethod, gateway string, paymentData model.PaymentData, channelID string) (res *model.GatewayResponse, errMsg string) {
+func (a *ServicePayment) fetchGatewayResponse(paymentFunc PaymentMethod, gateway string, paymentData model.PaymentData, channelID string) (res *model.GatewayResponse, errMsg string) {
 	res, _ = paymentFunc(gateway, paymentData, channelID)
 	gatewayErr := a.ValidateGatewayResponse(res)
 	if gatewayErr != nil {

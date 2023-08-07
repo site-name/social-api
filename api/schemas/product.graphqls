@@ -187,6 +187,15 @@ type ProductTranslate {
   product: Product
 }
 
+input AttributeInput {
+  slug: String!
+  values: [String!]!
+  valuesRange: IntRangeInput
+  dateTime: DateTimeRangeInput
+  date: DateRangeInput
+  boolean: Boolean
+}
+
 input ProductFilterInput {
   isPublished: Boolean
   collections: [String!]!
@@ -203,14 +212,15 @@ input ProductFilterInput {
   giftCard: Boolean
   ids: [String!]!
   hasPreorderedVariants: Boolean
-  channel: String
+  # channel: String # Deprecated: 
 }
 
 input ProductOrder {
   direction: OrderDirection!
-  channel: String
   attributeId: String
   field: ProductOrderField
+
+  # channel: String
 }
 
 type ProductCountableConnection {

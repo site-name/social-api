@@ -79,7 +79,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 	var groupBy []string
 
 	// parse option
-	if option.SelectForUpdate {
+	if option.SelectForUpdate && option.Transaction != nil {
 		var forUpdateOf string
 		if option.SelectForUpdateOf != "" {
 			forUpdateOf = " OF " + option.SelectForUpdateOf

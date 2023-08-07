@@ -2,6 +2,8 @@ package model
 
 import (
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 var (
@@ -22,13 +24,10 @@ const (
 	SystemManagerRoleId         = "system_manager"
 	ShopAdminRoleId             = "shop_admin"
 	ShopStaffRoleId             = "shop_staff"
-
-	RoleNameMaxLength        = 64
-	RoleDisplayNameMaxLength = 128
-	RoleDescriptionMaxLength = 1024
 )
 
-func init() {
+// initRoles is called be the init() function located in /model.init.go file
+func initRoles() {
 	NewSystemRoleIDs = []string{
 		SystemUserManagerRoleId,
 		SystemReadOnlyAdminRoleId,
@@ -274,17 +273,28 @@ func init() {
 }
 
 type Role struct {
-	Id            string   `json:"id"`
-	Name          string   `json:"name"`
-	DisplayName   string   `json:"display_name"`
-	Description   string   `json:"description"`
-	CreateAt      int64    `json:"create_at"`
-	UpdateAt      int64    `json:"update_at"`
-	DeleteAt      int64    `json:"delete_at"`
-	Permissions   []string `json:"permissions"`
-	SchemeManaged bool     `json:"scheme_managed"`
-	BuiltIn       bool     `json:"built_in"`
+	Id            string   `json:"id" gorm:"type:uuid;primaryKey;default:gen_randon_uuid();column:Id"`
+	Name          string   `json:"name" gorm:"type:varchar(64);column:Name"`
+	DisplayName   string   `json:"display_name" gorm:"type:varchar(128);column:DisplayName"`
+	Description   string   `json:"description" gorm:"type:varchar(1024);column:Description"`
+	CreateAt      int64    `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	UpdateAt      int64    `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
+	DeleteAt      int64    `json:"delete_at" gorm:"type:bigint;column:DeleteAt"`
+	Permissions   []string `json:"permissions" gorm:"-"`                            // this field got populated after db queries
+	Permmissions_ string   `json:"-" gorm:"column:Permmissions;type:varchar(5000)"` // this fiel got populated before upserting to database
+	SchemeManaged bool     `json:"scheme_managed" gorm:"column:SchemeManaged"`
+	BuiltIn       bool     `json:"built_in" gorm:"column:BuiltIn"`
 }
+
+func (c *Role) BeforeCreate(_ *gorm.DB) error {
+	c.Permmissions_ = strings.Join(c.Permissions, " ")
+	return nil
+}
+func (c *Role) BeforeUpdate(_ *gorm.DB) error {
+	c.Permmissions_ = strings.Join(c.Permissions, " ")
+	return nil
+}
+func (c *Role) TableName() string { return RoleTableName }
 
 type RolePatch struct {
 	Permissions *[]string `json:"permissions"`
@@ -293,18 +303,6 @@ type RolePatch struct {
 type RolePermissions struct {
 	RoleID      string
 	Permissions []string
-}
-
-func (r *Role) ToJSON() string {
-	return ModelToJson(r)
-}
-
-func RoleListToJson(r []*Role) string {
-	return ModelToJson(r)
-}
-
-func (r *RolePatch) ToJSON() string {
-	return ModelToJson(r)
 }
 
 func (r *Role) Patch(patch *RolePatch) {
@@ -346,24 +344,12 @@ func PermissionsChangedByPatch(role *Role, patch *RolePatch) []string {
 }
 
 func (r *Role) IsValid() bool {
-	if !IsValidId(r.Id) {
-		return false
-	}
-
 	return r.IsValidWithoutId()
 }
 
 // IsValidWithoutId check if current role is valid without checking its Id
 func (r *Role) IsValidWithoutId() bool {
 	if !IsValidRoleName(r.Name) {
-		return false
-	}
-
-	if r.DisplayName == "" || len(r.DisplayName) > RoleDisplayNameMaxLength {
-		return false
-	}
-
-	if len(r.Description) > RoleDescriptionMaxLength {
 		return false
 	}
 
@@ -409,7 +395,7 @@ func CleanRoleNames(roleNames []string) ([]string, bool) {
 //
 // contains no character other than English's 26 letters, 10 digits and underscore
 func IsValidRoleName(roleName string) bool {
-	if roleName == "" || len(roleName) > RoleNameMaxLength {
+	if roleName == "" {
 		return false
 	}
 

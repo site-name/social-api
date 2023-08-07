@@ -17,13 +17,13 @@ type DiscountVoucherStore struct {
 	mock.Mock
 }
 
-// AddVoucherRelations provides a mock function with given fields: transaction, vouchers, relations
-func (_m *DiscountVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations interface{}) error {
-	ret := _m.Called(transaction, vouchers, relations)
+// Delete provides a mock function with given fields: transaction, ids
+func (_m *DiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+	ret := _m.Called(transaction, ids)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, model.Vouchers, interface{}) error); ok {
-		r0 = rf(transaction, vouchers, relations)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) error); ok {
+		r0 = rf(transaction, ids)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -146,6 +146,20 @@ func (_m *DiscountVoucherStore) ScanFields(voucher *model.Voucher) []interface{}
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
 		}
+	}
+
+	return r0
+}
+
+// ToggleVoucherRelations provides a mock function with given fields: transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete
+func (_m *DiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+	ret := _m.Called(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, model.Vouchers, []string, []string, []string, []string, bool) error); ok {
+		r0 = rf(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
+	} else {
+		r0 = ret.Error(0)
 	}
 
 	return r0

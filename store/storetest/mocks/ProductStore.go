@@ -7,6 +7,7 @@ package mocks
 import (
 	model "github.com/sitename/sitename/model"
 	mock "github.com/stretchr/testify/mock"
+	gorm "gorm.io/gorm"
 
 	squirrel "github.com/Masterminds/squirrel"
 
@@ -264,25 +265,25 @@ func (_m *ProductStore) ScanFields(prd *model.Product) []interface{} {
 	return r0
 }
 
-// SelectForUpdateDiscountedPricesOfCatalogues provides a mock function with given fields: productIDs, categoryIDs, collectionIDs, variantIDs
-func (_m *ProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
-	ret := _m.Called(productIDs, categoryIDs, collectionIDs, variantIDs)
+// SelectForUpdateDiscountedPricesOfCatalogues provides a mock function with given fields: transaction, productIDs, categoryIDs, collectionIDs, variantIDs
+func (_m *ProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
+	ret := _m.Called(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 
 	var r0 []*model.Product
 	var r1 error
-	if rf, ok := ret.Get(0).(func([]string, []string, []string, []string) ([]*model.Product, error)); ok {
-		return rf(productIDs, categoryIDs, collectionIDs, variantIDs)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string, []string, []string, []string) ([]*model.Product, error)); ok {
+		return rf(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	}
-	if rf, ok := ret.Get(0).(func([]string, []string, []string, []string) []*model.Product); ok {
-		r0 = rf(productIDs, categoryIDs, collectionIDs, variantIDs)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string, []string, []string, []string) []*model.Product); ok {
+		r0 = rf(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.Product)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func([]string, []string, []string, []string) error); ok {
-		r1 = rf(productIDs, categoryIDs, collectionIDs, variantIDs)
+	if rf, ok := ret.Get(1).(func(*gorm.DB, []string, []string, []string, []string) error); ok {
+		r1 = rf(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	} else {
 		r1 = ret.Error(1)
 	}

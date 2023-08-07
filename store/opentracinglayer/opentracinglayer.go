@@ -3381,7 +3381,7 @@ func (s *OpenTracingLayerDiscountSaleChannelListingStore) Upsert(transaction *go
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+func (s *OpenTracingLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -3390,13 +3390,13 @@ func (s *OpenTracingLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids 
 	}()
 
 	defer span.Finish()
-	err := s.DiscountVoucherStore.Delete(transaction, ids)
+	result, err := s.DiscountVoucherStore.Delete(transaction, ids)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return err
+	return result, err
 }
 
 func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {

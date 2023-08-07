@@ -87,7 +87,6 @@ func (r *Resolver) CheckoutLines(ctx context.Context, args GraphqlParams) (*Chec
 		return nil, appErr
 	}
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	checkoutLines, appErr := embedCtx.App.Srv().CheckoutService().CheckoutLinesByOption(&model.CheckoutLineFilterOption{})
 	if appErr != nil {
 		return nil, appErr

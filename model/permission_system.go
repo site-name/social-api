@@ -687,7 +687,8 @@ func initSystemPermissionGroups() {
 	AllSystemScopedPermissions = append(AllSystemScopedPermissions, SysconsoleWritePermissions...)
 }
 
-func init() {
+// initPermissions is called inside init() function located in /model/init.go
+func initPermissions() {
 	initializeShopScopedPermissions()
 	initializeSystemScopedPermissions()
 

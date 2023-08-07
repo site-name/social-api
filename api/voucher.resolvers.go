@@ -10,6 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -48,15 +49,11 @@ func (r *Resolver) VoucherCreate(ctx context.Context, args struct{ Input Voucher
 
 // NOTE: Refer to ./schemas/voucher.graphqls for details on directives used
 func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) (*VoucherDelete, error) {
-	// validate params
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("VoucherDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid voucher id", http.StatusBadRequest)
-	}
-
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	err := embedCtx.App.Srv().Store.DiscountVoucher().Delete(nil, []string{args.Id})
+	_, err := r.VoucherBulkDelete(ctx, struct{ Ids []string }{Ids: []string{args.Id}})
 	if err != nil {
-		return nil, model.NewAppError("VoucherDelete", "app.discount.delete_voucher.app_error", nil, err.Error(), http.StatusInternalServerError)
+		appErr := err.(*model.AppError)
+		appErr.Where = "VoucherDelete"
+		return nil, appErr
 	}
 
 	return &VoucherDelete{
@@ -66,7 +63,20 @@ func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) 
 
 // NOTE: Refer to ./schemas/voucher.graphqls for details on directives used
 func (r *Resolver) VoucherBulkDelete(ctx context.Context, args struct{ Ids []string }) (*VoucherBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !lo.EveryBy(args.Ids, model.IsValidId) {
+		return nil, model.NewAppError("VoucherBulkDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide vald voucher ids", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	numDeleted, err := embedCtx.App.Srv().Store.DiscountVoucher().Delete(nil, args.Ids)
+	if err != nil {
+		return nil, model.NewAppError("VoucherBulkDelete", "app.discount.voucher_delete.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &VoucherBulkDelete{
+		Count: int32(numDeleted),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/voucher.graphqls for details on directives used
@@ -252,7 +262,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 			*addChannelObj.DiscountValue = *(*PositiveDecimal)(unsafe.Pointer(&roundedValue))
 
 		case model.DISCOUNT_VALUE_TYPE_PERCENTAGE:
-			// discount can't > 100
+			// discount percentage can't > 100
 			if decimal.Decimal(*addChannelObj.DiscountValue).GreaterThan(decimal.NewFromInt(100)) {
 				return nil, model.NewAppError("VoucherChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValue"}, "discount value can greater than 100", http.StatusBadRequest)
 			}
@@ -348,8 +358,49 @@ func (r *Resolver) Vouchers(ctx context.Context, args struct {
 		}
 	}
 
-	if args.Channel != nil && model.IsValidId(*args.Channel) {
+	if args.Channel != nil && slug.IsSlug(*args.Channel) {
 		voucherFilter.VoucherChannelListing_ChannelSlug = squirrel.Expr(model.ChannelTableName+".Slug = ?", *args.Channel)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	vouchers, appErr := embedCtx.App.Srv().DiscountService().VouchersByOption(voucherFilter)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if args.SortBy != nil {
+		switch args.SortBy.Field {
+		case VoucherSortFieldCode:
+			newGraphqlPaginator(vouchers, func(v *model.Voucher) string {})
+		case VoucherSortFieldStartDate:
+		case VoucherSortFieldEndDate:
+		case VoucherSortFieldValue:
+		case VoucherSortFieldType:
+		case VoucherSortFieldUsageLimit:
+		case VoucherSortFieldMinimumSpentAmount:
+		}
+	}
+
+	voucherOrdering := ".Name"
+
+	if args.SortBy != nil {
+		switch args.SortBy.Field {
+		case VoucherSortFieldCode:
+			voucherOrdering = ".Code"
+		case VoucherSortFieldStartDate:
+			voucherOrdering = ".StartDate"
+		case VoucherSortFieldEndDate:
+			voucherOrdering = ".EndDate"
+		case VoucherSortFieldValue:
+
+		case VoucherSortFieldType:
+			voucherOrdering = ".Type"
+
+		case VoucherSortFieldUsageLimit:
+			voucherOrdering = ".UsageLimit"
+		case VoucherSortFieldMinimumSpentAmount:
+		}
+	}
+
+	model.Voucher
 }

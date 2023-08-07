@@ -444,6 +444,9 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) {
+	if transaction == nil {
+		return nil, store.NewErrInvalidInput("SelectForUpdateDiscountedPricesOfCatalogues", "transaction", nil)
+	}
 	query := ps.GetQueryBuilder().
 		Select(model.ProductTableName + ".*").
 		Distinct().

@@ -20,9 +20,10 @@ type Collection struct {
 	ModelMetadata
 	Seo
 
-	Sales    Sales    `json:"-" gorm:"many2many:SaleCollections"`
-	Vouchers Vouchers `json:"-" gorm:"many2many:VoucherCollections"`
-	Products Products `json:"-" gorm:"many2many:ProductCollections"`
+	Sales              Sales                `json:"-" gorm:"many2many:SaleCollections"`
+	Vouchers           Vouchers             `json:"-" gorm:"many2many:VoucherCollections"`
+	Products           Products             `json:"-" gorm:"many2many:ProductCollections"`
+	CollectionProducts []*CollectionProduct `json:"-" gorm:"foreignKey:CollectionID"`
 }
 
 func (c *Collection) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
@@ -34,10 +35,13 @@ func (c *Collection) TableName() string             { return CollectionTableName
 // if `SelectAll` is set to true, it finds all collections of given shop, ignores other options too
 type CollectionFilterOption struct {
 	Conditions squirrel.Sqlizer
+	// E.g:
+	//  []string{"Sales", "CollectionProducts"} // etc...
+	Preload []string
 
-	ProductID squirrel.Sqlizer // SELECT * FROM Collections INNER JOIN ProductCollections ON (...) WHERE ProductCollections.ProductID ...
-	VoucherID squirrel.Sqlizer // SELECT * FROM Collections INNER JOIN VoucherCollections ON (...) WHERE VoucherCollections.VoucherID ...
-	SaleID    squirrel.Sqlizer // SELECT * FROM Collections INNER JOIN SaleCollections ON (Collections.Id = SaleCollections.CollectionID) WHERE SaleCollections.SaleID ...
+	ProductID squirrel.Sqlizer // INNER JOIN ProductCollections ON ... WHERE ProductCollections.ProductID ...
+	VoucherID squirrel.Sqlizer // INNER JOIN VoucherCollections ON ... WHERE VoucherCollections.VoucherID ...
+	SaleID    squirrel.Sqlizer // INNER JOIN SaleCollections ON ... WHERE SaleCollections.SaleID ...
 
 	ChannelListingPublicationDate squirrel.Sqlizer // INNER JOIN `CollectionChannelListings`
 	ChannelListingChannelSlug     squirrel.Sqlizer // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`

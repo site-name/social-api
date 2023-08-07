@@ -1,7 +1,6 @@
 package product
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -111,9 +110,18 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res model.Collections
+	var (
+		res    model.Collections
+		runner = cs.GetReplica()
+	)
 
-	err = cs.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	if len(option.Preload) > 0 {
+		for _, preload := range option.Preload {
+			runner = runner.Preload(preload)
+		}
+	}
+
+	err = runner.Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collections with given options")
 	}
@@ -122,12 +130,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 }
 
 func (s *SqlCollectionStore) Delete(ids ...string) error {
-	query, args, err := s.GetQueryBuilder().Delete(model.CollectionTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "Delete_ToSql")
-	}
-
-	err = s.GetMaster().Raw(query, args...).Error
+	err := s.GetMaster().Raw("DELETE FROM "+model.CollectionTableName+" WHERE Id IN ?", ids).Error
 	if err != nil {
 		errors.Wrap(err, "failed to delete collection(s) by given ids")
 	}

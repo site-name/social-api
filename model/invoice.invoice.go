@@ -26,7 +26,7 @@ type Invoice struct {
 	UpdateAt    int64   `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
 	ModelMetadata
 
-	order *Order `db:"-"`
+	order *Order `gorm:"-"`
 }
 
 func (c *Invoice) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }

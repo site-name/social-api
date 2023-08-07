@@ -13,7 +13,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, channel: String, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
+  attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, channelSlug: String, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
   attribute(id: String, slug: String): Attribute
 }
 
@@ -214,7 +214,7 @@ input AttributeFilterInput {
   type: AttributeTypeEnum
   inCollection: String
   inCategory: String
-  channel: String
+  # channel: String # deprecated
 }
 
 enum AttributeSortField {
@@ -243,15 +243,6 @@ type AttributeCountableConnection {
 type AttributeCountableEdge {
   node: Attribute!
   cursor: String!
-}
-
-input AttributeInput {
-  slug: String!
-  values: [String!]!
-  valuesRange: IntRangeInput
-  dateTime: DateTimeRangeInput
-  date: DateRangeInput
-  boolean: Boolean
 }
 
 enum AttributeInputTypeEnum {

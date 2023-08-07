@@ -260,6 +260,32 @@ func (_m *WarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, 
 	return r0, r1
 }
 
+// WarehouseShipingZonesByCountryCodeAndChannelID provides a mock function with given fields: countryCode, channelID
+func (_m *WarehouseStore) WarehouseShipingZonesByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
+	ret := _m.Called(countryCode, channelID)
+
+	var r0 []*model.WarehouseShippingZone
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string) ([]*model.WarehouseShippingZone, error)); ok {
+		return rf(countryCode, channelID)
+	}
+	if rf, ok := ret.Get(0).(func(string, string) []*model.WarehouseShippingZone); ok {
+		r0 = rf(countryCode, channelID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.WarehouseShippingZone)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(countryCode, channelID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewWarehouseStore interface {
 	mock.TestingT
 	Cleanup(func())

@@ -18,8 +18,6 @@ import (
 
 // NOTE: Refer to ./schemas/channel.graphqls for directive used
 func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input ChannelCreateInput }) (*ChannelCreate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	// validate input
 	if !lo.EveryBy(args.Input.AddShippingZones, model.IsValidId) {
 		return nil, model.NewAppError("ChannelCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addShippingZones"}, "please provide valid addShippingZones", http.StatusBadRequest)
@@ -28,6 +26,8 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 		return nil, model.NewAppError("ChannelCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "defaultCountry"}, fmt.Sprintf("%s is not valid country code", args.Input.DefaultCountry), http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	channel := &model.Channel{
 		Name:     args.Input.Name,
 		Currency: args.Input.CurrencyCode,
@@ -35,7 +35,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 	if val := args.Input.IsActive; val != nil {
 		channel.IsActive = *val
 	}
-	if val := args.Input.Slug; val != "" && slug.IsSlug(val) {
+	if val := args.Input.Slug; slug.IsSlug(val) {
 		channel.Slug = val
 	}
 

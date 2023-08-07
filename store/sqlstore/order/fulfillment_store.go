@@ -70,7 +70,7 @@ func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 	return &ffm, nil
 }
 
-func (fs *SqlFulfillmentStore) commonQueryBuild(transaction *gorm.DB, option *model.FulfillmentFilterOption) squirrel.SelectBuilder {
+func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterOption) squirrel.SelectBuilder {
 	// decide which fiedlds to select
 	selectFields := []string{model.FulfillmentTableName + ".*"}
 	if option.SelectRelatedOrder {
@@ -97,7 +97,7 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(transaction *gorm.DB, option *mo
 	if option.SelectRelatedOrder {
 		query = query.InnerJoin(model.OrderTableName + " ON (Orders.Id = Fulfillments.OrderID)")
 	}
-	if option.SelectForUpdate && transaction != nil {
+	if option.SelectForUpdate && option.Transaction != nil {
 		query = query.Suffix("FOR UPDATE")
 	}
 
@@ -106,9 +106,9 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(transaction *gorm.DB, option *mo
 
 // GetByOption returns 1 fulfillment, filtered by given option
 func (fs *SqlFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
-	runner := fs.GetMaster()
-	if option.Transaction != nil {
-		runner = option.Transaction
+	queryString, args, err := fs.commonQueryBuild(option).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
 	var (
@@ -120,11 +120,10 @@ func (fs *SqlFulfillmentStore) GetByOption(option *model.FulfillmentFilterOption
 		scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
 	}
 
-	queryString, args, err := fs.commonQueryBuild(option.Transaction, option).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	runner := fs.GetMaster()
+	if option.Transaction != nil {
+		runner = option.Transaction
 	}
-
 	err = runner.Raw(queryString, args...).Row().Scan(scanFields)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -147,7 +146,7 @@ func (fs *SqlFulfillmentStore) FilterByOption(option *model.FulfillmentFilterOpt
 		runner = option.Transaction
 	}
 
-	queryString, args, err := fs.commonQueryBuild(option.Transaction, option).ToSql()
+	queryString, args, err := fs.commonQueryBuild(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}

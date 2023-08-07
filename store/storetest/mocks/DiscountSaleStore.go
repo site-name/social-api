@@ -15,18 +15,28 @@ type DiscountSaleStore struct {
 	mock.Mock
 }
 
-// ToggleSaleRelations provides a mock function with given fields: transaction, sales, relations
-func (_m *DiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, relations interface{}) error {
-	ret := _m.Called(transaction, sales, relations)
+// Delete provides a mock function with given fields: transaction, options
+func (_m *DiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {
+	ret := _m.Called(transaction, options)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, model.Sales, interface{}) error); ok {
-		r0 = rf(transaction, sales, relations)
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.SaleFilterOption) (int64, error)); ok {
+		return rf(transaction, options)
+	}
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.SaleFilterOption) int64); ok {
+		r0 = rf(transaction, options)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.SaleFilterOption) error); ok {
+		r1 = rf(transaction, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // FilterSalesByOption provides a mock function with given fields: option
@@ -79,6 +89,20 @@ func (_m *DiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	}
 
 	return r0, r1
+}
+
+// ToggleSaleRelations provides a mock function with given fields: transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete
+func (_m *DiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+	ret := _m.Called(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, model.Sales, []string, []string, []string, []string, bool) error); ok {
+		r0 = rf(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Upsert provides a mock function with given fields: transaction, sale

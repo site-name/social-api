@@ -9,6 +9,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
@@ -223,7 +224,11 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, pr
 func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
 	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
-		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, err.Error(), http.StatusInternalServerError)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, err.Error(), statusCode)
 	}
 
 	return a.UpdateProductsDiscountedPrices(transaction, products, nil)

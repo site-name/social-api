@@ -3119,10 +3119,10 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB,
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+func (s *TimerLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	err := s.DiscountVoucherStore.Delete(transaction, ids)
+	result, err := s.DiscountVoucherStore.Delete(transaction, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3132,7 +3132,7 @@ func (s *TimerLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []stri
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.Delete", success, elapsed)
 	}
-	return err
+	return result, err
 }
 
 func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {

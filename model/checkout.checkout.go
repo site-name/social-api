@@ -21,7 +21,7 @@ const (
 
 // A Shopping checkout
 type Checkout struct {
-	Token                  string           `json:"token" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"` // uuid4, primary_key, NO EDITABLE
+	Token                  string           `json:"token" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Token"` // uuid4, primary_key, NO EDITABLE
 	CreateAt               int64            `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
 	UpdateAt               int64            `json:"update_at" gorm:"column:UpdateAt;autoUpdateTime:milli"`
 	UserID                 *string          `json:"user_id" gorm:"type:uuid;column:UserID"`
@@ -55,7 +55,7 @@ func (c *Checkout) BeforeUpdate(_ *gorm.DB) error {
 	c.PreUpdate()
 	return c.IsValid()
 }
-func (c *Checkout) TableName() string              { return CheckoutLineTableName }
+func (c *Checkout) TableName() string              { return CheckoutTableName }
 func (c *Checkout) SetChannel(ch *Channel)         { c.channel = ch }
 func (c *Checkout) GetChannel() *Channel           { return c.channel }
 func (c *Checkout) SetBilingAddress(addr *Address) { c.billingAddress = addr }

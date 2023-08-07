@@ -11,21 +11,10 @@ import (
 // TransactionsByOption returns a list of transactions filtered based on given option
 func (a *ServicePayment) TransactionsByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, *model.AppError) {
 	transactions, err := a.srv.Store.PaymentTransaction().FilterByOption(option)
-
-	var statusCode int
-	var appErrMsg string
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		appErrMsg = err.Error()
+		return nil, model.NewAppError("TransactionsByOption", "app.payment.error_finding_transactions_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if len(transactions) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode == 0 {
-		return transactions, nil
-	}
-	return nil, model.NewAppError("TransactionsByOption", "app.payment.error_finding_transactions_by_option.app_error", nil, appErrMsg, statusCode)
+	return transactions, nil
 }
 
 func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError) {

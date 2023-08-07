@@ -106,14 +106,10 @@ func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 
 // FilterByOption returns a list of orders, filtered by given option
 func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
-	runner := os.GetMaster()
-	if option.Transaction != nil {
-		runner = option.Transaction
-	}
-
 	query := os.GetQueryBuilder().
 		Select(model.OrderTableName + ".*").
-		From(model.OrderTableName).Where(option.Conditions)
+		From(model.OrderTableName).
+		Where(option.Conditions)
 
 	if option.ChannelSlug != nil {
 		query = query.
@@ -129,6 +125,10 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
+	runner := os.GetReplica()
+	if option.Transaction != nil {
+		runner = option.Transaction
+	}
 	var res model.Orders
 	err = runner.Raw(queryString, args...).Scan(&res).Error
 	if err != nil {

@@ -76,7 +76,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 
 		query = query.Where(squirrel.Expr("GiftCards.Id IN ?", subSelect))
 	}
-	if option.SelectForUpdate {
+	if option.SelectForUpdate && option.Transaction != nil {
 		query = query.Suffix("FOR UPDATE")
 	}
 	if option.Distinct {
@@ -88,8 +88,12 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 		return nil, errors.Wrap(err, "query_toSql")
 	}
 
+	runner := gs.GetReplica()
+	if option.Transaction != nil {
+		runner = option.Transaction
+	}
 	var giftcards []*model.GiftCard
-	err = gs.GetReplica().Raw(queryString, args...).Scan(&giftcards).Error
+	err = runner.Raw(queryString, args...).Scan(&giftcards).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}

@@ -174,36 +174,37 @@ func (a *ServicePayment) CreatePayment(
 ) (*model.Payment, *model.PaymentError, *model.AppError) {
 	// must at least provide either checkout or order, both is best :))
 	if checkOut == nil && orDer == nil {
-		return nil, nil, model.NewAppError("CreatePayment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("CreatePayment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "please provide both order and checkout", http.StatusBadRequest)
 	}
 
 	if extraData == nil {
 		extraData = make(map[string]string)
 	}
+	if metadata == nil {
+		metadata = make(model.StringMap)
+	}
 
-	var (
-		billingAddress   *model.Address
-		billingAddressID string
-	)
-
+	var billingAddressID string
 	if checkOut != nil && checkOut.BillingAddressID != nil {
 		billingAddressID = *checkOut.BillingAddressID
 	} else if orDer != nil && orDer.BillingAddressID != nil {
 		billingAddressID = *orDer.BillingAddressID
 	}
 
-	billingAddress, appErr := a.srv.AccountService().AddressById(billingAddressID)
-	if appErr != nil {
-		return nil, nil, appErr // this error can be either system error/not found error
+	var billingAddress *model.Address
+
+	if billingAddressID != "" {
+		var appErr *model.AppError
+		billingAddress, appErr = a.srv.AccountService().AddressById(billingAddressID)
+		if appErr != nil {
+			return nil, nil, appErr // this error can be either system error/not found error
+		}
 	}
 
 	if billingAddress == nil {
 		return nil, model.NewPaymentError("CreatePayment", "Order does not have a billing address.", model.BILLING_ADDRESS_NOT_SET), nil
 	}
 
-	if metadata == nil {
-		metadata = make(model.StringMap)
-	}
 	payment := &model.Payment{
 		BillingEmail:       email,
 		BillingFirstName:   billingAddress.FirstName,
@@ -236,7 +237,7 @@ func (a *ServicePayment) CreatePayment(
 		payment.OrderID = &orDer.Id
 	}
 
-	payment, appErr = a.srv.PaymentService().UpsertPayment(transaction, payment)
+	payment, appErr := a.srv.PaymentService().UpsertPayment(transaction, payment)
 	return payment, nil, appErr
 }
 

@@ -73,7 +73,7 @@ func (a *AttributeValue) Translation(ctx context.Context, args struct{ LanguageC
 	panic("not implemented")
 }
 
-func (a *AttributeValue) InputType(ctx context.Context) (*model.AttributeInputType, error) {
+func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum, error) {
 	attr, err := AttributesByAttributeIdLoader.Load(ctx, a.attributeID)()
 	if err != nil {
 		return nil, err
@@ -105,16 +105,16 @@ func (a *AttributeValue) Reference(ctx context.Context) (*string, error) {
 // --------------------- Attribute --------------------
 
 type Attribute struct {
-	ID              string                     `json:"id"`
-	PrivateMetadata []*MetadataItem            `json:"privateMetadata"`
-	Metadata        []*MetadataItem            `json:"metadata"`
-	InputType       *model.AttributeInputType  `json:"inputType"`
-	EntityType      *model.AttributeEntityType `json:"entityType"`
-	Name            *string                    `json:"name"`
-	Slug            *string                    `json:"slug"`
-	Type            *model.AttributeType       `json:"type"`
-	Unit            *MeasurementUnitsEnum      `json:"unit"`
-	WithChoices     bool                       `json:"withChoices"`
+	ID              string                   `json:"id"`
+	PrivateMetadata []*MetadataItem          `json:"privateMetadata"`
+	Metadata        []*MetadataItem          `json:"metadata"`
+	InputType       *AttributeInputTypeEnum  `json:"inputType"`
+	EntityType      *AttributeEntityTypeEnum `json:"entityType"`
+	Name            *string                  `json:"name"`
+	Slug            *string                  `json:"slug"`
+	Type            *AttributeTypeEnum       `json:"type"`
+	Unit            *MeasurementUnitsEnum    `json:"unit"`
+	WithChoices     bool                     `json:"withChoices"`
 
 	attr *model.Attribute
 

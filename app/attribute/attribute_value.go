@@ -95,11 +95,14 @@ func (s *ServiceAttribute) newReordering(values model.AttributeValues, operation
 
 func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *model.AppError) {
 	if !r.runned { // check if runned or not
+		// indicate runned
+		r.runned = true
+
 		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			Transaction:     transaction,
 			Ordering:        model.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
 			Conditions:      squirrel.Eq{model.AttributeValueTableName + ".Id": r.Values.IDs()},
 			SelectForUpdate: true,
+			Transaction:     transaction,
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -140,8 +143,6 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 		for key, value := range orderingMap {
 			r.cachedOrderedNodeMap[key] = value
 		}
-		// indicate runned
-		r.runned = true
 
 		return orderingMap, nil
 	}

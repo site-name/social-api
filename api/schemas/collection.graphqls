@@ -114,7 +114,7 @@ input CollectionFilterInput {
   search: String
   metadata: [MetadataInput]!
   ids: [String!]!
-  channel: String
+  # channel: String # Deprecated
 }
 
 enum CollectionPublished {
@@ -131,8 +131,8 @@ enum CollectionSortField {
 
 input CollectionSortingInput {
   direction: OrderDirection!
-  channel: String
   field: CollectionSortField!
+  # channel: String # Deprecated
 }
 
 type CollectionCountableConnection {

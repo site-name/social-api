@@ -20,7 +20,7 @@ type ProductVariant struct {
 	WeightUnit              measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
 	TrackInventory          *bool                  `json:"track_inventory" gorm:"column:TrackInventory"` // default *true
 	IsPreOrder              bool                   `json:"is_preorder" gorm:"column:IsPreOrder"`
-	PreorderEndDate         *int64                 `json:"preorder_end_date" column:"type:bigint;column:PreorderEndDate"`
+	PreorderEndDate         *int64                 `json:"preorder_end_date" gorm:"type:bigint;column:PreorderEndDate"`
 	PreOrderGlobalThreshold *int                   `json:"preorder_global_threshold" gorm:"type:smallint;column:PreOrderGlobalThreshold"`
 	Sortable
 	ModelMetadata

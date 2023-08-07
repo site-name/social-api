@@ -20,13 +20,13 @@ func (p *PaginationValues) QueryLimit() uint64 {
 	return p.Limit + 1
 }
 
-func (p *PaginationValues) paginationNotEmpty() bool {
+func (p *PaginationValues) paginationApplicable() bool {
 	return p.OrderBy != "" && p.Condition != nil && p.Limit > 0
 }
 
 // AddPaginationToSelectBuilder check if current PaginationValues is not empty, then add pagination ability to given select builder
 func (p *PaginationValues) AddPaginationToSelectBuilderIfNeeded(builder squirrel.SelectBuilder) squirrel.SelectBuilder {
-	if p.paginationNotEmpty() {
+	if p.paginationApplicable() {
 		return builder.
 			OrderBy(p.OrderBy).
 			Limit(p.QueryLimit()).

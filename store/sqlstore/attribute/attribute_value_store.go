@@ -60,11 +60,6 @@ func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) 
 
 // FilterByOptions finds and returns all matched attribute values based on given options
 func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
-	var executor *gorm.DB = as.GetMaster()
-	if options.Transaction != nil {
-		executor = options.Transaction
-	}
-
 	selectFields := []string{model.AttributeValueTableName + ".*"}
 	if options.SelectRelatedAttribute {
 		selectFields = append(selectFields, model.AttributeTableName+".*")
@@ -89,7 +84,11 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := executor.Raw(queryString, args...).Rows()
+	runner := as.GetReplica()
+	if options.Transaction != nil {
+		runner = options.Transaction
+	}
+	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute values")
 	}

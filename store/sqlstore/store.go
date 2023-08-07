@@ -23,7 +23,6 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/store/sqlstore/account"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -534,95 +533,7 @@ type m2mRelation struct {
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
 	// 1) migrating tables
-	for _, model := range []model.TableModel{
-		&model.User{},                         // account
-		&model.Address{},                      //
-		&model.Status{},                       //
-		&model.UserAccessToken{},              //
-		&model.CustomerEvent{},                //
-		&model.CustomerNote{},                 //
-		&model.AppToken{},                     //
-		&model.Session{},                      //
-		&account.Role{},                       //
-		&model.Attribute{},                    // attribute
-		&model.AttributeValue{},               //
-		&model.AttributeTranslation{},         //
-		&model.AttributeValueTranslation{},    //
-		&model.AttributeVariant{},             //
-		&model.AttributePage{},                //
-		&model.AttributeProduct{},             //
-		&model.Audit{},                        // audit
-		&model.Channel{},                      // channel
-		&model.CheckoutLine{},                 // checkout
-		&model.Checkout{},                     //
-		&model.ClusterDiscovery{},             // cluster
-		&model.Compliance{},                   // compliance
-		&model.ExportEvent{},                  // csv
-		&model.ExportFile{},                   //
-		&model.OrderDiscount{},                // discount
-		&model.Sale{},                         //
-		&model.VoucherChannelListing{},        //
-		&model.SaleChannelListing{},           //
-		&model.Voucher{},                      //
-		&model.VoucherCustomer{},              //
-		&model.OpenExchangeRate{},             // 3rd party
-		&model.FileInfo{},                     // file info
-		&model.UploadSession{},                //
-		&model.GiftCardEvent{},                // giftcard
-		&model.GiftCard{},                     //
-		&model.InvoiceEvent{},                 // invoice
-		&model.Invoice{},                      //
-		&model.Job{},                          // job
-		&model.MenuItemTranslation{},          // menu
-		&model.MenuItem{},                     //
-		&model.Menu{},                         //
-		&model.Order{},                        // order
-		&model.OrderLine{},                    //
-		&model.FulfillmentLine{},              //
-		&model.Fulfillment{},                  //
-		&model.OrderEvent{},                   //
-		&model.PageType{},                     // page
-		&model.PageTranslation{},              //
-		&model.Page{},                         //
-		&model.Payment{},                      // payment
-		&model.PaymentTransaction{},           //
-		&model.PluginConfiguration{},          // plugin
-		&model.PluginKeyValue{},               //
-		&model.Preference{},                   // preference
-		&model.Category{},                     // product
-		&model.CategoryTranslation{},          //
-		&model.Product{},                      //
-		&model.ProductVariant{},               //
-		&model.Collection{},                   //
-		&model.CollectionChannelListing{},     //
-		&model.CollectionProduct{},            //
-		&model.CollectionTranslation{},        //
-		&model.DigitalContent{},               //
-		&model.DigitalContentUrl{},            //
-		&model.ProductChannelListing{},        //
-		&model.ProductMedia{},                 //
-		&model.ProductTranslation{},           //
-		&model.ProductType{},                  //
-		&model.ProductVariantChannelListing{}, //
-		&model.ProductVariantTranslation{},    //
-		&model.ShippingMethod{},               // shipping
-		&model.ShippingMethodChannelListing{}, //
-		&model.ShippingMethodPostalCodeRule{}, //
-		&model.ShippingMethodTranslation{},    //
-		&model.ShippingZone{},                 //
-		&model.ShopStaff{},                    // shop
-		&model.ShopTranslation{},              //
-		&model.System{},                       // system
-		&model.TermsOfService{},               //
-		&model.Token{},                        //
-		&model.Vat{},                          // vat
-		&model.Allocation{},                   // warehouse
-		&model.Stock{},                        //
-		&model.WareHouse{},                    //
-		&model.PreorderAllocation{},           //
-		&model.Wishlist{},                     // wishlist
-		&model.WishlistItem{},                 //
-	} {
+	for _, model := range model.SystemModels {
 		slog.Debug("migrating table", slog.String("model", model.TableName()))
 		if err := ss.master.AutoMigrate(model); err != nil {
 			return err

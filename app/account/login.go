@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/avct/uasurfer"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
@@ -156,9 +157,14 @@ func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*model.User, *mode
 	// Try to get the user with LDAP if enabled
 	if *a.srv.Config().LdapSettings.Enable && a.srv.Ldap != nil {
 		if ldapUser, err := a.srv.Ldap.GetUser(loginId); err == nil {
-			if user, err := a.GetUserByAuth(ldapUser.AuthData, model.USER_AUTH_SERVICE_LDAP); err == nil {
-				return user, nil
+			if ldapUser.AuthData != nil && *ldapUser.AuthData != "" {
+				if user, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+					Conditions: squirrel.Expr(model.UserTableName+".AuthData = ? AND Users.AuthService = ?", *ldapUser.AuthData, model.USER_AUTH_SERVICE_LDAP),
+				}); err == nil {
+					return user, nil
+				}
 			}
+
 			return ldapUser, nil
 		}
 	}

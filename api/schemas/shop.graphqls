@@ -8,7 +8,7 @@ extend type Mutation {
   shopSettingsUpdate(input: ShopSettingsInput!): ShopSettingsUpdate @hasRoles(roles: [shop_admin])
   shopFetchTaxRates: ShopFetchTaxRates @hasRoleAny(roles: [shop_admin, shop_staff])
   shopSettingsTranslate(input: ShopSettingsTranslationInput!, languageCode: LanguageCodeEnum!): ShopSettingsTranslate
-  shopAddressUpdate(input: AddressInput): ShopAddressUpdate @hasRoles(roles: [shop_admin])
+  shopAddressUpdate(input: AddressInput!): ShopAddressUpdate @hasRoles(roles: [shop_admin])
 }
 
 type Shop {

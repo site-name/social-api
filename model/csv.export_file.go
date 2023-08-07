@@ -12,7 +12,7 @@ type ExportFile struct {
 	UserID      *string `json:"user_id" gorm:"type:uuid;column:UserID"`
 	ContentFile *string `json:"content_file" gorm:"column:ContentFile"`
 	CreateAt    int64   `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
-	UpdateAt    int64   `json:"update_at" gorm:"type:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
+	UpdateAt    int64   `json:"update_at" gorm:"type:bigint;autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
 }
 
 func (c *ExportFile) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }

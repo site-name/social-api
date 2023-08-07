@@ -192,11 +192,14 @@ func (s *SqlVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers 
 	return nil
 }
 
-func (s *SqlVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+func (s *SqlVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.VoucherTableName+" WHERE Id IN ?", ids).Error
-	return err
+	res := transaction.Raw("DELETE FROM "+model.VoucherTableName+" WHERE Id IN ?", ids)
+	if res.Error != nil {
+		return 0, res.Error
+	}
+	return res.RowsAffected, nil
 }

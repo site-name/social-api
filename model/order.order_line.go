@@ -30,10 +30,10 @@ type OrderLine struct {
 	VariantName                       string            `json:"variant_name" gorm:"type:varchar(255);column:VariantName"`
 	TranslatedProductName             string            `json:"translated_product_name" gorm:"type:varchar(386);column:TranslatedProductName"`
 	TranslatedVariantName             string            `json:"translated_variant_name" gorm:"type:varchar(255);column:TranslatedVariantName"`
-	ProductSku                        *string           `json:"product_sku" gorm:"type:varchar(255);column:ProductSKU"`
+	ProductSku                        *string           `json:"product_sku" gorm:"type:varchar(255);column:ProductSku"`
 	ProductVariantID                  *string           `json:"product_variant_id" gorm:"type:varchar(255);column:ProductVariantID"` // GraphQL ID used as fallback when product SKU is not available
 	IsShippingRequired                bool              `json:"is_shipping_required" gorm:"column:IsShippingRequired"`
-	IsGiftcard                        bool              `json:"is_gift_card" gorm:"column:IsGiftCard"`
+	IsGiftcard                        bool              `json:"is_gift_card" gorm:"column:IsGiftcard"`
 	Quantity                          int               `json:"quantity" gorm:"type:integer;check:Quantity >= 1;column:Quantity"`
 	QuantityFulfilled                 int               `json:"quantity_fulfilled" gorm:"type:integer;check:QuantityFulfilled >= 0;column:QuantityFulfilled"`
 	Currency                          string            `json:"currency" gorm:"type:varchar(3);column:Currency"`

@@ -27,6 +27,9 @@ type StockData struct {
 // If there is less quantity in stocks then rise InsufficientStock exception.
 func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode model.CountryCode, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*model.InsufficientStock, *model.AppError) {
 	transaction := a.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("AlloccateStocks", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	// allocation only applied to order lines with variants with track inventory set to True
@@ -41,6 +44,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		ProductVariantIDFilter: squirrel.Eq{model.StockTableName + ".ProductVariantID": orderLineInfos.Variants().IDs()},
 		LockForUpdate:          true,                 // FOR UPDATE
 		ForUpdateOf:            model.StockTableName, // FOR UPDATE OF Stocks
+		Transaction:            transaction,
 	}
 
 	// update lookup options:
@@ -54,9 +58,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 
 	stocks, appErr := a.FilterStocksForCountryAndChannel(stockFilterOption)
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr // return immediately if error was caused by system
-		}
+		return nil, appErr
 	}
 
 	quantityAllocationList, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
@@ -66,9 +68,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr // return immediately if error was caused by system
-		}
+		return nil, appErr
 	}
 
 	// quantityAllocationForStocks has keys are stock IDs and values are sum of allocatedQuantity of allocations (which belong to a stock)

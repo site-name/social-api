@@ -89,18 +89,17 @@ func (ps *SqlPaymentStore) Update(transaction *gorm.DB, payment *model.Payment) 
 
 // Get finds and returns the payment with given id
 func (ps *SqlPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
-	if transaction == nil {
-		transaction = ps.GetMaster()
-	}
-
 	var (
 		res          model.Payment
 		forUpdateSql string
 	)
-	if lockForUpdate {
+	if lockForUpdate && transaction != nil {
 		forUpdateSql = " FOR UPDATE"
 	}
 
+	if transaction == nil {
+		transaction = ps.GetReplica()
+	}
 	err := transaction.Raw("SELECT * FROM "+model.PaymentTableName+" WHERE Id = ?"+forUpdateSql, id).Scan(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

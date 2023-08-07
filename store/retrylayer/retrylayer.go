@@ -3648,21 +3648,21 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Upsert(transaction *gorm.DB,
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) error {
+func (s *RetryLayerDiscountVoucherStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
 
 	tries := 0
 	for {
-		err := s.DiscountVoucherStore.Delete(transaction, ids)
+		result, err := s.DiscountVoucherStore.Delete(transaction, ids)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
 		}
 	}
 

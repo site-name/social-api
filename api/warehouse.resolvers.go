@@ -5,8 +5,6 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"net/http"
 	"strings"
 	"unsafe"
@@ -434,7 +432,7 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	numOfStocks, err := embedCtx.App.Srv().Store.Stock().CountByOptions(stockFilterOptions)
+	totalNumOfStocks, err := embedCtx.App.Srv().Store.Stock().CountByOptions(stockFilterOptions)
 	if err != nil {
 		return nil, model.NewAppError("Stocks", "app.warehouse.error_countring_stocks.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -445,21 +443,14 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 		stocks = stocks[:len(stocks)-1]
 	}
 
-	res := &StockCountableConnection{
-		TotalCount: &numOfStocks,
-		Edges: lo.Map(stocks, func(st *model.Stock, _ int) *StockCountableEdge {
-			return &StockCountableEdge{
-				Node:   SystemStockToGraphqlStock(st),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%v", st.CreateAt))),
-			}
-		}),
-	}
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNextPage,
-		HasPreviousPage: hasPrevPage,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(stocks)-1].Cursor,
-	}
+	res := constructCountableConnection(
+		stocks,
+		int(totalNumOfStocks),
+		hasNextPage,
+		hasPrevPage,
+		func(st *model.Stock) int64 { return st.CreateAt },
+		SystemStockToGraphqlStock,
+	)
 
-	return res, nil
+	return (*StockCountableConnection)(unsafe.Pointer(res)), nil
 }

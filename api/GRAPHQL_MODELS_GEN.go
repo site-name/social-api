@@ -436,22 +436,55 @@ type AttributeError struct {
 }
 
 type AttributeFilterInput struct {
-	ValueRequired          *bool                `json:"valueRequired"`
-	IsVariantOnly          *bool                `json:"isVariantOnly"`
-	VisibleInStoreFront    *bool                `json:"visibleInStorefront"`
-	FilterableInStorefront *bool                `json:"filterableInStorefront"`
-	FilterableInDashboard  *bool                `json:"filterableInDashboard"`
-	AvailableInGrid        *bool                `json:"availableInGrid"`
-	Metadata               []*MetadataInput     `json:"metadata"`
-	Search                 *string              `json:"search"`
-	Ids                    []string             `json:"ids"`
-	Type                   *model.AttributeType `json:"type"`
-	InCollection           *string              `json:"inCollection"`
-	InCategory             *string              `json:"inCategory"`
-	Channel                *string              `json:"channel"` // deprecated
+	ValueRequired          *bool              `json:"valueRequired"`
+	IsVariantOnly          *bool              `json:"isVariantOnly"`
+	VisibleInStoreFront    *bool              `json:"visibleInStorefront"`
+	FilterableInStorefront *bool              `json:"filterableInStorefront"`
+	FilterableInDashboard  *bool              `json:"filterableInDashboard"`
+	AvailableInGrid        *bool              `json:"availableInGrid"`
+	Metadata               []*MetadataInput   `json:"metadata"`
+	Search                 *string            `json:"search"`
+	Ids                    []string           `json:"ids"`
+	Type                   *AttributeTypeEnum `json:"type"`
+	InCollection           *string            `json:"inCollection"`
+	InCategory             *string            `json:"inCategory"`
+
+	// Channel                *string            `json:"channel"` //Deprecated. Dont use this
 }
 
-func (a *AttributeFilterInput) parse(api string) (*model.AttributeFilterOption, *model.AppError) {
+func (a *AttributeFilterInput) validate(where string) *model.AppError {
+	where += "AttributeFilterInput.validate"
+	if !lo.EveryBy(a.Ids, model.IsValidId) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid attribute ids", http.StatusBadRequest)
+	}
+	if a.Search != nil && stringsContainSqlExpr.MatchString(*a.Search) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
+	}
+	if a.Type != nil && !a.Type.IsValid() {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid attribute type", http.StatusBadRequest)
+	}
+
+	for name, value := range map[string]*string{
+		"inCollection": a.InCollection,
+		"inCategory":   a.InCategory,
+	} {
+		if value != nil && !model.IsValidId(*value) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
+// parse calls validate() first, if an validation error occured, return immediately.
+// If not, return *AttributeFilterOption and nil error
+func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption, *model.AppError) {
+	where += ".AttributeFilterInput.parse"
+	appErr := a.validate(where)
+	if appErr != nil {
+		return nil, appErr
+	}
+
 	conditions := squirrel.Eq{}
 	if a.VisibleInStoreFront != nil {
 		conditions[model.AttributeTableName+".VisibleInStoreFront"] = *a.VisibleInStoreFront
@@ -472,32 +505,16 @@ func (a *AttributeFilterInput) parse(api string) (*model.AttributeFilterOption, 
 		conditions[model.AttributeTableName+".AvailableInGrid"] = *a.AvailableInGrid
 	}
 	if len(a.Ids) > 0 {
-		if !lo.EveryBy(a.Ids, model.IsValidId) {
-			return nil, model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid attribute ids", http.StatusBadRequest)
-		}
 		conditions[model.AttributeTableName+".Id"] = a.Ids
 	}
 	if a.Type != nil {
-		if !a.Type.IsValid() {
-			return nil, model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid attribute type", http.StatusBadRequest)
-		}
 		conditions[model.AttributeTableName+".Type"] = *a.Type
-	}
-
-	for name, value := range map[string]*string{
-		"InCollection": a.InCollection,
-		"InCategory":   a.InCategory,
-	} {
-		if value != nil && !model.IsValidId(*value) {
-			return nil, model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid attribute "+name, http.StatusBadRequest)
-		}
 	}
 
 	res := &model.AttributeFilterOption{
 		Conditions:   conditions,
 		InCollection: a.InCollection,
 		InCategory:   a.InCategory,
-		Channel:      a.Channel,
 	}
 	if a.Search != nil && !stringsContainSqlExpr.MatchString(*a.Search) {
 		res.Search = *a.Search
@@ -522,6 +539,37 @@ type AttributeInput struct {
 	DateTime    *DateTimeRangeInput `json:"dateTime"`
 	Date        *DateRangeInput     `json:"date"`
 	Boolean     *bool               `json:"boolean"`
+}
+
+func (a *AttributeInput) validate(where string) *model.AppError {
+	where += ".AttributeInput.valiate"
+
+	if a.Slug != "" && !slug.IsSlug(a.Slug) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(a.Values, model.IsValidId) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "values"}, "please provide valid value ids", http.StatusBadRequest)
+	}
+	if a.ValuesRange != nil {
+		appErr := a.ValuesRange.validate(where)
+		if appErr != nil {
+			return appErr
+		}
+	}
+	if a.DateTime != nil {
+		appErr := a.DateTime.validate(where)
+		if appErr != nil {
+			return appErr
+		}
+	}
+	if a.Date != nil {
+		appErr := a.Date.validate(where)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
 }
 
 type AttributeReorderValues struct {
@@ -551,17 +599,21 @@ type AttributeTranslation struct {
 	Language *LanguageDisplay `json:"language"`
 }
 
+type AttributeEntityTypeEnum = model.AttributeEntityType
+
+type AttributeTypeEnum = model.AttributeType
+
 type AttributeUpdate struct {
 	Attribute *Attribute        `json:"attribute"`
 	Errors    []*AttributeError `json:"errors"`
 }
 
 type AttributeCreateInput struct {
-	InputType                *model.AttributeInputType    `json:"inputType"`
-	EntityType               *model.AttributeEntityType   `json:"entityType"`
+	InputType                *AttributeInputTypeEnum      `json:"inputType"`
+	EntityType               *AttributeEntityTypeEnum     `json:"entityType"`
 	Name                     string                       `json:"name"`
 	Slug                     *string                      `json:"slug"`
-	Type                     model.AttributeType          `json:"type"`
+	Type                     AttributeTypeEnum            `json:"type"`
 	Unit                     *MeasurementUnitsEnum        `json:"unit"`
 	Values                   []*AttributeValueCreateInput `json:"values"`
 	ValueRequired            *bool                        `json:"valueRequired"`
@@ -1115,6 +1167,23 @@ type CollectionCreate struct {
 }
 
 type CollectionCreateInput struct {
+	CollectionInput
+	Products []string `json:"products"`
+}
+
+func (c *CollectionCreateInput) validate(api string) *model.AppError {
+	appErr := c.CollectionInput.validate(api)
+	if appErr != nil {
+		return appErr
+	}
+	if !lo.EveryBy(c.Products, model.IsValidId) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+type CollectionInput struct {
 	IsPublished        *bool           `json:"isPublished"`
 	Name               *string         `json:"name"`
 	Slug               *string         `json:"slug"`
@@ -1123,7 +1192,19 @@ type CollectionCreateInput struct {
 	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
 	Seo                *SeoInput       `json:"seo"`
 	PublicationDate    *Date           `json:"publicationDate"`
-	Products           []string        `json:"products"`
+}
+
+func (c *CollectionInput) validate(api string) *model.AppError {
+	if c.Slug != nil && slug.IsSlug(*c.Slug) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, *c.Slug+" is not a valid slug", http.StatusBadRequest)
+	}
+	if c.IsPublished != nil && *c.IsPublished && c.PublicationDate == nil {
+		c.PublicationDate = &Date{DateTime{util.StartOfDay(time.Now())}}
+	}
+
+	panic("not implemented") // TODO: add validate for background image
+
+	return nil
 }
 
 type CollectionDelete struct {
@@ -1143,18 +1224,22 @@ type CollectionFilterInput struct {
 	Search    *string              `json:"search"`
 	Metadata  []*MetadataInput     `json:"metadata"`
 	Ids       []string             `json:"ids"`
-	Channel   *string              `json:"channel"`
+	// Channel   *string              `json:"channel"` //Deprecated. Do not use
 }
 
-type CollectionInput struct {
-	IsPublished        *bool           `json:"isPublished"`
-	Name               *string         `json:"name"`
-	Slug               *string         `json:"slug"`
-	Description        JSONString      `json:"description"`
-	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
-	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
-	Seo                *SeoInput       `json:"seo"`
-	PublicationDate    *Date           `json:"publicationDate"`
+func (c *CollectionFilterInput) validate(where string) *model.AppError {
+	where += "CollectionFilterInput.validate"
+	if c.Published != nil && !c.Published.IsValid() {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "published"}, "please provide valid published attribute", http.StatusBadRequest)
+	}
+	if c.Search != nil && stringsContainSqlExpr.MatchString(*c.Search) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(c.Ids, model.IsValidId) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid collection ids", http.StatusBadRequest)
+	}
+
+	return nil
 }
 
 type CollectionRemoveProducts struct {
@@ -1169,8 +1254,8 @@ type CollectionReorderProducts struct {
 
 type CollectionSortingInput struct {
 	Direction OrderDirection      `json:"direction"`
-	Channel   *string             `json:"channel"`
 	Field     CollectionSortField `json:"field"`
+	// Channel   *string             `json:"channel"`
 }
 
 type CollectionTranslatableContent struct {
@@ -1287,9 +1372,27 @@ type DateRangeInput struct {
 	Lte *Date `json:"lte"`
 }
 
+func (d *DateRangeInput) validate(api string) *model.AppError {
+	api += ".DateRangeInput.validate"
+
+	if d.Gte != nil && d.Lte != nil && d.Gte.After(d.Lte.Time) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
+	}
+	return nil
+}
+
 type DateTimeRangeInput struct {
 	Gte *DateTime `json:"gte"`
 	Lte *DateTime `json:"lte"`
+}
+
+func (d *DateTimeRangeInput) validate(api string) *model.AppError {
+	api += ".DateTimeRangeInput.validate"
+
+	if d.Gte != nil && d.Lte != nil && d.Gte.After(d.Lte.Time) {
+		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
+	}
+	return nil
 }
 
 type DeactivateAllUserTokens struct {
@@ -1760,6 +1863,14 @@ type Image struct {
 type IntRangeInput struct {
 	Gte *int32 `json:"gte"`
 	Lte *int32 `json:"lte"`
+}
+
+func (i *IntRangeInput) validate(where string) *model.AppError {
+	where += ".IntRangeInput.validate"
+	if i.Gte != nil && i.Lte != nil && *i.Gte > *i.Lte {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lte, gte"}, "gte must less than or equal to lte", http.StatusBadRequest)
+	}
+	return nil
 }
 
 type InvoiceCreate struct {
@@ -2709,6 +2820,14 @@ type PriceRangeInput struct {
 	Lte *float64 `json:"lte"`
 }
 
+func (p *PriceRangeInput) validate(where string) *model.AppError {
+	where += "PriceRangeInput.validate"
+	if p.Gte != nil && p.Lte != nil && *p.Gte > *p.Lte {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
+	}
+	return nil
+}
+
 type ProductAttributeAssign struct {
 	ProductType *ProductType    `json:"productType"`
 	Errors      []*ProductError `json:"errors"`
@@ -2804,10 +2923,14 @@ type ProductError struct {
 	Values     []string         `json:"values"`
 }
 
+type AttributeInputTypeEnum = model.AttributeInputType
+
 type ProductFilterInput struct {
 	IsPublished           *bool                    `json:"isPublished"`
 	Collections           []string                 `json:"collections"`
 	Categories            []string                 `json:"categories"`
+	ProductTypes          []string                 `json:"productTypes"`
+	Ids                   []string                 `json:"ids"`
 	HasCategory           *bool                    `json:"hasCategory"`
 	Attributes            []*AttributeInput        `json:"attributes"`
 	StockAvailability     *StockAvailability       `json:"stockAvailability"`
@@ -2816,14 +2939,57 @@ type ProductFilterInput struct {
 	Metadata              []*MetadataInput         `json:"metadata"`
 	Price                 *PriceRangeInput         `json:"price"`
 	MinimalPrice          *PriceRangeInput         `json:"minimalPrice"`
-	ProductTypes          []string                 `json:"productTypes"`
 	GiftCard              *bool                    `json:"giftCard"`
-	Ids                   []string                 `json:"ids"`
 	HasPreorderedVariants *bool                    `json:"hasPreorderedVariants"`
-	Channel               *string                  `json:"channel"` // can be either channel id or channel slug
+	// Channel               *string                  `json:"channel"`
 }
 
-func (p *ProductFilterInput) ToSystemProductFilterInput() *model.ProductFilterInput {
+func (p *ProductFilterInput) validate(where string) *model.AppError {
+	where += "ProductFilterInput.validate"
+
+	for name, value := range map[string][]string{
+		"collections":   p.Collections,
+		"categories":    p.Categories,
+		"product types": p.ProductTypes,
+		"ids":           p.Ids,
+	} {
+		if !lo.EveryBy(value, model.IsValidId) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+		}
+	}
+	for _, attributeInput := range p.Attributes {
+		if appErr := attributeInput.validate(where); appErr != nil {
+			return appErr
+		}
+	}
+	if p.StockAvailability != nil && !p.StockAvailability.IsValid() {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fieds": "stock availability"}, "please provide valid stock availability", http.StatusBadRequest)
+	}
+	if p.Stocks != nil {
+		if appErr := p.Stocks.validate(where); appErr != nil {
+			return appErr
+		}
+	}
+	if p.Search != nil && stringsContainSqlExpr.MatchString(*p.Search) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search string", http.StatusBadRequest)
+	}
+	for name, value := range map[string]*PriceRangeInput{
+		"price":         p.Price,
+		"minimal price": p.MinimalPrice,
+	} {
+		if value != nil {
+			if appErr := value.validate(where); appErr != nil {
+				appErr.DetailedError = "please provide valid " + name
+				return appErr
+			}
+		}
+	}
+
+	return nil
+}
+
+// NOTE: make sure to call me after caling validate
+func (p *ProductFilterInput) toSystemProductFilterInput() *model.ProductFilterInput {
 	systemAttributeFilter := lo.Map(p.Attributes, func(item *AttributeInput, _ int) *model.AttributeFilter {
 		res := &model.AttributeFilter{
 			Slug:   item.Slug,
@@ -2881,8 +3047,9 @@ func (p *ProductFilterInput) ToSystemProductFilterInput() *model.ProductFilterIn
 		GiftCard:              p.GiftCard,
 		Ids:                   p.Ids,
 		HasPreorderedVariants: p.HasPreorderedVariants,
-		Channel:               p.Channel,
 		StockAvailability:     p.StockAvailability,
+
+		// Channel:               p.Channel,
 	}
 
 	if p.Stocks != nil {
@@ -2983,9 +3150,10 @@ type ProductMediaUpdateInput struct {
 
 type ProductOrder struct {
 	Direction   OrderDirection     `json:"direction"`
-	Channel     *string            `json:"channel"` // DEPRECATED, don't use this field
 	AttributeID *string            `json:"attributeId"`
 	Field       *ProductOrderField `json:"field"`
+
+	// Channel     *string            `json:"channel"` // DEPRECATED, don't use this field
 }
 
 func (o *ProductOrder) ToSystemProductOrder() *model.ProductOrder {
@@ -3019,6 +3187,22 @@ type ProductReorderAttributeValues struct {
 type ProductStockFilterInput struct {
 	WarehouseIds []string       `json:"warehouseIds"`
 	Quantity     *IntRangeInput `json:"quantity"`
+}
+
+func (p *ProductStockFilterInput) validate(where string) *model.AppError {
+	where += ".ProductStockFilterInput.validate"
+
+	if !lo.EveryBy(p.WarehouseIds, model.IsValidId) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "warehouseIds"}, "please provide valid warehouse ids", http.StatusBadRequest)
+	}
+	if p.Quantity != nil {
+		appErr := p.Quantity.validate(where)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
 }
 
 type ProductTranslatableContent struct {
@@ -4343,18 +4527,19 @@ type VoucherInput struct {
 	UsageLimit               *int32                 `json:"usageLimit"`
 }
 
-func (v *VoucherInput) Validate(api string) *model.AppError {
+func (v *VoucherInput) Validate(where string) *model.AppError {
+	where += "VoucherInput.Validate"
 	if v.Type != nil && !v.Type.IsValid() {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid voucher type", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid voucher type", http.StatusBadRequest)
 	}
 	if v.Code != nil && !model.PromoCodeRegex.MatchString(*v.Code) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "code"}, "code must look like UH78-GHUY-98RG", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "code"}, "code must look like UH78-GHUY-98RG", http.StatusBadRequest)
 	}
 	if v.StartDate != nil && v.EndDate != nil && v.StartDate.After(v.EndDate.Time) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "dates"}, "start date must less than end date", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "dates"}, "start date must less than end date", http.StatusBadRequest)
 	}
 	if v.MinCheckoutItemsQuantity != nil && *v.MinCheckoutItemsQuantity <= 0 {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "minCheckoutQuantity"}, "minimum checkout quantity must >= 1", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "minCheckoutQuantity"}, "minimum checkout quantity must >= 1", http.StatusBadRequest)
 	}
 
 	for name, value := range map[string][]string{
@@ -4364,17 +4549,17 @@ func (v *VoucherInput) Validate(api string) *model.AppError {
 		"categories":  v.Categories,
 	} {
 		if !lo.EveryBy(value, model.IsValidId) {
-			return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" ids", http.StatusBadRequest)
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" ids", http.StatusBadRequest)
 		}
 	}
 	if lo.SomeBy(v.Countries, func(c CountryCode) bool { return !c.IsValid() }) {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countries"}, "please provide valid country codes", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countries"}, "please provide valid country codes", http.StatusBadRequest)
 	}
 	if v.UsageLimit != nil && *v.UsageLimit < 0 {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usageLimit"}, "please provide valid usage limit", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usageLimit"}, "please provide valid usage limit", http.StatusBadRequest)
 	}
 	if v.DiscountValueType != nil && !v.DiscountValueType.IsValid() {
-		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValueType"}, "please provide valid discount value type", http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValueType"}, "please provide valid discount value type", http.StatusBadRequest)
 	}
 
 	return nil
@@ -4802,23 +4987,31 @@ func (e AttributeErrorCode) IsValid() bool {
 type AttributeSortField string
 
 const (
-	AttributeSortFieldName                     AttributeSortField = "NAME"
-	AttributeSortFieldSlug                     AttributeSortField = "SLUG"
-	AttributeSortFieldValueRequired            AttributeSortField = "VALUE_REQUIRED"
-	AttributeSortFieldIsVariantOnly            AttributeSortField = "IS_VARIANT_ONLY"
-	AttributeSortFieldVisibleInStorefront      AttributeSortField = "VISIBLE_IN_STOREFRONT"
-	AttributeSortFieldFilterableInStorefront   AttributeSortField = "FILTERABLE_IN_STOREFRONT"
-	AttributeSortFieldFilterableInDashboard    AttributeSortField = "FILTERABLE_IN_DASHBOARD"
-	AttributeSortFieldStorefrontSearchPosition AttributeSortField = "STOREFRONT_SEARCH_POSITION"
-	AttributeSortFieldAvailableInGrid          AttributeSortField = "AVAILABLE_IN_GRID"
+	AttributeSortFieldName                     AttributeSortField = "NAME"                       //
+	AttributeSortFieldSlug                     AttributeSortField = "SLUG"                       //
+	AttributeSortFieldValueRequired            AttributeSortField = "VALUE_REQUIRED"             //
+	AttributeSortFieldIsVariantOnly            AttributeSortField = "IS_VARIANT_ONLY"            //
+	AttributeSortFieldVisibleInStorefront      AttributeSortField = "VISIBLE_IN_STOREFRONT"      //
+	AttributeSortFieldFilterableInStorefront   AttributeSortField = "FILTERABLE_IN_STOREFRONT"   //
+	AttributeSortFieldFilterableInDashboard    AttributeSortField = "FILTERABLE_IN_DASHBOARD"    //
+	AttributeSortFieldStorefrontSearchPosition AttributeSortField = "STOREFRONT_SEARCH_POSITION" //
+	AttributeSortFieldAvailableInGrid          AttributeSortField = "AVAILABLE_IN_GRID"          //
 )
 
+var attributeSortFieldMap = map[AttributeSortField]string{
+	AttributeSortFieldName:                     ".Name",
+	AttributeSortFieldSlug:                     ".Slug",
+	AttributeSortFieldValueRequired:            ".ValueRequired",
+	AttributeSortFieldIsVariantOnly:            ".IsVariantOnly",
+	AttributeSortFieldVisibleInStorefront:      ".VisibleInStoreFront",
+	AttributeSortFieldFilterableInStorefront:   ".FilterableInStorefront",
+	AttributeSortFieldFilterableInDashboard:    ".FilterableInDashboard",
+	AttributeSortFieldStorefrontSearchPosition: ".StorefrontSearchPosition",
+	AttributeSortFieldAvailableInGrid:          ".AvailableInGrid",
+}
+
 func (e AttributeSortField) IsValid() bool {
-	switch e {
-	case AttributeSortFieldName, AttributeSortFieldSlug, AttributeSortFieldValueRequired, AttributeSortFieldIsVariantOnly, AttributeSortFieldVisibleInStorefront, AttributeSortFieldFilterableInStorefront, AttributeSortFieldFilterableInDashboard, AttributeSortFieldStorefrontSearchPosition, AttributeSortFieldAvailableInGrid:
-		return true
-	}
-	return false
+	return attributeSortFieldMap[e] != ""
 }
 
 type CategorySortField string
@@ -5332,16 +5525,16 @@ const (
 	OrderActionVoid       OrderAction = "VOID"
 )
 
-func (e OrderAction) IsValid() bool {
-	switch e {
+func (e *OrderAction) IsValid() bool {
+	switch *e {
 	case OrderActionCapture, OrderActionMarkAsPaid, OrderActionRefund, OrderActionVoid:
 		return true
 	}
 	return false
 }
 
-func (o OrderAction) Description() string {
-	switch o {
+func (o *OrderAction) Description() string {
+	switch *o {
 	case OrderActionCapture:
 		return "Represents the capture action."
 	case OrderActionMarkAsPaid:
@@ -5351,16 +5544,11 @@ func (o OrderAction) Description() string {
 	case OrderActionVoid:
 		return "Represents a void action."
 	default:
-		return "Unsupported enum value: " + string(o)
+		return "Unsupported enum value: " + string(*o)
 	}
 }
 
 type OrderDirection = model.OrderDirection
-
-const (
-	OrderDirectionAsc  OrderDirection = model.ASC
-	OrderDirectionDesc OrderDirection = model.DESC
-)
 
 type OrderDiscountType = model.OrderDiscountType
 

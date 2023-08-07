@@ -53,11 +53,13 @@ type ProductVariantChannelListingFilterOption struct {
 
 	SelectRelatedChannel        bool   // tell store to select related Channel(s)
 	SelectRelatedProductVariant bool   // tell store to select related product variant
-	SelectForUpdate             bool   // if true, add `FOR UPDATE` to the end of query
+	SelectForUpdate             bool   // if true, add `FOR UPDATE` to the end of query. NOTE: only apply when Transaction is set
 	SelectForUpdateOf           string // if provided, tell database system to lock on specific row(s)
 
 	AnnotatePreorderQuantityAllocated bool // set true to populate `preorderQuantityAllocated` field of returning product variant channel listings
 	AnnotateAvailablePreorderQuantity bool // set true to populate `availablePreorderQuantity` field of returning product variant channel listings
+
+	Transaction *gorm.DB
 }
 
 func (p *ProductVariantChannelListing) Set_preorderQuantityAllocated(value int) {

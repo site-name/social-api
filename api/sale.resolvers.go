@@ -439,6 +439,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 			SaleID:        args.Id,
 			ChannelID:     ac.ChannelID,
 			DiscountValue: (*decimal.Decimal)(unsafe.Pointer(&ac.DiscountValue)),
+			Currency:      channelCurrenciesMap[ac.ChannelID],
 		}
 	})
 

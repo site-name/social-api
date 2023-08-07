@@ -44,19 +44,8 @@ func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, loc
 // PaymentsByOption returns all payments that satisfy given option
 func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) ([]*model.Payment, *model.AppError) {
 	payments, err := a.srv.Store.Payment().FilterByOption(option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(payments) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return payments, nil

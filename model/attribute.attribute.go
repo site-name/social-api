@@ -159,7 +159,7 @@ type AttributeFilterOption struct {
 	Search       string // Slug or Name ILIKE ...
 	InCollection *string
 	InCategory   *string
-	Channel      *string // channel id or slug in which attributes reside
+	ChannelSlug  *string
 
 	OrderBy         string
 	Distinct        bool
@@ -167,6 +167,7 @@ type AttributeFilterOption struct {
 	Limit           int
 
 	PrefetchRelatedAttributeValues bool
+	PaginationValues               PaginationValues
 }
 
 func (a *Attribute) IsValid() *AppError {

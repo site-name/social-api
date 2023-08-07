@@ -119,7 +119,7 @@ type Order struct {
 	TotalPaid              *goprices.Money      `json:"total_paid" gorm:"-"`
 	Weight                 *measurement.Weight  `json:"weight" gorm:"-"` // default 0
 
-	populatedNonDBFields bool `db:"-"`
+	populatedNonDBFields bool `gorm:"-"`
 
 	GiftCards []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
 }

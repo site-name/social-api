@@ -1154,7 +1154,8 @@ const (
 	LanguageCodeEnumZuZa         LanguageCodeEnum = "ZU_ZA"
 )
 
-func init() {
+// initConsts is called by init() function that located in /model/init.go
+func initConsts() {
 	// borrowed from django_countries
 	Countries = map[CountryCode]string{
 		CountryCodeAf: "Afghanistan",
