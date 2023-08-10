@@ -25,15 +25,15 @@ type PluginOption struct {
 type PluginSettingType int
 
 const (
-	Bool PluginSettingType = iota
-	Dropdown
-	Generated
-	Radio
-	Text
-	LongText
-	Number
-	Username
-	Custom
+	PluginTypeBool PluginSettingType = iota
+	PluginTypeDropdown
+	PluginTypeGenerated
+	PluginTypeRadio
+	PluginTypeText
+	PluginTypeLongText
+	PluginTypeNumber
+	PluginTypeUsername
+	PluginTypeCustom
 )
 
 type PluginSetting struct {
@@ -463,20 +463,20 @@ func (s *PluginSetting) isValid() error {
 		return err
 	}
 
-	if s.RegenerateHelpText != "" && pluginSettingType != Generated {
+	if s.RegenerateHelpText != "" && pluginSettingType != PluginTypeGenerated {
 		return errors.New("should not set RegenerateHelpText for setting type that is not generated")
 	}
 
-	if s.Placeholder != "" && !(pluginSettingType == Generated ||
-		pluginSettingType == Text ||
-		pluginSettingType == LongText ||
-		pluginSettingType == Number ||
-		pluginSettingType == Username) {
+	if s.Placeholder != "" && !(pluginSettingType == PluginTypeGenerated ||
+		pluginSettingType == PluginTypeText ||
+		pluginSettingType == PluginTypeLongText ||
+		pluginSettingType == PluginTypeNumber ||
+		pluginSettingType == PluginTypeUsername) {
 		return errors.New("should not set Placeholder for setting type not in text, generated or username")
 	}
 
 	if s.Options != nil {
-		if pluginSettingType != Radio && pluginSettingType != Dropdown {
+		if pluginSettingType != PluginTypeRadio && pluginSettingType != PluginTypeDropdown {
 			return errors.New("should not set Options for setting type not in radio or dropdown")
 		}
 
@@ -494,23 +494,23 @@ func convertTypeToPluginSettingType(t string) (PluginSettingType, error) {
 	var settingType PluginSettingType
 	switch t {
 	case "bool":
-		return Bool, nil
+		return PluginTypeBool, nil
 	case "dropdown":
-		return Dropdown, nil
+		return PluginTypeDropdown, nil
 	case "generated":
-		return Generated, nil
+		return PluginTypeGenerated, nil
 	case "radio":
-		return Radio, nil
+		return PluginTypeRadio, nil
 	case "text":
-		return Text, nil
+		return PluginTypeText, nil
 	case "number":
-		return Number, nil
+		return PluginTypeNumber, nil
 	case "longtext":
-		return LongText, nil
+		return PluginTypeLongText, nil
 	case "username":
-		return Username, nil
+		return PluginTypeUsername, nil
 	case "custom":
-		return Custom, nil
+		return PluginTypeCustom, nil
 	default:
 		return settingType, errors.New("invalid setting type: " + t)
 	}

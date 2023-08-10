@@ -173,7 +173,7 @@ func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args GraphqlParam
 		return nil, err
 	}
 
-	keyFunc := func(p *model.Product) string { return p.Slug }
+	keyFunc := func(p *model.Product) []any { return []any{model.ProductTableName + ".Slug", p.Slug} }
 	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args).parse("ShippingMethod.ExcludedProducts")
 	if appErr != nil {
 		return nil, appErr

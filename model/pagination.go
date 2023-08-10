@@ -15,7 +15,7 @@ type PaginationValues struct {
 	Limit uint64
 }
 
-// QueryLimit returns current limit + 1 as a trick to determine if there are nextPage/reviousPage exists
+// QueryLimit returns current limit + 1 as a trick to determine if there are nextPage/previousPage exists
 func (p *PaginationValues) QueryLimit() uint64 {
 	return p.Limit + 1
 }

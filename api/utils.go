@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -139,98 +138,161 @@ func systemRecordsToGraphql[S any, D any](slice []S, iteratee func(S) D) []D {
 	return res
 }
 
-func convertGraphqlOperandToString[C graphqlCursorType](operand C) string {
-	switch t := any(operand).(type) {
-	case time.Time:
-		return t.Format(time.RFC3339)
-	case decimal.Decimal:
-		return t.String()
+// operands have format like:
+//
+//	 []any{"Users.Id", "9032nfuy45", "Users.Username", "minhson"}
+//
+//		convertGraphqlOperandsToString({"Users.Id": "8975jhfgg9u", "Users.Username": nil}) == "Users.Id:8975jhfgg9u____Users.Username:nil"
+func convertGraphqlOperandsToString(operands []any) string {
+	var cursorStrings = make([]string, len(operands)/2)
+	var j = 0
 
-	default:
-		return fmt.Sprintf("%v", t)
+	for i := 0; i < len(operands); i += 2 {
+		key := operands[i].(string)
+		value := operands[i+1]
+
+		if value == nil {
+			cursorStrings[j] = key + ":nil"
+			j++
+			continue
+		}
+
+		kind, _ := model.GetModelFieldKind(key)
+		if kind&1 != 0 { // check if kind is odd => normal type
+			value = &value
+		}
+
+		switch kind {
+		case model.Time, model.TimePtr:
+			cursorStrings[j] = fmt.Sprintf("%s:%s", key, (value.(*time.Time)).Format(time.RFC3339Nano))
+		case model.Decimal, model.DecimalPtr:
+			cursorStrings[j] = fmt.Sprintf("%s:%s", key, (value.(*decimal.Decimal).String()))
+		case model.String, model.StringPtr:
+			cursorStrings[j] = key + ":" + *(value.(*string))
+		case model.Bool, model.BoolPtr:
+			cursorStrings[j] = key + ":" + strconv.FormatBool(*(value.(*bool)))
+		case model.Int, model.IntPtr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*int)))
+		case model.Int8, model.Int8Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*int8)))
+		case model.Int16, model.Int16Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*int16)))
+		case model.Int32, model.Int32Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*int32)))
+		case model.Int64, model.Int64Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*int64)))
+		case model.Uint, model.UintPtr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*uint)))
+		case model.Uint8, model.Uint8Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*uint8)))
+		case model.Uint16, model.Uint16Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*uint16)))
+		case model.Uint32, model.Uint32Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*uint32)))
+		case model.Uint64, model.Uint64Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*uint64)))
+		case model.Float32, model.Float32Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*float32)))
+		case model.Float64, model.Float64Ptr:
+			cursorStrings[j] = key + ":" + fmt.Sprintf("%v", *(value.(*float64)))
+
+		default:
+		}
+		j++
+	}
+
+	return strings.Join(cursorStrings, cursorPartsSeperator)
+}
+
+// NOTE: Don't pass maps values
+func compareOperands(a, b any, kind model.ModelFieldKind) int {
+	if a == b {
+		return 0
+	}
+	if a == nil && b != nil {
+		return -1
+	}
+	if a != nil && b == nil {
+		return 1
+	}
+
+	if kind&1 != 0 { // check odd. Refer to /model/init.go to see why we check odd here
+		a, b = &a, &b
+	}
+	// from now on, a and b are pointer values
+
+	switch kind {
+	case model.TimePtr, model.Time:
+		return a.(*time.Time).Compare(*(b.(*time.Time)))
+
+	case model.Decimal, model.DecimalPtr:
+		return a.(*decimal.Decimal).Cmp(*(b.(*decimal.Decimal)))
+
+	case model.String, model.StringPtr:
+		return comparePrimitives(*(a.(*string)), *(b.(*string)))
+
+	case model.Bool, model.BoolPtr:
+		return comparePrimitives(
+			*(*uint8)(unsafe.Pointer(a.(*bool))),
+			*(*uint8)(unsafe.Pointer(b.(*bool))),
+		)
+	case model.Int, model.IntPtr:
+		return comparePrimitives(*a.(*int), *b.(*int))
+	case model.Int8, model.Int8Ptr:
+		return comparePrimitives(*a.(*int8), *b.(*int8))
+	case model.Int16, model.Int16Ptr:
+		return comparePrimitives(*a.(*int16), *b.(*int16))
+	case model.Int32, model.Int32Ptr:
+		return comparePrimitives(*a.(*int32), *b.(*int32))
+	case model.Int64, model.Int64Ptr:
+		return comparePrimitives(*a.(*int64), *b.(*int64))
+	case model.Uint, model.UintPtr:
+		return comparePrimitives(*a.(*uint), *b.(*uint))
+	case model.Uint8, model.Uint8Ptr:
+		return comparePrimitives(*a.(*uint8), *b.(*uint8))
+	case model.Uint16, model.Uint16Ptr:
+		return comparePrimitives(*a.(*uint16), *b.(*uint16))
+	case model.Uint32, model.Uint32Ptr:
+		return comparePrimitives(*a.(*uint32), *b.(*uint32))
+	case model.Uint64, model.Uint64Ptr:
+		return comparePrimitives(*a.(*uint64), *b.(*uint64))
+	case model.Float32, model.Float32Ptr:
+		return comparePrimitives(*a.(*float32), *b.(*float32))
+	case model.Float64, model.Float64Ptr:
+		return comparePrimitives(*a.(*float64), *b.(*float64))
+
+	default: // this code should never be reached
+		return 0
 	}
 }
 
-// parseGraphqlOperand can possibly returns (nil, nil)
-func parseGraphqlOperand[C graphqlCursorType](params *GraphqlParams) (*C, *model.AppError) {
-	// in case users query resuts for the first time
-	if params.Before == nil && params.After == nil {
-		return nil, nil
+// operands must have format like:
+//
+//	[]any{"Products.Slug", "hello-this-is-slug", "Products.CreateAt": 1678089}
+//
+// compareGraphqlOperands compares according values of two given maps. It returns:
+//
+// 1 if map1 > map2
+//
+// 0 if map1 == map2
+//
+// -1 if map1 < map2
+func compareGraphqlOperands(operand1, operand2 []any) int {
+	for i := 0; i < len(operand1); i += 2 {
+		var (
+			key     = operand1[i].(string)
+			value1  = operand1[i+1]
+			value2  = operand2[i+1]
+			kind, _ = model.GetModelFieldKind(key)
+			result  = compareOperands(value1, value2, kind)
+		)
+
+		if result != 0 {
+			return result
+		}
 	}
 
-	// convert base64 cursor to string:
-	var byteCursorValue []byte
-	var err error
-	if params.Before != nil {
-		byteCursorValue, err = base64.StdEncoding.DecodeString(*params.Before)
-	} else if params.After != nil {
-		byteCursorValue, err = base64.StdEncoding.DecodeString(*params.After)
-	}
-
-	if err != nil {
-		return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not valid base64 encoded string", http.StatusBadRequest)
-	}
-	var cursorValue = string(byteCursorValue)
-
-	var res C
-	switch any(res).(type) {
-	case string:
-		return (*C)(unsafe.Pointer(&cursorValue)), nil
-
-	case float64:
-		float, err := strconv.ParseFloat(cursorValue, 64)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not float64 based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&float)), nil
-
-	case int:
-		i32, err := strconv.ParseInt(cursorValue, 10, 32)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not int based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&i32)), nil
-
-	case int64:
-		i64, err := strconv.ParseInt(cursorValue, 10, 64)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not int64 based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&i64)), nil
-
-	case uint64:
-		ui64, err := strconv.ParseUint(cursorValue, 10, 64)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not uint64 based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&ui64)), nil
-
-	case time.Time:
-		tim, err := time.Parse(time.RFC3339, cursorValue)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not RFC3339 time based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&tim)), nil
-
-	case bool:
-		boo, err := strconv.ParseBool(cursorValue)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not boolean based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&boo)), nil
-
-	default:
-		deci, err := decimal.NewFromString(cursorValue)
-		if err != nil {
-			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not decimal based string", http.StatusBadRequest)
-		}
-		return (*C)(unsafe.Pointer(&deci)), nil
-	}
-}
-
-// If the type is time.Time, we always parse it in RFC3339 format
-type graphqlCursorType interface {
-	time.Time | decimal.Decimal | util.Ordered | bool
+	return 0
 }
 
 // It returns -1 if a < b, 0 if a == b and +1 if a > b
@@ -245,69 +307,256 @@ func comparePrimitives[T util.Ordered](a, b T) int {
 	}
 }
 
-// compareGraphqlOperands compares a and b and returns int.
-//
-// It returns -1 if a < b, 0 if a == b and 1 if a > b
-func compareGraphqlOperands[K graphqlCursorType](a, b K) int {
-	anyB := any(b)
-	anyA := any(a)
+const cursorPartsSeperator = "____"
 
-	switch t := anyA.(type) {
-	case time.Time:
-		return t.Compare(anyB.(time.Time))
-	case decimal.Decimal:
-		return t.Cmp(anyB.(decimal.Decimal))
-	case string:
-		return comparePrimitives(t, anyB.(string))
-	case int:
-		return comparePrimitives(t, anyB.(int))
-	case int8:
-		return comparePrimitives(t, anyB.(int8))
-	case int16:
-		return comparePrimitives(t, anyB.(int16))
-	case int32:
-		return comparePrimitives(t, anyB.(int32))
-	case int64:
-		return comparePrimitives(t, anyB.(int64))
-	case uint:
-		return comparePrimitives(t, anyB.(uint))
-	case uint8:
-		return comparePrimitives(t, anyB.(uint8))
-	case uint16:
-		return comparePrimitives(t, anyB.(uint16))
-	case uint32:
-		return comparePrimitives(t, anyB.(uint32))
-	case uint64:
-		return comparePrimitives(t, anyB.(uint64))
-	case float32:
-		return comparePrimitives(t, anyB.(float32))
-	case float64:
-		return comparePrimitives(t, anyB.(float64))
-	default:
-		return comparePrimitives(
-			*(*uint8)(unsafe.Pointer(&t)),
-			*(*uint8)(unsafe.Pointer(&anyB)),
-		)
+func parseGraphqlCursor(params *GraphqlParams) ([]any, error) {
+	// this case happends when user initially fetch first page
+	if params.Before == nil && params.After == nil {
+		return nil, nil
 	}
+
+	var cursor string
+	switch {
+	case params.Before != nil:
+		data, err := base64.StdEncoding.DecodeString(*params.Before)
+		if err != nil {
+			return nil, errors.Wrap(err, "invalid cursor before provided")
+		}
+		cursor = string(data)
+	default:
+		data, err := base64.StdEncoding.DecodeString(*params.After)
+		if err != nil {
+			return nil, errors.Wrap(err, "invalid cursor after provided")
+		}
+		cursor = string(data)
+	}
+
+	splitCursor := strings.Split(cursor, cursorPartsSeperator)
+
+	var res = make([]any, 0, len(splitCursor)*2)
+
+	for _, cursorPart := range splitCursor {
+		splitCursorsParts := strings.Split(cursorPart, ":")
+		if len(splitCursorsParts) != 2 {
+			return nil, errors.Errorf("expect cursor part to have 2 component, got %d", len(splitCursorsParts))
+		}
+		key, value := splitCursorsParts[0], splitCursorsParts[1]
+
+		if value == "nil" {
+			res = append(res, key, nil)
+			continue
+		}
+
+		kind, found := model.GetModelFieldKind(key)
+		if !found {
+			return nil, errors.Errorf("invalid field key: %s", key)
+		}
+
+		switch kind {
+		case model.Decimal, model.DecimalPtr:
+			deci, err := decimal.NewFromString(value)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse decimal value")
+			}
+			var value any = deci
+			if kind == model.DecimalPtr {
+				value = &deci
+			}
+			res = append(res, key, value)
+
+		case model.Time, model.TimePtr:
+			tim, err := time.Parse(time.RFC3339Nano, value)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse time value")
+			}
+			var value any = tim
+			if kind == model.TimePtr {
+				value = &tim
+			}
+			res = append(res, key, value)
+
+		case model.Bool, model.BoolPtr:
+			boo, err := strconv.ParseBool(value)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse bool value")
+			}
+			var value any = boo
+			if kind == model.BoolPtr {
+				value = &boo
+			}
+			res = append(res, key, value)
+
+		case model.Int, model.IntPtr:
+			in, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse int value")
+			}
+			var value any = int(in) // type cast
+			if kind == model.IntPtr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Int8, model.Int8Ptr:
+			in, err := strconv.ParseInt(value, 10, 8)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse int8 value")
+			}
+			var value any = int8(in)
+			if kind == model.Int8Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Int16, model.Int16Ptr:
+			in, err := strconv.ParseInt(value, 10, 16)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse int16 value")
+			}
+			var value any = int16(in)
+			if kind == model.Int16Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Int32, model.Int32Ptr:
+			in, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse int32 value")
+			}
+			var value any = int32(in)
+			if kind == model.Int32Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Int64, model.Int64Ptr:
+			in, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse int64 value")
+			}
+			var value any = in
+			if kind == model.Int64Ptr {
+				value = &in
+			}
+			res = append(res, key, value)
+
+		case model.Uint, model.UintPtr:
+			uin, err := strconv.ParseUint(value, 10, 32)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse uint value")
+			}
+			var value any = uint(uin)
+			if kind == model.UintPtr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Uint8, model.Uint8Ptr:
+			uin, err := strconv.ParseUint(value, 10, 8)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse uint8 value")
+			}
+			var value any = uint8(uin)
+			if kind == model.Uint8Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Uint16, model.Uint16Ptr:
+			uin, err := strconv.ParseUint(value, 10, 16)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse uint16 value")
+			}
+			var value any = uint16(uin)
+			if kind == model.Uint16Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Uint32, model.Uint32Ptr:
+			uin, err := strconv.ParseUint(value, 10, 32)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse uint32 value")
+			}
+			var value any = uint32(uin)
+			if kind == model.Uint32Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Uint64, model.Uint64Ptr:
+			uin, err := strconv.ParseUint(value, 10, 64)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse uint64 value")
+			}
+			var value any = uin
+			if kind == model.Uint64Ptr {
+				value = &uin
+			}
+			res = append(res, key, value)
+
+		case model.Float32, model.Float32Ptr:
+			float, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse float32 value")
+			}
+			var value any = float32(float)
+			if kind == model.Float32Ptr {
+				value = &value
+			}
+			res = append(res, key, value)
+
+		case model.Float64, model.Float64Ptr:
+			float, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse float64 value")
+			}
+			var value any = float
+			if kind == model.Float64Ptr {
+				value = &float
+			}
+			res = append(res, key, value)
+
+		case model.String, model.StringPtr:
+			var str any = value
+			if kind == model.StringPtr {
+				str = &value
+			}
+			res = append(res, key, str)
+
+		default:
+			// NOTE: there is still Map and Slice types.
+			// But we don't sort records using map nor slice types.
+			// So I decide to ignore it here
+			return nil, errors.Errorf("unsupported type")
+		}
+	}
+
+	return res, nil
 }
 
 // GraphqlParams is provided in some resolver methods
 type GraphqlParams struct {
+	// after base64 decoding, Before must have format like:
+	//  "Products.Slug:hello-world____Products.DeleteAt:nil"
 	Before *string `json:"before"`
-	After  *string `json:"after"`
-	First  *int32  `json:"first"`
-	Last   *int32  `json:"last"`
+	// after base64 decoding, After must have format like:
+	//  "Products.Slug:hello-world____Products.DeleteAt:nil"
+	After *string `json:"after"`
+	First *int32  `json:"first"`
+	Last  *int32  `json:"last"`
 
 	validated    bool
 	cachedAppErr *model.AppError
 }
 
-func (g *GraphqlParams) Validate(where string) *model.AppError {
+func (g *GraphqlParams) validate(where string) *model.AppError {
 	if g.validated {
 		return g.cachedAppErr
 	}
 	g.validated = true
-	where += "GraphqlParams.Validate"
+	where += ".GraphqlParams.validate"
 
 	switch {
 	case (g.First != nil && *g.First < 0) || (g.Last != nil && *g.Last < 0):
@@ -332,36 +581,36 @@ func (g *GraphqlParams) Validate(where string) *model.AppError {
 	return g.cachedAppErr
 }
 
-func (s *graphqlPaginator[RawT, CursorT, DestT]) Len() int {
+func (s *graphqlPaginator[RawT, DestT]) Len() int {
 	return len(s.data)
 }
 
-func (s *graphqlPaginator[RawT, CursorT, DestT]) Less(i, j int) bool {
+func (s *graphqlPaginator[RawT, DestT]) Less(i, j int) bool {
 	return compareGraphqlOperands(s.keyFunc(s.data[i]), s.keyFunc(s.data[j])) == -1
 }
 
-func (s *graphqlPaginator[RawT, CursorT, DestT]) Swap(i, j int) {
+func (s *graphqlPaginator[RawT, DestT]) Swap(i, j int) {
 	s.data[i], s.data[j] = s.data[j], s.data[i]
 }
 
 const PaginationError = "api.graphql.pagination_params_invalid.app_error"
 
-// graphqlPaginator implements sort.Interface
-type graphqlPaginator[RawT any, CursorT graphqlCursorType, DestT any] struct {
-	data                  []RawT             // E.g []*model.Product
-	keyFunc               func(RawT) CursorT // extract value from system model types
-	rawTypeToDestTypeFunc func(RawT) DestT   // convert raw system model types to their according graphql type
+// In some graphql types there are methods that require countable connections
+type graphqlPaginator[RawT any, DestT any] struct {
+	data                  []RawT           // E.g []*model.Product
+	keyFunc               func(RawT) []any // extract value from system model types
+	rawTypeToDestTypeFunc func(RawT) DestT // convert raw system model types to their according graphql type
 	GraphqlParams
 }
 
 // newGraphqlPaginator returns *graphqlPaginator formed using given arguments.
 // Use this instead of manually construct &graphqlPaginator{} to prevent missing some fields.
-func newGraphqlPaginator[RawT any, CurT graphqlCursorType, DestT any](
+func newGraphqlPaginator[RawT any, DestT any](
 	data []RawT,
-	keyFunc func(RawT) CurT,
+	keyFunc func(RawT) []any,
 	rawTypeToDestTypeFunc func(RawT) DestT,
-	params GraphqlParams) *graphqlPaginator[RawT, CurT, DestT] {
-	return &graphqlPaginator[RawT, CurT, DestT]{data, keyFunc, rawTypeToDestTypeFunc, params}
+	params GraphqlParams) *graphqlPaginator[RawT, DestT] {
+	return &graphqlPaginator[RawT, DestT]{data, keyFunc, rawTypeToDestTypeFunc, params}
 }
 
 // CountableConnection shares similar memory layout as all graphql api Connections.
@@ -376,17 +625,17 @@ type CountableConnectionEdge[D any] struct {
 	Cursor string
 }
 
-func constructCountableConnection[R any, C graphqlCursorType, D any](
+func constructCountableConnection[R any, D any](
 	data []R,
 	totalCount int,
 	hasNextPage, hasPreviousPage bool,
-	keyFunc func(R) C,
+	keyFunc func(R) []any,
 	rawTypeToDestTypeFunc func(R) D,
 ) *CountableConnection[D] {
 	res := &CountableConnection[D]{
 		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
 		Edges: lo.Map(data, func(item R, _ int) *CountableConnectionEdge[D] {
-			stringRawCursor := convertGraphqlOperandToString(keyFunc(item))
+			stringRawCursor := convertGraphqlOperandsToString(keyFunc(item))
 
 			return &CountableConnectionEdge[D]{
 				Cursor: base64.StdEncoding.EncodeToString([]byte(stringRawCursor)),
@@ -406,8 +655,8 @@ func constructCountableConnection[R any, C graphqlCursorType, D any](
 	return res
 }
 
-func (g *graphqlPaginator[RawT, CursorT, DestT]) parse(where string) (*CountableConnection[DestT], *model.AppError) {
-	appErr := g.Validate(where)
+func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnection[DestT], *model.AppError) {
+	appErr := g.validate(where)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -420,7 +669,7 @@ func (g *graphqlPaginator[RawT, CursorT, DestT]) parse(where string) (*Countable
 		sort.Sort(sort.Reverse(g))
 	}
 
-	operand, err := parseGraphqlOperand[CursorT](&g.GraphqlParams)
+	operand, err := parseGraphqlCursor(&g.GraphqlParams)
 	if err != nil {
 		return nil, model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
 	}
@@ -455,7 +704,7 @@ func (g *graphqlPaginator[RawT, CursorT, DestT]) parse(where string) (*Countable
 	// case operand provided:
 	index = sort.Search(totalCount, func(i int) bool {
 		value := g.keyFunc(g.data[i])
-		cmp := compareGraphqlOperands(value, *operand)
+		cmp := compareGraphqlOperands(value, operand)
 
 		// order ASC && >= || order DESC && <=
 		return (orderASC && cmp >= 0) || cmp <= 0
@@ -488,92 +737,84 @@ func reportingPeriodToDate(period ReportingPeriod) time.Time {
 	}
 }
 
-func convertStringCursorToRealType(where, value string, kind reflect.Kind) (any, *model.AppError) {
-	var (
-		res any
-		err error
-	)
-	switch kind {
-	case model.Time:
-		res, err = time.Parse(value, time.RFC3339)
-	case model.Decimal:
-		res, err = decimal.NewFromString(value)
-	case reflect.Bool:
-		res, err = strconv.ParseBool(value)
-	case reflect.Int64, reflect.Int, reflect.Int8, reflect.Int32, reflect.Int16:
-		res, err = strconv.ParseInt(value, 10, 64)
-	case reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uint:
-		res, err = strconv.ParseUint(value, 10, 64)
-	case reflect.Float64, reflect.Float32:
-		res, err = strconv.ParseFloat(value, 64)
-	case reflect.String:
-		res = value
-	default:
-		// Map is not used for sorting
-		err = fmt.Errorf("not supported cursor type: %s", kind.String())
+func prepareFilterExpression(fieldName string, index int, cursors []any, sortingFields []string, sortAscending bool) (squirrel.Or, squirrel.And) {
+	var fieldExpression = squirrel.And{}
+	var extraExpression = squirrel.Or{}
+
+	for idx, cursorValue := range cursors[:index] {
+		fieldExpression = append(fieldExpression, squirrel.Eq{sortingFields[idx]: cursorValue})
 	}
 
-	if err != nil {
-		where += "convertStringCursorToRealType"
-		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "value"}, err.Error(), http.StatusBadRequest)
+	if sortAscending {
+		extraExpression = append(
+			extraExpression,
+			squirrel.Gt{fieldName: cursors[index]},
+			squirrel.Eq{fieldName: nil},
+		)
+	} else if cursors[index] != nil {
+		var expr squirrel.Sqlizer = squirrel.Gt{fieldName: cursors[index]}
+		if !sortAscending {
+			expr = squirrel.Lt{fieldName: cursors[index]}
+		}
+		fieldExpression = append(fieldExpression, expr)
+
+	} else {
+		fieldExpression = append(fieldExpression, squirrel.NotEq{fieldName: nil})
 	}
 
-	return res, nil
+	return extraExpression, fieldExpression
 }
 
-// NOTE: orderKey must be like "Users.Id" or
-func (g *GraphqlParams) parse(where, orderKey string) (*model.PaginationValues, *model.AppError) {
-	where += "GraphqlParams.parse"
+func (g *GraphqlParams) Parse(where string) (*model.PaginationValues, *model.AppError) {
+	where += ".GraphqlParams.parse"
 
-	appErr := g.Validate(where)
+	appErr := g.validate(where)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	kind, found := model.GetModelFieldKind(orderKey)
-	if !found {
-		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderKey"}, orderKey+" is not a valid ", http.StatusBadRequest)
+	operand, err := parseGraphqlCursor(g)
+	if err != nil {
+		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "GraphqlParams"}, err.Error(), http.StatusBadRequest)
 	}
 
-	var realCursorValue string
-	if g.Before != nil || g.After != nil {
-		var decodeCursor []byte
-		var err error
+	var (
+		cursors          = make([]any, 0, len(operand)/2)
+		sortingFields    = make(util.AnyArray[string], 0, len(operand)/2)
+		sortingAscending = g.First != nil
+		res              = &model.PaginationValues{}
+		conditions       = squirrel.Or{}
+	)
 
-		if g.Before != nil {
-			decodeCursor, err = base64.StdEncoding.DecodeString(*g.Before)
-		} else {
-			decodeCursor, err = base64.StdEncoding.DecodeString(*g.After)
+	if len(operand) > 0 {
+		for i := 0; i < len(operand); i += 2 {
+			cursors = append(cursors, operand[i+1])
+			sortingFields = append(sortingFields, operand[i].(string))
 		}
-		if err != nil {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Before / After"}, "please provide valid cursor value", http.StatusBadRequest)
+
+		for idx, fieldName := range sortingFields {
+			if cursors[idx] == nil && sortingAscending {
+				continue
+			}
+
+			extraExpr, fieldExpr := prepareFilterExpression(fieldName, idx, cursors, sortingFields, sortingAscending)
+			conditions = append(conditions, squirrel.And{extraExpr, fieldExpr})
 		}
-		realCursorValue = string(decodeCursor)
 	}
-
-	var operand any
-	if len(realCursorValue) > 0 {
-		operand, appErr = convertStringCursorToRealType(where, realCursorValue, kind)
-		if appErr != nil {
-			return nil, appErr
-		}
-	}
-
-	res := &model.PaginationValues{}
 
 	switch {
-	case g.First != nil:
+	case sortingAscending: // means order ascending
 		res.Limit = uint64(*g.First)
-		res.OrderBy = orderKey + " ASC"
-		if operand != nil {
-			res.Condition = squirrel.Gt{orderKey: operand}
+		res.OrderBy = sortingFields.Map(func(_ int, item string) string { return item + " ASC" }).Join(", ")
+		if len(conditions) > 0 {
+			res.Condition = conditions
 		}
 
-	case g.Last != nil:
+	default: // order descending
 		res.Limit = uint64(*g.Last)
-		res.OrderBy = orderKey + " DESC"
-		if operand != nil {
-			res.Condition = squirrel.Lt{orderKey: operand}
+		res.OrderBy = sortingFields.Map(func(_ int, item string) string { return item + " DESC" }).Join(", ")
+		if len(conditions) > 0 {
+			res.Condition = conditions
 		}
 	}
 

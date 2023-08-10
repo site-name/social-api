@@ -444,42 +444,44 @@ type AttributesArgs struct {
 }
 
 func (args *AttributesArgs) parse(where string) (*model.AttributeFilterOption, *model.AppError) {
-	where += "AttributesArgs.parse"
-	// validate params
-	var attributeFilter = &model.AttributeFilterOption{}
+	// where += "AttributesArgs.parse"
+	// // validate params
+	// var attributeFilter = &model.AttributeFilterOption{}
 
-	if args.Filter != nil {
-		var appErr *model.AppError
-		attributeFilter, appErr = args.Filter.parse(where)
-		if appErr != nil {
-			return nil, appErr
-		}
-	}
+	// if args.Filter != nil {
+	// 	var appErr *model.AppError
+	// 	attributeFilter, appErr = args.Filter.parse(where)
+	// 	if appErr != nil {
+	// 		return nil, appErr
+	// 	}
+	// }
 
-	if args.ChannelSlug != nil {
-		if !slug.IsSlug(*args.ChannelSlug) {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
-		}
-		attributeFilter.ChannelSlug = args.ChannelSlug
-	}
+	// if args.ChannelSlug != nil {
+	// 	if !slug.IsSlug(*args.ChannelSlug) {
+	// 		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
+	// 	}
+	// 	attributeFilter.ChannelSlug = args.ChannelSlug
+	// }
 
-	// attributes are sorted by Names as default.
-	orderKey := model.AttributeTableName + ".Name"
+	// // attributes are sorted by Names as default.
+	// orderKey := model.AttributeTableName + ".Name"
 
-	if args.SortBy != nil {
-		if !args.SortBy.Field.IsValid() {
-			where += "SortBy"
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
-		}
-		orderKey = model.AttributeTableName + attributeSortFieldMap[args.SortBy.Field]
-	}
+	// if args.SortBy != nil {
+	// 	if !args.SortBy.Field.IsValid() {
+	// 		where += "SortBy"
+	// 		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
+	// 	}
+	// 	orderKey = model.AttributeTableName + attributeSortFieldMap[args.SortBy.Field]
+	// }
 
-	paginValue, appErr := args.GraphqlParams.parse(where, orderKey)
-	if appErr != nil {
-		return nil, appErr
-	}
+	// paginValue, appErr := args.GraphqlParams.Parse(where, orderKey)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
 	// NOTE: there are some cases that require to sort by
+
+	panic("not implemented")
 }
 
 func (r *Resolver) Attributes(ctx context.Context, args AttributesArgs) (*AttributeCountableConnection, error) {

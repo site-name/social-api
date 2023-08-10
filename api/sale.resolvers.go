@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -497,29 +496,29 @@ func (r *Resolver) Sales(ctx context.Context, args struct {
 	GraphqlParams
 }) (*SaleCountableConnection, error) {
 	// validate params
-	appErr := args.GraphqlParams.Validate("Resolver.Sales")
-	if appErr != nil {
-		return nil, appErr
-	}
+	// appErr := args.GraphqlParams.validate("Resolver.Sales")
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
-	var saleFilterOpts = &model.SaleFilterOption{}
-	if args.Filter != nil {
-		var appErr *model.AppError
-		saleFilterOpts, appErr = args.Filter.Parse()
-		if appErr != nil {
-			return nil, appErr
-		}
-	}
+	// var saleFilterOpts = &model.SaleFilterOption{}
+	// if args.Filter != nil {
+	// 	var appErr *model.AppError
+	// 	saleFilterOpts, appErr = args.Filter.Parse()
+	// 	if appErr != nil {
+	// 		return nil, appErr
+	// 	}
+	// }
 
-	if args.Channel != nil && model.IsValidId(*args.Channel) {
-		saleFilterOpts.SaleChannelListing_ChannelID = squirrel.Expr(model.SaleChannelListingTableName+".ChannelID = ?", *args.Channel)
-	}
+	// if args.Channel != nil && model.IsValidId(*args.Channel) {
+	// 	saleFilterOpts.SaleChannelListing_ChannelID = squirrel.Expr(model.SaleChannelListingTableName+".ChannelID = ?", *args.Channel)
+	// }
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(saleFilterOpts)
-	if appErr != nil {
-		return nil, appErr
-	}
+	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(saleFilterOpts)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
 	// keyFunc := func(s *model.Sale) string { return s.Name }
 	// res, appErr := newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).
@@ -528,27 +527,29 @@ func (r *Resolver) Sales(ctx context.Context, args struct {
 	// 	return nil, appErr
 	// }
 
-	var res *CountableConnection[*Sale]
+	// var res *CountableConnection[*Sale]
 
-	if args.SortBy != nil {
-		switch args.SortBy.Field {
-		case SaleSortFieldName:
-			keyFunc := func(s *model.Sale) string { return s.Name }
-			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-		case SaleSortFieldStartDate:
-			keyFunc := func(s *model.Sale) time.Time { return s.StartDate }
-			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-		case SaleSortFieldEndDate:
-			keyFunc := func(s *model.Sale) *time.Time { return s.EndDate }
-			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-		case SaleSortFieldValue:
-			keyFunc := func(s *model.Sale) string { return s.Name }
-			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-		case SaleSortFieldType:
-			keyFunc := func(s *model.Sale) string { return string(s.Type) }
-			res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-		}
-	}
+	// if args.SortBy != nil {
+	// 	switch args.SortBy.Field {
+	// 	case SaleSortFieldName:
+	// 		keyFunc := func(s *model.Sale) string { return s.Name }
+	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+	// 	case SaleSortFieldStartDate:
+	// 		keyFunc := func(s *model.Sale) time.Time { return s.StartDate }
+	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+	// 	case SaleSortFieldEndDate:
+	// 		keyFunc := func(s *model.Sale) *time.Time { return s.EndDate }
+	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+	// 	case SaleSortFieldValue:
+	// 		keyFunc := func(s *model.Sale) string { return s.Name }
+	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+	// 	case SaleSortFieldType:
+	// 		keyFunc := func(s *model.Sale) string { return string(s.Type) }
+	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
+	// 	}
+	// }
 
-	return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
+	// return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
+
+	panic("not implemented")
 }

@@ -315,7 +315,7 @@ func (v *Voucher) Categories(ctx context.Context, args GraphqlParams) (*Category
 		return nil, err
 	}
 
-	keyFunc := func(c *model.Category) string { return c.Name }
+	keyFunc := func(c *model.Category) []any { return []any{model.CategoryTableName + ".Name", c.Name} }
 	res, appErr := newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args).parse("Voucher.Categories")
 	if appErr != nil {
 		return nil, appErr
@@ -331,7 +331,7 @@ func (v *Voucher) Collections(ctx context.Context, args GraphqlParams) (*Collect
 		return nil, err
 	}
 
-	keyFunc := func(c *model.Collection) string { return c.Slug }
+	keyFunc := func(c *model.Collection) []any { return []any{model.CollectionTableName + ".Slug", c.Slug} }
 	res, appErr := newGraphqlPaginator(collections, keyFunc, systemCollectionToGraphqlCollection, args).parse("Voucher.Collections")
 	if err != nil {
 		return nil, appErr
@@ -346,7 +346,7 @@ func (v *Voucher) Products(ctx context.Context, args GraphqlParams) (*ProductCou
 		return nil, err
 	}
 
-	keyFunc := func(p *model.Product) string { return p.Slug }
+	keyFunc := func(p *model.Product) []any { return []any{model.ProductTableName + ".Slug", p.Slug} }
 	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args).parse("voucher.Products")
 	if appErr != nil {
 		return nil, appErr
@@ -361,7 +361,7 @@ func (v *Voucher) Variants(ctx context.Context, args GraphqlParams) (*ProductVar
 		return nil, err
 	}
 
-	keyFunc := func(pv *model.ProductVariant) string { return pv.Sku }
+	keyFunc := func(pv *model.ProductVariant) []any { return []any{model.ProductVariantTableName + ".Sku", pv.Sku} }
 	res, appErr := newGraphqlPaginator(variants, keyFunc, SystemProductVariantToGraphqlProductVariant, args).parse("Voucher.Variants")
 	if appErr != nil {
 		return nil, appErr

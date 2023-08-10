@@ -103,8 +103,8 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 	if option.InCategory != nil || option.InCollection != nil {
 		var channelIdOrSlug string
-		if option.Channel != nil {
-			channelIdOrSlug = *option.Channel
+		if option.ChannelSlug != nil {
+			channelIdOrSlug = *option.ChannelSlug
 		}
 
 		productQuery := as.

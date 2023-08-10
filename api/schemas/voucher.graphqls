@@ -134,7 +134,7 @@ enum VoucherSortField {
 
 input VoucherSortingInput {
   direction: OrderDirection!
-  channel: String
+  # channel: String # Deprecated
   field: VoucherSortField!
 }
 

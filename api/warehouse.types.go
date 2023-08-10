@@ -54,7 +54,9 @@ func (w *Warehouse) ShippingZones(ctx context.Context, args GraphqlParams) (*Shi
 		return nil, err
 	}
 
-	keyFunc := func(sz *model.ShippingZone) int64 { return sz.CreateAt }
+	keyFunc := func(sz *model.ShippingZone) []any {
+		return []any{model.ShippingZoneTableName + ".CreateAt", sz.CreateAt}
+	}
 	res, appErr := newGraphqlPaginator(shippingZones, keyFunc, SystemShippingZoneToGraphqlShippingZone, args).parse("Warehouse.ShippingZones")
 	if appErr != nil {
 		return nil, appErr

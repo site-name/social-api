@@ -78,12 +78,12 @@ func (cp *CompliancePost) Row() []string {
 
 	postDeleteAt := ""
 	if cp.PostDeleteAt > 0 {
-		postDeleteAt = time.Unix(0, cp.PostDeleteAt*int64(1000*1000)).Format(time.RFC3339)
+		postDeleteAt = time.Unix(0, cp.PostDeleteAt*int64(1000*1000)).Format(time.RFC3339Nano)
 	}
 
 	postUpdateAt := ""
 	if cp.PostUpdateAt != cp.PostCreateAt {
-		postUpdateAt = time.Unix(0, cp.PostUpdateAt*int64(1000*1000)).Format(time.RFC3339)
+		postUpdateAt = time.Unix(0, cp.PostUpdateAt*int64(1000*1000)).Format(time.RFC3339Nano)
 	}
 
 	userType := "user"
@@ -105,7 +105,7 @@ func (cp *CompliancePost) Row() []string {
 		userType,
 
 		cp.PostId,
-		time.Unix(0, cp.PostCreateAt*int64(1000*1000)).Format(time.RFC3339),
+		time.Unix(0, cp.PostCreateAt*int64(1000*1000)).Format(time.RFC3339Nano),
 		postUpdateAt,
 		postDeleteAt,
 

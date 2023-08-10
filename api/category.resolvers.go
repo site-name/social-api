@@ -191,17 +191,21 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 
 	switch args.SortBy.Field {
 	case CategorySortFieldSubcategoryCount:
-		keyFunc := func(c *model.Category) int { return c.NumOfChildren }
+		keyFunc := func(c *model.Category) []any {
+			return []any{model.CategoryTableName + ".NumOfChildren", c.NumOfChildren}
+		}
 		res, appErr = newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 
 	case CategorySortFieldProductCount:
-		keyFunc := func(c *model.Category) uint64 { return c.NumOfProducts }
+		keyFunc := func(c *model.Category) []any {
+			return []any{model.CategoryTableName + ".NumOfProducts", c.NumOfProducts}
+		}
 		res, appErr = newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 
 	default:
-		keyFunc := func(c *model.Category) string { return c.Name }
+		keyFunc := func(c *model.Category) []any { return []any{model.CategoryTableName + ".Name", c.Name} }
 		if args.SortBy.Field != CategorySortFieldName {
-			keyFunc = func(c *model.Category) string { return c.Slug }
+			keyFunc = func(c *model.Category) []any { return []any{model.CategoryTableName + ".Slug", c.Slug} }
 		}
 		res, appErr = newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 	}

@@ -341,11 +341,11 @@ func (r *Resolver) Voucher(ctx context.Context, args struct {
 func (r *Resolver) Vouchers(ctx context.Context, args struct {
 	Filter  *VoucherFilterInput
 	SortBy  *VoucherSortingInput
-	Channel *string
+	Channel *string // channel slug
 	GraphqlParams
 }) (*VoucherCountableConnection, error) {
 	// validate params
-	appErr := args.GraphqlParams.Validate("Vouchers")
+	appErr := args.GraphqlParams.validate("Vouchers")
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -363,44 +363,46 @@ func (r *Resolver) Vouchers(ctx context.Context, args struct {
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	vouchers, appErr := embedCtx.App.Srv().DiscountService().VouchersByOption(voucherFilter)
+	_, appErr = embedCtx.App.Srv().DiscountService().VouchersByOption(voucherFilter)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if args.SortBy != nil {
-		switch args.SortBy.Field {
-		case VoucherSortFieldCode:
-			newGraphqlPaginator(vouchers, func(v *model.Voucher) string {})
-		case VoucherSortFieldStartDate:
-		case VoucherSortFieldEndDate:
-		case VoucherSortFieldValue:
-		case VoucherSortFieldType:
-		case VoucherSortFieldUsageLimit:
-		case VoucherSortFieldMinimumSpentAmount:
-		}
-	}
+	panic("not implemented")
 
-	voucherOrdering := ".Name"
+	// if args.SortBy != nil {
+	// 	switch args.SortBy.Field {
+	// 	case VoucherSortFieldCode:
+	// 		newGraphqlPaginator(vouchers, func(v *model.Voucher) string {})
+	// 	case VoucherSortFieldStartDate:
+	// 	case VoucherSortFieldEndDate:
+	// 	case VoucherSortFieldValue:
+	// 	case VoucherSortFieldType:
+	// 	case VoucherSortFieldUsageLimit:
+	// 	case VoucherSortFieldMinimumSpentAmount:
+	// 	}
+	// }
 
-	if args.SortBy != nil {
-		switch args.SortBy.Field {
-		case VoucherSortFieldCode:
-			voucherOrdering = ".Code"
-		case VoucherSortFieldStartDate:
-			voucherOrdering = ".StartDate"
-		case VoucherSortFieldEndDate:
-			voucherOrdering = ".EndDate"
-		case VoucherSortFieldValue:
+	// voucherOrdering := ".Name"
 
-		case VoucherSortFieldType:
-			voucherOrdering = ".Type"
+	// if args.SortBy != nil {
+	// 	switch args.SortBy.Field {
+	// 	case VoucherSortFieldCode:
+	// 		voucherOrdering = ".Code"
+	// 	case VoucherSortFieldStartDate:
+	// 		voucherOrdering = ".StartDate"
+	// 	case VoucherSortFieldEndDate:
+	// 		voucherOrdering = ".EndDate"
+	// 	case VoucherSortFieldValue:
 
-		case VoucherSortFieldUsageLimit:
-			voucherOrdering = ".UsageLimit"
-		case VoucherSortFieldMinimumSpentAmount:
-		}
-	}
+	// 	case VoucherSortFieldType:
+	// 		voucherOrdering = ".Type"
 
-	model.Voucher
+	// 	case VoucherSortFieldUsageLimit:
+	// 		voucherOrdering = ".UsageLimit"
+	// 	case VoucherSortFieldMinimumSpentAmount:
+	// 	}
+	// }
+
+	// model.Voucher
 }

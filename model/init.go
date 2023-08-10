@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 )
@@ -16,9 +17,50 @@ func init() {
 	initRoles()
 }
 
+type ModelFieldKind int
+
+// NOTE: Never change position of those constants below
 const (
-	Decimal reflect.Kind = iota + reflect.UnsafePointer + 1
+	Decimal ModelFieldKind = (iota * 2) + 1
 	Time
+	Bool
+	Int
+	Int8
+	Int16
+	Int32
+	Int64
+	Uint
+	Uint8
+	Uint16
+	Uint32
+	Uint64
+	Float32
+	Float64
+	String
+	Map
+	Slice
+)
+
+// every values here is x2 of according types above
+const (
+	DecimalPtr = ((iota * 2) + 1) * 2
+	TimePtr
+	BoolPtr
+	IntPtr
+	Int8Ptr
+	Int16Ptr
+	Int32Ptr
+	Int64Ptr
+	UintPtr
+	Uint8Ptr
+	Uint16Ptr
+	Uint32Ptr
+	Uint64Ptr
+	Float32Ptr
+	Float64Ptr
+	StringPtr
+	MapPtr
+	SlicePtr
 )
 
 // SystemModels holds all database struct models of the wholte system.
@@ -113,13 +155,13 @@ var SystemModels = [...]TableModel{
 	&ProductChannelListing{},        //
 }
 
-func modelFieldKindInit() func(key string) (reflect.Kind, bool) {
+func modelFieldKindInit() func(key string) (ModelFieldKind, bool) {
 	// modelFieldsTypeMap contains models' field types.
 	// E.g
 	//
 	//	"Products.Id": reflect.String
 	//	"Users.Metadata": reflect.Map
-	var modelFieldsTypeMap = map[string]reflect.Kind{}
+	var modelFieldsTypeMap = map[string]ModelFieldKind{}
 
 	for _, model := range SystemModels {
 		typeOf := reflect.TypeOf(model)
@@ -140,10 +182,7 @@ func modelFieldKindInit() func(key string) (reflect.Kind, bool) {
 			if fieldAtIdx.IsExported() && gormTag == "" && jsonTag == "" && fieldType.Kind() == reflect.Struct { // embed struct
 				for j := 0; j < fieldType.NumField(); j++ {
 					subField := fieldType.Field(j)
-					kind, err := inspectField(model.TableName(), subField)
-					if err != nil {
-						panic(err)
-					}
+					kind := inspectField(model.TableName(), subField)
 
 					modelFieldsTypeMap[model.TableName()+"."+subField.Name] = kind
 				}
@@ -151,17 +190,14 @@ func modelFieldKindInit() func(key string) (reflect.Kind, bool) {
 			}
 
 			if fieldAtIdx.IsExported() && gormTag != "-" && jsonTag != "-" {
-				kind, err := inspectField(model.TableName(), fieldAtIdx)
-				if err != nil {
-					panic(err)
-				}
+				kind := inspectField(model.TableName(), fieldAtIdx)
 
 				modelFieldsTypeMap[model.TableName()+"."+fieldAtIdx.Name] = kind
 			}
 		}
 	}
 
-	return func(key string) (reflect.Kind, bool) {
+	return func(key string) (ModelFieldKind, bool) {
 		kind, ok := modelFieldsTypeMap[key]
 		return kind, ok
 	}
@@ -172,33 +208,72 @@ func modelFieldKindInit() func(key string) (reflect.Kind, bool) {
 //	GetModelFieldKind("Users.Id") // => reflect.String, true
 var GetModelFieldKind = modelFieldKindInit()
 
-func inspectField(modelName string, aField reflect.StructField) (reflect.Kind, error) {
+func inspectField(modelName string, aField reflect.StructField) ModelFieldKind {
 	gormTag := aField.Tag.Get("gorm")
 	splitGormTag := strings.Split(gormTag, ";")
-	fieldType := aField.Type
-	if fieldType.Kind() == reflect.Pointer {
-		fieldType = fieldType.Elem()
+	reflectFieldType := aField.Type
+	realReflectFieldKind := aField.Type.Kind()
+
+	if reflectFieldType.Kind() == reflect.Pointer {
+		reflectFieldType = reflectFieldType.Elem()
 	}
 
 	columnAttr, found := lo.Find(splitGormTag, func(s string) bool { return strings.HasPrefix(s, "column:") })
 	if found {
 		columnName := columnAttr[len("column:"):]
 		if columnName == aField.Name {
-			var kind reflect.Kind
-			switch fieldType {
-			case reflect.TypeOf(time.Time{}):
+			var kind ModelFieldKind
+
+			switch {
+			case reflectFieldType == reflect.TypeOf(time.Time{}):
 				kind = Time
-			case reflect.TypeOf(decimal.Decimal{}):
+			case reflectFieldType == reflect.TypeOf(decimal.Decimal{}):
 				kind = Decimal
+			case reflectFieldType.Kind() == reflect.Bool:
+				kind = Bool
+			case reflectFieldType.Kind() == reflect.Int:
+				kind = Int
+			case reflectFieldType.Kind() == reflect.Int8:
+				kind = Int8
+			case reflectFieldType.Kind() == reflect.Int16:
+				kind = Int16
+			case reflectFieldType.Kind() == reflect.Int32:
+				kind = Int32
+			case reflectFieldType.Kind() == reflect.Int64:
+				kind = Int64
+			case reflectFieldType.Kind() == reflect.Uint:
+				kind = Uint
+			case reflectFieldType.Kind() == reflect.Uint8:
+				kind = Uint8
+			case reflectFieldType.Kind() == reflect.Uint16:
+				kind = Uint16
+			case reflectFieldType.Kind() == reflect.Uint32:
+				kind = Uint32
+			case reflectFieldType.Kind() == reflect.Uint64:
+				kind = Uint64
+			case reflectFieldType.Kind() == reflect.Float32:
+				kind = Float32
+			case reflectFieldType.Kind() == reflect.Float64:
+				kind = Float64
+			case reflectFieldType.Kind() == reflect.String:
+				kind = String
+			case reflectFieldType.Kind() == reflect.Map:
+				kind = Map
+			case reflectFieldType.Kind() == reflect.Slice:
+				kind = Slice
 			default:
-				kind = fieldType.Kind()
+				panic(errors.Errorf("model: %s, field %s got unexpected model field type: %s", modelName, aField.Name, reflectFieldType.Kind().String()))
 			}
 
-			return kind, nil
+			if realReflectFieldKind == reflect.Pointer {
+				kind *= 2
+			}
+
+			return kind
 		}
 
-		return reflect.Invalid, fmt.Errorf("column: %s != field: %s", columnName, aField.Name)
+		panic(fmt.Errorf("column: %s != field: %s", columnName, aField.Name))
 	}
 
-	return reflect.Invalid, fmt.Errorf("model: %s, field: %s gorm column attribute not found", modelName, aField.Name)
+	panic(fmt.Errorf("model: %s, field: %s gorm column attribute not found", modelName, aField.Name))
 }

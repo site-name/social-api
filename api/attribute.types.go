@@ -168,7 +168,7 @@ func (a *Attribute) Choices(
 	if !model.TYPES_WITH_CHOICES.Contains(a.attr.InputType) {
 		return nil, nil
 	}
-	appErr := args.GraphqlParams.Validate("Attribute.Choices")
+	appErr := args.GraphqlParams.validate("Attribute.Choices")
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -178,9 +178,13 @@ func (a *Attribute) Choices(
 		return nil, err
 	}
 
-	keyFunc := func(v *model.AttributeValue) string { return v.Name }
+	keyFunc := func(v *model.AttributeValue) []any {
+		return []any{model.AttributeValueTableName + ".Name", v.Name}
+	}
 	if args.SortBy != nil && args.SortBy.Field == AttributeChoicesSortFieldSlug {
-		keyFunc = func(v *model.AttributeValue) string { return v.Slug }
+		keyFunc = func(v *model.AttributeValue) []any {
+			return []any{model.AttributeValueTableName + ".Slug", v.Slug}
+		}
 	}
 
 	// parse filter
@@ -220,7 +224,9 @@ func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*Prod
 		return nil, appErr
 	}
 
-	keyFunc := func(pt *model.ProductType) string { return pt.Slug }
+	keyFunc := func(pt *model.ProductType) []any {
+		return []any{model.ProductTypeTableName + ".Slug", pt.Slug}
+	}
 	res, appErr := newGraphqlPaginator(productTypes, keyFunc, SystemProductTypeToGraphqlProductType, args).parse("Attribute.ProductTypes")
 	if appErr != nil {
 		return nil, appErr
@@ -241,7 +247,9 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 		return nil, appErr
 	}
 
-	keyFunc := func(pt *model.ProductType) string { return pt.Slug }
+	keyFunc := func(pt *model.ProductType) []any {
+		return []any{model.ProductTypeTableName + ".Slug", pt.Slug}
+	}
 	res, appErr := newGraphqlPaginator(productTypes, keyFunc, SystemProductTypeToGraphqlProductType, args).parse("Attribute.ProductVariantTypes")
 	if appErr != nil {
 		return nil, appErr

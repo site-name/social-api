@@ -494,7 +494,7 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 		return nil, model.NewAppError("AvailableAttributes", "app.attribute.filter_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	keyFunc := func(a *model.Attribute) string { return a.Slug }
+	keyFunc := func(a *model.Attribute) []any { return []any{model.AttributeTableName + ".Slug", a.Slug} }
 	res, appErr := newGraphqlPaginator(attributes, keyFunc, SystemAttributeToGraphqlAttribute, args.GraphqlParams).parse("ProductType.AvailableAttributes")
 	if appErr != nil {
 		return nil, appErr

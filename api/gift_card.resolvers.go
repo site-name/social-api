@@ -415,7 +415,7 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 			return nil, err
 		}
 	}
-	err := args.GraphqlParams.Validate("GiftCards")
+	err := args.GraphqlParams.validate("GiftCards")
 	if err != nil {
 		return nil, err
 	}
@@ -432,20 +432,14 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 
 	switch args.SortBy.Field {
 	case GiftCardSortFieldTag:
-		keyFunc := func(g *model.GiftCard) string {
-			if g.Tag != nil {
-				return *g.Tag
-			}
-			return ""
+		keyFunc := func(g *model.GiftCard) []any {
+			return []any{model.GiftcardTableName + ".Tag", g.Tag}
 		}
 		connection, appErr = newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args.GraphqlParams).parse("GiftCards")
 
 	case GiftCardSortFieldCurrentBalance:
-		keyFunc := func(g *model.GiftCard) decimal.Decimal {
-			if g.CurrentBalanceAmount == nil {
-				g.CurrentBalanceAmount = &decimal.Zero
-			}
-			return *g.CurrentBalanceAmount
+		keyFunc := func(g *model.GiftCard) []any {
+			return []any{model.GiftcardTableName + ".CurrentBalanceAmount", g.CurrentBalanceAmount}
 		}
 		connection, appErr = newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args.GraphqlParams).parse("GiftCards")
 	}

@@ -58,7 +58,7 @@ func (s *Sale) Categories(ctx context.Context, args GraphqlParams) (*CategoryCou
 		return nil, err
 	}
 
-	keyFunc := func(c *model.Category) string { return c.Slug }
+	keyFunc := func(c *model.Category) []any { return []any{model.CategoryTableName + ".Slug", c.Slug} }
 	res, appErr := newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args).parse("sale.Categories")
 	if appErr != nil {
 		return nil, appErr
@@ -73,7 +73,7 @@ func (s *Sale) Collections(ctx context.Context, args GraphqlParams) (*Collection
 		return nil, err
 	}
 
-	keyFunc := func(c *model.Collection) string { return c.Slug }
+	keyFunc := func(c *model.Collection) []any { return []any{model.CollectionTableName + ".Slug", c.Slug} }
 	res, appErr := newGraphqlPaginator(collections, keyFunc, systemCollectionToGraphqlCollection, args).parse("Sale.Collections")
 	if appErr != nil {
 		return nil, appErr
@@ -88,7 +88,7 @@ func (s *Sale) Products(ctx context.Context, args GraphqlParams) (*ProductCounta
 		return nil, err
 	}
 
-	keyFunc := func(p *model.Product) string { return p.Slug }
+	keyFunc := func(p *model.Product) []any { return []any{model.ProductTableName + ".Slug", p.Slug} }
 	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args).parse("Sale.Products")
 	if appErr != nil {
 		return nil, appErr
@@ -103,7 +103,7 @@ func (s *Sale) Variants(ctx context.Context, args GraphqlParams) (*ProductVarian
 		return nil, err
 	}
 
-	keyFunc := func(pv *model.ProductVariant) string { return pv.Sku }
+	keyFunc := func(pv *model.ProductVariant) []any { return []any{model.ProductVariantTableName + ".Slug", pv.Sku} }
 	res, appErr := newGraphqlPaginator(variants, keyFunc, SystemProductVariantToGraphqlProductVariant, args).parse("Sale.Variants")
 	if appErr != nil {
 		return nil, appErr

@@ -1228,7 +1228,7 @@ type CollectionFilterInput struct {
 }
 
 func (c *CollectionFilterInput) validate(where string) *model.AppError {
-	where += "CollectionFilterInput.validate"
+	where += ".CollectionFilterInput.validate"
 	if c.Published != nil && !c.Published.IsValid() {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "published"}, "please provide valid published attribute", http.StatusBadRequest)
 	}
@@ -2945,7 +2945,7 @@ type ProductFilterInput struct {
 }
 
 func (p *ProductFilterInput) validate(where string) *model.AppError {
-	where += "ProductFilterInput.validate"
+	where += ".ProductFilterInput.validate"
 
 	for name, value := range map[string][]string{
 		"collections":   p.Collections,
@@ -4392,7 +4392,27 @@ type VoucherFilterInput struct {
 	Metadata     []*MetadataFilter      `json:"metadata"`
 }
 
+func (v *VoucherFilterInput) validate(where string) *model.AppError {
+	where += ".validate"
+
+	if lo.SomeBy(v.Status, func(st *DiscountStatusEnum) bool { return st != nil && !st.IsValid() }) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
+	}
+	if v.TimesUsed != nil && v.TimesUsed.Gte != nil && v.TimesUsed.Lte != nil && *v.TimesUsed.Gte >= *v.TimesUsed.Lte {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "timesUsed"}, "gte field must less than lte field", http.StatusBadRequest)
+	}
+	if v.Started != nil && v.Started.Gte != nil && v.Started.Lte != nil && v.Started.Gte.After(v.Started.Lte.Time) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "started"}, "gte time must be after than lte time", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
 func (v *VoucherFilterInput) Parse() (*model.VoucherFilterOption, *model.AppError) {
+	if appErr := v.validate("VoucherFilterInput.Parse"); appErr != nil {
+		return nil, appErr
+	}
+
 	now := time.Now()
 	conditions := squirrel.And{}
 
@@ -4404,10 +4424,6 @@ func (v *VoucherFilterInput) Parse() (*model.VoucherFilterOption, *model.AppErro
 			if st == nil {
 				continue
 			}
-			if !st.IsValid() {
-				return nil, model.NewAppError("VoucherFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "status"}, "please provide valid statuses", http.StatusBadRequest)
-			}
-
 			switch *st {
 			case DiscountStatusEnumActive:
 				orConditions = append(orConditions, squirrel.And{
@@ -4434,9 +4450,6 @@ func (v *VoucherFilterInput) Parse() (*model.VoucherFilterOption, *model.AppErro
 
 	// parse time used:
 	if v.TimesUsed != nil {
-		if v.TimesUsed.Gte != nil && v.TimesUsed.Lte != nil && *v.TimesUsed.Gte >= *v.TimesUsed.Lte {
-			return nil, model.NewAppError("VoucherFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "timesUsed"}, "gte field must less than lte field", http.StatusBadRequest)
-		}
 
 		if gte := v.TimesUsed.Gte; gte != nil {
 			conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".Used >= ?", *gte))
@@ -4470,10 +4483,6 @@ func (v *VoucherFilterInput) Parse() (*model.VoucherFilterOption, *model.AppErro
 
 	// start date
 	if v.Started != nil {
-		if v.Started.Gte != nil && v.Started.Lte != nil && v.Started.Gte.After(v.Started.Lte.Time) {
-			return nil, model.NewAppError("VoucherFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "started"}, "gte time must be after than lte time", http.StatusBadRequest)
-		}
-
 		if gte := v.Started.Gte; gte != nil {
 			conditions = append(conditions, squirrel.Expr(model.VoucherTableName+".StartDate >= ?", gte.Time))
 		}
@@ -4615,8 +4624,9 @@ type VoucherRemoveCatalogues struct {
 
 type VoucherSortingInput struct {
 	Direction OrderDirection   `json:"direction"`
-	Channel   *string          `json:"channel"`
 	Field     VoucherSortField `json:"field"`
+
+	// Channel   *string          `json:"channel"`
 }
 
 type VoucherTranslatableContent struct {
@@ -4998,20 +5008,21 @@ const (
 	AttributeSortFieldAvailableInGrid          AttributeSortField = "AVAILABLE_IN_GRID"          //
 )
 
-var attributeSortFieldMap = map[AttributeSortField]string{
-	AttributeSortFieldName:                     ".Name",
-	AttributeSortFieldSlug:                     ".Slug",
-	AttributeSortFieldValueRequired:            ".ValueRequired",
-	AttributeSortFieldIsVariantOnly:            ".IsVariantOnly",
-	AttributeSortFieldVisibleInStorefront:      ".VisibleInStoreFront",
-	AttributeSortFieldFilterableInStorefront:   ".FilterableInStorefront",
-	AttributeSortFieldFilterableInDashboard:    ".FilterableInDashboard",
-	AttributeSortFieldStorefrontSearchPosition: ".StorefrontSearchPosition",
-	AttributeSortFieldAvailableInGrid:          ".AvailableInGrid",
+// attributeSortFieldMap
+var attributeSortFieldMap = map[AttributeSortField][]string{
+	AttributeSortFieldName:                     {model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},
+	AttributeSortFieldSlug:                     {model.AttributeTableName + ".Slug"},
+	AttributeSortFieldValueRequired:            {model.AttributeTableName + ".ValueRequired", model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},
+	AttributeSortFieldIsVariantOnly:            {model.AttributeTableName + ".IsVariantOnly", model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},
+	AttributeSortFieldVisibleInStorefront:      {model.AttributeTableName + ".VisibleInStoreFront", model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},
+	AttributeSortFieldFilterableInStorefront:   {model.AttributeTableName + ".FilterableInStorefront", model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},
+	AttributeSortFieldFilterableInDashboard:    {model.AttributeTableName + ".FilterableInDashboard", model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},
+	AttributeSortFieldStorefrontSearchPosition: {model.AttributeTableName + ".StorefrontSearchPosition", model.AttributeTableName + ".Name"},
+	AttributeSortFieldAvailableInGrid:          {model.AttributeTableName + ".AvailableInGrid", model.AttributeTableName + ".Name"},
 }
 
 func (e AttributeSortField) IsValid() bool {
-	return attributeSortFieldMap[e] != ""
+	return len(attributeSortFieldMap[e]) > 0
 }
 
 type CategorySortField string
@@ -5946,12 +5957,26 @@ const (
 type SaleSortField string
 
 const (
-	SaleSortFieldName      SaleSortField = "NAME"
-	SaleSortFieldStartDate SaleSortField = "START_DATE"
-	SaleSortFieldEndDate   SaleSortField = "END_DATE"
-	SaleSortFieldValue     SaleSortField = "VALUE"
-	SaleSortFieldType      SaleSortField = "TYPE"
+	SaleSortFieldName      SaleSortField = "NAME"       //
+	SaleSortFieldStartDate SaleSortField = "START_DATE" //
+	SaleSortFieldEndDate   SaleSortField = "END_DATE"   //
+	SaleSortFieldValue     SaleSortField = "VALUE"      //
+	SaleSortFieldType      SaleSortField = "TYPE"       //
 )
+
+var saleSortFieldsMap = map[SaleSortField][]string{
+	SaleSortFieldName:      {model.SaleTableName + ".Name", model.SaleTableName + ".CreateAt"},
+	SaleSortFieldStartDate: {model.SaleTableName + ".StartDate", model.SaleTableName + ".Name", model.SaleTableName + ".CreateAt"},
+	SaleSortFieldEndDate:   {model.SaleTableName + ".EndDate", model.SaleTableName + ".Name", model.SaleTableName + ".CreateAt"},
+	SaleSortFieldType:      {model.SaleTableName + ".Type", model.SaleTableName + ".Name", model.SaleTableName + ".CreateAt"},
+
+	SaleSortFieldValue: {model.SaleTableName + ".Name", model.SaleTableName + ".CreateAt"}, // TODO: fix me
+}
+
+func (s *SaleSortField) IsValid() bool {
+	// model.Sale
+	return len(saleSortFieldsMap[*s]) > 0
+}
 
 type SaleType = model.DiscountValueType
 
@@ -6099,14 +6124,29 @@ func (v *VoucherDiscountType) IsValid() bool {
 type VoucherSortField string
 
 const (
-	VoucherSortFieldCode               VoucherSortField = "CODE"
-	VoucherSortFieldStartDate          VoucherSortField = "START_DATE"
-	VoucherSortFieldEndDate            VoucherSortField = "END_DATE"
-	VoucherSortFieldValue              VoucherSortField = "VALUE"
-	VoucherSortFieldType               VoucherSortField = "TYPE"
-	VoucherSortFieldUsageLimit         VoucherSortField = "USAGE_LIMIT"
-	VoucherSortFieldMinimumSpentAmount VoucherSortField = "MINIMUM_SPENT_AMOUNT"
+	VoucherSortFieldCode               VoucherSortField = "CODE"                 //
+	VoucherSortFieldStartDate          VoucherSortField = "START_DATE"           //
+	VoucherSortFieldEndDate            VoucherSortField = "END_DATE"             //
+	VoucherSortFieldValue              VoucherSortField = "VALUE"                //
+	VoucherSortFieldType               VoucherSortField = "TYPE"                 //
+	VoucherSortFieldUsageLimit         VoucherSortField = "USAGE_LIMIT"          //
+	VoucherSortFieldMinimumSpentAmount VoucherSortField = "MINIMUM_SPENT_AMOUNT" //
 )
+
+var voucherSortFieldsMap = map[VoucherSortField][]string{
+	VoucherSortFieldCode:       {model.VoucherTableName + ".Code"},
+	VoucherSortFieldStartDate:  {model.VoucherTableName + ".StartDate", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+	VoucherSortFieldEndDate:    {model.VoucherTableName + ".EndDate", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+	VoucherSortFieldType:       {model.VoucherTableName + ".Type", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+	VoucherSortFieldUsageLimit: {model.VoucherTableName + ".UsageLimit", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+
+	VoucherSortFieldValue:              {model.VoucherTableName + ".EndDate", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+	VoucherSortFieldMinimumSpentAmount: {model.VoucherTableName + ".EndDate", model.VoucherTableName + ".Name", model.VoucherTableName + ".Code"},
+}
+
+func (v *VoucherSortField) IsValid() bool {
+	return len(voucherSortFieldsMap[*v]) != 0
+}
 
 type VoucherTypeEnum = model.VoucherType
 

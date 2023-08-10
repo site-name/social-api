@@ -324,7 +324,7 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 			GetUserRoles().
 			InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
 			Len() > 0 {
-		if appErr := args.Validate("User.GiftCards"); appErr != nil {
+		if appErr := args.validate("User.GiftCards"); appErr != nil {
 			return nil, appErr
 		}
 
@@ -333,7 +333,9 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 			return nil, err
 		}
 
-		keyFunc := func(gc *model.GiftCard) string { return gc.Code }
+		keyFunc := func(gc *model.GiftCard) []any {
+			return []any{model.GiftcardTableName + ".Code", gc.Code}
+		}
 		res, appErr := newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args).parse("User.GiftCards")
 		if appErr != nil {
 			return nil, appErr
@@ -357,7 +359,7 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 			InterSection([]string{model.ShopStaffRoleId}).
 			Len() > 0
 	if requesterCanSeeUserOrders {
-		if appErr := args.Validate("User.Orders"); appErr != nil {
+		if appErr := args.validate("User.Orders"); appErr != nil {
 			return nil, appErr
 		}
 
@@ -366,7 +368,9 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 			return nil, err
 		}
 
-		keyFunc := func(o *model.Order) int64 { return o.CreateAt }
+		keyFunc := func(o *model.Order) []any {
+			return []any{model.OrderTableName + ".CreateAt", o.CreateAt}
+		}
 		res, appErr := newGraphqlPaginator(orders, keyFunc, SystemOrderToGraphqlOrder, args).parse("User.Orders")
 		if appErr != nil {
 			return nil, appErr

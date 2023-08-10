@@ -695,7 +695,7 @@ func (r *Resolver) ShippingZones(ctx context.Context, args struct {
 		channelIDs = append(channelIDs, *args.ChannelID)
 	}
 
-	appErr := args.GraphqlParams.Validate("ShippingZones")
+	appErr := args.GraphqlParams.validate("ShippingZones")
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -724,7 +724,7 @@ func (r *Resolver) ShippingZones(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	keyFunc := func(sz *model.ShippingZone) string { return sz.Name }
+	keyFunc := func(sz *model.ShippingZone) []any { return []any{model.ShippingZoneTableName + ".Name", sz.Name} }
 	res, appErr := newGraphqlPaginator(shippingZones, keyFunc, SystemShippingZoneToGraphqlShippingZone, args.GraphqlParams).parse("ShippingZones")
 	if appErr != nil {
 		return nil, appErr

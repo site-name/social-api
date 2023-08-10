@@ -83,7 +83,7 @@ func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryC
 	filter := func(c *model.Category) bool { return c.ParentID != nil && *c.ParentID == c.Id }
 	children := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
 
-	keyFunc := func(c *model.Category) string { return c.Slug }
+	keyFunc := func(c *model.Category) []any { return []any{model.CategoryTableName + ".Slug", c.Slug} }
 	res, appErr := newGraphqlPaginator(children, keyFunc, systemCategoryToGraphqlCategory, args).parse("Category.Children")
 	if appErr != nil {
 		return nil, appErr
@@ -109,7 +109,7 @@ func (c *Category) Products(ctx context.Context, args struct {
 		channelIdOrSlug = *args.Channel
 	}
 
-	if appErr := args.GraphqlParams.Validate("Category.Products"); appErr != nil {
+	if appErr := args.GraphqlParams.validate("Category.Products"); appErr != nil {
 		return nil, appErr
 	}
 
@@ -120,7 +120,7 @@ func (c *Category) Products(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	keyFunc := func(p *model.Product) string { return p.Slug }
+	keyFunc := func(p *model.Product) []any { return []any{model.ProductTableName + ".Slug", p.Slug} }
 	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args.GraphqlParams).parse("Category.Products")
 	if appErr != nil {
 		return nil, appErr
