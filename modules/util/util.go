@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"io"
 	"net"
@@ -47,13 +48,6 @@ func OptionalBoolOf(b bool) OptionalBool {
 		return OptionalBoolTrue
 	}
 	return OptionalBoolFalse
-}
-
-type Ordered interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 |
-		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
-		~float32 | ~float64 |
-		~string
 }
 
 // IsEmptyString checks if the provided string is empty
@@ -207,7 +201,7 @@ func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
-func NewSet[T Ordered](items ...T) *AnySet[T] {
+func NewSet[T cmp.Ordered](items ...T) *AnySet[T] {
 	res := &AnySet[T]{
 		meetMap: make(map[T]struct{}),
 	}
@@ -217,7 +211,7 @@ func NewSet[T Ordered](items ...T) *AnySet[T] {
 }
 
 // AnySet makes sure there are no duplicate in its values.
-type AnySet[T Ordered] struct {
+type AnySet[T cmp.Ordered] struct {
 	values  AnyArray[T]
 	meetMap map[T]struct{}
 }
@@ -239,7 +233,7 @@ func (s *AnySet[T]) Values() AnyArray[T] {
 }
 
 // AnyArray if a generic slice with a set of member methods that can be chained
-type AnyArray[T Ordered] []T
+type AnyArray[T cmp.Ordered] []T
 
 // Remove removes input from the array
 func (a AnyArray[T]) Remove(item T) AnyArray[T] {
@@ -269,7 +263,7 @@ func (a AnyArray[T]) Dedup() AnyArray[T] {
 	return res
 }
 
-type MinMax[T Ordered] struct {
+type MinMax[T cmp.Ordered] struct {
 	Min, Max T
 }
 
@@ -327,7 +321,7 @@ func (a AnyArray[T]) Len() int {
 //
 // E.g
 //
-//	StringArray{"a", "b", "c"}.Map(func(_ int, s string) string { return s + s })
+//	AnyArray{"a", "b", "c"}.Map(func(_ int, s string) string { return s + s })
 func (a AnyArray[T]) Map(fn func(index int, item T) T) AnyArray[T] {
 	res := make([]T, len(a), cap(a))
 
@@ -392,6 +386,6 @@ func (sa AnyArray[T]) Join(sep string) string {
 	return builder.String()
 }
 
-func GetMinMax[T Ordered](items ...T) MinMax[T] {
+func GetMinMax[T cmp.Ordered](items ...T) MinMax[T] {
 	return AnyArray[T](items).GetMinMax()
 }

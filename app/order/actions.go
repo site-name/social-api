@@ -613,7 +613,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 		return nil, nil, appErr
 	}
 
-	stocks, appErr := s.srv.WarehouseService().StocksByOption(&model.StockFilterOption{
+	_, stocks, appErr := s.srv.WarehouseService().StocksByOption(&model.StockFilterOption{
 		Conditions: squirrel.Eq{model.StockTableName + ".Id": fulfillmentLines.StockIDs()},
 	})
 	if appErr != nil {

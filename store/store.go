@@ -334,13 +334,13 @@ type (
 	}
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}
-		CountByOptions(options *model.StockFilterOption) (int32, error)
+		// CountByOptions(options *model.StockFilterOption) (int32, error)
 		Get(stockID string) (*model.Stock, error)                                                                       // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
 		FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
 		FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
 		ChangeQuantity(stockID string, quantity int) error                                                              // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error)                                 // FilterByOption finds and returns a slice of stocks that satisfy given option
 		BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error)                                 // BulkUpsert performs upserts or inserts given stocks, then returns them
 		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)          // FilterForChannel finds and returns stocks that satisfy given options
 	}
@@ -647,7 +647,7 @@ type (
 		Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) // Upsert bases on sale's Id to decide to update or insert given sale
 		Get(saleID string) (*model.Sale, error)                             // Get finds and returns a sale with given saleID
 		ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
-		FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) // FilterSalesByOption filter sales by option
+		FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
 		Upsert(transaction *gorm.DB, voucherChannelListings []*model.VoucherChannelListing) ([]*model.VoucherChannelListing, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
@@ -657,11 +657,11 @@ type (
 	}
 	DiscountVoucherStore interface {
 		ScanFields(voucher *model.Voucher) []interface{}
-		Upsert(voucher *model.Voucher) (*model.Voucher, error)                              // Upsert saves or updates given voucher then returns it with an error
-		Get(voucherID string) (*model.Voucher, error)                                       // Get finds a voucher with given id, then returns it with an error
-		FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
-		ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error)                    // ExpiredVouchers finds and returns vouchers that are expired before given date
-		GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
+		Upsert(voucher *model.Voucher) (*model.Voucher, error)                                     // Upsert saves or updates given voucher then returns it with an error
+		Get(voucherID string) (*model.Voucher, error)                                              // Get finds a voucher with given id, then returns it with an error
+		FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
+		ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error)                           // ExpiredVouchers finds and returns vouchers that are expired before given date
+		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
 		ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
 		Delete(transaction *gorm.DB, ids []string) (int64, error)
 	}

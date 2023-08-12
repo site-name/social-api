@@ -4,9 +4,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -19,7 +20,6 @@ type SqlVoucherStore struct {
 
 func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore {
 	return &SqlVoucherStore{sqlStore}
-
 }
 
 func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
@@ -79,38 +79,85 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	return &res, nil
 }
 
-func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption) squirrel.SelectBuilder {
+// FilterVouchersByOption finds vouchers bases on given option.
+func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
 	query := vs.
 		GetQueryBuilder().
 		Select(model.VoucherTableName + ".*").
 		From(model.VoucherTableName).
 		Where(option.Conditions)
 
-	// parse options:
-	if option.VoucherChannelListing_ChannelSlug != nil || option.VoucherChannelListing_ChannelIsActive != nil {
+	if option.Annotate_DiscountValue ||
+		option.Annotate_MinimumSpentAmount {
+
+		// check if channel provided:
+		if !slug.IsSlug(option.ChannelSlug) {
+			return 0, nil, store.NewErrInvalidInput("SqlVoucherStore.commonQueryBuilder", "option.ChannelSlug", option.ChannelSlug)
+		}
+
+		query = query.
+			LeftJoin(model.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").
+			LeftJoin(model.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)").
+			GroupBy(model.VoucherTableName + ".Id")
+
+		if option.Annotate_MinimumSpentAmount {
+			query = query.
+				Column(`MIN(
+					VoucherChannelListings.MinSpentAmount
+				) FILTER (
+					WHERE Channels.Slug = ?
+				) AS "Vouchers.MintSpentAmount"`, option.ChannelSlug)
+		} else {
+			query = query.
+				Column(`MIN(
+					VoucherChannelListings.DiscountValue
+				) FILTER (
+					WHERE Channels.Slug = ?
+				) AS "Vouchers.DiscountValue"`, option.ChannelSlug)
+		}
+
+	} else if option.VoucherChannelListing_ChannelSlug != nil ||
+		option.VoucherChannelListing_ChannelIsActive != nil {
 		query = query.
 			InnerJoin(model.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").
-			InnerJoin(model.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)")
-
-		if option.VoucherChannelListing_ChannelSlug != nil {
-			query = query.Where(option.VoucherChannelListing_ChannelSlug)
-		}
-		if option.VoucherChannelListing_ChannelIsActive != nil {
-			query = query.Where(option.VoucherChannelListing_ChannelIsActive)
-		}
+			InnerJoin(model.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)").
+			Where(option.VoucherChannelListing_ChannelSlug).
+			Where(option.VoucherChannelListing_ChannelIsActive)
 	}
+
 	if option.ForUpdate && option.Transaction != nil {
 		query = query.Suffix("FOR UPDATE")
 	}
 
-	return query
-}
+	// parse pagination
+	if option.GraphqlPaginationValues.PaginationApplicable() {
+		query = query.
+			Where(option.GraphqlPaginationValues.Condition).
+			OrderBy(option.GraphqlPaginationValues.OrderBy)
+	}
 
-// FilterVouchersByOption finds vouchers bases on given option.
-func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
-	queryString, args, err := vs.commonQueryBuilder(option).ToSql()
+	// count total vouchers if required
+	var totalVoucher int64
+	if option.CountTotal {
+		queryStr, args, err := vs.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOptions_Count_ToSql")
+		}
+
+		err = vs.GetReplica().Raw(queryStr, args...).Scan(&totalVoucher).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total vouchers that satisfy given options")
+		}
+	}
+
+	// NOTE: we apply limit after counting
+	if option.GraphqlPaginationValues.Limit > 0 {
+		query = query.Limit(option.GraphqlPaginationValues.Limit)
+	}
+
+	querystr, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterVouchersByOption_tosql")
+		return 0, nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
 	runner := vs.GetReplica()
@@ -118,25 +165,41 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 		runner = option.Transaction
 	}
 
-	var vouchers []*model.Voucher
-	err = runner.Raw(queryString, args...).Scan(&vouchers).Error
+	rows, err := runner.Raw(querystr, args...).Rows()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
+		return 0, nil, errors.Wrap(err, "failed to find vouchers by given options")
+	}
+	defer rows.Close()
+
+	var vouchers model.Vouchers
+
+	for rows.Next() {
+		var (
+			voucher                       model.Voucher
+			minSpentAmount, discountValue decimal.Decimal
+			scanFields                    = vs.ScanFields(&voucher)
+		)
+		if option.Annotate_MinimumSpentAmount {
+			scanFields = append(scanFields, &minSpentAmount)
+		} else if option.Annotate_DiscountValue {
+			scanFields = append(scanFields, &discountValue)
+		}
+
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to scan a row of voucher")
+		}
+
+		if option.Annotate_MinimumSpentAmount {
+			voucher.MinSpentAmount = &minSpentAmount
+		} else if option.Annotate_DiscountValue {
+			voucher.DiscountValue = &discountValue
+		}
+
+		vouchers = append(vouchers, &voucher)
 	}
 
-	return vouchers, nil
-}
-
-// GetByOptions finds and returns 1 voucher filtered using given options
-func (vs *SqlVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
-	vouchers, err := vs.FilterVouchersByOption(options)
-	if err != nil {
-		return nil, err
-	}
-	if len(vouchers) == 0 {
-		return nil, store.NewErrNotFound(model.VoucherTableName, "options")
-	}
-	return vouchers[0], nil
+	return totalVoucher, vouchers, nil
 }
 
 // ExpiredVouchers finds and returns vouchers that are expired before given date

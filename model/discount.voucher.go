@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/site-name/decimal"
 	"gorm.io/gorm"
 )
 
@@ -68,6 +69,9 @@ type Voucher struct {
 	ProductVariants        ProductVariants         `json:"-" gorm:"many2many:VoucherVariants"`
 	Collections            Collections             `json:"-" gorm:"many2many:VoucherCollections"`
 	VoucherChannelListings []VoucherChannelListing `json:"-" gorm:"foreignKey:VoucherID;constraint:OnDelete:CASCADE"`
+
+	MinSpentAmount *decimal.Decimal `json:"-" gorm:"-"` // this field is used for sorting vouchers.
+	DiscountValue  *decimal.Decimal `json:"-" gorm:"-"` // this field is used for sorting vouchers.
 }
 
 func (c *Voucher) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -78,10 +82,24 @@ func (c *Voucher) TableName() string             { return VoucherTableName }
 type VoucherFilterOption struct {
 	Conditions squirrel.Sqlizer
 
+	CountTotal bool // if true, store counts all vouchers that satisfy options
+
 	VoucherChannelListing_ChannelIsActive squirrel.Sqlizer // INNER JOIN VoucherChannelListings ON ... INNER JOIN Channels ON ... WHERE Channels.IsActive ...
 	VoucherChannelListing_ChannelSlug     squirrel.Sqlizer // INNER JOIN VoucherChannelListings ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
 	ForUpdate                             bool             // this add FOR UPDATE to sql queries, NOTE: Only applied if Transaction field is non-nil
 	Transaction                           *gorm.DB
+
+	// if true, the field `MinSpentAmount` will be populated.
+	// Please visit store_voucher.go for details.
+	Annotate_MinimumSpentAmount bool
+	// if true, the field `DiscountValue` will be populated.
+	// Please visit store_voucher.go for details.
+	Annotate_DiscountValue bool
+	// NOTE: if `Annotate_MinimumSpentAmount` or `Annotate_DiscountValue`, this field must provided,
+	// otherwise store will return *store.ErrInvalidInput error
+	ChannelSlug string
+
+	GraphqlPaginationValues GraphqlPaginationValues
 }
 
 // ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement

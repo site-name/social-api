@@ -29,7 +29,7 @@ func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 func (s *SqlChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
 	err := transaction.Save(channel).Error
 	if err != nil {
-		if s.IsUniqueConstraintError(err, []string{"slug", "channels_slug_key", "idx_channels_slug_unique"}) {
+		if s.IsUniqueConstraintError(err, []string{"slug", "slug_unique_key", "idx_channels_slug_unique"}) {
 			return nil, store.NewErrInvalidInput(model.ChannelTableName, "Slug", channel.Slug)
 		}
 		return nil, errors.Wrap(err, "failed to upsert channel")

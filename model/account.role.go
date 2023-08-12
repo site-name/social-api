@@ -280,8 +280,8 @@ type Role struct {
 	CreateAt      int64    `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	UpdateAt      int64    `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
 	DeleteAt      int64    `json:"delete_at" gorm:"type:bigint;column:DeleteAt"`
-	Permissions   []string `json:"permissions" gorm:"-"`                            // this field got populated after db queries
-	Permmissions_ string   `json:"-" gorm:"column:Permmissions;type:varchar(5000)"` // this fiel got populated before upserting to database
+	Permissions   []string `json:"permissions" gorm:"-"`                             // this field got populated after db queries
+	Permmissions_ string   `json:"-" gorm:"column:Permmissions_;type:varchar(5000)"` // this fiel got populated before upserting to database
 	SchemeManaged bool     `json:"scheme_managed" gorm:"column:SchemeManaged"`
 	BuiltIn       bool     `json:"built_in" gorm:"column:BuiltIn"`
 }

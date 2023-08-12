@@ -1,6 +1,7 @@
 package api
 
 import (
+	"cmp"
 	"context"
 	"net/http"
 	"strings"
@@ -1833,7 +1834,7 @@ func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []s
 // E.g:
 //
 //	a := []int{1, 2}; b := []int{1, 2, 3, 4} Produces {1: 1, 2: 2}
-func keyValuesToMap[K util.Ordered, V any](keys []K, values []V) map[K]V {
+func keyValuesToMap[K cmp.Ordered, V any](keys []K, values []V) map[K]V {
 	res := map[K]V{}
 
 	for i := 0; i < util.GetMinMax(len(keys), len(values)).Min; i++ {

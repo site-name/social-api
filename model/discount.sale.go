@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	"github.com/site-name/decimal"
 	"golang.org/x/text/language"
 	"gorm.io/gorm"
 )
@@ -25,6 +26,8 @@ type Sale struct {
 	Products        Products        `json:"-" gorm:"many2many:SaleProducts"`
 	ProductVariants ProductVariants `json:"-" gorm:"many2many:SaleProductVariants"`
 	Collections     Collections     `json:"-" gorm:"many2many:SaleCollections"`
+
+	Value *decimal.Decimal `json:"-" gorm:"-"` // this field get populated when vouchers are sorted by it
 }
 
 func (c *Sale) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -53,8 +56,15 @@ type SaleProductVariant struct {
 
 // SaleFilterOption can be used to
 type SaleFilterOption struct {
-	Conditions                   squirrel.Sqlizer
-	SaleChannelListing_ChannelID squirrel.Sqlizer // INNER JOIN SaleChannelListings ON ... WHERE SaleChannelListings.ChannelID ...
+	Conditions                     squirrel.Sqlizer
+	SaleChannelListing_ChannelSlug squirrel.Sqlizer // INNER JOIN SaleChannelListings ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
+
+	Annotate_Value bool   // if true, store will populate `Value` field of Voucher
+	ChannelSlug    string // this field is required if `Annotate_Value` is true, if not provided, *store.InvalidInput is raised
+
+	CountTotal bool // if true, db dounts total number of sales that satisfy conitions
+
+	GraphqlPaginationValues GraphqlPaginationValues
 }
 
 type Sales []*Sale

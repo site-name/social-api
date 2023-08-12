@@ -395,7 +395,7 @@ func (s *ServiceCheckout) getProductsVoucherDiscount(manager interfaces.PluginMa
 		prices = moneys
 	}
 
-	if prices == nil || len(prices) == 0 {
+	if len(prices) == 0 {
 		return nil, model.NewNotApplicable("getProductsVoucherDiscount", "This offer is only valid for selected items.", nil, 0), nil
 	}
 
@@ -581,10 +581,10 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo,
 	checkout := checkoutInfo.Checkout
 
 	if checkout.VoucherCode != nil {
-		if vouchers == nil || len(vouchers) == 0 {
+		if len(vouchers) == 0 {
 			// finds vouchers that are active in a channel
 			var appErr *model.AppError
-			vouchers, appErr = a.srv.DiscountService().VouchersByOption(&model.VoucherFilterOption{
+			_, vouchers, appErr = a.srv.DiscountService().VouchersByOption(&model.VoucherFilterOption{
 				VoucherChannelListing_ChannelSlug:     squirrel.Eq{model.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
 				VoucherChannelListing_ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
 				Conditions: squirrel.And{

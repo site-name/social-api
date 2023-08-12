@@ -121,7 +121,7 @@ type WarehouseService interface {
 	// StockIncreaseQuantity Return given quantity of product to a stock.
 	StockIncreaseQuantity(stockID string, quantity int) *model.AppError
 	// StocksByOption returns a list of stocks filtered using given options
-	StocksByOption(option *model.StockFilterOption) (model.Stocks, *model.AppError)
+	StocksByOption(option *model.StockFilterOption) (int64, model.Stocks, *model.AppError)
 	// Validate if there is stock available for given variant in given country.
 	//
 	// If so - returns None. If there is less stock then required raise InsufficientStock

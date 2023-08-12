@@ -215,31 +215,31 @@ func (a *ServiceDiscount) ValidateOnlyForStaff(voucher *model.Voucher, customerI
 }
 
 // VouchersByOption finds all vouchers with given option then returns them
-func (a *ServiceDiscount) VouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, *model.AppError) {
-	vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(option)
+func (a *ServiceDiscount) VouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, *model.AppError) {
+	totalCount, vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+		var statusCode = http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return 0, nil, model.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, err.Error(), statusCode)
 	}
 
-	return vouchers, nil
+	return totalCount, vouchers, nil
 }
 
 // VoucherByOption returns 1 voucher filtered using given options
 func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*model.Voucher, *model.AppError) {
-	voucher, err := s.srv.Store.DiscountVoucher().GetByOptions(options)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("VoucherByOption", "app.discount.error_finding_voucher_by_option.app_error", nil, err.Error(), statusCode)
+	_, vouchers, appErr := s.VouchersByOption(options)
+	if appErr != nil {
+		return nil, appErr
 	}
-	return voucher, nil
+	return vouchers[0], nil
 }
 
 // PromoCodeIsVoucher checks if given code is belong to a voucher
 func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
-	vouchers, appErr := a.VouchersByOption(&model.VoucherFilterOption{
+	_, vouchers, appErr := a.VouchersByOption(&model.VoucherFilterOption{
 		Conditions: squirrel.Expr(model.VoucherTableName+".Code = ?", code),
 	})
 	if appErr != nil {
@@ -267,7 +267,8 @@ func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug strin
 		filterOptions.VoucherChannelListing_ChannelIsActive = squirrel.Expr(model.ChannelTableName + ".IsActive")
 	}
 
-	return s.VouchersByOption(filterOptions)
+	_, vouchers, appErr := s.VouchersByOption(filterOptions)
+	return vouchers, appErr
 }
 
 // ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead

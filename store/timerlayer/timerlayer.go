@@ -2991,10 +2991,10 @@ func (s *TimerLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *mode
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
+func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
+	result, resultVar1, err := s.DiscountSaleStore.FilterSalesByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3004,7 +3004,7 @@ func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilt
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.FilterSalesByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
@@ -3151,10 +3151,10 @@ func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) 
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
 	start := timemodule.Now()
 
-	result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
+	result, resultVar1, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3164,7 +3164,7 @@ func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *model.Vo
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.FilterVouchersByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
@@ -3179,22 +3179,6 @@ func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
-	start := timemodule.Now()
-
-	result, err := s.DiscountVoucherStore.GetByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -6591,26 +6575,10 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.CountByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.CountByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
-	start := timemodule.Now()
-
-	result, err := s.StockStore.FilterByOption(options)
+	result, resultVar1, err := s.StockStore.FilterByOption(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6620,7 +6588,7 @@ func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) 
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {

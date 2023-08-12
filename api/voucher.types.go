@@ -438,7 +438,7 @@ func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	vouchers, appErr := embedCtx.App.Srv().DiscountService().VouchersByOption(&model.VoucherFilterOption{
+	_, vouchers, appErr := embedCtx.App.Srv().DiscountService().VouchersByOption(&model.VoucherFilterOption{
 		Conditions: squirrel.Eq{model.VoucherTableName + ".Id": ids},
 	})
 	if appErr != nil {

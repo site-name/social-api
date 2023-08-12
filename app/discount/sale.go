@@ -39,17 +39,17 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *
 
 // FilterSalesByOption should be used to filter active or expired sales
 // refer: saleor/discount/models.SaleQueryset for details
-func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, *model.AppError) {
-	sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
+func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, *model.AppError) {
+	totalCount, sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
 		}
-		return nil, model.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
+		return 0, nil, model.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
-	return sales, nil
+	return totalCount, sales, nil
 }
 
 // ActiveSales finds active sales by given date. If date is nil then set date to UTC now
@@ -60,7 +60,7 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppE
 		date = util.NewTime(time.Now().UTC())
 	}
 
-	activeSalesByDate, err := a.srv.Store.DiscountSale().
+	_, activeSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&model.SaleFilterOption{
 			Conditions: squirrel.And{
 				squirrel.LtOrEq{model.SaleTableName + ".StartDate": *date},
@@ -89,7 +89,7 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 		date = util.NewTime(time.Now().UTC())
 	}
 
-	expiredSalesByDate, err := a.srv.Store.DiscountSale().
+	_, expiredSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&model.SaleFilterOption{
 			Conditions: squirrel.Lt{
 				model.SaleTableName + ".EndDate":   *date,

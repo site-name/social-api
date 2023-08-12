@@ -62,7 +62,7 @@ type DiscountService interface {
 	FilterActiveVouchers(date time.Time, channelSlug string) ([]*model.Voucher, *model.AppError)
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
-	FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, *model.AppError)
+	FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, *model.AppError)
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 	//
 	//	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
@@ -122,7 +122,7 @@ type DiscountService interface {
 	// VoucherTranslationsByOption returns a list of voucher translations filtered using given option
 	VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
-	VouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, *model.AppError)
+	VouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, *model.AppError)
 	// NOTE: if `isDelete` is true, system will add sale relations, otherwise if false
 	ToggleSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string, isDelete bool) *model.AppError
 	FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model.AppError)

@@ -164,10 +164,10 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 
 	// build a filter option
 	allVariantStockFilterOption := &model.StockFilterForCountryAndChannel{
-		CountryCode:              countryCode,
-		ChannelSlug:              channelSlug,
-		ProductVariantIDFilter:   squirrel.Eq{model.StockTableName + ".ProductVariantID": variants.IDs()},
-		AnnotateAvailabeQuantity: true,
+		CountryCode:               countryCode,
+		ChannelSlug:               channelSlug,
+		ProductVariantIDFilter:    squirrel.Eq{model.StockTableName + ".ProductVariantID": variants.IDs()},
+		AnnotateAvailableQuantity: true,
 	}
 
 	// check if `additionalFilterLookup` is not nil:

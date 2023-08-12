@@ -3,7 +3,7 @@ package model
 import "github.com/Masterminds/squirrel"
 
 // NOTE: Embed me in some database query lookup structs
-type PaginationValues struct {
+type GraphqlPaginationValues struct {
 	// E.g:
 	//  "Products.CreateAt ASC"
 	OrderBy string
@@ -15,21 +15,16 @@ type PaginationValues struct {
 	Limit uint64
 }
 
-// QueryLimit returns current limit + 1 as a trick to determine if there are nextPage/previousPage exists
-func (p *PaginationValues) QueryLimit() uint64 {
-	return p.Limit + 1
-}
-
-func (p *PaginationValues) paginationApplicable() bool {
+func (p *GraphqlPaginationValues) PaginationApplicable() bool {
 	return p.OrderBy != "" && p.Condition != nil && p.Limit > 0
 }
 
-// AddPaginationToSelectBuilder check if current PaginationValues is not empty, then add pagination ability to given select builder
-func (p *PaginationValues) AddPaginationToSelectBuilderIfNeeded(builder squirrel.SelectBuilder) squirrel.SelectBuilder {
-	if p.paginationApplicable() {
+// AddPaginationToSelectBuilder check if current GraphqlPaginationValues is not empty, then add pagination ability to given select builder
+func (p *GraphqlPaginationValues) AddPaginationToSelectBuilderIfNeeded(builder squirrel.SelectBuilder) squirrel.SelectBuilder {
+	if p.PaginationApplicable() {
 		return builder.
 			OrderBy(p.OrderBy).
-			Limit(p.QueryLimit()).
+			Limit(p.Limit).
 			Where(p.Condition)
 	}
 

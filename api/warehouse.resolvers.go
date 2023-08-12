@@ -223,7 +223,7 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 	transaction.Rollback()
 
 	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
-	stocks, appErr := embedCtx.App.Srv().
+	_, stocks, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		StocksByOption(&model.StockFilterOption{
 			Conditions: squirrel.Eq{model.StockTableName + ".WarehouseID": args.Id},
@@ -409,50 +409,43 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 	Filter *StockFilterInput
 	GraphqlParams
 }) (*StockCountableConnection, error) {
-	// pagination, appErr := parseGraphqlParams[int64](&args.GraphqlParams, "Stocks", model.StockTableName+".CreateAt")
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	pagination, appErr := args.GraphqlParams.Parse("Stocks")
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// stockFilterOptions := &model.StockFilterOption{
-	// 	PaginationValues: *pagination,
-	// }
-	// if filter := args.Filter; filter != nil {
-	// 	if filter.Search != nil && strings.TrimSpace(*filter.Search) != "" {
-	// 		stockFilterOptions.Search = *filter.Search
-	// 	}
-	// 	if filter.Quantity != nil {
-	// 		stockFilterOptions.Conditions = squirrel.Eq{model.StockTableName + ".Quantity": *filter.Quantity}
-	// 	}
-	// }
+	stockFilterOptions := &model.StockFilterOption{
+		GraphqlPaginationValues: *pagination,
+		CountTotal:              true,
+	}
+	if filter := args.Filter; filter != nil {
+		if filter.Search != nil && !stringsContainSqlExpr.MatchString(*filter.Search) {
+			stockFilterOptions.Search = *filter.Search
+		}
+		if filter.Quantity != nil {
+			stockFilterOptions.Conditions = squirrel.Eq{model.StockTableName + ".Quantity": *filter.Quantity}
+		}
+	}
 
-	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	// stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalCount, stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// totalNumOfStocks, err := embedCtx.App.Srv().Store.Stock().CountByOptions(stockFilterOptions)
-	// if err != nil {
-	// 	return nil, model.NewAppError("Stocks", "app.warehouse.error_countring_stocks.app_error", nil, err.Error(), http.StatusInternalServerError)
-	// }
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(stocks))
+	if hasNextPage {
+		stocks = stocks[:len(stocks)-1]
+	}
 
-	// hasPrevPage := args.GraphqlParams.Before != nil || args.GraphqlParams.After != nil
-	// hasNextPage := int(pagination.QueryLimit()) == len(stocks)
-	// if hasNextPage {
-	// 	stocks = stocks[:len(stocks)-1]
-	// }
+	res := constructCountableConnection(
+		stocks,
+		int(totalCount),
+		hasNextPage,
+		hasPrevPage,
+		func(st *model.Stock) []any { return []any{model.StockTableName + ".CreateAt", st.CreateAt} },
+		SystemStockToGraphqlStock,
+	)
 
-	// res := constructCountableConnection(
-	// 	stocks,
-	// 	int(totalNumOfStocks),
-	// 	hasNextPage,
-	// 	hasPrevPage,
-	// 	func(st *model.Stock) int64 { return st.CreateAt },
-	// 	SystemStockToGraphqlStock,
-	// )
-
-	// return (*StockCountableConnection)(unsafe.Pointer(res)), nil
-
-	panic("not implemente")
+	return (*StockCountableConnection)(unsafe.Pointer(res)), nil
 }

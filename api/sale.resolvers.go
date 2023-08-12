@@ -10,6 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -380,7 +381,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// get sale by given id
-	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
+	_, sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
 		Conditions: squirrel.Expr(model.SaleTableName+".Id = ?", args.Id),
 	})
 	if appErr != nil {
@@ -478,7 +479,7 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
+	_, sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(&model.SaleFilterOption{
 		Conditions: squirrel.Expr(model.SaleTableName+".Id = ?", args.Id),
 	})
 	if appErr != nil {
@@ -488,68 +489,81 @@ func (r *Resolver) Sale(ctx context.Context, args struct {
 	return systemSaleToGraphqlSale(sales[0]), nil
 }
 
-// TODO: Check if we need any role or permission to see this
-func (r *Resolver) Sales(ctx context.Context, args struct {
+type SalesArgs struct {
 	Filter  *SaleFilterInput
 	SortBy  *SaleSortingInput
-	Channel *string // This is channel id
+	Channel *string // This is channel slug
 	GraphqlParams
-}) (*SaleCountableConnection, error) {
-	// validate params
-	// appErr := args.GraphqlParams.validate("Resolver.Sales")
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+}
 
-	// var saleFilterOpts = &model.SaleFilterOption{}
-	// if args.Filter != nil {
-	// 	var appErr *model.AppError
-	// 	saleFilterOpts, appErr = args.Filter.Parse()
-	// 	if appErr != nil {
-	// 		return nil, appErr
-	// 	}
-	// }
+func (a *SalesArgs) parse() (*model.SaleFilterOption, *model.AppError) {
+	var conditions squirrel.Sqlizer
 
-	// if args.Channel != nil && model.IsValidId(*args.Channel) {
-	// 	saleFilterOpts.SaleChannelListing_ChannelID = squirrel.Expr(model.SaleChannelListingTableName+".ChannelID = ?", *args.Channel)
-	// }
+	if a.Filter != nil {
+		var appErr *model.AppError
+		conditions, appErr = a.Filter.parse()
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if a.SortBy != nil && !a.SortBy.Field.IsValid() {
+		return nil, model.NewAppError("SalesArgs.SortBy", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Field"}, "please provide valid field to sort", http.StatusBadRequest)
+	}
+	if a.Channel != nil && !slug.IsSlug(*a.Channel) {
+		return nil, model.NewAppError("SalesArgs.Channel", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, *a.Channel+" is not a valid channel slug", http.StatusBadRequest)
+	}
 
-	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	// sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(saleFilterOpts)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	paginationValues, appErr := a.GraphqlParams.Parse("SalesArgs")
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// keyFunc := func(s *model.Sale) string { return s.Name }
-	// res, appErr := newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).
-	// 	parse("Resolver.Sales")
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	res := &model.SaleFilterOption{
+		Conditions:              conditions,
+		GraphqlPaginationValues: *paginationValues,
+		CountTotal:              true,
+	}
 
-	// var res *CountableConnection[*Sale]
+	// in case no sort field is provided
+	if res.GraphqlPaginationValues.OrderBy == "" {
+		saleSortFields := saleSortFieldsMap[SaleSortFieldName].fields
 
-	// if args.SortBy != nil {
-	// 	switch args.SortBy.Field {
-	// 	case SaleSortFieldName:
-	// 		keyFunc := func(s *model.Sale) string { return s.Name }
-	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-	// 	case SaleSortFieldStartDate:
-	// 		keyFunc := func(s *model.Sale) time.Time { return s.StartDate }
-	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-	// 	case SaleSortFieldEndDate:
-	// 		keyFunc := func(s *model.Sale) *time.Time { return s.EndDate }
-	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-	// 	case SaleSortFieldValue:
-	// 		keyFunc := func(s *model.Sale) string { return s.Name }
-	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-	// 	case SaleSortFieldType:
-	// 		keyFunc := func(s *model.Sale) string { return string(s.Type) }
-	// 		res, appErr = newGraphqlPaginator(sales, keyFunc, systemSaleToGraphqlSale, args.GraphqlParams).parse("Sales")
-	// 	}
-	// }
+		if a.SortBy != nil {
+			saleSortFields = saleSortFieldsMap[a.SortBy.Field].fields
 
-	// return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
+			// check if users wuant to sort sales by Values
+			if a.SortBy.Field == SaleSortFieldValue {
+				res.Annotate_Value = true
+			}
+		}
 
-	panic("not implemented")
+		saleOrder := a.GraphqlParams.orderDirection()
+		res.GraphqlPaginationValues.OrderBy = saleSortFields.Map(func(index int, item string) string { return item + " " + saleOrder }).Join(",")
+	}
+
+	return res, nil
+}
+
+// TODO: Check if we need any role or permission to see this
+func (r *Resolver) Sales(ctx context.Context, args SalesArgs) (*SaleCountableConnection, error) {
+	saleFilterOpts, appErr := args.parse()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalSales, sales, appErr := embedCtx.App.Srv().DiscountService().FilterSalesByOption(saleFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	saleKeyFunc := saleSortFieldsMap[SaleSortFieldName].keyFunc
+	if args.SortBy != nil && args.SortBy.Field != SaleSortFieldName {
+		saleKeyFunc = saleSortFieldsMap[args.SortBy.Field].keyFunc
+	}
+
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(sales))
+	res := constructCountableConnection(sales, int(totalSales), hasNextPage, hasPrevPage, saleKeyFunc, systemSaleToGraphqlSale)
+
+	return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
 }

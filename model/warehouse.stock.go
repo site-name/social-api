@@ -74,7 +74,7 @@ type StockFilterOption struct {
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
 	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
 
-	AnnotateAvailabeQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
+	AnnotateAvailableQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
 
 	// NOTE: If Set, store use OR ILIKEs to check this value against:
 	//
@@ -100,7 +100,10 @@ type StockFilterOption struct {
 	// NOTE: Remember to set `LockForUpdate` to true before setting this.
 	ForUpdateOf string
 
-	PaginationValues PaginationValues
+	GraphqlPaginationValues GraphqlPaginationValues
+
+	CountTotal bool // if true, count number of stocks in db also
+	Distinct   bool // if true, SELECT DISTINCT is applied
 }
 
 type StockFilterForCountryAndChannel struct {
@@ -115,7 +118,7 @@ type StockFilterForCountryAndChannel struct {
 	WarehouseIDFilter      squirrel.Sqlizer
 	ProductVariantIDFilter squirrel.Sqlizer
 
-	AnnotateAvailabeQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
+	AnnotateAvailableQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
 
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries

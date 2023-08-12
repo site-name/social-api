@@ -233,7 +233,7 @@ func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*m
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	stocks, appErr := embedCtx.App.Srv().
+	_, stocks, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		StocksByOption(&model.StockFilterOption{
 			Conditions:             squirrel.Eq{model.StockTableName + ".Id": ids},
@@ -334,7 +334,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader(ctx contex
 	// the result map has keys are variant ids
 	var batchLoadQuantitiesByCountry = func(countryCode, channelID string, variantIDs []string) (map[string]int, *model.AppError) {
 		stockFilterOptions := &model.StockFilterOption{
-			AnnotateAvailabeQuantity: true,
+			AnnotateAvailableQuantity: true,
 		}
 		conditions := squirrel.And{
 			squirrel.Eq{model.StockTableName + ".ProductVariantID": variantIDs},
@@ -357,7 +357,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelIdLoader(ctx contex
 		}
 
 		stockFilterOptions.Conditions = conditions
-		stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
+		_, stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -443,8 +443,8 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 		countryCode = strings.ToUpper(countryCode)
 
 		stockFilterOptions := &model.StockFilterOption{
-			Conditions:               squirrel.Eq{model.StockTableName + ".ProductVariantID": variantIDs},
-			AnnotateAvailabeQuantity: true,
+			Conditions:                squirrel.Eq{model.StockTableName + ".ProductVariantID": variantIDs},
+			AnnotateAvailableQuantity: true,
 		}
 		if countryCode != "" {
 			stockFilterOptions.Warehouse_ShippingZone_countries = squirrel.Like{model.ShippingZoneTableName + ".Countries::text": "%" + countryCode + "%"}
@@ -453,7 +453,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 			stockFilterOptions.Warehouse_ShippingZone_ChannelID = squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": channelID}
 		}
 
-		stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
+		_, stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
 		if appErr != nil {
 			return nil, appErr
 		}

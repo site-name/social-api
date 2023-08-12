@@ -259,7 +259,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 }
 
 func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
-	stocks, err := ws.Stock().FilterByOption(&model.StockFilterOption{
+	_, stocks, err := ws.Stock().FilterByOption(&model.StockFilterOption{
 		SelectRelatedProductVariant: true,
 		Conditions:                  squirrel.Eq{model.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
 	})

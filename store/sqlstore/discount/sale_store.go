@@ -3,8 +3,10 @@ package discount
 import (
 	"strings"
 
+	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -16,6 +18,20 @@ type SqlDiscountSaleStore struct {
 
 func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 	return &SqlDiscountSaleStore{sqlStore}
+}
+
+func (s *SqlDiscountSaleStore) ScanFields(sale *model.Sale) []any {
+	return []any{
+		&sale.Id,
+		&sale.Name,
+		&sale.Type,
+		&sale.StartDate,
+		&sale.EndDate,
+		&sale.CreateAt,
+		&sale.UpdateAt,
+		&sale.Metadata,
+		&sale.PrivateMetadata,
+	}
 }
 
 // Upsert bases on sale's Id to decide to update or insert given sale
@@ -52,29 +68,93 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 }
 
 // FilterSalesByOption filter sales by option
-func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
+func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
 	query := ss.GetQueryBuilder().
 		Select(model.SaleTableName + ".*").
 		From(model.SaleTableName).
 		Where(option.Conditions)
 
-	if option.SaleChannelListing_ChannelID != nil {
+	if option.SaleChannelListing_ChannelSlug != nil {
 		query = query.
 			InnerJoin(model.SaleChannelListingTableName + " ON SaleChannelListings.SaleID = Sales.Id").
-			Where(option.SaleChannelListing_ChannelID)
+			InnerJoin(model.ChannelTableName + " ON Channels.Id = SaleChannelListings.ChannelID").
+			Where(option.SaleChannelListing_ChannelSlug)
+
+	} else if option.Annotate_Value {
+
+		// check if channel provided:
+		if !slug.IsSlug(option.ChannelSlug) {
+			return 0, nil, store.NewErrInvalidInput("FilterSalesByOption", "option.ChannelSlug", option.ChannelSlug)
+		}
+
+		query = query.
+			LeftJoin(model.SaleChannelListingTableName+" ON SaleChannelListings.SaleID = Sales.Id").
+			LeftJoin(model.ChannelTableName+" ON Channels.Id = SaleChannelListings.ChannelID").
+			Column(`MIN (
+				SaleChannelListings.DiscountValue
+			) FILTER (
+				WHERE Channels.Slug = ?
+			) AS "Sales.Value"`, option.ChannelSlug).
+			GroupBy(model.SaleTableName + ".Id")
 	}
+
+	if option.GraphqlPaginationValues.PaginationApplicable() {
+		query = query.
+			Where(option.GraphqlPaginationValues.Condition).
+			OrderBy(option.GraphqlPaginationValues.OrderBy)
+	}
+
+	var totalSale int64
+	if option.CountTotal {
+		query, args, err := ss.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterSalesByOptions_Count_ToSql")
+		}
+		err = ss.GetReplica().Raw(query, args...).Scan(&totalSale).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total number of sales by given options")
+		}
+	}
+
+	// NOTICE:
+	// we add limit to the query after counting.
+	if option.GraphqlPaginationValues.Limit > 0 {
+		query = query.Limit(option.GraphqlPaginationValues.Limit)
+	}
+
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterSalesByOption_ToSql")
+		return 0, nil, errors.Wrap(err, "FilterSalesByOption_ToSql")
 	}
+
+	rows, err := ss.GetReplica().Raw(queryString, args...).Rows()
+	if err != nil {
+		return 0, nil, errors.Wrap(err, "failed to find sales with given condition.")
+	}
+	defer rows.Close()
 
 	var sales model.Sales
-	err = ss.GetReplica().Raw(queryString, args...).Scan(&sales).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find sales with given condition.")
+	for rows.Next() {
+		var (
+			sale       model.Sale
+			scanFields = ss.ScanFields(&sale)
+			value      decimal.Decimal
+		)
+		if option.Annotate_Value {
+			scanFields = append(scanFields, &value)
+		}
+
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to scan a row of sale")
+		}
+
+		if option.Annotate_Value {
+			sale.Value = &value
+		}
 	}
 
-	return sales, nil
+	return totalSale, sales, nil
 }
 
 func (s *SqlDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error) {

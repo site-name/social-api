@@ -143,69 +143,69 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	return nil, returningStocks, nil
 }
 
-func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
-	query := s.GetQueryBuilder().Select("COUNT(DISTINCT Stocks.Id)").From(model.StockTableName)
+// func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+// 	query := s.GetQueryBuilder().Select("COUNT(DISTINCT Stocks.Id)").From(model.StockTableName)
 
-	var stockSearchOpts squirrel.Sqlizer = nil
-	if options.Search != "" {
-		expr := "%" + options.Search + "%"
+// 	var stockSearchOpts squirrel.Sqlizer = nil
+// 	if options.Search != "" {
+// 		expr := "%" + options.Search + "%"
 
-		stockSearchOpts = squirrel.Or{
-			squirrel.ILike{model.ProductTableName + ".Name": expr},
-			squirrel.ILike{model.ProductVariantTableName + ".Name": expr},
-			squirrel.ILike{model.WarehouseTableName + ".Name": expr},
-			squirrel.ILike{model.AddressTableName + ".CompanyName": expr},
-		}
-	}
+// 		stockSearchOpts = squirrel.Or{
+// 			squirrel.ILike{model.ProductTableName + ".Name": expr},
+// 			squirrel.ILike{model.ProductVariantTableName + ".Name": expr},
+// 			squirrel.ILike{model.WarehouseTableName + ".Name": expr},
+// 			squirrel.ILike{model.AddressTableName + ".CompanyName": expr},
+// 		}
+// 	}
 
-	// parse options:
-	for _, opt := range []squirrel.Sqlizer{
-		options.Conditions,
-		options.Warehouse_ShippingZone_countries,
-		options.Warehouse_ShippingZone_ChannelID,
-		stockSearchOpts, //
-	} {
-		query = query.Where(opt)
-	}
+// 	// parse options:
+// 	for _, opt := range []squirrel.Sqlizer{
+// 		options.Conditions,
+// 		options.Warehouse_ShippingZone_countries,
+// 		options.Warehouse_ShippingZone_ChannelID,
+// 		stockSearchOpts, //
+// 	} {
+// 		query = query.Where(opt)
+// 	}
 
-	if options.Search != "" ||
-		options.Warehouse_ShippingZone_countries != nil ||
-		options.Warehouse_ShippingZone_ChannelID != nil {
+// 	if options.Search != "" ||
+// 		options.Warehouse_ShippingZone_countries != nil ||
+// 		options.Warehouse_ShippingZone_ChannelID != nil {
 
-		query = query.InnerJoin(model.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID")
+// 		query = query.InnerJoin(model.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID")
 
-		if options.Warehouse_ShippingZone_countries != nil ||
-			options.Warehouse_ShippingZone_ChannelID != nil {
-			query = query.
-				InnerJoin(model.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
-				InnerJoin(model.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+// 		if options.Warehouse_ShippingZone_countries != nil ||
+// 			options.Warehouse_ShippingZone_ChannelID != nil {
+// 			query = query.
+// 				InnerJoin(model.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
+// 				InnerJoin(model.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
 
-			if options.Warehouse_ShippingZone_ChannelID != nil {
-				query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
-			}
-		}
+// 			if options.Warehouse_ShippingZone_ChannelID != nil {
+// 				query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
+// 			}
+// 		}
 
-		if options.Search != "" {
-			query = query.InnerJoin(model.AddressTableName + " ON Addresses.Id = Warehouses.AddressID")
-		}
-	}
+// 		if options.Search != "" {
+// 			query = query.InnerJoin(model.AddressTableName + " ON Addresses.Id = Warehouses.AddressID")
+// 		}
+// 	}
 
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "CountByOptions_ToSql")
-	}
+// 	queryStr, args, err := query.ToSql()
+// 	if err != nil {
+// 		return 0, errors.Wrap(err, "CountByOptions_ToSql")
+// 	}
 
-	var res int32
-	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count stocks by given options")
-	}
+// 	var res int32
+// 	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
+// 	if err != nil {
+// 		return 0, errors.Wrap(err, "failed to count stocks by given options")
+// 	}
 
-	return res, nil
-}
+// 	return res, nil
+// }
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
-func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	selectFields := []string{model.StockTableName + ".*"}
 	if options.SelectRelatedProductVariant {
 		selectFields = append(selectFields, model.ProductVariantTableName+".*")
@@ -217,6 +217,10 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 	query := ss.GetQueryBuilder().
 		Select(selectFields...). // this selecting fields differ the query from `if` caluse
 		From(model.StockTableName)
+
+	if options.Distinct {
+		query = query.Distinct()
+	}
 
 	var stockSearchOpts squirrel.Sqlizer = nil
 	if options.Search != "" {
@@ -282,11 +286,10 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 	}
 
 	var groupBy string
-
-	if options.AnnotateAvailabeQuantity {
+	if options.AnnotateAvailableQuantity {
 		query = query.
-			Column(squirrel.Alias(squirrel.Expr("Stocks.Quantity - COALESCE( SUM ( Allocations.QuantityAllocated ), 0 )"), "AvailableQuantity")).
-			LeftJoin(model.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
+			Column("Stocks.Quantity - COALESCE( SUM ( Allocations.QuantityAllocated ), 0 ) AS AvailableQuantity").
+			LeftJoin(model.AllocationTableName + " ON Stocks.Id = Allocations.StockID")
 		groupBy = "Stocks.Id"
 	}
 
@@ -294,11 +297,34 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		query = query.GroupBy(groupBy)
 	}
 
-	query = options.PaginationValues.AddPaginationToSelectBuilderIfNeeded(query)
+	// check if graphql pagination provided:
+	if options.GraphqlPaginationValues.PaginationApplicable() {
+		query = query.
+			Where(options.GraphqlPaginationValues.Condition).
+			OrderBy(options.GraphqlPaginationValues.OrderBy)
+	}
+
+	// NOTE: we have to construct the count query here before pagination limit is applied
+	var totalCount int64
+	if options.CountTotal {
+		countQuery, countArgs, err := ss.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "CountTotal_ToSql")
+		}
+		err = ss.GetReplica().Raw(countQuery, countArgs...).Scan(&totalCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total number of stocks by given options")
+		}
+	}
+
+	// query = options.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(query)
+	if options.GraphqlPaginationValues.Limit > 0 {
+		query = query.Limit(options.GraphqlPaginationValues.Limit)
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+		return 0, nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
 	runner := ss.GetReplica()
@@ -308,11 +334,11 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 
 	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find stocks by given options")
+		return 0, nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
 	defer rows.Close()
 
-	returningStocks := make(model.Stocks, 0)
+	var returningStocks model.Stocks
 
 	for rows.Next() {
 		var (
@@ -330,13 +356,13 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		if options.SelectRelatedWarehouse {
 			scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
 		}
-		if options.AnnotateAvailabeQuantity {
+		if options.AnnotateAvailableQuantity {
 			scanFields = append(scanFields, &availableQuantity)
 		}
 
 		err = rows.Scan(scanFields...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to find stocks with related warehouses and product variants")
+			return 0, nil, errors.Wrap(err, "failed to find stocks with related warehouses and product variants")
 		}
 
 		if options.SelectRelatedProductVariant {
@@ -345,13 +371,13 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		if options.SelectRelatedWarehouse {
 			stock.SetWarehouse(&wareHouse)
 		}
-		if options.AnnotateAvailabeQuantity {
+		if options.AnnotateAvailableQuantity {
 			stock.AvailableQuantity = availableQuantity
 		}
 		returningStocks = append(returningStocks, &stock)
 	}
 
-	return returningStocks, nil
+	return totalCount, returningStocks, nil
 }
 
 // FilterForCountryAndChannel finds and returns stocks with given options
@@ -371,7 +397,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 
 	// parse option for FilterVariantStocksForCountry
 	// parse additional options
-	if options.AnnotateAvailabeQuantity {
+	if options.AnnotateAvailableQuantity {
 		query = query.
 			Column("Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity").
 			LeftJoin(model.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
@@ -434,7 +460,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 		scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
 		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
 
-		if options.AnnotateAvailabeQuantity {
+		if options.AnnotateAvailableQuantity {
 			scanFields = append(scanFields, &availableQuantity)
 		}
 
@@ -448,7 +474,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 
 		returningStocks = append(returningStocks, &stock)
 
-		if options.AnnotateAvailabeQuantity {
+		if options.AnnotateAvailableQuantity {
 			stock.AvailableQuantity = availableQuantity
 		}
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -323,11 +324,14 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 
 func (r *Resolver) Voucher(ctx context.Context, args struct {
 	Id      string
-	Channel *string // NOTE: this is channel id
+	Channel *string // channel slug
 }) (*Voucher, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("Voucher", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid voucher id", http.StatusBadRequest)
+	}
+	if args.Channel != nil && !slug.IsSlug(*args.Channel) {
+		return nil, model.NewAppError("Voucher", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid channel slug", http.StatusBadRequest)
 	}
 
 	voucher, err := VoucherByIDLoader.Load(ctx, args.Id)()
@@ -338,71 +342,92 @@ func (r *Resolver) Voucher(ctx context.Context, args struct {
 	return systemVoucherToGraphqlVoucher(voucher), nil
 }
 
-func (r *Resolver) Vouchers(ctx context.Context, args struct {
+type VoucherFilterArgs struct {
 	Filter  *VoucherFilterInput
 	SortBy  *VoucherSortingInput
 	Channel *string // channel slug
 	GraphqlParams
-}) (*VoucherCountableConnection, error) {
+}
+
+func (v *VoucherFilterArgs) parse() (*model.VoucherFilterOption, *model.AppError) {
 	// validate params
-	appErr := args.GraphqlParams.validate("Vouchers")
-	if appErr != nil {
-		return nil, appErr
+	if v.Channel != nil && !slug.IsSlug(*v.Channel) {
+		return nil, model.NewAppError("VoucherFilterArgs.parse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, "please provide valid channel slug", http.StatusBadRequest)
+	}
+	if v.SortBy != nil && !v.SortBy.Field.IsValid() {
+		return nil, model.NewAppError("VoucherFilterArgs.parse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortBy.Field"}, "please provide valid field for sorting", http.StatusBadRequest)
 	}
 
-	var voucherFilter = &model.VoucherFilterOption{}
-	if args.Filter != nil {
-		voucherFilter, appErr = args.Filter.Parse()
+	var conditions squirrel.Sqlizer = nil
+	// parse filter
+	if v.Filter != nil {
+		var appErr *model.AppError
+		conditions, appErr = v.Filter.Parse()
 		if appErr != nil {
 			return nil, appErr
 		}
 	}
-
-	if args.Channel != nil && slug.IsSlug(*args.Channel) {
-		voucherFilter.VoucherChannelListing_ChannelSlug = squirrel.Expr(model.ChannelTableName+".Slug = ?", *args.Channel)
-	}
-
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	_, appErr = embedCtx.App.Srv().DiscountService().VouchersByOption(voucherFilter)
+	// parse GraphqlParams
+	paginationValues, appErr := v.GraphqlParams.Parse("Vouchers")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	panic("not implemented")
+	var voucherFilterOptions = &model.VoucherFilterOption{
+		Conditions:              conditions,
+		GraphqlPaginationValues: *paginationValues,
+		CountTotal:              true,
+	}
 
-	// if args.SortBy != nil {
-	// 	switch args.SortBy.Field {
-	// 	case VoucherSortFieldCode:
-	// 		newGraphqlPaginator(vouchers, func(v *model.Voucher) string {})
-	// 	case VoucherSortFieldStartDate:
-	// 	case VoucherSortFieldEndDate:
-	// 	case VoucherSortFieldValue:
-	// 	case VoucherSortFieldType:
-	// 	case VoucherSortFieldUsageLimit:
-	// 	case VoucherSortFieldMinimumSpentAmount:
-	// 	}
-	// }
+	if v.Channel != nil {
+		voucherFilterOptions.VoucherChannelListing_ChannelSlug = squirrel.Eq{model.ChannelTableName + ".Slug": *v.Channel}
+		voucherFilterOptions.ChannelSlug = *v.Channel // in case we sort vouchers by their `MinSpentAmount` or `DiscountValue`
+	}
 
-	// voucherOrdering := ".Name"
+	if voucherFilterOptions.GraphqlPaginationValues.OrderBy == "" {
+		// vouchers are sorted by codes by default
+		var voucherSortFields = util.AnyArray[string]{model.VoucherTableName + ".Code"}
 
-	// if args.SortBy != nil {
-	// 	switch args.SortBy.Field {
-	// 	case VoucherSortFieldCode:
-	// 		voucherOrdering = ".Code"
-	// 	case VoucherSortFieldStartDate:
-	// 		voucherOrdering = ".StartDate"
-	// 	case VoucherSortFieldEndDate:
-	// 		voucherOrdering = ".EndDate"
-	// 	case VoucherSortFieldValue:
+		if v.SortBy != nil {
+			voucherSortFields = voucherSortFieldsMap[v.SortBy.Field].fields
 
-	// 	case VoucherSortFieldType:
-	// 		voucherOrdering = ".Type"
+			if v.SortBy.Field == VoucherSortFieldValue {
+				voucherFilterOptions.Annotate_DiscountValue = true
+			} else if v.SortBy.Field == VoucherSortFieldMinimumSpentAmount {
+				voucherFilterOptions.Annotate_MinimumSpentAmount = true
+			}
+		}
 
-	// 	case VoucherSortFieldUsageLimit:
-	// 		voucherOrdering = ".UsageLimit"
-	// 	case VoucherSortFieldMinimumSpentAmount:
-	// 	}
-	// }
+		orderDirection := v.GraphqlParams.orderDirection()
+		voucherFilterOptions.GraphqlPaginationValues.OrderBy = voucherSortFields.Map(func(_ int, item string) string { return item + " " + orderDirection }).Join(",")
+	}
 
-	// model.Voucher
+	return voucherFilterOptions, nil
+}
+
+// Vouchers are by default sorted by their codes
+func (r *Resolver) Vouchers(ctx context.Context, args VoucherFilterArgs) (*VoucherCountableConnection, error) {
+	voucherFilterOpts, appErr := args.parse()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalCount, vouchers, appErr := embedCtx.App.Srv().DiscountService().VouchersByOption(voucherFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	keyFunc := voucherSortFieldsMap[VoucherSortFieldCode].keyFunc
+
+	if args.SortBy != nil &&
+		args.SortBy.Field.IsValid() &&
+		args.SortBy.Field != VoucherSortFieldCode {
+		keyFunc = voucherSortFieldsMap[args.SortBy.Field].keyFunc
+	}
+
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(vouchers))
+	res := constructCountableConnection(vouchers, int(totalCount), hasNextPage, hasPrevPage, keyFunc, systemVoucherToGraphqlVoucher)
+
+	return (*VoucherCountableConnection)(unsafe.Pointer(res)), nil
 }

@@ -3488,21 +3488,21 @@ func (s *RetryLayerDiscountSaleStore) Delete(transaction *gorm.DB, options *mode
 
 }
 
-func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
+func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleStore.FilterSalesByOption(option)
+		result, resultVar1, err := s.DiscountSaleStore.FilterSalesByOption(option)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 
@@ -3688,21 +3688,21 @@ func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) 
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
+		result, resultVar1, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 
@@ -3713,26 +3713,6 @@ func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, 
 	tries := 0
 	for {
 		result, err := s.DiscountVoucherStore.Get(voucherID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
-
-	tries := 0
-	for {
-		result, err := s.DiscountVoucherStore.GetByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -7894,41 +7874,21 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+func (s *RetryLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.CountByOptions(options)
+		result, resultVar1, err := s.StockStore.FilterByOption(options)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
-
-	tries := 0
-	for {
-		result, err := s.StockStore.FilterByOption(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 

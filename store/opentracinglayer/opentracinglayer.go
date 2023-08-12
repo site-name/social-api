@@ -3237,7 +3237,7 @@ func (s *OpenTracingLayerDiscountSaleStore) Delete(transaction *gorm.DB, options
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
+func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.FilterSalesByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3246,13 +3246,13 @@ func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *model.Sa
 	}()
 
 	defer span.Finish()
-	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
+	result, resultVar1, err := s.DiscountSaleStore.FilterSalesByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
@@ -3417,7 +3417,7 @@ func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
+func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.FilterVouchersByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3426,13 +3426,13 @@ func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option *mo
 	}()
 
 	defer span.Finish()
-	result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
+	result, resultVar1, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
@@ -3445,24 +3445,6 @@ func (s *OpenTracingLayerDiscountVoucherStore) Get(voucherID string) (*model.Vou
 
 	defer span.Finish()
 	result, err := s.DiscountVoucherStore.Get(voucherID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.GetByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.DiscountVoucherStore.GetByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7256,25 +7238,7 @@ func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int
 	return err
 }
 
-func (s *OpenTracingLayerStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.CountByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.StockStore.CountByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -7283,13 +7247,13 @@ func (s *OpenTracingLayerStockStore) FilterByOption(options *model.StockFilterOp
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterByOption(options)
+	result, resultVar1, err := s.StockStore.FilterByOption(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {

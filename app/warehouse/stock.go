@@ -29,13 +29,13 @@ func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorm.DB, stocks []*mode
 }
 
 // StocksByOption returns a list of stocks filtered using given options
-func (a *ServiceWarehouse) StocksByOption(option *model.StockFilterOption) (model.Stocks, *model.AppError) {
-	stocks, err := a.srv.Store.Stock().FilterByOption(option)
+func (a *ServiceWarehouse) StocksByOption(option *model.StockFilterOption) (int64, model.Stocks, *model.AppError) {
+	total, stocks, err := a.srv.Store.Stock().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("StocksByOption", "app.warehouse.error_finding_stocks_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model.NewAppError("StocksByOption", "app.warehouse.error_finding_stocks_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return stocks, nil
+	return total, stocks, nil
 }
 
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.

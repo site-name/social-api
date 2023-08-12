@@ -167,7 +167,7 @@ type AttributeFilterOption struct {
 	Limit           int
 
 	PrefetchRelatedAttributeValues bool
-	PaginationValues               PaginationValues
+	GraphqlPaginationValues        GraphqlPaginationValues
 }
 
 func (a *Attribute) IsValid() *AppError {
