@@ -37,27 +37,13 @@ func (s *ServiceShipping) DeleteShippingZones(transaction *gorm.DB, conditions *
 	return numDeleted, nil
 }
 
-// NOTE: relations must be []*model.Channel or []*model.Warehouse
-func (s *ServiceShipping) AddShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError {
-	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, relations, false)
+func (s *ServiceShipping) ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model.AppError {
+	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 	if err != nil {
 		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return model.NewAppError("AddShippingZoneRelations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
+			return model.NewAppError("ToggleShippingZoneRelations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
 		}
-		return model.NewAppError("AddShippingZoneRelations", "app.channel.add_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return nil
-}
-
-// NOTE: relations must be []*model.Channel or []*model.Warehouse
-func (s *ServiceShipping) RemoveShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError {
-	err := s.srv.Store.ShippingZone().ToggleRelations(transaction, zones, relations, true)
-	if err != nil {
-		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return model.NewAppError("RemoveShippingZoneRelations", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "relations"}, err.Error(), http.StatusBadRequest)
-		}
-		return model.NewAppError("RemoveShippingZoneRelations", "app.channel.remove_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("ToggleShippingZoneRelations", "app.channel.add_channel_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

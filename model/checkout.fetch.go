@@ -50,8 +50,8 @@ type CheckoutInfo struct {
 // ValidDeliveryMethods returns a slice of interfaces.
 //
 // NOTE: These interfaces can be *Warehouse or *ShippingMethod
-func (c *CheckoutInfo) ValidDeliveryMethods() []interface{} {
-	var res []interface{}
+func (c *CheckoutInfo) ValidDeliveryMethods() []any {
+	var res []any
 
 	for _, item := range c.ValidShippingMethods {
 		if item != nil {

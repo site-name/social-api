@@ -27,7 +27,7 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 	if pr := args.Parent; pr != nil && !model.IsValidId(*pr) {
 		return nil, model.NewAppError("CategoryCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "parent"}, fmt.Sprintf("%s is not a valid category id", *pr), http.StatusBadRequest)
 	}
-	if appErr := args.Input.Validate(); appErr != nil {
+	if appErr := args.Input.Validate("CategoryCreate"); appErr != nil {
 		return nil, appErr
 	}
 
@@ -67,7 +67,7 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("CategoryUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
-	if appErr := args.Input.Validate(); appErr != nil {
+	if appErr := args.Input.Validate("CategoryCreate"); appErr != nil {
 		return nil, appErr
 	}
 

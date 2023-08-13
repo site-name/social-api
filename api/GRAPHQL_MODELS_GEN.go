@@ -873,9 +873,9 @@ type CategoryInput struct {
 	BackgroundImageAlt *string    `json:"backgroundImageAlt"`
 }
 
-func (c *CategoryInput) Validate() *model.AppError {
+func (c *CategoryInput) Validate(where string) *model.AppError {
 	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
-		return model.NewAppError("CategoryInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
 	}
 	return nil
 }

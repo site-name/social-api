@@ -21,10 +21,7 @@ type ShippingService interface {
 	FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddress *model.Address) []*model.ShippingMethod
 	// GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError)
-	// NOTE: relations must be []*model.Channel or []*model.Warehouse
-	AddShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError
-	// NOTE: relations must be []*model.Channel or []*model.Warehouse
-	RemoveShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, relations any) *model.AppError
+	ToggleShippingZoneRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) *model.AppError
 	// Prepare mapping shipping method to price from channel listings
 	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
 	// ShippingMethodByOption returns a shipping method with given options

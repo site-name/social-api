@@ -24,8 +24,6 @@ func init() {
 }
 
 func (a *ServiceAttribute) AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError) {
-	option.Limit = 1
-
 	attributes, appErr := a.AttributesByOption(option)
 	if appErr != nil {
 		return nil, appErr

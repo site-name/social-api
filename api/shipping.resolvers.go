@@ -597,15 +597,15 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	}
 
 	// add channels, warehouses to shipping zones
-	err := embedCtx.App.Srv().Store.ShippingZone().ToggleRelations(transaction, model.ShippingZones{{Id: args.Id}}, args.Input.AddWarehouses, args.Input.AddChannels, false)
-	if err != nil {
-		return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.toggle_shipping_zone_relations.add.app_error", nil, err.Error(), http.StatusInternalServerError)
+	appErr = embedCtx.App.Srv().ShippingService().ToggleShippingZoneRelations(transaction, model.ShippingZones{{Id: args.Id}}, args.Input.AddWarehouses, args.Input.AddChannels, false)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	// remove channels, warehouses from shipping zones
-	err = embedCtx.App.Srv().Store.ShippingZone().ToggleRelations(transaction, model.ShippingZones{{Id: args.Id}}, args.Input.RemoveWarehouses, args.Input.RemoveChannels, true)
-	if err != nil {
-		return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.toggle_shipping_zone_relations.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
+	appErr = embedCtx.App.Srv().ShippingService().ToggleShippingZoneRelations(transaction, model.ShippingZones{{Id: args.Id}}, args.Input.RemoveWarehouses, args.Input.RemoveChannels, true)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	if len(args.Input.RemoveChannels) > 0 {
@@ -631,7 +631,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	}
 
 	// commit transaction
-	err = transaction.Commit().Error
+	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingZoneUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

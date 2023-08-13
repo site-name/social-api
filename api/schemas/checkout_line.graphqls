@@ -1,6 +1,6 @@
 extend type Mutation {
   checkoutLineDelete(lineId: String!, token: String!): CheckoutLineDelete
-  checkoutLinesAdd(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesAdd
+  checkoutLinesAdd(lines: [CheckoutLineInput]!, token: String!): CheckoutLinesAdd
   checkoutLinesUpdate(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesUpdate
 }
 

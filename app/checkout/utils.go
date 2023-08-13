@@ -1,6 +1,7 @@
 package checkout
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"sync/atomic"
@@ -72,18 +73,6 @@ func (a *ServiceCheckout) CheckVariantInStock(checkout *model.Checkout, variant 
 //
 // `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
 func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo, variant *model.ProductVariant, quantity int, replace bool, checkQuantity bool) (*model.Checkout, *model.InsufficientStock, *model.AppError) {
-	// validate arguments
-	var invalidArgs string
-	if checkoutInfo == nil {
-		invalidArgs = "checkoutInfo"
-	}
-	if variant == nil {
-		invalidArgs += ", variant"
-	}
-	if invalidArgs != "" {
-		return nil, nil, model.NewAppError("AddVariantToCheckout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
-	}
-
 	checkout := checkoutInfo.Checkout
 	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 		Conditions: squirrel.Eq{
@@ -999,4 +988,107 @@ func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*model.Checkou
 // prepareInsufficientStockCheckoutValidationAppError
 func prepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model.AppError {
 	return model.NewAppError(where, "app.checkout.insufficient_stock.app_error", map[string]interface{}{"variants": err.VariantIDs()}, "", http.StatusNotAcceptable)
+}
+
+type DeliveryMethod interface {
+	*model.ShippingMethod | *model.WareHouse
+}
+
+// Check if current shipping method is valid
+func (s *ServiceCheckout) cleanDeliveryMethod(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos, method any) (bool, *model.AppError) {
+	if method == nil {
+		// no shipping method was provided, it is valid
+		return true, nil
+	}
+
+	shippingRequired, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
+	if appErr != nil {
+		return false, appErr
+	}
+
+	if !shippingRequired {
+		return false, model.NewAppError("cleanDeliveryMethod", "app.checkout.clean_delivery_method.shipping_not_required.app_error", nil, "shipping not required", http.StatusNotAcceptable)
+	}
+
+	switch t := any(method).(type) {
+	case *model.ShippingMethod:
+		if checkoutInfo.ShippingAddress == nil {
+			return false, model.NewAppError("cleanDeliveryMethod", "app.checkout.checkout_no_shipping_address.app_error", nil, "cannot choose a shipping method for a checkout without the shipping address", http.StatusNotAcceptable)
+		}
+		return lo.SomeBy(checkoutInfo.ValidShippingMethods, func(item *model.ShippingMethod) bool { return item != nil && item.Id == t.Id }), nil
+
+	case *model.WareHouse:
+		return lo.SomeBy(checkoutInfo.ValidPickupPoints, func(item *model.WareHouse) bool { return item != nil && item.Id == t.Id }), nil
+
+	// this code will never reach
+	default:
+		return false, nil
+	}
+}
+
+func (s *ServiceCheckout) UpdateCheckoutShippingMethodIfValid(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError {
+	quantity, appErr := s.CalculateCheckoutQuantity(lines)
+	if appErr != nil {
+		return appErr
+	}
+
+	// remove shipping method when empty checkout
+	if quantity == 0 {
+		appErr := s.ClearDeliveryMethod(*checkoutInfo)
+		if appErr != nil {
+			return appErr
+		}
+	} else {
+		requireShipping, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
+		if appErr != nil {
+			return appErr
+		}
+		if !requireShipping {
+			appErr := s.ClearDeliveryMethod(*checkoutInfo)
+			if appErr != nil {
+				return appErr
+			}
+		}
+	}
+
+	isValid, appErr := s.cleanDeliveryMethod(checkoutInfo, lines, checkoutInfo.DeliveryMethodInfo.GetDeliveryMethod())
+	if appErr != nil {
+		return appErr
+	}
+
+	if !isValid {
+		appErr = s.ClearDeliveryMethod(*checkoutInfo)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
+}
+
+func (s *ServiceCheckout) CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model.AppError {
+	for _, quantity := range quantities {
+		if (!allowZeroQuantity && quantity <= 0) || (allowZeroQuantity && quantity < 0) {
+			return model.NewAppError("CheckLinesQuantity", "app.checkout.zero_quantity_not_allowed.app_error", nil, "quantity must be heigher than zero", http.StatusNotAcceptable)
+		}
+
+		shopMaxCheckoutQuantity := *s.srv.Config().ShopSettings.MaxCheckoutLineQuantity
+		if quantity > shopMaxCheckoutQuantity {
+			return model.NewAppError("CheckLinesQuantity", "app.checkout.quantity_exceed_max_allowed.app_error", nil, fmt.Sprintf("cannot add more than %d items", shopMaxCheckoutQuantity), http.StatusNotAcceptable)
+		}
+	}
+
+	insufficientStockErr, appErr := s.srv.WarehouseService().CheckStockAndPreorderQuantityBulk(variants, country, quantities, channelSlug, nil, existingLines, replace)
+	if appErr != nil {
+		return appErr
+	}
+	if insufficientStockErr != nil {
+		errors := make([]string, len(insufficientStockErr.Items))
+		for idx, item := range insufficientStockErr.Items {
+			errors[idx] = fmt.Sprintf("could not add items %s. Only %d remainning in stock.", item.Variant.String(), util.GetMinMax(*item.AvailableQuantity, 0).Max)
+		}
+		return model.NewAppError("CheckLinesQuantity", "app.checkout.insufficient_stock.app_error", map[string]interface{}{"Quantity": errors}, insufficientStockErr.Error(), http.StatusNotAcceptable)
+	}
+
+	return nil
 }

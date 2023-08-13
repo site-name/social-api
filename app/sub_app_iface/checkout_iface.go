@@ -172,4 +172,6 @@ type CheckoutService interface {
 	GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model.AppError)
 	UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model.AppError)
 	ValidateVariantsInCheckoutLines(lines []*model.CheckoutLineInfo) *model.AppError
+	CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model.AppError
+	UpdateCheckoutShippingMethodIfValid(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError
 }

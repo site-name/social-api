@@ -56,7 +56,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 	shippingZones := lo.Map(args.Input.AddShippingZones, func(id string, _ int) *model.ShippingZone {
 		return &model.ShippingZone{Id: id}
 	})
-	appErr = embedCtx.App.Srv().ShippingService().AddShippingZoneRelations(transaction, shippingZones, model.Channels{channel})
+	appErr = embedCtx.App.Srv().ShippingService().ToggleShippingZoneRelations(transaction, shippingZones, nil, []string{channel.Id}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -76,8 +76,6 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	Id    string
 	Input ChannelUpdateInput
 }) (*ChannelUpdate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	// validate inputs
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("ChannelUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid id", http.StatusBadRequest)
@@ -93,6 +91,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 		return nil, model.NewAppError("ChannelUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveShippingZones/AddShippingZones"}, "remove shipping zone ids and add shipping zone ids can not have same ids", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// validate if channe does exist
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": args.Id},
@@ -132,7 +131,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	// create relations between shipping zones and channel
 	if len(args.Input.AddShippingZones) > 0 {
 		shippingZonesToAdd := lo.Map(args.Input.AddShippingZones, func(id string, _ int) *model.ShippingZone { return &model.ShippingZone{Id: id} })
-		appErr = embedCtx.App.Srv().ShippingService().AddShippingZoneRelations(transaction, shippingZonesToAdd, model.Channels{channel})
+		appErr = embedCtx.App.Srv().ShippingService().ToggleShippingZoneRelations(transaction, shippingZonesToAdd, []string{}, []string{channel.Id}, false)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -141,7 +140,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	if len(args.Input.RemoveShippingZones) > 0 {
 		// delete relations between shipping zones and channel
 		shippingZonesToRemove := lo.Map(args.Input.RemoveShippingZones, func(id string, _ int) *model.ShippingZone { return &model.ShippingZone{Id: id} })
-		appErr = embedCtx.App.Srv().ShippingService().RemoveShippingZoneRelations(transaction, shippingZonesToRemove, model.Channels{channel})
+		appErr = embedCtx.App.Srv().ShippingService().ToggleShippingZoneRelations(transaction, shippingZonesToRemove, []string{}, []string{channel.Id}, true)
 		if appErr != nil {
 			return nil, appErr
 		}
