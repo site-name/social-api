@@ -523,8 +523,8 @@ func parseGraphqlCursor(params *GraphqlParams) ([]any, error) {
 			res = append(res, key, str)
 
 		default:
-			// NOTE: there is still Map and Slice types.
-			// But we don't sort records using map nor slice types.
+			// NOTE: there is still Map, Struct and Slice types.
+			// But we don't sort records using map nor slice nor struct types.
 			// So I decide to ignore it here
 			return nil, errors.Errorf("unsupported type")
 		}

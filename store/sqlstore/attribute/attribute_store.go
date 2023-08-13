@@ -61,15 +61,12 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 		Where(option.Conditions)
 
 	// parse options
-	if option.OrderBy != "" {
-		query = query.OrderBy(option.OrderBy)
-	}
+
 	if option.Distinct {
 		query = query.Distinct()
 	}
-	if option.Limit > 0 {
-		query = query.Limit(uint64(option.Limit))
-	}
+
+	query = option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(query)
 
 	if option.AttributeProduct_ProductTypeID != nil {
 		query = query.
@@ -207,19 +204,19 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 
 	if unassigned {
 		sqQuery = sqQuery.Where(`NOT (
-	EXISTS(
-		SELECT (1) AS "a"
-		FROM `+model.AttributeProductTableName+` WHERE
-			AttributeProducts.ProductTypeID = ? AND AttributeProducts.AttributeID = Attributes.Id
-		LIMIT 1
-	)
-	OR EXISTS(
-		SELECT (1) AS "a"
-		FROM `+model.AttributeVariantTableName+` WHERE
-			AttributeVariants.ProductTypeID = ? AND AttributeVariants.AttributeID = Attributes.Id
-		LIMIT 1
-	)
-)`, productTypeID, productTypeID)
+			EXISTS(
+				SELECT (1) AS "a"
+				FROM `+model.AttributeProductTableName+` WHERE
+					AttributeProducts.ProductTypeID = ? AND AttributeProducts.AttributeID = Attributes.Id
+				LIMIT 1
+			)
+			OR EXISTS(
+				SELECT (1) AS "a"
+				FROM `+model.AttributeVariantTableName+` WHERE
+					AttributeVariants.ProductTypeID = ? AND AttributeVariants.AttributeID = Attributes.Id
+				LIMIT 1
+			)
+		)`, productTypeID, productTypeID)
 
 	} else {
 		sqQuery = sqQuery.
@@ -273,4 +270,31 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 	}
 
 	return res, nil
+}
+
+func (s *SqlAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+	paginApplicable := options.GraphqlPaginationValues.PaginationApplicable()
+
+	// NOTE: can't count when limit is > 0
+	// When limit is set to 0, other pagination values (order by, logical condition) are not applied. (see commonQueryBuilder() for details)
+	// so we must add them manually after call to `commonQueryBuilder`
+	options.GraphqlPaginationValues.Limit = 0
+
+	query := s.commonQueryBuilder(options)
+	if paginApplicable {
+		query = query.Where(options.GraphqlPaginationValues.Condition)
+	}
+
+	countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "CountByOptions_ToSql")
+	}
+
+	var totalCount int64
+	err = s.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count attributes by given options")
+	}
+
+	return totalCount, nil
 }

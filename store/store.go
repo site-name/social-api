@@ -209,6 +209,7 @@ type (
 		FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) // FilterbyOption returns a list of attributes by given option
 		GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error)
 		GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error)
+		CountByOptions(options *model.AttributeFilterOption) (int64, error)
 	}
 	AttributeTranslationStore interface {
 	}
@@ -362,7 +363,7 @@ type (
 // model
 type (
 	ShippingZoneStore interface {
-		ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
+		ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) error // NOTE: relations must be []*Channel or []*Warehouse
 		ScanFields(shippingZone *model.ShippingZone) []interface{}
 		Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error)
 		Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) // Upsert depends on given model zone's Id to decide update or insert the zone

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -177,37 +178,30 @@ func (s *SqlShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.Sh
 	return result.RowsAffected, nil
 }
 
-func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
-	if len(zones) == 0 || relations == nil {
-		return store.NewErrInvalidInput("ShippingZones.ToggleRelations", "zones/relations", "empty")
-	}
-
-	var associationName string
-
-	switch relations.(type) {
-	case []*model.Channel:
-		associationName = "Channels"
-	case []*model.WareHouse:
-		associationName = "Warehouses"
-	default:
-		return store.NewErrInvalidInput("channel.AddRelations", "relations", relations)
-	}
-
+func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds, channelIds []string, delete bool) error {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	for _, zone := range zones {
-		if zone != nil {
-			association := transaction.Model(zone).Association(associationName)
-			var err error
-			if delete {
-				err = association.Delete(relations)
-			} else {
-				err = association.Append(relations)
-			}
-			if err != nil {
-				return errors.Wrap(err, "failed to add "+strings.ToLower(associationName)+" to shipping zone with id = "+zone.Id)
+	var relationsMap = map[string]any{
+		"Channels":   lo.Map(channelIds, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} }),
+		"Warehouses": lo.Map(warehouseIds, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} }),
+	}
+
+	for _, shippingZone := range zones {
+		if shippingZone != nil {
+			for assoName, relations := range relationsMap {
+				association := transaction.Model(shippingZone).Association(assoName)
+				var err error
+				switch {
+				case delete:
+					err = association.Delete(relations)
+				default:
+					err = association.Append(relations)
+				}
+				if err != nil {
+					return errors.Wrap(err, "failed to toggle "+strings.ToLower(assoName)+" to shipping zone with id = "+shippingZone.Id)
+				}
 			}
 		}
 	}

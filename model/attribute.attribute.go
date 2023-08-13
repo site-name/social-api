@@ -1,7 +1,7 @@
 package model
 
 import (
-	"strings"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
@@ -156,37 +156,30 @@ type AttributeFilterOption struct {
 	AttributeVariant_ProductTypeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
 
 	Metadata     StringMAP
-	Search       string // Slug or Name ILIKE ...
+	Search       string // Attributes.Slug or Attributes.Name ILIKE ...
 	InCollection *string
 	InCategory   *string
 	ChannelSlug  *string
 
-	OrderBy         string
 	Distinct        bool
 	UserIsShopStaff bool // user has role 'shop_admin' or 'shop_staff'
-	Limit           int
 
 	PrefetchRelatedAttributeValues bool
 	GraphqlPaginationValues        GraphqlPaginationValues
 }
 
 func (a *Attribute) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.attribute.is_valid.%s.app_error",
-		"attribute_id=",
-		"Attribute.IsValid",
-	)
 	if !a.Type.IsValid() {
-		return outer("type", &a.Id)
+		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.type.app_error", nil, "please provide valid attribute type", http.StatusBadRequest)
 	}
 	if !a.InputType.IsValid() {
-		return outer("input_type", &a.Id)
+		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.input_type.app_error", nil, "please provide valid attribute input type", http.StatusBadRequest)
 	}
 	if a.EntityType != nil && !(*a.EntityType).IsValid() {
-		return outer("entity_type", &a.Id)
+		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.entity_type.app_error", nil, "please provide valid attribute entity type", http.StatusBadRequest)
 	}
-	if a.Unit != nil && measurement.MeasurementUnitMap[strings.ToUpper(*a.Unit)] == "" {
-		return outer("unit", &a.Id)
+	if a.Unit != nil && measurement.MeasurementUnitMap[*a.Unit] == "" {
+		return NewAppError("Attribute.IsValid", "model.attribute.is_valid.unit.app_error", nil, "please provide valid attribute unit", http.StatusBadRequest)
 	}
 
 	return nil
@@ -228,16 +221,11 @@ func (a *AttributeTranslation) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); r
 func (a *AttributeTranslation) TableName() string             { return AttributeTranslationTableName }
 
 func (a *AttributeTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.attribute_translation.is_valid.%s.app_error",
-		"attribute_translation_id=",
-		"AttributeTranslation.IsValid",
-	)
 	if !IsValidId(a.AttributeID) {
-		return outer("attribute_id", nil)
+		return NewAppError("AttributeTranslation.IsValid", "model.attribute_translation.is_valid.attribute_id.app_error", nil, "please provide valid attribute id", http.StatusBadRequest)
 	}
 	if !a.LanguageCode.IsValid() {
-		return outer("language_code", &a.Id)
+		return NewAppError("AttributeTranslation.IsValid", "model.attribute_translation.is_valid.language_code.app_error", nil, "please provide valid attribute id", http.StatusBadRequest)
 	}
 
 	return nil

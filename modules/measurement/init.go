@@ -1,9 +1,5 @@
 package measurement
 
-import (
-	"strings"
-)
-
 var (
 	MeasurementUnitMap     map[string]string // MeasurementUnitMap contains all measurement unit notations supported by this aplication
 	MeasurementUnitChoices [][]string        // MeasurementUnitChoices contains all measurements supported by this application
@@ -12,16 +8,16 @@ var (
 func init() {
 	MeasurementUnitMap = make(map[string]string)
 	for k := range DISTANCE_UNIT_STRINGS {
-		MeasurementUnitMap[strings.ToUpper(string(k))] = string(k)
+		MeasurementUnitMap[string(k)] = string(k)
 	}
 	for k := range AREA_UNIT_STRINGS {
-		MeasurementUnitMap[strings.ToUpper(k)] = k
+		MeasurementUnitMap[k] = k
 	}
 	for k := range WEIGHT_UNIT_STRINGS {
-		MeasurementUnitMap[strings.ToUpper(string(k))] = string(k)
+		MeasurementUnitMap[string(k)] = string(k)
 	}
 	for k := range VOLUME_UNIT_STRINGS {
-		MeasurementUnitMap[strings.ToUpper(k)] = k
+		MeasurementUnitMap[k] = k
 	}
 
 	for _, v := range MeasurementUnitMap {

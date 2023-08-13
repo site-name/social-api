@@ -443,49 +443,79 @@ type AttributesArgs struct {
 	GraphqlParams
 }
 
-func (args *AttributesArgs) parse(where string) (*model.AttributeFilterOption, *model.AppError) {
-	// where += "AttributesArgs.parse"
-	// // validate params
-	// var attributeFilter = &model.AttributeFilterOption{}
+func (args *AttributesArgs) parse() (*model.AttributeFilterOption, *model.AppError) {
+	// validate params
+	var attributeFilter = &model.AttributeFilterOption{}
 
-	// if args.Filter != nil {
-	// 	var appErr *model.AppError
-	// 	attributeFilter, appErr = args.Filter.parse(where)
-	// 	if appErr != nil {
-	// 		return nil, appErr
-	// 	}
-	// }
+	if args.Filter != nil {
+		var appErr *model.AppError
+		attributeFilter, appErr = args.Filter.parse("AttributesArgs.parse")
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
 
-	// if args.ChannelSlug != nil {
-	// 	if !slug.IsSlug(*args.ChannelSlug) {
-	// 		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
-	// 	}
-	// 	attributeFilter.ChannelSlug = args.ChannelSlug
-	// }
+	if args.ChannelSlug != nil {
+		if !slug.IsSlug(*args.ChannelSlug) {
+			return nil, model.NewAppError("AttributesArgs.parse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel slug"}, "please provide valid channel slug", http.StatusBadRequest)
+		}
+		attributeFilter.ChannelSlug = args.ChannelSlug
+	}
 
-	// // attributes are sorted by Names as default.
-	// orderKey := model.AttributeTableName + ".Name"
+	if args.SortBy != nil && !args.SortBy.Field.IsValid() {
+		return nil, model.NewAppError("AttributesArgs.parse", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
+	}
 
-	// if args.SortBy != nil {
-	// 	if !args.SortBy.Field.IsValid() {
-	// 		where += "SortBy"
-	// 		return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sort field"}, "please provide valid sort field", http.StatusBadRequest)
-	// 	}
-	// 	orderKey = model.AttributeTableName + attributeSortFieldMap[args.SortBy.Field]
-	// }
+	paginValue, appErr := args.GraphqlParams.Parse("AttributesArgs.parse")
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// paginValue, appErr := args.GraphqlParams.Parse(where, orderKey)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	attributeFilter.GraphqlPaginationValues = *paginValue
+	if attributeFilter.GraphqlPaginationValues.OrderBy == "" {
 
-	// NOTE: there are some cases that require to sort by
+		// sodrt attributes default by slugs
+		attributeSortFields := attributeSortFieldMap[AttributeSortFieldSlug].fields
+		if args.SortBy != nil {
+			attributeSortFields = attributeSortFieldMap[args.SortBy.Field].fields
+		}
 
-	panic("not implemented")
+		orderDirection := args.GraphqlParams.orderDirection()
+		attributeFilter.GraphqlPaginationValues.OrderBy = attributeSortFields.
+			Map(func(_ int, item string) string { return item + " " + orderDirection }).
+			Join(",")
+	}
+
+	return attributeFilter, nil
 }
 
 func (r *Resolver) Attributes(ctx context.Context, args AttributesArgs) (*AttributeCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	attrFilterOpts, appErr := args.parse()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// find attributes by options
+	attributes, appErr := embedCtx.App.Srv().AttributeService().AttributesByOption(attrFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+	// count total number of attributes that satisfy given options
+	totalCount, err := embedCtx.App.Srv().Store.Attribute().CountByOptions(attrFilterOpts)
+	if err != nil {
+		return nil, model.NewAppError("Attributes", "app.attribute.count_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	keyFunc := attributeSortFieldMap[AttributeSortFieldSlug].keyFunc
+	if args.SortBy != nil {
+		keyFunc = attributeSortFieldMap[args.SortBy.Field].keyFunc
+	}
+
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(attributes))
+	res := constructCountableConnection(attributes, int(totalCount), hasNextPage, hasPrevPage, keyFunc, SystemAttributeToGraphqlAttribute)
+	return (*AttributeCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (r *Resolver) Attribute(ctx context.Context, args struct {

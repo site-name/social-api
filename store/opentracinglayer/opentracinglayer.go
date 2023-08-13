@@ -1689,6 +1689,24 @@ func (s *OpenTracingLayerAssignedVariantAttributeValueStore) UpdateInBulk(attrib
 	return err
 }
 
+func (s *OpenTracingLayerAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.CountByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.CountByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAttributeStore) Delete(ids ...string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Delete")
@@ -6914,7 +6932,7 @@ func (s *OpenTracingLayerShippingZoneStore) Get(shippingZoneID string) (*model.S
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+func (s *OpenTracingLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds []string, channelIds []string, delete bool) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneStore.ToggleRelations")
 	s.Root.Store.SetContext(newCtx)
@@ -6923,7 +6941,7 @@ func (s *OpenTracingLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB
 	}()
 
 	defer span.Finish()
-	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, relations, delete)
+	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

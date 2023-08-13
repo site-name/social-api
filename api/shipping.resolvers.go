@@ -511,17 +511,16 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
-	if !lo.EveryBy(args.Input.AddWarehouses, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddWarehouses"}, "please provide valid add warehouse ids", http.StatusBadRequest)
-	}
-	if !lo.EveryBy(args.Input.RemoveWarehouses, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveWarehouses"}, "please provide valid remove warehouse zone ids", http.StatusBadRequest)
-	}
-	if !lo.EveryBy(args.Input.AddChannels, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddChannels"}, "please provide valid add channel ids", http.StatusBadRequest)
-	}
-	if !lo.EveryBy(args.Input.RemoveChannels, model.IsValidId) {
-		return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveChannels"}, "please provide valid remove channel ids", http.StatusBadRequest)
+
+	for argsName, ids := range map[string][]string{
+		"addWarehouses":    args.Input.AddWarehouses,
+		"addChannels":      args.Input.AddChannels,
+		"removeWarehouses": args.Input.RemoveWarehouses,
+		"removeChannels":   args.Input.RemoveChannels,
+	} {
+		if !lo.EveryBy(ids, model.IsValidId) {
+			return nil, model.NewAppError("ShippingZoneUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argsName}, "please provide valid "+argsName, http.StatusBadRequest)
+		}
 	}
 
 	if len(lo.Intersect(args.Input.AddWarehouses, args.Input.RemoveWarehouses)) > 0 {
@@ -533,6 +532,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
+	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, model.NewAppError("ShippingZoneUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -553,31 +553,32 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	}
 
 	// clean default:
-	// Check if there are some shipping zone that isn't given shipping zone but is set to default.
-	// And requester want to update given shipping zone to default.
+	// check if:
+	// 1) requester want to set given shipping zone as default.
+	// 2) there is already a shippingzone with `Default` set to true.
+	// If 2 conditions are met, return error
 	if val := args.Input.Default; val != nil && *val {
 		if lo.SomeBy(allShippingZones, func(sp *model.ShippingZone) bool { return sp.Id != args.Id && sp.Default != nil && *sp.Default }) {
 			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.default_shipping_zone_exists.app_error", nil, "default shipping zone exists", http.StatusNotModified)
-		} else {
-			// find all countries code that are not used by any shipping zones
-			usedCountriesByShippingZones := map[string]struct{}{}
-			for _, spz := range allShippingZones {
-				for _, country := range strings.Fields(spz.Countries) {
-					usedCountriesByShippingZones[country] = struct{}{}
-				}
-			}
-
-			countriesNotUsedByShippingZones := []string{}
-			for country := range model.Countries {
-				countryCode := string(country)
-				_, used := usedCountriesByShippingZones[countryCode]
-				if !used {
-					countriesNotUsedByShippingZones = append(countriesNotUsedByShippingZones, countryCode)
-				}
-			}
-
-			args.Input.Countries = countriesNotUsedByShippingZones
 		}
+		// find all countries code that are not used by any shipping zones
+		usedCountriesByShippingZones := map[string]struct{}{}
+		for _, spz := range allShippingZones {
+			for _, country := range strings.Fields(spz.Countries) {
+				usedCountriesByShippingZones[country] = struct{}{}
+			}
+		}
+
+		countriesNotUsedByShippingZones := []string{}
+		for country := range model.Countries {
+			countryCode := string(country)
+			_, used := usedCountriesByShippingZones[countryCode]
+			if !used {
+				countriesNotUsedByShippingZones = append(countriesNotUsedByShippingZones, countryCode)
+			}
+		}
+
+		args.Input.Countries = countriesNotUsedByShippingZones
 	}
 
 	// update shipping zone:
@@ -595,37 +596,19 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	// save m2m warehouse shipping zones
-	if len(args.Input.AddWarehouses) > 0 {
-		warehousesToAdd := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
-		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Warehouses").Append(warehousesToAdd)
-		if err != nil {
-			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.add_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-	}
-	if len(args.Input.RemoveWarehouses) > 0 {
-		warehousesToRemove := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} })
-		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Warehouses").Delete(warehousesToRemove)
-		if err != nil {
-			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.remove_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+	// add channels, warehouses to shipping zones
+	err := embedCtx.App.Srv().Store.ShippingZone().ToggleRelations(transaction, model.ShippingZones{{Id: args.Id}}, args.Input.AddWarehouses, args.Input.AddChannels, false)
+	if err != nil {
+		return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.toggle_shipping_zone_relations.add.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	// save m2m shipping zone channels
-	if len(args.Input.AddChannels) > 0 {
-		channelsToAdd := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} })
-		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Channels").Append(channelsToAdd)
-		if err != nil {
-			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.add_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+	// remove channels, warehouses from shipping zones
+	err = embedCtx.App.Srv().Store.ShippingZone().ToggleRelations(transaction, model.ShippingZones{{Id: args.Id}}, args.Input.RemoveWarehouses, args.Input.RemoveChannels, true)
+	if err != nil {
+		return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.toggle_shipping_zone_relations.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
+
 	if len(args.Input.RemoveChannels) > 0 {
-		channelsToRemove := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} })
-		err := transaction.Model(&model.ShippingZone{Id: args.Id}).Association("Channels").Delete(channelsToRemove)
-		if err != nil {
-			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.remove_channel_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-
 		shippingChannelListings, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
 			ShippingMethod_ShippingZoneID_Inner: squirrel.Eq{model.ShippingZoneTableName + ".Id": args.Id},
 			Conditions:                          squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
@@ -648,7 +631,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	}
 
 	// commit transaction
-	err := transaction.Commit().Error
+	err = transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("ShippingZoneUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -714,7 +697,7 @@ func (r *Resolver) ShippingZones(ctx context.Context, args struct {
 	}
 
 	if len(channelIDs) > 0 {
-		shippingZoneFilterOpts.ChannelID = squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": *args.ChannelID}
+		shippingZoneFilterOpts.ChannelID = squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": channelIDs}
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

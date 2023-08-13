@@ -223,10 +223,10 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id and slug"}, "id or slug must be provided", http.StatusBadRequest)
 	}
 	if args.Id != nil && model.IsValidId(*args.Id) {
-		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprint("%s is invalid id", *args.Id), http.StatusBadRequest)
+		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", *args.Id), http.StatusBadRequest)
 	}
 	if args.Slug != nil && !slug.IsSlug(*args.Slug) {
-		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprint("%s is invalid slug", *args.Slug), http.StatusBadRequest)
+		return nil, model.NewAppError("Category", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is invalid slug", *args.Slug), http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

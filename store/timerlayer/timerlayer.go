@@ -1615,6 +1615,22 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
+func (s *TimerLayerAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.CountByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.CountByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeStore) Delete(ids ...string) (int64, error) {
 	start := timemodule.Now()
 
@@ -6287,10 +6303,10 @@ func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+func (s *TimerLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds []string, channelIds []string, delete bool) error {
 	start := timemodule.Now()
 
-	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, relations, delete)
+	err := s.ShippingZoneStore.ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

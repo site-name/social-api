@@ -457,7 +457,7 @@ func (a *AttributeFilterInput) validate(where string) *model.AppError {
 	if !lo.EveryBy(a.Ids, model.IsValidId) {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid attribute ids", http.StatusBadRequest)
 	}
-	if a.Search != nil && stringsContainSqlExpr.MatchString(*a.Search) {
+	if a.Search != nil && (stringsContainSqlExpr.MatchString(*a.Search) || *a.Search == "") {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
 	}
 	if a.Type != nil && !a.Type.IsValid() {
@@ -516,7 +516,7 @@ func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption
 		InCollection: a.InCollection,
 		InCategory:   a.InCategory,
 	}
-	if a.Search != nil && !stringsContainSqlExpr.MatchString(*a.Search) {
+	if a.Search != nil {
 		res.Search = *a.Search
 	}
 
@@ -5027,8 +5027,8 @@ var attributeSortFieldMap = map[AttributeSortField]*attributeSortKeys{
 	AttributeSortFieldName: {
 		keyFunc: func(a *model.Attribute) []any {
 			return []any{
-				model.AttributeTableName + ".Name",
-				model.AttributeTableName + ".Slug",
+				model.AttributeTableName + ".Name", a.Name,
+				model.AttributeTableName + ".Slug", a.Slug,
 			}
 		},
 		fields: []string{model.AttributeTableName + ".Name", model.AttributeTableName + ".Slug"},

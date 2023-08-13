@@ -1768,6 +1768,26 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
+func (s *RetryLayerAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.CountByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeStore) Delete(ids ...string) (int64, error) {
 
 	tries := 0
@@ -7514,11 +7534,11 @@ func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 
 }
 
-func (s *RetryLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations any, delete bool) error {
+func (s *RetryLayerShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds []string, channelIds []string, delete bool) error {
 
 	tries := 0
 	for {
-		err := s.ShippingZoneStore.ToggleRelations(transaction, zones, relations, delete)
+		err := s.ShippingZoneStore.ToggleRelations(transaction, zones, warehouseIds, channelIds, delete)
 		if err == nil {
 			return nil
 		}

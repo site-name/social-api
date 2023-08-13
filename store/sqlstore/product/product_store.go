@@ -572,7 +572,7 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 					conditions = append(conditions, expr)
 					continue
 				}
-				expr := fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'::jsonb`, pair.Key, pair.Value)
+				expr := fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'`, pair.Key, pair.Value)
 				conditions = append(conditions, expr)
 			}
 		}
