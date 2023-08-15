@@ -28,7 +28,7 @@ type CheckoutService interface {
 	// Otherwise, quantity will be added or replaced (if replace argument is True).
 	//
 	//	skipStockCheck and replace are default to false
-	AddVariantsToCheckout(checkout *model.Checkout, variants []*model.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError)
+	AddVariantsToCheckout(checkout *model.Checkout, variants model.ProductVariants, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError)
 	// AddVoucherCodeToCheckout Add voucher data to checkout by code.
 	// Raise InvalidPromoCode() if voucher of given type cannot be applied.
 	AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucherCode string, discounts []*model.DiscountInfo) (*model.InvalidPromoCode, *model.AppError)

@@ -146,19 +146,7 @@ func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*model.CheckoutL
 // Otherwise, quantity will be added or replaced (if replace argument is True).
 //
 //	skipStockCheck and replace are default to false
-func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, variants []*model.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError) {
-	// validate input arguments:
-	var invlArgs string
-	if checkout == nil {
-		invlArgs = "checkout"
-	}
-	if len(variants) == 0 {
-		invlArgs += ", variants"
-	}
-	if invlArgs != "" {
-		return nil, nil, model.NewAppError("AddVariantsToCheckout", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invlArgs}, "", http.StatusBadRequest)
-	}
-
+func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, variants model.ProductVariants, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError) {
 	// check quantities
 	countryCode, appErr := a.CheckoutCountry(checkout)
 	if appErr != nil {
@@ -166,18 +154,13 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 	}
 	if !skipStockCheck {
 		insfStock, appErr := a.srv.WarehouseService().CheckStockAndPreorderQuantityBulk(variants, countryCode, quantities, channelSlug, nil, nil, false)
-		if appErr != nil {
-			return nil, nil, appErr
-		}
-		if insfStock != nil && len(insfStock.Items) > 0 {
-			return nil, insfStock, nil
+		if appErr != nil || insfStock != nil {
+			return nil, insfStock, appErr
 		}
 	}
 
-	productIDs := make([]string, len(variants))
-	for i, variant := range variants {
-		productIDs[i] = variant.ProductID
-	}
+	productIDs := variants.ProductIDs()
+
 	channelListings, appErr := a.srv.ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 			Conditions: squirrel.Eq{
@@ -189,13 +172,15 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 		return nil, nil, appErr
 	}
 
-	listingMap := make(map[string]*model.ProductChannelListing)
+	// keys are product ids
+	var listingMap = make(map[string]*model.ProductChannelListing)
 	for _, listing := range channelListings {
 		listingMap[listing.ProductID] = listing
 	}
 
-	for _, productID := range productIDs {
-		if listingMap[productID] == nil || !listingMap[productID].IsPublished {
+	for _, variant := range variants {
+		productChannelListing := listingMap[variant.ProductID]
+		if productChannelListing == nil || !productChannelListing.IsPublished {
 			return nil, nil, model.NewAppError("AddVariantsToCheckout", model.ProductNotPublishedAppErrID, nil, "", http.StatusNotAcceptable)
 		}
 	}
@@ -205,14 +190,15 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 		return nil, nil, appErr
 	}
 
-	variantIDsInLines := make(map[string]*model.CheckoutLine)
+	// keys are variant ids
+	var variantIDsInLines = make(map[string]*model.CheckoutLine)
 	for _, line := range linesOfCheckout {
 		variantIDsInLines[line.VariantID] = line
 	}
 
 	var (
-		toCreateCheckoutLines   = []*model.CheckoutLine{}
-		toUpdateCheckoutLines   = []*model.CheckoutLine{}
+		toCreateCheckoutLines   = model.CheckoutLines{}
+		toUpdateCheckoutLines   = model.CheckoutLines{}
 		toDeleteCheckoutLineIDs = []string{}
 	)
 	// use Min() since two slices may not have same length

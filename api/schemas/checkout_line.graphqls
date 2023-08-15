@@ -1,7 +1,7 @@
 extend type Mutation {
   checkoutLineDelete(lineId: String!, token: String!): CheckoutLineDelete
   checkoutLinesAdd(lines: [CheckoutLineInput]!, token: String!): CheckoutLinesAdd
-  checkoutLinesUpdate(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesUpdate
+  checkoutLinesUpdate(lines: [CheckoutLineInput]!, token: String!): CheckoutLinesUpdate
 }
 
 extend type Query {

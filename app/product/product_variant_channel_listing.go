@@ -3,6 +3,8 @@ package product
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -36,4 +38,26 @@ func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *go
 	}
 
 	return variantChannelListings, nil
+}
+
+func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string, channelId string) *model.AppError {
+	variantChannelListings, appErr := s.ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
+		Conditions: squirrel.And{
+			squirrel.Eq{
+				model.ProductVariantChannelListingTableName + ".VariantID": variantIds,
+				model.ProductVariantChannelListingTableName + ".ChannelID": channelId,
+			},
+			squirrel.Expr(model.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NUL"),
+		},
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	variantsNotAvailable, _ := lo.Difference(variantIds, variantChannelListings.VariantIDs())
+	if len(variantsNotAvailable) > 0 {
+		return model.NewAppError("ValidateVariantsAvailableInChannel", "app.product.add_not_available_variants_in_channel_to_lines.app_error", nil, "cannot add lines with unavailable variants", http.StatusNotAcceptable)
+	}
+
+	return nil
 }

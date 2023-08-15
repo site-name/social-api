@@ -445,6 +445,7 @@ type (
 		FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
+		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error)
 		ScanFields(variant *model.ProductVariant) []interface{}
 		Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
 		Get(id string) (*model.ProductVariant, error)                                              // Get returns a product variant with given id

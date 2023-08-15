@@ -15,6 +15,8 @@ import (
 
 // ProductService contains methods for working with products
 type ProductService interface {
+	ValidateVariantsAvailableInChannel(variantIds []string, channelId string) *model.AppError
+	ValidateVariantsAvailableForPurchase(variantIds []string, channelID string) *model.AppError
 	// BulkUpsertProductChannelListings bulk update/inserts given product channel listings and returns them
 	BulkUpsertProductChannelListings(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, *model.AppError)
 	// BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings

@@ -2,11 +2,13 @@ package product
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -257,9 +259,6 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 }
 
 func (s *SqlProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
-	if len(variants) == 0 || len(medias) == 0 {
-		return errors.New("please provide variants and medias")
-	}
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
@@ -272,4 +271,21 @@ func (s *SqlProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, v
 	}
 
 	return nil
+}
+
+func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
+	query := "SELECT PV.* FROM " +
+		model.ProductChannelListingTableName + " PCL INNER JOIN " +
+		model.ProductTableName + " P ON (PCL.ProductID = P.Id) INNER JOIN " +
+		model.ProductVariantTableName + " PV ON (P.Id = PV.ProductID) " +
+		" WHERE PCL.ChannelID = ? AND PCL.AvailableForPurchase <= ? AND Pv.Id IN ?"
+
+	now := util.StartOfDay(time.Now())
+	var res model.ProductVariants
+	err := s.GetReplica().Raw(query, channelID, now, variantIds).Scan(&res).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find availabe for purchase product variants")
+	}
+
+	return res, nil
 }

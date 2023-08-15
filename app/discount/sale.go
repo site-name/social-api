@@ -116,3 +116,55 @@ func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID strin
 
 	return nil
 }
+
+// SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
+func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model.AppError) {
+	var res []*model.SaleCollection
+	err := s.srv.Store.GetReplica().Table("SaleCollections").Find(&res, store.BuildSqlizer(options)...).Error
+	if err != nil {
+		return nil, model.NewAppError("SaleCollectionsByOptions", "app.discount.sale_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return res, nil
+}
+
+// SaleCategoriesByOption returns sale-category relations with an app error
+func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model.AppError) {
+	var res []*model.SaleCategory
+	err := s.srv.Store.GetReplica().Table("SaleCategories").Find(&res, store.BuildSqlizer(option)...).Error
+	if err != nil {
+		return nil, model.NewAppError("SaleCategoriesByOption", "app.discount.sale_categories_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return res, nil
+}
+
+// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
+func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model.AppError) {
+	var res []*model.SaleProduct
+	err := s.srv.Store.GetReplica().Table("sale_collections").Find(&res, store.BuildSqlizer(options)...).Error
+	if err != nil {
+		return nil, model.NewAppError("SaleProductsByOptions", "app.discount.sale_product_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return res, nil
+}
+
+// SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
+func (s *ServiceDiscount) SaleProductVariantsByOptions(options squirrel.Sqlizer) ([]*model.SaleProductVariant, *model.AppError) {
+	var res []*model.SaleProductVariant
+	err := s.srv.Store.GetReplica().Table("sale_productvariants").Find(&res, store.BuildSqlizer(options)...).Error
+	if err != nil {
+		return nil, model.NewAppError("SaleProductVariantsByOptions", "app.discount.error_finding_sale_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return res, nil
+}
+
+func (s *ServiceDiscount) SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model.AppError) {
+	listings, err := s.srv.Store.DiscountSaleChannelListing().SaleChannelListingsWithOption(options)
+	if err != nil {
+		return nil, model.NewAppError("SaleChannelListingsByOptions", "app.discount.error_finding_sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return listings, nil
+}

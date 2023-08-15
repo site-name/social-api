@@ -10,19 +10,8 @@ import (
 // VoucherTranslationsByOption returns a list of voucher translations filtered using given option
 func (s *ServiceDiscount) VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model.AppError) {
 	translations, err := s.srv.Store.VoucherTranslation().FilterByOption(option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(translations) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("VoucherTranslationsByOption", "app.discount.error_finding_voucher_translations_by_option.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("VoucherTranslationsByOption", "app.discount.error_finding_voucher_translations_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return translations, nil

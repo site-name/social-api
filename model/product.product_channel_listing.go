@@ -19,7 +19,7 @@ type ProductChannelListing struct {
 	ProductID             string           `json:"product_id" gorm:"type:uuid;column:ProductID;index:productid_channelid_key"`
 	ChannelID             string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:productid_channelid_key"`
 	VisibleInListings     bool             `json:"visible_in_listings" gorm:"column:VisibleInListings"`
-	AvailableForPurchase  *time.Time       `json:"available_for_purchase" gorm:"column:AvailableForPurchase"` // UTC time
+	AvailableForPurchase  *time.Time       `json:"available_for_purchase" gorm:"column:AvailableForPurchase"` // precision to date. E.g 2021-09-08
 	Currency              string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
 	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount" gorm:"column:DiscountedPriceAmount"` // can be NULL
 	CreateAt              uint64           `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
@@ -27,7 +27,7 @@ type ProductChannelListing struct {
 
 	DiscountedPrice *goprices.Money `json:"discounted_price,omitempty" gorm:"-"` // can be NULL
 
-	channel *Channel `db:"-"` // this field may be populated when store performs prefetching
+	channel *Channel `gorm:"-"` // this field may be populated when store performs prefetching
 }
 
 func (c *ProductChannelListing) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
