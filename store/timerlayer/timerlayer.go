@@ -2207,10 +2207,10 @@ func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
+func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutStore.FilterByOption(option)
+	result, resultVar1, err := s.CheckoutStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2220,7 +2220,7 @@ func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOpt
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
@@ -4445,22 +4445,6 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOptio
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
 	start := timemodule.Now()
 
@@ -5468,6 +5452,22 @@ func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVari
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.FindVariantsAvailableForPurchase(variantIds, channelID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FindVariantsAvailableForPurchase", success, elapsed)
 	}
 	return result, err
 }

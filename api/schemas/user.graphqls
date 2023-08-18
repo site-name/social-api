@@ -118,6 +118,8 @@ enum CustomerEventsEnum {
   NAME_ASSIGNED
   EMAIL_ASSIGNED
   NOTE_ADDED
+  ACCOUNT_ACTIVATED
+  ACCOUNT_DEACTIVATED
 }
 
 type PaymentSource {

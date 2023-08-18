@@ -63,7 +63,7 @@ type PaymentTransaction struct {
 	Kind               TransactionKind  `json:"kind" gorm:"type:varchar(25);column:Kind"`
 	IsSuccess          bool             `json:"is_success" gorm:"column:IsSuccess"`
 	ActionRequired     bool             `json:"action_required" gorm:"column:ActionRequired"`
-	ActionRequiredData StringMap        `json:"action_required_data" gorm:"type:jsonb;column:ActionRequiredData"`
+	ActionRequiredData StringInterface  `json:"action_required_data" gorm:"type:jsonb;column:ActionRequiredData"`
 	Currency           string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
 	Amount             *decimal.Decimal `json:"amount" gorm:"default:0;column:Amount"` // DEFAULT decimal(0)
 	Error              *string          `json:"error" gorm:"type:varchar(256);column:Error"`
@@ -122,7 +122,7 @@ func (p *PaymentTransaction) commonPre() {
 		p.Amount = &decimal.Zero
 	}
 	if p.ActionRequiredData == nil {
-		p.ActionRequiredData = make(StringMap)
+		p.ActionRequiredData = make(StringInterface)
 	}
 	if p.GatewayResponse == nil {
 		p.GatewayResponse = make(StringInterface)

@@ -159,8 +159,8 @@ func (r *Reordering) calculateNewSortOrder(pk string, move int) (int, int, int) 
 	targetPos := nodePos + move
 
 	// Make sure we are not getting out of bounds
-	targetPos = util.GetMinMax(0, targetPos).Max
-	targetPos = util.GetMinMax(len(r.OrderedPKs)-1, targetPos).Min
+	targetPos = max(0, targetPos)
+	targetPos = min(len(r.OrderedPKs)-1, targetPos)
 
 	// Retrieve the target node and its sort order
 	var (

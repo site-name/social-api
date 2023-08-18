@@ -100,6 +100,9 @@ type PaymentFilterOption struct {
 	TransactionsKind           squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.Kind ...
 	TransactionsActionRequired squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.ActionRequired ...
 	TransactionsIsSuccess      squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.IsSuccess ...
+
+	DbTransaction *gorm.DB
+	LockForUpdate bool
 }
 
 // PaymentPatch is used to update payments
@@ -214,7 +217,7 @@ func (p *Payment) IsValid() *AppError {
 	if *p.CcExpYear < MIN_CC_EXP_YEAR {
 		return outer("cc_exp_year", &p.Id)
 	}
-	if StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
+	if !p.StorePaymentMethod.IsValid() {
 		return outer("store_payment_method", &p.Id)
 	}
 
@@ -253,7 +256,7 @@ func (p *Payment) commonPre() {
 	if p.Currency == "" {
 		p.Currency = DEFAULT_CURRENCY
 	}
-	if StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
+	if !p.StorePaymentMethod.IsValid() {
 		p.StorePaymentMethod = NONE
 	}
 }

@@ -35,7 +35,7 @@ func (tl TokenLocation) String() string {
 
 // ParseAuthTokenFromRequest reads header "Authorization" from request's header, then parses it into token and token location
 func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
-	authHeader := r.Header.Get(model.HEADER_AUTH)
+	authHeader := r.Header.Get(model.HeaderAuth)
 
 	// Attempt to parse the token from the cookie
 	if cookie, err := r.Cookie(model.SESSION_COOKIE_TOKEN); err == nil {
@@ -43,12 +43,12 @@ func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	}
 
 	// Parse the token from the header
-	if len(authHeader) > 6 && strings.ToUpper(authHeader[0:6]) == model.HEADER_BEARER {
+	if len(authHeader) > 6 && strings.ToUpper(authHeader[0:6]) == model.HeaderBearer {
 		// Default session token
 		return authHeader[7:], TokenLocationHeader
 	}
 
-	if len(authHeader) > 5 && strings.ToLower(authHeader[0:5]) == model.HEADER_TOKEN {
+	if len(authHeader) > 5 && strings.ToLower(authHeader[0:5]) == model.HeaderToken {
 		// OAuth token
 		return authHeader[6:], TokenLocationHeader
 	}
@@ -224,7 +224,7 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 
 // GetProtocol returns request's protocol
 func GetProtocol(r *http.Request) string {
-	if r.Header.Get(model.HEADER_FORWARDED_PROTO) == "https" || r.TLS != nil {
+	if r.Header.Get(model.HeaderForwardedProto) == "https" || r.TLS != nil {
 		return "https"
 	}
 	return "http"

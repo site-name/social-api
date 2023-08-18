@@ -263,28 +263,6 @@ func (a AnyArray[T]) Dedup() AnyArray[T] {
 	return res
 }
 
-type MinMax[T cmp.Ordered] struct {
-	Min, Max T
-}
-
-// GetMinMax find min, max values of current array, return them
-func (s AnyArray[T]) GetMinMax() MinMax[T] {
-	if len(s) == 1 {
-		return MinMax[T]{s[0], s[0]}
-	}
-	var min, max T
-	for _, item := range s {
-		if item < min {
-			min = item
-		}
-		if item > max {
-			max = item
-		}
-	}
-
-	return MinMax[T]{min, max}
-}
-
 // InterSection returns items that appear in both current array and given others
 func (s AnyArray[T]) InterSection(others []T) AnyArray[T] {
 	var res AnyArray[T]
@@ -384,8 +362,4 @@ func (sa AnyArray[T]) Join(sep string) string {
 	}
 
 	return builder.String()
-}
-
-func GetMinMax[T cmp.Ordered](items ...T) MinMax[T] {
-	return AnyArray[T](items).GetMinMax()
 }

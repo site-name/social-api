@@ -531,14 +531,14 @@ func (a *SalesArgs) parse() (*model.SaleFilterOption, *model.AppError) {
 		if a.SortBy != nil {
 			saleSortFields = saleSortFieldsMap[a.SortBy.Field].fields
 
-			// check if users wuant to sort sales by Values
+			// check if users want to sort sales by Values
 			if a.SortBy.Field == SaleSortFieldValue {
 				res.Annotate_Value = true
 			}
 		}
 
 		saleOrder := a.GraphqlParams.orderDirection()
-		res.GraphqlPaginationValues.OrderBy = saleSortFields.Map(func(index int, item string) string { return item + " " + saleOrder }).Join(",")
+		res.GraphqlPaginationValues.OrderBy = saleSortFields.Map(func(_ int, item string) string { return item + " " + saleOrder }).Join(",")
 	}
 
 	return res, nil
@@ -563,7 +563,7 @@ func (r *Resolver) Sales(ctx context.Context, args SalesArgs) (*SaleCountableCon
 	}
 
 	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(sales))
-	res := constructCountableConnection(sales, int(totalSales), hasNextPage, hasPrevPage, saleKeyFunc, systemSaleToGraphqlSale)
+	res := constructCountableConnection(sales, totalSales, hasNextPage, hasPrevPage, saleKeyFunc, systemSaleToGraphqlSale)
 
 	return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
 }

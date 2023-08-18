@@ -53,14 +53,13 @@ func (cs *SqlCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Chec
 	}
 
 	for _, checkout := range checkouts {
-		isSaving := checkout.Token == ""
-
 		var err error
-		if isSaving {
+		if checkout.Token == "" {
 			err = transaction.Create(checkout).Error
 		} else {
 			checkout.ShippingAddressID = model.NewPrimitive("") // prevent update
 			checkout.BillingAddressID = model.NewPrimitive("")  // prevent update
+			checkout.CreateAt = 0                               // prevent update
 
 			err = transaction.Model(checkout).Updates(checkout).Error
 		}
@@ -90,6 +89,9 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 	if option.SelectRelatedBillingAddress {
 		selectFields = append(selectFields, model.AddressTableName+".*")
 	}
+	if option.SelectRelatedUser {
+		selectFields = append(selectFields, model.UserTableName+".*")
+	}
 
 	query := cs.GetQueryBuilder().
 		Select(selectFields...).
@@ -102,9 +104,16 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 	if option.SelectRelatedBillingAddress {
 		query = query.InnerJoin(model.AddressTableName + " ON Checkouts.BillingAddressID = Addresses.Id")
 	}
+	if option.SelectRelatedUser {
+		query = query.InnerJoin(model.UserTableName + " ON Users.Id = Checkouts.UserID")
+	}
 
-	if option.Limit > 0 {
-		query = query.Limit(uint64(option.Limit))
+	// NOTE: we don't apply limit here yet.
+	// Limit may be applied in FilterByOption() method.
+	if option.GraphqlPaginationValues.PaginationApplicable() {
+		query = query.
+			OrderBy(option.GraphqlPaginationValues.OrderBy).
+			Where(option.GraphqlPaginationValues.Condition)
 	}
 
 	return query
@@ -112,12 +121,13 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 
 // GetByOption finds and returns 1 checkout based on given option
 func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
-	option.Limit = 0 // no limit
+	option.GraphqlPaginationValues.Limit = 0
 
 	var (
 		res            model.Checkout
 		channel        model.Channel
 		billingAddress model.Address
+		user           model.User
 		scanFields     = cs.ScanFields(&res)
 	)
 	if option.SelectRelatedChannel {
@@ -125,6 +135,9 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 	}
 	if option.SelectRelatedBillingAddress {
 		scanFields = append(scanFields, cs.Address().ScanFields(&billingAddress)...)
+	}
+	if option.SelectRelatedUser {
+		scanFields = append(scanFields, cs.User().ScanFields(&user)...)
 	}
 
 	query, args, err := cs.commonFilterQueryBuilder(option).ToSql()
@@ -146,20 +159,38 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 	if option.SelectRelatedBillingAddress {
 		res.SetBilingAddress(&billingAddress)
 	}
+	if option.SelectRelatedUser {
+		res.SetUser(&user)
+	}
 
 	return &res, nil
 }
 
 // FilterByOption finds and returns a list of checkout based on given option
-func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
-	query, args, err := cs.commonFilterQueryBuilder(option).ToSql()
+func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
+	filterQuery := cs.commonFilterQueryBuilder(option)
+
+	var totalCount int64
+	if option.CountTotal && option.GraphqlPaginationValues.PaginationApplicable() {
+		countQuery, args, err := cs.GetQueryBuilder().Select("COUNT (*)").FromSelect(filterQuery, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOption_Count_ToSql")
+		}
+
+		err = cs.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total number of checkouts by given options")
+		}
+	}
+
+	query, args, err := filterQuery.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+		return 0, nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
 	rows, err := cs.GetReplica().Raw(query, args...).Rows()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find checkouts with given options")
+		return 0, nil, errors.Wrap(err, "failed to find checkouts with given options")
 	}
 	defer rows.Close()
 
@@ -170,6 +201,7 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 			checkout       model.Checkout
 			channel        model.Channel
 			billingAddress model.Address
+			user           model.User
 			scanFields     = cs.ScanFields(&checkout)
 		)
 		if option.SelectRelatedChannel {
@@ -178,9 +210,12 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 		if option.SelectRelatedBillingAddress {
 			scanFields = append(scanFields, cs.Address().ScanFields(&billingAddress)...)
 		}
+		if option.SelectRelatedUser {
+			scanFields = append(scanFields, cs.User().ScanFields(&user)...)
+		}
 
 		if err := rows.Scan(scanFields...); err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of checkout")
+			return 0, nil, errors.Wrap(err, "failed to scan a row of checkout")
 		}
 
 		if option.SelectRelatedChannel {
@@ -189,11 +224,14 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 		if option.SelectRelatedBillingAddress {
 			checkout.SetBilingAddress(&billingAddress)
 		}
+		if option.SelectRelatedUser {
+			checkout.SetUser(&user)
+		}
 
 		res = append(res, &checkout)
 	}
 
-	return res, nil
+	return totalCount, res, nil
 }
 
 // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
@@ -386,7 +424,10 @@ func (cs *SqlCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) 
 		db = db.Joins("INNER JOIN Channels ON Checkouts.ChannelID = Channels.Id")
 	}
 
-	condStr, args, _ := conditions.ToSql()
+	condStr, args, err := conditions.ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "CountCheckouts_ToSql")
+	}
 	var count int64
 	return count, db.Where(condStr, args...).Raw("SELECT COUNT(*) FROM " + model.CheckoutTableName).Scan(&count).Error
 }

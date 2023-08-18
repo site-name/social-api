@@ -13,6 +13,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"gorm.io/gorm"
 )
 
 const (
@@ -67,8 +68,8 @@ func (a *ServicePayment) requireActivePayment(where string, payMent model.Paymen
 }
 
 // withLockedPayment Lock payment to protect from asynchronous modification.
-func (a *ServicePayment) withLockedPayment(where string, payMent model.Payment) (*model.Payment, *model.AppError) {
-	paymentToOperateOn, appErr := a.PaymentByID(nil, payMent.Id, true)
+func (a *ServicePayment) withLockedPayment(dbTransaction *gorm.DB, where string, payMent model.Payment) (*model.Payment, *model.AppError) {
+	paymentToOperateOn, appErr := a.PaymentByID(dbTransaction, payMent.Id, true)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -84,6 +85,7 @@ func (a *ServicePayment) withLockedPayment(where string, payMent model.Payment) 
 //
 // @paymentPostProcess
 func (a *ServicePayment) ProcessPayment(
+	dbTransaction *gorm.DB,
 	payMent model.Payment,
 	token string,
 	manager interfaces.PluginManagerInterface,
@@ -98,7 +100,7 @@ func (a *ServicePayment) ProcessPayment(
 		return nil, paymentErr, nil
 	}
 
-	lockedPayment, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	lockedPayment, appErr := a.withLockedPayment(dbTransaction, "ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -144,6 +146,7 @@ func (a *ServicePayment) ProcessPayment(
 //
 // @paymentPostProcess
 func (a *ServicePayment) Authorize(
+	dbTransaction *gorm.DB,
 	payMent model.Payment,
 	token string,
 	manager interfaces.PluginManagerInterface,
@@ -158,7 +161,7 @@ func (a *ServicePayment) Authorize(
 		return nil, paymentErr, nil
 	}
 
-	lockedPayment, appErr := a.withLockedPayment("Authorize", payMent)
+	lockedPayment, appErr := a.withLockedPayment(dbTransaction, "Authorize", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -207,6 +210,7 @@ func (a *ServicePayment) Authorize(
 //
 // @paymentPostProcess
 func (a *ServicePayment) Capture(
+	dbTransaction *gorm.DB,
 	payMent model.Payment,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
@@ -221,7 +225,7 @@ func (a *ServicePayment) Capture(
 		return nil, paymentErr, nil
 	}
 
-	lockedPayment, appErr := a.withLockedPayment("Capture", payMent)
+	lockedPayment, appErr := a.withLockedPayment(dbTransaction, "Capture", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -274,6 +278,7 @@ func (a *ServicePayment) Capture(
 //
 // @paymentPostProcess
 func (a *ServicePayment) Refund(
+	dbTransaction *gorm.DB,
 	payMent model.Payment,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
@@ -286,7 +291,7 @@ func (a *ServicePayment) Refund(
 		return nil, paymentErr, nil
 	}
 
-	lockedPayment, appErr := a.withLockedPayment("Refund", payMent)
+	lockedPayment, appErr := a.withLockedPayment(dbTransaction, "Refund", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -359,13 +364,13 @@ func (a *ServicePayment) Refund(
 // @raisePaymentError
 //
 // @paymentPostProcess
-func (a *ServicePayment) Void(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
+func (a *ServicePayment) Void(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError) {
 	paymentErr := a.requireActivePayment("Refund", payMent)
 	if paymentErr != nil {
 		return nil, paymentErr, nil
 	}
 
-	lockedPayment, appErr := a.withLockedPayment("Refund", payMent)
+	lockedPayment, appErr := a.withLockedPayment(dbTransaction, "Refund", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -412,6 +417,7 @@ func (a *ServicePayment) Void(payMent model.Payment, manager interfaces.PluginMa
 // @paymentPostProcess
 // Confirm confirms payment
 func (a *ServicePayment) Confirm(
+	dbTransaction *gorm.DB,
 	payMent model.Payment,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
@@ -424,7 +430,7 @@ func (a *ServicePayment) Confirm(
 		return nil, paymentErr, nil
 	}
 
-	lockedPayment, appErr := a.withLockedPayment("Confirm", payMent)
+	lockedPayment, appErr := a.withLockedPayment(dbTransaction, "Confirm", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -546,7 +552,7 @@ func (a *ServicePayment) validateRefundAmount(payMent *model.Payment, amount *de
 }
 
 // PaymentRefundOrVoid
-func (a *ServicePayment) PaymentRefundOrVoid(payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError) {
+func (a *ServicePayment) PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError) {
 	if payMent == nil {
 		return nil, nil
 	}
@@ -559,9 +565,9 @@ func (a *ServicePayment) PaymentRefundOrVoid(payMent *model.Payment, manager int
 	var paymentErr *model.PaymentError
 
 	if payMent.CanRefund() {
-		_, paymentErr, appErr = a.Refund(*payMent, manager, channelSlug, nil)
+		_, paymentErr, appErr = a.Refund(dbTransaction, *payMent, manager, channelSlug, nil)
 	} else if paymentCanVoid {
-		_, paymentErr, appErr = a.Void(*payMent, manager, channelSlug)
+		_, paymentErr, appErr = a.Void(dbTransaction, *payMent, manager, channelSlug)
 	}
 
 	return paymentErr, appErr

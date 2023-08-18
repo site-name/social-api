@@ -59,7 +59,8 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error
 func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 	query := cs.GetQueryBuilder().
 		Select(model.CollectionTableName + ".*").
-		From(model.CollectionTableName).Where(option.Conditions)
+		From(model.CollectionTableName).
+		Where(option.Conditions)
 
 	// parse options
 	if option.ProductID != nil {
@@ -80,7 +81,6 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 
 	if option.ChannelListingPublicationDate != nil ||
 		option.ChannelListingIsPublished != nil ||
-
 		option.ChannelListingChannelSlug != nil ||
 		option.ChannelListingChannelIsActive != nil {
 		query = query.

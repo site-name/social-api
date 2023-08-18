@@ -6,7 +6,6 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/store"
 )
@@ -91,7 +90,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
 		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForProfileByIds,
 		Striped:                true,
-		StripedBuckets:         util.GetMinMax(runtime.NumCPU()-1, 1).Max,
+		StripedBuckets:         max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return
 	}
@@ -108,7 +107,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		DefaultExpiry:          RoleCacheSec * time.Second,
 		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForRoles,
 		Striped:                true,
-		StripedBuckets:         util.GetMinMax(runtime.NumCPU()-1, 1).Max,
+		StripedBuckets:         max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return
 	}

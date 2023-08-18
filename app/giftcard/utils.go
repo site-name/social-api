@@ -77,7 +77,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model.
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings *model.Shop, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model.AppError) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model.AppError) {
 	if user != nil && !model.IsValidId(user.Id) {
 		user = nil
 	}
@@ -125,7 +125,7 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (
 }
 
 // GiftcardsCreate creates purchased gift cards
-func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings *model.Shop, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError) {
 	var (
 		customerUser          *model.User = nil
 		customerUserID        *string
@@ -300,15 +300,15 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, r
 }
 
 // CalculateExpiryDate calculate expiry date based on giftcard settings.
-func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *model.Shop) *time.Time {
+func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings model.ShopSettings) *time.Time {
 	var (
 		today      = util.StartOfDay(time.Now().UTC())
 		expiryDate *time.Time
 	)
 
-	if shopSettings.GiftcardExpiryType == model.EXPIRY_PERIOD {
+	if *shopSettings.GiftcardExpiryType == model.EXPIRY_PERIOD {
 		if expiryPeriod := shopSettings.GiftcardExpiryPeriod; expiryPeriod != nil {
-			switch shopSettings.GiftcardExpiryPeriodType {
+			switch *shopSettings.GiftcardExpiryPeriodType {
 			case model.DAY:
 				expiryDate = util.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * time.Hour))
 			case model.WEEK:

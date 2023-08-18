@@ -43,7 +43,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 
 // FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 // It prefetch some related value also
-func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError) {
+func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) (model.CheckoutLineInfos, *model.AppError) {
 	checkoutLineInfos, err := a.srv.Store.Checkout().FetchCheckoutLinesAndPrefetchRelatedValue(checkOut)
 	if err != nil {
 		return nil, model.NewAppError("FetchCheckoutLines", "app.checkout.error_collecting_checkout_line_infos.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -157,8 +157,8 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*m
 			// ignore not found error
 		}
 	}
-	var deliveryMethod interface{} = collectionPoint
-	if deliveryMethod == nil {
+	var deliveryMethod any = collectionPoint
+	if deliveryMethod.(*model.WareHouse) == nil {
 		deliveryMethod = shippingMethod
 	}
 

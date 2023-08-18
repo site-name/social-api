@@ -59,7 +59,7 @@ package shop
 // 	})
 // }
 
-// func (s *SqlShopStore) ScanFields(shop *model.Shop) []interface{} {
+// func (s *SqlShopStore) ScanFields(shop model.ShopSettings) []interface{} {
 // 	return []interface{}{
 // 		&shop.Id,
 // 		&shop.CreateAt,
@@ -93,7 +93,7 @@ package shop
 // }
 
 // // Upsert depends on shop's Id to decide to update/insert the given shop.
-// func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
+// func (ss *SqlShopStore) Upsert(shopInstance model.ShopSettings) (model.ShopSettings, error) {
 // 	var saving bool
 // 	if shopInstance.Id == "" {
 // 		saving = true
@@ -141,7 +141,7 @@ package shop
 // }
 
 // // Get finds a shop with given id and returns it
-// func (ss *SqlShopStore) Get(shopID string) (*model.Shop, error) {
+// func (ss *SqlShopStore) Get(shopID string) (model.ShopSettings, error) {
 // 	var res model.Shop
 // 	err := ss.GetReplica().First(&res, "Id = ?", shopID).Error
 // 	if err != nil {
@@ -178,7 +178,7 @@ package shop
 // }
 
 // // FilterByOptions finds and returns shops with given options
-// func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
+// func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]model.ShopSettings, error) {
 // 	queryString, args, err := ss.commonQueryBuilder(options)
 // 	if err != nil {
 // 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
@@ -190,7 +190,7 @@ package shop
 // 	}
 // 	defer rows.Close()
 
-// 	var res []*model.Shop
+// 	var res []model.ShopSettings
 
 // 	for rows.Next() {
 // 		var shop model.Shop
@@ -215,7 +215,7 @@ package shop
 // }
 
 // // GetByOptions finds and returns 1 shop with given options
-// func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
+// func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (model.ShopSettings, error) {
 // 	queryString, args, err := ss.commonQueryBuilder(options)
 // 	if err != nil {
 // 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")

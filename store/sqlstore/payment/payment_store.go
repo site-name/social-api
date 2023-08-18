@@ -87,30 +87,6 @@ func (ps *SqlPaymentStore) Update(transaction *gorm.DB, payment *model.Payment) 
 	return payment, nil
 }
 
-// Get finds and returns the payment with given id
-func (ps *SqlPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
-	var (
-		res          model.Payment
-		forUpdateSql string
-	)
-	if lockForUpdate && transaction != nil {
-		forUpdateSql = " FOR UPDATE"
-	}
-
-	if transaction == nil {
-		transaction = ps.GetReplica()
-	}
-	err := transaction.Raw("SELECT * FROM "+model.PaymentTableName+" WHERE Id = ?"+forUpdateSql, id).Scan(&res).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.PaymentTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
-	}
-
-	return &res, nil
-}
-
 // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) error {
 	err := ps.GetMaster().Raw("UPDATE "+model.PaymentTableName+" SET IsActive = false WHERE CheckoutID = ? AND IsActive = true", checkoutID).Error
@@ -128,6 +104,10 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 		From(model.PaymentTableName).
 		Where(option.Conditions)
 
+	if option.LockForUpdate && option.DbTransaction != nil {
+		query = query.Suffix("FOR UPDATE")
+	}
+
 	if option.TransactionsKind != nil ||
 		option.TransactionsActionRequired != nil ||
 		option.TransactionsIsSuccess != nil {
@@ -140,7 +120,6 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 		query = query.
 			InnerJoin(model.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
 			Where(andConds)
-
 	}
 
 	queryString, args, err := query.ToSql()

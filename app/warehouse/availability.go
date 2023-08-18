@@ -5,7 +5,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
@@ -44,7 +43,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks model.Stocks) (int, *mode
 		quantityAllocated += allocation.QuantityAllocated
 	}
 
-	return util.GetMinMax(totalQuantity-quantityAllocated, 0).Max, nil
+	return max(totalQuantity-quantityAllocated, 0), nil
 }
 
 // CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
@@ -107,19 +106,21 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *model.ProductVariant, cou
 func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode model.CountryCode, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model.AppError) {
 	stockVariants, stockQuantities, preorderVariants, preorderQuantities := s.splitLinesForTrackableAndPreorder(variants, quantities)
 
-	var (
-		insufficientStockErr *model.InsufficientStock
-		appErr               *model.AppError
-	)
 	if len(stockVariants) > 0 {
-		insufficientStockErr, appErr = s.CheckStockQuantityBulk(stockVariants, countryCode, stockQuantities, channelSlug, additionalFilterBoolup, existingLines, replace)
+		insufficientStockErr, appErr := s.CheckStockQuantityBulk(stockVariants, countryCode, stockQuantities, channelSlug, additionalFilterBoolup, existingLines, replace)
+		if insufficientStockErr != nil || appErr != nil {
+			return insufficientStockErr, appErr
+		}
 	}
 
 	if len(preorderVariants) > 0 {
-		insufficientStockErr, appErr = s.CheckPreorderThresholdBulk(preorderVariants, preorderQuantities, channelSlug)
+		insufficientStockErr, appErr := s.CheckPreorderThresholdBulk(preorderVariants, preorderQuantities, channelSlug)
+		if insufficientStockErr != nil || appErr != nil {
+			return insufficientStockErr, appErr
+		}
 	}
 
-	return insufficientStockErr, appErr
+	return nil, nil
 }
 
 // splitLinesForTrackableAndPreorder Return variants and quantities splitted by "is_preorder_active
@@ -131,7 +132,7 @@ func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*model.P
 		stockQuantities    []int
 	)
 
-	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
+	for i := 0; i < min(len(variants), len(quantities)); i++ {
 		variant := variants[i]
 		quantity := quantities[i]
 
@@ -203,7 +204,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 		}
 	}
 
-	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
+	for i := 0; i < min(len(variants), len(quantities)); i++ {
 		quantity := quantities[i]
 		variant := variants[i]
 
@@ -292,7 +293,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVari
 	}
 
 	var insufficientStocks []*model.InsufficientStockData
-	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
+	for i := 0; i < min(len(variants), len(quantities)); i++ {
 		var (
 			variant  = variants[i]
 			quantity = quantities[i]

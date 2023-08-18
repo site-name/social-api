@@ -305,7 +305,7 @@ func NewServer(options ...Option) (*Server, error) {
 	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.STATUS_CACHE_SIZE,
 		Striped:        true,
-		StripedBuckets: util.AnyArray[int]{runtime.NumCPU() - 1, 1}.GetMinMax().Max,
+		StripedBuckets: max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return nil, errors.Wrap(err, "Unable to create status cache")
 	}

@@ -22,7 +22,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedContext.AppContext.Session()
 
-	appErr := args.Input.Validate("AccountAddressCreate")
+	appErr := args.Input.validate("AccountAddressCreate")
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -78,7 +78,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 		return nil, model.NewAppError("AccountAddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, fmt.Sprintf("$s is invalid address id", args.Id), http.StatusBadRequest)
 	}
 
-	appErr := args.Input.Validate("AccountAddressUpdate")
+	appErr := args.Input.validate("AccountAddressUpdate")
 	if appErr != nil {
 		return nil, appErr
 	}

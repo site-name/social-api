@@ -2508,21 +2508,21 @@ func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 
 }
 
-func (s *RetryLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
+func (s *RetryLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
 
 	tries := 0
 	for {
-		result, err := s.CheckoutStore.FilterByOption(option)
+		result, resultVar1, err := s.CheckoutStore.FilterByOption(option)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 
@@ -5280,26 +5280,6 @@ func (s *RetryLayerPaymentStore) FilterByOption(option *model.PaymentFilterOptio
 
 }
 
-func (s *RetryLayerPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
 
 	tries := 0
@@ -6493,6 +6473,26 @@ func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVari
 	tries := 0
 	for {
 		result, err := s.ProductVariantStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.FindVariantsAvailableForPurchase(variantIds, channelID)
 		if err == nil {
 			return result, nil
 		}

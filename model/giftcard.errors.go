@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 type InvalidPromoCode struct {
 	Where   string
 	Message string
@@ -9,12 +11,12 @@ type InvalidPromoCode struct {
 type GiftcardErrorCode string
 
 const (
-	ALREADY_EXISTS GiftcardErrorCode = "already_exists"
-	GRAPHQL_ERROR_ GiftcardErrorCode = "graphql_error"
-	INVALID_       GiftcardErrorCode = "invalid"
-	NOT_FOUND_     GiftcardErrorCode = "not_found"
-	REQUIRED_      GiftcardErrorCode = "required"
-	UNIQUE_        GiftcardErrorCode = "unique"
+	GIFT_CARD_ERROR_CODE_ALREADY_EXISTS GiftcardErrorCode = "already_exists"
+	GIFT_CARD_ERROR_CODE_GRAPHQL_ERROR  GiftcardErrorCode = "graphql_error"
+	GIFT_CARD_ERROR_CODE_INVALID        GiftcardErrorCode = "invalid"
+	GIFT_CARD_ERROR_CODE_NOT_FOUND      GiftcardErrorCode = "not_found"
+	GIFT_CARD_ERROR_CODE_REQUIRED       GiftcardErrorCode = "required"
+	GIFT_CARD_ERROR_CODE_UNIQUE         GiftcardErrorCode = "unique"
 )
 
 // NewInvalidPromoCode is common function to create invalid promo code with code = "invalid"
@@ -22,6 +24,10 @@ func NewInvalidPromoCode(where, message string) *InvalidPromoCode {
 	return &InvalidPromoCode{
 		Where:   where,
 		Message: message,
-		Code:    INVALID_,
+		Code:    GIFT_CARD_ERROR_CODE_INVALID,
 	}
+}
+
+func (e *InvalidPromoCode) Error() string {
+	return fmt.Sprintf("InvalidPromoCode<where: %s, message: %s, code: %s>", e.Where, e.Message, e.Code)
 }

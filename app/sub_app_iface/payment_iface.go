@@ -21,7 +21,7 @@ type PaymentService interface {
 	//
 	// @paymentPostProcess
 	// Confirm confirms payment
-	Confirm(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
+	Confirm(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -29,7 +29,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Authorize(payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
+	Authorize(dbTransaction *gorm.DB, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -37,7 +37,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Capture(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
+	Capture(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -45,7 +45,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	ProcessPayment(payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
+	ProcessPayment(dbTransaction *gorm.DB, payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -53,7 +53,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Refund(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
+	Refund(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -61,7 +61,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Void(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
+	Void(dbTransaction *gorm.DB, payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// CleanAuthorize Check if payment can be authorized
 	CleanAuthorize(payMent *model.Payment) *model.PaymentError
 	// CleanCapture Check if payment can be captured.
@@ -102,7 +102,7 @@ type PaymentService interface {
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 	PaymentCanVoid(payMent *model.Payment) (bool, *model.AppError)
 	// PaymentRefundOrVoid
-	PaymentRefundOrVoid(payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError)
+	PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError)
 	// PaymentsByOption returns all payments that satisfy given option
 	PaymentsByOption(option *model.PaymentFilterOption) ([]*model.Payment, *model.AppError)
 	// StoreCustomerId stores new value into given user's PrivateMetadata

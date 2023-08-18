@@ -1,10 +1,10 @@
 extend type Mutation {
   checkoutAddPromoCode(promoCode: String!, token: String!): CheckoutAddPromoCode
   checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String!): CheckoutBillingAddressUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
-  checkoutComplete(paymentData: JSONString!, redirectUrl: String, storeSource: Boolean, token: String!): CheckoutComplete
+  checkoutComplete(paymentData: JSONString!, redirectUrl: String, storeSource: Boolean, token: String!): CheckoutComplete @authenticated
   checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
-  checkoutCustomerAttach(customerId: String, token: String!): CheckoutCustomerAttach
-  checkoutCustomerDetach(token: String!): CheckoutCustomerDetach
+  checkoutCustomerAttach(customerId: String, token: String!): CheckoutCustomerAttach @authenticated
+  checkoutCustomerDetach(token: String!): CheckoutCustomerDetach @authenticated
   checkoutEmailUpdate(email: String!, token: String!): CheckoutEmailUpdate
   checkoutRemovePromoCode(promoCode: String!, token: String!): CheckoutRemovePromoCode
   checkoutPaymentCreate(input: PaymentInput!, token: String!): CheckoutPaymentCreate
@@ -16,7 +16,7 @@ extend type Mutation {
 
 extend type Query {
   checkout(token: String!): Checkout
-  checkouts(channel: String, before: String, after: String, first: Int, last: Int): CheckoutCountableConnection
+  checkouts(channel: String, before: String, after: String, first: Int, last: Int): CheckoutCountableConnection @hasRoles(roles: [shop_admin])
 }
 
 type CheckoutDeliveryMethodUpdate {
@@ -74,7 +74,7 @@ type CheckoutComplete {
 }
 
 input CheckoutCreateInput {
-  channel: String
+  channelId: String
   lines: [CheckoutLineInput]!
   email: String
   shippingAddress: AddressInput
@@ -124,9 +124,9 @@ input PaymentInput {
 }
 
 enum StorePaymentMethodEnum {
-  ON_SESSION
-  OFF_SESSION
-  NONE
+  on_session
+  oss_session
+  none
 }
 
 type CheckoutShippingAddressUpdate {

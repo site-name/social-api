@@ -30,6 +30,10 @@ type CheckoutLineFilterOption struct {
 
 type CheckoutLines []*CheckoutLine
 
+func (c CheckoutLines) Quantities() []int {
+	return lo.Map(c, func(l *CheckoutLine, _ int) int { return l.Quantity })
+}
+
 func (c CheckoutLines) VariantIDs() []string {
 	return lo.Map(c, func(l *CheckoutLine, _ int) string { return l.VariantID })
 }

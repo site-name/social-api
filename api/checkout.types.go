@@ -522,12 +522,12 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	checkouts, appErr := embedCtx.
+	_, checkouts, appErr := embedCtx.
 		App.
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
+			ChannelIsActive: squirrel.Expr(model.ChannelTableName + ".IsActive"),
 			Conditions: squirrel.Eq{
 				model.CheckoutTableName + ".UserID":    userIDs,
 				model.CheckoutTableName + ".ChannelID": channelIDs,
@@ -560,12 +560,12 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	checkouts, appErr := embedCtx.
+	_, checkouts, appErr := embedCtx.
 		App.
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
+			ChannelIsActive: squirrel.Expr(model.ChannelTableName + ".IsActive"),
 			Conditions:      squirrel.Eq{model.CheckoutTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
@@ -590,7 +590,7 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 	res := make([]*dataloader.Result[*model.Checkout], len(tokens))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	checkouts, appErr := embedCtx.
+	_, checkouts, appErr := embedCtx.
 		App.
 		Srv().
 		CheckoutService().
@@ -698,7 +698,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 	shippingMethodMap = lo.SliceToMap(shippingMethods, func(s *model.ShippingMethod) (string, *model.ShippingMethod) { return s.Id, s })
 
-	for i := 0; i < util.GetMinMax(len(checkouts), len(channels)).Min; i++ {
+	for i := 0; i < min(len(checkouts), len(channels)); i++ {
 		if checkouts[i].ShippingMethodID != nil {
 			shippingMethodIDChannelIDPairs = append(shippingMethodIDChannelIDPairs, *checkouts[i].ShippingMethodID+"__"+channels[i].Id)
 		}
@@ -720,7 +720,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 	collectionPointMap = lo.SliceToMap(collectionPoints, func(s *model.WareHouse) (string, *model.WareHouse) { return s.Id, s })
 
-	for i := 0; i < util.GetMinMax(len(tokens), len(checkouts), len(channels)).Min; i++ {
+	for i := 0; i < min(len(tokens), len(checkouts), len(channels)); i++ {
 		var (
 			checkout                 = checkouts[i]
 			channel                  = channels[i]

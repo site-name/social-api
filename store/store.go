@@ -506,7 +506,6 @@ type (
 	PaymentStore interface {
 		ScanFields(payMent *model.Payment) []interface{}
 		Save(transaction *gorm.DB, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
-		Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error)                       // Get returns a model with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
 		Update(transaction *gorm.DB, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                             // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
 		FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error)                            // FilterByOption finds and returns a list of payments that satisfy given option
@@ -709,7 +708,7 @@ type (
 		Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error)                // Upsert depends on given model's Token property to decide to update or insert it
 		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
 		GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error)                            // GetByOption finds and returns 1 model based on given option
-		FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error)                       // FilterByOption finds and returns a list of model based on given option
+		FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error)                // FilterByOption finds and returns a list of model based on given option
 		DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error             // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
 		CountCheckouts(options *model.CheckoutFilterOption) (int64, error)
 	}

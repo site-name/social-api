@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 	"unsafe"
@@ -90,23 +89,17 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	}, nil
 }
 
-// func validateBeforeAddCheckoutLines() *model.AppError {
-
-// }
-
-func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
-	Lines []*CheckoutLineInput
-	Token string
-}) (*CheckoutLinesAdd, error) {
+// NOTE: which must be either "CheckoutLinesAdd" or "CheckoutLinesUpdate".
+func commonCheckoutLinesUpsert[R any](ctx context.Context, which, token string, linesInput []*CheckoutLineInput) (*R, *model.AppError) {
 	// validate params
-	if !model.IsValidId(args.Token) {
+	if !model.IsValidId(token) {
 		return nil, model.NewAppError("CheckoutLinesAdd", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
 	var (
-		productVariantIds = make([]string, 0, len(args.Lines))
-		quantities        = make([]int, 0, len(args.Lines))
+		productVariantIds = make([]string, 0, len(linesInput))
+		quantities        = make([]int, 0, len(linesInput))
 	)
-	for _, line := range args.Lines {
+	for _, line := range linesInput {
 		if line != nil {
 			productVariantIds = append(productVariantIds, line.VariantID)
 			quantities = append(quantities, *(*int)(unsafe.Pointer(&line.Quantity)))
@@ -119,7 +112,7 @@ func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// find checkout by token
 	checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
-		Conditions: squirrel.Expr(model.CheckoutTableName+".Token = ?", args.Token),
+		Conditions: squirrel.Expr(model.CheckoutTableName+".Token = ?", token),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -134,32 +127,61 @@ func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 		manager interfaces.PluginManagerInterface,
 		discounts []*model.DiscountInfo,
 		replace bool,
-	) *model.AppError {
-		appErr := embedCtx.App.Srv().CheckoutService().CheckLinesQuantity(variants, quantities, checkout.Country, checkoutInfo.Channel.Slug, false, lines, false)
-		if appErr != nil {
-			return appErr
+	) (model.CheckoutLineInfos, *model.AppError) {
+
+		{
+			// NOTE:
+			// difference in calling CheckLinesQuantity:
+			var (
+				allowZeroQuantity, replace bool
+			)
+			switch which {
+			case "CheckoutLinesAdd":
+				allowZeroQuantity, replace = false, false
+			case "CheckoutLinesUpdate":
+				allowZeroQuantity, replace = true, true
+			}
+			appErr := embedCtx.App.Srv().CheckoutService().CheckLinesQuantity(variants, quantities, checkout.Country, checkoutInfo.Channel.Slug, allowZeroQuantity, lines, replace)
+			if appErr != nil {
+				return nil, appErr
+			}
 		}
 
 		// validate variants available for purchase
 		appErr = embedCtx.App.Srv().ProductService().ValidateVariantsAvailableForPurchase(variants.IDs(), checkout.ChannelID)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 		// validates variants belong to given channel
 		appErr = embedCtx.App.Srv().ProductService().ValidateVariantsAvailableInChannel(variants.IDs(), checkout.ChannelID)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 
 		if len(variants) > 0 && len(quantities) > 0 {
-			checkout, insufficientStockErr, appErr := embedCtx.App.Srv().CheckoutService().AddVariantsToCheckout(checkout, variants, quantities, checkoutInfo.Channel.Slug, true, replace)
+			// NOTE: we ignore Insufficient stock error here
+			// since the argument `skipStockCheck` of method AddVariantsToCheckout() is set to `true`
+			checkout, _, appErr = embedCtx.App.Srv().CheckoutService().AddVariantsToCheckout(checkout, variants, quantities, checkoutInfo.Channel.Slug, true, replace)
 			if appErr != nil {
-				return appErr
-			}
-			if insufficientStockErr != nil {
-
+				return nil, appErr
 			}
 		}
+
+		lines, appErr = embedCtx.App.Srv().CheckoutService().FetchCheckoutLines(checkout)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		checkoutInfo.ValidShippingMethods, appErr = embedCtx.App.Srv().CheckoutService().GetValidShippingMethodListForCheckoutInfo(*checkoutInfo, checkoutInfo.ShippingAddress, lines, discounts, manager)
+		if appErr != nil {
+			return nil, appErr
+		}
+		checkoutInfo.ValidPickupPoints, appErr = embedCtx.App.Srv().CheckoutService().GetValidCollectionPointsForCheckoutInfo(checkoutInfo.ShippingAddress, lines, checkoutInfo)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return lines, nil
 	}
 
 	// find product variants
@@ -189,17 +211,20 @@ func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	shippingMethods, appErr := embedCtx.App.Srv().CheckoutService().GetValidShippingMethodListForCheckoutInfo(*checkoutInfo, checkoutInfo.ShippingAddress, lines, discounts, pluginMng)
+	lines, appErr = cleanInput(checkout, productVariants, quantities, checkoutInfo, lines, pluginMng, discounts, false)
 	if appErr != nil {
 		return nil, appErr
 	}
-	checkoutInfo.ValidShippingMethods = shippingMethods
 
-	warehouses, appErr := embedCtx.App.Srv().CheckoutService().GetValidCollectionPointsForCheckoutInfo(checkoutInfo.ShippingAddress, lines, checkoutInfo)
+	checkoutInfo.ValidShippingMethods, appErr = embedCtx.App.Srv().CheckoutService().GetValidShippingMethodListForCheckoutInfo(*checkoutInfo, checkoutInfo.ShippingAddress, lines, discounts, pluginMng)
 	if appErr != nil {
 		return nil, appErr
 	}
-	checkoutInfo.ValidPickupPoints = warehouses
+
+	checkoutInfo.ValidPickupPoints, appErr = embedCtx.App.Srv().CheckoutService().GetValidCollectionPointsForCheckoutInfo(checkoutInfo.ShippingAddress, lines, checkoutInfo)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	appErr = embedCtx.App.Srv().CheckoutService().UpdateCheckoutShippingMethodIfValid(checkoutInfo, lines)
 	if appErr != nil {
@@ -216,16 +241,27 @@ func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	return &CheckoutLinesAdd{
-		Checkout: SystemCheckoutToGraphqlCheckout(checkout),
-	}, nil
+	var res struct {
+		Checkout *Checkout
+		Errors   []*CheckoutError
+	}
+	res.Checkout = SystemCheckoutToGraphqlCheckout(checkout)
+
+	return (*R)(unsafe.Pointer(&res)), nil
+}
+
+func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
+	Lines []*CheckoutLineInput
+	Token string
+}) (*CheckoutLinesAdd, error) {
+	return commonCheckoutLinesUpsert[CheckoutLinesAdd](ctx, "CheckoutLinesAdd", args.Token, args.Lines)
 }
 
 func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, args struct {
 	Lines []*CheckoutLineInput
 	Token string
 }) (*CheckoutLinesUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	return commonCheckoutLinesUpsert[CheckoutLinesUpdate](ctx, "CheckoutLinesUpdate", args.Token, args.Lines)
 }
 
 // NOTE: Checkout lines are sorted by CreateAt

@@ -103,7 +103,9 @@ type AddressInput struct {
 	Phone          *string      `json:"phone"`
 }
 
-func (a *AddressInput) Validate(where string) *model.AppError {
+// validate check given `phone` and `country` field are valid. If not returns according error.
+// TODO: in the future we should validate by specific country name.
+func (a *AddressInput) validate(where string) *model.AppError {
 	// validate input country
 	if country := a.Country; country == nil || !country.IsValid() {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
@@ -1023,7 +1025,7 @@ type CheckoutCreate struct {
 }
 
 type CheckoutCreateInput struct {
-	Channel         *string              `json:"channel"`
+	ChannelID       *string              `json:"channel"`
 	Lines           []*CheckoutLineInput `json:"lines"`
 	Email           *string              `json:"email"`
 	ShippingAddress *AddressInput        `json:"shippingAddress"`
@@ -1224,11 +1226,9 @@ type CollectionFilterInput struct {
 	Search    *string              `json:"search"`
 	Metadata  []*MetadataInput     `json:"metadata"`
 	Ids       []string             `json:"ids"`
-	// Channel   *string              `json:"channel"` //Deprecated. Do not use
 }
 
 func (c *CollectionFilterInput) validate(where string) *model.AppError {
-	where += ".CollectionFilterInput.validate"
 	if c.Published != nil && !c.Published.IsValid() {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "published"}, "please provide valid published attribute", http.StatusBadRequest)
 	}
@@ -5996,20 +5996,7 @@ func (e ProductFieldEnum) IsValid() bool {
 	return false
 }
 
-type ProductMediaType string
-
-const (
-	ProductMediaTypeImage ProductMediaType = model.IMAGE
-	ProductMediaTypeVideo ProductMediaType = model.VIDEO
-)
-
-func (e ProductMediaType) IsValid() bool {
-	switch e {
-	case ProductMediaTypeImage, ProductMediaTypeVideo:
-		return true
-	}
-	return false
-}
+type ProductMediaType = model.ProductMediaType
 
 type ProductOrderField = model.ProductOrderField
 
@@ -6171,13 +6158,7 @@ const (
 	StockErrorCodeUnique        StockErrorCode = "UNIQUE"
 )
 
-type StorePaymentMethodEnum string
-
-const (
-	StorePaymentMethodEnumOnSession  StorePaymentMethodEnum = "ON_SESSION"
-	StorePaymentMethodEnumOffSession StorePaymentMethodEnum = "OFF_SESSION"
-	StorePaymentMethodEnumNone       StorePaymentMethodEnum = "NONE"
-)
+type StorePaymentMethodEnum = model.StorePaymentMethod
 
 type TranslatableKinds string
 

@@ -10,7 +10,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
@@ -1837,7 +1836,7 @@ func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []s
 func keyValuesToMap[K cmp.Ordered, V any](keys []K, values []V) map[K]V {
 	res := map[K]V{}
 
-	for i := 0; i < util.GetMinMax(len(keys), len(values)).Min; i++ {
+	for i := 0; i < min(len(keys), len(values)); i++ {
 		res[keys[i]] = values[i]
 	}
 	return res

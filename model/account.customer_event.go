@@ -1,6 +1,8 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"gorm.io/gorm"
 )
@@ -13,19 +15,21 @@ func (t CustomerEventType) IsValid() bool {
 
 // some available types for CustomerEvent's Type attribute
 const (
-	CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED          CustomerEventType = "account_created"
-	CUSTOMER_EVENT_TYPE_PASSWORD_RESET_LINK_SENT CustomerEventType = "password_reset_link_sent"
-	CUSTOMER_EVENT_TYPE_PASSWORD_RESET           CustomerEventType = "password_reset"
-	CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED         CustomerEventType = "password_changed"
-	CUSTOMER_EVENT_TYPE_EMAIL_CHANGE_REQUEST     CustomerEventType = "email_changed_request"
-	CUSTOMER_EVENT_TYPE_EMAIL_CHANGED            CustomerEventType = "email_changed"
-	CUSTOMER_EVENT_TYPE_PLACED_ORDER             CustomerEventType = "placed_order"            // created an order
-	CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER      CustomerEventType = "note_added_to_order"     // added a note to one of their orders
-	CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED  CustomerEventType = "digital_link_downloaded" // downloaded a digital good
-	CUSTOMER_EVENT_TYPE_CUSTOMER_DELETED         CustomerEventType = "customer_deleted"        // staff user deleted a customer
-	CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED           CustomerEventType = "email_assigned"          // the staff user assigned a email to the customer
-	CUSTOMER_EVENT_TYPE_NAME_ASSIGNED            CustomerEventType = "name_assigned"           // the staff user added set a name to the customer
-	CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED      CustomerEventType = "note_added"              // the staff user added a note to the customer
+	CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED          CustomerEventType = "ACCOUNT_CREATED"
+	CUSTOMER_EVENT_TYPE_PASSWORD_RESET_LINK_SENT CustomerEventType = "PASSWORD_RESET_LINK_SENT"
+	CUSTOMER_EVENT_TYPE_PASSWORD_RESET           CustomerEventType = "PASSWORD_RESET"
+	CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED         CustomerEventType = "PASSWORD_CHANGED"
+	CUSTOMER_EVENT_TYPE_EMAIL_CHANGE_REQUEST     CustomerEventType = "EMAIL_CHANGED_REQUEST"
+	CUSTOMER_EVENT_TYPE_EMAIL_CHANGED            CustomerEventType = "EMAIL_CHANGED"
+	CUSTOMER_EVENT_TYPE_PLACED_ORDER             CustomerEventType = "PLACED_ORDER"            // created an order
+	CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER      CustomerEventType = "NOTE_ADDED_TO_ORDER"     // added a note to one of their orders
+	CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED  CustomerEventType = "DIGITAL_LINK_DOWNLOADED" // downloaded a digital good
+	CUSTOMER_EVENT_TYPE_CUSTOMER_DELETED         CustomerEventType = "CUSTOMER_DELETED"        // staff user deleted a customer
+	CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED           CustomerEventType = "EMAIL_ASSIGNED"          // the staff user assigned a email to the customer
+	CUSTOMER_EVENT_TYPE_NAME_ASSIGNED            CustomerEventType = "NAME_ASSIGNED"           // the staff user added set a name to the customer
+	CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED      CustomerEventType = "NOTE_ADDED"              // the staff user added a note to the customer
+	CUSTOMER_EVENT_TYPE_ACCOUNT_ACTIVATED        CustomerEventType = "ACCOUNT_ACTIVATED"
+	CUSTOMER_EVENT_TYPE_ACCOUNT_DEACTIVATED      CustomerEventType = "ACCOUNT_DEACTIVATED"
 )
 
 var CustomerEventTypes = map[CustomerEventType]bool{
@@ -42,6 +46,8 @@ var CustomerEventTypes = map[CustomerEventType]bool{
 	CUSTOMER_EVENT_TYPE_EMAIL_ASSIGNED:           true,
 	CUSTOMER_EVENT_TYPE_NAME_ASSIGNED:            true,
 	CUSTOMER_EVENT_TYPE_CUSTOMER_NOTE_ADDED:      true,
+	CUSTOMER_EVENT_TYPE_ACCOUNT_ACTIVATED:        true,
+	CUSTOMER_EVENT_TYPE_ACCOUNT_DEACTIVATED:      true,
 }
 
 type CustomerEvent struct {
@@ -73,22 +79,17 @@ func (*CustomerEvent) TableName() string {
 }
 
 func (ce *CustomerEvent) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.customer_event.is_valid.%s.app_error",
-		"customer_event_id=",
-		"CustomerEvent.IsValid",
-	)
 	if ce.Date == 0 {
-		return outer("date", &ce.Id)
+		return NewAppError("CustomerEvent.IsValid", "model.customer_event.is_valid.date.app_error", nil, "please provide valid date", http.StatusBadRequest)
 	}
 	if ce.UserID != nil && !IsValidId(*ce.UserID) {
-		return outer("usder_id", &ce.Id)
+		return NewAppError("CustomerEvent.IsValid", "model.customer_event.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if ce.OrderID != nil && !IsValidId(*ce.OrderID) {
-		return outer("order_id", &ce.Id)
+		return NewAppError("CustomerEvent.IsValid", "model.customer_event.is_valid.order_id.app_error", nil, "please provide order id", http.StatusBadRequest)
 	}
 	if !CustomerEventTypes[ce.Type] {
-		return outer("type", &ce.Id)
+		return NewAppError("CustomerEvent.IsValid", "model.customer_event.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 
 	return nil
@@ -114,16 +115,11 @@ type StaffNotificationRecipientFilterOptions struct {
 }
 
 func (ce *StaffNotificationRecipient) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.staff_notification_recipient.is_valid.%s.app_error",
-		"staff_notification_recipient_id=",
-		"CustomerEvent.IsValid",
-	)
 	if ce.UserID != nil && !IsValidId(*ce.UserID) {
-		return outer("usder_id", &ce.Id)
+		return NewAppError("CustomerEvent.IsValid", "model.staff_notification_recipient.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if ce.StaffEmail != nil && !IsValidEmail(*ce.StaffEmail) {
-		return outer("staff_email", &ce.Id)
+		return NewAppError("CustomerEvent.IsValid", "model.staff_notification_recipient.is_valid.staff_email.app_error", nil, "please provide valid staff email", http.StatusBadRequest)
 	}
 
 	return nil

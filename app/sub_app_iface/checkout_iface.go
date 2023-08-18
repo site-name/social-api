@@ -85,7 +85,7 @@ type CheckoutService interface {
 	// CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
 	CheckoutTotalWeight(checkoutLineInfos []*model.CheckoutLineInfo) (*measurement.Weight, *model.AppError)
 	// CheckoutsByOption returns a list of checkouts, filtered by given option
-	CheckoutsByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, *model.AppError)
+	CheckoutsByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, *model.AppError)
 	// CleanCheckoutShipping
 	CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
@@ -94,7 +94,7 @@ type CheckoutService interface {
 	FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 	// It prefetch some related value also
-	FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError)
+	FetchCheckoutLines(checkOut *model.Checkout) (model.CheckoutLineInfos, *model.AppError)
 	// GetCustomerEmail returns checkout's user's email
 	GetCustomerEmail(ckout *model.Checkout) (string, *model.AppError)
 	// GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
@@ -129,7 +129,7 @@ type CheckoutService interface {
 	// :raises ValidationError
 	//
 	// NOTE: Make sure user is authenticated before calling this method.
-	CompleteCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ interface{}, siteSettings *model.Shop, trackingCode string, redirectURL string) (*model.Order, bool, model.StringMap, *model.PaymentError, *model.AppError)
+	CompleteCheckout(transaction *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ interface{}, siteSettings model.ShopSettings, trackingCode string, redirectURL string) (*model.Order, bool, model.StringInterface, *model.PaymentError, *model.AppError)
 	// RecalculateCheckoutDiscount Recalculate `checkout.discount` based on the voucher.
 	// Will clear both voucher and discount if the discount is no longer applicable.
 	RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) *model.AppError
@@ -174,4 +174,7 @@ type CheckoutService interface {
 	ValidateVariantsInCheckoutLines(lines []*model.CheckoutLineInfo) *model.AppError
 	CheckLinesQuantity(variants model.ProductVariants, quantities []int, country model.CountryCode, channelSlug string, allowZeroQuantity bool, existingLines model.CheckoutLineInfos, replace bool) *model.AppError
 	UpdateCheckoutShippingMethodIfValid(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError
+	PrepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model.AppError
+	// NOTE: method must be either *model.Warehouse or *model.ShippingMethod
+	CleanDeliveryMethod(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos, method any) (bool, *model.AppError)
 }

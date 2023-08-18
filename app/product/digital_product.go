@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *model.Shop) *model.ShopDefaultDigitalContentSettings {
+func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop model.ShopSettings) *model.ShopDefaultDigitalContentSettings {
 	return &model.ShopDefaultDigitalContentSettings{
 		AutomaticFulfillmentDigitalProducts: aShop.AutomaticFulfillmentDigitalProducts,
 		DefaultDigitalMaxDownloads:          aShop.DefaultDigitalMaxDownloads,

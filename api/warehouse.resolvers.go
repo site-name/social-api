@@ -35,7 +35,7 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 	newWarehouse.Name = input.Name
 
 	if input.Address != nil {
-		if err := input.Address.Validate("CreateWarehouse"); err != nil {
+		if err := input.Address.validate("CreateWarehouse"); err != nil {
 			return nil, err
 		}
 
@@ -146,7 +146,7 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 		warehouse.Slug = *input.Slug
 	}
 	if input.Address != nil {
-		appErr = input.Address.Validate("UpdateWarehouse")
+		appErr = input.Address.validate("UpdateWarehouse")
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -440,7 +440,7 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 
 	res := constructCountableConnection(
 		stocks,
-		int(totalCount),
+		totalCount,
 		hasNextPage,
 		hasPrevPage,
 		func(st *model.Stock) []any { return []any{model.StockTableName + ".CreateAt", st.CreateAt} },

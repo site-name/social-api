@@ -684,13 +684,14 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 	if err != nil {
 		return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
 	}
-	parsedSitenameUrl, _ := url.Parse(*config.ServiceSettings.SiteURL)
 
-	if parsedRedirectUrl.Hostname() != parsedSitenameUrl.Hostname() {
-		return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
+	allowedClients := strings.Fields(*config.ServiceSettings.AllowCorsFrom)
+	for _, validClient := range allowedClients {
+		if validClient == parsedRedirectUrl.Host {
+			return nil
+		}
 	}
-
-	return nil
+	return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
 }
 
 //	{

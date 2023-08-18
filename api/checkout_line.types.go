@@ -8,7 +8,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
@@ -232,7 +231,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		goto errorLabel
 	}
 
-	for i := 0; i < util.GetMinMax(len(channelIDS), len(checkoutLines)).Min; i++ {
+	for i := 0; i < min(len(channelIDS), len(checkoutLines)); i++ {
 		for _, line := range checkoutLines[i] {
 			variantIDChannelIDPairs = append(variantIDChannelIDPairs, line.VariantID+"__"+channelIDS[i])
 		}
@@ -243,27 +242,27 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		goto errorLabel
 	}
 
-	for i := 0; i < util.GetMinMax(len(variantIDS), len(variants)).Min; i++ {
+	for i := 0; i < min(len(variantIDS), len(variants)); i++ {
 		variantsMap[variantIDS[i]] = variants[i]
 	}
 
-	for i := 0; i < util.GetMinMax(len(variantIDS), len(products)).Min; i++ {
+	for i := 0; i < min(len(variantIDS), len(products)); i++ {
 		productsMap[variantIDS[i]] = products[i]
 	}
 
-	for i := 0; i < util.GetMinMax(len(variantIDS), len(productTypes)).Min; i++ {
+	for i := 0; i < min(len(variantIDS), len(productTypes)); i++ {
 		productTypesMap[variantIDS[i]] = productTypes[i]
 	}
 
-	for i := 0; i < util.GetMinMax(len(variantIDS), len(collections)).Min; i++ {
+	for i := 0; i < min(len(variantIDS), len(collections)); i++ {
 		collectionsMap[variantIDS[i]] = collections[i]
 	}
 
-	for i := 0; i < util.GetMinMax(len(variantIDChannelIDPairs), len(channelListings)).Min; i++ {
+	for i := 0; i < min(len(variantIDChannelIDPairs), len(channelListings)); i++ {
 		channelListingsMap[variantIDChannelIDPairs[i]] = channelListings[i]
 	}
 
-	for i := 0; i < util.GetMinMax(len(checkouts), len(checkoutLines)).Min; i++ {
+	for i := 0; i < min(len(checkouts), len(checkoutLines)); i++ {
 		for _, line := range checkoutLines[i] {
 			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &model.CheckoutLineInfo{
 				Line:           *line,

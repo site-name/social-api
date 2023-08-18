@@ -388,7 +388,7 @@ func parseGraphqlCursor(params *GraphqlParams) ([]any, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to parse int value")
 			}
-			var value any = int(in) // type cast
+			var value any = int(in)
 			if kind == model.IntPtr {
 				value = &value
 			}
@@ -573,7 +573,7 @@ func (g *GraphqlParams) queryLimit() uint64 {
 func (g *GraphqlParams) checkNextPageAndPreviousPage(numOfRecordsFound int) (hasNextPage, hasPreviousPage bool) {
 	queryLimit := g.queryLimit()
 	hasNextPage = queryLimit != 0 && numOfRecordsFound == int(queryLimit)
-	hasPreviousPage = queryLimit != 0 && g.Before != nil || g.After != nil
+	hasPreviousPage = queryLimit != 0 && (g.Before != nil || g.After != nil)
 	return
 }
 
@@ -582,7 +582,6 @@ func (g *GraphqlParams) validate(where string) *model.AppError {
 		return g.memoizedErr
 	}
 	g.validated = true
-	where += ".GraphqlParams.validate"
 
 	switch {
 	case (g.First != nil && *g.First < 0) || (g.Last != nil && *g.Last < 0):
@@ -662,7 +661,7 @@ type CountableConnectionEdge[D any] struct {
 
 func constructCountableConnection[R any, D any](
 	data []R,
-	totalCount int,
+	totalCount int64,
 	hasNextPage, hasPreviousPage bool,
 	keyFunc func(R) []any,
 	modelTypeToGraphqlTypeFunc func(R) D,
@@ -719,7 +718,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 
 	// return immediately when no data passed
 	if totalCount == 0 {
-		return constructCountableConnection(resultData, (totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
+		return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
 	}
 
 	if limit == nil {
@@ -733,7 +732,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 		} else {
 			resultData = g.data
 		}
-		return constructCountableConnection(resultData, (totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
+		return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
 	}
 
 	// case operand provided:
@@ -758,7 +757,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 		hasNextPage = true
 	}
 
-	return constructCountableConnection(resultData, (totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
+	return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
 }
 
 func reportingPeriodToDate(period ReportingPeriod) time.Time {
@@ -800,8 +799,6 @@ func prepareFilterExpression(fieldName string, index int, cursors []any, sorting
 }
 
 func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *model.AppError) {
-	where += ".GraphqlParams.parse"
-
 	appErr := g.validate(where)
 	if appErr != nil {
 		return nil, appErr
@@ -845,4 +842,23 @@ func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *mo
 	}
 
 	return res, nil
+}
+
+// getMax returns the largest item from given items
+func getMax[T cmp.Ordered](items ...T) T {
+	var max T
+	if len(items) == 0 {
+		return max
+	}
+	if len(items) == 1 {
+		return items[0]
+	}
+	max = items[0]
+	for i := 1; i < len(items); i++ {
+		if itemAtI := items[i]; itemAtI > max {
+			max = itemAtI
+		}
+	}
+
+	return max
 }

@@ -20,13 +20,13 @@ func init() {
 }
 
 // ShopById finds shop by given id
-// func (a *ServiceShop) ShopById(shopID string) (*model.Shop, *model.AppError) {
+// func (a *ServiceShop) ShopById(shopID string) (model.ShopSettings, *model.AppError) {
 // 	return a.ShopByOptions(&model.ShopFilterOptions{
 // 		Id: squirrel.Eq{model.ShopTableName + ".Id": shopID},
 // 	})
 // }
 
-// func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError) {
+// func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (model.ShopSettings, *model.AppError) {
 // 	shop, err := a.srv.Store.Shop().GetByOptions(options)
 // 	if err != nil {
 // 		statusCode := http.StatusInternalServerError

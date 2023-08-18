@@ -9,7 +9,7 @@ type Sortable struct {
 }
 
 type Publishable struct {
-	PublicationDate *time.Time `json:"publication_date" gorm:"column:PublicationDate"`
+	PublicationDate *time.Time `json:"publication_date" gorm:"column:PublicationDate"` // precision to day only
 	IsPublished     bool       `json:"is_published" gorm:"column:IsPublished"`
 }
 

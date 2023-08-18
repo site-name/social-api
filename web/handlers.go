@@ -117,6 +117,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.AppContext.SetUserAgent(r.UserAgent())
 	c.AppContext.SetAcceptLanguage(r.Header.Get("Accept-Language"))
 	c.AppContext.SetPath(r.URL.Path)
+	c.AppContext.SetRequest(r)
 	c.Logger = c.App.Log()
 
 	// check if open tracing is enabled
@@ -307,11 +308,11 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 	csrfCheckPassed := false
 
 	if csrfCheckNeeded {
-		csrfHeader := r.Header.Get(model.HEADER_CSRF_TOKEN)
+		csrfHeader := r.Header.Get(model.HeaderCsrfToken)
 
 		if csrfHeader == session.GetCSRF() {
 			csrfCheckPassed = true
-		} else if r.Header.Get(model.HEADER_REQUESTED_WITH) == model.HEADER_REQUESTED_WITH_XML {
+		} else if r.Header.Get(model.HeaderRequestedWith) == model.HeaderRequestedWith_XML {
 			// ToDo(DSchalla) 2019/01/04: Remove after deprecation period and only allow CSRF Header (MM-13657)
 			csrfErrorMessage := "CSRF Header check failed for request - Please upgrade your web application or custom app to set a CSRF Header"
 

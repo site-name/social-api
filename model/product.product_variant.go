@@ -136,7 +136,7 @@ func (p *ProductVariant) String() string {
 }
 
 func (p *ProductVariant) IsPreorderActive() bool {
-	return p.IsPreOrder && (p.PreorderEndDate == nil || (p.PreorderEndDate != nil && GetMillis() <= *p.PreorderEndDate))
+	return p.IsPreOrder && (p.PreorderEndDate == nil || GetMillis() <= *p.PreorderEndDate)
 }
 
 func (p *ProductVariant) commonPre() {

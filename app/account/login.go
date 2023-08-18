@@ -231,7 +231,7 @@ func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *h
 		return err
 	}
 
-	w.Header().Set(model.HEADER_TOKEN, session.Token)
+	w.Header().Set(model.HeaderToken, session.Token)
 
 	c.SetSession(session)
 	if a.srv.Ldap != nil {

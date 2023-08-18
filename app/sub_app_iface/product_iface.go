@@ -135,8 +135,7 @@ type ProductService interface {
 	UpsertDigitalContentURL(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, *model.AppError)
 	// UpsertProductVariant tells store to upsert given product variant and returns it
 	UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError)
-	// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
-	VisibleCollectionsToUser(userID, channelSlug string) ([]*model.Collection, *model.AppError)
+	VisibleCollectionsToUser(channelSlug string, userIsShopStaff bool) ([]*model.Collection, *model.AppError)
 	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
 	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
 	CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError)
@@ -145,7 +144,7 @@ type ProductService interface {
 	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError)
 	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories
 	FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError)
-	GetDefaultDigitalContentSettings(aShop *model.Shop) *model.ShopDefaultDigitalContentSettings
+	GetDefaultDigitalContentSettings(aShop model.ShopSettings) *model.ShopDefaultDigitalContentSettings
 	GetProductAvailability(product model.Product, productChannelListing *model.ProductChannelListing, variants []*model.ProductVariant, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, manager interfaces.PluginManagerInterface, countryCode model.CountryCode, localCurrency string) (*model.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product model.Product, variants model.ProductVariants, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.MoneyRange, *model.AppError)
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model.AppError)

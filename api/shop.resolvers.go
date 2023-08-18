@@ -126,7 +126,7 @@ func (r *Resolver) ShopSettingsTranslate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/shop.graphqls for details on directives used.
 func (r *Resolver) ShopAddressUpdate(ctx context.Context, args struct{ Input AddressInput }) (*ShopAddressUpdate, error) {
 	// validate argument
-	if err := args.Input.Validate("ShopAddressUpdate"); err != nil {
+	if err := args.Input.validate("ShopAddressUpdate"); err != nil {
 		return nil, err
 	}
 

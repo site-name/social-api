@@ -2,6 +2,7 @@ package request
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
@@ -16,6 +17,7 @@ type Context struct {
 	userAgent      string
 	acceptLanguage string
 	context        context.Context
+	request        *http.Request
 }
 
 func NewContext(ctx context.Context, requestId, ipAddress, path, userAgent, acceptLanguage string, session model.Session, t i18n.TranslateFunc) *Context {
@@ -93,4 +95,12 @@ func (c *Context) SetContext(ctx context.Context) {
 
 func (c *Context) GetT() i18n.TranslateFunc {
 	return c.t
+}
+
+func (c *Context) SetRequest(r *http.Request) {
+	c.request = r
+}
+
+func (c *Context) GetRequest() *http.Request {
+	return c.request
 }

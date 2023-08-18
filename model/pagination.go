@@ -15,8 +15,10 @@ type GraphqlPaginationValues struct {
 	Limit uint64
 }
 
+// PaginationApplicable checks if:
+// Limit > 0, OrderBy != ""
 func (p *GraphqlPaginationValues) PaginationApplicable() bool {
-	return p.OrderBy != "" && p.Condition != nil && p.Limit > 0
+	return p.OrderBy != "" && p.Limit > 0
 }
 
 // AddPaginationToSelectBuilder check if current GraphqlPaginationValues is not empty, then add pagination ability to given select builder

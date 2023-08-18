@@ -183,10 +183,10 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *model.OrderLineData, stoc
 		quantityAllocatedInStock := quantityAllocationForStocks[stockData.Pk]
 		quantityAvailableInStock := stockData.Quantity - quantityAllocatedInStock
 
-		quantityToAllocate := util.GetMinMax(
+		quantityToAllocate := min(
 			(quantity - quantityAllocated),
 			quantityAvailableInStock,
-		).Min
+		)
 
 		if quantityToAllocate > 0 {
 			allocations = append(allocations, &model.Allocation{
@@ -256,10 +256,10 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 		)
 
 		for _, allocation := range allocations {
-			quantityToDeallocate := util.GetMinMax(
+			quantityToDeallocate := min(
 				(quantity - quantityDeAllocated),
 				allocation.QuantityAllocated,
-			).Min
+			)
 			if quantityToDeallocate > 0 {
 				allocation.QuantityAllocated = allocation.QuantityAllocated - quantityToDeallocate
 				quantityDeAllocated += quantityToDeallocate
@@ -309,7 +309,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	}
 
 	for _, allocation := range allocationsBeforeUpdate {
-		availableStockNow := util.GetMinMax(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0).Max
+		availableStockNow := max(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0)
 
 		if allocation.GetStockAvailableQuantity() <= 0 && availableStockNow > 0 {
 			if appErr := manager.ProductVariantBackInStock(*allocation.Stock); appErr != nil {

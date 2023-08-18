@@ -39,26 +39,28 @@ func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*model.Coll
 func (a *ServiceProduct) PublishedCollections(channelSlug string) ([]*model.Collection, *model.AppError) {
 	today := util.StartOfDay(time.Now())
 
-	return a.CollectionsByOption(&model.CollectionFilterOption{
-		ChannelListingPublicationDate: squirrel.Or{
-			squirrel.LtOrEq{model.CollectionChannelListingTableName + ".PublicationDate": today},
-			squirrel.Eq{model.CollectionChannelListingTableName + ".PublicationDate": nil},
-		},
-		ChannelListingIsPublished:     squirrel.Eq{model.CollectionChannelListingTableName + "IsPublished": true},
-		ChannelListingChannelSlug:     squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
-		ChannelListingChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
-	})
-}
-
-// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
-func (a *ServiceProduct) VisibleCollectionsToUser(userID, channelSlug string) ([]*model.Collection, *model.AppError) {
+	publishedCollectionFilterOpts := &model.CollectionFilterOption{
+		ChannelListingPublicationDate: squirrel.Expr(model.CollectionChannelListingTableName+".PublicationDate <= ? OR CollectionChannelListings.PublicationDate IS NULL", today),
+		ChannelListingIsPublished:     squirrel.Expr(model.CollectionChannelListingTableName + ".IsPublished"),
+		ChannelListingChannelIsActive: squirrel.Expr(model.ChannelTableName + ".IsActive"),
+	}
 	if channelSlug != "" {
-		return a.CollectionsByOption(&model.CollectionFilterOption{
-			ChannelListingChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
-		})
+		publishedCollectionFilterOpts.ChannelListingChannelSlug = squirrel.Expr(model.ChannelTableName+".Slug = ?", channelSlug)
 	}
 
-	return a.CollectionsByOption(&model.CollectionFilterOption{})
+	return a.CollectionsByOption(publishedCollectionFilterOpts)
+}
+
+func (a *ServiceProduct) VisibleCollectionsToUser(channelSlug string, userIsShopStaff bool) ([]*model.Collection, *model.AppError) {
+	if userIsShopStaff {
+		collectionFilterOpts := &model.CollectionFilterOption{}
+		if channelSlug != "" {
+			collectionFilterOpts.ChannelListingChannelSlug = squirrel.Expr(model.ChannelTableName+".Slug = ?", channelSlug)
+		}
+		return a.CollectionsByOption(collectionFilterOpts)
+	}
+
+	return a.PublishedCollections(channelSlug)
 }
 
 func (a *ServiceProduct) CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError) {

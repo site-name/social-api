@@ -301,8 +301,8 @@ type ProductCountableEdge {
 }
 
 enum ProductMediaType {
-  image
-  video
+  IMAGE
+  VIDEO
 }
 
 enum StockAvailability {

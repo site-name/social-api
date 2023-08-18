@@ -321,7 +321,8 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args Coll
 	}
 
 	// add collection-channel listings
-	now := time.Now()
+	today := util.StartOfDay(time.Now())
+
 	collectionChannelListingsToAdd := lo.Map(args.Input.AddChannels, func(item *PublishableChannelListingInput, _ int) *model.CollectionChannelListing {
 		relation := model.CollectionChannelListing{
 			CollectionID: args.Id,
@@ -332,8 +333,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args Coll
 			relation.IsPublished = true
 
 			if item.PublicationDate == nil {
-				date := util.StartOfDay(now)
-				relation.PublicationDate = &date
+				relation.PublicationDate = &today
 			} else {
 				relation.PublicationDate = &item.PublicationDate.Time
 			}
@@ -370,14 +370,15 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args Coll
 }
 
 type CollectionArgs struct {
-	Id      *string
-	Slug    *string
+	Id *string // -------|
+	//                   OR
+	Slug    *string // --|
 	Channel *string // this is channel slug
 }
 
 func (c *CollectionArgs) validate() *model.AppError {
-	if c.Id == nil && c.Slug == nil {
-		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id, slug"}, "please provide collection id or slug", http.StatusBadRequest)
+	if (c.Id == nil && c.Slug == nil) || (c.Id != nil && c.Slug != nil) {
+		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id, slug"}, "please provide either id or slug", http.StatusBadRequest)
 	}
 	if c.Id != nil && !model.IsValidId(*c.Id) {
 		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
@@ -385,12 +386,52 @@ func (c *CollectionArgs) validate() *model.AppError {
 	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
 		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid collection slug", http.StatusBadRequest)
 	}
+	if c.Channel != nil && !slug.IsSlug(*c.Channel) {
+		return model.NewAppError("Collection", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, "please provide valid channel slug", http.StatusBadRequest)
+	}
 
 	return nil
 }
 
 func (r *Resolver) Collection(ctx context.Context, args CollectionArgs) (*Collection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	appErr := args.validate()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		collectionID   string
+		collectionSlug string
+		channelSlug    string
+	)
+	if args.Id != nil {
+		collectionID = *args.Id
+	} else if args.Slug != nil {
+		collectionSlug = *args.Slug
+	}
+
+	if args.Channel != nil {
+		channelSlug = *args.Channel
+	}
+
+	// check if requester can see all collections or not
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("Collection", model.ShopAdminRoleId, model.ShopStaffRoleId)
+	userIsShopStaff := embedCtx.Err == nil
+
+	collections, appErr := embedCtx.App.Srv().ProductService().VisibleCollectionsToUser(channelSlug, userIsShopStaff)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	for _, collection := range collections {
+		if collection.Id == collectionID || collection.Slug == collectionSlug {
+			return systemCollectionToGraphqlCollection(collection), nil
+		}
+	}
+
+	return nil, nil
 }
 
 type CollectionsArgs struct {

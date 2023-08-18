@@ -8,7 +8,6 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
 
@@ -144,12 +143,12 @@ func (ps Products) Flat() []StringInterface {
 	var res = []StringInterface{}
 
 	for _, prd := range ps {
-		maxLength := util.AnyArray[int]{
+		maxLength := max(
 			len(prd.Collections),
 			len(prd.medias),
 			len(prd.Attributes),
 			len(prd.productVariants),
-		}.GetMinMax().Max
+		)
 
 		var categorySlug string
 		var productTypeName string

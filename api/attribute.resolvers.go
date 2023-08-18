@@ -514,7 +514,7 @@ func (r *Resolver) Attributes(ctx context.Context, args AttributesArgs) (*Attrib
 	}
 
 	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(attributes))
-	res := constructCountableConnection(attributes, int(totalCount), hasNextPage, hasPrevPage, keyFunc, SystemAttributeToGraphqlAttribute)
+	res := constructCountableConnection(attributes, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemAttributeToGraphqlAttribute)
 	return (*AttributeCountableConnection)(unsafe.Pointer(res)), nil
 }
 

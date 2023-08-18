@@ -19,7 +19,8 @@ const (
 	CHECKOUT_LANGUAGE_CODE_MAX_LENGTH            = 35
 )
 
-// A Shopping checkout
+// A Shopping checkout.
+// Ordering by CreateAt ASC
 type Checkout struct {
 	Token                  string           `json:"token" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Token"` // uuid4, primary_key, NO EDITABLE
 	CreateAt               int64            `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
@@ -41,11 +42,12 @@ type Checkout struct {
 	VoucherCode            *string          `json:"voucher_code" gorm:"column:VoucherCode;type:varchar(12)"`
 	RedirectURL            *string          `json:"redirect_url" gorm:"type:varchar(200);column:RedirectURL"`
 	TrackingCode           *string          `json:"tracking_code" gorm:"type:varchar(255);column:TrackingCode"`
-	LanguageCode           LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`
+	LanguageCode           LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"` // default to DEFAULT_LOCALE
 	ModelMetadata
 
 	channel        *Channel        `gorm:"-"`
 	billingAddress *Address        `gorm:"-"`
+	user           *User           `gorm:"-"`
 	Discount       *goprices.Money `gorm:"-" json:"discount,omitempty"`
 	Giftcards      Giftcards       `json:"-" gorm:"many2many:GiftcardCheckouts"`
 }
@@ -60,6 +62,8 @@ func (c *Checkout) SetChannel(ch *Channel)         { c.channel = ch }
 func (c *Checkout) GetChannel() *Channel           { return c.channel }
 func (c *Checkout) SetBilingAddress(addr *Address) { c.billingAddress = addr }
 func (c *Checkout) GetBilingAddress() *Address     { return c.billingAddress }
+func (c *Checkout) SetUser(u *User)                { c.user = u }
+func (c *Checkout) GetUser() *User                 { return c.user }
 
 // CheckoutFilterOption is used for bulding sql queries
 type CheckoutFilterOption struct {
@@ -69,7 +73,10 @@ type CheckoutFilterOption struct {
 
 	SelectRelatedChannel        bool // this will populate the field `channel`
 	SelectRelatedBillingAddress bool // this will populate the field 'billingAddress'
-	Limit                       int  // <= 0 means no limit
+	SelectRelatedUser           bool
+
+	GraphqlPaginationValues GraphqlPaginationValues
+	CountTotal              bool
 }
 
 func (c *Checkout) IsValid() *AppError {

@@ -30,15 +30,15 @@ func init() {
 
 // PaymentByID returns a payment with given id
 func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
-	payMent, err := a.srv.Store.Payment().Get(transaction, paymentID, lockForUpdate)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", nil, err.Error(), statusCode)
+	payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
+		Conditions:    squirrel.Expr(model.PaymentTableName+".Id = ?", paymentID),
+		DbTransaction: transaction,
+		LockForUpdate: lockForUpdate,
+	})
+	if appErr != nil {
+		return nil, appErr
 	}
-	return payMent, nil
+	return payments[0], nil
 }
 
 // PaymentsByOption returns all payments that satisfy given option

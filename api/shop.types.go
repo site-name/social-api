@@ -174,7 +174,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 		return nil, model.NewAppError("Shop.AvailableShippingMethods", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
 	}
 	if args.Address != nil {
-		err := args.Address.Validate("AvailableShippingMethods")
+		err := args.Address.validate("AvailableShippingMethods")
 		if err != nil {
 			return nil, err
 		}

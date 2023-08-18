@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
 
@@ -574,7 +573,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 	return appErr
 }
 
-func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model.AppError) {
+func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings model.ShopSettings, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model.AppError) {
 	// initialize a transaction
 	transaction := s.srv.Store.GetMaster().Begin()
 	defer transaction.Rollback()
@@ -686,7 +685,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 }
 
 // CreateGiftcardsWhenApprovingFulfillment
-func (s *ServiceOrder) CreateGiftcardsWhenApprovingFulfillment(orDer *model.Order, linesData []*model.OrderLineData, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop) *model.AppError {
+func (s *ServiceOrder) CreateGiftcardsWhenApprovingFulfillment(orDer *model.Order, linesData []*model.OrderLineData, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings model.ShopSettings) *model.AppError {
 	var (
 		giftcardLines = []*model.OrderLine{}
 		quantities    = map[string]int{}
@@ -1259,7 +1258,7 @@ func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*mod
 
 	for _, lineData := range orderLinesToMove {
 		// calculate the quantity fulfilled/unfulfilled to move
-		unFulfilledToMove := util.GetMinMax(lineData.Line.QuantityUnFulfilled(), lineData.Quantity).Min
+		unFulfilledToMove := min(lineData.Line.QuantityUnFulfilled(), lineData.Quantity)
 		lineData.Line.QuantityFulfilled += unFulfilledToMove
 
 		// update current lines with new value of quantity
@@ -1334,7 +1333,7 @@ func (a *ServiceOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesT
 		res := a.getFulfillmentLine(targetFulfillment, linesInTargetFulfillment, fulfillmentLine.OrderLineID, fulfillmentLine.StockID)
 
 		// calculate the quantity fulfilled/unfulfilled/to move
-		fulfilledToMove := util.GetMinMax(fulfillmentLine.Quantity, quantityToMove).Min
+		fulfilledToMove := min(fulfillmentLine.Quantity, quantityToMove)
 		quantityToMove -= fulfilledToMove
 		res.MovedFulfillmentLine.Quantity += fulfilledToMove
 		fulfillmentLine.Quantity -= fulfilledToMove

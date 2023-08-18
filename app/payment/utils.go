@@ -140,7 +140,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 		ReuseSource:        storeSource,
 		Data:               additionalData,
 		GraphqlCustomerID:  userID,
-		StorePaymentMethod: payMent.StorePaymentMethod.ToEnum(),
+		StorePaymentMethod: payMent.StorePaymentMethod,
 		PaymentMetadata:    model.StringMap(payMent.Metadata),
 	}, nil
 }
@@ -384,6 +384,9 @@ func (a *ServicePayment) ValidateGatewayResponse(response *model.GatewayResponse
 func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model.AppError {
 	// create transaction
 	transaction := a.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return model.NewAppError("GatewayPostProcess", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	var (
@@ -495,41 +498,12 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 // FetchCustomerId Retrieve users customer_id stored for desired gateway.
 // returning string could be "" or long string
 func (a *ServicePayment) FetchCustomerId(user *model.User, gateway string) (string, *model.AppError) {
-	// validate arguments are valid
-	var argumentErrorFields string
-	if user == nil {
-		argumentErrorFields = "user"
-	}
-	if gateway == "" {
-		argumentErrorFields += ", gateway"
-	}
-
-	if argumentErrorFields != "" {
-		return "", model.NewAppError("FetchCustomerId", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argumentErrorFields}, "", http.StatusBadRequest)
-	}
-
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
 	return user.PrivateMetadata.Get(metaKey, ""), nil
 }
 
 // StoreCustomerId stores new value into given user's PrivateMetadata
 func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customerID string) *model.AppError {
-	// validate arguments are valid:
-	var argumentErrFields string
-	if !model.IsValidId(userID) {
-		argumentErrFields = "userID"
-	}
-	if trimmedGateway := strings.TrimSpace(gateway); trimmedGateway == "" {
-		argumentErrFields += ", gateway"
-	}
-	if trimmedCustomerID := strings.TrimSpace(customerID); trimmedCustomerID == "" {
-		argumentErrFields += ", customerID"
-	}
-
-	if argumentErrFields != "" {
-		return model.NewAppError("StoreCustomerId", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": argumentErrFields}, "", http.StatusBadRequest)
-	}
-
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
 	user, appErr := a.srv.AccountService().UserById(context.Background(), userID)
 	if appErr != nil {

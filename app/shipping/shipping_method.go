@@ -150,7 +150,7 @@ func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethod
 func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model.AppError {
 	// unlink shipping methods from order and checkout instances
 	// when method is no longer available in given channels
-	checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
+	_, checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
 		Conditions: squirrel.Eq{
 			model.CheckoutTableName + ".ShippingMethodID": shippingMethodIds,
 			model.CheckoutTableName + ".ChannelID":        channelIds,

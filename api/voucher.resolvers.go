@@ -427,7 +427,7 @@ func (r *Resolver) Vouchers(ctx context.Context, args VoucherFilterArgs) (*Vouch
 	}
 
 	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(vouchers))
-	res := constructCountableConnection(vouchers, int(totalCount), hasNextPage, hasPrevPage, keyFunc, systemVoucherToGraphqlVoucher)
+	res := constructCountableConnection(vouchers, totalCount, hasNextPage, hasPrevPage, keyFunc, systemVoucherToGraphqlVoucher)
 
 	return (*VoucherCountableConnection)(unsafe.Pointer(res)), nil
 }

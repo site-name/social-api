@@ -203,9 +203,9 @@ func (c *Context) SetJSONEncodingError() {
 
 func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWriter, r *http.Request) bool {
 	metrics := c.App.Metrics()
-	if et := r.Header.Get(model.HEADER_ETAG_CLIENT); etag != "" {
+	if et := r.Header.Get(model.HeaderEtagClient); etag != "" {
 		if et == etag {
-			w.Header().Set(model.HEADER_ETAG_SERVER, etag)
+			w.Header().Set(model.HeaderEtagServer, etag)
 			w.WriteHeader(http.StatusNotModified)
 			if metrics != nil {
 				metrics.IncrementEtagHitCounter(routeName)
@@ -268,5 +268,5 @@ func (c *Context) GetSiteURLHeader() string {
 }
 
 func (c *Context) GetRemoteID(r *http.Request) string {
-	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
+	return r.Header.Get(model.HeaderRemoteClusterId)
 }

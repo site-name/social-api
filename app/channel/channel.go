@@ -33,7 +33,7 @@ func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*mo
 		return nil, appErr
 	}
 	if channels.Len() == 0 {
-		return nil, model.NewAppError("ChannelByOption", "app.channel.channel_by_options.app_error", nil, "", http.StatusNotFound)
+		return nil, model.NewAppError("ChannelByOption", "app.channel.channel_by_options.app_error", nil, "no channel exist", http.StatusNotFound)
 	}
 
 	return channels[0], nil
@@ -57,23 +57,12 @@ func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *mod
 }
 
 func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model.AppError) {
-	var (
-		channel *model.Channel
-		appErr  *model.AppError
-	)
-
 	if channelID != nil {
-		channel, appErr = a.ValidateChannel(*channelID)
-	} else {
-		channel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
-			Conditions: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
-		})
+		return a.ValidateChannel(*channelID)
 	}
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return channel, nil
+	return a.ChannelByOption(&model.ChannelFilterOption{
+		Conditions: squirrel.Expr(model.ChannelTableName + ".IsActive"),
+	})
 }
 
 // ChannelsByOption returns a list of channels by given options

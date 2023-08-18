@@ -1,39 +1,73 @@
 package model
 
 import (
+	"crypto/sha1"
+	"net/http"
 	"regexp"
+	"strings"
 	"unsafe"
 
+	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
 // constants for access http(s) requests's headers
 const (
-	HeaderRequestId            = "X-Request-ID"
-	HeaderVersionId            = "X-Version-ID"
-	HEADER_CLUSTER_ID          = "X-Cluster-ID"
-	HEADER_ETAG_SERVER         = "ETag"
-	HEADER_ETAG_CLIENT         = "If-None-Match"
-	HEADER_FORWARDED           = "X-Forwarded-For"
-	HEADER_REAL_IP             = "X-Real-IP"
-	HEADER_FORWARDED_PROTO     = "X-Forwarded-Proto"
-	HEADER_TOKEN               = "token"
-	HEADER_CSRF_TOKEN          = "X-CSRF-Token"
-	HEADER_BEARER              = "BEARER"
-	HEADER_AUTH                = "Authorization"
-	HEADER_CLOUD_TOKEN         = "X-Cloud-Token"
-	HEADER_REMOTECLUSTER_TOKEN = "X-RemoteCluster-Token"
-	HEADER_REMOTECLUSTER_ID    = "X-RemoteCluster-Id"
-	HEADER_REQUESTED_WITH      = "X-Requested-With"
-	HEADER_REQUESTED_WITH_XML  = "XMLHttpRequest"
-	HEADER_RANGE               = "Range"
-	STATUS                     = "status"
-	STATUS_OK                  = "OK"
-	STATUS_FAIL                = "FAIL"
-	STATUS_UNHEALTHY           = "UNHEALTHY"
-	STATUS_REMOVE              = "REMOVE"
-	CLIENT_DIR                 = "client"
+	HeaderRequestId          = "X-Request-ID"
+	HeaderVersionId          = "X-Version-ID"
+	HeaderClusterId          = "X-Cluster-ID"
+	HeaderAcceptEncoding     = "Accept-Encoding"
+	HeaderAcceptLanguage     = "Accept-Language"
+	HeaderUserAgent          = "User-Agent"
+	HeaderRemoteAddress      = "Remote Address"
+	HeaderEtagServer         = "ETag"
+	HeaderEtagClient         = "If-None-Match"
+	HeaderForwarded          = "X-Forwarded-For"
+	HeaderRealIp             = "X-Real-IP"
+	HeaderForwardedProto     = "X-Forwarded-Proto"
+	HeaderToken              = "token"
+	HeaderCsrfToken          = "X-CSRF-Token"
+	HeaderBearer             = "BEARER"
+	HeaderAuth               = "Authorization"
+	HeaderCloudToken         = "X-Cloud-Token"
+	HeaderRemoteClusterToken = "X-RemoteCluster-Token"
+	HeaderRemoteClusterId    = "X-RemoteCluster-Id"
+	HeaderRequestedWith      = "X-Requested-With"
+	HeaderRequestedWith_XML  = "XMLHttpRequest"
+	HeaderRange              = "Range"
+	STATUS                   = "status"
+	STATUS_OK                = "OK"
+	STATUS_FAIL              = "FAIL"
+	STATUS_UNHEALTHY         = "UNHEALTHY"
+	STATUS_REMOVE            = "REMOVE"
+	CLIENT_DIR               = "client"
 )
+
+var UUID_NAMESPACE = uuid.New()
+
+// Refer to https://github.com/nu7hatch/gouuid/blob/179d4d0c4d8d407a32af483c2354df1d2c91e6c3/uuid.go#L113 for details
+func NewUUIDv5(nameSpace *uuid.UUID, name []byte) uuid.UUID {
+	u := new(uuid.UUID)
+
+	hash := sha1.New()
+	hash.Write(nameSpace[:])
+	hash.Write(name)
+	copy(u[:], hash.Sum([]byte{})[:16])
+	u[8] = (u[8] | 0x40) & 0x7F
+	u[6] = (u[6] & 0xF) | (5 << 4)
+
+	return *u
+}
+
+func GetClientId(r *http.Request) uuid.UUID {
+	headers := []string{HeaderAcceptEncoding, HeaderAcceptLanguage, HeaderUserAgent, HeaderForwarded, HeaderRemoteAddress}
+	headers = lo.Map(headers, func(item string, _ int) string {
+		return r.Header.Get(item)
+	})
+	name := strings.Join(headers, "_")
+	return NewUUIDv5(&UUID_NAMESPACE, []byte(name))
+}
 
 type TimePeriodType string
 

@@ -443,6 +443,7 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 		}
 		connection, appErr = newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args.GraphqlParams).parse("GiftCards")
 	}
+	// TODO: add sort by product and used by to giftcards
 	if appErr != nil {
 		return nil, appErr
 	}

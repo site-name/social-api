@@ -2355,7 +2355,7 @@ func (s *OpenTracingLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValu
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
+func (s *OpenTracingLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -2364,13 +2364,13 @@ func (s *OpenTracingLayerCheckoutStore) FilterByOption(option *model.CheckoutFil
 	}()
 
 	defer span.Finish()
-	result, err := s.CheckoutStore.FilterByOption(option)
+	result, resultVar1, err := s.CheckoutStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
@@ -4865,24 +4865,6 @@ func (s *OpenTracingLayerPaymentStore) FilterByOption(option *model.PaymentFilte
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.PaymentOwnedByUser")
@@ -5993,6 +5975,24 @@ func (s *OpenTracingLayerProductVariantStore) FilterByOption(option *model.Produ
 
 	defer span.Finish()
 	result, err := s.ProductVariantStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FindVariantsAvailableForPurchase")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductVariantStore.FindVariantsAvailableForPurchase(variantIds, channelID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

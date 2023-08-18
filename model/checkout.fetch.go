@@ -29,6 +29,10 @@ func (cs CheckoutLineInfos) Products() Products {
 	return lo.Map(cs, func(c *CheckoutLineInfo, _ int) *Product { return &c.Product })
 }
 
+func (cs CheckoutLineInfos) ProductVariants() ProductVariants {
+	return lo.Map(cs, func(c *CheckoutLineInfo, _ int) *ProductVariant { return &c.Variant })
+}
+
 // FilterNils returns a list of non-nil checkout line info(s)
 func (cs CheckoutLineInfos) FilterNils() CheckoutLineInfos {
 	return lo.Filter(cs, func(c *CheckoutLineInfo, _ int) bool { return c != nil })

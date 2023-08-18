@@ -211,8 +211,8 @@ input ShippingPostalCodeRulesCreateInputRange {
 }
 
 enum PostalCodeRuleInclusionTypeEnum {
-  INCLUDE
-  EXCLUDE
+  include
+  exclude
 }
 
 type ShippingZoneCountableEdge {

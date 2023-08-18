@@ -7,6 +7,7 @@ package checkout
 import (
 	"context"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -46,8 +47,8 @@ func (a *ServiceCheckout) CheckoutByOption(option *model.CheckoutFilterOption) (
 }
 
 // CheckoutsByOption returns a list of checkouts, filtered by given option
-func (a *ServiceCheckout) CheckoutsByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, *model.AppError) {
-	checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
+func (a *ServiceCheckout) CheckoutsByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, *model.AppError) {
+	totalCount, checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
 	var (
 		statusCode int
 		errMsg     string
@@ -60,10 +61,10 @@ func (a *ServiceCheckout) CheckoutsByOption(option *model.CheckoutFilterOption) 
 	}
 
 	if statusCode != 0 {
-		return nil, model.NewAppError("CheckoutsByOption", "app.checkout.error_finding_checkouts.app_error", nil, errMsg, statusCode)
+		return 0, nil, model.NewAppError("CheckoutsByOption", "app.checkout.error_finding_checkouts.app_error", nil, errMsg, statusCode)
 	}
 
-	return checkouts, nil
+	return totalCount, checkouts, nil
 }
 
 // GetCustomerEmail returns checkout's user's email
@@ -224,21 +225,21 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*
 		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			return nil, nil
-		}
 		return nil, appErr
+	}
+	if len(payments) == 0 {
+		return nil, nil
+	}
+	if len(payments) == 1 {
+		return payments[0], nil
 	}
 
 	// find latest payment by comparing their creation time
-	var latestPayment model.Payment
-	for _, payMent := range payments {
-		if *payMent.IsActive && (latestPayment.Id == "" || latestPayment.CreateAt < payMent.CreateAt) {
-			latestPayment = *payMent
-		}
-	}
+	sort.SliceStable(payments, func(i, j int) bool {
+		return payments[i].CreateAt > payments[j].CreateAt
+	})
 
-	return &latestPayment, nil
+	return payments[0], nil
 }
 
 // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)

@@ -75,7 +75,7 @@ type GatewayResponse struct {
 	CustomerID                  string
 	PaymentMethodInfo           *PaymentMethodInfo
 	RawResponse                 StringInterface
-	ActionRequiredData          map[string]string
+	ActionRequiredData          StringInterface
 	TransactionAlreadyProcessed bool
 	SearchableKey               string
 	PspReference                string
@@ -128,10 +128,10 @@ type PaymentData struct {
 	Token              *string // can be nil
 	CustomerID         *string // can be nil
 	ReuseSource        bool
-	Data               StringInterface        // can be nil
-	GraphqlPaymentID   string                 // default to payment's Token
-	GraphqlCustomerID  *string                // can be nil
-	StorePaymentMethod StorePaymentMethodEnum // default to StorePaymentMethodEnum_NONE ("none")
+	Data               StringInterface    // can be nil
+	GraphqlPaymentID   string             // default to payment's Token
+	GraphqlCustomerID  *string            // can be nil
+	StorePaymentMethod StorePaymentMethod // default to StorePaymentMethodEnum_NONE ("none")
 	PaymentMetadata    StringMap
 }
 
@@ -202,29 +202,11 @@ const (
 	NONE        StorePaymentMethod = "none"
 )
 
-var StorePaymentMethodStringValues = map[StorePaymentMethod]string{
-	ON_SESSION:  "On session",
-	OFF_SESSION: "Of session",
-	NONE:        "none",
-}
-
-type StorePaymentMethodEnum string
-
-const (
-	StorePaymentMethodEnum_NONE        StorePaymentMethodEnum = "NONE"
-	StorePaymentMethodEnum_ON_SESSION  StorePaymentMethodEnum = "ON SESSION"
-	StorePaymentMethodEnum_OFF_SESSION StorePaymentMethodEnum = "OFF_SESSION"
-)
-
-func (mt StorePaymentMethod) ToEnum() StorePaymentMethodEnum {
-	switch mt {
-	case ON_SESSION:
-		return StorePaymentMethodEnum_ON_SESSION
-	case NONE:
-		return StorePaymentMethodEnum_NONE
-	case OFF_SESSION:
-		return StorePaymentMethodEnum_OFF_SESSION
+func (m *StorePaymentMethod) IsValid() bool {
+	switch *m {
+	case ON_SESSION, OFF_SESSION, NONE:
+		return true
 	default:
-		return StorePaymentMethodEnum("")
+		return false
 	}
 }

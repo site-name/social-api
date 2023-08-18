@@ -23,7 +23,7 @@ func (r *Resolver) AddressCreate(ctx context.Context, args struct {
 	currentSession := embedCtx.AppContext.Session()
 
 	// validate input
-	appErr := args.Input.Validate("AddressCreate")
+	appErr := args.Input.validate("AddressCreate")
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -72,7 +72,7 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 		return nil, model.NewAppError("AddressUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
-	appErr := args.Input.Validate("AddressUpdate")
+	appErr := args.Input.validate("AddressUpdate")
 	if appErr != nil {
 		return nil, appErr
 	}
