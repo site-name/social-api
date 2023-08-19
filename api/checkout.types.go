@@ -745,7 +745,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 			deliveryMethod = shippingMethodMap[*checkout.ShippingMethodID]
 			shipMethodChannelListing = shippingMethodChannelListingMap[*checkout.ShippingMethodID+channel.Id]
 		}
-		if deliveryMethod == nil && checkout.CollectionPointID != nil {
+		if deliveryMethod.(*model.ShippingMethod) == nil && checkout.CollectionPointID != nil {
 			deliveryMethod = collectionPointMap[*checkout.CollectionPointID]
 		}
 

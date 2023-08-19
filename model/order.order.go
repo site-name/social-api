@@ -73,7 +73,7 @@ func (e OrderStatus) IsValid() bool {
 type Order struct {
 	Id                  string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt            int64                  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`         // NOT editable
-	Status              OrderStatus            `json:"status" gorm:"type:varchar(32);column:Status"`                              // default: ORDER_STATUS_UNFULFILLED
+	Status              OrderStatus            `json:"status" gorm:"type:varchar(32);column:Status"`                              // default ORDER_STATUS_UNFULFILLED
 	UserID              *string                `json:"user_id" gorm:"type:uuid;column:UserID"`                                    //
 	LanguageCode        LanguageCodeEnum       `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`                 // default: "en"
 	TrackingClientID    string                 `json:"tracking_client_id" gorm:"type:varchar(36);column:TrackingClientID"`        // NOT editable
@@ -86,7 +86,7 @@ type Order struct {
 	ShippingMethodID    *string                `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID"`
 	CollectionPointID   *string                `json:"collection_point_id" gorm:"type:uuid;column:CollectionPointID"`             // foreign key warehosue
 	ShippingMethodName  *string                `json:"shipping_method_name" gorm:"type:varchar(255);column:ShippingMethodName"`   // NUL, NOT editable
-	CollectionPointName *string                `json:"collection_point_name" gorm:"type:varchar(255);column:CollectionPointName"` // NUL, NOTE editable
+	CollectionPointName *string                `json:"collection_point_name" gorm:"type:varchar(255);column:CollectionPointName"` // NUL, NOT editable
 	ChannelID           string                 `json:"channel_id" gorm:"type:uuid;column:ChannelID"`                              //
 	Token               string                 `json:"token" gorm:"type:varchar(36);column:Token;uniqueIndex:token_unique_key"`   // unique
 	CheckoutToken       string                 `json:"checkout_token" gorm:"type:varchar(36);column:CheckoutToken"`               //
@@ -96,39 +96,43 @@ type Order struct {
 	WeightAmount        float32                `json:"weight_amount" gorm:"default:0;column:WeightAmount"`
 	WeightUnit          measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit;type:varchar(5)"` // default 'kg'
 	RedirectUrl         *string                `json:"redirect_url" gorm:"type:varchar(200);column:RedirectUrl"`
+	ShippingTaxRate     *decimal.Decimal       `json:"shipping_tax_rate" gorm:"default:0;column:ShippingTaxRate"` // default Decimal(0)
+
+	TotalPaidAmount *decimal.Decimal `json:"total_paid_amount" gorm:"default:0;column:TotalPaidAmount"`
+	TotalPaid       *goprices.Money  `json:"total_paid" gorm:"-"`
+
+	TotalNetAmount   *decimal.Decimal     `json:"total_net_amount" gorm:"default:0;column:TotalNetAmount"` // default Decimal(0)
+	TotalNet         *goprices.Money      `json:"total_net" gorm:"-"`
+	TotalGrossAmount *decimal.Decimal     `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount"`
+	TotalGross       *goprices.Money      `json:"total_gross" gorm:"-"`
+	Total            *goprices.TaxedMoney `json:"total" gorm:"-"` // from TotalNet, TotalGross
+
+	UnDiscountedTotalNetAmount   *decimal.Decimal     `json:"undiscounted_total_net_amount" gorm:"default:0;column:UnDiscountedTotalNetAmount"`
+	UnDiscountedTotalNet         *goprices.Money      `json:"undiscounted_total_net" gorm:"-"`
+	UnDiscountedTotalGrossAmount *decimal.Decimal     `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount"`
+	UnDiscountedTotalGross       *goprices.Money      `json:"undiscounted_total_gross" gorm:"-"`
+	UnDiscountedTotal            *goprices.TaxedMoney `json:"undiscounted_total" gorm:"-"` // from UnDiscountedTotalNet, UnDiscountedTotalGross
+
+	ShippingPriceNetAmount   *decimal.Decimal     `json:"shipping_price_net_amount" gorm:"default:0;column:ShippingPriceNetAmount"` // NOT editable, default Zero
+	ShippingPriceNet         *goprices.Money      `json:"shipping_price_net" gorm:"-"`
+	ShippingPriceGrossAmount *decimal.Decimal     `json:"shipping_price_gross_amount" gorm:"default:0;column:ShippingPriceGrossAmount"` // NOT editable
+	ShippingPriceGross       *goprices.Money      `json:"shipping_price_gross" gorm:"-"`
+	ShippingPrice            *goprices.TaxedMoney `json:"shipping_price" gorm:"-"` // from ShippingPriceNet, ShippingPriceGross
+
+	Weight *measurement.Weight `json:"weight" gorm:"-"` // default 0
+
 	ModelMetadata
-
-	ShippingPriceNetAmount       *decimal.Decimal `json:"shipping_price_net_amount" gorm:"default:0;column:ShippingPriceNetAmount"`     // NOT editable, default Zero
-	ShippingPriceGrossAmount     *decimal.Decimal `json:"shipping_price_gross_amount" gorm:"default:0;column:ShippingPriceGrossAmount"` // NOT editable
-	ShippingTaxRate              *decimal.Decimal `json:"shipping_tax_rate" gorm:"default:0;column:ShippingTaxRate"`                    // default: Decimal(0)
-	TotalNetAmount               *decimal.Decimal `json:"total_net_amount" gorm:"default:0;column:TotalNetAmount"`                      // default 0
-	UnDiscountedTotalNetAmount   *decimal.Decimal `json:"undiscounted_total_net_amount" gorm:"default:0;column:UnDiscountedTotalNetAmount"`
-	TotalGrossAmount             *decimal.Decimal `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount"`
-	UnDiscountedTotalGrossAmount *decimal.Decimal `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount"`
-	TotalPaidAmount              *decimal.Decimal `json:"total_paid_amount" gorm:"default:0;column:TotalPaidAmount"`
-
-	TotalNet               *goprices.Money      `json:"total_net" gorm:"-"`
-	ShippingPriceNet       *goprices.Money      `json:"shipping_price_net" gorm:"-"` //
-	ShippingPriceGross     *goprices.Money      `json:"shipping_price_gross" gorm:"-"`
-	ShippingPrice          *goprices.TaxedMoney `json:"shipping_price" gorm:"-"`
-	UnDiscountedTotalNet   *goprices.Money      `json:"undiscounted_total_net" gorm:"-"`
-	TotalGross             *goprices.Money      `json:"total_gross" gorm:"-"`
-	UnDiscountedTotalGross *goprices.Money      `json:"undiscounted_total_gross" gorm:"-"`
-	Total                  *goprices.TaxedMoney `json:"total" gorm:"-"`
-	UnDiscountedTotal      *goprices.TaxedMoney `json:"undiscounted_total" gorm:"-"`
-	TotalPaid              *goprices.Money      `json:"total_paid" gorm:"-"`
-	Weight                 *measurement.Weight  `json:"weight" gorm:"-"` // default 0
-
-	populatedNonDBFields bool `gorm:"-"`
-
-	GiftCards []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
+	GiftCards            []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
+	OrderLines           OrderLines  `json:"-" gorm:"foreignKey:OrderID"`
+	Channel              *Channel    `json:"-"`
+	populatedNonDBFields bool        `gorm:"-"`
 }
 
 func (c *Order) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Order) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Order) TableName() string             { return OrderTableName }
 
-// OrderFilterOption is used to buils sql queries for filtering orders
+// OrderFilterOption is used to build sql queries for filtering orders
 type OrderFilterOption struct {
 	Conditions squirrel.Sqlizer // filter by order's id
 
@@ -136,6 +140,8 @@ type OrderFilterOption struct {
 
 	SelectForUpdate bool // if true, add FOR UPDATE to the end of sql queries. NOTE: Only applies if Transaction is set
 	Transaction     *gorm.DB
+
+	Preload []string
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
@@ -171,10 +177,6 @@ func (o *Order) PopulateNonDbFields() {
 		Amount:   *o.UnDiscountedTotalGrossAmount,
 		Currency: o.Currency,
 	}
-	o.UnDiscountedTotalGross = &goprices.Money{
-		Amount:   *o.UnDiscountedTotalGrossAmount,
-		Currency: o.Currency,
-	}
 	o.Total, _ = goprices.NewTaxedMoney(o.TotalNet, o.TotalGross)                                     // ignore error since arguments are trusted
 	o.UnDiscountedTotal, _ = goprices.NewTaxedMoney(o.UnDiscountedTotalNet, o.UnDiscountedTotalGross) // ignore error since arguments are trusted
 	o.TotalPaid = &goprices.Money{
@@ -185,7 +187,6 @@ func (o *Order) PopulateNonDbFields() {
 		Amount: o.WeightAmount,
 		Unit:   o.WeightUnit,
 	}
-	o.populatedNonDBFields = true
 }
 
 // Orders is slice contains order(s)
@@ -268,34 +269,50 @@ func (o *Order) IsValid() *AppError {
 }
 
 func (o *Order) commonPre() {
-	if o.ShippingPriceNet != nil {
+	// shipping price
+	if o.ShippingPrice != nil {
+		o.ShippingPriceNet = o.ShippingPrice.Net
+		o.ShippingPriceGross = o.ShippingPrice.Gross
+
 		o.ShippingPriceNetAmount = &o.ShippingPriceNet.Amount
-	} else {
+		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
+	}
+	if o.ShippingPriceNetAmount == nil {
 		o.ShippingPriceNetAmount = &decimal.Zero
 	}
-
-	if o.ShippingPriceGross != nil {
-		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
-	} else {
+	if o.ShippingPriceGrossAmount == nil {
 		o.ShippingPriceGrossAmount = &decimal.Zero
 	}
 
-	if o.TotalNet != nil {
+	// total
+	if o.Total != nil {
+		o.TotalNet = o.Total.Net
+		o.TotalGross = o.Total.Gross
+
 		o.TotalNetAmount = &o.TotalNet.Amount
-	} else {
+		o.TotalGrossAmount = &o.TotalGross.Amount
+	}
+	if o.TotalNetAmount == nil {
 		o.TotalNetAmount = &decimal.Zero
 	}
-
-	if o.TotalGross != nil {
-		o.TotalGrossAmount = &o.TotalGross.Amount
-	} else {
+	if o.TotalGrossAmount == nil {
 		o.TotalGrossAmount = &decimal.Zero
 	}
 
+	// total paid
 	if o.TotalPaid != nil {
 		o.TotalPaidAmount = &o.TotalPaid.Amount
 	} else {
 		o.TotalPaidAmount = &decimal.Zero
+	}
+
+	// un-discounted total
+	if o.UnDiscountedTotal != nil {
+		o.UnDiscountedTotalNet = o.UnDiscountedTotal.Net
+		o.UnDiscountedTotalGross = o.UnDiscountedTotal.Gross
+
+		o.UnDiscountedTotalNetAmount = &o.UnDiscountedTotalNet.Amount
+		o.UnDiscountedTotalGrossAmount = &o.UnDiscountedTotalGross.Amount
 	}
 
 	if o.DisplayGrossPrices == nil {

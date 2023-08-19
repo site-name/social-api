@@ -61,8 +61,8 @@ type OrderLine struct {
 	UnitPriceGross         *goprices.Money      `json:"unit_price_gross" gorm:"-"`
 	UnitPriceNet           *goprices.Money      `json:"unit_price_net" gorm:"-"`
 
-	ProductVariant *ProductVariant `json:"-"` // for storing value returned by prefetching
-	Order          *Order          `json:"-"` // related data, get popularized in some calls to database
+	ProductVariant *ProductVariant `json:"-" gorm:"constraint:OnDelete:SET NULL"` // for storing value returned by prefetching
+	Order          *Order          `json:"-" gorm:"constraint:OnDelete:CASCADE"`  // related data, get popularized in some calls to database
 	Allocations    Allocations     `json:"-" gorm:"foreignKey:OrderLineID"`
 }
 

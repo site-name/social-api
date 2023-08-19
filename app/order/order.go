@@ -87,7 +87,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 		return false, appErr
 	}
 
-	return lo.SomeBy(lines, func(o *model.OrderLine) bool { return o.IsShippingRequired }), nil
+	return lo.SomeBy(lines, func(o *model.OrderLine) bool { return o != nil && o.IsShippingRequired }), nil
 }
 
 // OrderTotalQuantity return total quantity of given order
@@ -326,4 +326,28 @@ func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID model.Whi
 	}
 
 	return addresses[0], nil
+}
+
+func (a *ServiceOrder) PrepareInsufficientStockOrderValidationAppError(where string, err *model.InsufficientStock) *model.AppError {
+	var warehouseIDs = make([]string, 0, len(err.Items))
+	var orderLineIDs = make([]string, 0, len(err.Items))
+	for _, item := range err.Items {
+		if item.WarehouseID != nil {
+			warehouseIDs = append(warehouseIDs, *item.WarehouseID)
+		}
+		if item.OrderLine != nil {
+			orderLineIDs = append(orderLineIDs, item.OrderLine.Id)
+		}
+	}
+
+	return model.NewAppError(where, "app.order.insufficient_stock.app_error", map[string]interface{}{"orderLines": orderLineIDs, "warehouses": warehouseIDs}, "insufficient product stock", http.StatusNotAcceptable)
+}
+
+func (s *ServiceOrder) DeleteOrders(transaction *gorm.DB, ids []string) (int64, *model.AppError) {
+	count, err := s.srv.Store.Order().Delete(transaction, ids)
+	if err != nil {
+		return 0, model.NewAppError("DeleteOrders", "app.order.delete_orders.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return count, nil
 }

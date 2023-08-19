@@ -44,14 +44,23 @@ func (a *ServiceOrder) OrderCreated(ord model.Order, user *model.User, _ interfa
 			if InsufficientStock != nil || appErr != nil {
 				return InsufficientStock, appErr
 			}
+
+			goto finally
 		}
 
-		appErr = a.OrderAuthorized(ord, user, nil, lastPaymentOfOrder.Total, *lastPaymentOfOrder, manager)
+		orderIsPreAuthorized, appErr := a.OrderIsPreAuthorized(ord.Id)
 		if appErr != nil {
 			return nil, appErr
 		}
+		if orderIsPreAuthorized {
+			appErr = a.OrderAuthorized(ord, user, nil, lastPaymentOfOrder.Total, *lastPaymentOfOrder, manager)
+			if appErr != nil {
+				return nil, appErr
+			}
+		}
 	}
 
+finally:
 	if *a.srv.Config().ShopSettings.AutomaticallyConfirmAllNewOrders {
 		appErr = a.OrderConfirmed(ord, user, nil, manager, false)
 		if appErr != nil {

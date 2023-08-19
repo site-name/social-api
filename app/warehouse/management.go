@@ -221,6 +221,9 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *model.OrderLineData, stoc
 // raise an exception.
 func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, manager interfaces.PluginManagerInterface) (*model.AllocationError, *model.AppError) {
 	transaction := a.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("DeallocateStock", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	linesAllocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
@@ -425,6 +428,9 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 
 	// start a transaction
 	transaction := a.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("IncreaseAllocations", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
@@ -510,6 +516,9 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 	}
 
 	transaction := a.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("DecreaseStock", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	var (
@@ -695,6 +704,9 @@ func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*mod
 // DeAllocateStockForOrder Remove all allocations for given order
 func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager interfaces.PluginManagerInterface) *model.AppError {
 	transaction := a.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return model.NewAppError("DeAllocateStockForOrder", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
@@ -745,6 +757,9 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas, channelSlug string) (*model.InsufficientStock, *model.AppError) {
 	// init transaction
 	transaction := s.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("AllocatePreOrders", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	orderLinesInfoWithPreOrder := s.GetOrderLinesWithPreOrder(orderLinesInfo)
@@ -921,6 +936,9 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *model.OrderLineDat
 func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.ProductVariant) (*model.PreorderAllocationError, *model.AppError) {
 	// init transaction:
 	transaction := s.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("DeactivatePreorderForVariant", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	if !productVariant.IsPreOrder {

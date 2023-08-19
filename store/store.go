@@ -42,26 +42,25 @@ type Store interface {
 	MarkSystemRanUnitTests() //
 	DBXFromContext(ctx context.Context) *gorm.DB
 
-	User() UserStore                                             // account
-	Address() AddressStore                                       //
-	CustomerEvent() CustomerEventStore                           //
-	StaffNotificationRecipient() StaffNotificationRecipientStore //
-	CustomerNote() CustomerNoteStore                             //
-	System() SystemStore                                         // system
-	Job() JobStore                                               // job
-	Session() SessionStore                                       // session
-	Preference() PreferenceStore                                 // preference
-	Token() TokenStore                                           // token
-	Status() StatusStore                                         // status
-	Role() RoleStore                                             // role
-	UserAccessToken() UserAccessTokenStore                       // user access token
-	TermsOfService() TermsOfServiceStore                         // term of service
-	ClusterDiscovery() ClusterDiscoveryStore                     // cluster
-	Audit() AuditStore                                           // audit
-	App() AppStore                                               // app
-	AppToken() AppTokenStore                                     //
-	Channel() ChannelStore                                       // channel
-	// ChannelShop() ChannelShopStore                                     //
+	User() UserStore                                                   // account
+	Address() AddressStore                                             //
+	CustomerEvent() CustomerEventStore                                 //
+	StaffNotificationRecipient() StaffNotificationRecipientStore       //
+	CustomerNote() CustomerNoteStore                                   //
+	System() SystemStore                                               // system
+	Job() JobStore                                                     // job
+	Session() SessionStore                                             // session
+	Preference() PreferenceStore                                       // preference
+	Token() TokenStore                                                 // token
+	Status() StatusStore                                               // status
+	Role() RoleStore                                                   // role
+	UserAccessToken() UserAccessTokenStore                             // user access token
+	TermsOfService() TermsOfServiceStore                               // term of service
+	ClusterDiscovery() ClusterDiscoveryStore                           // cluster
+	Audit() AuditStore                                                 // audit
+	App() AppStore                                                     // app
+	AppToken() AppTokenStore                                           //
+	Channel() ChannelStore                                             // channel
 	Checkout() CheckoutStore                                           // checkout
 	CheckoutLine() CheckoutLineStore                                   //
 	CsvExportEvent() CsvExportEventStore                               // csv
@@ -542,6 +541,7 @@ type (
 		BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
+		Delete(transaction *gorm.DB, ids []string) (int64, error)
 		ScanFields(holder *model.Order) []interface{}
 		Get(id string) (*model.Order, error)                                            // Get find order in database with given id
 		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)         // FilterByOption returns a list of orders, filtered by given option

@@ -26,8 +26,9 @@ type Channel struct {
 	DefaultCountry CountryCode `json:"default_country" gorm:"column:DefaultCountry;type:varchar(10)"` // default "US"
 
 	ShippingZones ShippingZones `json:"-" gorm:"many2many:ShippingZoneChannels"`
+	Orders        Orders        `json:"-" gorm:"foreignKey:ChannelID"`
 
-	hasOrders bool `db:"-"`
+	hasOrders bool `gorm:"-"`
 }
 
 func (c *Channel) GetHasOrders() bool            { return c.hasOrders }

@@ -128,11 +128,12 @@ func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []str
 	}
 
 	for idx, id := range shippingZoneIDs {
+		var whs model.Warehouses
 		zone := shippingZoneMap[id]
-		if zone == nil {
-			zone = new(model.ShippingZone)
+		if zone != nil {
+			whs = zone.Warehouses
 		}
-		res[idx] = &dataloader.Result[model.Warehouses]{Data: zone.Warehouses}
+		res[idx] = &dataloader.Result[model.Warehouses]{Data: whs}
 	}
 	return res
 }

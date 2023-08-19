@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/web"
 )
 
 type AccountAddressCreate struct {
@@ -1496,35 +1497,76 @@ type DraftOrderCreate struct {
 }
 
 type DraftOrderCreateInput struct {
-	BillingAddress  *AddressInput           `json:"billingAddress"`
-	User            *string                 `json:"user"`
-	UserEmail       *string                 `json:"userEmail"`
-	Discount        *PositiveDecimal        `json:"discount"`
-	ShippingAddress *AddressInput           `json:"shippingAddress"`
-	ShippingMethod  *string                 `json:"shippingMethod"`
-	Voucher         *string                 `json:"voucher"`
-	CustomerNote    *string                 `json:"customerNote"`
-	ChannelID       *string                 `json:"channelId"`
-	RedirectURL     *string                 `json:"redirectUrl"`
-	Lines           []*OrderLineCreateInput `json:"lines"`
+	DraftOrderInput
+	Lines []*OrderLineCreateInput `json:"lines"`
+}
+
+func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *model.AppError {
+	if appErr := d.DraftOrderInput.validate(embedCtx, where); appErr != nil {
+		return appErr
+	}
+
+	var (
+		variantIds = make([]string, 0, len(d.Lines))
+		quantities = make([]int, 0, len(d.Lines))
+	)
+}
+
+type DraftOrderInput struct {
+	User           *string `json:"user"`
+	ShippingMethod *string `json:"shippingMethod"`
+	Voucher        *string `json:"voucher"`
+	ChannelID      *string `json:"channelId"`
+
+	RedirectURL     *string          `json:"redirectUrl"`
+	CustomerNote    *string          `json:"customerNote"`
+	UserEmail       *string          `json:"userEmail"`
+	Discount        *PositiveDecimal `json:"discount"`
+	BillingAddress  *AddressInput    `json:"billingAddress"`
+	ShippingAddress *AddressInput    `json:"shippingAddress"`
+}
+
+func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.AppError {
+	// validate id fields
+	for name, idValue := range map[string]*string{
+		"UserID":         d.User,
+		"ShippingMethod": d.ShippingMethod,
+		"VoucerID":       d.Voucher,
+		"ChannelID":      d.ChannelID,
+	} {
+		if idValue != nil && !model.IsValidId(*idValue) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+		}
+	}
+
+	if d.UserEmail != nil && !model.IsValidEmail(*d.UserEmail) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please provide valid user email", http.StatusBadRequest)
+	}
+	if d.RedirectURL != nil {
+		appErr := model.ValidateStoreFrontUrl(embedCtx.App.Config(), *d.RedirectURL)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	for name, addrValaue := range map[string]*AddressInput{
+		"BillingAddress":  d.BillingAddress,
+		"ShippingAddress": d.ShippingAddress,
+	} {
+		if addrValaue != nil {
+			appErr := addrValaue.validate(where + "." + name)
+			if appErr != nil {
+				return appErr
+			}
+		}
+	}
+
+	return nil
 }
 
 type DraftOrderDelete struct {
 	Errors []*OrderError `json:"errors"`
 	Order  *Order        `json:"order"`
-}
-
-type DraftOrderInput struct {
-	BillingAddress  *AddressInput    `json:"billingAddress"`
-	User            *string          `json:"user"`
-	UserEmail       *string          `json:"userEmail"`
-	Discount        *PositiveDecimal `json:"discount"`
-	ShippingAddress *AddressInput    `json:"shippingAddress"`
-	ShippingMethod  *string          `json:"shippingMethod"`
-	Voucher         *string          `json:"voucher"`
-	CustomerNote    *string          `json:"customerNote"`
-	ChannelID       *string          `json:"channelId"`
-	RedirectURL     *string          `json:"redirectUrl"`
 }
 
 type DraftOrderLinesBulkDelete struct {

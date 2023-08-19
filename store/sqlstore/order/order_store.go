@@ -129,6 +129,9 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	if option.Transaction != nil {
 		runner = option.Transaction
 	}
+	for _, preload := range option.Preload {
+		runner = runner.Preload(preload)
+	}
 	var res model.Orders
 	err = runner.Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
@@ -136,4 +139,17 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	}
 
 	return res, nil
+}
+
+func (s *SqlOrderStore) Delete(transaction *gorm.DB, ids []string) error {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	err := transaction.Raw("DELETE FROM "+model.OrderTableName+" WHERE Id IN ?", ids).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to delete orders")
+	}
+
+	return nil
 }

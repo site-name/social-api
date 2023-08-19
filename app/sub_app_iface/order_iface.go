@@ -329,4 +329,6 @@ type OrderService interface {
 	UpdateGiftcardBalance(giftCard *model.GiftCard, totalPriceLeft *goprices.Money) model.BalanceObject
 	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
+	PrepareInsufficientStockOrderValidationAppError(where string, err *model.InsufficientStock) *model.AppError
+	DeleteOrders(transaction *gorm.DB, ids []string) (int64, *model.AppError)
 }

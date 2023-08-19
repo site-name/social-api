@@ -124,7 +124,7 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 		if ok && expiryDate != nil {
 			switch t := expiryDate.(type) {
 			case string:
-				tim, err := time.Parse("2006-01-02", t)
+				tim, err := time.Parse(time.DateOnly, t)
 				if err == nil {
 					res.ExpiryDate = &Date{DateTime{tim}}
 				}

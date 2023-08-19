@@ -1007,11 +1007,12 @@ func collectionsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*d
 	}
 
 	for idx, id := range voucherIDs {
+		var cols model.Collections
 		voucher := voucherMap[id]
-		if voucher == nil {
-			voucher = new(model.Voucher)
+		if voucher != nil {
+			cols = voucher.Collections
 		}
-		res[idx] = &dataloader.Result[[]*model.Collection]{Data: voucher.Collections}
+		res[idx] = &dataloader.Result[[]*model.Collection]{Data: cols}
 	}
 	return res
 }
@@ -1037,11 +1038,12 @@ func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*data
 	}
 
 	for idx, id := range voucherIDs {
+		var prds model.Products
 		voucher := voucherMap[id]
-		if voucher == nil {
-			voucher = new(model.Voucher)
+		if voucher != nil {
+			prds = voucher.Products
 		}
-		res[idx] = &dataloader.Result[[]*model.Product]{Data: voucher.Products}
+		res[idx] = &dataloader.Result[[]*model.Product]{Data: prds}
 	}
 	return res
 }
@@ -1067,11 +1069,12 @@ func productVariantsByVoucherIdLoader(ctx context.Context, voucherIDs []string) 
 	}
 
 	for idx, id := range voucherIDs {
+		var variants model.ProductVariants
 		voucher := voucherMap[id]
-		if voucher == nil {
-			voucher = new(model.Voucher)
+		if voucher != nil {
+			variants = voucher.ProductVariants
 		}
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: voucher.ProductVariants}
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variants}
 	}
 	return res
 }
@@ -1097,11 +1100,12 @@ func categoriesBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataload
 	}
 
 	for idx, id := range saleIDs {
+		var cates model.Categories
 		sale := saleMap[id]
-		if sale == nil {
-			sale = new(model.Sale)
+		if sale != nil {
+			cates = sale.Categories
 		}
-		res[idx] = &dataloader.Result[[]*model.Category]{Data: sale.Categories}
+		res[idx] = &dataloader.Result[[]*model.Category]{Data: cates}
 	}
 	return res
 }
@@ -1127,11 +1131,12 @@ func collectionsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloa
 	}
 
 	for idx, id := range saleIDs {
+		var cols model.Collections
 		sale := saleMap[id]
-		if sale == nil {
-			sale = new(model.Sale)
+		if sale != nil {
+			cols = sale.Collections
 		}
-		res[idx] = &dataloader.Result[[]*model.Collection]{Data: sale.Collections}
+		res[idx] = &dataloader.Result[[]*model.Collection]{Data: cols}
 	}
 	return res
 }
@@ -1157,11 +1162,12 @@ func productsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader
 	}
 
 	for idx, id := range saleIDs {
+		var prds model.Products
 		sale := saleMap[id]
-		if sale == nil {
-			sale = new(model.Sale)
+		if sale != nil {
+			prds = sale.Products
 		}
-		res[idx] = &dataloader.Result[[]*model.Product]{Data: sale.Products}
+		res[idx] = &dataloader.Result[[]*model.Product]{Data: prds}
 	}
 	return res
 }
@@ -1188,10 +1194,11 @@ func productVariantsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dat
 
 	for idx, id := range saleIDs {
 		sale := saleMap[id]
-		if sale == nil {
-			sale = new(model.Sale)
+		var variants model.ProductVariants
+		if sale != nil {
+			variants = sale.ProductVariants
 		}
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: sale.ProductVariants}
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variants}
 	}
 	return res
 }
