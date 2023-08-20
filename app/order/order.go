@@ -7,6 +7,7 @@ package order
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -340,7 +341,7 @@ func (a *ServiceOrder) PrepareInsufficientStockOrderValidationAppError(where str
 		}
 	}
 
-	return model.NewAppError(where, "app.order.insufficient_stock.app_error", map[string]interface{}{"orderLines": orderLineIDs, "warehouses": warehouseIDs}, "insufficient product stock", http.StatusNotAcceptable)
+	return model.NewAppError(where, "app.order.insufficient_stock.app_error", map[string]interface{}{"orderLines": strings.Join(orderLineIDs, ", "), "warehouses": strings.Join(warehouseIDs, ", ")}, "insufficient product stock", http.StatusNotAcceptable)
 }
 
 func (s *ServiceOrder) DeleteOrders(transaction *gorm.DB, ids []string) (int64, *model.AppError) {

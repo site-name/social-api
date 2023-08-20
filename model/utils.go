@@ -677,7 +677,8 @@ func CleanUsername(uname string) string {
 	return s
 }
 
-// ValidateStoreFrontUrl is common function for validating urls in user's inputs
+// ValidateStoreFrontUrl checks if given url is valid and is one of
+// CORS whitelisted items.
 func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 	// try check if provided redirect url is valid
 	parsedRedirectUrl, err := url.Parse(urlValue)

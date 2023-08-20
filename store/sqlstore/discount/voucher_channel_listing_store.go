@@ -11,7 +11,7 @@ type SqlVoucherChannelListingStore struct {
 	store.Store
 }
 
-var VoucherChannelListingDuplicateList = []string{
+var voucherChannelListingDuplicateList = []string{
 	"VoucherID", "ChannelID", "voucherid_channelid_key",
 }
 
@@ -36,7 +36,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(transaction *gorm.DB, voucherC
 			err = transaction.Model(listing).Updates(listing).Error
 		}
 		if err != nil {
-			if vcls.IsUniqueConstraintError(err, VoucherChannelListingDuplicateList) {
+			if vcls.IsUniqueConstraintError(err, voucherChannelListingDuplicateList) {
 				return nil, store.NewErrInvalidInput(model.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
 			}
 			return nil, errors.Wrap(err, "failed to upsert voucher channel listing")

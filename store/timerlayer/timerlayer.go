@@ -4173,6 +4173,22 @@ func (s *TimerLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.
 	return result, err
 }
 
+func (s *TimerLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderStore.Delete(transaction, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Delete", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	start := timemodule.Now()
 
@@ -5068,14 +5084,14 @@ func (s *TimerLayerProductStore) GetByOption(option *model.ProductFilterOption) 
 	return result, err
 }
 
-func (s *TimerLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+func (s *TimerLayerProductStore) NotPublishedProducts(channelID string) ([]*struct {
 	model.Product
 	IsPublished     bool
 	PublicationDate *timemodule.Time
 }, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.NotPublishedProducts(channelSlug)
+	result, err := s.ProductStore.NotPublishedProducts(channelID)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

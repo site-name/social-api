@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"gorm.io/gorm"
@@ -28,8 +29,8 @@ func (a *ServiceOrder) CommonCreateOrderEvent(transaction *gorm.DB, option *mode
 	return orderEvent, nil
 }
 
-func linePerQuantityToLineObject(quantity int, line *model.OrderLine) map[string]interface{} {
-	return map[string]interface{}{
+func (s *ServiceOrder) LinePerQuantityToLineObject(quantity int, line *model.OrderLine) model.StringInterface {
+	return model.StringInterface{
 		"quantity": quantity,
 		"line_pk":  line.Id,
 		"item":     line.String(),
@@ -48,13 +49,10 @@ func orderLinesToQuantityOrderLine(orderLines []*model.OrderLine) []*model.Quant
 	return res
 }
 
-func linesPerQuantityToLineObjectList(quantitiesPerOrderLine []*model.QuantityOrderLine) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, item := range quantitiesPerOrderLine {
-		res = append(res, linePerQuantityToLineObject(item.Quantity, item.OrderLine))
-	}
-
-	return res
+func (s *ServiceOrder) LinesPerQuantityToLineObjectList(quantitiesPerOrderLine []*model.QuantityOrderLine) []model.StringInterface {
+	return lo.Map(quantitiesPerOrderLine, func(item *model.QuantityOrderLine, _ int) model.StringInterface {
+		return s.LinePerQuantityToLineObject(item.Quantity, item.OrderLine)
+	})
 }
 
 func prepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) model.StringInterface {
@@ -148,7 +146,7 @@ func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, or
 		discountParameters["old_amount_value"] = lineBeforeUpdate.UnitDiscountAmount
 	}
 
-	lineData := linePerQuantityToLineObject(int(line.Quantity), line)
+	lineData := a.LinePerQuantityToLineObject(int(line.Quantity), line)
 	lineData["discount"] = discountParameters
 
 	return a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
@@ -299,7 +297,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, d
 		UserID:  userID,
 		Parameters: model.StringInterface{
 			"related_order_pk": originalOrder.Id,
-			"lines":            linesPerQuantityToLineObjectList(lines),
+			"lines":            s.LinesPerQuantityToLineObjectList(lines),
 		},
 	})
 }
@@ -316,7 +314,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer mode
 		UserID:  userID,
 		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_REPLACED,
 		Parameters: model.StringInterface{
-			"lines": linesPerQuantityToLineObjectList(replacedLines),
+			"lines": s.LinesPerQuantityToLineObjectList(replacedLines),
 		},
 	})
 }

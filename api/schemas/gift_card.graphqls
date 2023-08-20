@@ -1,7 +1,7 @@
 extend type Mutation {
   giftCardActivate(id: String!): GiftCardActivate @hasRoleAny(roles: [shop_admin, shop_staff])
-  giftCardCreate(input: GiftCardCreateInput!): GiftCardCreate
-  giftCardDelete(id: String!): GiftCardDelete
+  giftCardCreate(input: GiftCardCreateInput!): GiftCardCreate @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCardDelete(id: String!): GiftCardDelete @hasRoles(roles: [shop_admin])
   giftCardDeactivate(id: String!): GiftCardDeactivate @hasRoleAny(roles: [shop_admin, shop_staff])
   giftCardUpdate(id: String!, input: GiftCardUpdateInput!): GiftCardUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
   giftCardResend(input: GiftCardResendInput!): GiftCardResend @hasRoleAny(roles: [shop_admin, shop_staff])

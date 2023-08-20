@@ -4940,6 +4940,26 @@ func (s *RetryLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.
 
 }
 
+func (s *RetryLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderStore.Delete(transaction, ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 
 	tries := 0
@@ -6032,7 +6052,7 @@ func (s *RetryLayerProductStore) GetByOption(option *model.ProductFilterOption) 
 
 }
 
-func (s *RetryLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+func (s *RetryLayerProductStore) NotPublishedProducts(channelID string) ([]*struct {
 	model.Product
 	IsPublished     bool
 	PublicationDate *timemodule.Time
@@ -6040,7 +6060,7 @@ func (s *RetryLayerProductStore) NotPublishedProducts(channelSlug string) ([]*st
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.NotPublishedProducts(channelSlug)
+		result, err := s.ProductStore.NotPublishedProducts(channelID)
 		if err == nil {
 			return result, nil
 		}

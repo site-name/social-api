@@ -303,7 +303,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 // FilterNotPublishedProducts finds all not published products belong to given channel
 //
 // refer to ./product_store_doc.md (line 45)
-func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
+func (ps *SqlProductStore) NotPublishedProducts(channelID string) (
 	[]*struct {
 		model.Product
 		IsPublished     bool
@@ -316,15 +316,13 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 	isPublishedColumnSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductChannelListings.IsPublished").
 		From(model.ProductChannelListingTableName).
-		InnerJoin(model.ChannelTableName+" ON (ProductChannelListings.ChannelID = Channels.Id)").
-		Where("ProductChannelListings.ProductID = Products.Id AND Channels.Slug = ?", channelSlug).
+		Where("ProductChannelListings.ProductID = Products.Id AND ProductChannelListings.ChannelID = ?", channelID).
 		Limit(1)
 
 	publicationDateColumnSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductChannelListings.PublicationDate").
 		From(model.ProductChannelListingTableName).
-		InnerJoin(model.ChannelTableName+" ON (Channels.Id = ProductChannelListings.ChannelID)").
-		Where("ProductChannelListings.ProductID = Products.Id AND Channels.Slug = ?", channelSlug).
+		Where("ProductChannelListings.ProductID = Products.Id AND ProductChannelListings.ChannelID = ?", channelID).
 		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
@@ -334,7 +332,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		From(model.ProductTableName).
 		Where(squirrel.Or{
 			squirrel.And{
-				squirrel.Expr("Products.PublicationDate::date > ?", today),
+				squirrel.Expr("Products.PublicationDate > ?", today),
 				squirrel.Expr("Products.IsPublished"),
 			},
 			squirrel.Expr("NOT Products.IsPublished"),
@@ -354,7 +352,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 
 	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find not published product with channel slug=%s", channelSlug)
+		return nil, errors.Wrapf(err, "failed to find not published product with channel id=%s", channelID)
 	}
 
 	return res, nil

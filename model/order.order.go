@@ -28,14 +28,14 @@ type OrderOrigin string
 
 // order origin valid values
 const (
-	CHECKOUT OrderOrigin = "checkout" // order created from checkout
-	DRAFT    OrderOrigin = "draft"    // order created from draft order
-	REISSUE  OrderOrigin = "reissue"  // order created from reissue existing one
+	ORDER_ORIGIN_CHECKOUT OrderOrigin = "checkout" // order created from checkout
+	ORDER_ORIGIN_DRAFT    OrderOrigin = "draft"    // order created from draft order
+	ORDER_ORIGIN_REISSUE  OrderOrigin = "reissue"  // order created from reissue existing one
 )
 
 func (e OrderOrigin) IsValid() bool {
 	switch e {
-	case CHECKOUT, DRAFT, REISSUE:
+	case ORDER_ORIGIN_CHECKOUT, ORDER_ORIGIN_DRAFT, ORDER_ORIGIN_REISSUE:
 		return true
 	}
 	return false

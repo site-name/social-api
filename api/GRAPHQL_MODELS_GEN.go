@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,10 +11,12 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
+	"gorm.io/gorm"
 )
 
 type AccountAddressCreate struct {
@@ -1501,15 +1504,124 @@ type DraftOrderCreateInput struct {
 	Lines []*OrderLineCreateInput `json:"lines"`
 }
 
+func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginMng interfaces.PluginManagerInterface) *model.AppError {
+	appErr := d.DraftOrderInput.patchOrder(embedCtx, order, transaction, pluginMng, false)
+	if appErr != nil {
+		return appErr
+	}
+
+	// if we are creating draft order
+	// then we need to create an event about order dreation
+	_, appErr = embedCtx.App.Srv().OrderService().
+		CommonCreateOrderEvent(transaction, &model.OrderEventOption{
+			OrderID: order.Id,
+			UserID:  &embedCtx.AppContext.Session().UserId,
+			Type:    model.ORDER_EVENT_TYPE_DRAFT_CREATED,
+		})
+	if appErr != nil {
+		return appErr
+	}
+
+	// save lines
+	if len(d.Lines) > 0 {
+		// find user
+		user, appErr := embedCtx.App.Srv().AccountService().UserById(context.Background(), embedCtx.AppContext.Session().UserId)
+		if appErr != nil {
+			return appErr
+		}
+
+		var variantIds = lo.Map(d.Lines, func(item *OrderLineCreateInput, _ int) string { return item.VariantID })
+		variants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
+			Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": variantIds},
+		})
+		if appErr != nil {
+			return appErr
+		}
+		// keys are variant ids
+		var variantMap = lo.SliceToMap(variants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return v.Id, v })
+
+		var lines = make(model.QuantityOrderLines, 0, len(d.Lines))
+		for _, line := range d.Lines {
+			variant := variantMap[line.VariantID]
+			if variant != nil {
+				addedOrderLine, insufErr, appErr := embedCtx.App.Srv().OrderService().AddVariantToOrder(*order, *variant, int(line.Quantity), user, nil, pluginMng, []*model.DiscountInfo{}, false)
+				if appErr != nil {
+					return appErr
+				}
+				if insufErr != nil {
+					return embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("DraftOrderCreateInput.patchOrder", insufErr)
+				}
+
+				lines = append(lines, &model.QuantityOrderLine{
+					Quantity:  int(line.Quantity),
+					OrderLine: addedOrderLine,
+				})
+			}
+		}
+
+		_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(transaction, &model.OrderEventOption{
+			OrderID: order.Id,
+			Type:    model.ORDER_EVENT_TYPE_ADDED_PRODUCTS,
+			UserID:  &embedCtx.AppContext.Session().UserId,
+			Parameters: model.StringInterface{
+				"lines": embedCtx.App.Srv().OrderService().LinesPerQuantityToLineObjectList(lines),
+			},
+		})
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
+}
+
 func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *model.AppError {
 	if appErr := d.DraftOrderInput.validate(embedCtx, where); appErr != nil {
 		return appErr
 	}
 
+	// validate lines
 	var (
 		variantIds = make([]string, 0, len(d.Lines))
 		quantities = make([]int, 0, len(d.Lines))
 	)
+	for _, line := range d.Lines {
+		if line != nil {
+			variantIds = append(variantIds, line.VariantID)
+			quantities = append(quantities, int(line.Quantity))
+		}
+	}
+
+	// vaidate variants
+	if !lo.EveryBy(variantIds, model.IsValidId) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Lines"}, "please provide valid variant ids", http.StatusBadRequest)
+	}
+
+	if d.ChannelID != nil {
+		variants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
+			Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": variantIds},
+		})
+		if appErr != nil {
+			return appErr
+		}
+
+		appErr = embedCtx.App.Srv().OrderService().ValidateProductIsPublishedInChannel(variants, *d.ChannelID)
+		if appErr != nil {
+			return appErr
+		}
+
+		appErr = embedCtx.App.Srv().ProductService().ValidateVariantsAvailableInChannel(variantIds, *d.ChannelID)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	// validate quantities
+	if lo.SomeBy(quantities, func(item int) bool { return item < 0 }) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantities"}, "quantities must be greater than 0", http.StatusBadRequest)
+	}
+
+	return nil
 }
 
 type DraftOrderInput struct {
@@ -1518,24 +1630,54 @@ type DraftOrderInput struct {
 	Voucher        *string `json:"voucher"`
 	ChannelID      *string `json:"channelId"`
 
-	RedirectURL     *string          `json:"redirectUrl"`
-	CustomerNote    *string          `json:"customerNote"`
+	RedirectURL  *string `json:"redirectUrl"`
+	CustomerNote *string `json:"customerNote"`
+
 	UserEmail       *string          `json:"userEmail"`
 	Discount        *PositiveDecimal `json:"discount"`
 	BillingAddress  *AddressInput    `json:"billingAddress"`
 	ShippingAddress *AddressInput    `json:"shippingAddress"`
 }
 
+// where is the api name,
 func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.AppError {
 	// validate id fields
 	for name, idValue := range map[string]*string{
 		"UserID":         d.User,
 		"ShippingMethod": d.ShippingMethod,
-		"VoucerID":       d.Voucher,
+		"VoucherID":      d.Voucher,
 		"ChannelID":      d.ChannelID,
 	} {
 		if idValue != nil && !model.IsValidId(*idValue) {
 			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name, http.StatusBadRequest)
+		}
+	}
+
+	// clean customer note
+	if d.CustomerNote != nil {
+		*d.CustomerNote = model.SanitizeUnicode(*d.CustomerNote)
+	}
+
+	// validate email
+	if d.UserEmail != nil && !model.IsValidEmail(*d.UserEmail) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please provide valid user email", http.StatusBadRequest)
+	}
+
+	// if voucher id and channel id are provided.
+	// we need to check if voucher is availabe in the channel
+	if d.Voucher != nil && d.ChannelID != nil {
+		voucherChannelListings, appErr := embedCtx.App.Srv().DiscountService().VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
+			Conditions: squirrel.And{
+				squirrel.Expr(model.VoucherChannelListingTableName+".VoucherID = ?", *d.Voucher),
+				squirrel.Expr(model.VoucherChannelListingTableName+".ChannelID = ?", *d.ChannelID),
+			},
+		})
+		if appErr != nil {
+			return appErr
+		}
+		if len(voucherChannelListings) == 0 {
+			// meaning channel does not have voucher
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher, channel"}, "given channel does not have given voucher", http.StatusBadRequest)
 		}
 	}
 
@@ -1557,6 +1699,92 @@ func (d *DraftOrderInput) validate(embedCtx *web.Context, where string) *model.A
 			appErr := addrValaue.validate(where + "." + name)
 			if appErr != nil {
 				return appErr
+			}
+		}
+	}
+
+	return nil
+}
+
+// patchOrder must be called after calling to validate()
+// `isUpdate` indicates whether the operation is updating given order or creating a new one.
+func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, transaction *gorm.DB, pluginManager interfaces.PluginManagerInterface, isUpdate bool) *model.AppError {
+	order.UserID = d.User
+	order.ShippingMethodID = d.ShippingMethod
+	order.RedirectUrl = d.RedirectURL
+	if d.CustomerNote != nil {
+		order.CustomerNote = *d.CustomerNote
+	}
+	if d.UserEmail != nil {
+		order.UserEmail = *d.UserEmail
+	}
+	order.VoucherID = d.Voucher // voucher cleaned in validate()
+	order.Status = model.ORDER_STATUS_DRAFT
+	order.Origin = model.ORDER_ORIGIN_DRAFT
+	order.DisplayGrossPrices = embedCtx.App.Config().ShopSettings.DisplayGrossPrices
+
+	// IF:
+	// 1) we are updating an existing draft order.
+	// 2) the order has channel already
+	// 3) another channel id is provided
+	// DON'T update the order
+	if d.ChannelID != nil && !isUpdate {
+		order.ChannelID = *d.ChannelID
+
+		// so we are creating new order.
+		// we need currency for it
+		channel, appErr := embedCtx.App.Srv().Channel.ChannelByOption(&model.ChannelFilterOption{
+			Conditions: squirrel.Expr(model.ChannelTableName+".Id = ?", *d.ChannelID),
+		})
+		if appErr != nil {
+			return appErr
+		}
+		order.Currency = channel.Currency
+	}
+
+	// set address ids for order
+	for name, addrInput := range map[string]*AddressInput{
+		"billing":  d.BillingAddress,
+		"shipping": d.ShippingAddress,
+	} {
+		if addrInput != nil {
+			var addr model.Address
+			addrInput.PatchAddress(&addr)
+
+			savedAddr, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(transaction, &addr)
+			if appErr != nil {
+				return appErr
+			}
+
+			if name == "billing" {
+				order.BillingAddressID = &savedAddr.Id
+			} else {
+				order.ShippingAddressID = &savedAddr.Id
+			}
+		}
+	}
+
+	// insert/update order
+	upsertedOrder, appErr := embedCtx.App.Srv().OrderService().UpsertOrder(transaction, order)
+	if appErr != nil {
+		return appErr
+	}
+
+	if isUpdate {
+		// refresh lines unit price
+		orderRequireShipping, appErr := embedCtx.App.Srv().OrderService().OrderShippingIsRequired(upsertedOrder.Id)
+		if appErr != nil {
+			return appErr
+		}
+
+		if orderRequireShipping {
+			for _, addrInput := range []*AddressInput{d.BillingAddress, d.ShippingAddress} {
+				if addrInput != nil {
+					appErr := embedCtx.App.Srv().OrderService().UpdateOrderPrices(*upsertedOrder, pluginManager, *embedCtx.App.Config().ShopSettings.IncludeTaxesInPrice)
+					if appErr != nil {
+						return appErr
+					}
+				}
 			}
 		}
 	}

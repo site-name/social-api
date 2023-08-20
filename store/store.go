@@ -486,11 +486,11 @@ type (
 		GetByOption(option *model.ProductFilterOption) (*model.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) // FilterByOption finds and returns all products that satisfy given option
 		PublishedProducts(channelSlug string) ([]*model.Product, error)             // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
-		NotPublishedProducts(channelSlug string) ([]*struct {
+		NotPublishedProducts(channelID string) ([]*struct {
 			model.Product
 			IsPublished     bool
 			PublicationDate *timemodule.Time
-		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
+		}, error) // NotPublishedProducts finds all not published products belong to given channel
 		PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder                                                                                    // PublishedWithVariants finds and returns products.
 		VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                          // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.

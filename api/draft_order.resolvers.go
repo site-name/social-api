@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"unsafe"
 
@@ -135,12 +134,6 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 	}, nil
 }
 
-func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
-	Input DraftOrderCreateInput
-}) (*DraftOrderCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string }) (*DraftOrderDelete, error) {
 	// validate params
@@ -232,6 +225,51 @@ func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []
 }
 
 // NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
+func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
+	Input DraftOrderCreateInput
+}) (*DraftOrderCreate, error) {
+	// validate params
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	appErr := args.Input.validate("DraftOrderCreate", embedCtx)
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("DraftOrderCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer transaction.Rollback()
+
+	var order model.Order
+	appErr = args.Input.patchOrder(embedCtx, &order, transaction, pluginMng)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(transaction, &order, model.StringInterface{})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	err := transaction.Commit().Error
+	if err != nil {
+		return nil, model.NewAppError("DraftOrderCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	_, appErr = pluginMng.DraftOrderCreated(order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &DraftOrderCreate{
+		Order: SystemOrderToGraphqlOrder(&order),
+	}, nil
+}
+
+// NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 	Id    string
 	Input DraftOrderInput
@@ -241,5 +279,47 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 		return nil, model.NewAppError("DraftOrderUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid draft order id", http.StatusBadRequest)
 	}
 
-	panic("not implemtend")
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = args.Input.validate(embedCtx, "DraftOrderUpdate")
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	// create transaction
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("DraftOrderUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer transaction.Rollback()
+
+	appErr = args.Input.patchOrder(embedCtx, order, transaction, pluginMng, true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(transaction, order, model.StringInterface{})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	err := transaction.Commit().Error
+	if err != nil {
+		return nil, model.NewAppError("DraftOrderCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	_, appErr = pluginMng.DraftOrderUpdated(*order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &DraftOrderUpdate{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }

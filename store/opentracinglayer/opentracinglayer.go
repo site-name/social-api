@@ -4559,6 +4559,24 @@ func (s *OpenTracingLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*
 	return result, err
 }
 
+func (s *OpenTracingLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OrderStore.Delete(transaction, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.FilterByOption")
@@ -5557,7 +5575,7 @@ func (s *OpenTracingLayerProductStore) GetByOption(option *model.ProductFilterOp
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelID string) ([]*struct {
 	model.Product
 	IsPublished     bool
 	PublicationDate *timemodule.Time
@@ -5570,7 +5588,7 @@ func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelSlug string) 
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.NotPublishedProducts(channelSlug)
+	result, err := s.ProductStore.NotPublishedProducts(channelID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

@@ -537,7 +537,7 @@ func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.C
 	newOrder.Id = ""
 	newOrder.CheckoutToken = checkout.Token
 	newOrder.Status = status
-	newOrder.Origin = model.CHECKOUT
+	newOrder.Origin = model.ORDER_ORIGIN_CHECKOUT
 	newOrder.ChannelID = checkoutInfo.Channel.Id
 
 	createdNewOrder, appErr := s.srv.OrderService().UpsertOrder(transaction, &newOrder)

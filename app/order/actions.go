@@ -1497,7 +1497,7 @@ func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorm.DB, original
 		DisplayGrossPrices: originalOrder.DisplayGrossPrices,
 		RedirectUrl:        originalOrder.RedirectUrl,
 		OriginalID:         &originalOrder.Id,
-		Origin:             model.REISSUE,
+		Origin:             model.ORDER_ORIGIN_REISSUE,
 		ModelMetadata: model.ModelMetadata{
 			Metadata:        originalOrder.Metadata,
 			PrivateMetadata: originalOrder.PrivateMetadata,

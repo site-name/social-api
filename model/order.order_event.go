@@ -166,10 +166,54 @@ func (c *OrderEvent) TableName() string             { return OrderEventTableName
 // OrderEventOption contains parameters to create new order event instance
 type OrderEventOption struct {
 	OrderID string
-	// If provided, should contains below:
+	// To reduce number of type assertion steps, below are
+	// possible keys and their according values TYPES you must follow when storing things into this field:
+	//  "email": string
+	//  "email_type": string
+	//  "amount": float64
+	//  "payment_id": string
+	//  "payment_gateway": string
+	//  "quantity": int
+	//  "message": string
+	//  "composed_id": string
+	//  "oversold_items": []string
 	//  "invoice_number": string
+	//  "transaction_reference": string
+	//  "shipping_costs_included": bool
+	//  "related_order_pk": string
+	//  "warehouse": string
+	//  "fulfilled_items": []string // ids of fulfillment lines
+	//  "lines": []map[string]any{
+	//      "quantity": int,
+	//      "line_pk": string,
+	//      "item": string,
+	//      "discount": map[string]any{ // NOTE: Remember to check nil
+	//        "value": float64,
+	//        "amount_value": float64,
+	//        "currency": string,
+	//        "value_type": string,
+	//        "reason": string,
+	//        "old_value": float64,
+	//        "old_value_type": string,
+	//        "old_amount_value": float64,
+	//      }
+	//    }
 	//  "url": string
 	//  "status": string
+	//  "gateway": string
+	//  "awaiting_fulfillments": []string // ids of fulfillment lines
+	//  "tracking_number": string
+	//  "fulfillment": string
+	//  "discount": map[string]any{
+	//    "value": string,
+	//    "amount_value": float64,
+	//    "currency": string,
+	//    "value_type": string,
+	//    "reason": string,
+	//    "old_value": float64,
+	//    "old_value_type": string,
+	//    "old_amount_value": float64,
+	//  }
 	Parameters StringInterface
 	Type       OrderEventType
 	UserID     *string

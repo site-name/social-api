@@ -331,4 +331,7 @@ type OrderService interface {
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
 	PrepareInsufficientStockOrderValidationAppError(where string, err *model.InsufficientStock) *model.AppError
 	DeleteOrders(transaction *gorm.DB, ids []string) (int64, *model.AppError)
+	ValidateProductIsPublishedInChannel(variants model.ProductVariants, channelID string) *model.AppError
+	LinesPerQuantityToLineObjectList(quantitiesPerOrderLine []*model.QuantityOrderLine) []model.StringInterface
+	LinePerQuantityToLineObject(quantity int, line *model.OrderLine) model.StringInterface
 }

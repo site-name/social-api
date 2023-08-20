@@ -676,6 +676,9 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorm.DB, ord model.Order) 
 // Returns an order line the variant was added to.
 func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError) {
 	transaction := s.srv.Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, nil, model.NewAppError("AddVariantToOrder", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
 	defer transaction.Rollback()
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
@@ -1029,7 +1032,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.O
 			UserID:  savingUserID,
 			Type:    model.ORDER_EVENT_TYPE_REMOVED_PRODUCTS,
 			Parameters: model.StringInterface{
-				"lines": linesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
+				"lines": a.LinesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
 					{
 						Quantity:  quantityDiff,
 						OrderLine: orderLine,
@@ -1043,7 +1046,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.O
 			UserID:  savingUserID,
 			Type:    model.ORDER_EVENT_TYPE_ADDED_PRODUCTS,
 			Parameters: model.StringInterface{
-				"lines": linesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
+				"lines": a.LinesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
 					{
 						Quantity:  quantityDiff * -1,
 						OrderLine: orderLine,
@@ -1695,7 +1698,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.total_quantity_zero.app_error", nil, "cannot create order without product", http.StatusNotAcceptable)
 	}
 
-	notPublishedProducts, err := s.srv.Store.Product().NotPublishedProducts(channel.Slug)
+	notPublishedProducts, err := s.srv.Store.Product().NotPublishedProducts(channel.Id)
 	if err != nil {
 		return model.NewAppError("app.order.ValidateDraftOrder", "app.product.error_finding_not_published_products.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -1743,6 +1746,35 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 
 	if productVariantIDs.Dedup().Len() > variantChannelListings.VariantIDs().Dedup().Len() {
 		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.variant_not_available.app_error", nil, "product variant not available for purchase", http.StatusNotAcceptable)
+	}
+
+	return nil
+}
+
+// ValidateProductIsPublishedInChannel checks if some of given variants belong to unpublished products
+func (s *ServiceOrder) ValidateProductIsPublishedInChannel(variants model.ProductVariants, channelID string) *model.AppError {
+	var unPublishedProductsWithData, err = s.srv.Store.Product().NotPublishedProducts(channelID)
+	if err != nil {
+		return model.NewAppError("ValidateProductIsPublishedInChannel", "app.product.error_finding_not_published_products.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	var unPublisgedProductIdMap = lo.SliceToMap(unPublishedProductsWithData, func(item *struct {
+		model.Product
+		IsPublished     bool
+		PublicationDate *time.Time
+	}) (string, bool) {
+		return item.Id, true
+	})
+
+	variantIdsThatAreUnPublished := []string{}
+	for _, item := range variants {
+		if unPublisgedProductIdMap[item.ProductID] {
+			variantIdsThatAreUnPublished = append(variantIdsThatAreUnPublished, item.Id)
+		}
+	}
+
+	if len(variantIdsThatAreUnPublished) > 0 {
+		return model.NewAppError("ValidateProductIsPublishedInChannel", "app.order.add_unpublished_variants_to_order.app_error", map[string]interface{}{"Variants": strings.Join(variantIdsThatAreUnPublished, ", ")}, "cannot add unpublished variants to order", http.StatusNotAcceptable)
 	}
 
 	return nil
