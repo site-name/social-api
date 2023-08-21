@@ -11,19 +11,8 @@ import (
 // GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().FilterByOptions(options)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(events) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("GiftcardEventsByOptions", "app.giftcard.error_finding_giftcard_events_by_options.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("GiftcardEventsByOptions", "app.giftcard.error_finding_giftcard_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return events, nil

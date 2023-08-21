@@ -6,8 +6,8 @@ extend type Mutation {
 }
 
 extend type Query {
-  digitalContent(id: String!): DigitalContent
-  digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection
+  digitalContent(id: String!): DigitalContent @hasRoleAny(roles: [shop_admin, shop_staff])
+  digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 type DigitalContent  {

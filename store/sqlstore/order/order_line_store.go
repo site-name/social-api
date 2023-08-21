@@ -125,8 +125,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 	// }
 
 	query := ols.GetReplica()
-	if len(option.PrefetchRelated) > 0 {
-		for _, rel := range option.PrefetchRelated {
+	if len(option.Preload) > 0 {
+		for _, rel := range option.Preload {
 			query = query.Preload(rel)
 		}
 	}

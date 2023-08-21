@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -53,12 +54,107 @@ func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string 
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardCreate(ctx context.Context, args struct{ Input GiftCardCreateInput }) (*GiftCardCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	appErr := args.Input.validate()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var giftcard model.GiftCard
+	giftcard.Tag = args.Input.Tag
+
+	if v := args.Input.ExpiryDate; v != nil {
+		giftcard.ExpiryDate = (*time.Time)(unsafe.Pointer(&v.DateTime.Time))
+	}
+	if v := args.Input.Balance; v != nil {
+		giftcard.Currency = v.Currency
+		giftcard.InitialBalanceAmount = (*decimal.Decimal)(unsafe.Pointer(&v.Amount))
+		giftcard.CurrentBalanceAmount = (*decimal.Decimal)(unsafe.Pointer(&v.Amount))
+	}
+	if v := args.Input.Code; v != nil {
+		giftcard.Code = *v
+	}
+	giftcard.IsActive = &args.Input.IsActive
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	giftcard.CreatedByID = &user.Id
+	giftcard.CreatedByEmail = &user.Email
+
+	giftcards, appErr := embedCtx.App.Srv().GiftcardService().UpsertGiftcards(nil, &giftcard)
+	if appErr != nil {
+		return nil, appErr
+	}
+	savedGiftcard := giftcards[0]
+
+	// create giftcard events
+	eventParams := model.StringInterface{}
+	if note := args.Input.Note; note != nil {
+		eventParams["message"] = *note
+	}
+	_, appErr = embedCtx.App.Srv().GiftcardService().BulkUpsertGiftcardEvents(nil, &model.GiftCardEvent{
+		GiftcardID: savedGiftcard.Id,
+		UserID:     &user.Id,
+		Parameters: eventParams,
+		Type:       model.GIFT_CARD_EVENT_TYPE_NOTE_ADDED,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// send notification to user
+	if email := args.Input.UserEmail; email != nil {
+		customer, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+			Conditions: squirrel.Expr(model.UserTableName+".Email = ?", *email),
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+		pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+		appErr = embedCtx.App.Srv().GiftcardService().SendGiftcardNotification(user, nil, customer, *email, *savedGiftcard, pluginMng, *args.Input.Channel, false)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &GiftCardCreate{
+		GiftCard: SystemGiftcardToGraphqlGiftcard(savedGiftcard),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string }) (*GiftCardDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("GiftCardDelete", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	tran := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tran.Error != nil {
+		return nil, model.NewAppError("GiftCardDelete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tran.Rollback()
+
+	appErr := embedCtx.App.Srv().GiftcardService().DeleteGiftcards(tran, []string{args.Id})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if err := tran.Commit().Error; err != nil {
+		return nil, model.NewAppError("GiftcardDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &GiftCardDelete{
+		GiftCard: &GiftCard{
+			ID: args.Id,
+		},
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
@@ -102,14 +198,16 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	Id    string
 	Input GiftCardUpdateInput
 }) (*GiftCardUpdate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	// valudate input
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("GiftcardUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
+	if args.Input.ExpiryDate != nil && args.Input.ExpiryDate.Before(time.Now()) {
+		return nil, model.NewAppError("GiftCardUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryDate"}, "expiry date mut be brater than now", http.StatusBadRequest)
+	}
 
-	// check if giftcard relly belong to current shop
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	giftcard, appErr := embedCtx.App.Srv().GiftcardService().GetGiftCard(args.Id)
 	if appErr != nil {
 		return nil, appErr
@@ -139,9 +237,8 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	updatedGiftCard := giftcards[0]
 
 	// add gift card events if needed
-	eventsToAdd := []*model.GiftCardEvent{}
+	eventsToAdd := make([]*model.GiftCardEvent, 0, 3)
 	if args.Input.BalanceAmount != nil {
-		// embedCtx.App.Srv().GiftcardService().GiftCardEve
 		eventsToAdd = append(eventsToAdd, &model.GiftCardEvent{
 			GiftcardID: updatedGiftCard.Id,
 			UserID:     &embedCtx.AppContext.Session().UserId,
@@ -392,7 +489,7 @@ func (r *Resolver) GiftCard(ctx context.Context, args struct{ Id string }) (*Gif
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("GiftCard", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("$s is invalid id", args.Id), http.StatusBadRequest)
+		return nil, model.NewAppError("GiftCard", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid giftcard id", http.StatusBadRequest)
 	}
 
 	giftcard, appErr := embedCtx.App.Srv().GiftcardService().GetGiftCard(args.Id)

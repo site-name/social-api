@@ -249,7 +249,7 @@ func (a *ServiceOrder) OrderReturned(transaction *gorm.DB, ord model.Order, user
 		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_RETURNED,
 		UserID:  userID,
 		Parameters: model.StringInterface{
-			"lines": linesPerQuantityToLineObjectList(returnedLines),
+			"lines": a.LinesPerQuantityToLineObjectList(returnedLines),
 		},
 	})
 	if appErr != nil {
@@ -847,10 +847,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 		Conditions: squirrel.Expr("?.OrderID = ? AND ?.IsShippingRequired = false", model.OrderLineTableName, ord.Id, model.OrderLineTableName),
 		// VariantDigitalContentID: squirrel.NotEq{model.DigitalContentTableName + ".Id": nil},
 		VariantDigitalContentID: squirrel.Expr(model.DigitalContentTableName + ".Id IS NOT NULL"),
-		// PrefetchRelated: model.OrderLinePrefetchRelated{
-		// 	VariantDigitalContent: true, // this tell store to prefetch related product variants, digital contents too
-		// },
-		PrefetchRelated: []string{"ProductVariant.DigitalContent"}, // TODO: check if this works
+		Preload:                 []string{"ProductVariant.DigitalContent"}, // TODO: check if this works
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -2217,7 +2214,7 @@ func (a *ServiceOrder) processRefund(
 		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_REFUNDED,
 		UserID:  userID,
 		Parameters: model.StringInterface{
-			"lines":                   linesPerQuantityToLineObjectList(lo.Values(linesToRefund)),
+			"lines":                   a.LinesPerQuantityToLineObjectList(lo.Values(linesToRefund)),
 			"amount":                  amount,
 			"shipping_costs_included": refundShippingCosts,
 		},

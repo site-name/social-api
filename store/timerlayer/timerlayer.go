@@ -2895,10 +2895,26 @@ func (s *TimerLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.Cus
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
+func (s *TimerLayerDigitalContentStore) Delete(transaction *gorm.DB, options *model.DigitalContentFilterOption) error {
 	start := timemodule.Now()
 
-	result, err := s.DigitalContentStore.FilterByOption(option)
+	err := s.DigitalContentStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.Delete", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, err := s.DigitalContentStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2908,7 +2924,7 @@ func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalCont
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {

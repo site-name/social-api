@@ -36,6 +36,9 @@ func (c *DigitalContent) TableName() string             { return DigitalContentT
 // DigitalContentFilterOption is used for building sql queries
 type DigitalContentFilterOption struct {
 	Conditions squirrel.Sqlizer
+
+	PaginationValues GraphqlPaginationValues
+	CountTotal       bool
 }
 
 func (d *DigitalContent) IsValid() *AppError {

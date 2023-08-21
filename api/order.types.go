@@ -221,9 +221,9 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			Conditions:      squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
-			OrderChannelID:  squirrel.Eq{model.OrderTableName + ".ChannelID": channelIDs},
-			PrefetchRelated: []string{"Order"},
+			Conditions:     squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
+			OrderChannelID: squirrel.Eq{model.OrderTableName + ".ChannelID": channelIDs},
+			Preload:        []string{"Order"},
 		})
 	if appErr != nil {
 		for idx := range idPairs {

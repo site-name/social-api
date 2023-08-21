@@ -53,8 +53,8 @@ type GiftCardActivate {
 input GiftCardCreateInput {
   tag: String
   expiryDate: Date
-  startDate: Date
-  endDate: Date
+  # startDate: Date
+  # endDate: Date
   balance: PriceInput!
   userEmail: String
   channel: String

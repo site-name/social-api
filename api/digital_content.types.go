@@ -71,7 +71,7 @@ func digitalContentByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	contents, appErr := embedCtx.App.Srv().ProductService().DigitalContentsbyOptions(&model.DigitalContentFilterOption{
+	_, contents, appErr := embedCtx.App.Srv().ProductService().DigitalContentsbyOptions(&model.DigitalContentFilterOption{
 		Conditions: squirrel.Eq{model.DigitalContentTableName + ".Id": ids},
 	})
 	if appErr != nil {

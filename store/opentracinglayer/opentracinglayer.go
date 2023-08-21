@@ -3129,7 +3129,25 @@ func (s *OpenTracingLayerCustomerNoteStore) Save(note *model.CustomerNote) (*mod
 	return result, err
 }
 
-func (s *OpenTracingLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
+func (s *OpenTracingLayerDigitalContentStore) Delete(transaction *gorm.DB, options *model.DigitalContentFilterOption) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.DigitalContentStore.Delete(transaction, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3138,13 +3156,13 @@ func (s *OpenTracingLayerDigitalContentStore) FilterByOption(option *model.Digit
 	}()
 
 	defer span.Finish()
-	result, err := s.DigitalContentStore.FilterByOption(option)
+	result, resultVar1, err := s.DigitalContentStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {

@@ -141,7 +141,7 @@ type ProductService interface {
 	CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError)
 	CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError)
 	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model.AppError)
-	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError)
+	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, *model.AppError)
 	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories
 	FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError)
 	GetDefaultDigitalContentSettings(aShop model.ShopSettings) *model.ShopDefaultDigitalContentSettings
@@ -153,4 +153,5 @@ type ProductService interface {
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
+	UpsertDigitalContent(digitalContent *model.DigitalContent) (*model.DigitalContent, *model.AppError)
 }

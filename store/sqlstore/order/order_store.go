@@ -141,15 +141,15 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	return res, nil
 }
 
-func (s *SqlOrderStore) Delete(transaction *gorm.DB, ids []string) error {
+func (s *SqlOrderStore) Delete(transaction *gorm.DB, ids []string) (int64, error) {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.OrderTableName+" WHERE Id IN ?", ids).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete orders")
+	result := transaction.Raw("DELETE FROM "+model.OrderTableName+" WHERE Id IN ?", ids)
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "failed to delete orders")
 	}
 
-	return nil
+	return result.RowsAffected, nil
 }

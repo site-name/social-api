@@ -433,8 +433,8 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines model.OrderLines, voucher *
 	if orderLines[0].ProductVariant == nil {
 		var appErr *model.AppError
 		orderLines, appErr = a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			Conditions:      squirrel.Expr(model.OrderLineTableName+".Id IN ?", orderLines.IDs()),
-			PrefetchRelated: []string{"ProductVariant.Product.Collections"}, // TODO: check if this works
+			Conditions: squirrel.Expr(model.OrderLineTableName+".Id IN ?", orderLines.IDs()),
+			Preload:    []string{"ProductVariant.Product.Collections"}, // TODO: check if this works
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -1639,8 +1639,8 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 
 	// validate order lines
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions:      squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
-		PrefetchRelated: []string{"ProductVariant"},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
+		Preload:    []string{"ProductVariant"},
 	})
 	if appErr != nil {
 		return appErr

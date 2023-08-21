@@ -663,7 +663,7 @@ func constructCountableConnection[R any, D any](
 	data []R,
 	totalCount int64,
 	hasNextPage, hasPreviousPage bool,
-	keyFunc func(R) []any,
+	keyFunc func(R) []any, // E.g func(p *model.Product) []any{"Products.CreateAt", 1674545, "Products.Name", "hello world"}
 	modelTypeToGraphqlTypeFunc func(R) D,
 ) *CountableConnection[D] {
 	res := &CountableConnection[D]{
@@ -695,7 +695,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 		return nil, appErr
 	}
 
-	orderASC := g.First != nil // order ascending or not
+	orderASC := g.orderDirection() == "ASC" // order ascending or not
 
 	if orderASC {
 		sort.Sort(g)
@@ -718,7 +718,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 
 	// return immediately when no data passed
 	if totalCount == 0 {
-		return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
+		goto result
 	}
 
 	if limit == nil {
@@ -732,7 +732,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 		} else {
 			resultData = g.data
 		}
-		return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
+		goto result
 	}
 
 	// case operand provided:
@@ -757,6 +757,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 		hasNextPage = true
 	}
 
+result:
 	return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
 }
 
@@ -776,23 +777,23 @@ func prepareFilterExpression(fieldName string, index int, cursors []any, sorting
 	var extraExpression = squirrel.Or{}
 
 	for idx, cursorValue := range cursors[:index] {
-		fieldExpression = append(fieldExpression, squirrel.Eq{sortingFields[idx]: cursorValue})
+		fieldExpression = append(fieldExpression, squirrel.Expr(sortingFields[idx]+" = ?", cursorValue))
 	}
 
 	if sortAscending {
 		extraExpression = append(
 			extraExpression,
-			squirrel.Gt{fieldName: cursors[index]},
-			squirrel.Eq{fieldName: nil},
+			squirrel.Expr(fieldName+" > ?", cursors[index]),
+			squirrel.Expr(fieldName+" IS NULL"),
 		)
 	} else if cursors[index] != nil {
-		var expr squirrel.Sqlizer = squirrel.Gt{fieldName: cursors[index]}
+		var expr squirrel.Sqlizer = squirrel.Expr(fieldName+" > ?", cursors[index])
 		if !sortAscending {
-			expr = squirrel.Lt{fieldName: cursors[index]}
+			expr = squirrel.Expr(fieldName+" < ?", cursors[index])
 		}
 		fieldExpression = append(fieldExpression, expr)
 	} else {
-		fieldExpression = append(fieldExpression, squirrel.NotEq{fieldName: nil})
+		fieldExpression = append(fieldExpression, squirrel.Expr(fieldName+" IS NOT NULL"))
 	}
 
 	return extraExpression, fieldExpression

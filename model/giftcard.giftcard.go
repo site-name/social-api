@@ -27,7 +27,7 @@ type GiftCard struct {
 	UsedByID             *string          `json:"used_by_id" gorm:"type:uuid;column:UsedByID"`
 	CreatedByEmail       *string          `json:"created_by_email" gorm:"type:varchar(128);column:CreatedByEmail"`
 	UsedByEmail          *string          `json:"used_by_email" gorm:"type:varchar(128);column:UsedByEmail"`
-	CreateAt             int64            `json:"created_at" gorm:"type:bigint;column:CreateAt"`
+	CreateAt             int64            `json:"created_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	StartDate            *time.Time       `json:"start_date" gorm:"column:StartDate"`
 	ExpiryDate           *time.Time       `json:"expiry_date" gorm:"column:ExpiryDate"`
 	Tag                  *string          `json:"tag" gorm:"type:varchar(255);column:Tag"`

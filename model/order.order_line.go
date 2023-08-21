@@ -94,7 +94,7 @@ type OrderLineFilterOption struct {
 	// E.g
 	//  "ProductVariant" // will fetch related product variant(s)
 	//  "ProductVariant.Product" // will fetch related variants, product
-	PrefetchRelated []string
+	Preload []string
 }
 
 func (o *OrderLine) String() string {

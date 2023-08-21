@@ -3368,21 +3368,41 @@ func (s *RetryLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.Cus
 
 }
 
-func (s *RetryLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
+func (s *RetryLayerDigitalContentStore) Delete(transaction *gorm.DB, options *model.DigitalContentFilterOption) error {
 
 	tries := 0
 	for {
-		result, err := s.DigitalContentStore.FilterByOption(option)
+		err := s.DigitalContentStore.Delete(transaction, options)
 		if err == nil {
-			return result, nil
+			return nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, err := s.DigitalContentStore.FilterByOption(option)
+		if err == nil {
+			return result, resultVar1, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, err
 		}
 	}
 

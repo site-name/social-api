@@ -1817,7 +1817,7 @@ func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []s
 	res := make([]*dataloader.Result[*model.DigitalContent], len(variantIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	digitalContents, appErr := embedCtx.App.Srv().ProductService().
+	_, digitalContents, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentsbyOptions(&model.DigitalContentFilterOption{
 			Conditions: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": variantIDs},
 		})

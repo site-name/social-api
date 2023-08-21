@@ -426,10 +426,11 @@ type (
 		FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error)
 	}
 	DigitalContentStore interface {
+		Delete(transaction *gorm.DB, options *model.DigitalContentFilterOption) error
 		ScanFields(content *model.DigitalContent) []interface{}
-		Save(content *model.DigitalContent) (*model.DigitalContent, error)                        // Save inserts given digital content into database then returns it
-		GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error)      // GetByOption finds and returns 1 digital content filtered using given option
-		FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) //
+		Save(content *model.DigitalContent) (*model.DigitalContent, error)                               // Save inserts given digital content into database then returns it
+		GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error)             // GetByOption finds and returns 1 digital content filtered using given option
+		FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) //
 	}
 	ProductVariantChannelListingStore interface {
 		ScanFields(listing *model.ProductVariantChannelListing) []interface{}

@@ -21,11 +21,19 @@ func (a *ServiceProduct) DigitalContentbyOption(option *model.DigitalContentFilt
 	return digitalContent, nil
 }
 
-func (a *ServiceProduct) DigitalContentsbyOptions(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError) {
-	digitalContents, err := a.srv.Store.DigitalContent().FilterByOption(option)
+func (a *ServiceProduct) DigitalContentsbyOptions(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, *model.AppError) {
+	total, digitalContents, err := a.srv.Store.DigitalContent().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("DigitalContentsbyOptions", "app.product.error_finding_digital_contents_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model.NewAppError("DigitalContentsbyOptions", "app.product.error_finding_digital_contents_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return digitalContents, nil
+	return total, digitalContents, nil
+}
+
+func (s *ServiceProduct) UpsertDigitalContent(digitalContent *model.DigitalContent) (*model.DigitalContent, *model.AppError) {
+	digitalContent, err := s.srv.Store.DigitalContent().Save(digitalContent)
+	if err != nil {
+		return nil, model.NewAppError("UpsertDigitalContent", "app.product.upsert_digital_content.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return digitalContent, nil
 }

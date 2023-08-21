@@ -148,8 +148,8 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines mode
 
 	// refetch order lines with prefetching options
 	giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions:      squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
-		PrefetchRelated: []string{"ProductVariant.Product"},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
+		Preload:    []string{"ProductVariant.Product"},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -232,11 +232,7 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, r
 		var appErr *model.AppError
 		giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 			Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
-			// PrefetchRelated: model.OrderLinePrefetchRelated{
-			// 	AllocationsStock: true,
-			// 	VariantStocks:    true,
-			// },
-			PrefetchRelated: []string{ // TODO: check if this works
+			Preload: []string{ // TODO: check if this works
 				"Allocations.Stock",
 				"ProductVariant.Stocks",
 			},

@@ -94,8 +94,8 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, 
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			Conditions:      squirrel.Expr(model.OrderLineTableName+".OrderID = ?", order.Id),
-			PrefetchRelated: []string{"ProductVariant"},
+			Conditions: squirrel.Expr(model.OrderLineTableName+".OrderID = ?", order.Id),
+			Preload:    []string{"ProductVariant"},
 		})
 		if appErr != nil {
 			return nil, appErr

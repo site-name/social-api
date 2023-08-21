@@ -11,6 +11,8 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
+	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
@@ -2022,14 +2024,50 @@ type GiftCardCreate struct {
 type GiftCardCreateInput struct {
 	Tag        *string     `json:"tag"`
 	ExpiryDate *Date       `json:"expiryDate"`
-	StartDate  *Date       `json:"startDate"`
-	EndDate    *Date       `json:"endDate"`
 	Balance    *PriceInput `json:"balance"`
-	UserEmail  *string     `json:"userEmail"`
-	Channel    *string     `json:"channel"`
+	UserEmail  *string     `json:"userEmail"` // Email of the customer to whom gift card will be sent.
+	Channel    *string     `json:"channel"`   // this is channel Id, when UserEmail is set, this must be set too
 	IsActive   bool        `json:"isActive"`
 	Code       *string     `json:"code"`
 	Note       *string     `json:"note"`
+
+	// StartDate  *Date       `json:"startDate"`
+	// EndDate    *Date       `json:"endDate"`
+}
+
+func (g *GiftCardCreateInput) validate() *model.AppError {
+	if g.Code == nil || !model.PromoCodeRegex.MatchString(*g.Code) {
+		code := model.NewPromoCode()
+		g.Code = &code
+	}
+	if g.Note != nil {
+		*g.Note = model.SanitizeUnicode(*g.Note)
+	}
+	if g.ExpiryDate != nil && g.ExpiryDate.Before(time.Now()) {
+		return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ExpiryDate"}, "expiry date must be greater than now", http.StatusBadRequest)
+	}
+
+	if g.Balance != nil {
+		precision, err := goprices.GetCurrencyPrecision(g.Balance.Currency)
+		if err != nil {
+			return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Balance.Currency"}, g.Balance.Currency+" is not a valid currency", http.StatusBadRequest)
+		}
+
+		roundedAmount := (*(*decimal.Decimal)(unsafe.Pointer(&g.Balance.Amount))).Round(int32(precision))
+		g.Balance.Amount = *(*PositiveDecimal)(unsafe.Pointer(&roundedAmount))
+	}
+
+	if g.UserEmail != nil {
+		if !model.IsValidEmail(*g.UserEmail) {
+			return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, *g.UserEmail+" is not a valid email", http.StatusBadRequest)
+		}
+		// channel slug must be provided when user email is set
+		if g.Channel == nil || !slug.IsSlug(*g.Channel) {
+			return model.NewAppError("iftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Channel"}, "channel must be provided along with UserEmail", http.StatusBadRequest)
+		}
+	}
+
+	return nil
 }
 
 type GiftCardDeactivate struct {
@@ -5696,7 +5734,7 @@ const (
 
 func (e GiftCardSortField) IsValid() bool {
 	switch e {
-	case GiftCardSortFieldTag, GiftCardSortFieldCurrentBalance:
+	case GiftCardSortFieldTag, GiftCardSortFieldCurrentBalance, GiftCardSortFieldProduct, GiftCardSortFieldUsedBy:
 		return true
 	}
 	return false
