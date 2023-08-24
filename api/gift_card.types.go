@@ -361,7 +361,7 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	giftcards, appErr := embedCtx.
+	_, giftcards, appErr := embedCtx.
 		App.
 		Srv().
 		GiftcardService().
@@ -476,14 +476,15 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 		return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "please provide a currency", http.StatusBadRequest)
 	}
 
-	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
-		// check if gte >= lte
-		if priceRange != nil && priceRange.Gte != nil && priceRange.Lte != nil && *priceRange.Gte >= *priceRange.Lte {
-			errorField := "currentBalance"
-			if idx == 1 {
-				errorField = "initialBalance"
-			}
-			return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": errorField}, "Lte must be greater than Gte", http.StatusBadRequest)
+	for name, priceRange := range map[string]*PriceRangeInput{
+		"CurrentBalance": g.CurrentBalance,
+		"InitialBalance": g.InitialBalance,
+	} {
+		if priceRange != nil &&
+			priceRange.Gte != nil &&
+			priceRange.Lte != nil &&
+			*priceRange.Gte >= *priceRange.Lte {
+			return model.NewAppError("GiftCardFilterInput.Validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "Lte must be greater than Gte", http.StatusBadRequest)
 		}
 	}
 
@@ -491,14 +492,17 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 }
 
 // NOTE: Call me after calling validate()
-func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOption {
+func (g *GiftCardFilterInput) ToSystemGiftcardFilter() (*model.GiftCardFilterOption, *model.AppError) {
+	appErr := g.validate()
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	andConditions := squirrel.And{}
 
 	if g.IsActive != nil {
 		andConditions = append(andConditions, squirrel.Eq{model.GiftcardTableName + ".IsActive": *g.IsActive})
 	}
-
 	var tagFilter = squirrel.And{}
 	if g.Tag != nil && *g.Tag != "" {
 		tagFilter = append(tagFilter, squirrel.ILike{model.GiftcardTableName + ".Tag": "%" + *g.Tag + "%"})
@@ -519,25 +523,22 @@ func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOpti
 	if g.Currency != nil {
 		andConditions = append(andConditions, squirrel.Eq{model.GiftcardTableName + ".Currency": strings.ToUpper(*g.Currency)})
 	}
-	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
+
+	for fieldName, priceRange := range map[string]*PriceRangeInput{
+		".CurrentBalanceAmount": g.CurrentBalance,
+		".InitialBalanceAmount": g.InitialBalance,
+	} {
 		if priceRange != nil {
 			balanceConditions := squirrel.And{}
-
-			fieldName := ".CurrentBalanceAmount"
-			if idx == 1 {
-				fieldName = ".InitialBalanceAmount"
-			}
-
 			if gte := priceRange.Gte; gte != nil {
 				balanceConditions = append(balanceConditions, squirrel.GtOrEq{model.GiftcardTableName + fieldName: *gte})
 			}
 			if lte := priceRange.Lte; lte != nil {
 				balanceConditions = append(balanceConditions, squirrel.LtOrEq{model.GiftcardTableName + fieldName: *lte})
 			}
-
 			andConditions = append(andConditions, balanceConditions)
 		}
 	}
 
-	return &model.GiftCardFilterOption{Conditions: andConditions}
+	return &model.GiftCardFilterOption{Conditions: andConditions}, nil
 }

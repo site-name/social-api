@@ -407,7 +407,7 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.Eq{
 			model.GiftcardTableName + ".IsActive": false,
 			model.GiftcardTableName + ".Id":       args.Ids,
@@ -450,7 +450,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.Eq{
 			model.GiftcardTableName + ".IsActive": true,
 			model.GiftcardTableName + ".Id":       args.Ids,
@@ -475,6 +475,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 		return nil, appErr
 	}
 
+	// commit
 	err := transaction.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -486,11 +487,11 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 }
 
 func (r *Resolver) GiftCard(ctx context.Context, args struct{ Id string }) (*GiftCard, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("GiftCard", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id+" is not a valid giftcard id", http.StatusBadRequest)
 	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	giftcard, appErr := embedCtx.App.Srv().GiftcardService().GetGiftCard(args.Id)
 	if appErr != nil {
@@ -506,52 +507,56 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 	Filter *GiftCardFilterInput
 	GraphqlParams
 }) (*GiftCardCountableConnection, error) {
-	// validate params
+	var giftcardFilter = &model.GiftCardFilterOption{}
+
+	paginationValues, appErr := args.GraphqlParams.Parse("GiftCards")
+	if appErr != nil {
+		return nil, appErr
+	}
+	if args.SortBy != nil && !args.SortBy.Field.IsValid() {
+		return nil, model.NewAppError("GiftCards", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortBy.Field"}, "please provide valid sort field", http.StatusBadRequest)
+	}
 	if args.Filter != nil {
-		if err := args.Filter.validate(); err != nil {
-			return nil, err
+		giftcardFilter, appErr = args.Filter.ToSystemGiftcardFilter()
+		if appErr != nil {
+			return nil, appErr
 		}
 	}
-	err := args.GraphqlParams.validate("GiftCards")
-	if err != nil {
-		return nil, err
+
+	giftcardFilter.CountTotal = true                           // for counting total giftcards
+	giftcardFilter.GraphqlPaginationValues = *paginationValues // for paginating
+
+	giftcardKeyFunc := giftcardSortFieldMap[GiftCardSortFieldTag].keyFunc
+
+	if giftcardFilter.GraphqlPaginationValues.OrderBy == "" {
+		// default to sort by tags
+		sortFields := giftcardSortFieldMap[GiftCardSortFieldTag].fields
+		if args.SortBy != nil {
+			sortObj := giftcardSortFieldMap[args.SortBy.Field]
+			sortFields = sortObj.fields
+			giftcardKeyFunc = sortObj.keyFunc
+		}
+		orderDirection := args.GraphqlParams.orderDirection()
+		giftcardFilter.GraphqlPaginationValues.OrderBy = sortFields.Map(func(_ int, item string) string { return item + " " + orderDirection }).Join(",")
 	}
 
-	giftcardFilter := args.Filter.ToSystemGiftcardFilter()
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(giftcardFilter)
+	totalCount, giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(giftcardFilter)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	var connection *CountableConnection[*GiftCard]
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(giftcards))
+	res := constructCountableConnection(giftcards, totalCount, hasNextPage, hasPrevPage, giftcardKeyFunc, SystemGiftcardToGraphqlGiftcard)
 
-	switch args.SortBy.Field {
-	case GiftCardSortFieldTag:
-		keyFunc := func(g *model.GiftCard) []any {
-			return []any{model.GiftcardTableName + ".Tag", g.Tag}
-		}
-		connection, appErr = newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args.GraphqlParams).parse("GiftCards")
-
-	case GiftCardSortFieldCurrentBalance:
-		keyFunc := func(g *model.GiftCard) []any {
-			return []any{model.GiftcardTableName + ".CurrentBalanceAmount", g.CurrentBalanceAmount}
-		}
-		connection, appErr = newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args.GraphqlParams).parse("GiftCards")
-	}
-	// TODO: add sort by product and used by to giftcards
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return (*GiftCardCountableConnection)(unsafe.Pointer(connection)), nil
+	return (*GiftCardCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 // NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (r *Resolver) GiftCardCurrencies(ctx context.Context) ([]string, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{})
+	_, giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{})
 	if appErr != nil {
 		return nil, appErr
 	}

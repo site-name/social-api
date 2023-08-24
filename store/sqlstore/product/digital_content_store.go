@@ -1,7 +1,6 @@
 package product
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -43,16 +42,8 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 
 // GetByOption finds and returns 1 digital content filtered using given option
 func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
-	conditions := squirrel.And{
-		option.Conditions,
-	}
 	var res model.DigitalContent
-	db := ds.GetReplica()
-	if option.PaginationValues.PaginationApplicable() {
-		db = db.Order(option.PaginationValues.OrderBy)
-		conditions = append(conditions, option.PaginationValues.Condition)
-	}
-	err := db.First(&res, store.BuildSqlizer(conditions)...).Error
+	err := ds.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentTableName, "option")
@@ -65,16 +56,9 @@ func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilter
 
 func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, error) {
 	query := ds.GetQueryBuilder().
-		Select("*").
+		Select(model.DigitalContentTableName + ".*").
 		From(model.DigitalContentTableName).
 		Where(option.Conditions)
-
-	// NOTE: we don't add limit here, since we may need to count
-	if option.PaginationValues.PaginationApplicable() {
-		query = query.
-			OrderBy(option.PaginationValues.OrderBy).
-			Where(option.PaginationValues.Condition)
-	}
 
 	var totalCount int64
 	if option.CountTotal {
@@ -88,9 +72,7 @@ func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContentFil
 		}
 	}
 
-	if option.PaginationValues.PaginationApplicable() {
-		query = query.Limit(option.PaginationValues.Limit)
-	}
+	option.PaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
 
 	queryStr, args, err := query.ToSql()
 	if err != nil {

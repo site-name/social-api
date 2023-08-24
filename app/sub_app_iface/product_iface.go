@@ -40,7 +40,7 @@ type ProductService interface {
 	// CollectionsByOption returns all collections that satisfy given option.
 	//
 	// NOTE: `ShopID` is required.
-	CollectionsByOption(option *model.CollectionFilterOption) (model.Collections, *model.AppError)
+	CollectionsByOption(option *model.CollectionFilterOption) (int64, model.Collections, *model.AppError)
 	// CollectionsByProductID finds and returns all collections related to given product
 	CollectionsByProductID(productID string) ([]*model.Collection, *model.AppError)
 	// CollectionsByVoucherID finds all collections that have relationships with given voucher

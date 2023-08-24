@@ -2495,10 +2495,10 @@ func (s *TimerLayerCollectionStore) Delete(ids ...string) error {
 	return err
 }
 
-func (s *TimerLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
+func (s *TimerLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) {
 	start := timemodule.Now()
 
-	result, err := s.CollectionStore.FilterByOption(option)
+	result, resultVar1, err := s.CollectionStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2508,7 +2508,7 @@ func (s *TimerLayerCollectionStore) FilterByOption(option *model.CollectionFilte
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerCollectionStore) Get(collectionID string) (*model.Collection, error) {
@@ -3613,10 +3613,10 @@ func (s *TimerLayerGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []st
 	return err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
 	start := timemodule.Now()
 
-	result, err := s.GiftCardStore.FilterByOption(option)
+	result, resultVar1, err := s.GiftCardStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3626,7 +3626,7 @@ func (s *TimerLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOpt
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {

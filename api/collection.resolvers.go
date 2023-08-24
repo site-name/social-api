@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
@@ -229,7 +230,7 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 		})
 	}
 
-	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
+	_, collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
 		Conditions: squirrel.Expr(model.CollectionTableName+".Id = ?", args.CollectionID),
 	})
 	if appErr != nil {
@@ -357,7 +358,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args Coll
 		return nil, model.NewAppError("CollectionChannelListingUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
+	_, collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
 		Conditions: squirrel.Eq{model.CollectionTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
@@ -437,14 +438,140 @@ func (r *Resolver) Collection(ctx context.Context, args CollectionArgs) (*Collec
 type CollectionsArgs struct {
 	Filter  *CollectionFilterInput
 	SortBy  *CollectionSortingInput
-	Channel *string
+	Channel *string // channel slug
 	GraphqlParams
 }
 
-func (c *CollectionsArgs) parse() (*model.CollectionFilterOption, *model.AppError) {
-	panic(fmt.Errorf("not implemented"))
+func (c *CollectionsArgs) parse(embedCtx *web.Context) (*model.CollectionFilterOption, *model.AppError) {
+	// validate params
+	if c.Filter != nil {
+		appErr := c.Filter.validate("Collections")
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if c.SortBy != nil && !c.SortBy.Field.IsValid() {
+		return nil, model.NewAppError("Collections", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortField"}, "please provide valid sort field", http.StatusBadRequest)
+	}
+	if c.Channel != nil && !slug.IsSlug(*c.Channel) {
+		return nil, model.NewAppError("Collections", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Channel"}, "please provide valid channel slug", http.StatusBadRequest)
+	}
+	appErr := c.validate("Collections")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// start parsing
+	var res = &model.CollectionFilterOption{
+		CountTotal: true,
+	}
+
+	conditions := squirrel.And{}
+
+	if c.Filter != nil {
+		if len(c.Filter.Ids) > 0 {
+			conditions = append(conditions, squirrel.Eq{model.CollectionTableName + ".Id": c.Filter.Ids})
+		}
+
+		if c.Filter.Published != nil {
+			switch *c.Filter.Published {
+			case CollectionPublishedPublished:
+				res.ChannelListingIsPublished = squirrel.Expr(model.CollectionChannelListingTableName + ".IsPublished")
+			case CollectionPublishedHidden:
+				res.ChannelListingIsPublished = squirrel.Expr(model.CollectionChannelListingTableName + ".IsPublished = false")
+			}
+
+			if c.Channel != nil {
+				res.ChannelListingChannelSlug = squirrel.Expr(model.ChannelTableName+".Slug = ?", *c.Channel)
+			}
+		}
+
+		// search
+		if c.Filter.Search != nil {
+			expr := "%" + *c.Filter.Search + "%"
+			conditions = append(conditions, squirrel.ILike{
+				model.CollectionTableName + ".Name": expr,
+				model.CollectionTableName + ".Slug": expr,
+			})
+		}
+
+		// meta data
+		if c.Filter.Metadata != nil {
+			for _, metaItem := range c.Filter.Metadata {
+				if metaItem != nil && metaItem.Key != "" {
+					if metaItem.Value == "" {
+						expr := fmt.Sprintf(model.SaleTableName+".Metadata::jsonb ? '%s'", metaItem.Key)
+						conditions = append(conditions, squirrel.Expr(expr))
+					} else {
+						expr := fmt.Sprintf(model.SaleTableName+".Metadata::jsonb @> '{%q:%q}'", metaItem.Key, metaItem.Value)
+						conditions = append(conditions, squirrel.Expr(expr))
+					}
+				}
+			}
+		}
+	}
+
+	// parse pagination
+	paginationValues, _ := c.GraphqlParams.Parse("Collections")
+	res.GraphqlPaginationValues = *paginationValues
+
+	if res.GraphqlPaginationValues.OrderBy == "" {
+		sortfields := collectionSortFieldMap[CollectionSortFieldName].fields
+
+		// parse sort
+		if c.SortBy != nil {
+			sortfields = collectionSortFieldMap[c.SortBy.Field].fields
+
+			switch c.SortBy.Field {
+			case CollectionSortFieldAvailability, CollectionSortFieldPublicationDate:
+				if c.Channel != nil {
+					res.ChannelSlugForIsPublishedAndPublicationDateAnnotation = *c.Channel
+				} else {
+					// we need a channel slug to be able to annotate collection's Availability and publicationDate
+					defaultChannel, appErr := embedCtx.App.Srv().ChannelService().GetDefaultChannel()
+					if appErr != nil {
+						// this is because there is no active channel in the system
+						return nil, appErr
+					}
+					res.ChannelSlugForIsPublishedAndPublicationDateAnnotation = defaultChannel.Slug
+				}
+				if c.SortBy.Field == CollectionSortFieldAvailability {
+					res.AnnotateIsPublished = true
+				} else {
+					res.AnnotatePublicationDate = true
+				}
+
+			case CollectionSortFieldProductCount:
+				res.AnnotateProductCount = true
+			}
+		}
+
+		orderDirection := c.GraphqlParams.orderDirection()
+		res.GraphqlPaginationValues.OrderBy = sortfields.
+			Map(func(_ int, item string) string { return item + " " + orderDirection }).
+			Join(", ")
+	}
+
+	return res, nil
 }
 
 func (r *Resolver) Collections(ctx context.Context, args CollectionsArgs) (*CollectionCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	collectionFilterOpts, appErr := args.parse(embedCtx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic("not done")
+	// add filter when requester is shop staff or outer customer
+
+	totalCount, collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(collectionFilterOpts)
+	hasNextPage, hasPrevPage := args.checkNextPageAndPreviousPage(len(collections))
+	keyFunc := collectionSortFieldMap[CollectionSortFieldName].keyFunc
+
+	if args.SortBy != nil {
+		keyFunc = collectionSortFieldMap[args.SortBy.Field].keyFunc
+	}
+	res := constructCountableConnection(collections, totalCount, hasNextPage, hasPrevPage, keyFunc, systemCollectionToGraphqlCollection)
+	return (*CollectionCountableConnection)(unsafe.Pointer(res)), nil
 }

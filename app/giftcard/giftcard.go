@@ -41,14 +41,15 @@ func (a *ServiceGiftcard) GetGiftCard(id string) (*model.GiftCard, *model.AppErr
 }
 
 func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model.AppError) {
-	return a.GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkoutToken},
 	})
+	return giftcards, appErr
 }
 
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
-	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.Eq{model.GiftcardTableName + ".Code": code},
 	})
 	if appErr != nil {
@@ -59,13 +60,13 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppErro
 }
 
 // GiftcardsByOption finds a list of giftcards with given option
-func (a *ServiceGiftcard) GiftcardsByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError) {
-	giftcards, err := a.srv.Store.GiftCard().FilterByOption(option)
+func (a *ServiceGiftcard) GiftcardsByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, *model.AppError) {
+	totalCount, giftcards, err := a.srv.Store.GiftCard().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return giftcards, nil
+	return totalCount, giftcards, nil
 }
 
 // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
@@ -91,7 +92,7 @@ func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*mo
 
 // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *model.AppError) {
-	return s.GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := s.GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Or{
 				squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
@@ -100,6 +101,7 @@ func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *m
 			squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
 		},
 	})
+	return giftcards, appErr
 }
 
 func (s *ServiceGiftcard) DeleteGiftcards(transaction *gorm.DB, ids []string) *model.AppError {

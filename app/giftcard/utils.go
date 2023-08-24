@@ -16,7 +16,7 @@ import (
 func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(checkout *model.Checkout, email, promoCode, currency string) (*model.InvalidPromoCode, *model.AppError) {
 	now := time.Now()
 
-	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Expr(model.GiftcardTableName+".Code = ?", promoCode),
 			squirrel.Expr(model.GiftcardTableName+".Currency = ?", strings.ToUpper(currency)),
@@ -47,7 +47,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(checkout *model.Checkout, em
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(checkout *model.Checkout, giftcardCode string) *model.AppError {
-	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		Conditions: squirrel.Expr(model.GiftcardTableName+".Code = ?", giftcardCode),
 	})
 	if appErr != nil {

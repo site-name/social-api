@@ -297,14 +297,7 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64
 		query = query.GroupBy(groupBy)
 	}
 
-	// check if graphql pagination provided:
-	if options.GraphqlPaginationValues.PaginationApplicable() {
-		query = query.
-			Where(options.GraphqlPaginationValues.Condition).
-			OrderBy(options.GraphqlPaginationValues.OrderBy)
-	}
-
-	// NOTE: we have to construct the count query here before pagination limit is applied
+	// NOTE: we have to construct the count query here before pagination conditions is applied
 	var totalCount int64
 	if options.CountTotal {
 		countQuery, countArgs, err := ss.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
@@ -317,10 +310,7 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64
 		}
 	}
 
-	// query = options.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(query)
-	if options.GraphqlPaginationValues.Limit > 0 {
-		query = query.Limit(options.GraphqlPaginationValues.Limit)
-	}
+	options.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

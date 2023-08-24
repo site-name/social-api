@@ -26,7 +26,7 @@ type GiftcardService interface {
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 	GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
-	GiftcardsByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError)
+	GiftcardsByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, *model.AppError)
 	// GiftcardsCreate creates purchased gift cards
 	GiftcardsCreate(orDer *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events

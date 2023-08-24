@@ -7,7 +7,6 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -100,14 +99,15 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 			LeftJoin(model.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)").
 			GroupBy(model.VoucherTableName + ".Id")
 
+		// NOTE: these annotation are for sorting voucher
 		if option.Annotate_MinimumSpentAmount {
 			query = query.
 				Column(`MIN(
 					VoucherChannelListings.MinSpentAmount
 				) FILTER (
 					WHERE Channels.Slug = ?
-				) AS "Vouchers.MintSpentAmount"`, option.ChannelSlug)
-		} else {
+				) AS "Vouchers.MinSpentAmount"`, option.ChannelSlug)
+		} else if option.Annotate_DiscountValue {
 			query = query.
 				Column(`MIN(
 					VoucherChannelListings.DiscountValue
@@ -129,13 +129,6 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 		query = query.Suffix("FOR UPDATE")
 	}
 
-	// parse pagination
-	if option.GraphqlPaginationValues.PaginationApplicable() {
-		query = query.
-			Where(option.GraphqlPaginationValues.Condition).
-			OrderBy(option.GraphqlPaginationValues.OrderBy)
-	}
-
 	// count total vouchers if required
 	var totalVoucher int64
 	if option.CountTotal {
@@ -150,10 +143,7 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 		}
 	}
 
-	// NOTE: we apply limit after counting
-	if option.GraphqlPaginationValues.Limit > 0 {
-		query = query.Limit(option.GraphqlPaginationValues.Limit)
-	}
+	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
 
 	querystr, args, err := query.ToSql()
 	if err != nil {
@@ -175,25 +165,18 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 
 	for rows.Next() {
 		var (
-			voucher                       model.Voucher
-			minSpentAmount, discountValue decimal.Decimal
-			scanFields                    = vs.ScanFields(&voucher)
+			voucher    model.Voucher
+			scanFields = vs.ScanFields(&voucher)
 		)
 		if option.Annotate_MinimumSpentAmount {
-			scanFields = append(scanFields, &minSpentAmount)
+			scanFields = append(scanFields, &voucher.MinSpentAmount)
 		} else if option.Annotate_DiscountValue {
-			scanFields = append(scanFields, &discountValue)
+			scanFields = append(scanFields, &voucher.DiscountValue)
 		}
 
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return 0, nil, errors.Wrap(err, "failed to scan a row of voucher")
-		}
-
-		if option.Annotate_MinimumSpentAmount {
-			voucher.MinSpentAmount = &minSpentAmount
-		} else if option.Annotate_DiscountValue {
-			voucher.DiscountValue = &discountValue
 		}
 
 		vouchers = append(vouchers, &voucher)

@@ -173,7 +173,7 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryC
 
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
 func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout) (*goprices.Money, *model.AppError) {
-	giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
 		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
 		Conditions: squirrel.And{
 			squirrel.Or{

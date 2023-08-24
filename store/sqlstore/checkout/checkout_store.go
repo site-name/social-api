@@ -108,14 +108,6 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 		query = query.InnerJoin(model.UserTableName + " ON Users.Id = Checkouts.UserID")
 	}
 
-	// NOTE: we don't apply limit here yet.
-	// Limit may be applied in FilterByOption() method.
-	if option.GraphqlPaginationValues.PaginationApplicable() {
-		query = query.
-			OrderBy(option.GraphqlPaginationValues.OrderBy).
-			Where(option.GraphqlPaginationValues.Condition)
-	}
-
 	return query
 }
 
@@ -171,7 +163,7 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 	filterQuery := cs.commonFilterQueryBuilder(option)
 
 	var totalCount int64
-	if option.CountTotal && option.GraphqlPaginationValues.PaginationApplicable() {
+	if option.CountTotal {
 		countQuery, args, err := cs.GetQueryBuilder().Select("COUNT (*)").FromSelect(filterQuery, "subquery").ToSql()
 		if err != nil {
 			return 0, nil, errors.Wrap(err, "FilterByOption_Count_ToSql")
@@ -182,6 +174,9 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 			return 0, nil, errors.Wrap(err, "failed to count total number of checkouts by given options")
 		}
 	}
+
+	// apply pagination
+	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&filterQuery)
 
 	query, args, err := filterQuery.ToSql()
 	if err != nil {

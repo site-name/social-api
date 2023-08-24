@@ -42,10 +42,14 @@ type GiftCard struct {
 	CurrentBalance *goprices.Money `json:"current_balance,omitempty" gorm:"-"`
 	InitialBalance *goprices.Money `json:"initial_balance,omitempty" gorm:"-"`
 
-	populatedNonDBFields bool `db:"-"`
-
 	Checkouts []*Checkout `json:"-" gorm:"many2many:GiftcardCheckouts"`
 	Orders    Orders      `json:"-" gorm:"many2many:OrderGiftCards"`
+
+	// NOTE: fields below are used for sorting purpose
+	RelatedProductName     string `json:"-" gorm:"column:-"`
+	RelatedProductSlug     string `json:"-" gorm:"column:-"`
+	RelatedUsedByFirstName string `json:"-" gorm:"column:-"`
+	RelatedUsedByLastName  string `json:"-" gorm:"column:-"`
 }
 
 func (c *GiftCard) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
@@ -56,13 +60,20 @@ func (c *GiftCard) TableName() string             { return GiftcardTableName }
 type GiftCardFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
+	CheckoutToken squirrel.Sqlizer // Id IN (SELECT 'GiftcardID' FROM 'GiftcardCheckouts' WHERE 'GiftcardCheckouts.CheckoutID' ...)
 	OrderID       squirrel.Sqlizer // INNER JOIN OrderGiftCards ON OrderGiftCards.GiftcardID = Giftcards.Id WHERE OrderGiftCards.OrderID ...
 
 	Distinct        bool // if true, SELECT DISTINCT
-	OrderBy         string
 	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries. NOTE: only apply when Transaction is set
 	Transaction     *gorm.DB
+
+	AnnotateRelatedProductName bool
+	AnnotateRelatedProductSlug bool
+	AnnotateUsedByFirstName    bool
+	AnnotateUsedByLastName     bool
+
+	CountTotal              bool
+	GraphqlPaginationValues GraphqlPaginationValues
 }
 
 type Giftcards []*GiftCard
@@ -80,11 +91,6 @@ func (gc *GiftCard) DisplayCode() string {
 
 // PopulateNonDbFields populates money fields for giftcard
 func (gc *GiftCard) PopulateNonDbFields() {
-	if gc.populatedNonDBFields {
-		return
-	}
-	gc.populatedNonDBFields = true
-
 	if gc.InitialBalanceAmount == nil {
 		gc.InitialBalanceAmount = &decimal.Zero
 	}

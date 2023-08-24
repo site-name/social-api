@@ -881,7 +881,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 		giftcardsToAddToOrder []*model.GiftCard
 	)
 
-	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
+	_, giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
 		SelectForUpdate: true,
 		CheckoutToken:   squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkoutInfo.Checkout.Token},
 	})

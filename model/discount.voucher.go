@@ -70,6 +70,7 @@ type Voucher struct {
 	Collections            Collections             `json:"-" gorm:"many2many:VoucherCollections"`
 	VoucherChannelListings []VoucherChannelListing `json:"-" gorm:"foreignKey:VoucherID;constraint:OnDelete:CASCADE"`
 
+	// NOTE: these fields are used for sorting vouchers
 	MinSpentAmount *decimal.Decimal `json:"-" gorm:"-"` // this field is used for sorting vouchers.
 	DiscountValue  *decimal.Decimal `json:"-" gorm:"-"` // this field is used for sorting vouchers.
 }

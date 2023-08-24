@@ -295,7 +295,7 @@ func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
 func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	giftcards, appErr := embedCtx.
+	_, giftcards, appErr := embedCtx.
 		App.
 		Srv().
 		GiftcardService().

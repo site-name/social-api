@@ -35,7 +35,6 @@ func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ Varian
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	err := embedCtx.App.Srv().Store.DigitalContent().Delete(nil, &model.DigitalContentFilterOption{
 		Conditions: squirrel.Expr(model.DigitalContentTableName+".ProductVariantID = ?", args.VariantID),
 	})

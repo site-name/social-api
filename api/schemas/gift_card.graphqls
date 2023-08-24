@@ -232,8 +232,8 @@ input GiftCardSettingsUpdateInput {
 
 enum GiftCardSortField {
   TAG
-  # PRODUCT
-  # USED_BY
+  PRODUCT
+  USED_BY
   CURRENT_BALANCE
 }
 

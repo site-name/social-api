@@ -461,7 +461,6 @@ type AttributeFilterInput struct {
 }
 
 func (a *AttributeFilterInput) validate(where string) *model.AppError {
-	where += "AttributeFilterInput.validate"
 	if !lo.EveryBy(a.Ids, model.IsValidId) {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid attribute ids", http.StatusBadRequest)
 	}
@@ -487,7 +486,6 @@ func (a *AttributeFilterInput) validate(where string) *model.AppError {
 // parse calls validate() first, if an validation error occured, return immediately.
 // If not, return *AttributeFilterOption and nil error
 func (a *AttributeFilterInput) parse(where string) (*model.AttributeFilterOption, *model.AppError) {
-	where += ".AttributeFilterInput.parse"
 	appErr := a.validate(where)
 	if appErr != nil {
 		return nil, appErr
@@ -550,8 +548,6 @@ type AttributeInput struct {
 }
 
 func (a *AttributeInput) validate(where string) *model.AppError {
-	where += ".AttributeInput.valiate"
-
 	if a.Slug != "" && !slug.IsSlug(a.Slug) {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
@@ -1210,7 +1206,16 @@ func (c *CollectionInput) validate(api string) *model.AppError {
 		c.PublicationDate = &Date{DateTime{util.StartOfDay(time.Now())}}
 	}
 
-	panic("not implemented") // TODO: add validate for background image
+	if c.Name != nil {
+		*c.Name = model.SanitizeUnicode(*c.Name)
+	}
+	if c.BackgroundImageAlt != nil {
+		*c.BackgroundImageAlt = model.SanitizeUnicode(*c.BackgroundImageAlt)
+	}
+	if c.Seo != nil {
+		c.Seo.Title = model.SanitizeUnicode(c.Seo.Title)
+		c.Seo.Description = model.SanitizeUnicode(c.Seo.Description)
+	}
 
 	return nil
 }
@@ -1229,7 +1234,7 @@ type CollectionError struct {
 
 type CollectionFilterInput struct {
 	Published *CollectionPublished `json:"published"`
-	Search    *string              `json:"search"`
+	Search    *string              `json:"search"` // collections' slug, name ILIKE ...
 	Metadata  []*MetadataInput     `json:"metadata"`
 	Ids       []string             `json:"ids"`
 }
@@ -1238,8 +1243,13 @@ func (c *CollectionFilterInput) validate(where string) *model.AppError {
 	if c.Published != nil && !c.Published.IsValid() {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "published"}, "please provide valid published attribute", http.StatusBadRequest)
 	}
-	if c.Search != nil && stringsContainSqlExpr.MatchString(*c.Search) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
+	if c.Search != nil {
+		if stringsContainSqlExpr.MatchString(*c.Search) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
+		}
+		if *c.Search == "" {
+			c.Search = nil
+		}
 	}
 	if !lo.EveryBy(c.Ids, model.IsValidId) {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid collection ids", http.StatusBadRequest)
@@ -1261,7 +1271,6 @@ type CollectionReorderProducts struct {
 type CollectionSortingInput struct {
 	Direction OrderDirection      `json:"direction"`
 	Field     CollectionSortField `json:"field"`
-	// Channel   *string             `json:"channel"`
 }
 
 type CollectionTranslatableContent struct {
@@ -1379,8 +1388,6 @@ type DateRangeInput struct {
 }
 
 func (d *DateRangeInput) validate(api string) *model.AppError {
-	api += ".DateRangeInput.validate"
-
 	if d.Gte != nil && d.Lte != nil && d.Gte.After(d.Lte.Time) {
 		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
 	}
@@ -1393,8 +1400,6 @@ type DateTimeRangeInput struct {
 }
 
 func (d *DateTimeRangeInput) validate(api string) *model.AppError {
-	api += ".DateTimeRangeInput.validate"
-
 	if d.Gte != nil && d.Lte != nil && d.Gte.After(d.Lte.Time) {
 		return model.NewAppError(api, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
 	}
@@ -2174,7 +2179,6 @@ type IntRangeInput struct {
 }
 
 func (i *IntRangeInput) validate(where string) *model.AppError {
-	where += ".IntRangeInput.validate"
 	if i.Gte != nil && i.Lte != nil && *i.Gte > *i.Lte {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lte, gte"}, "gte must less than or equal to lte", http.StatusBadRequest)
 	}
@@ -3129,7 +3133,6 @@ type PriceRangeInput struct {
 }
 
 func (p *PriceRangeInput) validate(where string) *model.AppError {
-	where += "PriceRangeInput.validate"
 	if p.Gte != nil && p.Lte != nil && *p.Gte > *p.Lte {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "gte, lte"}, "gte must be less than lte", http.StatusBadRequest)
 	}
@@ -3253,8 +3256,6 @@ type ProductFilterInput struct {
 }
 
 func (p *ProductFilterInput) validate(where string) *model.AppError {
-	where += ".ProductFilterInput.validate"
-
 	for name, value := range map[string][]string{
 		"collections":   p.Collections,
 		"categories":    p.Categories,
@@ -3498,8 +3499,6 @@ type ProductStockFilterInput struct {
 }
 
 func (p *ProductStockFilterInput) validate(where string) *model.AppError {
-	where += ".ProductStockFilterInput.validate"
-
 	if !lo.EveryBy(p.WarehouseIds, model.IsValidId) {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "warehouseIds"}, "please provide valid warehouse ids", http.StatusBadRequest)
 	}
@@ -5543,6 +5542,49 @@ const (
 	CollectionSortFieldPublicationDate CollectionSortField = "PUBLICATION_DATE"
 )
 
+type collectionSortKeys struct {
+	fields  util.AnyArray[string]
+	keyFunc func(c *model.Collection) []any
+}
+
+var collectionSortFieldMap = map[CollectionSortField]*collectionSortKeys{
+	CollectionSortFieldName: &collectionSortKeys{
+		fields: []string{model.CollectionTableName + ".Name"},
+		keyFunc: func(c *model.Collection) []any {
+			return []any{
+				model.CollectionTableName + ".Name", c.Name,
+			}
+		},
+	},
+	CollectionSortFieldAvailability: &collectionSortKeys{
+		fields: []string{model.CollectionTableName + ".IsPublished", model.CollectionTableName + ".Name"},
+		keyFunc: func(c *model.Collection) []any {
+			return []any{
+				model.CollectionTableName + ".IsPublished", c.IsPublished,
+				model.CollectionTableName + ".Name", c.Name,
+			}
+		},
+	},
+	CollectionSortFieldProductCount: &collectionSortKeys{
+		fields: []string{model.CollectionTableName + ".ProductCount", model.CollectionTableName + ".Name"},
+		keyFunc: func(c *model.Collection) []any {
+			return []any{
+				model.CollectionTableName + ".ProductCount", c.ProductCount,
+				model.CollectionTableName + ".Name", c.Name,
+			}
+		},
+	},
+	CollectionSortFieldPublicationDate: &collectionSortKeys{
+		fields: []string{model.CollectionTableName + ".PublicationDate", model.CollectionTableName + ".Name"},
+		keyFunc: func(c *model.Collection) []any {
+			return []any{
+				model.CollectionTableName + ".PublicationDate", c.PublicationDate,
+				model.CollectionTableName + ".Name", c.Name,
+			}
+		},
+	},
+}
+
 func (e CollectionSortField) IsValid() bool {
 	switch e {
 	case CollectionSortFieldName, CollectionSortFieldAvailability, CollectionSortFieldProductCount, CollectionSortFieldPublicationDate:
@@ -5727,10 +5769,50 @@ type GiftCardSortField string
 
 const (
 	GiftCardSortFieldTag            GiftCardSortField = "TAG"
-	GiftCardSortFieldProduct        GiftCardSortField = "PRODUCT"
+	GiftCardSortFieldProduct        GiftCardSortField = "PRODUCT" // order by
 	GiftCardSortFieldUsedBy         GiftCardSortField = "USED_BY"
 	GiftCardSortFieldCurrentBalance GiftCardSortField = "CURRENT_BALANCE"
 )
+
+var giftcardSortFieldMap = map[GiftCardSortField]*struct {
+	fields  util.AnyArray[string]
+	keyFunc func(g *model.GiftCard) []any
+}{
+	GiftCardSortFieldTag: {
+		fields: []string{model.GiftcardTableName + ".Tag"},
+		keyFunc: func(g *model.GiftCard) []any {
+			return []any{model.GiftcardTableName + ".Tag", g.Tag}
+		},
+	},
+	GiftCardSortFieldProduct: {
+		fields: []string{model.GiftcardTableName + ".RelatedProductName", model.GiftcardTableName + ".RelatedProductSlug"},
+		keyFunc: func(g *model.GiftCard) []any {
+			return []any{
+				model.GiftcardTableName + ".RelatedProductName", g.RelatedProductName,
+				model.GiftcardTableName + ".RelatedProductSlug", g.RelatedProductSlug,
+			}
+		},
+	},
+	GiftCardSortFieldUsedBy: {
+		fields: []string{model.GiftcardTableName + ".RelatedUsedByFirstName", model.GiftcardTableName + ".RelatedUsedByLastName", model.GiftcardTableName + ".CreateAt"},
+		keyFunc: func(g *model.GiftCard) []any {
+			return []any{
+				model.GiftcardTableName + ".RelatedUsedByFirstName", g.RelatedUsedByFirstName,
+				model.GiftcardTableName + ".RelatedUsedByLastName", g.RelatedUsedByLastName,
+				model.GiftcardTableName + ".CreateAt", g.CreateAt,
+			}
+		},
+	},
+	GiftCardSortFieldCurrentBalance: {
+		fields: []string{model.GiftcardTableName + ".CurrentBalanceAmount", model.GiftcardTableName + ".CreateAt"},
+		keyFunc: func(g *model.GiftCard) []any {
+			return []any{
+				model.GiftcardTableName + ".CurrentBalanceAmount", g.CurrentBalanceAmount,
+				model.GiftcardTableName + ".CreateAt", g.CreateAt,
+			}
+		},
+	},
+}
 
 func (e GiftCardSortField) IsValid() bool {
 	switch e {

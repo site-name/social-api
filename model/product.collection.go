@@ -2,6 +2,7 @@ package model
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
@@ -24,6 +25,12 @@ type Collection struct {
 	Vouchers           Vouchers             `json:"-" gorm:"many2many:VoucherCollections"`
 	Products           Products             `json:"-" gorm:"many2many:ProductCollections"`
 	CollectionProducts []*CollectionProduct `json:"-" gorm:"foreignKey:CollectionID"`
+
+	// NOTE: fields below are sort sorting purpose.
+	// Don't use them in business logic
+	IsPublished     bool       `json:"-" gorm:"-"`
+	PublicationDate *time.Time `json:"-" gorm:"-"`
+	ProductCount    int64      `json:"-" gorm:"-"`
 }
 
 func (c *Collection) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
@@ -47,6 +54,18 @@ type CollectionFilterOption struct {
 	ChannelListingChannelSlug     squirrel.Sqlizer // INNER JOIN `CollectionChannelListings` ON ... INNER JOIN `Channels` ON ... WHERE Channels.Slug ...
 	ChannelListingChannelIsActive squirrel.Sqlizer // INNER JOIN `CollectionChannelListings` ON ... INNER JOIN `Channels` ON ... WHERE Channels.IsActive ...
 	ChannelListingIsPublished     squirrel.Sqlizer // INNER JOIN `CollectionChannelListings` ON ... WHERE CollectionChannelListings.IsPublished ...
+
+	AnnotateProductCount bool
+
+	// NOTE: this field must be set when `AnnotateIsPublished` or `AnnotatePublicationDate` is set to true
+	ChannelSlugForIsPublishedAndPublicationDateAnnotation string
+
+	// NOTE: in order for 2 fields below to work, `ChannelSlugForIsPublishedAndPublicationDateAnnotation` must be set
+	AnnotateIsPublished     bool
+	AnnotatePublicationDate bool
+
+	CountTotal              bool
+	GraphqlPaginationValues GraphqlPaginationValues
 }
 
 type Collections []*Collection

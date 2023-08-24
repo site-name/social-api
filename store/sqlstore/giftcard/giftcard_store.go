@@ -19,6 +19,28 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 	return &SqlGiftCardStore{sqlStore}
 }
 
+func (s *SqlGiftCardStore) ScanFields(g *model.GiftCard) []any {
+	return []any{
+		&g.Id,
+		&g.Code,
+		&g.CreatedByID,
+		&g.UsedByID,
+		&g.CreatedByEmail,
+		&g.UsedByEmail,
+		&g.CreateAt,
+		&g.StartDate,
+		&g.Tag,
+		&g.ProductID,
+		&g.LastUsedOn,
+		&g.IsActive,
+		&g.Currency,
+		&g.InitialBalanceAmount,
+		&g.CurrentBalanceAmount,
+		&g.Metadata,
+		&g.PrivateMetadata,
+	}
+}
+
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
 func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	if transaction == nil {
@@ -50,18 +72,12 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 }
 
 // FilterByOption finds giftcards wth option
-func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
 	query := gs.
 		GetQueryBuilder().
-		Select(model.GiftcardTableName + ".").
-		From(model.GiftcardTableName).Where(option.Conditions)
-
-	if option.OrderBy != "" {
-		query = query.OrderBy(option.OrderBy)
-	} else {
-		// defaut to code
-		query = query.OrderBy("Code ASC")
-	}
+		Select(model.GiftcardTableName + ".*").
+		From(model.GiftcardTableName).
+		Where(option.Conditions)
 
 	if option.OrderID != nil {
 		query = query.
@@ -83,22 +99,76 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 		query = query.Distinct()
 	}
 
+	// those annotations are used for pagination sorting
+	if option.AnnotateRelatedProductName ||
+		option.AnnotateRelatedProductSlug {
+		query = query.
+			InnerJoin(model.ProductTableName + " ON Products.Id = GiftCards.ProductID").
+			Column(`Products.Name AS "GiftCards.RelatedProductName"`).
+			Column(`Products.Slug AS "GiftCards.RelatedProductSlug"`)
+	}
+
+	if option.AnnotateUsedByFirstName ||
+		option.AnnotateRelatedProductSlug {
+		query = query.
+			InnerJoin(model.UserTableName + " ON GiftCards.UsedByID = Users.Id").
+			Column(`Users.FirstName AS "GiftCards.RelatedUsedByFirstName"`).
+			Column(`Users.LastName AS "GiftCards.RelatedUsedByLastName"`)
+	}
+
+	var totalCount int64
+	if option.CountTotal {
+		countQuery, args, err := gs.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOption_CountTotal_ToSql")
+		}
+
+		err = gs.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total giftcards by options")
+		}
+	}
+
+	// check pagination
+	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
+
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "query_toSql")
+		return 0, nil, errors.Wrap(err, "query_toSql")
 	}
 
 	runner := gs.GetReplica()
 	if option.Transaction != nil {
 		runner = option.Transaction
 	}
-	var giftcards []*model.GiftCard
-	err = runner.Raw(queryString, args...).Scan(&giftcards).Error
+
+	rows, err := runner.Raw(queryString, args...).Rows()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds giftcards with code")
+		return 0, nil, errors.Wrap(err, "failed to count total number of giftcards by options")
+	}
+	defer rows.Close()
+
+	var res model.Giftcards
+	for rows.Next() {
+		var gc model.GiftCard
+		var scanFields = gs.ScanFields(&gc)
+
+		if option.AnnotateRelatedProductName || option.AnnotateRelatedProductSlug {
+			scanFields = append(scanFields, &gc.RelatedProductName, &gc.RelatedProductSlug)
+		}
+		if option.AnnotateUsedByFirstName || option.AnnotateUsedByLastName {
+			scanFields = append(scanFields, &gc.RelatedUsedByFirstName, &gc.RelatedUsedByLastName)
+		}
+
+		err := rows.Scan(scanFields...)
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to scan a row of giftcard")
+		}
+
+		res = append(res, &gc)
 	}
 
-	return giftcards, nil
+	return totalCount, res, nil
 }
 
 // GetGiftcardLines returns a list of order lines

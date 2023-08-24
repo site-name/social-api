@@ -295,7 +295,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 	}()
 
 	go func() {
-		collections, appErr := a.CollectionsByOption(&collectionFilterOption)
+		_, collections, appErr := a.CollectionsByOption(&collectionFilterOption)
 		if appErr != nil {
 			appError <- appErr
 			return

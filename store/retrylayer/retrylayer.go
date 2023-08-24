@@ -2868,21 +2868,21 @@ func (s *RetryLayerCollectionStore) Delete(ids ...string) error {
 
 }
 
-func (s *RetryLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
+func (s *RetryLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) {
 
 	tries := 0
 	for {
-		result, err := s.CollectionStore.FilterByOption(option)
+		result, resultVar1, err := s.CollectionStore.FilterByOption(option)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 
@@ -4240,21 +4240,21 @@ func (s *RetryLayerGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []st
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
 
 	tries := 0
 	for {
-		result, err := s.GiftCardStore.FilterByOption(option)
+		result, resultVar1, err := s.GiftCardStore.FilterByOption(option)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 

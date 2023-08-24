@@ -66,7 +66,7 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 		query = query.Distinct()
 	}
 
-	query = option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(query)
+	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
 
 	if option.AttributeProduct_ProductTypeID != nil {
 		query = query.
@@ -273,18 +273,7 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 }
 
 func (s *SqlAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
-	paginApplicable := options.GraphqlPaginationValues.PaginationApplicable()
-
-	// NOTE: can't count when limit is > 0
-	// When limit is set to 0, other pagination values (order by, logical condition) are not applied. (see commonQueryBuilder() for details)
-	// so we must add them manually after call to `commonQueryBuilder`
-	options.GraphqlPaginationValues.Limit = 0
-
 	query := s.commonQueryBuilder(options)
-	if paginApplicable {
-		query = query.Where(options.GraphqlPaginationValues.Condition)
-	}
-
 	countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "CountByOptions_ToSql")

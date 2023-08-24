@@ -404,9 +404,9 @@ type (
 		FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error)
 	}
 	CollectionStore interface {
-		Upsert(collection *model.Collection) (*model.Collection, error)                   // Upsert depends on given collection's Id property to decide update or insert the collection
-		Get(collectionID string) (*model.Collection, error)                               // Get finds and returns collection with given collectionID
-		FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
+		Upsert(collection *model.Collection) (*model.Collection, error)                          // Upsert depends on given collection's Id property to decide update or insert the collection
+		Get(collectionID string) (*model.Collection, error)                                      // Get finds and returns collection with given collectionID
+		FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
 		ScanFields(col *model.Collection) []interface{}
 		Delete(ids ...string) error
 	}
@@ -606,7 +606,7 @@ type (
 		DeleteGiftcards(transaction *gorm.DB, ids []string) error
 		BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
 		GetById(id string) (*model.GiftCard, error)                                               // GetById returns a giftcard instance that has id of given id
-		FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error)             // FilterByOption finds giftcards wth option
+		FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error)      // FilterByOption finds giftcards wth option
 		// DeactivateOrderGiftcards update giftcards
 		// which have giftcard events with type == 'bought', parameters.order_id == given order id
 		// by setting their IsActive model to false

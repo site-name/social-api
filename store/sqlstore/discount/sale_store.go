@@ -79,9 +79,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 			InnerJoin(model.SaleChannelListingTableName + " ON SaleChannelListings.SaleID = Sales.Id").
 			InnerJoin(model.ChannelTableName + " ON Channels.Id = SaleChannelListings.ChannelID").
 			Where(option.SaleChannelListing_ChannelSlug)
-
 	} else if option.Annotate_Value {
-
 		// check if channel provided:
 		if !slug.IsSlug(option.ChannelSlug) {
 			return 0, nil, store.NewErrInvalidInput("FilterSalesByOption", "option.ChannelSlug", option.ChannelSlug)
@@ -98,12 +96,6 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 			GroupBy(model.SaleTableName + ".Id")
 	}
 
-	if option.GraphqlPaginationValues.PaginationApplicable() {
-		query = query.
-			Where(option.GraphqlPaginationValues.Condition).
-			OrderBy(option.GraphqlPaginationValues.OrderBy)
-	}
-
 	var totalSale int64
 	if option.CountTotal {
 		query, args, err := ss.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
@@ -116,11 +108,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 		}
 	}
 
-	// NOTICE:
-	// we add limit to the query after counting.
-	if option.GraphqlPaginationValues.Limit > 0 {
-		query = query.Limit(option.GraphqlPaginationValues.Limit)
-	}
+	option.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

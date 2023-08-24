@@ -2679,7 +2679,7 @@ func (s *OpenTracingLayerCollectionStore) Delete(ids ...string) error {
 	return err
 }
 
-func (s *OpenTracingLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
+func (s *OpenTracingLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -2688,13 +2688,13 @@ func (s *OpenTracingLayerCollectionStore) FilterByOption(option *model.Collectio
 	}()
 
 	defer span.Finish()
-	result, err := s.CollectionStore.FilterByOption(option)
+	result, resultVar1, err := s.CollectionStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerCollectionStore) Get(collectionID string) (*model.Collection, error) {
@@ -3929,7 +3929,7 @@ func (s *OpenTracingLayerGiftCardStore) DeleteGiftcards(transaction *gorm.DB, id
 	return err
 }
 
-func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3938,13 +3938,13 @@ func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *model.GiftCardFil
 	}()
 
 	defer span.Finish()
-	result, err := s.GiftCardStore.FilterByOption(option)
+	result, resultVar1, err := s.GiftCardStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
