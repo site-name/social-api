@@ -4780,6 +4780,12 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
+func (s *RetryLayerMenuStore) Delete(ids []string) (int64, *model.AppError) {
+
+	return s.MenuStore.Delete(ids)
+
+}
+
 func (s *RetryLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
 
 	tries := 0
@@ -4837,6 +4843,12 @@ func (s *RetryLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+
+	return s.MenuItemStore.Delete(ids)
 
 }
 
@@ -8652,21 +8664,21 @@ func (s *RetryLayerUserStore) Count(options model.UserCountOptions) (int64, erro
 
 }
 
-func (s *RetryLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
+func (s *RetryLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.FilterByOptions(ctx, options)
+		result, resultVar1, err := s.UserStore.FilterByOptions(ctx, options)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 

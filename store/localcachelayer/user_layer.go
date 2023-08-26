@@ -171,7 +171,7 @@ func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 		if fromMaster {
 			ctx = sqlstore.WithMaster(ctx)
 		}
-		dbUsers, err := s.UserStore.FilterByOptions(ctx, &model.UserFilterOptions{
+		_, dbUsers, err := s.UserStore.FilterByOptions(ctx, &model.UserFilterOptions{
 			Conditions: squirrel.Eq{model.UserTableName + ".Id": notCachedUserIds},
 		})
 		if err != nil {

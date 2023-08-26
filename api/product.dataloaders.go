@@ -330,7 +330,7 @@ func collectionByIdLoader(ctx context.Context, collectionIDs []string) []*datalo
 	res := make([]*dataloader.Result[*model.Collection], len(collectionIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	collections, appErr := embedCtx.App.Srv().
+	_, collections, appErr := embedCtx.App.Srv().
 		ProductService().
 		CollectionsByOption(&model.CollectionFilterOption{
 			Conditions: squirrel.Eq{model.CollectionTableName + ".Id": collectionIDs},

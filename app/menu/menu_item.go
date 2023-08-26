@@ -14,3 +14,11 @@ func (s *ServiceMenu) MenuItemsByOptions(options *model.MenuItemFilterOptions) (
 
 	return items, nil
 }
+
+func (s *ServiceMenu) UpsertMenuItem(item *model.MenuItem) (*model.MenuItem, *model.AppError) {
+	item, err := s.srv.Store.MenuItem().Save(item)
+	if err != nil {
+		return nil, model.NewAppError("UpsertMenuItem", "app.menu.upsert_item.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return item, nil
+}

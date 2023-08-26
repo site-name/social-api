@@ -20,20 +20,14 @@ import (
 
 // constants used in package account
 const (
-	ME                            = "me"
-	PUSH_NOTIFY_PROP              = "push"
-	EMAIL_NOTIFY_PROP             = "email"
-	USER_NOTIFY_MENTION           = "mention"
-	MENTION_KEYS_NOTIFY_PROP      = "mention_keys"
-	USER_NICKNAME_MAX_RUNES       = 64
-	USER_POSITION_MAX_RUNES       = 128
-	USER_FIRST_NAME_MAX_RUNES     = 64
-	USER_LAST_NAME_MAX_RUNES      = 64
-	USER_AUTH_DATA_MAX_LENGTH     = 128
-	USER_HASH_PASSWORD_MAX_LENGTH = 128
-	USER_LOCALE_MAX_LENGTH        = 5
-	USER_TIMEZONE_MAX_RUNES       = 256
-	USER_LANGUAGE_CODE_MAX_LENGTH = 10
+	ME                        = "me"
+	PUSH_NOTIFY_PROP          = "push"
+	EMAIL_NOTIFY_PROP         = "email"
+	USER_NOTIFY_MENTION       = "mention"
+	MENTION_KEYS_NOTIFY_PROP  = "mention_keys"
+	USER_FIRST_NAME_MAX_RUNES = 64
+	USER_LAST_NAME_MAX_RUNES  = 64
+	USER_TIMEZONE_MAX_RUNES   = 256
 )
 
 // User contains the details about the user.
@@ -79,6 +73,9 @@ type User struct {
 	CustomerNotes               []*CustomerNote               `json:"-" gorm:"foreignKey:UserID"` // notes that this user has made
 	NotesOnMe                   []*CustomerNote               `json:"-" gorm:"foreignKey:CustomerID"`
 	StaffNotificationRecipients []*StaffNotificationRecipient `json:"-" gorm:"foreignKey:UserID"`
+
+	// NOTE: field(s) below is/are used for sorting
+	OrderCount int `json:"-" gorm:"-"`
 }
 
 func (u *User) BeforeCreate(_ *gorm.DB) error { u.PreSave(); return u.IsValid() }

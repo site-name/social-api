@@ -715,9 +715,7 @@ func (a *ServiceAccount) UpdateUserRolesWithUser(user *model.User, newRoles stri
 }
 
 func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppError {
-	users, err := a.FidUsersByOptions(context.TODO(), &model.UserFilterOptions{
-		OrderBy: "Users.Username ASC",
-	})
+	users, err := a.FidUsersByOptions(context.TODO(), &model.UserFilterOptions{})
 	if err != nil {
 		return model.NewAppError("PermanentDeleteAllUsers", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -1288,7 +1286,7 @@ func getProfileImagePath(userID string) string {
 }
 
 func (s *ServiceAccount) FidUsersByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, *model.AppError) {
-	users, err := s.srv.Store.User().FilterByOptions(ctx, options)
+	_, users, err := s.srv.Store.User().FilterByOptions(ctx, options)
 	if err != nil {
 		return nil, model.NewAppError("FidUsersByOptions", "app.account.users_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

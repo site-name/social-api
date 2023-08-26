@@ -575,11 +575,13 @@ type (
 	MenuItemTranslationStore interface {
 	}
 	MenuStore interface {
+		Delete(ids []string) (int64, *model.AppError)
 		Save(menu *model.Menu) (*model.Menu, error) // Save insert given menu into database and returns it
 		GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error)
 		FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error)
 	}
 	MenuItemStore interface {
+		Delete(ids []string) (int64, *model.AppError)
 		Save(menuItem *model.MenuItem) (*model.MenuItem, error) // Save insert given menu item into database and returns it
 		GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error)
 		FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error)
@@ -843,7 +845,7 @@ type (
 		AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
 		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error)
 		GetUnreadCount(userID string) (int64, error) // TODO: consider me
-		FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error)
+		FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error)
 		GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error)
 	}
 	TokenStore interface {

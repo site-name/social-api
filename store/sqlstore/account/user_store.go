@@ -764,16 +764,34 @@ func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions
 	query := s.
 		GetQueryBuilder().
 		Select(model.UserTableName + ".*").
-		From(model.UserTableName).Where(options.Conditions)
-
-	if options.OrderID != nil {
-		query = query.Where(options.OrderID)
-	}
+		From(model.UserTableName).
+		Where(options.Conditions)
 
 	if options.HasNoOrder {
 		query = query.
 			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
 			Where("Orders.UserID IS NULL")
+
+		goto orderBy
+	}
+
+	if options.OrderID != nil {
+		query = query.
+			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+			Where(options.OrderID)
+	}
+
+	if options.HasNoOrder || (options.AnnotateOrderCount && options.OrderCreatedDate == nil) {
+		query = query.
+			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id")
+
+		if options.HasNoOrder {
+			query = query.Where("Orders.UserID IS NULL")
+		} else if options.AnnotateOrderCount {
+			query = query.
+				Column(`COUNT (Orders.Id) AS "Users.OrderCount"`).
+				GroupBy(model.UserTableName + ".Id")
+		}
 	} else if options.OrderID != nil {
 		query = query.
 			InnerJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
@@ -784,28 +802,76 @@ func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions
 			LeftJoin(model.ShopStaffTableName + " ON ShopStaffs.StaffID = Users.Id").
 			Where("ShopStaffs.StaffID IS NULL")
 	}
-	if options.Limit > 0 {
-		query = query.Limit(uint64(options.Limit))
-	}
-	if options.OrderBy != "" {
-		query = query.OrderBy(options.OrderBy)
+
+	if options.AnnotateOrderCount {
+		query = query.
+			LeftJoin(model.OrderTableName + " ON Orders.UserID = Users.Id").
+			Column(`COUNT (Orders.Id) AS "Users.OrderCount"`).
+			GroupBy(model.UserTableName + ".Id")
+	} else if options.OrderCreatedDate != nil {
+
 	}
 
+orderBy:
+	if options.GraphqlPaginationValues.OrderBy != "" {
+		query = query.OrderBy(options.GraphqlPaginationValues.OrderBy)
+	}
 	return query
 }
 
-func (s *SqlUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
-	queryString, args, err := s.commonSelectQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+func (s *SqlUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
+	query := s.commonSelectQueryBuilder(options)
+
+	// count total if needed
+	var totalUsersCount int64
+	if options.CountTotal {
+		countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOptions_CountTotal_ToSql")
+		}
+
+		err = s.GetReplica().Raw(countQuery, args...).Scan(&totalUsersCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total number of users by given options")
+		}
 	}
 
-	var users []*model.User
-	err = s.GetReplica().Raw(queryString, args...).Find(&users).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find users with given options")
+	// apply pagination if needed
+	// NOTE: we don't apply order by here since it's applied in commonQueryBuilder
+	if options.GraphqlPaginationValues.PaginationApplicable() {
+		query = query.
+			Limit(options.GraphqlPaginationValues.Limit).
+			Where(options.GraphqlPaginationValues.Condition)
 	}
-	return users, nil
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return 0, nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	rows, err := s.GetReplica().Raw(queryString, args...).Rows()
+	if err != nil {
+		return 0, nil, errors.Wrap(err, "failed to find users by given options")
+	}
+	defer rows.Close()
+
+	var users []*model.User
+	for rows.Next() {
+		var user model.User
+		scanFields := s.ScanFields(&user)
+		if options.AnnotateOrderCount {
+			scanFields = append(scanFields, &user.OrderCount)
+		}
+
+		err := rows.Scan(scanFields...)
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to scan a row of user")
+		}
+
+		users = append(users, &user)
+	}
+
+	return totalUsersCount, users, nil
 }
 
 func (s *SqlUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
@@ -847,7 +913,7 @@ func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relatio
 		association = "StaffNotificationRecipients"
 	}
 
-	err := s.GetMaster().Model(&model.User{Id: userID}).Association(association).Append(relations)
+	err := transaction.Model(&model.User{Id: userID}).Association(association).Append(relations)
 	if err != nil {
 		return model.NewAppError("UserStore.AddRelations", "app.account.add_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
 	}
@@ -876,7 +942,7 @@ func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, rela
 		association = "StaffNotificationRecipients"
 	}
 
-	err := s.GetMaster().Model(&model.User{Id: userID}).Association(association).Delete(relations)
+	err := transaction.Model(&model.User{Id: userID}).Association(association).Delete(relations)
 	if err != nil {
 		return model.NewAppError("UserStore.AddRelations", "app.account.remove_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
 	}

@@ -49,3 +49,17 @@ func (s *ServiceMenu) MenusByOptions(options *model.MenuFilterOptions) ([]*model
 
 	return mnu, nil
 }
+
+func (s *ServiceMenu) UpsertMenu(menu *model.Menu) (*model.Menu, *model.AppError) {
+	menu, err := s.srv.Store.Menu().Save(menu)
+	if err != nil {
+		var statusCode = http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("UpsertMenu", "app.menu.upsert_menu.app_error", nil, err.Error(), statusCode)
+	}
+
+	return menu, nil
+}

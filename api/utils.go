@@ -570,9 +570,9 @@ func (g *GraphqlParams) queryLimit() uint64 {
 	}
 }
 
-func (g *GraphqlParams) checkNextPageAndPreviousPage(kengthOfRecordSliceFounded int) (hasNextPage, hasPreviousPage bool) {
+func (g *GraphqlParams) checkNextPageAndPreviousPage(lengthOfRecordSliceFounded int) (hasNextPage, hasPreviousPage bool) {
 	queryLimit := g.queryLimit()
-	hasNextPage = queryLimit != 0 && kengthOfRecordSliceFounded == int(queryLimit)
+	hasNextPage = queryLimit != 0 && lengthOfRecordSliceFounded == int(queryLimit)
 	hasPreviousPage = queryLimit != 0 && (g.Before != nil || g.After != nil)
 	return
 }

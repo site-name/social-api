@@ -10,4 +10,6 @@ type MenuService interface {
 	MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model.AppError)
 	MenuItemsByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, *model.AppError)
 	MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model.AppError)
+	UpsertMenu(menu *model.Menu) (*model.Menu, *model.AppError)
+	UpsertMenuItem(item *model.MenuItem) (*model.MenuItem, *model.AppError)
 }

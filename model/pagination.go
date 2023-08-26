@@ -19,15 +19,15 @@ type GraphqlPaginationValues struct {
 	Limit uint64
 }
 
-// paginationApplicable checks if:
+// PaginationApplicable checks if:
 // Limit > 0, OrderBy != ""
-func (p *GraphqlPaginationValues) paginationApplicable() bool {
+func (p *GraphqlPaginationValues) PaginationApplicable() bool {
 	return p.OrderBy != "" && p.Limit > 0
 }
 
 // AddPaginationToSelectBuilder check if current GraphqlPaginationValues is not empty, then add pagination ability to given select builder
 func (p *GraphqlPaginationValues) AddPaginationToSelectBuilderIfNeeded(builder *squirrel.SelectBuilder) {
-	if p.paginationApplicable() {
+	if p.PaginationApplicable() {
 		*builder = builder.
 			OrderBy(p.OrderBy).
 			Limit(p.Limit).

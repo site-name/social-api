@@ -1,15 +1,15 @@
 extend type Mutation {
   assignNavigation(menu: String, navigationType: NavigationType!): AssignNavigation @hasRoles(roles: [shop_admin])
-  menuCreate(input: MenuCreateInput!): MenuCreate
-  menuDelete(id: String!): MenuDelete
-  menuBulkDelete(ids: [String!]!): MenuBulkDelete
-  menuUpdate(id: String!, input: MenuInput!): MenuUpdate
-  menuItemCreate(input: MenuItemCreateInput!): MenuItemCreate
-  menuItemDelete(id: String!): MenuItemDelete
-  menuItemBulkDelete(ids: [String!]!): MenuItemBulkDelete
-  menuItemUpdate(id: String!, input: MenuItemInput!): MenuItemUpdate
-  menuItemTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): MenuItemTranslate
-  menuItemMove(menu: String!, moves: [MenuItemMoveInput]!): MenuItemMove
+  menuCreate(input: MenuCreateInput!): MenuCreate @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuDelete(id: String!): MenuDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuBulkDelete(ids: [String!]!): MenuBulkDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuUpdate(id: String!, input: MenuInput!): MenuUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuItemCreate(input: MenuItemCreateInput!): MenuItemCreate @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuItemDelete(id: String!): MenuItemDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuItemBulkDelete(ids: [String!]!): MenuItemBulkDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuItemUpdate(id: String!, input: MenuItemInput!): MenuItemUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuItemTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): MenuItemTranslate @hasRoleAny(roles: [shop_admin, shop_staff])
+  menuItemMove(menu: String!, moves: [MenuItemMoveInput]!): MenuItemMove @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {

@@ -4045,6 +4045,22 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
+func (s *TimerLayerMenuStore) Delete(ids []string) (int64, *model.AppError) {
+	start := timemodule.Now()
+
+	result, resultVar1 := s.MenuStore.Delete(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.Delete", success, elapsed)
+	}
+	return result, resultVar1
+}
+
 func (s *TimerLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
 	start := timemodule.Now()
 
@@ -4091,6 +4107,22 @@ func (s *TimerLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+	start := timemodule.Now()
+
+	result, resultVar1 := s.MenuItemStore.Delete(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.Delete", success, elapsed)
+	}
+	return result, resultVar1
 }
 
 func (s *TimerLayerMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
@@ -7229,10 +7261,10 @@ func (s *TimerLayerUserStore) Count(options model.UserCountOptions) (int64, erro
 	return result, err
 }
 
-func (s *TimerLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
+func (s *TimerLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserStore.FilterByOptions(ctx, options)
+	result, resultVar1, err := s.UserStore.FilterByOptions(ctx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7242,7 +7274,7 @@ func (s *TimerLayerUserStore) FilterByOptions(ctx context.Context, options *mode
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.FilterByOptions", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {

@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -1053,7 +1052,7 @@ func (r *Resolver) Checkouts(ctx context.Context, args struct {
 	}
 
 	if paginationValues.OrderBy == "" {
-		paginationValues.OrderBy = fmt.Sprintf("%[1]s.CreateAt ASC", model.CheckoutTableName)
+		paginationValues.OrderBy = model.CheckoutTableName + ".CreateAt ASC"
 	}
 
 	filterOpts := &model.CheckoutFilterOption{

@@ -30,6 +30,7 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
+	"github.com/uber/jaeger-client-go/utils"
 )
 
 const (
@@ -166,11 +167,6 @@ func GetMillis() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-// GetMillisForTime is a convenience method to get milliseconds since epoch for provided Time.
-func GetMillisForTime(thisTime time.Time) int64 {
-	return thisTime.UnixNano() / int64(time.Millisecond)
-}
-
 // GetTimeForMillis is a convenience method to get time.Time for milliseconds since epoch.
 func GetTimeForMillis(millis int64) time.Time {
 	return time.Unix(0, millis*int64(time.Millisecond))
@@ -180,14 +176,14 @@ func GetTimeForMillis(millis int64) time.Time {
 func GetStartOfDayMillis(thisTime time.Time, timeZoneOffset int) int64 {
 	localSearchTimeZone := time.FixedZone("Local Search Time Zone", timeZoneOffset)
 	resultTime := time.Date(thisTime.Year(), thisTime.Month(), thisTime.Day(), 0, 0, 0, 0, localSearchTimeZone)
-	return GetMillisForTime(resultTime)
+	return utils.TimeToMicrosecondsSinceEpochInt64(resultTime)
 }
 
 // GetEndOfDayMillis is a convenience method to get milliseconds since epoch for provided date's end of day
 func GetEndOfDayMillis(thisTime time.Time, timeZoneOffset int) int64 {
 	localSearchTimeZone := time.FixedZone("Local Search Time Zone", timeZoneOffset)
 	resultTime := time.Date(thisTime.Year(), thisTime.Month(), thisTime.Day(), 23, 59, 59, 999999999, localSearchTimeZone)
-	return GetMillisForTime(resultTime)
+	return utils.TimeToMicrosecondsSinceEpochInt64(resultTime)
 }
 
 // AppError represents error caused while the system is operating

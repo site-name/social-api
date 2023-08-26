@@ -1,6 +1,8 @@
 package menu
 
 import (
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -16,7 +18,7 @@ func NewSqlMenuItemStore(s store.Store) store.MenuItemStore {
 }
 
 func (is *SqlMenuItemStore) Save(item *model.MenuItem) (*model.MenuItem, error) {
-	if err := is.GetMaster().Create(item).Error; err != nil {
+	if err := is.GetMaster().Save(item).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to save menu item with id=%s", item.Id)
 	}
 	return item, nil
@@ -37,10 +39,18 @@ func (is *SqlMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (
 
 func (is *SqlMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
 	var res []*model.MenuItem
-	err := is.GetReplica().Select(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err := is.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find menu items by given options")
 	}
 
 	return res, nil
+}
+
+func (s *SqlMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+	result := s.GetMaster().Raw("DELETE FROM "+model.MenuItemTableName+" WHERE Id IN ?", ids)
+	if result.Error != nil {
+		return 0, model.NewAppError("DeleteMenu", "app.menu.delete_menu_items.app_error", nil, result.Error.Error(), http.StatusInternalServerError)
+	}
+	return result.RowsAffected, nil
 }

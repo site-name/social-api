@@ -1,6 +1,8 @@
 package menu
 
 import (
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -16,11 +18,11 @@ func NewSqlMenuStore(sqlStore store.Store) store.MenuStore {
 }
 
 func (ms *SqlMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
-	if err := ms.GetMaster().Create(menu).Error; err != nil {
-		if ms.IsUniqueConstraintError(err, []string{"Name", "menus_name_key", "idx_menus_name_unique"}) {
+	if err := ms.GetMaster().Save(menu).Error; err != nil {
+		if ms.IsUniqueConstraintError(err, []string{"Name", "name_unique_key"}) {
 			return nil, store.NewErrInvalidInput(model.MenuTableName, "Name", menu.Name)
 		}
-		if ms.IsUniqueConstraintError(err, []string{"Slug", "menus_slug_key", "idx_menus_slug_unique"}) {
+		if ms.IsUniqueConstraintError(err, []string{"Slug", "slug_unique_key"}) {
 			return nil, store.NewErrInvalidInput(model.MenuTableName, "Slug", menu.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to save menu with id=%s", menu.Id)
@@ -50,4 +52,12 @@ func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*mo
 	}
 
 	return res, nil
+}
+
+func (s *SqlMenuStore) Delete(ids []string) (int64, *model.AppError) {
+	result := s.GetMaster().Raw("DELETE FROM "+model.MenuTableName+" WHERE Id IN ?", ids)
+	if result.Error != nil {
+		return 0, model.NewAppError("DeleteMenu", "app.menu.delete_menus.app_error", nil, result.Error.Error(), http.StatusInternalServerError)
+	}
+	return result.RowsAffected, nil
 }

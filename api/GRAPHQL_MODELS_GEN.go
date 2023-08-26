@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -1361,9 +1362,37 @@ type CustomerDelete struct {
 type CustomerFilterInput struct {
 	DateJoined     *DateRangeInput  `json:"dateJoined"`
 	NumberOfOrders *IntRangeInput   `json:"numberOfOrders"`
-	PlacedOrders   *DateRangeInput  `json:"placedOrders"`
+	PlacedOrders   *DateRangeInput  `json:"placedOrders"` // comapre by the date orders are created by users
 	Search         *string          `json:"search"`
 	Metadata       []*MetadataInput `json:"metadata"`
+}
+
+func (c *CustomerFilterInput) validate(api string) *model.AppError {
+	for _, item := range map[string]*DateRangeInput{
+		"DateJoined":   c.DateJoined,
+		"PlacedOrders": c.PlacedOrders,
+	} {
+		if item != nil {
+			appErr := item.validate(api)
+			if appErr != nil {
+				return appErr
+			}
+		}
+	}
+	if c.NumberOfOrders != nil {
+		appErr := c.NumberOfOrders.validate(api)
+		if appErr != nil {
+			return appErr
+		}
+	}
+	if c.Search != nil {
+		if stringsContainSqlExpr.MatchString(*c.Search) {
+			c.Search = nil
+		}
+		*c.Search = strings.TrimSpace(*c.Search)
+	}
+
+	return nil
 }
 
 type CustomerInput struct {
@@ -2313,6 +2342,27 @@ type MenuCreateInput struct {
 	Items []*MenuItemInput `json:"items"`
 }
 
+func (m *MenuCreateInput) validate(where string) *model.AppError {
+	m.Name = strings.TrimSpace(m.Name)
+	if m.Name == "" {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide menu name", http.StatusBadRequest)
+	}
+	if m.Slug != nil && !slug.IsSlug(*m.Slug) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
+	}
+
+	for _, item := range m.Items {
+		if item != nil {
+			appErr := item.validate(where)
+			if appErr != nil {
+				return appErr
+			}
+		}
+	}
+
+	return nil
+}
+
 type MenuDelete struct {
 	Errors []*MenuError `json:"errors"`
 	Menu   *Menu        `json:"menu"`
@@ -2333,6 +2383,20 @@ type MenuFilterInput struct {
 type MenuInput struct {
 	Name *string `json:"name"`
 	Slug *string `json:"slug"`
+}
+
+func (m *MenuInput) validate(where string) *model.AppError {
+	if m.Name != nil {
+		name := strings.TrimSpace(*m.Name)
+		if name == "" {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu name", http.StatusBadRequest)
+		}
+	}
+	if m.Slug != nil && !slug.IsSlug(*m.Slug) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
+	}
+
+	return nil
 }
 
 type MenuItemBulkDelete struct {
@@ -2366,6 +2430,29 @@ type MenuItemCreateInput struct {
 	Parent     *string `json:"parent"`
 }
 
+func (m *MenuItemCreateInput) validate(where string) *model.AppError {
+	m.Name = strings.TrimSpace(m.Name)
+	if m.Name == "" {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fieds": "Name"}, "please provide menu item name", http.StatusBadRequest)
+	}
+	if !model.IsValidId(m.Menu) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MenuId"}, "please provide valid menu id", http.StatusBadRequest)
+	}
+
+	for name, id := range map[string]*string{
+		"Category":     m.Category,
+		"Collection":   m.Collection,
+		"Page":         m.Page,
+		"ParentMenuId": m.Parent,
+	} {
+		if id != nil && !model.IsValidId(*id) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" id", http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
 type MenuItemDelete struct {
 	Errors   []*MenuError `json:"errors"`
 	MenuItem *MenuItem    `json:"menuItem"`
@@ -2384,6 +2471,46 @@ type MenuItemInput struct {
 	Page       *string `json:"page"`
 }
 
+func (m *MenuItemInput) validate(where string) *model.AppError {
+	if m.Name != nil {
+		name := strings.TrimSpace(*m.Name)
+		if len(name) == 0 {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Name"}, "please provide valid menu item name", http.StatusBadRequest)
+		}
+	}
+
+	for name, value := range map[string]*string{
+		"Category":   m.Category,
+		"Collection": m.Collection,
+		"Page":       m.Page,
+	} {
+		if value != nil && !model.IsValidId(*value) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide valid "+name+" id", http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
+// NOTE: patchMenuItem must be called after calling validate()
+func (m *MenuItemInput) patchMenuItem(item *model.MenuItem) {
+	if m.Name != nil {
+		item.Name = *m.Name
+	}
+	if m.URL != nil {
+		item.Url = m.URL
+	}
+	if m.Category != nil {
+		item.CategoryID = m.Category
+	}
+	if m.Collection != nil {
+		item.CollectionID = m.Collection
+	}
+	if m.Page != nil {
+		item.PageID = m.Page
+	}
+}
+
 type MenuItemMove struct {
 	Menu   *Menu        `json:"menu"`
 	Errors []*MenuError `json:"errors"`
@@ -2393,6 +2520,22 @@ type MenuItemMoveInput struct {
 	ItemID    string  `json:"itemId"`
 	ParentID  *string `json:"parentId"`
 	SortOrder *int32  `json:"sortOrder"`
+}
+
+func (m *MenuItemMoveInput) validate(where string) *model.AppError {
+	if !model.IsValidId(m.ItemID) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ItemId"}, "please provide valid menu item id", http.StatusBadRequest)
+	}
+	if m.ParentID != nil {
+		if !model.IsValidId(*m.ParentID) {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PrentID"}, "please provide valid parent menu item id", http.StatusBadRequest)
+		}
+		if *m.ParentID == m.ItemID {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "PrentID"}, "cannot assign a node to itself", http.StatusBadRequest)
+		}
+	}
+
+	return nil
 }
 
 type MenuItemSortingInput struct {
@@ -6588,6 +6731,59 @@ const (
 	UserSortFieldEmail      UserSortField = "EMAIL"
 	UserSortFieldOrderCount UserSortField = "ORDER_COUNT"
 )
+
+type userSortfield struct {
+	fields  util.AnyArray[string]
+	keyFunc func(c *model.User) []any
+}
+
+var userSortFieldMap = map[UserSortField]*userSortfield{
+	UserSortFieldFirstName: {
+		fields: []string{
+			model.UserTableName + ".FirstName",
+			model.UserTableName + ".LastName",
+			model.UserTableName + ".CreateAt",
+		},
+		keyFunc: func(c *model.User) []any {
+			return []any{
+				model.UserTableName + ".FirstName", c.FirstName,
+				model.UserTableName + ".LastName", c.LastName,
+				model.UserTableName + ".CreateAt", c.CreateAt,
+			}
+		},
+	},
+	UserSortFieldLastName: {
+		fields: []string{
+			model.UserTableName + ".LastName",
+			model.UserTableName + ".FirstName",
+			model.UserTableName + ".CreateAt",
+		},
+		keyFunc: func(c *model.User) []any {
+			return []any{
+				model.UserTableName + ".LastName", c.LastName,
+				model.UserTableName + ".FirstName", c.FirstName,
+				model.UserTableName + ".CreateAt", c.CreateAt,
+			}
+		},
+	},
+	UserSortFieldEmail: {
+		fields: []string{model.UserTableName + ".Email"},
+		keyFunc: func(c *model.User) []any {
+			return []any{
+				model.UserTableName + ".Email", c.Email,
+			}
+		},
+	},
+	UserSortFieldOrderCount: {
+		fields: []string{model.UserTableName + ".OrderCount", model.UserTableName + ".Email"},
+		keyFunc: func(c *model.User) []any {
+			return []any{
+				model.UserTableName + ".OrderCount", c.OrderCount,
+				model.UserTableName + ".Email", c.Email,
+			}
+		},
+	},
+}
 
 type VariantAttributeScope string
 

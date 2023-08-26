@@ -6,6 +6,10 @@ package api
 import (
 	"context"
 	"fmt"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+	"github.com/uber/jaeger-client-go/utils"
 )
 
 func (r *Resolver) CustomerCreate(ctx context.Context, args struct{ Input UserCreateInput }) (*CustomerCreate, error) {
@@ -33,5 +37,52 @@ func (r *Resolver) Customers(ctx context.Context, args struct {
 	SortBy *UserSortingInput
 	GraphqlParams
 }) (*UserCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if args.Filter != nil {
+		appErr := args.Filter.validate("Customers")
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	paginValues, appErr := args.GraphqlParams.Parse("Customers")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// parsing
+	conditions := squirrel.And{}
+	userFilterOpts := model.UserFilterOptions{}
+
+	if filter := args.Filter; filter != nil {
+		if dateJoin := args.Filter.DateJoined; dateJoin != nil {
+			gte, lte := dateJoin.Gte, dateJoin.Lte
+
+			if gte != nil {
+				conditions = append(conditions, squirrel.Expr(model.UserTableName+".CreateAt >= ?", utils.TimeToMicrosecondsSinceEpochInt64(gte.Time)))
+			}
+			if lte != nil {
+				conditions = append(conditions, squirrel.Expr(model.UserTableName+".CreateAt <= ?", utils.TimeToMicrosecondsSinceEpochInt64(lte.Time)))
+			}
+		}
+
+		if numOfOrders := args.Filter.NumberOfOrders; numOfOrders != nil {
+			userFilterOpts.AnnotateOrderCount = true
+
+			if gte := numOfOrders.Gte; gte != nil {
+				conditions = append(conditions, squirrel.Expr(model.UserTableName+".OrderCount >= ?", *gte))
+			}
+			if lte := numOfOrders.Lte; lte != nil {
+				conditions = append(conditions, squirrel.Expr(model.UserTableName+".OrderCount <= ?", *lte))
+			}
+		}
+
+		if placedOrders := args.Filter.PlacedOrders; placedOrders != nil {
+			if gte := placedOrders.Gte; gte != nil {
+
+			}
+			if lte := placedOrders.Lte; lte != nil {
+
+			}
+		}
+	}
 }

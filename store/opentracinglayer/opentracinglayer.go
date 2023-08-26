@@ -4415,6 +4415,19 @@ func (s *OpenTracingLayerJobStore) UpdateStatusOptimistically(id string, current
 	return result, err
 }
 
+func (s *OpenTracingLayerMenuStore) Delete(ids []string) (int64, *model.AppError) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, resultVar1 := s.MenuStore.Delete(ids)
+	return result, resultVar1
+}
+
 func (s *OpenTracingLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.FilterByOptions")
@@ -4467,6 +4480,19 @@ func (s *OpenTracingLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) 
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerMenuItemStore) Delete(ids []string) (int64, *model.AppError) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, resultVar1 := s.MenuItemStore.Delete(ids)
+	return result, resultVar1
 }
 
 func (s *OpenTracingLayerMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
@@ -7961,7 +7987,7 @@ func (s *OpenTracingLayerUserStore) Count(options model.UserCountOptions) (int64
 	return result, err
 }
 
-func (s *OpenTracingLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
+func (s *OpenTracingLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -7970,13 +7996,13 @@ func (s *OpenTracingLayerUserStore) FilterByOptions(ctx context.Context, options
 	}()
 
 	defer span.Finish()
-	result, err := s.UserStore.FilterByOptions(ctx, options)
+	result, resultVar1, err := s.UserStore.FilterByOptions(ctx, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {

@@ -75,8 +75,12 @@ type UserFilterOptions struct {
 	HasNoOrder          bool             // LEFT JOIN Orders ON ... WHERE Orders.UserID IS NULL
 	ExcludeBoardMembers bool             // LEFT JOIN ShopStaffs ON ... WHERE ShopStaffs.StaffID IS NULL
 
-	Limit   int
-	OrderBy string
+	CountTotal              bool // if true, store count total number of users that satisfy this filter option
+	GraphqlPaginationValues GraphqlPaginationValues
+
+	OrderCreatedDate squirrel.Sqlizer
+
+	AnnotateOrderCount bool // if true, the field `OrderCount` of users will be populated
 }
 
 // Options for counting users

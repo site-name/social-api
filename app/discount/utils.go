@@ -553,7 +553,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 	}()
 
 	go func() {
-		collections, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
+		_, collections, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
 			SaleID: squirrel.Eq{model.SaleCollectionTableName + ".SaleID": instance.Id},
 		})
 		if appErr != nil {
