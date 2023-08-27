@@ -25,7 +25,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-//go:embed schemas
+//go:embed graphql-schema
 var assets embed.FS
 
 // stringsContainSqlExpr is used to validate strings values contain sql statements or not

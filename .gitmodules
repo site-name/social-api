@@ -1,0 +1,3 @@
+[submodule "api/graphql-schema"]
+	path = api/graphql-schema
+	url = https://github.com/site-name/graphql-schema.git
