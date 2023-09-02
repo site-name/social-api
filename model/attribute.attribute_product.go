@@ -9,9 +9,9 @@ import (
 
 // AttributeID unique together with ProductTypeID
 type AttributeProduct struct {
-	Id            string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	AttributeID   string `json:"attribute_id" gorm:"type:uuid;column:AttributeID;index:attributeid_producttypeid_key"`      // to Attribute
-	ProductTypeID string `json:"product_type_id" gorm:"type:uuid;column:ProductTypeID;index:attributeid_producttypeid_key"` // to ProductType
+	Id            UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	AttributeID   UUID `json:"attribute_id" gorm:"type:uuid;column:AttributeID;index:attributeid_producttypeid_key"`      // to Attribute
+	ProductTypeID UUID `json:"product_type_id" gorm:"type:uuid;column:ProductTypeID;index:attributeid_producttypeid_key"` // to ProductType
 	Sortable
 
 	AssignedProducts   Products                    `json:"-" gorm:"many2many:AssignedProductAttributes"`
@@ -53,9 +53,9 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 // Associate a product type attribute and selected values to a given product
 // ProductID unique with AssignmentID
 type AssignedProductAttribute struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ProductID    string `json:"product_id" gorm:"type:uuid;index:productid_assignmentid_key;column:ProductID"`       // to Product
-	AssignmentID string `json:"assignment_id" gorm:"type:uuid;index:productid_assignmentid_key;column:AssignmentID"` // to AttributeProduct
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ProductID    UUID `json:"product_id" gorm:"type:uuid;index:productid_assignmentid_key;column:ProductID"`       // to Product
+	AssignmentID UUID `json:"assignment_id" gorm:"type:uuid;index:productid_assignmentid_key;column:AssignmentID"` // to AttributeProduct
 
 	Values                  AttributeValues                  `json:"-" gorm:"many2many:AssignedProductAttributeValues"`
 	ProductValueAssignments []*AssignedProductAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
@@ -106,9 +106,9 @@ func (a AssignedProductAttributes) DeepCopy() AssignedProductAttributes {
 
 // ValueID unique together AssignmentID
 type AssignedProductAttributeValue struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;column:Id;default:gen_random_uuid()"`
-	ValueID      string `json:"value_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:ValueID"`           // to AttributeValue
-	AssignmentID string `json:"assignment_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:AssignmentID"` // to AssignedProductAttribute
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;column:Id;default:gen_random_uuid()"`
+	ValueID      UUID `json:"value_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:ValueID"`           // to AttributeValue
+	AssignmentID UUID `json:"assignment_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:AssignmentID"` // to AssignedProductAttribute
 	Sortable
 }
 

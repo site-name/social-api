@@ -7,7 +7,7 @@ import (
 )
 
 type Menu struct {
-	Id       string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id       UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name     string `json:"name" gorm:"type:varchar(250);column:Name;uniqueIndex:name_unique_key"`
 	Slug     string `json:"slug" gorm:"type:varchar(255);column:Slug;uniqueIndex:slug_unique_key"` // unique, index
 	CreateAt int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`     // this field can be used for ordering

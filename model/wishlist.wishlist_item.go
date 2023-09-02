@@ -9,10 +9,10 @@ import (
 )
 
 type WishlistItem struct {
-	Id         string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	WishlistID string `json:"wishlist_id" gorm:"type:uuid;column:WishlistID;index:wishlistid_productid_key"`
-	ProductID  string `json:"product_id" gorm:"type:uuid;column:ProductID;index:wishlistid_productid_key"`
-	CreateAt   int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	Id         UUID  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	WishlistID UUID  `json:"wishlist_id" gorm:"type:uuid;column:WishlistID;index:wishlistid_productid_key"`
+	ProductID  UUID  `json:"product_id" gorm:"type:uuid;column:ProductID;index:wishlistid_productid_key"`
+	CreateAt   int64 `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 
 	ProductVariants ProductVariants `json:"-" gorm:"many2many:WishlistItemProductVariants"`
 }
@@ -32,12 +32,12 @@ type WishlistItemFilterOption struct {
 
 type WishlistItems []*WishlistItem
 
-func (w WishlistItems) IDs() []string {
-	return lo.Map(w, func(item *WishlistItem, _ int) string { return item.Id })
+func (w WishlistItems) IDs() []UUID {
+	return lo.Map(w, func(item *WishlistItem, _ int) UUID { return item.Id })
 }
 
-func (w WishlistItems) ProductIDs() []string {
-	return lo.Map(w, func(item *WishlistItem, _ int) string { return item.ProductID })
+func (w WishlistItems) ProductIDs() []UUID {
+	return lo.Map(w, func(item *WishlistItem, _ int) UUID { return item.ProductID })
 }
 
 func (w *WishlistItem) IsValid() *AppError {

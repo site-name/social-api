@@ -8,9 +8,9 @@ import (
 )
 
 type ProductTranslation struct {
-	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode;index:languagecode_productid_key"`
-	ProductID    string           `json:"product_id" gorm:"type:uuid;column:ProductID;index:languagecode_productid_key"`
+	ProductID    UUID             `json:"product_id" gorm:"type:uuid;column:ProductID;index:languagecode_productid_key"`
 	Name         string           `json:"name" gorm:"type:varchar(250);column:Name"`
 	Description  StringInterface  `json:"description" gorm:"type:jsonb;column:Description"`
 	SeoTranslation

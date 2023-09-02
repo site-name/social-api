@@ -18,11 +18,11 @@ var ContentTypeString = map[string]string{
 }
 
 type DigitalContent struct {
-	Id                   string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                   UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	UseDefaultSettings   *bool  `json:"use_defaults_settings" gorm:"column:UseDefaultSettings"`   // default true
 	AutomaticFulfillment *bool  `json:"automatic_fulfillment" gorm:"column:AutomaticFulfillment"` // default false
 	ContentType          string `json:"content_type" gorm:"type:varchar(128);column:ContentType"`
-	ProductVariantID     string `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID"`
+	ProductVariantID     UUID   `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID"`
 	ContentFile          string `json:"content_file" gorm:"type:varchar(300);column:ContentFile"`
 	MaxDownloads         *int   `json:"max_downloads" gorm:"column:MaxDownloads"`
 	UrlValidDays         *int   `json:"url_valid_days" gorm:"column:UrlValidDays"`

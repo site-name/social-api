@@ -12,9 +12,9 @@ import (
 
 // sort by sku
 type ProductVariant struct {
-	Id                      string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	Id                      UUID                   `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
 	Name                    string                 `json:"name" gorm:"type:varchar(255);column:Name"` // varchar(255)
-	ProductID               string                 `json:"product_id" gorm:"type:uuid;index:productvariants_productid_index_key;column:ProductID"`
+	ProductID               UUID                   `json:"product_id" gorm:"type:uuid;index:productvariants_productid_index_key;column:ProductID"`
 	Sku                     string                 `json:"sku" gorm:"type:varchar(255);column:Sku"` // varchar(255)
 	Weight                  *float32               `json:"weight" gorm:"column:Weight"`
 	WeightUnit              measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
@@ -103,13 +103,13 @@ func (p ProductVariants) FilterNils() ProductVariants {
 	return lo.Filter(p, func(v *ProductVariant, _ int) bool { return v != nil })
 }
 
-func (p ProductVariants) IDs() []string {
-	return lo.Map(p, func(v *ProductVariant, _ int) string { return v.Id })
+func (p ProductVariants) IDs() []UUID {
+	return lo.Map(p, func(v *ProductVariant, _ int) UUID { return v.Id })
 }
 
 // ProductIDs returns all product ids of current product variants
-func (p ProductVariants) ProductIDs() []string {
-	return lo.Map(p, func(v *ProductVariant, _ int) string { return v.ProductID })
+func (p ProductVariants) ProductIDs() []UUID {
+	return lo.Map(p, func(v *ProductVariant, _ int) UUID { return v.ProductID })
 }
 
 func (p *ProductVariant) IsValid() *AppError {

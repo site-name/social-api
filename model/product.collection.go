@@ -12,7 +12,7 @@ import (
 )
 
 type Collection struct {
-	Id                 string          `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	Id                 UUID            `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
 	Name               string          `json:"name" gorm:"type:varchar(250);unique;not null;column:Name"`
 	Slug               string          `json:"slug" gorm:"type:varchar(255);uniqueIndex:slug_unique_key;column:Slug"`
 	BackgroundImage    *string         `json:"background_image" gorm:"type:varchar(200);column:BackgroundImage"`
@@ -91,8 +91,8 @@ func (c *Collection) DeepCopy() *Collection {
 	return &res
 }
 
-func (c Collections) IDs() util.AnyArray[string] {
-	return lo.Map(c, func(o *Collection, _ int) string { return o.Id })
+func (c Collections) IDs() util.AnyArray[UUID] {
+	return lo.Map(c, func(o *Collection, _ int) UUID { return o.Id })
 }
 func (c Collections) DeepCopy() Collections {
 	return lo.Map(c, func(o *Collection, _ int) *Collection { return o.DeepCopy() })

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"gorm.io/gorm"
@@ -23,13 +24,8 @@ func (a *AppToken) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsVa
 func (_ *AppToken) TableName() string             { return "AppTokens" }
 
 func (a *AppToken) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.app_token.is_valid.%s.app_error",
-		"app_token_id=",
-		"AppToken.IsValid",
-	)
 	if !IsValidId(a.AppId) {
-		return outer("app_id", nil)
+		return NewAppError("AppToken.IsValid", "model.app_token.is_valid.app_id.app_error", nil, "pleaseprovide valid app id", http.StatusBadRequest)
 	}
 
 	return nil

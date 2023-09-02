@@ -67,7 +67,7 @@ func (worker *SimpleWorker) DoJob(job *model.Job) {
 	if claimed, err := worker.jobServer.ClaimJob(job); err != nil {
 		slog.Warn("SimpleWorker experienced an error while trying to claim job",
 			slog.String("worker", worker.name),
-			slog.String("job_id", job.Id),
+			slog.String("job_id", string(job.Id)),
 			slog.Err(err))
 		return
 	} else if !claimed {
@@ -76,24 +76,24 @@ func (worker *SimpleWorker) DoJob(job *model.Job) {
 
 	err := worker.execute(job)
 	if err != nil {
-		slog.Error("SimpleWorker: Failed to get active user count", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.Err(err))
+		slog.Error("SimpleWorker: Failed to get active user count", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.Err(err))
 		worker.setJobError(job, model.NewAppError("DoJob", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError))
 		return
 	}
 
-	slog.Info("SimpleWorker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+	slog.Info("SimpleWorker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)))
 	worker.setJobSuccess(job)
 }
 
 func (worker *SimpleWorker) setJobSuccess(job *model.Job) {
 	if err := worker.jobServer.SetJobSuccess(job); err != nil {
-		slog.Error("SimpleWorker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("SimpleWorker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
 func (worker *SimpleWorker) setJobError(job *model.Job, appError *model.AppError) {
 	if err := worker.jobServer.SetJobError(job, appError); err != nil {
-		slog.Error("SimpleWorker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.Err(err))
+		slog.Error("SimpleWorker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.Err(err))
 	}
 }

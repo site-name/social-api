@@ -9,7 +9,7 @@ import (
 )
 
 type OpenExchangeRate struct {
-	Id         string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id         UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	ToCurrency string           `json:"to_currency" gorm:"type:varchar(5);column:ToCurrency"` // db_index
 	Rate       *decimal.Decimal `json:"rate" gorm:"column:Rate;default:0"`                    // default 0
 }

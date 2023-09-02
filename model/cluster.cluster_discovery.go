@@ -13,7 +13,7 @@ const (
 )
 
 type ClusterDiscovery struct {
-	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id          UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Type        string `json:"type" gorm:"type:varchar(64);column:Type"`
 	ClusterName string `json:"cluster_name" gorm:"type:varchar(64);column:ClusterName"`
 	Hostname    string `json:"hostname" gorm:"type:varchar(512);column:Hostname"`

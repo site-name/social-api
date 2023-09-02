@@ -9,11 +9,11 @@ import (
 )
 
 type FulfillmentLine struct {
-	Id            string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	OrderLineID   string  `json:"order_line_id" gorm:"type:uuid;column:OrderLineID"`
-	FulfillmentID string  `json:"fulfillment_id" gorm:"type:uuid;column:FulfillmentID"`
-	Quantity      int     `json:"quantity" gorm:"type:integer;column:Quantity"`
-	StockID       *string `json:"stock_id" gorm:"type:uuid;column:StockID"`
+	Id            UUID  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	OrderLineID   UUID  `json:"order_line_id" gorm:"type:uuid;column:OrderLineID"`
+	FulfillmentID UUID  `json:"fulfillment_id" gorm:"type:uuid;column:FulfillmentID"`
+	Quantity      int   `json:"quantity" gorm:"type:integer;column:Quantity"`
+	StockID       *UUID `json:"stock_id" gorm:"type:uuid;column:StockID"`
 
 	OrderLine *OrderLine `json:"-" db:"-"`
 }
@@ -36,12 +36,12 @@ type FulfillmentLineFilterOption struct {
 
 type FulfillmentLines []*FulfillmentLine
 
-func (f FulfillmentLines) IDs() []string {
-	return lo.Map(f, func(item *FulfillmentLine, _ int) string { return item.Id })
+func (f FulfillmentLines) IDs() []UUID {
+	return lo.Map(f, func(item *FulfillmentLine, _ int) UUID { return item.Id })
 }
 
-func (f FulfillmentLines) OrderLineIDs() []string {
-	return lo.Map(f, func(item *FulfillmentLine, _ int) string { return item.OrderLineID })
+func (f FulfillmentLines) OrderLineIDs() []UUID {
+	return lo.Map(f, func(item *FulfillmentLine, _ int) UUID { return item.OrderLineID })
 
 }
 
@@ -59,8 +59,8 @@ func (f FulfillmentLines) OrderLines() OrderLines {
 	return res
 }
 
-func (f FulfillmentLines) StockIDs() []string {
-	res := []string{}
+func (f FulfillmentLines) StockIDs() []UUID {
+	res := []UUID{}
 	for _, item := range f {
 		if item != nil && item.StockID != nil {
 			res = append(res, *item.StockID)

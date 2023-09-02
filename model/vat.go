@@ -8,7 +8,7 @@ import (
 )
 
 type Vat struct {
-	Id          string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id          UUID        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CountryCode CountryCode `json:"country_code" gorm:"type:varchar(5);column:CountryCode;index:countrycode_key"` // db index
 	// NOTE:
 	//
@@ -49,7 +49,7 @@ func (v *Vat) String() string {
 
 func (v *Vat) IsValid() *AppError {
 	if !v.CountryCode.IsValid() {
-		return NewAppError("Vat.IsValid", "model.vat.is_valid.country_code.app_error", nil, v.Id+" is invalid id", http.StatusBadRequest)
+		return NewAppError("Vat.IsValid", "model.vat.is_valid.country_code.app_error", nil, "please provide valid id", http.StatusBadRequest)
 	}
 
 	return nil

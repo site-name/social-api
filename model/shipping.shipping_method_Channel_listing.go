@@ -1,7 +1,7 @@
 package model
 
 import (
-	"strings"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -13,9 +13,9 @@ import (
 )
 
 type ShippingMethodChannelListing struct {
-	Id                      string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ShippingMethodID        string           `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID;index:shippingmethodid_channelid_key"`
-	ChannelID               string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:shippingmethodid_channelid_key"`
+	Id                      UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ShippingMethodID        UUID             `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID;index:shippingmethodid_channelid_key"`
+	ChannelID               UUID             `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:shippingmethodid_channelid_key"`
 	MinimumOrderPriceAmount *decimal.Decimal `json:"minimum_order_price_amount" gorm:"default:0;column:MinimumOrderPriceAmount"` // default 0
 	Currency                string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
 	MaximumOrderPriceAmount *decimal.Decimal `json:"maximum_order_price_amount" gorm:"column:MaximumOrderPriceAmount"`
@@ -50,32 +50,27 @@ type ShippingMethodChannelListingFilterOption struct {
 
 type ShippingMethodChannelListings []*ShippingMethodChannelListing
 
-func (ss ShippingMethodChannelListings) IDs() util.AnyArray[string] {
-	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.Id })
+func (ss ShippingMethodChannelListings) IDs() util.AnyArray[UUID] {
+	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) UUID { return s.Id })
 }
 
-func (ss ShippingMethodChannelListings) ShippingMethodIDs() util.AnyArray[string] {
-	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.ShippingMethodID })
+func (ss ShippingMethodChannelListings) ShippingMethodIDs() util.AnyArray[UUID] {
+	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) UUID { return s.ShippingMethodID })
 }
 
-func (ss ShippingMethodChannelListings) ChannelIDs() util.AnyArray[string] {
-	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.ChannelID })
+func (ss ShippingMethodChannelListings) ChannelIDs() util.AnyArray[UUID] {
+	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) UUID { return s.ChannelID })
 }
 
 func (s *ShippingMethodChannelListing) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.shipping_method_channel_listing.is_valid.%s.app_error",
-		"shipping_method_channel_listing_id=",
-		"ShippingMethodChannelListing.IsValid",
-	)
 	if !IsValidId(s.ShippingMethodID) {
-		return outer("shipping_method_id", &s.Id)
+		return NewAppError("ShippingMethodChannelListing.IsValid", "model.shipping_method_channel_listing.is_valid.shipping_method_id.app_error", nil, "please provide valid shipping method id", http.StatusBadRequest)
 	}
 	if !IsValidId(s.ChannelID) {
-		return outer("channel_id", &s.Id)
+		return NewAppError("ShippingMethodChannelListing.IsValid", "model.shipping_method_channel_listing.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
-	if unit, err := currency.ParseISO(s.Currency); err != nil || !strings.EqualFold(unit.String(), s.Currency) {
-		return outer("currency", &s.Id)
+	if _, err := currency.ParseISO(s.Currency); err != nil {
+		return NewAppError("ShippingMethodChannelListing.IsValid", "model.shipping_method_channel_listing.is_valid.currency.app_error", nil, "please provide valid shipping currency", http.StatusBadRequest)
 	}
 
 	return nil

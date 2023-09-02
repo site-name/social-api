@@ -61,8 +61,8 @@ func NewInsufficientStock(items []*InsufficientStockData) *InsufficientStock {
 	}
 }
 
-func (i *InsufficientStock) VariantIDs() []string {
-	res := []string{}
+func (i *InsufficientStock) VariantIDs() []UUID {
+	res := []UUID{}
 	for _, item := range i.Items {
 		res = append(res, item.Variant.Id)
 	}

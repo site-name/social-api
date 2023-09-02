@@ -8,10 +8,10 @@ import (
 )
 
 type CollectionChannelListing struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CreateAt     int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	CollectionID string `json:"collection_id" gorm:"type:uuid;column:CollectionID"`
-	ChannelID    string `json:"channel_id" gorm:"type:uuid;column:ChannelID"`
+	Id           UUID  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt     int64 `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	CollectionID UUID  `json:"collection_id" gorm:"type:uuid;column:CollectionID"`
+	ChannelID    UUID  `json:"channel_id" gorm:"type:uuid;column:ChannelID"`
 	Publishable
 }
 

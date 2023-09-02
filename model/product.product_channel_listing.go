@@ -15,13 +15,13 @@ import (
 )
 
 type ProductChannelListing struct {
-	Id                    string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ProductID             string           `json:"product_id" gorm:"type:uuid;column:ProductID;index:productid_channelid_key"`
-	ChannelID             string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:productid_channelid_key"`
+	Id                    UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ProductID             UUID             `json:"product_id" gorm:"type:uuid;column:ProductID;index:productid_channelid_key"`
+	ChannelID             UUID             `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:productid_channelid_key"`
 	VisibleInListings     bool             `json:"visible_in_listings" gorm:"column:VisibleInListings"`
 	AvailableForPurchase  *time.Time       `json:"available_for_purchase" gorm:"column:AvailableForPurchase"` // precision to date. E.g 2021-09-08
 	Currency              string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
-	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount" gorm:"column:DiscountedPriceAmount"` // can be NULL
+	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount" gorm:"column:DiscountedPriceAmount;type:decimal(12,3)"` // can be NULL
 	CreateAt              uint64           `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	Publishable
 
@@ -63,9 +63,7 @@ func (p *ProductChannelListing) IsValid() *AppError {
 	if un, err := currency.ParseISO(p.Currency); !strings.EqualFold(un.String(), p.Currency) || err != nil {
 		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
 	}
-	if err := ValidateDecimal("ProductChannelListing.IsValid", p.DiscountedPriceAmount, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
-		return err
-	}
+
 	return nil
 }
 
@@ -104,16 +102,16 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 
 type ProductChannelListings []*ProductChannelListing
 
-func (p ProductChannelListings) IDs() []string {
-	return lo.Map(p, func(r *ProductChannelListing, _ int) string { return r.Id })
+func (p ProductChannelListings) IDs() []UUID {
+	return lo.Map(p, func(r *ProductChannelListing, _ int) UUID { return r.Id })
 }
 
-func (p ProductChannelListings) ChannelIDs() []string {
-	return lo.Map(p, func(r *ProductChannelListing, _ int) string { return r.ChannelID })
+func (p ProductChannelListings) ChannelIDs() []UUID {
+	return lo.Map(p, func(r *ProductChannelListing, _ int) UUID { return r.ChannelID })
 }
 
-func (p ProductChannelListings) ProductIDs() []string {
-	return lo.Map(p, func(r *ProductChannelListing, _ int) string { return r.ProductID })
+func (p ProductChannelListings) ProductIDs() []UUID {
+	return lo.Map(p, func(r *ProductChannelListing, _ int) UUID { return r.ProductID })
 }
 
 func (p ProductChannelListings) DeepCopy() ProductChannelListings {

@@ -28,7 +28,7 @@ var ProductTypeKindStrings = map[ProductTypeKind]string{
 
 // Orderby Slug
 type ProductType struct {
-	Id                 string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                 UUID                   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name               string                 `json:"name" gorm:"type:varchar(250);column:Name"`
 	Slug               string                 `json:"slug" gorm:"type:varchar(255);column:Slug;uniqueIndex:slug_key"`
 	Kind               ProductTypeKind        `json:"kind" gorm:"type:varchar(32);column:Kind"`

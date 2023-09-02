@@ -79,7 +79,7 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 	usernameAndNicknameSuggestions := append(usernameSuggestions, nicknameSuggesitons...)
 
 	return &BLVUser{
-		Id:                         user.Id,
+		Id:                         string(user.Id),
 		SuggestionsWithFullname:    append(usernameAndNicknameSuggestions, fullnameSuggestions...),
 		SuggestionsWithoutFullname: usernameAndNicknameSuggestions,
 		TeamsIds:                   teamsIds,
@@ -89,7 +89,7 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 
 func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
 	user := &model.User{
-		Id:        userForIndexing.Id,
+		Id:        model.UUID(userForIndexing.Id),
 		Username:  userForIndexing.Username,
 		Nickname:  userForIndexing.Nickname,
 		FirstName: userForIndexing.FirstName,

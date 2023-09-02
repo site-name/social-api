@@ -71,7 +71,7 @@ var ALL_JOB_STATUSES = util.AnyArray[string]{
 }
 
 type Job struct {
-	Id             string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id             UUID      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Type           string    `json:"type" gorm:"type:varchar(100);column:Type"`
 	Priority       int64     `json:"priority" gorm:"type:varchar(30);column:Priority"`
 	CreateAt       int64     `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
@@ -98,10 +98,6 @@ func (j *Job) IsValid() *AppError {
 
 func (j *Job) ToJSON() string {
 	return ModelToJson(j)
-}
-
-func JobsToJson(jobs []*Job) string {
-	return ModelToJson(&jobs)
 }
 
 type Worker interface {

@@ -8,8 +8,8 @@ import (
 )
 
 type ExportFile struct {
-	Id          string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	UserID      *string `json:"user_id" gorm:"type:uuid;column:UserID"`
+	Id          UUID    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	UserID      *UUID   `json:"user_id" gorm:"type:uuid;column:UserID"`
 	ContentFile *string `json:"content_file" gorm:"column:ContentFile"`
 	CreateAt    int64   `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
 	UpdateAt    int64   `json:"update_at" gorm:"type:bigint;autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`

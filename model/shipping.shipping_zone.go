@@ -11,7 +11,7 @@ import (
 
 // order by CreateAt
 type ShippingZone struct {
-	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id          UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name        string `json:"name" gorm:"type:varchar(100);column:Name"`
 	Countries   string `json:"countries" gorm:"type:varchar(2000);column:Countries"` // multiple allowed. E.g: VN USA CN
 	Default     *bool  `json:"default" gorm:"default:false;column:Default"`          // default false
@@ -42,8 +42,8 @@ type ShippingZoneFilterOption struct {
 
 type ShippingZones []*ShippingZone
 
-func (s ShippingZones) IDs() []string {
-	return lo.Map(s, func(i *ShippingZone, _ int) string { return i.Id })
+func (s ShippingZones) IDs() []UUID {
+	return lo.Map(s, func(i *ShippingZone, _ int) UUID { return i.Id })
 }
 
 func (s ShippingZones) DeepCopy() ShippingZones {

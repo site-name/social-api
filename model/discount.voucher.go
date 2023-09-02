@@ -46,7 +46,7 @@ func (e DiscountValueType) IsValid() bool {
 }
 
 type Voucher struct {
-	Id                       string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                       UUID              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Type                     VoucherType       `json:"type" gorm:"type:varchar(20);column:Type"` // default to "entire_order"
 	Name                     *string           `json:"name" gorm:"type:varchar(255);column:Name"`
 	Code                     string            `json:"code" gorm:"type:varchar(16);column:Code"` // UNIQUE, has format of XXXX-XXXX-XXXX
@@ -169,10 +169,10 @@ func (v *Voucher) commonPre() {
 
 // VoucherTranslation represents translation for a voucher
 type VoucherTranslation struct {
-	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
 	Name         string           `json:"name" gorm:"type:varchar(255);column:Name"`
-	VoucherID    string           `json:"voucher_id" gorm:"type:uuid;column:VoucherID"`
+	VoucherID    UUID             `json:"voucher_id" gorm:"type:uuid;column:VoucherID"`
 	CreateAt     int64            `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 }
 

@@ -7,9 +7,9 @@ import (
 )
 
 type MenuItemTranslation struct {
-	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(3);column:LanguageCode"`
-	MenuItemID   string           `json:"menu_item_id" gorm:"type:uuid;column:MenuItemID"`
+	MenuItemID   UUID             `json:"menu_item_id" gorm:"type:uuid;column:MenuItemID"`
 	Name         string           `json:"name" gorm:"type:varchar(128);column:Name"`
 }
 

@@ -8,10 +8,10 @@ import (
 )
 
 type Wishlist struct {
-	Id       string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Token    string  `json:"token" gorm:"type:uuid;default:gen_random_uuid();column:Token;unique"` // uuid, unique, not editable
-	UserID   *string `json:"user_id" gorm:"type:uuid;column:UserID"`
-	CreateAt int64   `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	Id       UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Token    string `json:"token" gorm:"type:uuid;default:gen_random_uuid();column:Token;unique"` // uuid, unique, not editable
+	UserID   *UUID  `json:"user_id" gorm:"type:uuid;column:UserID"`
+	CreateAt int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 }
 
 func (t *Wishlist) TableName() string             { return WishlistTableName }

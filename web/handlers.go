@@ -222,7 +222,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Rate limit by UserID
-		if c.App.Srv().RateLimiter != nil && c.App.Srv().RateLimiter.UserIdRateLimit(c.AppContext.Session().UserId, w) {
+		if c.App.Srv().RateLimiter != nil && c.App.Srv().RateLimiter.UserIdRateLimit(string(c.AppContext.Session().UserId), w) {
 			return
 		}
 
@@ -233,7 +233,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.String("path", c.AppContext.Path()),
 		slog.String("request_id", c.AppContext.RequestId()),
 		slog.String("ip_addr", c.AppContext.IpAddress()),
-		slog.String("user_id", c.AppContext.Session().UserId),
+		slog.Any("user_id", c.AppContext.Session().UserId),
 		slog.String("method", r.Method),
 	)
 
@@ -316,8 +316,8 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 			// ToDo(DSchalla) 2019/01/04: Remove after deprecation period and only allow CSRF Header (MM-13657)
 			csrfErrorMessage := "CSRF Header check failed for request - Please upgrade your web application or custom app to set a CSRF Header"
 
-			sid := ""
-			userId := ""
+			var sid model.UUID
+			var userId model.UUID
 
 			if session != nil {
 				sid = session.Id
@@ -327,8 +327,8 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 			fields := []slog.Field{
 				slog.String("path", r.URL.Path),
 				slog.String("ip", r.RemoteAddr),
-				slog.String("session_id", sid),
-				slog.String("user_id", userId),
+				slog.Any("session_id", sid),
+				slog.Any("user_id", userId),
 			}
 
 			if *c.App.Config().ServiceSettings.ExperimentalStrictCSRFEnforcement {

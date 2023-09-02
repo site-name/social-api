@@ -27,8 +27,8 @@ func (s StaffSalaryPeriod) IsValid() bool {
 
 // ShopStaff represents a relation between a shop and an staff user
 type ShopStaff struct {
-	Id             string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	StaffID        string            `json:"staff_id" gorm:"type:uuid;column:StaffID;unique"`
+	Id             UUID              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	StaffID        UUID              `json:"staff_id" gorm:"type:uuid;column:StaffID;unique"`
 	CreateAt       int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	EndAt          *int64            `json:"end_at" gorm:"type:bigint;column:EndAt"`
 	SalaryPeriod   StaffSalaryPeriod `json:"salary_period" gorm:"type:varchar(20);column:SalaryPeriod"`

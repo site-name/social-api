@@ -139,11 +139,11 @@ func (si StringInterface) Value() (driver.Value, error) {
 // E.g:
 //
 //	2 => &2 // ^.^
-func NewPrimitive[T cmp.Ordered | bool | time.Time | decimal.Decimal](value T) *T {
+func NewPrimitive[T cmp.Ordered | bool | time.Time | decimal.Decimal | UUID](value T) *T {
 	return &value
 }
 
-func CopyPointer[T cmp.Ordered | bool | time.Time | decimal.Decimal](value *T) *T {
+func CopyPointer[T cmp.Ordered | bool | time.Time | decimal.Decimal | UUID](value *T) *T {
 	if value == nil {
 		return nil
 	}
@@ -232,17 +232,17 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 //		return outer("name", &collection.Id)
 //
 // NOTE: This is applied for errors with status code "http.StatusBadRequest (400)" only
-func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
-	var id, details string
-	return func(fieldName string, typeId *string) *AppError {
-		id = fmt.Sprintf(format, fieldName)
-		if !strings.EqualFold(fieldName, "id") && typeId != nil {
-			details = detailKey + *typeId
-		}
+// func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
+// 	var id, details string
+// 	return func(fieldName string, typeId *string) *AppError {
+// 		id = fmt.Sprintf(format, fieldName)
+// 		if !strings.EqualFold(fieldName, "id") && typeId != nil {
+// 			details = detailKey + *typeId
+// 		}
 
-		return NewAppError(where, id, nil, details, http.StatusBadRequest)
-	}
-}
+// 		return NewAppError(where, id, nil, details, http.StatusBadRequest)
+// 	}
+// }
 
 // Encodes database models to json string format
 func ModelToJson(model interface{}) string {
@@ -297,8 +297,8 @@ func GetPreferredTimezone(timezone StringMap) string {
 }
 
 // IsValidID check if given value is a valid uuid or not
-func IsValidId(value string) bool {
-	_, err := uuid.Parse(value)
+func IsValidId[T string | UUID](value T) bool {
+	_, err := uuid.Parse(*(*string)(unsafe.Pointer(&value)))
 	return err == nil
 }
 
@@ -917,23 +917,3 @@ const (
 	DESC OrderDirection = "DESC"
 	ASC  OrderDirection = "ASC"
 )
-
-func ValidateDecimal(where string, value *decimal.Decimal, maxDigits, numOfDecimalPlaces int) *AppError {
-	if value == nil {
-		return nil
-	}
-
-	strDecimal := value.String()
-	if len(strDecimal)-1 > maxDigits { // 12.345 remove dot (.)
-		return NewAppError(where, "app.validate_decimal.max_digits.app_error", nil, fmt.Sprintf("number of digits (%d) exceeds %d", len(strDecimal)-1, maxDigits), http.StatusBadRequest)
-	}
-
-	splitDecimal := strings.Split(strDecimal, ".")
-	if len(splitDecimal) == 2 {
-		if len(splitDecimal[1]) > numOfDecimalPlaces {
-			return NewAppError(where, "app.validate_decimal.decimal_places.app_error", nil, fmt.Sprintf("number of decimal places (%d) exceeds %d", len(splitDecimal[1]), numOfDecimalPlaces), http.StatusBadRequest)
-		}
-	}
-
-	return nil
-}

@@ -214,12 +214,12 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
 		}
 		defer rows.Close()
-		var warehousesMap = lo.SliceToMap(returningWarehouses, func(w *model.WareHouse) (string, *model.WareHouse) { return w.Id, w })
+		var warehousesMap = lo.SliceToMap(returningWarehouses, func(w *model.WareHouse) (model.UUID, *model.WareHouse) { return w.Id, w })
 
 		for rows.Next() {
 			var (
 				shippingZone       model.ShippingZone
-				relatedWarehouseID string
+				relatedWarehouseID model.UUID
 				scanFields         = append(wh.ShippingZone().ScanFields(&shippingZone), &relatedWarehouseID)
 			)
 

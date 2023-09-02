@@ -45,7 +45,7 @@ const (
 )
 
 type Preference struct {
-	UserId   string `json:"user_id" gorm:"type:uuid;primaryKey;index:userid_key;column:UserId"`
+	UserId   UUID   `json:"user_id" gorm:"type:uuid;primaryKey;index:userid_key;column:UserId"`
 	Category string `json:"category" gorm:"type:varchar(32);column:Category"`
 	Name     string `json:"name" gorm:"type:varchar(32);column:Name"`
 	Value    string `json:"value" gorm:"type:varchar(2000);column:Value"`
@@ -61,7 +61,7 @@ func (o *Preference) ToJSON() string {
 
 func (o *Preference) IsValid() *AppError {
 	if !IsValidId(o.UserId) {
-		return NewAppError("Preference.IsValid", "model.preference.is_valid.id.app_error", nil, "user_id="+o.UserId, http.StatusBadRequest)
+		return NewAppError("Preference.IsValid", "model.preference.is_valid.id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if o.Category == "" {
 		return NewAppError("Preference.IsValid", "model.preference.is_valid.category.app_error", nil, "category="+o.Category, http.StatusBadRequest)

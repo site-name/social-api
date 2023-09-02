@@ -16,10 +16,10 @@ var (
 )
 
 // max lengths for some fulfillment's fields
-const (
-	FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS     = 12
-	FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES = 3
-)
+// const (
+// FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS     = 12
+// FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES = 3
+// )
 
 type FulfillmentStatus string
 
@@ -55,8 +55,8 @@ type Fulfillment struct {
 	Status               FulfillmentStatus `json:"status" gorm:"type:varchar(32);column:Status"`                                 // default "fulfilled"
 	TrackingNumber       string            `json:"tracking_numdber" gorm:"type:varchar(255);column:TrackingNumber"`
 	CreateAt             int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	ShippingRefundAmount *decimal.Decimal  `json:"shipping_refund_amount" gorm:"column:ShippingRefundAmount"` // max digits 12, decimal places 3
-	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount" gorm:"column:TotalRefundAmount"`       // max digits 12, decimal places 3
+	ShippingRefundAmount *decimal.Decimal  `json:"shipping_refund_amount" gorm:"column:ShippingRefundAmount;type:decimal(12,3)"` // max digits 12, decimal places 3
+	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount" gorm:"column:TotalRefundAmount;type:decimal(12,3)"`       // max digits 12, decimal places 3
 	ModelMetadata
 
 	FulfillmentLines FulfillmentLines `json:"-" gorm:"foreignKey:FulfillmentID;constraint:OnDelete:CASCADE"`
@@ -94,12 +94,6 @@ func (f Fulfillments) IDs() []string {
 func (f *Fulfillment) IsValid() *AppError {
 	if !f.Status.IsValid() {
 		return NewAppError("Fulfillment.IsValid", "model.fulfillment.is_valid.status.app_error", nil, "please provide valid status", http.StatusBadRequest)
-	}
-	if appErr := ValidateDecimal("Fulfillment.IsValid", f.ShippingRefundAmount, FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS, FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES); appErr != nil {
-		return appErr
-	}
-	if appErr := ValidateDecimal("Fulfillment.IsValid", f.TotalRefundAmount, FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS, FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES); appErr != nil {
-		return appErr
 	}
 	return nil
 }

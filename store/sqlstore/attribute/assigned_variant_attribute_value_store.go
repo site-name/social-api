@@ -56,8 +56,8 @@ func (as *SqlAssignedVariantAttributeValueStore) Get(id string) (*model.Assigned
 	return &res, nil
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
-	relations := lo.Map(attributeValueIDs, func(item string, _ int) *model.AssignedVariantAttributeValue {
+func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedVariantAttributeValue, error) {
+	relations := lo.Map(attributeValueIDs, func(item model.UUID, _ int) *model.AssignedVariantAttributeValue {
 		return &model.AssignedVariantAttributeValue{
 			ValueID:      item,
 			AssignmentID: assignmentID,

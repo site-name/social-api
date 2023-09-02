@@ -83,7 +83,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 	if claimed, err := worker.jobServer.ClaimJob(job); err != nil {
 		slog.Info("Worker experienced an error while trying to claim job",
 			slog.String("worker", worker.name),
-			slog.String("job_id", job.Id),
+			slog.String("job_id", string(job.Id)),
 			slog.String("error", err.Error()))
 		return
 	} else if !claimed {
@@ -93,36 +93,36 @@ func (worker *Worker) DoJob(job *model.Job) {
 	cancelCtx, cancelCancelWatcher := context.WithCancel(context.Background())
 	cancelWatcherChan := make(chan interface{}, 1)
 
-	go worker.jobServer.CancellationWatcher(cancelCtx, job.Id, cancelWatcherChan)
+	go worker.jobServer.CancellationWatcher(cancelCtx, string(job.Id), cancelWatcherChan)
 
 	defer cancelCancelWatcher()
 
 	for {
 		select {
 		case <-cancelWatcherChan:
-			slog.Debug("Worker: Job has been canceled via CancellationWatcher", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+			slog.Debug("Worker: Job has been canceled via CancellationWatcher", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)))
 			worker.setJobCanceled(job)
 			return
 
 		case <-worker.stop:
-			slog.Debug("Worker: Job has been canceled via Worker Stop", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+			slog.Debug("Worker: Job has been canceled via Worker Stop", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)))
 			worker.setJobCanceled(job)
 			return
 
 		case <-time.After(TimeBetweenBatches * time.Millisecond):
 			done, progress, err := worker.runMigration(job.Data[JobDataKeyMigration], job.Data[JobDataKeyMigrationLastDone])
 			if err != nil {
-				slog.Error("Worker: Failed to run migration", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+				slog.Error("Worker: Failed to run migration", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 				worker.setJobError(job, err)
 				return
 			} else if done {
-				slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+				slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)))
 				worker.setJobSuccess(job)
 				return
 			} else {
 				job.Data[JobDataKeyMigrationLastDone] = progress
 				if err := worker.jobServer.UpdateInProgressJobData(job); err != nil {
-					slog.Error("Worker: Failed to update migration status data for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+					slog.Error("Worker: Failed to update migration status data for job", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 					worker.setJobError(job, err)
 					return
 				}
@@ -133,20 +133,20 @@ func (worker *Worker) DoJob(job *model.Job) {
 
 func (worker *Worker) setJobSuccess(job *model.Job) {
 	if err := worker.jobServer.SetJobSuccess(job); err != nil {
-		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
 func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
 	if err := worker.jobServer.SetJobError(job, appError); err != nil {
-		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 	}
 }
 
 func (worker *Worker) setJobCanceled(job *model.Job) {
 	if err := worker.jobServer.SetJobCanceled(job); err != nil {
-		slog.Error("Worker: Failed to mark job as canceled", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to mark job as canceled", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 	}
 }
 

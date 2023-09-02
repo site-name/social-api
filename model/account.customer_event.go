@@ -51,16 +51,16 @@ var CustomerEventTypes = map[CustomerEventType]bool{
 }
 
 type CustomerEvent struct {
-	Id      string            `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid();column:Id"`
+	Id      UUID              `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid();column:Id"`
 	Date    int64             `json:"date" gorm:"type:bigint;autoCreateTime:milli;column:Date"`
 	Type    CustomerEventType `json:"type" gorm:"type:varchar(255);column:Type"`
-	OrderID *string           `json:"order_id" gorm:"type:uuid;index;column:OrderID"`
-	UserID  *string           `json:"user_id" gorm:"type:uuid;index:customerevents_userid_key;column:UserID"`
+	OrderID *UUID             `json:"order_id" gorm:"type:uuid;index;column:OrderID"`
+	UserID  *UUID             `json:"user_id" gorm:"type:uuid;index:customerevents_userid_key;column:UserID"`
 	// To reduce number of type checking steps,
 	// below are possible keys and their according values's Types you must follow
 	//  "message": string
 	//  "count": int
-	//  "order_line_pk": string
+	//  "order_line_pk": UUID
 	Parameters StringInterface `json:"parameters" gorm:"type:jsonb;column:Parameters"`
 }
 
@@ -104,8 +104,8 @@ func (c *CustomerEvent) commonPre() {
 }
 
 type StaffNotificationRecipient struct {
-	Id         string  `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid();column:Id"`
-	UserID     *string `json:"user_id" gorm:"type:uuid;column:UserID;index:staffnotificationrecipients_userid_key"`
+	Id         UUID    `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid();column:Id"`
+	UserID     *UUID   `json:"user_id" gorm:"type:uuid;column:UserID;index:staffnotificationrecipients_userid_key"`
 	StaffEmail *string `json:"staff_email" gorm:"unique:staff_notification_recipients_staff_email_key;column:StaffEmail"`
 	Active     *bool   `json:"active" gorm:"default:true;column:Active"`
 }

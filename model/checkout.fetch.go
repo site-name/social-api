@@ -258,7 +258,7 @@ func (d *CollectionPointInfo) String() string {
 // }
 
 func (c *CollectionPointInfo) WarehousePK() string {
-	return c.DeliveryMethod.Id
+	return string(c.DeliveryMethod.Id)
 }
 
 func (c *CollectionPointInfo) IsLocalCollectionPoint() bool {

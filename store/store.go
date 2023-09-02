@@ -226,7 +226,7 @@ type (
 	AssignedPageAttributeValueStore interface {
 		Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error)                                                 // Save insert given value into database then returns it with an error
 		Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error)                                                                           // Get try finding an value with given id then returns it with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error)                                                 // SaveInBulk inserts multiple values into database then returns them with an error
+		SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedPageAttributeValue, error)                                         // SaveInBulk inserts multiple values into database then returns them with an error
 		SelectForSort(assignmentID string) (assignedPageAttributeValues []*model.AssignedPageAttributeValue, attributeValues []*model.AttributeValue, err error) // SelectForSort uses inner join to find two list: []*assignedPageAttributeValue and []*attributeValue. With given assignedPageAttributeID
 		UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error                                                                                  // UpdateInBulk use transaction to update all given assigned page model values
 	}
@@ -244,7 +244,7 @@ type (
 		ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
 		Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                   // Get try finding a value with given id then returns it with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error)                                                    // SaveInBulk save multiple values into database then returns them
+		SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedVariantAttributeValue, error)                                            // SaveInBulk save multiple values into database then returns them
 		SelectForSort(assignmentID string) (assignedVariantAttributeValues []*model.AssignedVariantAttributeValue, attributeValues []*model.AttributeValue, err error) // SelectForSort
 		UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error                                                                                     // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
 		FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error)
@@ -263,11 +263,11 @@ type (
 	}
 	AssignedProductAttributeValueStore interface {
 		ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []interface{}
-		Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
-		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                              // Get try finding an instance with given id then returns the value with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error)       // SaveInBulk save multiple values into database
-		SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error)       // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
-		UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error                                        // UpdateInBulk use transaction to update the given values. Returned error can be `*store.ErrInvalidInput` or `system error`
+		Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error)   // Save inserts given instance into database then returns it with an error
+		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                                // Get try finding an instance with given id then returns the value with an error
+		SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedProductAttributeValue, error) // SaveInBulk save multiple values into database
+		SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error)         // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
+		UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error                                          // UpdateInBulk use transaction to update the given values. Returned error can be `*store.ErrInvalidInput` or `system error`
 		FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error)
 	}
 	AssignedProductAttributeStore interface {
@@ -469,7 +469,7 @@ type (
 		FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error)
 		Save(productType *model.ProductType) (*model.ProductType, error)                      // Save try inserting new product type into database then returns it
 		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) // FilterProductTypesByCheckoutToken is used to check if a model requires model
-		ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error)           // ProductTypesByProductIDs returns all product types belong to given products
+		ProductTypesByProductIDs(productIDs []model.UUID) ([]*model.ProductType, error)       // ProductTypesByProductIDs returns all product types belong to given products
 		ProductTypeByProductVariantID(variantID string) (*model.ProductType, error)           // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 		GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)       // GetByOption finds and returns a product type with given options
 		Count(options *model.ProductTypeFilterOption) (int64, error)
@@ -551,7 +551,7 @@ type (
 	OrderEventStore interface {
 		Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
 		Get(orderEventID string) (*model.OrderEvent, error)                                 // Get finds order event with given id then returns it
-		FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error)
+		FilterByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, error)
 	}
 	FulfillmentLineStore interface {
 		Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error)
@@ -650,7 +650,7 @@ type (
 		Delete(transaction *gorm.DB, options *model.SaleFilterOption) (int64, error)
 		Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) // Upsert bases on sale's Id to decide to update or insert given sale
 		Get(saleID string) (*model.Sale, error)                             // Get finds and returns a sale with given saleID
-		ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
+		ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []model.UUID, isDelete bool) error
 		FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
@@ -666,7 +666,7 @@ type (
 		FilterVouchersByOption(option *model.VoucherFilterOption) (int64, []*model.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
 		ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error)                           // ExpiredVouchers finds and returns vouchers that are expired before given date
 		// GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
-		ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error
+		ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []model.UUID, isDelete bool) error
 		Delete(transaction *gorm.DB, ids []string) (int64, error)
 	}
 	VoucherCustomerStore interface {
@@ -807,9 +807,9 @@ type (
 	}
 	UserStore interface {
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
-		RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
+		RemoveRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
-		AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
+		AddRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError
 		ClearCaches()
 		ScanFields(user *model.User) []interface{}
 		Save(user *model.User) (*model.User, error)                               // Save takes an user struct and save into database
@@ -829,7 +829,7 @@ type (
 		GetEtagForProfiles(teamID string) string
 		UpdateFailedPasswordAttempts(userID string, attempts int) error
 		GetSystemAdminProfiles() (map[string]*model.User, error)
-		PermanentDelete(userID string) error // PermanentDelete completely delete user from the system
+		PermanentDelete(userID model.UUID) error // PermanentDelete completely delete user from the system
 		AnalyticsGetInactiveUsersCount() (int64, error)
 		AnalyticsGetExternalUsers(hostDomain string) (bool, error)
 		AnalyticsGetSystemAdminCount() (int64, error)

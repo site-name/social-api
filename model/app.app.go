@@ -1,6 +1,8 @@
 package model
 
 import (
+	"net/http"
+
 	"gorm.io/gorm"
 )
 
@@ -17,7 +19,7 @@ const (
 )
 
 type App struct {
-	Id               string        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id               UUID          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name             string        `json:"name" gorm:"type:varchar(60);column:Name"`
 	CreateAt         int64         `json:"create_at" gorm:"autoCreateTime:milli;type:bigint;column:CreateAt"`
 	IsActive         *bool         `json:"is_active" gorm:"default:true;column:IsActive"` // default true
@@ -36,19 +38,11 @@ type App struct {
 
 func (a *App) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
 func (a *App) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
-func (*App) TableName() string               { return "Apps" }
+func (*App) TableName() string               { return AppTableName }
 
 func (a *App) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.app.is_valid.%s.app_error",
-		"app_id=",
-		"App.IsValid",
-	)
 	if !a.Type.IsValid() {
-		return outer("type", &a.Id)
-	}
-	if a.CreateAt == 0 {
-		return outer("create_at", &a.Id)
+		return NewAppError("App.IsValid", "model.app.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 
 	return nil

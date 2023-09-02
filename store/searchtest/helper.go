@@ -190,9 +190,7 @@ func (th *SearchTestHelper) deleteUser(user *model.User) error {
 }
 
 func (th *SearchTestHelper) cleanAllUsers() error {
-	users, err := th.Store.User().FilterByOptions(context.Background(), &model.UserFilterOptions{
-		OrderBy: "Users.Username ASC",
-	})
+	_, users, err := th.Store.User().FilterByOptions(context.Background(), &model.UserFilterOptions{})
 	if err != nil {
 		return err
 	}
@@ -357,7 +355,7 @@ func (th *SearchTestHelper) cleanAllUsers() error {
 
 func (th *SearchTestHelper) createFileInfoModel(creatorID, postID, name, content, extension, mimeType string, createAt, size int64) *model.FileInfo {
 	return &model.FileInfo{
-		CreatorId: creatorID,
+		CreatorId: model.UUID(creatorID),
 		// PostId:    postID,
 		CreateAt:  createAt,
 		UpdateAt:  createAt,

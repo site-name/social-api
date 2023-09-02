@@ -9,9 +9,9 @@ import (
 
 // AttributeID unique together with ProductTypeID
 type AttributeVariant struct {
-	Id            string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	AttributeID   string `json:"attribute_id" gorm:"type:uuid;index:attributeid_producttypeid_key;column:AttributeID"`
-	ProductTypeID string `json:"product_type_id" gorm:"type:uuid;index:attributeid_producttypeid_key;column:ProductTypeID"`
+	Id            UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	AttributeID   UUID `json:"attribute_id" gorm:"type:uuid;index:attributeid_producttypeid_key;column:AttributeID"`
+	ProductTypeID UUID `json:"product_type_id" gorm:"type:uuid;index:attributeid_producttypeid_key;column:ProductTypeID"`
 	Sortable
 
 	AssignedVariants   ProductVariants             `json:"-" gorm:"many2many:AssignedVariantAttributes"`
@@ -41,9 +41,9 @@ func (a *AttributeVariant) IsValid() *AppError {
 
 // Associate a product type attribute and selected values to a given variant.
 type AssignedVariantAttribute struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	VariantID    string `json:"variant_id" gorm:"column:VariantID;index:variantid_assignmentid_key"`       // to ProductVariant
-	AssignmentID string `json:"assignment_id" gorm:"column:AssignmentID;index:variantid_assignmentid_key"` // to AttributeVariant
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	VariantID    UUID `json:"variant_id" gorm:"column:VariantID;index:variantid_assignmentid_key"`       // to ProductVariant
+	AssignmentID UUID `json:"assignment_id" gorm:"column:AssignmentID;index:variantid_assignmentid_key"` // to AttributeVariant
 
 	Values                 AttributeValues                  `json:"-" gorm:"many2many:AssignedVariantAttributeValues"`
 	VariantValueAssignment []*AssignedVariantAttributeValue `json:"-" gorm:"foreignKey:AssignmentID"`
@@ -75,9 +75,9 @@ func (a *AssignedVariantAttribute) IsValid() *AppError {
 
 // ValueID unique together with AssignmentID
 type AssignedVariantAttributeValue struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ValueID      string `json:"value_id" gorm:"primaryKey;index:valueid_assignmentid_key;type:uuid;column:ValueID"`
-	AssignmentID string `json:"assignment_id" gorm:"primaryKey;index:valueid_assignmentid_key;type:uuid;column:AssignmentID"`
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ValueID      UUID `json:"value_id" gorm:"primaryKey;index:valueid_assignmentid_key;type:uuid;column:ValueID"`
+	AssignmentID UUID `json:"assignment_id" gorm:"primaryKey;index:valueid_assignmentid_key;type:uuid;column:AssignmentID"`
 	Sortable
 }
 

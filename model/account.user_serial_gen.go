@@ -390,6 +390,58 @@ func (z StringMAP) Msgsize() (s int) {
 }
 
 // DecodeMsg implements msgp.Decodable
+func (z *UUID) DecodeMsg(dc *msgp.Reader) (err error) {
+	{
+		var zb0001 string
+		zb0001, err = dc.ReadString()
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		(*z) = UUID(zb0001)
+	}
+	return
+}
+
+// EncodeMsg implements msgp.Encodable
+func (z UUID) EncodeMsg(en *msgp.Writer) (err error) {
+	err = en.WriteString(string(z))
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	return
+}
+
+// MarshalMsg implements msgp.Marshaler
+func (z UUID) MarshalMsg(b []byte) (o []byte, err error) {
+	o = msgp.Require(b, z.Msgsize())
+	o = msgp.AppendString(o, string(z))
+	return
+}
+
+// UnmarshalMsg implements msgp.Unmarshaler
+func (z *UUID) UnmarshalMsg(bts []byte) (o []byte, err error) {
+	{
+		var zb0001 string
+		zb0001, bts, err = msgp.ReadStringBytes(bts)
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		(*z) = UUID(zb0001)
+	}
+	o = bts
+	return
+}
+
+// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
+func (z UUID) Msgsize() (s int) {
+	s = msgp.StringPrefixSize + len(string(z))
+	return
+}
+
+// DecodeMsg implements msgp.Decodable
 func (z *User) DecodeMsg(dc *msgp.Reader) (err error) {
 	var field []byte
 	_ = field
@@ -408,10 +460,14 @@ func (z *User) DecodeMsg(dc *msgp.Reader) (err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Id":
-			z.Id, err = dc.ReadString()
-			if err != nil {
-				err = msgp.WrapError(err, "Id")
-				return
+			{
+				var zb0002 string
+				zb0002, err = dc.ReadString()
+				if err != nil {
+					err = msgp.WrapError(err, "Id")
+					return
+				}
+				z.Id = UUID(zb0002)
 			}
 		case "Email":
 			z.Email, err = dc.ReadString()
@@ -653,6 +709,167 @@ func (z *User) DecodeMsg(dc *msgp.Reader) (err error) {
 				err = msgp.WrapError(err, "ModelMetadata")
 				return
 			}
+		case "Addresses":
+			var zb0003 uint32
+			zb0003, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "Addresses")
+				return
+			}
+			if cap(z.Addresses) >= int(zb0003) {
+				z.Addresses = (z.Addresses)[:zb0003]
+			} else {
+				z.Addresses = make([]*Address, zb0003)
+			}
+			for za0001 := range z.Addresses {
+				if dc.IsNil() {
+					err = dc.ReadNil()
+					if err != nil {
+						err = msgp.WrapError(err, "Addresses", za0001)
+						return
+					}
+					z.Addresses[za0001] = nil
+				} else {
+					if z.Addresses[za0001] == nil {
+						z.Addresses[za0001] = new(Address)
+					}
+					err = z.Addresses[za0001].DecodeMsg(dc)
+					if err != nil {
+						err = msgp.WrapError(err, "Addresses", za0001)
+						return
+					}
+				}
+			}
+		case "CustomerEvents":
+			var zb0004 uint32
+			zb0004, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerEvents")
+				return
+			}
+			if cap(z.CustomerEvents) >= int(zb0004) {
+				z.CustomerEvents = (z.CustomerEvents)[:zb0004]
+			} else {
+				z.CustomerEvents = make([]*CustomerEvent, zb0004)
+			}
+			for za0002 := range z.CustomerEvents {
+				if dc.IsNil() {
+					err = dc.ReadNil()
+					if err != nil {
+						err = msgp.WrapError(err, "CustomerEvents", za0002)
+						return
+					}
+					z.CustomerEvents[za0002] = nil
+				} else {
+					if z.CustomerEvents[za0002] == nil {
+						z.CustomerEvents[za0002] = new(CustomerEvent)
+					}
+					err = z.CustomerEvents[za0002].DecodeMsg(dc)
+					if err != nil {
+						err = msgp.WrapError(err, "CustomerEvents", za0002)
+						return
+					}
+				}
+			}
+		case "CustomerNotes":
+			var zb0005 uint32
+			zb0005, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerNotes")
+				return
+			}
+			if cap(z.CustomerNotes) >= int(zb0005) {
+				z.CustomerNotes = (z.CustomerNotes)[:zb0005]
+			} else {
+				z.CustomerNotes = make([]*CustomerNote, zb0005)
+			}
+			for za0003 := range z.CustomerNotes {
+				if dc.IsNil() {
+					err = dc.ReadNil()
+					if err != nil {
+						err = msgp.WrapError(err, "CustomerNotes", za0003)
+						return
+					}
+					z.CustomerNotes[za0003] = nil
+				} else {
+					if z.CustomerNotes[za0003] == nil {
+						z.CustomerNotes[za0003] = new(CustomerNote)
+					}
+					err = z.CustomerNotes[za0003].DecodeMsg(dc)
+					if err != nil {
+						err = msgp.WrapError(err, "CustomerNotes", za0003)
+						return
+					}
+				}
+			}
+		case "NotesOnMe":
+			var zb0006 uint32
+			zb0006, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "NotesOnMe")
+				return
+			}
+			if cap(z.NotesOnMe) >= int(zb0006) {
+				z.NotesOnMe = (z.NotesOnMe)[:zb0006]
+			} else {
+				z.NotesOnMe = make([]*CustomerNote, zb0006)
+			}
+			for za0004 := range z.NotesOnMe {
+				if dc.IsNil() {
+					err = dc.ReadNil()
+					if err != nil {
+						err = msgp.WrapError(err, "NotesOnMe", za0004)
+						return
+					}
+					z.NotesOnMe[za0004] = nil
+				} else {
+					if z.NotesOnMe[za0004] == nil {
+						z.NotesOnMe[za0004] = new(CustomerNote)
+					}
+					err = z.NotesOnMe[za0004].DecodeMsg(dc)
+					if err != nil {
+						err = msgp.WrapError(err, "NotesOnMe", za0004)
+						return
+					}
+				}
+			}
+		case "StaffNotificationRecipients":
+			var zb0007 uint32
+			zb0007, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "StaffNotificationRecipients")
+				return
+			}
+			if cap(z.StaffNotificationRecipients) >= int(zb0007) {
+				z.StaffNotificationRecipients = (z.StaffNotificationRecipients)[:zb0007]
+			} else {
+				z.StaffNotificationRecipients = make([]*StaffNotificationRecipient, zb0007)
+			}
+			for za0005 := range z.StaffNotificationRecipients {
+				if dc.IsNil() {
+					err = dc.ReadNil()
+					if err != nil {
+						err = msgp.WrapError(err, "StaffNotificationRecipients", za0005)
+						return
+					}
+					z.StaffNotificationRecipients[za0005] = nil
+				} else {
+					if z.StaffNotificationRecipients[za0005] == nil {
+						z.StaffNotificationRecipients[za0005] = new(StaffNotificationRecipient)
+					}
+					err = z.StaffNotificationRecipients[za0005].DecodeMsg(dc)
+					if err != nil {
+						err = msgp.WrapError(err, "StaffNotificationRecipients", za0005)
+						return
+					}
+				}
+			}
+		case "OrderCount":
+			z.OrderCount, err = dc.ReadInt()
+			if err != nil {
+				err = msgp.WrapError(err, "OrderCount")
+				return
+			}
 		default:
 			err = dc.Skip()
 			if err != nil {
@@ -666,13 +883,13 @@ func (z *User) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *User) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 33
+	// map header, size 39
 	// write "Id"
-	err = en.Append(0xde, 0x0, 0x21, 0xa2, 0x49, 0x64)
+	err = en.Append(0xde, 0x0, 0x27, 0xa2, 0x49, 0x64)
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.Id)
+	err = en.WriteString(string(z.Id))
 	if err != nil {
 		err = msgp.WrapError(err, "Id")
 		return
@@ -1025,16 +1242,146 @@ func (z *User) EncodeMsg(en *msgp.Writer) (err error) {
 		err = msgp.WrapError(err, "ModelMetadata")
 		return
 	}
+	// write "Addresses"
+	err = en.Append(0xa9, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.Addresses)))
+	if err != nil {
+		err = msgp.WrapError(err, "Addresses")
+		return
+	}
+	for za0001 := range z.Addresses {
+		if z.Addresses[za0001] == nil {
+			err = en.WriteNil()
+			if err != nil {
+				return
+			}
+		} else {
+			err = z.Addresses[za0001].EncodeMsg(en)
+			if err != nil {
+				err = msgp.WrapError(err, "Addresses", za0001)
+				return
+			}
+		}
+	}
+	// write "CustomerEvents"
+	err = en.Append(0xae, 0x43, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x65, 0x72, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.CustomerEvents)))
+	if err != nil {
+		err = msgp.WrapError(err, "CustomerEvents")
+		return
+	}
+	for za0002 := range z.CustomerEvents {
+		if z.CustomerEvents[za0002] == nil {
+			err = en.WriteNil()
+			if err != nil {
+				return
+			}
+		} else {
+			err = z.CustomerEvents[za0002].EncodeMsg(en)
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerEvents", za0002)
+				return
+			}
+		}
+	}
+	// write "CustomerNotes"
+	err = en.Append(0xad, 0x43, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x65, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.CustomerNotes)))
+	if err != nil {
+		err = msgp.WrapError(err, "CustomerNotes")
+		return
+	}
+	for za0003 := range z.CustomerNotes {
+		if z.CustomerNotes[za0003] == nil {
+			err = en.WriteNil()
+			if err != nil {
+				return
+			}
+		} else {
+			err = z.CustomerNotes[za0003].EncodeMsg(en)
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerNotes", za0003)
+				return
+			}
+		}
+	}
+	// write "NotesOnMe"
+	err = en.Append(0xa9, 0x4e, 0x6f, 0x74, 0x65, 0x73, 0x4f, 0x6e, 0x4d, 0x65)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.NotesOnMe)))
+	if err != nil {
+		err = msgp.WrapError(err, "NotesOnMe")
+		return
+	}
+	for za0004 := range z.NotesOnMe {
+		if z.NotesOnMe[za0004] == nil {
+			err = en.WriteNil()
+			if err != nil {
+				return
+			}
+		} else {
+			err = z.NotesOnMe[za0004].EncodeMsg(en)
+			if err != nil {
+				err = msgp.WrapError(err, "NotesOnMe", za0004)
+				return
+			}
+		}
+	}
+	// write "StaffNotificationRecipients"
+	err = en.Append(0xbb, 0x53, 0x74, 0x61, 0x66, 0x66, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x63, 0x69, 0x70, 0x69, 0x65, 0x6e, 0x74, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.StaffNotificationRecipients)))
+	if err != nil {
+		err = msgp.WrapError(err, "StaffNotificationRecipients")
+		return
+	}
+	for za0005 := range z.StaffNotificationRecipients {
+		if z.StaffNotificationRecipients[za0005] == nil {
+			err = en.WriteNil()
+			if err != nil {
+				return
+			}
+		} else {
+			err = z.StaffNotificationRecipients[za0005].EncodeMsg(en)
+			if err != nil {
+				err = msgp.WrapError(err, "StaffNotificationRecipients", za0005)
+				return
+			}
+		}
+	}
+	// write "OrderCount"
+	err = en.Append(0xaa, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x43, 0x6f, 0x75, 0x6e, 0x74)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt(z.OrderCount)
+	if err != nil {
+		err = msgp.WrapError(err, "OrderCount")
+		return
+	}
 	return
 }
 
 // MarshalMsg implements msgp.Marshaler
 func (z *User) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 33
+	// map header, size 39
 	// string "Id"
-	o = append(o, 0xde, 0x0, 0x21, 0xa2, 0x49, 0x64)
-	o = msgp.AppendString(o, z.Id)
+	o = append(o, 0xde, 0x0, 0x27, 0xa2, 0x49, 0x64)
+	o = msgp.AppendString(o, string(z.Id))
 	// string "Email"
 	o = append(o, 0xa5, 0x45, 0x6d, 0x61, 0x69, 0x6c)
 	o = msgp.AppendString(o, z.Email)
@@ -1163,6 +1510,79 @@ func (z *User) MarshalMsg(b []byte) (o []byte, err error) {
 		err = msgp.WrapError(err, "ModelMetadata")
 		return
 	}
+	// string "Addresses"
+	o = append(o, 0xa9, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.Addresses)))
+	for za0001 := range z.Addresses {
+		if z.Addresses[za0001] == nil {
+			o = msgp.AppendNil(o)
+		} else {
+			o, err = z.Addresses[za0001].MarshalMsg(o)
+			if err != nil {
+				err = msgp.WrapError(err, "Addresses", za0001)
+				return
+			}
+		}
+	}
+	// string "CustomerEvents"
+	o = append(o, 0xae, 0x43, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x65, 0x72, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.CustomerEvents)))
+	for za0002 := range z.CustomerEvents {
+		if z.CustomerEvents[za0002] == nil {
+			o = msgp.AppendNil(o)
+		} else {
+			o, err = z.CustomerEvents[za0002].MarshalMsg(o)
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerEvents", za0002)
+				return
+			}
+		}
+	}
+	// string "CustomerNotes"
+	o = append(o, 0xad, 0x43, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x65, 0x73)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.CustomerNotes)))
+	for za0003 := range z.CustomerNotes {
+		if z.CustomerNotes[za0003] == nil {
+			o = msgp.AppendNil(o)
+		} else {
+			o, err = z.CustomerNotes[za0003].MarshalMsg(o)
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerNotes", za0003)
+				return
+			}
+		}
+	}
+	// string "NotesOnMe"
+	o = append(o, 0xa9, 0x4e, 0x6f, 0x74, 0x65, 0x73, 0x4f, 0x6e, 0x4d, 0x65)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.NotesOnMe)))
+	for za0004 := range z.NotesOnMe {
+		if z.NotesOnMe[za0004] == nil {
+			o = msgp.AppendNil(o)
+		} else {
+			o, err = z.NotesOnMe[za0004].MarshalMsg(o)
+			if err != nil {
+				err = msgp.WrapError(err, "NotesOnMe", za0004)
+				return
+			}
+		}
+	}
+	// string "StaffNotificationRecipients"
+	o = append(o, 0xbb, 0x53, 0x74, 0x61, 0x66, 0x66, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x63, 0x69, 0x70, 0x69, 0x65, 0x6e, 0x74, 0x73)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.StaffNotificationRecipients)))
+	for za0005 := range z.StaffNotificationRecipients {
+		if z.StaffNotificationRecipients[za0005] == nil {
+			o = msgp.AppendNil(o)
+		} else {
+			o, err = z.StaffNotificationRecipients[za0005].MarshalMsg(o)
+			if err != nil {
+				err = msgp.WrapError(err, "StaffNotificationRecipients", za0005)
+				return
+			}
+		}
+	}
+	// string "OrderCount"
+	o = append(o, 0xaa, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x43, 0x6f, 0x75, 0x6e, 0x74)
+	o = msgp.AppendInt(o, z.OrderCount)
 	return
 }
 
@@ -1185,10 +1605,14 @@ func (z *User) UnmarshalMsg(bts []byte) (o []byte, err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Id":
-			z.Id, bts, err = msgp.ReadStringBytes(bts)
-			if err != nil {
-				err = msgp.WrapError(err, "Id")
-				return
+			{
+				var zb0002 string
+				zb0002, bts, err = msgp.ReadStringBytes(bts)
+				if err != nil {
+					err = msgp.WrapError(err, "Id")
+					return
+				}
+				z.Id = UUID(zb0002)
 			}
 		case "Email":
 			z.Email, bts, err = msgp.ReadStringBytes(bts)
@@ -1426,6 +1850,162 @@ func (z *User) UnmarshalMsg(bts []byte) (o []byte, err error) {
 				err = msgp.WrapError(err, "ModelMetadata")
 				return
 			}
+		case "Addresses":
+			var zb0003 uint32
+			zb0003, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "Addresses")
+				return
+			}
+			if cap(z.Addresses) >= int(zb0003) {
+				z.Addresses = (z.Addresses)[:zb0003]
+			} else {
+				z.Addresses = make([]*Address, zb0003)
+			}
+			for za0001 := range z.Addresses {
+				if msgp.IsNil(bts) {
+					bts, err = msgp.ReadNilBytes(bts)
+					if err != nil {
+						return
+					}
+					z.Addresses[za0001] = nil
+				} else {
+					if z.Addresses[za0001] == nil {
+						z.Addresses[za0001] = new(Address)
+					}
+					bts, err = z.Addresses[za0001].UnmarshalMsg(bts)
+					if err != nil {
+						err = msgp.WrapError(err, "Addresses", za0001)
+						return
+					}
+				}
+			}
+		case "CustomerEvents":
+			var zb0004 uint32
+			zb0004, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerEvents")
+				return
+			}
+			if cap(z.CustomerEvents) >= int(zb0004) {
+				z.CustomerEvents = (z.CustomerEvents)[:zb0004]
+			} else {
+				z.CustomerEvents = make([]*CustomerEvent, zb0004)
+			}
+			for za0002 := range z.CustomerEvents {
+				if msgp.IsNil(bts) {
+					bts, err = msgp.ReadNilBytes(bts)
+					if err != nil {
+						return
+					}
+					z.CustomerEvents[za0002] = nil
+				} else {
+					if z.CustomerEvents[za0002] == nil {
+						z.CustomerEvents[za0002] = new(CustomerEvent)
+					}
+					bts, err = z.CustomerEvents[za0002].UnmarshalMsg(bts)
+					if err != nil {
+						err = msgp.WrapError(err, "CustomerEvents", za0002)
+						return
+					}
+				}
+			}
+		case "CustomerNotes":
+			var zb0005 uint32
+			zb0005, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "CustomerNotes")
+				return
+			}
+			if cap(z.CustomerNotes) >= int(zb0005) {
+				z.CustomerNotes = (z.CustomerNotes)[:zb0005]
+			} else {
+				z.CustomerNotes = make([]*CustomerNote, zb0005)
+			}
+			for za0003 := range z.CustomerNotes {
+				if msgp.IsNil(bts) {
+					bts, err = msgp.ReadNilBytes(bts)
+					if err != nil {
+						return
+					}
+					z.CustomerNotes[za0003] = nil
+				} else {
+					if z.CustomerNotes[za0003] == nil {
+						z.CustomerNotes[za0003] = new(CustomerNote)
+					}
+					bts, err = z.CustomerNotes[za0003].UnmarshalMsg(bts)
+					if err != nil {
+						err = msgp.WrapError(err, "CustomerNotes", za0003)
+						return
+					}
+				}
+			}
+		case "NotesOnMe":
+			var zb0006 uint32
+			zb0006, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "NotesOnMe")
+				return
+			}
+			if cap(z.NotesOnMe) >= int(zb0006) {
+				z.NotesOnMe = (z.NotesOnMe)[:zb0006]
+			} else {
+				z.NotesOnMe = make([]*CustomerNote, zb0006)
+			}
+			for za0004 := range z.NotesOnMe {
+				if msgp.IsNil(bts) {
+					bts, err = msgp.ReadNilBytes(bts)
+					if err != nil {
+						return
+					}
+					z.NotesOnMe[za0004] = nil
+				} else {
+					if z.NotesOnMe[za0004] == nil {
+						z.NotesOnMe[za0004] = new(CustomerNote)
+					}
+					bts, err = z.NotesOnMe[za0004].UnmarshalMsg(bts)
+					if err != nil {
+						err = msgp.WrapError(err, "NotesOnMe", za0004)
+						return
+					}
+				}
+			}
+		case "StaffNotificationRecipients":
+			var zb0007 uint32
+			zb0007, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "StaffNotificationRecipients")
+				return
+			}
+			if cap(z.StaffNotificationRecipients) >= int(zb0007) {
+				z.StaffNotificationRecipients = (z.StaffNotificationRecipients)[:zb0007]
+			} else {
+				z.StaffNotificationRecipients = make([]*StaffNotificationRecipient, zb0007)
+			}
+			for za0005 := range z.StaffNotificationRecipients {
+				if msgp.IsNil(bts) {
+					bts, err = msgp.ReadNilBytes(bts)
+					if err != nil {
+						return
+					}
+					z.StaffNotificationRecipients[za0005] = nil
+				} else {
+					if z.StaffNotificationRecipients[za0005] == nil {
+						z.StaffNotificationRecipients[za0005] = new(StaffNotificationRecipient)
+					}
+					bts, err = z.StaffNotificationRecipients[za0005].UnmarshalMsg(bts)
+					if err != nil {
+						err = msgp.WrapError(err, "StaffNotificationRecipients", za0005)
+						return
+					}
+				}
+			}
+		case "OrderCount":
+			z.OrderCount, bts, err = msgp.ReadIntBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "OrderCount")
+				return
+			}
 		default:
 			bts, err = msgp.Skip(bts)
 			if err != nil {
@@ -1440,7 +2020,7 @@ func (z *User) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *User) Msgsize() (s int) {
-	s = 3 + 3 + msgp.StringPrefixSize + len(z.Id) + 6 + msgp.StringPrefixSize + len(z.Email) + 9 + msgp.StringPrefixSize + len(z.Username) + 10 + msgp.StringPrefixSize + len(z.FirstName) + 9 + msgp.StringPrefixSize + len(z.LastName) + 25
+	s = 3 + 3 + msgp.StringPrefixSize + len(string(z.Id)) + 6 + msgp.StringPrefixSize + len(z.Email) + 9 + msgp.StringPrefixSize + len(z.Username) + 10 + msgp.StringPrefixSize + len(z.FirstName) + 9 + msgp.StringPrefixSize + len(z.LastName) + 25
 	if z.DefaultShippingAddressID == nil {
 		s += msgp.NilSize
 	} else {
@@ -1464,7 +2044,47 @@ func (z *User) Msgsize() (s int) {
 	} else {
 		s += msgp.StringPrefixSize + len(*z.Note)
 	}
-	s += 12 + msgp.StringPrefixSize + len(z.JwtTokenKey) + 15 + msgp.Int64Size + 17 + msgp.StringPrefixSize + len(z.TermsOfServiceId) + 23 + msgp.Int64Size + 20 + msgp.BoolSize + 14 + z.ModelMetadata.Msgsize()
+	s += 12 + msgp.StringPrefixSize + len(z.JwtTokenKey) + 15 + msgp.Int64Size + 17 + msgp.StringPrefixSize + len(z.TermsOfServiceId) + 23 + msgp.Int64Size + 20 + msgp.BoolSize + 14 + z.ModelMetadata.Msgsize() + 10 + msgp.ArrayHeaderSize
+	for za0001 := range z.Addresses {
+		if z.Addresses[za0001] == nil {
+			s += msgp.NilSize
+		} else {
+			s += z.Addresses[za0001].Msgsize()
+		}
+	}
+	s += 15 + msgp.ArrayHeaderSize
+	for za0002 := range z.CustomerEvents {
+		if z.CustomerEvents[za0002] == nil {
+			s += msgp.NilSize
+		} else {
+			s += z.CustomerEvents[za0002].Msgsize()
+		}
+	}
+	s += 14 + msgp.ArrayHeaderSize
+	for za0003 := range z.CustomerNotes {
+		if z.CustomerNotes[za0003] == nil {
+			s += msgp.NilSize
+		} else {
+			s += z.CustomerNotes[za0003].Msgsize()
+		}
+	}
+	s += 10 + msgp.ArrayHeaderSize
+	for za0004 := range z.NotesOnMe {
+		if z.NotesOnMe[za0004] == nil {
+			s += msgp.NilSize
+		} else {
+			s += z.NotesOnMe[za0004].Msgsize()
+		}
+	}
+	s += 28 + msgp.ArrayHeaderSize
+	for za0005 := range z.StaffNotificationRecipients {
+		if z.StaffNotificationRecipients[za0005] == nil {
+			s += msgp.NilSize
+		} else {
+			s += z.StaffNotificationRecipients[za0005].Msgsize()
+		}
+	}
+	s += 11 + msgp.IntSize
 	return
 }
 

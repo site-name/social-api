@@ -328,7 +328,7 @@ func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*datal
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	events, appErr := embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
+	_, events, appErr := embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
 		Conditions: squirrel.Eq{model.OrderEventTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {

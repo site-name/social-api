@@ -34,12 +34,12 @@ func (t ExportEventType) IsValid() bool {
 
 // Model used to store events that happened during the export file lifecycle.
 type ExportEvent struct {
-	Id           string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           UUID            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Date         int64           `json:"date" gorm:"type:bigint;column:Date;autoCreateTime:milli"` // NOTE editable
 	Type         ExportEventType `json:"type" gorm:"type:varchar(255);column:Type"`
 	Parameters   *StringMap      `json:"parameters" gorm:"type:jsonb;column:Parameters"`
-	ExportFileID string          `json:"export_file_id" gorm:"type:uuid;column:ExportFileID"` // delete CASCADE
-	UserID       *string         `json:"user_id" gorm:"type:uuid;column:UserID"`              // delete CASCADE
+	ExportFileID UUID            `json:"export_file_id" gorm:"type:uuid;column:ExportFileID"` // delete CASCADE
+	UserID       *UUID           `json:"user_id" gorm:"type:uuid;column:UserID"`              // delete CASCADE
 }
 
 func (c *ExportEvent) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }

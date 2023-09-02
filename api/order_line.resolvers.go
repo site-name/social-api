@@ -6,13 +6,21 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/sitename/sitename/model"
 )
 
 func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	Id    string
 	Input []*OrderLineCreateInput
 }) (*OrderLinesCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("OrderLinesCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
+	}
+
+	panic("not implemented")
 }
 
 func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }) (*OrderLineDelete, error) {

@@ -72,7 +72,7 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	return productTypes, nil
 }
 
-func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
+func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []model.UUID) ([]*model.ProductType, error) {
 	var productTypes []*model.ProductType
 
 	err := pts.GetReplica().Raw("SELECT * FROM "+model.ProductTypeTableName+" INNER JOIN "+model.ProductTableName+" ON ProductTypes.Id = Products.ProductTypeID WHERE Products.Id IN ?", productIDs).Scan(&productTypes).Error

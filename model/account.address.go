@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"strings"
 	"unicode/utf8"
@@ -29,7 +30,7 @@ func (e AddressTypeEnum) IsValid() bool {
 
 // Address contains information that tells details about an address
 type Address struct {
-	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id             UUID        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	FirstName      string      `json:"first_name" gorm:"type:varchar(64);column:FirstName"`
 	LastName       string      `json:"last_name" gorm:"type:varchar(64);column:LastName"`
 	CompanyName    string      `json:"company_name,omitempty" gorm:"type:varchar(256);column:CompanyName"`
@@ -104,25 +105,20 @@ func (a *Address) commonPre() {
 
 // IsValid validates address and returns an error if data is not processed
 func (a *Address) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.address.is_valid.%s.app_error",
-		"address_id=",
-		"Address.IsValid",
-	)
 	if !IsValidNamePart(a.FirstName, FirstName) {
-		return outer("first_name", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.first_name.app_error", nil, "please provide valid address first name", http.StatusBadRequest)
 	}
 	if !IsValidNamePart(a.LastName, LastName) {
-		return outer("last_name", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.last_name.app_error", nil, "please provide valid address last name", http.StatusBadRequest)
 	}
 	if !IsAllNumbers(a.PostalCode) {
-		return outer("postal_code", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.postal_code.app_error", nil, "please provide valid address postal code", http.StatusBadRequest)
 	}
 	if !a.Country.IsValid() {
-		return outer("country", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.country.app_error", nil, "please provide valid address country", http.StatusBadRequest)
 	}
 	if str, ok := util.ValidatePhoneNumber(a.Phone, a.Country.String()); !ok {
-		return outer("phone", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.phone_number.app_error", nil, "please provide valid address phone number", http.StatusBadRequest)
 	} else {
 		a.Phone = str
 	}

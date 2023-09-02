@@ -51,8 +51,8 @@ func (as *SqlAssignedPageAttributeValueStore) Get(id string) (*model.AssignedPag
 	return &res, nil
 }
 
-func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
-	relations := lo.Map(attributeValueIDs, func(item string, _ int) *model.AssignedPageAttributeValue {
+func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedPageAttributeValue, error) {
+	relations := lo.Map(attributeValueIDs, func(item model.UUID, _ int) *model.AssignedPageAttributeValue {
 		return &model.AssignedPageAttributeValue{AssignmentID: assignmentID, ValueID: item}
 	})
 

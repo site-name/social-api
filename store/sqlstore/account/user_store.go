@@ -224,7 +224,7 @@ func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model
 	err := us.GetMaster().First(&oldUser, "Id = ?", user.Id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.UserTableName, user.Id)
+			return nil, store.NewErrNotFound(model.UserTableName, string(user.Id))
 		}
 		return nil, errors.Wrapf(err, "failed to get user with userId=%s", user.Id)
 	}
@@ -414,7 +414,7 @@ func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*model.User, error)
 	userMap := make(map[string]*model.User)
 	for _, u := range users {
 		u.Sanitize(map[string]bool{})
-		userMap[u.Id] = u
+		userMap[string(u.Id)] = u
 	}
 
 	return userMap, nil
@@ -467,7 +467,7 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 	return userId, nil
 }
 
-func (us *SqlUserStore) PermanentDelete(userId string) error {
+func (us *SqlUserStore) PermanentDelete(userId model.UUID) error {
 	if err := us.GetMaster().Raw("DELETE FROM "+model.UserTableName+" WHERE Id = ?", userId).Error; err != nil {
 		return errors.Wrapf(err, "failed to delete User with userId=%s", userId)
 	}
@@ -686,7 +686,7 @@ func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
 
 func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 	builtinRoles := model.MakeDefaultRoles()
-	lastUserId := strings.Repeat("0", len(model.NewId()))
+	lastUserId := model.UUID(strings.Repeat("0", len(model.NewId())))
 
 	for {
 		transaction := us.GetMaster().Begin()
@@ -892,7 +892,7 @@ func (s *SqlUserStore) GetByOptions(ctx context.Context, options *model.UserFilt
 	return &user, nil
 }
 
-func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}
@@ -921,7 +921,7 @@ func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relatio
 	return nil
 }
 
-func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 	if transaction == nil {
 		transaction = s.GetMaster()
 	}

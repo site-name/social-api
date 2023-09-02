@@ -201,7 +201,7 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, e
 	return res, nil
 }
 
-func (s *SqlVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error {
+func (s *SqlVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds, productIds, variantIds, categoryIds []model.UUID, isDelete bool) error {
 	if len(vouchers) == 0 {
 		return errors.New("please speficy relations")
 	}
@@ -210,10 +210,10 @@ func (s *SqlVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers 
 	}
 
 	relationsMap := map[string]any{
-		"Products":        lo.Map(productIds, func(id string, _ int) *model.Product { return &model.Product{Id: id} }),
-		"Collections":     lo.Map(collectionIds, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} }),
-		"ProductVariants": lo.Map(variantIds, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
-		"Categories":      lo.Map(categoryIds, func(id string, _ int) *model.Category { return &model.Category{Id: id} }),
+		"Products":        lo.Map(productIds, func(id model.UUID, _ int) *model.Product { return &model.Product{Id: id} }),
+		"Collections":     lo.Map(collectionIds, func(id model.UUID, _ int) *model.Collection { return &model.Collection{Id: id} }),
+		"ProductVariants": lo.Map(variantIds, func(id model.UUID, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
+		"Categories":      lo.Map(categoryIds, func(id model.UUID, _ int) *model.Category { return &model.Category{Id: id} }),
 	}
 
 	for associationName, relations := range relationsMap {

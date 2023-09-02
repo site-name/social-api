@@ -111,8 +111,8 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 	}
 
 	var (
-		productIDs  = make([]string, 0, len(products))
-		productsMap = map[string]*model.Product{} // productsMap has keys are product ids
+		productIDs  = make([]model.UUID, 0, len(products))
+		productsMap = map[model.UUID]*model.Product{} // productsMap has keys are product ids
 	)
 	for _, product := range products {
 		_, met := productsMap[product.Id]
@@ -148,7 +148,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 			return nil, err
 		}
 
-		var categoriesMap = map[string]*model.Category{}
+		var categoriesMap = map[model.UUID]*model.Category{}
 		for _, cate := range categories {
 			categoriesMap[cate.Id] = cate
 		}
@@ -185,7 +185,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 			return nil, err
 		}
 
-		var productTypesMap = map[string]*model.ProductType{}
+		var productTypesMap = map[model.UUID]*model.ProductType{}
 		for _, prdType := range productTypes {
 			productTypesMap[prdType.Id] = prdType
 		}

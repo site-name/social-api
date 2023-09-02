@@ -36,12 +36,12 @@ type StringMap = StringMAP
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type Session struct {
-	Id             string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id             UUID      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Token          string    `json:"token" gorm:"type:uuid;default:gen_random_uuid();column:Token;index:token_key"` // index, uuid
 	CreateAt       int64     `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 	ExpiresAt      int64     `json:"expires_at" gorm:"type:bigint;column:ExpiresAt"`
 	LastActivityAt int64     `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt;autoUpdateTime:milli;autoCreateTime:milli"`
-	UserId         string    `json:"user_id" gorm:"type:uuid;column:UserId;index:userid_key"` // uuid, index
+	UserId         UUID      `json:"user_id" gorm:"type:uuid;column:UserId;index:userid_key"` // uuid, index
 	DeviceId       string    `json:"device_id" gorm:"type:varchar(512);column:DeviceId"`
 	Roles          string    `json:"roles" gorm:"type:varchar(256);column:Roles"`
 	IsOAuth        bool      `json:"is_oauth" gorm:"column:IsOAuth"`

@@ -20,11 +20,11 @@ const (
 )
 
 type Stock struct {
-	Id               string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CreateAt         int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	WarehouseID      string `json:"warehouse_id" gorm:"type:uuid;column:WarehouseID;index:warehouseid_productvariantid_key"`            // NOT NULL
-	ProductVariantID string `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID;index:warehouseid_productvariantid_key"` // NOT NULL
-	Quantity         int    `json:"quantity" gorm:"check:Quantity >= 0;column:Quantity"`                                                // DEFAULT 0
+	Id               UUID  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt         int64 `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	WarehouseID      UUID  `json:"warehouse_id" gorm:"type:uuid;column:WarehouseID;index:warehouseid_productvariantid_key"`            // NOT NULL
+	ProductVariantID UUID  `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID;index:warehouseid_productvariantid_key"` // NOT NULL
+	Quantity         int   `json:"quantity" gorm:"check:Quantity >= 0;column:Quantity"`                                                // DEFAULT 0
 
 	AvailableQuantity int             `json:"-" gorm:"-"` // this field will be populated in same queries
 	warehouse         *WareHouse      `gorm:"-"`          // this foreign field is populated with select related data
@@ -137,8 +137,8 @@ type StockFilterForCountryAndChannel struct {
 type Stocks []*Stock
 
 // IDs returns a slice of ids of stocks contained in current `Stocks`
-func (s Stocks) IDs() []string {
-	return lo.Map(s, func(st *Stock, _ int) string { return st.Id })
+func (s Stocks) IDs() []UUID {
+	return lo.Map(s, func(st *Stock, _ int) UUID { return st.Id })
 }
 
 func (s Stocks) DeepCopy() Stocks {

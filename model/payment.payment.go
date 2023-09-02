@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -52,7 +53,7 @@ var ChargeStatuString = map[PaymentChargeStatus]string{
 
 // Payment represents payment from user to shop
 type Payment struct {
-	Id                 string              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                 UUID                `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	GateWay            string              `json:"gate_way" gorm:"type:varchar(255);column:GateWay"`
 	IsActive           *bool               `json:"is_active" gorm:"default:true;column:IsActive;index:isactive_key"` // default true
 	ToConfirm          bool                `json:"to_confirm" gorm:"column:ToConfirm"`
@@ -60,11 +61,11 @@ type Payment struct {
 	UpdateAt           int64               `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
 	ChargeStatus       PaymentChargeStatus `json:"charge_status" gorm:"type:varchar(20);column:ChargeStatus;index:chargestatus_key"` // default 'not_charged'
 	Token              string              `json:"token" gorm:"type:varchar(512);column:Token"`
-	Total              *decimal.Decimal    `json:"total" gorm:"default:0;column:Total"`                        // DEFAULT decimal(0)
-	CapturedAmount     *decimal.Decimal    `json:"captured_amount" gorm:"default:0;column:CapturedAmount"`     // DEFAULT decimal(0)
-	Currency           string              `json:"currency" gorm:"type:varchar(5);column:Currency"`            // default 'USD'
-	CheckoutID         *string             `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`             // foreign key to checkout
-	OrderID            *string             `json:"order_id" gorm:"type:uuid;column:OrderID;index:orderid_key"` // foreign key to order
+	Total              *decimal.Decimal    `json:"total" gorm:"default:0;column:Total;type:decimal(12,3)"`                    // DEFAULT decimal(0)
+	CapturedAmount     *decimal.Decimal    `json:"captured_amount" gorm:"default:0;column:CapturedAmount;type:decimal(12,3)"` // DEFAULT decimal(0)
+	Currency           string              `json:"currency" gorm:"type:varchar(5);column:Currency"`                           // default 'USD'
+	CheckoutID         *UUID               `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`                            // foreign key to checkout
+	OrderID            *UUID               `json:"order_id" gorm:"type:uuid;column:OrderID;index:orderid_key"`                // foreign key to order
 	BillingEmail       string              `json:"billing_email" gorm:"type:varchar(128);column:BillingEmail"`
 	BillingFirstName   string              `json:"billing_first_name" gorm:"type:varchar(256);column:BillingFirstName"`
 	BillingLastName    string              `json:"billing_last_name" gorm:"type:varchar(256);column:BillingLastName"`
@@ -172,66 +173,47 @@ func (p *Payment) GetCapturedAmount() *goprices.Money {
 
 // Check if input from user is valid or not
 func (p *Payment) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.payment.is_valid.%s.app_error",
-		"payment_id=",
-		"Payment.IsValid",
-	)
-
 	if p.OrderID != nil && !IsValidId(*p.OrderID) {
-		return outer("order_id", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.order_id.app_error", nil, "please provide valid payment order id", http.StatusBadRequest)
 	}
 	if p.CheckoutID != nil && !IsValidId(*p.CheckoutID) {
-		return outer("checkout_id", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.checkout_id.app_error", nil, "please provide valid payment checkout id", http.StatusBadRequest)
 	}
 	if !p.ChargeStatus.IsValid() {
-		return outer("charge_status", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.charge_status.app_error", nil, "please provide valid payment charge status", http.StatusBadRequest)
 	}
 	if p.Total == nil {
-		return outer("total", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.total.app_error", nil, "please provide valid payment total", http.StatusBadRequest)
 	}
 	if p.CapturedAmount == nil {
-		return outer("captured_amount", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.captured_amount.app_error", nil, "please provide valid payment captured amount", http.StatusBadRequest)
 	}
 	if !IsValidEmail(p.BillingEmail) {
-		return outer("billing_email", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.billing_email.app_error", nil, "please provide valid payment billing email", http.StatusBadRequest)
 	}
 	if !IsValidNamePart(p.BillingFirstName, FirstName) {
-		return outer("billing_first_name", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.billing_firstname.app_error", nil, "please provide valid payment billing first name", http.StatusBadRequest)
 	}
 	if !IsValidNamePart(p.BillingLastName, LastName) {
-		return outer("billing_last_name", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.billing_lastname.app_error", nil, "please provide valid payment billing last name", http.StatusBadRequest)
 	}
 	if !p.BillingCountryCode.IsValid() {
-		return outer("billing_country_code", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.billing_amountry_code.app_error", nil, "please provide valid payment billing country code", http.StatusBadRequest)
 	}
 
 	// make sure country code and currency code are match:
 	region, _ := language.ParseRegion(string(p.BillingCountryCode))
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
-		return outer("currency", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.currency.app_error", nil, "please provide valid payment currency code", http.StatusBadRequest)
 	}
 	if *p.CcExpMonth < MIN_CC_EXP_MONTH || *p.CcExpMonth > MAX_CC_EXP_MONTH {
-		return outer("cc_exp_month", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.cc_exp_month.app_error", nil, "please provide valid payment cc exp month", http.StatusBadRequest)
 	}
 	if *p.CcExpYear < MIN_CC_EXP_YEAR {
-		return outer("cc_exp_year", &p.Id)
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.cc_exp_year.app_error", nil, "please provide valid payment cc exp year", http.StatusBadRequest)
 	}
 	if !p.StorePaymentMethod.IsValid() {
-		return outer("store_payment_method", &p.Id)
-	}
-
-	for _, deci := range []struct {
-		name  string
-		value *decimal.Decimal
-	}{
-		{"CapturedAmount", p.CapturedAmount},
-		{"Total", p.Total},
-	} {
-		err := ValidateDecimal("Product.IsValid."+deci.name, deci.value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
-		if err != nil {
-			return err
-		}
+		return NewAppError("Payment.IsValid", "model.payment.is_valid.store_payment_method.app_error", nil, "please provide valid payment store payment method", http.StatusBadRequest)
 	}
 
 	return nil

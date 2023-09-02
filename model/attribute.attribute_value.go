@@ -11,11 +11,11 @@ import (
 )
 
 type AttributeValue struct {
-	Id          string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id          UUID            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name        string          `json:"name" gorm:"type:varchar(250);column:Name"`                                       // varchar(250)
 	Value       string          `json:"value" gorm:"type:varchar(9);column:Value"`                                       // varchar(9)
 	Slug        string          `json:"slug" gorm:"unique;index:idx_slug_attributeid_key;type:varchar(255);column:Slug"` // unique with attribute_id; varchar(255)
-	AttributeID string          `json:"attribute_id" gorm:"index:idx_slug_attributeid_key;type:uuid;column:AttributeID"`
+	AttributeID UUID            `json:"attribute_id" gorm:"index:idx_slug_attributeid_key;type:uuid;column:AttributeID"`
 	FileUrl     *string         `json:"file_url" gorm:"type:varchar(500);column:FileUrl"`        // varchar(500)
 	ContentType *string         `json:"content_file" gorm:"type:varchar(50);column:ContentType"` // varchar(50)
 	RichText    StringInterface `json:"rich_text" gorm:"column:RichText"`
@@ -54,8 +54,8 @@ type AttributeValueFilterOptions struct {
 
 type AttributeValues []*AttributeValue
 
-func (a AttributeValues) IDs() []string {
-	return lo.Map(a, func(v *AttributeValue, _ int) string { return v.Id })
+func (a AttributeValues) IDs() []UUID {
+	return lo.Map(a, func(v *AttributeValue, _ int) UUID { return v.Id })
 }
 
 func (a AttributeValues) DeepCopy() AttributeValues {
@@ -95,9 +95,9 @@ func (a *AttributeValue) DeepCopy() *AttributeValue {
 
 // LanguageCode unique together AttributeValueID
 type AttributeValueTranslation struct {
-	Id               string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id               UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);index::languagecode_attributevalueid_key;column:LanguageCode"` // varchar(35); unique together with attributeid
-	AttributeValueID string           `json:"attribute_value" gorm:"type:uuid;index::languagecode_attributevalueid_key;column:AttributeValueID"`
+	AttributeValueID UUID             `json:"attribute_value" gorm:"type:uuid;index::languagecode_attributevalueid_key;column:AttributeValueID"`
 	Name             string           `json:"name" gorm:"type:varchar(100);column:Name"` // varchar(100)
 	RichText         StringInterface  `json:"rich_text" gorm:"column:RichText"`
 }

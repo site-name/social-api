@@ -306,7 +306,7 @@ type OrderService interface {
 	CreateOrderEvent(transaction *gorm.DB, orderLine *model.OrderLine, userID string, quantityDiff int) *model.AppError
 	CreateReturnFulfillment(requester *model.User, ord model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.AppError)
 	DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError)
-	FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError)
+	FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, *model.AppError)
 	FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError)
 	FulfillmentCanceledEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError)
 	FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError)

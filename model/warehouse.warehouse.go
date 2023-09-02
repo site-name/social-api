@@ -29,10 +29,10 @@ var ValidWarehouseClickAndCollectOptionMap = map[WarehouseClickAndCollectOption]
 }
 
 type WareHouse struct {
-	Id                    string                         `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                    UUID                           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name                  string                         `json:"name" gorm:"type:varchar(250);column:Name"`
 	Slug                  string                         `json:"slug" gorm:"type:varchar(255);column:Slug;unique"`                              // unique
-	AddressID             *string                        `json:"address_id" gorm:"type:uuid;column:AddressID"`                                  // nullable
+	AddressID             *UUID                          `json:"address_id" gorm:"type:uuid;column:AddressID"`                                  // nullable
 	Email                 string                         `json:"email" gorm:"type:varchar(254);column:Email"`                                   //
 	ClickAndCollectOption WarehouseClickAndCollectOption `json:"click_and_collect_option" gorm:"column:ClickAndCollectOption;type:varchar(30)"` // default to "disabled"
 	IsPrivate             *bool                          `json:"is_private" gorm:"default:true;column:IsPrivate"`                               // default *true
@@ -75,8 +75,8 @@ func (w *WareHouse) SetAddress(a *Address) { w.address = a }
 
 type Warehouses []*WareHouse
 
-func (ws Warehouses) IDs() []string {
-	return lo.Map(ws, func(w *WareHouse, _ int) string { return w.Id })
+func (ws Warehouses) IDs() []UUID {
+	return lo.Map(ws, func(w *WareHouse, _ int) UUID { return w.Id })
 }
 
 func (w *WareHouse) String() string {

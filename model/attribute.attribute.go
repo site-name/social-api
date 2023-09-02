@@ -106,7 +106,7 @@ var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputType{
 
 // ORDER BY Slug
 type Attribute struct {
-	Id                       string               `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                       UUID                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Slug                     string               `json:"slug" gorm:"type:varchar(255);uniqueIndex:slug_unique_key;column:Slug"` // varchar(255); unique
 	Name                     string               `json:"name" gorm:"type:varchar(250);column:Name"`                             // varchar(250)
 	Type                     AttributeType        `json:"type" gorm:"type:varchar(50);column:Type"`                              // varchar(50)
@@ -187,8 +187,8 @@ func (a *Attribute) IsValid() *AppError {
 
 type Attributes []*Attribute
 
-func (as Attributes) IDs() []string {
-	return lo.Map(as, func(a *Attribute, _ int) string { return a.Id })
+func (as Attributes) IDs() []UUID {
+	return lo.Map(as, func(a *Attribute, _ int) UUID { return a.Id })
 }
 
 func (a *Attribute) DeepCopy() *Attribute {
@@ -210,8 +210,8 @@ func (a *Attribute) DeepCopy() *Attribute {
 }
 
 type AttributeTranslation struct {
-	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	AttributeID  string           `json:"attribute_id" gorm:"type:uuid;column:AttributeID"`
+	Id           UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	AttributeID  UUID             `json:"attribute_id" gorm:"type:uuid;column:AttributeID"`
 	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`
 	Name         string           `json:"name" gorm:"type:varchar(100);column:Name"`
 }

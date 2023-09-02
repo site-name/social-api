@@ -7,9 +7,9 @@ import (
 )
 
 type TermsOfService struct {
-	Id       string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id       UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt int64  `json:"create_at" gorm:"autoCreateTime:milli;type:bigint;column:CreateAt"`
-	UserId   string `json:"user_id" gorm:"type:uuid;index:termofservices_userid_key;column:UserId"`
+	UserId   UUID   `json:"user_id" gorm:"type:uuid;index:termofservices_userid_key;column:UserId"`
 	Text     string `json:"text" gorm:"column:Text;type:varchar(16383)"`
 }
 

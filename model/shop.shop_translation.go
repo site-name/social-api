@@ -12,7 +12,7 @@ const (
 )
 
 type ShopTranslation struct {
-	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode;unique"`
 	Name         string           `json:"name" gorm:"type:varchar(250);column:Name"`
 	Description  string           `json:"description" gorm:"type:varchar(1000);column:Description"`

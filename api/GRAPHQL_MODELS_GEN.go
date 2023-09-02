@@ -1574,7 +1574,7 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 			return appErr
 		}
 		// keys are variant ids
-		var variantMap = lo.SliceToMap(variants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return v.Id, v })
+		var variantMap = lo.SliceToMap(variants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return string(v.Id), v })
 
 		var lines = make(model.QuantityOrderLines, 0, len(d.Lines))
 		for _, line := range d.Lines {
@@ -1626,11 +1626,6 @@ func (d *DraftOrderCreateInput) validate(where string, embedCtx *web.Context) *m
 			variantIds = append(variantIds, line.VariantID)
 			quantities = append(quantities, int(line.Quantity))
 		}
-	}
-
-	// vaidate variants
-	if !lo.EveryBy(variantIds, model.IsValidId) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Lines"}, "please provide valid variant ids", http.StatusBadRequest)
 	}
 
 	if d.ChannelID != nil {
@@ -3359,7 +3354,7 @@ type ProductCreateInput struct {
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
 	Seo         *SeoInput              `json:"seo"`
-	Weight      *string                `json:"weight"`
+	Weight      *WeightScalar          `json:"weight"`
 	Rating      *float64               `json:"rating"`
 	ProductType string                 `json:"productType"`
 }
@@ -3556,7 +3551,7 @@ type ProductInput struct {
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
 	Seo         *SeoInput              `json:"seo"`
-	Weight      *string                `json:"weight"`
+	Weight      *WeightScalar          `json:"weight"`
 	Rating      *float64               `json:"rating"`
 }
 
@@ -3722,7 +3717,7 @@ type ProductTypeInput struct {
 	VariantAttributes  []string             `json:"variantAttributes"`
 	IsShippingRequired *bool                `json:"isShippingRequired"`
 	IsDigital          *bool                `json:"isDigital"`
-	Weight             *string              `json:"weight"`
+	Weight             *WeightScalar        `json:"weight"`
 	TaxCode            *string              `json:"taxCode"`
 }
 
@@ -3756,7 +3751,7 @@ type ProductVariantBulkCreateInput struct {
 	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
 	Sku             *string                                 `json:"sku"`
 	TrackInventory  *bool                                   `json:"trackInventory"`
-	Weight          *string                                 `json:"weight"`
+	Weight          *WeightScalar                           `json:"weight"`
 	Stocks          []*StockInput                           `json:"stocks"`
 	ChannelListings []*ProductVariantChannelListingAddInput `json:"channelListings"`
 }
@@ -3802,7 +3797,7 @@ type ProductVariantCreateInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *string                `json:"weight"`
+	Weight         *WeightScalar          `json:"weight"`
 	Product        string                 `json:"product"`
 	Stocks         []*StockInput          `json:"stocks"`
 }
@@ -3822,7 +3817,7 @@ type ProductVariantInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *string                `json:"weight"`
+	Weight         *WeightScalar          `json:"weight"`
 }
 
 type ProductVariantReorder struct {
@@ -4262,8 +4257,8 @@ type ShippingPriceExcludeProductsInput struct {
 type ShippingPriceInput struct {
 	Name                  *string                                    `json:"name"`
 	Description           JSONString                                 `json:"description"`
-	MinimumOrderWeight    *Weight                                    `json:"minimumOrderWeight"`
-	MaximumOrderWeight    *Weight                                    `json:"maximumOrderWeight"`
+	MinimumOrderWeight    *WeightScalar                              `json:"minimumOrderWeight"`
+	MaximumOrderWeight    *WeightScalar                              `json:"maximumOrderWeight"`
 	MaximumDeliveryDays   *int32                                     `json:"maximumDeliveryDays"`
 	MinimumDeliveryDays   *int32                                     `json:"minimumDeliveryDays"`
 	Type                  *ShippingMethodTypeEnum                    `json:"type"`

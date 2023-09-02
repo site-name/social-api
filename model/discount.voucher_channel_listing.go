@@ -12,10 +12,10 @@ import (
 )
 
 type VoucherChannelListing struct {
-	Id             string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id             UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt       int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"` // this field is for ordering
-	VoucherID      string           `json:"voucher_id" gorm:"type:uuid;column:VoucherID;index:voucherid_channelid_key"`
-	ChannelID      string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:voucherid_channelid_key"`
+	VoucherID      UUID             `json:"voucher_id" gorm:"type:uuid;column:VoucherID;index:voucherid_channelid_key"`
+	ChannelID      UUID             `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:voucherid_channelid_key"`
 	DiscountValue  *decimal.Decimal `json:"discount_value" gorm:"default:0;column:DiscountValue"` // default decimal.Zero
 	Currency       string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
 	MinSpentAmount *decimal.Decimal `json:"min_spent_amount" gorm:"default:0;column:MinSpentAmount"` // default decimal.Zero
@@ -77,7 +77,7 @@ func (v *VoucherChannelListing) IsValid() *AppError {
 	if !IsValidId(v.ChannelID) {
 		return NewAppError("VoucherChannelListing.IsValid", "model.voucher_channel_listing.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
-	if unit, err := currency.ParseISO(v.Currency); err != nil || !strings.EqualFold(unit.String(), v.Currency) {
+	if _, err := currency.ParseISO(v.Currency); err != nil {
 		return NewAppError("VoucherChannelListing.IsValid", "model.voucher_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
 	}
 

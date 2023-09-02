@@ -1247,7 +1247,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
+func (s *TimerLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedPageAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1407,7 +1407,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedProductAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1567,7 +1567,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedVariantAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -3055,7 +3055,7 @@ func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *TimerLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []model.UUID, productIds []model.UUID, variantIds []model.UUID, categoryIds []model.UUID, isDelete bool) error {
 	start := timemodule.Now()
 
 	err := s.DiscountSaleStore.ToggleSaleRelations(transaction, sales, collectionIds, productIds, variantIds, categoryIds, isDelete)
@@ -3215,7 +3215,7 @@ func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, 
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *TimerLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []model.UUID, productIds []model.UUID, variantIds []model.UUID, categoryIds []model.UUID, isDelete bool) error {
 	start := timemodule.Now()
 
 	err := s.DiscountVoucherStore.ToggleVoucherRelations(transaction, vouchers, collectionIds, productIds, variantIds, categoryIds, isDelete)
@@ -4333,10 +4333,10 @@ func (s *TimerLayerOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscoun
 	return result, err
 }
 
-func (s *TimerLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+func (s *TimerLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderEventStore.FilterByOptions(options)
+	result, resultVar1, err := s.OrderEventStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4346,7 +4346,7 @@ func (s *TimerLayerOrderEventStore) FilterByOptions(options *model.OrderEventFil
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderEventStore.FilterByOptions", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
@@ -5456,7 +5456,7 @@ func (s *TimerLayerProductTypeStore) ProductTypeByProductVariantID(variantID str
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
+func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []model.UUID) ([]*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
@@ -7102,7 +7102,7 @@ func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) erro
 	return err
 }
 
-func (s *TimerLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *TimerLayerUserStore) AddRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 	start := timemodule.Now()
 
 	result := s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
@@ -7468,7 +7468,7 @@ func (s *TimerLayerUserStore) InvalidateProfileCacheForUser(userID string) {
 	}
 }
 
-func (s *TimerLayerUserStore) PermanentDelete(userID string) error {
+func (s *TimerLayerUserStore) PermanentDelete(userID model.UUID) error {
 	start := timemodule.Now()
 
 	err := s.UserStore.PermanentDelete(userID)
@@ -7484,7 +7484,7 @@ func (s *TimerLayerUserStore) PermanentDelete(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *TimerLayerUserStore) RemoveRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 	start := timemodule.Now()
 
 	result := s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)

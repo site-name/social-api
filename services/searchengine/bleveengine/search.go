@@ -501,7 +501,7 @@ func (b *BleveEngine) DeleteUser(user *model.User) *model.AppError {
 	b.Mutex.RLock()
 	defer b.Mutex.RUnlock()
 
-	if err := b.UserIndex.Delete(user.Id); err != nil {
+	if err := b.UserIndex.Delete(string(user.Id)); err != nil {
 		return model.NewAppError("Bleveengine.DeleteUser", "bleveengine.delete_user.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil

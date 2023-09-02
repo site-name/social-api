@@ -415,9 +415,9 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 		return errors.Wrap(err, "failed to find all attributes")
 	}
 	var (
-		attributesSlugPkMap = map[string]string{}
-		attributesPkSlugMap = map[string]string{}
-		valuesMap           = map[string]map[string]string{}
+		attributesSlugPkMap = map[string]model.UUID{}            // keys are attribute slugs, values are attribute ids
+		attributesPkSlugMap = map[model.UUID]string{}            // keys are attribute ids, values are attribute slugs
+		valuesMap           = map[string]map[model.UUID]string{} // keys are attribute slugs, values are maps with keys are attribute value ids, values are attribute value slugs
 	)
 
 	for _, attr := range attributes {
@@ -477,8 +477,8 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 
 	var (
 		// attributesMap has keys are attribute slugs, values are attribute ids
-		attributesMap = model.StringMap{}
-		valuesMap     = map[string]map[float64]string{}
+		attributesMap = map[string]model.UUID{}
+		valuesMap     = map[string]map[float64]model.UUID{}
 	)
 	for _, attrValue := range attributeValues {
 		attributesMap[attrValue.Attribute.Slug] = attrValue.AttributeID
@@ -511,7 +511,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 
 		attrValues := valuesMap[vlRange.Slug]
 
-		attrValPks := []string{}
+		attrValPks := []model.UUID{}
 		for key, value := range attrValues {
 			if gte <= key && key <= lte {
 				attrValPks = append(attrValPks, value)
@@ -534,14 +534,14 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 	}
 
 	type aMap struct {
-		pk     string
-		values map[*time.Time]string
+		pk     model.UUID
+		values map[*time.Time]model.UUID
 	}
 
 	var valuesMap = map[string]aMap{}
 
 	for _, attr := range attributes {
-		values := map[*time.Time]string{}
+		values := map[*time.Time]model.UUID{}
 
 		for _, attrValue := range attr.AttributeValues {
 			values[attrValue.Datetime] = attrValue.Id
@@ -555,7 +555,7 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 			attrPK           = valuesMap[item.Slug].pk
 			gte              = item.Date.Gte
 			lte              = item.Date.Lte
-			matchingValuesID = []string{}
+			matchingValuesID = []model.UUID{}
 		)
 
 		for value, pk := range valuesMap[item.Slug].values {
@@ -598,14 +598,14 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	}
 
 	type aMap struct {
-		pk     string
-		values map[bool]string
+		pk     model.UUID
+		values map[bool]model.UUID
 	}
 
 	var valuesMap = map[string]aMap{}
 
 	for _, attr := range attributes {
-		values := map[bool]string{}
+		values := map[bool]model.UUID{}
 
 		for _, attrValue := range attr.AttributeValues {
 			if attrValue.Boolean != nil {

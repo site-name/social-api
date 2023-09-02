@@ -97,7 +97,7 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 
 	var (
 		returningShippingZones model.ShippingZones
-		shippingZonesMap       = map[string]*model.ShippingZone{} // keys are shipping zones' ids
+		shippingZonesMap       = map[model.UUID]*model.ShippingZone{} // keys are shipping zones' ids
 	)
 
 	for rows.Next() {
@@ -184,8 +184,8 @@ func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model
 	}
 
 	var relationsMap = map[string]any{
-		"Channels":   lo.Map(channelIds, func(id string, _ int) *model.Channel { return &model.Channel{Id: id} }),
-		"Warehouses": lo.Map(warehouseIds, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: id} }),
+		"Channels":   lo.Map(channelIds, func(id string, _ int) *model.Channel { return &model.Channel{Id: model.UUID(id)} }),
+		"Warehouses": lo.Map(warehouseIds, func(id string, _ int) *model.WareHouse { return &model.WareHouse{Id: model.UUID(id)} }),
 	}
 
 	for _, shippingZone := range zones {
@@ -200,7 +200,7 @@ func (s *SqlShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model
 					err = association.Append(relations)
 				}
 				if err != nil {
-					return errors.Wrap(err, "failed to toggle "+strings.ToLower(assoName)+" to shipping zone with id = "+shippingZone.Id)
+					return errors.Wrap(err, "failed to toggle "+strings.ToLower(assoName)+" to shipping zone with id = "+string(shippingZone.Id))
 				}
 			}
 		}

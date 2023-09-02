@@ -56,7 +56,7 @@ func (jss *SqlJobStore) UpdateStatus(id string, status string) (*model.Job, erro
 		return nil, errors.Wrapf(err, "failed to update Job with id=%s", id)
 	}
 
-	return &model.Job{Id: id, Status: status}, nil
+	return &model.Job{Id: model.UUID(id), Status: status}, nil
 }
 
 func (jss *SqlJobStore) UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) {

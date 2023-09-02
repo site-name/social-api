@@ -23,10 +23,10 @@ func (s *SearchUserStore) deleteUserIndex(user *model.User) {
 		if engine.IsIndexingEnabled() {
 			runIndexFn(engine, func(engineCopy searchengine.SearchEngineInterface) {
 				if err := engineCopy.DeleteUser(user); err != nil {
-					slog.Error("Encountered error deleting user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
+					slog.Error("Encountered error deleting user", slog.Any("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
 					return
 				}
-				slog.Debug("Removed user from the index in search engine", slog.String("search_engine", engineCopy.GetName()), slog.String("user_id", user.Id))
+				slog.Debug("Removed user from the index in search engine", slog.String("search_engine", engineCopy.GetName()), slog.Any("user_id", user.Id))
 			})
 		}
 	}
@@ -87,12 +87,12 @@ func (s *SearchUserStore) deleteUserIndex(user *model.User) {
 // 	return nuser, err
 // }
 
-func (s *SearchUserStore) PermanentDelete(userId string) error {
+func (s *SearchUserStore) PermanentDelete(userId model.UUID) error {
 	user, userErr := s.UserStore.GetByOptions(context.Background(), &model.UserFilterOptions{
 		Conditions: squirrel.Eq{model.UserTableName + ".Id": userId},
 	})
 	if userErr != nil {
-		slog.Warn("Encountered error deleting user", slog.String("user_id", userId), slog.Err(userErr))
+		slog.Warn("Encountered error deleting user", slog.Any("user_id", userId), slog.Err(userErr))
 	}
 	err := s.UserStore.PermanentDelete(userId)
 	if err == nil && userErr == nil {

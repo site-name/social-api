@@ -90,7 +90,7 @@ func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []str
 			return nil, err
 		}
 		for _, user := range remainingUsers {
-			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, user.Id, user)
+			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, string(user.Id), user)
 			users = append(users, user)
 		}
 	}
@@ -178,7 +178,7 @@ func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 			return nil, err
 		}
 		for _, user := range dbUsers {
-			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, user.Id, user)
+			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, string(user.Id), user)
 			cachedUsers = append(cachedUsers, user)
 		}
 	}

@@ -1275,7 +1275,7 @@ func (s *OpenTracingLayerAssignedPageAttributeValueStore) Save(assignedPageAttrV
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
+func (s *OpenTracingLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedPageAttributeValue, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedPageAttributeValueStore.SaveInBulk")
 	s.Root.Store.SetContext(newCtx)
@@ -1455,7 +1455,7 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) Save(assignedProduc
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
+func (s *OpenTracingLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedProductAttributeValue, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.SaveInBulk")
 	s.Root.Store.SetContext(newCtx)
@@ -1635,7 +1635,7 @@ func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Save(assignedVarian
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *OpenTracingLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedVariantAttributeValue, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.SaveInBulk")
 	s.Root.Store.SetContext(newCtx)
@@ -3309,7 +3309,7 @@ func (s *OpenTracingLayerDiscountSaleStore) Get(saleID string) (*model.Sale, err
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *OpenTracingLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []model.UUID, productIds []model.UUID, variantIds []model.UUID, categoryIds []model.UUID, isDelete bool) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.ToggleSaleRelations")
 	s.Root.Store.SetContext(newCtx)
@@ -3489,7 +3489,7 @@ func (s *OpenTracingLayerDiscountVoucherStore) Get(voucherID string) (*model.Vou
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *OpenTracingLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []model.UUID, productIds []model.UUID, variantIds []model.UUID, categoryIds []model.UUID, isDelete bool) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.ToggleVoucherRelations")
 	s.Root.Store.SetContext(newCtx)
@@ -4729,7 +4729,7 @@ func (s *OpenTracingLayerOrderDiscountStore) Upsert(transaction *gorm.DB, orderD
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+func (s *OpenTracingLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderEventStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -4738,13 +4738,13 @@ func (s *OpenTracingLayerOrderEventStore) FilterByOptions(options *model.OrderEv
 	}()
 
 	defer span.Finish()
-	result, err := s.OrderEventStore.FilterByOptions(options)
+	result, resultVar1, err := s.OrderEventStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
@@ -5973,7 +5973,7 @@ func (s *OpenTracingLayerProductTypeStore) ProductTypeByProductVariantID(variant
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
+func (s *OpenTracingLayerProductTypeStore) ProductTypesByProductIDs(productIDs []model.UUID) ([]*model.ProductType, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.ProductTypesByProductIDs")
 	s.Root.Store.SetContext(newCtx)
@@ -7817,7 +7817,7 @@ func (s *OpenTracingLayerUploadSessionStore) Update(session *model.UploadSession
 	return err
 }
 
-func (s *OpenTracingLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *OpenTracingLayerUserStore) AddRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.AddRelations")
 	s.Root.Store.SetContext(newCtx)
@@ -8206,7 +8206,7 @@ func (s *OpenTracingLayerUserStore) InvalidateProfileCacheForUser(userID string)
 
 }
 
-func (s *OpenTracingLayerUserStore) PermanentDelete(userID string) error {
+func (s *OpenTracingLayerUserStore) PermanentDelete(userID model.UUID) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.PermanentDelete")
 	s.Root.Store.SetContext(newCtx)
@@ -8224,7 +8224,7 @@ func (s *OpenTracingLayerUserStore) PermanentDelete(userID string) error {
 	return err
 }
 
-func (s *OpenTracingLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *OpenTracingLayerUserStore) RemoveRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.RemoveRelations")
 	s.Root.Store.SetContext(newCtx)

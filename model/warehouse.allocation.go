@@ -10,19 +10,17 @@ import (
 )
 
 type Allocation struct {
-	Id                string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CreateAt          int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	OrderLineID       string `json:"order_line_id" gorm:"type:uuid;column:OrderLineID;index:orderlineid_stockid_key"` // NOT NULL
-	StockID           string `json:"stock_id" gorm:"type:uuid;column:StockID;index:orderlineid_stockid_key"`          // NOT NULL
-	QuantityAllocated int    `json:"quantity_allocated" gorm:"column:QuantityAllocated"`                              // default 0
+	Id                UUID  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt          int64 `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	OrderLineID       UUID  `json:"order_line_id" gorm:"type:uuid;column:OrderLineID;index:orderlineid_stockid_key"` // NOT NULL
+	StockID           UUID  `json:"stock_id" gorm:"type:uuid;column:StockID;index:orderlineid_stockid_key"`          // NOT NULL
+	QuantityAllocated int   `json:"quantity_allocated" gorm:"column:QuantityAllocated"`                              // default 0
 
 	stockAvailableQuantity int        `json:"-"` // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
 	Stock                  *Stock     `json:"-"` // this field is populated with related stock
 	orderLine              *OrderLine `json:"-"` //
 }
 
-// func (s *Allocation) SetStock(stk *Stock)                 { s.stock = stk }
-// func (s *Allocation) GetStock() *Stock                    { return s.stock }
 func (s *Allocation) SetOrderLine(line *OrderLine)        { s.orderLine = line }
 func (s *Allocation) GetOrderLine() *OrderLine            { return s.orderLine }
 func (s *Allocation) SetStockAvailableQuantity(value int) { s.stockAvailableQuantity = value }
@@ -56,12 +54,12 @@ type AllocationFilterOption struct {
 
 type Allocations []*Allocation
 
-func (a Allocations) IDs() []string {
-	return lo.Map(a, func(al *Allocation, _ int) string { return al.Id })
+func (a Allocations) IDs() []UUID {
+	return lo.Map(a, func(al *Allocation, _ int) UUID { return al.Id })
 }
 
-func (a Allocations) StockIDs() []string {
-	return lo.Map(a, func(al *Allocation, _ int) string { return al.StockID })
+func (a Allocations) StockIDs() []UUID {
+	return lo.Map(a, func(al *Allocation, _ int) UUID { return al.StockID })
 }
 
 func (a Allocations) Len() int {

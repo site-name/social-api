@@ -30,12 +30,12 @@ var OrderDiscountTypeStrings = map[OrderDiscountType]string{
 }
 
 type OrderDiscount struct {
-	Id             string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	OrderID        *string           `json:"order_id" gorm:"type:uuid;column:OrderID"`
+	Id             UUID              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	OrderID        *UUID             `json:"order_id" gorm:"type:uuid;column:OrderID"`
 	Type           OrderDiscountType `json:"type" gorm:"type:varchar(10);column:Type"`
 	ValueType      DiscountValueType `json:"value_type" gorm:"type:varchar(10);column:ValueType"`
-	Value          *decimal.Decimal  `json:"value" gorm:"default:0;column:Value"`              // default 0
-	AmountValue    *decimal.Decimal  `json:"amount_value" gorm:"default:0;column:AmountValue"` // default 0
+	Value          *decimal.Decimal  `json:"value" gorm:"default:0;column:Value;type:decimal(12,3)"`              // default 0
+	AmountValue    *decimal.Decimal  `json:"amount_value" gorm:"default:0;column:AmountValue;type:decimal(12,3)"` // default 0
 	Currency       string            `json:"currency" gorm:"type:varchar(3);column:Currency"`
 	Name           *string           `json:"name" gorm:"type:varchar(255);column:Name"`
 	TranslatedName *string           `json:"translated_name" gorm:"type:varchar(255);column:TranslatedName"`
@@ -54,8 +54,8 @@ type OrderDiscountFilterOption struct {
 
 type OrderDiscounts []*OrderDiscount
 
-func (o OrderDiscounts) IDs() []string {
-	return lo.Map(o, func(item *OrderDiscount, _ int) string { return item.Id })
+func (o OrderDiscounts) IDs() []UUID {
+	return lo.Map(o, func(item *OrderDiscount, _ int) UUID { return item.Id })
 }
 
 func (o *OrderDiscount) DeepCopy() *OrderDiscount {
@@ -84,12 +84,6 @@ func (o *OrderDiscount) IsValid() *AppError {
 	if unit, err := currency.ParseISO(o.Currency); err != nil ||
 		!strings.EqualFold(unit.String(), o.Currency) {
 		return NewAppError("OrderDiscount.IsValid", "model.order_discount.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
-	}
-	if err := ValidateDecimal("OrderDiscount.IsValid.Value", o.Value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
-		return err
-	}
-	if err := ValidateDecimal("OrderDiscount.IsValid.AmountValue", o.AmountValue, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
-		return err
 	}
 
 	return nil

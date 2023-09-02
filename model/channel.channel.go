@@ -11,17 +11,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// max lengths for some channel's fields
-const (
-	CHANNEL_NAME_MAX_LENGTH = 250
-	CHANNEL_SLUG_MAX_LENGTH = 255
-)
-
 type Channel struct {
-	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id             UUID        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name           string      `json:"name" gorm:"type:varchar(250);column:Name"`
 	IsActive       bool        `json:"is_active" gorm:"column:IsActive"`
-	Slug           string      `json:"slug" gorm:"type:varchar(250);column:Slug;uniqueIndex:slug_unique_key"` // unique
+	Slug           string      `json:"slug" gorm:"type:varchar(255);column:Slug;uniqueIndex:slug_unique_key"` // unique
 	Currency       string      `json:"currency" gorm:"column:Currency;type:varchar(3)"`
 	DefaultCountry CountryCode `json:"default_country" gorm:"column:DefaultCountry;type:varchar(10)"` // default "US"
 
@@ -49,8 +43,8 @@ type ChannelFilterOption struct {
 
 type Channels []*Channel
 
-func (c Channels) IDs() []string {
-	return lo.Map(c, func(ch *Channel, _ int) string { return ch.Id })
+func (c Channels) IDs() []UUID {
+	return lo.Map(c, func(ch *Channel, _ int) UUID { return ch.Id })
 }
 
 func (c Channels) Currencies() []string {

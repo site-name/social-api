@@ -48,7 +48,7 @@ func (srv *JobServer) GetJob(id string) (*model.Job, *model.AppError) {
 
 // ClaimJob change status of given job from PENDING to IN_PROGRESS
 func (srv *JobServer) ClaimJob(job *model.Job) (bool, *model.AppError) {
-	updated, err := srv.Store.Job().UpdateStatusOptimistically(job.Id, model.JobStatusPending, model.JobStatusInProgress)
+	updated, err := srv.Store.Job().UpdateStatusOptimistically(string(job.Id), model.JobStatusPending, model.JobStatusInProgress)
 	if err != nil {
 		return false, model.NewAppError("ClaimJob", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -71,7 +71,7 @@ func (srv *JobServer) SetJobProgress(job *model.Job, progress int64) *model.AppE
 }
 
 func (srv *JobServer) SetJobWarning(job *model.Job) *model.AppError {
-	if _, err := srv.Store.Job().UpdateStatus(job.Id, model.JobStatusWarning); err != nil {
+	if _, err := srv.Store.Job().UpdateStatus(string(job.Id), model.JobStatusWarning); err != nil {
 		return model.NewAppError("SetJobWarning", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
@@ -79,7 +79,7 @@ func (srv *JobServer) SetJobWarning(job *model.Job) *model.AppError {
 
 // update status of given job to success
 func (srv *JobServer) SetJobSuccess(job *model.Job) *model.AppError {
-	if _, err := srv.Store.Job().UpdateStatus(job.Id, model.JobStatusSuccess); err != nil {
+	if _, err := srv.Store.Job().UpdateStatus(string(job.Id), model.JobStatusSuccess); err != nil {
 		return model.NewAppError("SetJobSuccess", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -92,7 +92,7 @@ func (srv *JobServer) SetJobSuccess(job *model.Job) *model.AppError {
 
 func (srv *JobServer) SetJobError(job *model.Job, jobError *model.AppError) *model.AppError {
 	if jobError == nil {
-		_, err := srv.Store.Job().UpdateStatus(job.Id, model.JobStatusError)
+		_, err := srv.Store.Job().UpdateStatus(string(job.Id), model.JobStatusError)
 		if err != nil {
 			return model.NewAppError("SetJobError", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
@@ -127,7 +127,7 @@ func (srv *JobServer) SetJobError(job *model.Job, jobError *model.AppError) *mod
 			return model.NewAppError("SetJobError", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 		if !updated {
-			return model.NewAppError("SetJobError", "jobs.set_job_error.update.error", nil, "id="+job.Id, http.StatusInternalServerError)
+			return model.NewAppError("SetJobError", "jobs.set_job_error.update.error", nil, "id="+string(job.Id), http.StatusInternalServerError)
 		}
 	}
 
@@ -135,7 +135,7 @@ func (srv *JobServer) SetJobError(job *model.Job, jobError *model.AppError) *mod
 }
 
 func (srv *JobServer) SetJobCanceled(job *model.Job) *model.AppError {
-	if _, err := srv.Store.Job().UpdateStatus(job.Id, model.JobStatusCanceled); err != nil {
+	if _, err := srv.Store.Job().UpdateStatus(string(job.Id), model.JobStatusCanceled); err != nil {
 		return model.NewAppError("SetJobCanceled", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 

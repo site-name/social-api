@@ -57,9 +57,9 @@ func (cs *SqlCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Chec
 		if checkout.Token == "" {
 			err = transaction.Create(checkout).Error
 		} else {
-			checkout.ShippingAddressID = model.NewPrimitive("") // prevent update
-			checkout.BillingAddressID = model.NewPrimitive("")  // prevent update
-			checkout.CreateAt = 0                               // prevent update
+			checkout.ShippingAddressID = model.NewPrimitive[model.UUID]("") // prevent update
+			checkout.BillingAddressID = model.NewPrimitive[model.UUID]("")  // prevent update
+			checkout.CreateAt = 0                                           // prevent update
 
 			err = transaction.Model(checkout).Updates(checkout).Error
 		}
@@ -244,8 +244,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 
 	// fetch product variants
 	var (
-		productIDs        []string
-		productVariantMap = map[string]*model.ProductVariant{} // productVariantMap has keys are product variant ids
+		productIDs        []model.UUID
+		productVariantMap = map[model.UUID]*model.ProductVariant{} // productVariantMap has keys are product variant ids
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
@@ -263,8 +263,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	// fetch products
 	var (
 		products       model.Products
-		productTypeIDs []string
-		productMap     = map[string]*model.Product{} // productMap has keys are product ids
+		productTypeIDs []model.UUID
+		productMap     = map[model.UUID]*model.Product{} // productMap has keys are product ids
 	)
 	// check if we can proceed:
 	if len(productIDs) > 0 {
@@ -282,9 +282,9 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	var (
 		collectionXs []*struct {
 			model.Collection
-			PrefetchRelatedValProductID string
+			PrefetchRelatedValProductID model.UUID
 		}
-		collectionsByProducts = map[string]model.Collections{} // collectionsByProducts has keys are product ids
+		collectionsByProducts = map[model.UUID]model.Collections{} // collectionsByProducts has keys are product ids
 	)
 	// check if we can proceed
 	if len(productIDs) > 0 {
@@ -306,8 +306,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	// fetch product variant channel listing
 	var (
 		productVariantChannelListings                 []*model.ProductVariantChannelListing
-		channelIDs                                    []string
-		productVariantChannelListingsByProductVariant = map[string][]*model.ProductVariantChannelListing{} // productVariantChannelListingsByProductVariant has keys are product variant ids
+		channelIDs                                    []model.UUID
+		productVariantChannelListingsByProductVariant = map[model.UUID][]*model.ProductVariantChannelListing{} // productVariantChannelListingsByProductVariant has keys are product variant ids
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
@@ -334,7 +334,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(checkout *
 	// fetch product types
 	var (
 		productTypes   []*model.ProductType
-		productTypeMap = map[string]*model.ProductType{} // productTypeMap has keys are product type ids
+		productTypeMap = map[model.UUID]*model.ProductType{} // productTypeMap has keys are product type ids
 	)
 	// check if we can proceed
 	if len(productTypeIDs) > 0 {

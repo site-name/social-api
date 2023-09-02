@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"net/http"
 
 	"gorm.io/gorm"
 )
@@ -19,10 +20,10 @@ const UploadNoUserID = "nouser"
 
 // UploadSession contains information used to keep track of a file upload.
 type UploadSession struct {
-	Id         string     `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"` // The unique identifier for the session.
+	Id         UUID       `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"` // The unique identifier for the session.
 	Type       UploadType `json:"type" gorm:"type:varchar(32);column:Type"`                           // The type of the upload.
 	CreateAt   int64      `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`  // The timestamp of creation.
-	UserID     string     `json:"user_id" gorm:"type:uuid;column:UserID"`                             // The id of the user performing the upload.
+	UserID     UUID       `json:"user_id" gorm:"type:uuid;column:UserID"`                             // The id of the user performing the upload.
 	FileName   string     `json:"filename" gorm:"type:varchar(256);column:FileName"`                  // The name of the file to upload.
 	Path       string     `json:"-" gorm:"type:varchar(512);column:Path"`                             // The path where the file is stored.
 	FileSize   int64      `json:"file_size" gorm:"type:bigint;column:FileSize"`                       // The size of the file to upload.
@@ -53,29 +54,23 @@ func (t UploadType) IsValid() error {
 }
 
 func (us *UploadSession) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.upload_session.is_valid.%s.app_error",
-		"upload_session_id=",
-		"UploadSession.IsValid",
-	)
-
 	if err := us.Type.IsValid(); err != nil {
-		return outer("type", &us.Id)
+		return NewAppError("UploadSession.IsValid", "model.upload_session.is_valid.type.app_error", nil, "please provide valid upload session type", http.StatusBadRequest)
 	}
 	if !IsValidId(us.UserID) && us.UserID != UploadNoUserID {
-		return outer("user_id", &us.Id)
+		return NewAppError("UploadSession.IsValid", "model.upload_session.user_id.type.app_error", nil, "please provide valid upload session user id", http.StatusBadRequest)
 	}
 	if us.FileName == "" {
-		return outer("file_name", &us.Id)
+		return NewAppError("UploadSession.IsValid", "model.upload_session.is_valid.file_name.app_error", nil, "please provide valid upload session file name", http.StatusBadRequest)
 	}
 	if us.FileSize <= 0 {
-		return outer("file_size", &us.Id)
+		return NewAppError("UploadSession.IsValid", "model.upload_session.is_valid.file_size.app_error", nil, "please provide valid upload session file size", http.StatusBadRequest)
 	}
 	if us.FileOffset < 0 || us.FileOffset > us.FileSize {
-		return outer("file_offset", &us.Id)
+		return NewAppError("UploadSession.IsValid", "model.upload_session.is_valid.file_offet.app_error", nil, "please provide valid upload session file offset", http.StatusBadRequest)
 	}
 	if us.Path == "" {
-		return outer("path", &us.Id)
+		return NewAppError("UploadSession.IsValid", "model.upload_session.is_valid.path.app_error", nil, "please provide valid upload session path", http.StatusBadRequest)
 	}
 
 	return nil

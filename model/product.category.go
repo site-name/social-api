@@ -15,11 +15,11 @@ const (
 )
 
 type Category struct {
-	Id                 string          `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	Id                 UUID            `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
 	Name               string          `json:"name" gorm:"unique;type:varchar(250);column:Name"`                      // unique, English
 	Slug               string          `json:"slug" gorm:"uniqueIndex:slug_unique_key;type:varchar(255);column:Slug"` // unique
 	Description        StringInterface `json:"description,omitempty" gorm:"type:jsonb;column:Description"`
-	ParentID           *string         `json:"parent_id,omitempty" gorm:"type:uuid;column:ParentID"`
+	ParentID           *UUID           `json:"parent_id,omitempty" gorm:"type:uuid;column:ParentID"`
 	Level              uint8           `json:"level" gorm:"type:smallint;check:level >= 0;column:Level"` // 0, 1, 2, 3, 4
 	BackgroundImage    *string         `json:"background_image,omitempty" gorm:"type:varchar(1000);column:BackgroundImage"`
 	BackgroundImageAlt string          `json:"background_image_alt" gorm:"type:varchar(128);column:BackgroundImageAlt"`
@@ -61,8 +61,8 @@ type CategoryFilterOption struct {
 type Categories []*Category
 
 // set flat to true to recursively get all ids of child categories to
-func (cs Categories) IDs(flat bool) util.AnyArray[string] {
-	return lo.Map(cs, func(g *Category, _ int) string { return g.Id })
+func (cs Categories) IDs(flat bool) util.AnyArray[UUID] {
+	return lo.Map(cs, func(g *Category, _ int) UUID { return g.Id })
 }
 
 func (ps Categories) Contains(c *Category) bool {
@@ -98,9 +98,6 @@ func (s *Category) DeepCopy() *Category {
 	if s.NameTranslation != nil {
 		res.NameTranslation = s.NameTranslation.DeepCopy()
 	}
-	// if len(s.Children) > 0 {
-	// 	res.Children = s.Children.DeepCopy()
-	// }
 	return &res
 }
 

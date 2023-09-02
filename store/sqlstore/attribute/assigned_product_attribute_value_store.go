@@ -56,8 +56,8 @@ func (as *SqlAssignedProductAttributeValueStore) Get(id string) (*model.Assigned
 	return &res, nil
 }
 
-func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
-	relations := lo.Map(attributeValueIDs, func(item string, _ int) *model.AssignedProductAttributeValue {
+func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedProductAttributeValue, error) {
+	relations := lo.Map(attributeValueIDs, func(item model.UUID, _ int) *model.AssignedProductAttributeValue {
 		return &model.AssignedProductAttributeValue{
 			ValueID:      item,
 			AssignmentID: assignmentID,

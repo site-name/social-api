@@ -273,7 +273,7 @@ func initRoles() {
 }
 
 type Role struct {
-	Id            string   `json:"id" gorm:"type:uuid;primaryKey;default:gen_randon_uuid();column:Id"`
+	Id            UUID     `json:"id" gorm:"type:uuid;primaryKey;default:gen_randon_uuid();column:Id"`
 	Name          string   `json:"name" gorm:"type:varchar(64);column:Name"`
 	DisplayName   string   `json:"display_name" gorm:"type:varchar(128);column:DisplayName"`
 	Description   string   `json:"description" gorm:"type:varchar(1024);column:Description"`

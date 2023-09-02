@@ -25,9 +25,9 @@ func (p ProductMediaType) IsValid() bool {
 }
 
 type ProductMedia struct {
-	Id          string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id          UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt    int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	ProductID   string           `json:"product_id" gorm:"type:uuid;column:ProductID"`
+	ProductID   UUID             `json:"product_id" gorm:"type:uuid;column:ProductID"`
 	Ppoi        string           `json:"ppoi" gorm:"type:varchar(20);column:Ppoi"` // holds resolution for images, not editable
 	Image       string           `json:"image" gorm:"type:varchar(500);column:Image"`
 	Alt         string           `json:"alt" gorm:"type:varchar(128);column:Alt"`

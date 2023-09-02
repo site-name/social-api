@@ -46,7 +46,7 @@ var GiftCardEventsString = map[GiftcardEventType]string{
 }
 
 type GiftCardEvent struct {
-	Id   string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id   UUID              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Date int64             `json:"date" gorm:"type:bigint;column:Date"` // not editable
 	Type GiftcardEventType `json:"type" gorm:"type:varchar(255);column:Type"`
 	// if "expiry_date" presents, its value should has format of "2006-01-02" or of type time.Time
@@ -60,7 +60,7 @@ type GiftCardEvent struct {
 	//  "expiry_date": *time.Time
 	//  "old_expiry_date": *time.Time
 	Parameters StringInterface `json:"parameters" gorm:"type:jsonb;column:Parameters"` // default map[stirng]string{}
-	UserID     *string         `json:"user_id" gorm:"type:uuid;column:UserID"`         // ON DELETE SET NULL
+	UserID     *UUID           `json:"user_id" gorm:"type:uuid;column:UserID"`         // ON DELETE SET NULL
 	GiftcardID string          `json:"giftcard_id" gorm:"type:uuid;column:GiftcardID"` // ON DELETE CASCADE
 }
 
@@ -75,13 +75,13 @@ type GiftCardEventFilterOption struct {
 
 func (g *GiftCardEvent) IsValid() *AppError {
 	if !IsValidId(g.GiftcardID) {
-		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.giftcard_id.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.giftcard_id.app_error", nil, "please provide valid gift card id", http.StatusBadRequest)
 	}
 	if g.UserID != nil && !IsValidId(*g.UserID) {
-		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.user_id.app_error", nil, "please provide valid gift user id", http.StatusBadRequest)
 	}
 	if !g.Type.IsValid() {
-		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.type.app_error", nil, "", http.StatusBadRequest)
+		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 
 	return nil

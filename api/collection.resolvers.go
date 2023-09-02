@@ -456,14 +456,17 @@ func (c *CollectionsArgs) parse(embedCtx *web.Context) (*model.CollectionFilterO
 	if c.Channel != nil && !slug.IsSlug(*c.Channel) {
 		return nil, model.NewAppError("Collections", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Channel"}, "please provide valid channel slug", http.StatusBadRequest)
 	}
-	appErr := c.validate("Collections")
+	appErr := c.GraphqlParams.validate("Collections")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	// start parsing
+	// parse pagination
+	paginationValues, _ := c.GraphqlParams.Parse("Collections")
+
 	var res = &model.CollectionFilterOption{
-		CountTotal: true,
+		CountTotal:              true,
+		GraphqlPaginationValues: *paginationValues,
 	}
 
 	conditions := squirrel.And{}
@@ -489,10 +492,11 @@ func (c *CollectionsArgs) parse(embedCtx *web.Context) (*model.CollectionFilterO
 		// search
 		if c.Filter.Search != nil {
 			expr := "%" + *c.Filter.Search + "%"
-			conditions = append(conditions, squirrel.ILike{
-				model.CollectionTableName + ".Name": expr,
-				model.CollectionTableName + ".Slug": expr,
-			})
+			conditions = append(conditions,
+				squirrel.Or{
+					squirrel.Expr(model.CollectionTableName+".Name ILIKE ?", expr),
+					squirrel.Expr(model.CollectionTableName+".Slug ILIKE ?", expr),
+				})
 		}
 
 		// meta data
@@ -511,9 +515,7 @@ func (c *CollectionsArgs) parse(embedCtx *web.Context) (*model.CollectionFilterO
 		}
 	}
 
-	// parse pagination
-	paginationValues, _ := c.GraphqlParams.Parse("Collections")
-	res.GraphqlPaginationValues = *paginationValues
+	res.Conditions = conditions
 
 	if res.GraphqlPaginationValues.OrderBy == "" {
 		sortfields := collectionSortFieldMap[CollectionSortFieldName].fields

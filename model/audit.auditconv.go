@@ -118,7 +118,7 @@ type auditUser struct {
 func newAuditUser(u *User) auditUser {
 	var user auditUser
 	if u != nil {
-		user.ID = u.Id
+		user.ID = string(u.Id)
 		user.Name = u.Username
 		user.Roles = u.Roles
 	}
@@ -126,7 +126,7 @@ func newAuditUser(u *User) auditUser {
 }
 
 func (u auditUser) MarshalJSONObject(enc *gojay.Encoder) {
-	enc.StringKey("id", u.ID)
+	enc.StringKey("id", string(u.ID))
 	enc.StringKey("name", u.Name)
 	enc.StringKey("roles", u.Roles)
 }
@@ -307,19 +307,20 @@ func (u auditUser) IsNil() bool {
 // }
 
 type auditFileInfo struct {
-	ID string
-	// PostID    string
+	ID        string
 	Path      string
 	Name      string
 	Extension string
 	Size      int64
+
+	// PostID    string
 }
 
 // newAuditFileInfo creates a simplified representation of FileInfo for output to audit log.
 func newAuditFileInfo(f *FileInfo) auditFileInfo {
 	var fi auditFileInfo
 	if f != nil {
-		fi.ID = f.Id
+		fi.ID = string(f.Id)
 		// fi.PostID = f.PostId
 		fi.Path = f.Path
 		fi.Name = f.Name
@@ -387,7 +388,7 @@ type auditJob struct {
 func newAuditJob(j *Job) auditJob {
 	var job auditJob
 	if j != nil {
-		job.ID = j.Id
+		job.ID = string(j.Id)
 		job.Type = j.Type
 		job.Priority = j.Priority
 		job.StartAt = j.StartAt
@@ -482,7 +483,7 @@ type auditRole struct {
 func newAuditRole(r *Role) auditRole {
 	var role auditRole
 	if r != nil {
-		role.ID = r.Id
+		role.ID = string(r.Id)
 		role.Name = r.Name
 		role.DisplayName = r.DisplayName
 		role.Permissions = append(role.Permissions, r.Permissions...)
@@ -493,7 +494,7 @@ func newAuditRole(r *Role) auditRole {
 }
 
 func (r auditRole) MarshalJSONObject(enc *gojay.Encoder) {
-	enc.StringKey("id", r.ID)
+	enc.StringKey("id", string(r.ID))
 	enc.StringKey("name", r.Name)
 	enc.StringKey("display", r.DisplayName)
 	enc.SliceStringKey("perms", r.Permissions)
@@ -572,8 +573,8 @@ type auditSession struct {
 func newAuditSession(s *Session) auditSession {
 	var session auditSession
 	if s != nil {
-		session.ID = s.Id
-		session.UserId = s.UserId
+		session.ID = string(s.Id)
+		session.UserId = string(s.UserId)
 		session.DeviceId = s.DeviceId
 	}
 	return session

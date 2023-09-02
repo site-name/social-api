@@ -432,7 +432,7 @@ func verifyUserCmdF(command *cobra.Command, args []string) error {
 			CommandPrintErrorln("Unable to find user '" + args[i] + "'")
 			continue
 		}
-		if _, err := a.Srv().Store.User().VerifyEmail(user.Id, user.Email); err != nil {
+		if _, err := a.Srv().Store.User().VerifyEmail(string(user.Id), user.Email); err != nil {
 			CommandPrintErrorln("Unable to verify '" + args[i] + "' email. Error: " + err.Error())
 		}
 	}
@@ -653,7 +653,7 @@ func resetUserMfaCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.Srv().AccountService().DeactivateMfa(user.Id); err != nil {
+		if err := a.Srv().AccountService().DeactivateMfa(string(user.Id)); err != nil {
 			return err
 		}
 
@@ -722,7 +722,7 @@ func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 	}
 	password := args[1]
 
-	if err := a.Srv().Store.User().UpdatePassword(user.Id, model.HashPassword(password)); err != nil {
+	if err := a.Srv().Store.User().UpdatePassword(string(user.Id), model.HashPassword(password)); err != nil {
 		return err
 	}
 

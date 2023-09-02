@@ -6,7 +6,7 @@ import (
 )
 
 type PageType struct {
-	Id   string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id   UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name string `json:"name" gorm:"type:varchar(250);column:Name"`
 	Slug string `json:"alug" gorm:"uniqueIndex:slug_key;type:varchar(255);column:Slug"`
 	ModelMetadata

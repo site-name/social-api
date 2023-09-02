@@ -70,7 +70,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 	if claimed, err := worker.jobServer.ClaimJob(job); err != nil {
 		slog.Info("Worker experienced an error while trying to claim job",
 			slog.String("worker", worker.name),
-			slog.String("job_id", job.Id),
+			slog.String("job_id", string(job.Id)),
 			slog.String("error", err.Error()))
 		return
 	} else if !claimed {
@@ -78,24 +78,24 @@ func (worker *Worker) DoJob(job *model.Job) {
 	}
 
 	if err := worker.app.DeleteAllExpiredPluginKeys(); err != nil {
-		slog.Error("Worker: Failed to delete expired keys", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to delete expired keys", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 		return
 	}
 
-	slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+	slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)))
 	worker.setJobSuccess(job)
 }
 
 func (worker *Worker) setJobSuccess(job *model.Job) {
 	if err := worker.jobServer.SetJobSuccess(job); err != nil {
-		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
 func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
 	if err := worker.jobServer.SetJobError(job, appError); err != nil {
-		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", string(job.Id)), slog.String("error", err.Error()))
 	}
 }

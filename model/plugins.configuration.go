@@ -9,10 +9,10 @@ import (
 )
 
 type PluginConfiguration struct {
-	Id            string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id            UUID            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Identifier    string          `json:"identifier" gorm:"type:varchar(128);column:Identifier;index:identifier_channelid_key"`
 	Name          string          `json:"name" gorm:"type:varchar(128);column:Name"`
-	ChannelID     string          `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:identifier_channelid_key"`
+	ChannelID     UUID            `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:identifier_channelid_key"`
 	Description   string          `json:"description" gorm:"column:Description"`
 	Active        bool            `json:"active" gorm:"column:Active"`
 	Configuration StringInterface `json:"configuration" gorm:"type:jsonb;column:Configuration"`
@@ -26,12 +26,12 @@ func (c *PluginConfiguration) TableName() string             { return Transactio
 
 type PluginConfigurations []*PluginConfiguration
 
-func (p PluginConfigurations) IDs() []string {
-	return lo.Map(p, func(c *PluginConfiguration, _ int) string { return c.Id })
+func (p PluginConfigurations) IDs() []UUID {
+	return lo.Map(p, func(c *PluginConfiguration, _ int) UUID { return c.Id })
 }
 
-func (p PluginConfigurations) ChannelIDs() []string {
-	return lo.Map(p, func(c *PluginConfiguration, _ int) string { return c.ChannelID })
+func (p PluginConfigurations) ChannelIDs() []UUID {
+	return lo.Map(p, func(c *PluginConfiguration, _ int) UUID { return c.ChannelID })
 }
 
 // PluginConfigurationFilterOptions is used to build sql queries

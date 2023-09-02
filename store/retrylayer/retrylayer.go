@@ -1308,7 +1308,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *
 
 }
 
-func (s *RetryLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
+func (s *RetryLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedPageAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1508,7 +1508,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedProductAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1708,7 +1708,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrV
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID model.UUID, attributeValueIDs []model.UUID) ([]*model.AssignedVariantAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -3568,7 +3568,7 @@ func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 }
 
-func (s *RetryLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *RetryLayerDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds []model.UUID, productIds []model.UUID, variantIds []model.UUID, categoryIds []model.UUID, isDelete bool) error {
 
 	tries := 0
 	for {
@@ -3768,7 +3768,7 @@ func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, 
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []string, productIds []string, variantIds []string, categoryIds []string, isDelete bool) error {
+func (s *RetryLayerDiscountVoucherStore) ToggleVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, collectionIds []model.UUID, productIds []model.UUID, variantIds []model.UUID, categoryIds []model.UUID, isDelete bool) error {
 
 	tries := 0
 	for {
@@ -5112,21 +5112,21 @@ func (s *RetryLayerOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscoun
 
 }
 
-func (s *RetryLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderEventStore.FilterByOptions(options)
+		result, resultVar1, err := s.OrderEventStore.FilterByOptions(options)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 
@@ -6460,7 +6460,7 @@ func (s *RetryLayerProductTypeStore) ProductTypeByProductVariantID(variantID str
 
 }
 
-func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
+func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []model.UUID) ([]*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -8492,7 +8492,7 @@ func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) erro
 
 }
 
-func (s *RetryLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *RetryLayerUserStore) AddRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 
 	return s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
 
@@ -8882,7 +8882,7 @@ func (s *RetryLayerUserStore) InvalidateProfileCacheForUser(userID string) {
 
 }
 
-func (s *RetryLayerUserStore) PermanentDelete(userID string) error {
+func (s *RetryLayerUserStore) PermanentDelete(userID model.UUID) error {
 
 	tries := 0
 	for {
@@ -8902,7 +8902,7 @@ func (s *RetryLayerUserStore) PermanentDelete(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+func (s *RetryLayerUserStore) RemoveRelations(transaction *gorm.DB, userID model.UUID, relations any, customerNoteOnUser bool) *model.AppError {
 
 	return s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
 

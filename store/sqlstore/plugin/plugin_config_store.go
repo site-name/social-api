@@ -94,7 +94,7 @@ func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigur
 
 	// check if we need to prefetch
 	if options.PrefetchRelatedChannel && model.IsValidId(res.Id) {
-		channel, err := p.Channel().Get(res.ChannelID)
+		channel, err := p.Channel().Get(string(res.ChannelID))
 
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find related channels of plugin configs")

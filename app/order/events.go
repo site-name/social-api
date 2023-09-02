@@ -336,11 +336,11 @@ func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrd
 	})
 }
 
-func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError) {
-	events, err := s.srv.Store.OrderEvent().FilterByOptions(options)
+func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, *model.AppError) {
+	totalCount, events, err := s.srv.Store.OrderEvent().FilterByOptions(options)
 	if err != nil {
-		return nil, model.NewAppError("FilterOrderEventsByOptions", "app.order.order_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model.NewAppError("FilterOrderEventsByOptions", "app.order.order_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return events, nil
+	return totalCount, events, nil
 }

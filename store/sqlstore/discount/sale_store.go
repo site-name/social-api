@@ -158,7 +158,7 @@ func (s *SqlDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleF
 	return result.RowsAffected, nil
 }
 
-func (s *SqlDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []string, isDelete bool) error {
+func (s *SqlDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales model.Sales, collectionIds, productIds, variantIds, categoryIds []model.UUID, isDelete bool) error {
 	if len(sales) == 0 {
 		return errors.New("please speficy relations")
 	}
@@ -167,10 +167,10 @@ func (s *SqlDiscountSaleStore) ToggleSaleRelations(transaction *gorm.DB, sales m
 	}
 
 	relationsMap := map[string]any{
-		"Products":        lo.Map(productIds, func(id string, _ int) *model.Product { return &model.Product{Id: id} }),
-		"Collections":     lo.Map(collectionIds, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} }),
-		"ProductVariants": lo.Map(variantIds, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
-		"Categories":      lo.Map(categoryIds, func(id string, _ int) *model.Category { return &model.Category{Id: id} }),
+		"Products":        lo.Map(productIds, func(id model.UUID, _ int) *model.Product { return &model.Product{Id: id} }),
+		"Collections":     lo.Map(collectionIds, func(id model.UUID, _ int) *model.Collection { return &model.Collection{Id: id} }),
+		"ProductVariants": lo.Map(variantIds, func(id model.UUID, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} }),
+		"Categories":      lo.Map(categoryIds, func(id model.UUID, _ int) *model.Category { return &model.Category{Id: id} }),
 	}
 
 	for associationName, relations := range relationsMap {

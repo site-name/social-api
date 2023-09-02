@@ -46,3 +46,70 @@ func (r *Resolver) TaxTypes(ctx context.Context) ([]*TaxType, error) {
 		}
 	}), nil
 }
+
+// NOTE: please refer to ./schemas/order.graphqls for details on directives used.
+func (r *Resolver) OrderSettingsUpdate(ctx context.Context, args struct {
+	Input OrderSettingsUpdateInput
+}) (*OrderSettingsUpdate, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentConfig := embedCtx.App.Config().ShopSettings
+
+	embedCtx.App.UpdateConfig(func(c *model.Config) {
+		if val := args.Input.AutomaticallyConfirmAllNewOrders; val != nil &&
+			*currentConfig.AutomaticallyConfirmAllNewOrders != *val {
+			*c.ShopSettings.AutomaticallyConfirmAllNewOrders = *val
+		}
+		if val := args.Input.AutomaticallyFulfillNonShippableGiftCard; val != nil &&
+			*currentConfig.AutomaticallyFulfillNonShippableGiftcard != *val {
+			*c.ShopSettings.AutomaticallyFulfillNonShippableGiftcard = *val
+		}
+	})
+
+	updatedShopSettings := embedCtx.App.Config().ShopSettings
+
+	return &OrderSettingsUpdate{
+		OrderSettings: &OrderSettings{
+			AutomaticallyConfirmAllNewOrders:         *updatedShopSettings.AutomaticallyConfirmAllNewOrders,
+			AutomaticallyFulfillNonShippableGiftCard: *updatedShopSettings.AutomaticallyFulfillNonShippableGiftcard,
+		},
+	}, nil
+}
+
+// NOTE: please refer to ./schemas/order.graphqls for details on directives used.
+func (r *Resolver) GiftCardSettingsUpdate(ctx context.Context, args struct {
+	Input GiftCardSettingsUpdateInput
+}) (*GiftCardSettingsUpdate, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSettings := embedCtx.App.Config().ShopSettings
+
+	embedCtx.App.UpdateConfig(func(c *model.Config) {
+		var (
+			expiryType   = args.Input.ExpiryType
+			expiryPeriod = args.Input.ExpiryPeriod
+		)
+
+		if expiryPeriod != nil {
+			if *currentSettings.GiftcardExpiryPeriodType != expiryPeriod.Type {
+				*c.ShopSettings.GiftcardExpiryPeriodType = expiryPeriod.Type
+			}
+			if *currentSettings.GiftcardExpiryPeriod != int(expiryPeriod.Amount) {
+				*c.ShopSettings.GiftcardExpiryPeriod = int(expiryPeriod.Amount)
+			}
+		}
+
+		if expiryType != nil && *expiryType != *currentSettings.GiftcardExpiryType {
+			*c.ShopSettings.GiftcardExpiryType = *expiryType
+		}
+	})
+
+	updatedSettings := embedCtx.App.Config().ShopSettings
+	return &GiftCardSettingsUpdate{
+		GiftCardSettings: &GiftCardSettings{
+			ExpiryType: *updatedSettings.GiftcardExpiryType,
+			ExpiryPeriod: &TimePeriod{
+				Amount: int32(*updatedSettings.GiftcardExpiryPeriod),
+				Type:   *updatedSettings.GiftcardExpiryPeriodType,
+			},
+		},
+	}, nil
+}

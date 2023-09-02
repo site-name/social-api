@@ -7,7 +7,7 @@ type OrderLineData struct {
 	Quantity    int
 	Variant     *ProductVariant // can be nil
 	Replace     bool            // default false
-	WarehouseID *string         // can be nil
+	WarehouseID *UUID           // can be nil
 }
 
 func (o *OrderLineData) DeepCopy() *OrderLineData {
@@ -41,8 +41,8 @@ func (a OrderLineDatas) OrderLines() OrderLines {
 	return lo.Map(a, func(o *OrderLineData, _ int) *OrderLine { return &o.Line })
 }
 
-func (a OrderLineDatas) WarehouseIDs() []string {
-	res := []string{}
+func (a OrderLineDatas) WarehouseIDs() []UUID {
+	res := []UUID{}
 	for _, item := range a {
 		if item != nil && item.WarehouseID != nil {
 			res = append(res, *item.WarehouseID)

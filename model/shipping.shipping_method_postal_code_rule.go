@@ -25,8 +25,8 @@ var PostalCodeRuleInclusionTypeString = map[InclusionType]string{
 }
 
 type ShippingMethodPostalCodeRule struct {
-	Id               string        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ShippingMethodID string        `json:"shipping_method_id" gorm:"index:shippingmethodid_start_end_key;type:uuid;column:ShippingMethodID"`
+	Id               UUID          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ShippingMethodID UUID          `json:"shipping_method_id" gorm:"index:shippingmethodid_start_end_key;type:uuid;column:ShippingMethodID"`
 	Start            string        `json:"start" gorm:"index:shippingmethodid_start_end_key;type:varchar(32);column:Start"`
 	End              string        `json:"end" gorm:"index:shippingmethodid_start_end_key;type:varchar(32);column:End"`
 	InclusionType    InclusionType `json:"inclusion_type" gorm:"type:varchar(32);column:InclusionType"`

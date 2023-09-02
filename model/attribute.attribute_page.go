@@ -9,9 +9,9 @@ import (
 
 // AttributeID unique with PageTypeID
 type AttributePage struct {
-	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	AttributeID string `json:"attribute_id" gorm:"type:uuid;index:attributeid_pagetypeid_key;column:AttributeID"` // to Attribute
-	PageTypeID  string `json:"page_type_id" gorm:"type:uuid;index:attributeid_pagetypeid_key;column:PageTypeID"`  // to PageType
+	Id          UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	AttributeID UUID `json:"attribute_id" gorm:"type:uuid;index:attributeid_pagetypeid_key;column:AttributeID"` // to Attribute
+	PageTypeID  UUID `json:"page_type_id" gorm:"type:uuid;index:attributeid_pagetypeid_key;column:PageTypeID"`  // to PageType
 	Sortable
 
 	PageAssignments []*AssignedPageAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
@@ -39,9 +39,9 @@ func (a *AttributePage) IsValid() *AppError {
 
 // ValueID unique together with AssignmentID
 type AssignedPageAttributeValue struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;column:Id;default:gen_random_uuid()"`
-	ValueID      string `json:"value_id" gorm:"primeryKey;type:uuid;column:ValueID;index:valueid_assignmentid_key"`           // AttributeValue
-	AssignmentID string `json:"assignment_id" gorm:"primeryKey;type:uuid;column:AssignmentID;index:valueid_assignmentid_key"` // AssignedPageAttribute
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;column:Id;default:gen_random_uuid()"`
+	ValueID      UUID `json:"value_id" gorm:"primeryKey;type:uuid;column:ValueID;index:valueid_assignmentid_key"`           // AttributeValue
+	AssignmentID UUID `json:"assignment_id" gorm:"primeryKey;type:uuid;column:AssignmentID;index:valueid_assignmentid_key"` // AssignedPageAttribute
 	Sortable
 }
 
@@ -71,9 +71,9 @@ func (a *AssignedPageAttributeValue) DeepCopy() *AssignedPageAttributeValue {
 // Associate a page type attribute and selected values to a given page.
 // PageID unique together with AssignmentID
 type AssignedPageAttribute struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	PageID       string `json:"page_id" gorm:"type:uuid;column:PageID;index:pageid_assignmentid_key"`             // Page
-	AssignmentID string `json:"assignment_id" gorm:"type:uuid;column:AssignmentID;index:pageid_assignmentid_key"` // AttributePage
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	PageID       UUID `json:"page_id" gorm:"type:uuid;column:PageID;index:pageid_assignmentid_key"`             // Page
+	AssignmentID UUID `json:"assignment_id" gorm:"type:uuid;column:AssignmentID;index:pageid_assignmentid_key"` // AttributePage
 
 	PageValueAssignments []*AssignedPageAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 	Values               AttributeValues               `json:"-" gorm:"many2many:AssignedPageAttributeValues"`

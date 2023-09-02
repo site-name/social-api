@@ -9,8 +9,8 @@ import (
 
 // VoucherCustomer represents m2m relation ship between customers and vouchers
 type VoucherCustomer struct {
-	Id            string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	VoucherID     string `json:"voucher_id" gorm:"type:uuid;column:VoucherID;index:voucherid_customeremail_key"`
+	Id            UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	VoucherID     UUID   `json:"voucher_id" gorm:"type:uuid;column:VoucherID;index:voucherid_customeremail_key"`
 	CustomerEmail string `json:"customer_email" gorm:"type:varchar(128);column:CustomerEmail;index:voucherid_customeremail_key"`
 }
 

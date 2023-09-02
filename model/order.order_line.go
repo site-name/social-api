@@ -2,7 +2,7 @@ package model
 
 import (
 	"fmt"
-	"strings"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -12,44 +12,35 @@ import (
 	"gorm.io/gorm"
 )
 
-// max lengths for some fields of OrderLine
-const (
-	ORDER_LINE_PRODUCT_NAME_MAX_LENGTH       = 386
-	ORDER_LINE_VARIANT_NAME_MAX_LENGTH       = 255
-	ORDER_LINE_PRODUCT_SKU_MAX_LENGTH        = 255
-	ORDER_LINE_PRODUCT_VARIANT_ID_MAX_LENGTH = 255
-	ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH = 10
-)
-
 type OrderLine struct {
-	Id                                string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                                UUID              `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt                          int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"` // for database ordering
-	OrderID                           string            `json:"order_id" gorm:"type:uuid;column:OrderID"`                          // NOTE editable
-	VariantID                         *string           `json:"variant_id" gorm:"type:uuid;column:VariantID"`                      // FOREIGN KEY ProductVariant
+	OrderID                           UUID              `json:"order_id" gorm:"type:uuid;column:OrderID"`                          // NOTE editable
+	VariantID                         *UUID             `json:"variant_id" gorm:"type:uuid;column:VariantID"`                      // FOREIGN KEY ProductVariant
 	ProductName                       string            `json:"product_name" gorm:"type:varchar(386);column:ProductName"`
 	VariantName                       string            `json:"variant_name" gorm:"type:varchar(255);column:VariantName"`
 	TranslatedProductName             string            `json:"translated_product_name" gorm:"type:varchar(386);column:TranslatedProductName"`
 	TranslatedVariantName             string            `json:"translated_variant_name" gorm:"type:varchar(255);column:TranslatedVariantName"`
 	ProductSku                        *string           `json:"product_sku" gorm:"type:varchar(255);column:ProductSku"`
-	ProductVariantID                  *string           `json:"product_variant_id" gorm:"type:varchar(255);column:ProductVariantID"` // GraphQL ID used as fallback when product SKU is not available
+	ProductVariantID                  *UUID             `json:"product_variant_id" gorm:"type:varchar(255);column:ProductVariantID"` // GraphQL ID used as fallback when product SKU is not available
 	IsShippingRequired                bool              `json:"is_shipping_required" gorm:"column:IsShippingRequired"`
 	IsGiftcard                        bool              `json:"is_gift_card" gorm:"column:IsGiftcard"`
 	Quantity                          int               `json:"quantity" gorm:"type:integer;check:Quantity >= 1;column:Quantity"`
 	QuantityFulfilled                 int               `json:"quantity_fulfilled" gorm:"type:integer;check:QuantityFulfilled >= 0;column:QuantityFulfilled"`
 	Currency                          string            `json:"currency" gorm:"type:varchar(3);column:Currency"`
-	UnitDiscountAmount                *decimal.Decimal  `json:"unit_discount_amount" gorm:"default:0;column:UnitDiscountAmount"`    // default 0
 	UnitDiscountType                  DiscountValueType `json:"unit_discount_type" gorm:"type:varchar(10);column:UnitDiscountType"` // default 'fixed'
 	UnitDiscountReason                *string           `json:"unit_discount_reason" gorm:"column:UnitDiscountReason"`
-	UnitPriceNetAmount                *decimal.Decimal  `json:"unit_price_net_amount" gorm:"default:0;column:UnitPriceNetAmount"`     // default 0
-	UnitDiscountValue                 *decimal.Decimal  `json:"unit_discount_value" gorm:"default:0;column:UnitDiscountValue"`        // store the value of the applied discount. Like 20%, default 0
-	UnitPriceGrossAmount              *decimal.Decimal  `json:"unit_price_gross_amount" gorm:"default:0;column:UnitPriceGrossAmount"` // default 0
-	TotalPriceNetAmount               *decimal.Decimal  `json:"total_price_net_amount" gorm:"column:TotalPriceNetAmount"`
-	TotalPriceGrossAmount             *decimal.Decimal  `json:"total_price_gross_amount" gorm:"column:TotalPriceGrossAmount"`
-	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal  `json:"undiscounted_unit_price_gross_amount" gorm:"column:UnDiscountedUnitPriceGrossAmount;default:0"`
-	UnDiscountedUnitPriceNetAmount    *decimal.Decimal  `json:"undiscounted_unit_price_net_amount" gorm:"column:UnDiscountedUnitPriceNetAmount;default:0"`
-	UnDiscountedTotalPriceGrossAmount *decimal.Decimal  `json:"undiscounted_total_price_gross_amount" gorm:"column:UnDiscountedTotalPriceGrossAmount;default:0"` // default 0
-	UnDiscountedTotalPriceNetAmount   *decimal.Decimal  `json:"undiscounted_total_price_net_amount" gorm:"column:UnDiscountedTotalPriceNetAmount;default:0"`     // default 0
-	TaxRate                           *decimal.Decimal  `json:"tax_rate" gorm:"column:TaxRate"`                                                                  // decimal places: 4, default: 0
+	UnitDiscountAmount                *decimal.Decimal  `json:"unit_discount_amount" gorm:"default:0;column:UnitDiscountAmount;type:decimal(12,3)"`      // default 0
+	UnitPriceNetAmount                *decimal.Decimal  `json:"unit_price_net_amount" gorm:"default:0;column:UnitPriceNetAmount;type:decimal(12,3)"`     // default 0
+	UnitDiscountValue                 *decimal.Decimal  `json:"unit_discount_value" gorm:"default:0;column:UnitDiscountValue;type:decimal(12,3)"`        // store the value of the applied discount. Like 20%, default 0
+	UnitPriceGrossAmount              *decimal.Decimal  `json:"unit_price_gross_amount" gorm:"default:0;column:UnitPriceGrossAmount;type:decimal(12,3)"` // default 0
+	TotalPriceNetAmount               *decimal.Decimal  `json:"total_price_net_amount" gorm:"column:TotalPriceNetAmount;type:decimal(12,3)"`
+	TotalPriceGrossAmount             *decimal.Decimal  `json:"total_price_gross_amount" gorm:"column:TotalPriceGrossAmount;type:decimal(12,3)"`
+	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal  `json:"undiscounted_unit_price_gross_amount" gorm:"column:UnDiscountedUnitPriceGrossAmount;default:0;type:decimal(12,3)"`
+	UnDiscountedUnitPriceNetAmount    *decimal.Decimal  `json:"undiscounted_unit_price_net_amount" gorm:"column:UnDiscountedUnitPriceNetAmount;default:0;type:decimal(12,3)"`
+	UnDiscountedTotalPriceGrossAmount *decimal.Decimal  `json:"undiscounted_total_price_gross_amount" gorm:"column:UnDiscountedTotalPriceGrossAmount;default:0;type:decimal(12,3)"` // default 0
+	UnDiscountedTotalPriceNetAmount   *decimal.Decimal  `json:"undiscounted_total_price_net_amount" gorm:"column:UnDiscountedTotalPriceNetAmount;default:0;type:decimal(12,3)"`     // default 0
+	TaxRate                           *decimal.Decimal  `json:"tax_rate" gorm:"column:TaxRate;type:decimal(5,4)"`                                                                   // decimal places: 4, default: 0
 
 	UnitDiscount           *goprices.Money      `json:"unit_dsicount" gorm:"-"`
 	UnDiscountedTotalPrice *goprices.TaxedMoney `json:"undiscounted_total_price" gorm:"-"`
@@ -107,8 +98,8 @@ func (o *OrderLine) String() string {
 type OrderLines []*OrderLine
 
 // ProductVariantIDs returns only non-nil product variant ids
-func (o OrderLines) ProductVariantIDs() []string {
-	res := []string{}
+func (o OrderLines) ProductVariantIDs() []UUID {
+	res := []UUID{}
 	for _, orderLine := range o {
 		if orderLine != nil && orderLine.VariantID != nil {
 			res = append(res, *orderLine.VariantID)
@@ -118,12 +109,12 @@ func (o OrderLines) ProductVariantIDs() []string {
 	return res
 }
 
-func (o OrderLines) OrderIDs() []string {
-	return lo.Map(o, func(l *OrderLine, _ int) string { return l.OrderID })
+func (o OrderLines) OrderIDs() []UUID {
+	return lo.Map(o, func(l *OrderLine, _ int) UUID { return l.OrderID })
 }
 
-func (o OrderLines) IDs() []string {
-	return lo.Map(o, func(l *OrderLine, _ int) string { return l.Id })
+func (o OrderLines) IDs() []UUID {
+	return lo.Map(o, func(l *OrderLine, _ int) UUID { return l.Id })
 }
 
 func (o OrderLines) FilterNils() OrderLines {
@@ -133,47 +124,17 @@ func (o OrderLines) FilterNils() OrderLines {
 }
 
 func (o *OrderLine) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.order_line.is_valid.%s.app_error",
-		"order_line_id=",
-		"OrderLine.IsValid",
-	)
-
 	if !IsValidId(o.OrderID) {
-		return outer("order_id", &o.Id)
+		return NewAppError("OrderLine.IsValid", "model.order_line.is_valid.order_id.app_error", nil, "please provide valid order line order id", http.StatusBadRequest)
 	}
 	if o.VariantID != nil && !IsValidId(*o.VariantID) {
-		return outer("variant_id", &o.Id)
+		return NewAppError("OrderLine.IsValid", "model.order_line.is_valid.variant_id.app_error", nil, "please provide valid order line variant id", http.StatusBadRequest)
 	}
 	if o.Quantity < 1 {
-		return outer("quantity", &o.Id)
+		return NewAppError("OrderLine.IsValid", "model.order_line.is_valid.quantity.app_error", nil, "please provide valid order line quantity", http.StatusBadRequest)
 	}
-	if unit, err := currency.ParseISO(o.Currency); err != nil || !strings.EqualFold(unit.String(), o.Currency) {
-		return outer("currency", &o.Id)
-	}
-
-	if err := ValidateDecimal("OrderLine.IsValid.TaxRate", o.TaxRate, 5, 4); err != nil {
-		return err
-	}
-
-	for _, deci := range []struct {
-		name  string
-		value *decimal.Decimal
-	}{
-		{name: "UnitDiscountAmount", value: o.UnitDiscountAmount},
-		{name: "UnitPriceNetAmount", value: o.UnitPriceNetAmount},
-		{name: "UnitDiscountValue", value: o.UnitDiscountValue},
-		{name: "UnitPriceGrossAmount", value: o.UnitPriceGrossAmount},
-		{name: "TotalPriceNetAmount", value: o.TotalPriceNetAmount},
-		{name: "TotalPriceGrossAmount", value: o.TotalPriceGrossAmount},
-		{name: "UnDiscountedUnitPriceGrossAmount", value: o.UnDiscountedUnitPriceGrossAmount},
-		{name: "UnDiscountedUnitPriceNetAmount", value: o.UnDiscountedUnitPriceNetAmount},
-		{name: "UnDiscountedTotalPriceGrossAmount", value: o.UnDiscountedTotalPriceGrossAmount},
-		{name: "UnDiscountedTotalPriceNetAmount", value: o.UnDiscountedTotalPriceNetAmount},
-	} {
-		if err := ValidateDecimal("OrderLine.IsValid."+deci.name, deci.value, 12, 3); err != nil {
-			return err
-		}
+	if _, err := currency.ParseISO(o.Currency); err != nil {
+		return NewAppError("OrderLine.IsValid", "model.order_line.is_valid.currency.app_error", nil, "please provide valid order line currency", http.StatusBadRequest)
 	}
 
 	return nil

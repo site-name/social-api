@@ -21,17 +21,17 @@ const (
 )
 
 type GiftCard struct {
-	Id                   string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                   UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Code                 string           `json:"code" gorm:"type:varchar(16);column:Code"`          // unique, db_index, looks like ABCD-EFGH-IJKL
-	CreatedByID          *string          `json:"created_by_id" gorm:"type:uuid;column:CreatedByID"` // foreign key User, ON DELETE SET NULL
-	UsedByID             *string          `json:"used_by_id" gorm:"type:uuid;column:UsedByID"`
+	CreatedByID          *UUID            `json:"created_by_id" gorm:"type:uuid;column:CreatedByID"` // foreign key User, ON DELETE SET NULL
+	UsedByID             *UUID            `json:"used_by_id" gorm:"type:uuid;column:UsedByID"`
 	CreatedByEmail       *string          `json:"created_by_email" gorm:"type:varchar(128);column:CreatedByEmail"`
 	UsedByEmail          *string          `json:"used_by_email" gorm:"type:varchar(128);column:UsedByEmail"`
 	CreateAt             int64            `json:"created_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	StartDate            *time.Time       `json:"start_date" gorm:"column:StartDate"`
 	ExpiryDate           *time.Time       `json:"expiry_date" gorm:"column:ExpiryDate"`
 	Tag                  *string          `json:"tag" gorm:"type:varchar(255);column:Tag"`
-	ProductID            *string          `json:"product_id" gorm:"type:uuid;column:ProductID"` // foreign key to Product
+	ProductID            *UUID            `json:"product_id" gorm:"type:uuid;column:ProductID"` // foreign key to Product
 	LastUsedOn           *int64           `json:"last_used_on" gorm:"type:bigint;column:LastUsedOn"`
 	IsActive             *bool            `json:"is_active" gorm:"column:IsActive"`                                    // default true
 	Currency             string           `json:"currency" gorm:"type:varchar(3);column:Currency"`                     // UPPER cased
@@ -46,10 +46,10 @@ type GiftCard struct {
 	Orders    Orders      `json:"-" gorm:"many2many:OrderGiftCards"`
 
 	// NOTE: fields below are used for sorting purpose
-	RelatedProductName     string `json:"-" gorm:"column:-"`
-	RelatedProductSlug     string `json:"-" gorm:"column:-"`
-	RelatedUsedByFirstName string `json:"-" gorm:"column:-"`
-	RelatedUsedByLastName  string `json:"-" gorm:"column:-"`
+	RelatedProductName     string `json:"-" gorm:"-"`
+	RelatedProductSlug     string `json:"-" gorm:"-"`
+	RelatedUsedByFirstName string `json:"-" gorm:"-"`
+	RelatedUsedByLastName  string `json:"-" gorm:"-"`
 }
 
 func (c *GiftCard) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
@@ -78,8 +78,8 @@ type GiftCardFilterOption struct {
 
 type Giftcards []*GiftCard
 
-func (gs Giftcards) IDs() []string {
-	return lo.Map(gs, func(g *GiftCard, _ int) string { return g.Id })
+func (gs Giftcards) IDs() []UUID {
+	return lo.Map(gs, func(g *GiftCard, _ int) UUID { return g.Id })
 }
 
 func (gc *GiftCard) DisplayCode() string {

@@ -20,7 +20,7 @@ func (oes *SqlOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.Orde
 		transaction = oes.GetMaster()
 	}
 
-	if err := transaction.Create(orderEvent).Error; err != nil {
+	if err := transaction.Save(orderEvent).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to save order event")
 	}
 
@@ -40,12 +40,37 @@ func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, erro
 	return &res, nil
 }
 
-func (s *SqlOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
-	var res []*model.OrderEvent
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find order events by given options")
+func (s *SqlOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) (int64, []*model.OrderEvent, error) {
+	query := s.
+		GetQueryBuilder().
+		Select(model.OrderEventTableName + ".*").
+		Where(options.Conditions)
+
+	var totalCount int64
+	if options.CountTotal {
+		countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOptions_CounTotal_ToSql")
+		}
+
+		err = s.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total number of order events by given options")
+		}
 	}
 
-	return res, nil
+	// NOTE: we apply pagination conditions after count total (if required)
+	options.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return 0, nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+	var res []*model.OrderEvent
+	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
+	if err != nil {
+		return 0, nil, errors.Wrap(err, "failed to find order events by given options")
+	}
+
+	return totalCount, res, nil
 }

@@ -102,7 +102,7 @@ func (c *Context) MfaRequired() {
 		return
 	}
 
-	user, err := c.App.Srv().AccountService().UserById(context.Background(), c.AppContext.Session().UserId)
+	user, err := c.App.Srv().AccountService().UserById(context.Background(), string(c.AppContext.Session().UserId))
 	if err != nil {
 		c.Err = model.NewAppError("MfaRequired", "api.context.get_user.app_error", nil, err.Error(), http.StatusUnauthorized)
 		return

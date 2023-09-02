@@ -33,7 +33,7 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *mode
 	err := ps.GetMaster().Create(variantChannelListing).Error
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
-			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListing.Id)
+			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, string(variantChannelListing.Id))
 		}
 		return nil, errors.Wrapf(err, "failed to save product variant channel listing with id=%s", variantChannelListing.Id)
 	}

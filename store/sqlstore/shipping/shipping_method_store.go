@@ -204,7 +204,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	}
 	defer rows.Close()
 
-	var shippingMethodMeetMap = map[string]*model.ShippingMethod{}
+	var shippingMethodMeetMap = map[model.UUID]*model.ShippingMethod{}
 
 	for rows.Next() {
 		var (
@@ -312,7 +312,7 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 	}
 	defer rows.Close()
 
-	var shippingMethodMap = map[string]*model.ShippingMethod{}
+	var shippingMethodMap = map[model.UUID]*model.ShippingMethod{}
 
 	for rows.Next() {
 		var (

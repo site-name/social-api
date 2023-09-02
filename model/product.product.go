@@ -13,19 +13,19 @@ import (
 
 // ordering slug
 type Product struct {
-	Id                   string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
-	ProductTypeID        string                 `json:"product_type_id" gorm:"type:uuid;index:producttypeid_key;column:ProductTypeID"`
+	Id                   UUID                   `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	ProductTypeID        UUID                   `json:"product_type_id" gorm:"type:uuid;index:producttypeid_key;column:ProductTypeID"`
 	Name                 string                 `json:"name" gorm:"type:varchar(250);column:Name"`
 	Slug                 string                 `json:"slug" gorm:"type:varchar(255);uniqueIndex:product_slug_unique_key;column:Slug"`
 	Description          StringInterface        `json:"description" gorm:"type:jsonb;column:Description"`
 	DescriptionPlainText string                 `json:"description_plaintext" gorm:"column:DescriptionPlainText"`
-	CategoryID           *string                `json:"category_id" gorm:"type:uuid;index:categoryid_key;column:CategoryID"`
+	CategoryID           *UUID                  `json:"category_id" gorm:"type:uuid;index:categoryid_key;column:CategoryID"`
 	CreateAt             int64                  `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 	UpdateAt             int64                  `json:"update_at" gorm:"type:bigint;autoCreateTime:milli;autoUpdateTime:milli;column:UpdateAt"`
 	ChargeTaxes          *bool                  `json:"charge_taxes" gorm:"default:true;column:ChargeTaxes"` // default true
 	Weight               *float32               `json:"weight" gorm:"column:Weight"`
 	WeightUnit           measurement.WeightUnit `json:"weight_unit" gorm:"type:varchar(5);column:WeightUnit"`
-	DefaultVariantID     *string                `json:"default_variant_id" gorm:"type:uuid;index:defaultvariantid_key;column:DefaultVariantID"`
+	DefaultVariantID     *UUID                  `json:"default_variant_id" gorm:"type:uuid;index:defaultvariantid_key;column:DefaultVariantID"`
 	Rating               *float32               `json:"rating" gorm:"column:Rating"`
 	ModelMetadata
 	Seo
@@ -97,8 +97,8 @@ type ProductFilterOption struct {
 
 type Products []*Product
 
-func (ps Products) IDs() []string {
-	return lo.Map(ps, func(p *Product, _ int) string {
+func (ps Products) IDs() []UUID {
+	return lo.Map(ps, func(p *Product, _ int) UUID {
 		return p.Id
 	})
 }
@@ -107,14 +107,14 @@ func (ps Products) Contains(p *Product) bool {
 	return p != nil && lo.SomeBy(ps, func(prd *Product) bool { return prd != nil && prd.Id == p.Id })
 }
 
-func (ps Products) ProductTypeIDs() []string {
-	return lo.Map(ps, func(p *Product, _ int) string {
+func (ps Products) ProductTypeIDs() []UUID {
+	return lo.Map(ps, func(p *Product, _ int) UUID {
 		return p.ProductTypeID
 	})
 }
 
-func (p Products) CategoryIDs() []string {
-	res := []string{}
+func (p Products) CategoryIDs() []UUID {
+	res := []UUID{}
 	for _, product := range p {
 		if product != nil && product.CategoryID != nil {
 			res = append(res, *product.CategoryID)

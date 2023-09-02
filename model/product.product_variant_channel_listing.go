@@ -14,12 +14,12 @@ import (
 )
 
 type ProductVariantChannelListing struct {
-	Id                        string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	VariantID                 string           `json:"variant_id" gorm:"type:uuid;column:VariantID"` // not null
-	ChannelID                 string           `json:"channel_id" gorm:"type:uuid;column:ChannelID"` // not null
+	Id                        UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	VariantID                 UUID             `json:"variant_id" gorm:"type:uuid;column:VariantID"` // not null
+	ChannelID                 UUID             `json:"channel_id" gorm:"type:uuid;column:ChannelID"` // not null
 	Currency                  string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
-	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty" gorm:"column:PriceAmount"` // can be NULL
-	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount" gorm:"column:CostPriceAmount"`  // can be NULL
+	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty" gorm:"column:PriceAmount;type:decimal(12,3)"` // can be NULL
+	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount" gorm:"column:CostPriceAmount;type:decimal(12,3)"`  // can be NULL
 	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold" gorm:"column:PreorderQuantityThreshold"`
 	CreateAt                  int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 
@@ -92,12 +92,12 @@ func (p *ProductVariantChannelListing) SetVariant(c *ProductVariant) {
 
 type ProductVariantChannelListings []*ProductVariantChannelListing
 
-func (p ProductVariantChannelListings) IDs() []string {
-	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) string { return l.Id })
+func (p ProductVariantChannelListings) IDs() []UUID {
+	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) UUID { return l.Id })
 }
 
-func (p ProductVariantChannelListings) VariantIDs() util.AnyArray[string] {
-	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) string { return l.VariantID })
+func (p ProductVariantChannelListings) VariantIDs() util.AnyArray[UUID] {
+	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) UUID { return l.VariantID })
 }
 
 func (ps ProductVariantChannelListings) DeepCopy() ProductVariantChannelListings {
@@ -111,21 +111,8 @@ func (p *ProductVariantChannelListing) IsValid() *AppError {
 	if !IsValidId(p.ChannelID) {
 		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
-	if unit, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(unit.String(), p.Currency) {
+	if _, err := currency.ParseISO(p.Currency); err != nil {
 		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
-	}
-
-	for _, deci := range []struct {
-		name  string
-		value *decimal.Decimal
-	}{
-		{"CostPriceAmount", p.CostPriceAmount},
-		{"PriceAmount", p.PriceAmount},
-	} {
-		err := ValidateDecimal("ProductVariantChannelListing.IsValid."+deci.name, deci.value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

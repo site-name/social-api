@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -10,29 +11,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// max lengths for Checkout table
-const (
-	CHECKOUT_DISCOUNT_NAME_MAX_LENGTH            = 255
-	CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH = 255
-	CHECKOUT_TRACKING_CODE_MAX_LENGTH            = 255
-	CHECKOUT_VOUCHER_CODE_MAX_LENGTH             = 12
-	CHECKOUT_LANGUAGE_CODE_MAX_LENGTH            = 35
-)
-
 // A Shopping checkout.
 // Ordering by CreateAt ASC
 type Checkout struct {
-	Token                  string           `json:"token" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Token"` // uuid4, primary_key, NO EDITABLE
+	Token                  UUID             `json:"token" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Token"` // uuid4, primary_key, NO EDITABLE
 	CreateAt               int64            `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
 	UpdateAt               int64            `json:"update_at" gorm:"column:UpdateAt;autoUpdateTime:milli"`
-	UserID                 *string          `json:"user_id" gorm:"type:uuid;column:UserID"`
+	UserID                 *UUID            `json:"user_id" gorm:"type:uuid;column:UserID"`
 	Email                  string           `json:"email" gorm:"type:varchar(128);column:Email"`
 	Quantity               int              `json:"quantity" gorm:"column:Quantity"`
-	ChannelID              string           `json:"channel_id" gorm:"column:ChannelID;type:uuid"`
-	BillingAddressID       *string          `json:"billing_address_id,omitempty" gorm:"column:BillingAddressID;type:uuid"`   // NOT EDITABLE
-	ShippingAddressID      *string          `json:"shipping_address_id,omitempty" gorm:"column:ShippingAddressID;type:uuid"` // NOT EDITABLE
-	ShippingMethodID       *string          `json:"shipping_method_id,omitempty" gorm:"type:uuid;column:ShippingMethodID"`
-	CollectionPointID      *string          `json:"collection_point_id" gorm:"type:uuid;column:CollectionPointID"` // foreign key *Warehouse
+	ChannelID              UUID             `json:"channel_id" gorm:"column:ChannelID;type:uuid"`
+	BillingAddressID       *UUID            `json:"billing_address_id,omitempty" gorm:"column:BillingAddressID;type:uuid"`   // NOT EDITABLE
+	ShippingAddressID      *UUID            `json:"shipping_address_id,omitempty" gorm:"column:ShippingAddressID;type:uuid"` // NOT EDITABLE
+	ShippingMethodID       *UUID            `json:"shipping_method_id,omitempty" gorm:"type:uuid;column:ShippingMethodID"`
+	CollectionPointID      *UUID            `json:"collection_point_id" gorm:"type:uuid;column:CollectionPointID"` // foreign key *Warehouse
 	Note                   string           `json:"note" gorm:"column:Note"`
 	Currency               string           `json:"currency" gorm:"type:varchar(3);column:Currency"`        // default "USD"
 	Country                CountryCode      `json:"country" gorm:"column:Country;type:varchar(20)"`         // one country only
@@ -80,40 +72,35 @@ type CheckoutFilterOption struct {
 }
 
 func (c *Checkout) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.checkout.is_valid.%s.app_error",
-		"checkout_token=",
-		"Checkout.IsValid",
-	)
 	if c.UserID != nil && !IsValidId(*c.UserID) {
-		return outer("user_id", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if !IsValidId(c.ChannelID) {
-		return outer("channel_id", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
 	if c.BillingAddressID != nil && !IsValidId(*c.BillingAddressID) {
-		return outer("billing_address", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.billing_address_id.app_error", nil, "please provide valid billing address id", http.StatusBadRequest)
 	}
 	if c.ShippingAddressID != nil && !IsValidId(*c.ShippingAddressID) {
-		return outer("shipping_address", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.shipping_address_id.app_error", nil, "please provide valid shipping address id", http.StatusBadRequest)
 	}
 	if c.ShippingMethodID != nil && !IsValidId(*c.ShippingMethodID) {
-		return outer("shipping_method", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.shipping_method_id.app_error", nil, "please provide valid shipping method id", http.StatusBadRequest)
 	}
 	if c.CollectionPointID != nil && !IsValidId(*c.CollectionPointID) {
-		return outer("collection_point_id", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.collection_point_id.app_error", nil, "please provide valid collection point id", http.StatusBadRequest)
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
-		return outer("currency", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
 	}
 	if !IsValidEmail(c.Email) {
-		return outer("email", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.email.app_error", nil, "please provide valid email", http.StatusBadRequest)
 	}
 	if !c.LanguageCode.IsValid() {
-		return outer("language_code", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
 	}
 	if !c.Country.IsValid() {
-		return outer("country", &c.Token)
+		return NewAppError("Checkout.IsValid", "model.checkout.is_valid.country.app_error", nil, "please provide valid country", http.StatusBadRequest)
 	}
 
 	return nil

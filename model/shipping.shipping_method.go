@@ -29,10 +29,10 @@ var ShippingMethodTypeString = map[ShippingMethodType]string{
 }
 
 type ShippingMethod struct {
-	Id                  string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                  UUID                   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name                string                 `json:"name" gorm:"type:varchar(100);column:Name"`
 	Type                ShippingMethodType     `json:"type" gorm:"type:varchar(30);column:Type"`
-	ShippingZoneID      string                 `json:"shipping_zone_id" gorm:"type:uuid;column:ShippingZoneID"`
+	ShippingZoneID      UUID                   `json:"shipping_zone_id" gorm:"type:uuid;column:ShippingZoneID"`
 	MinimumOrderWeight  *float32               `json:"minimum_order_weight" gorm:"column:MinimumOrderWeight;default:0"` // default 0
 	MaximumOrderWeight  *float32               `json:"maximum_order_weight" gorm:"column:MaximumOrderWeight"`
 	WeightUnit          measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
@@ -87,8 +87,8 @@ func (s *ShippingMethod) SetShippingZone(zone *ShippingZone) { s.shippingZone = 
 
 type ShippingMethods []*ShippingMethod
 
-func (ss ShippingMethods) IDs() []string {
-	return lo.Map(ss, func(item *ShippingMethod, _ int) string { return item.Id })
+func (ss ShippingMethods) IDs() []UUID {
+	return lo.Map(ss, func(item *ShippingMethod, _ int) UUID { return item.Id })
 }
 
 func (s *ShippingMethod) GetshippingMethodPostalCodeRules() ShippingMethodPostalCodeRules {
@@ -163,8 +163,8 @@ func (s *ShippingMethod) IsValid() *AppError {
 }
 
 type ShippingMethodTranslation struct {
-	Id               string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ShippingMethodID string           `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID"`
+	Id               UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ShippingMethodID UUID             `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID"`
 	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
 	Name             string           `json:"name" gorm:"type:varchar(255);column:Name"`
 	Description      StringInterface  `json:"description" gorm:"type:jsonb;column:Description"`

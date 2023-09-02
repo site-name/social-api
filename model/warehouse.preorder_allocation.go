@@ -9,12 +9,12 @@ import (
 )
 
 type PreorderAllocation struct {
-	Id                             string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	OrderLineID                    string `json:"order_line_id" gorm:"type:uuid;column:OrderLineID;index:orderlineid_productvariantchannellistingid_key"`
-	ProductVariantChannelListingID string `json:"product_variant_channel_listing_id" gorm:"type:uuid;column:ProductVariantChannelListingID;index:orderlineid_productvariantchannellistingid_key"`
-	Quantity                       int    `json:"quantity" gorm:"check:Quantity >= 0;column:Quantity"`
+	Id                             UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	OrderLineID                    UUID `json:"order_line_id" gorm:"type:uuid;column:OrderLineID;index:orderlineid_productvariantchannellistingid_key"`
+	ProductVariantChannelListingID UUID `json:"product_variant_channel_listing_id" gorm:"type:uuid;column:ProductVariantChannelListingID;index:orderlineid_productvariantchannellistingid_key"`
+	Quantity                       int  `json:"quantity" gorm:"check:Quantity >= 0;column:Quantity"`
 
-	orderLine *OrderLine `json:"-" gorm:"-"` // related data popularized in some database calls
+	orderLine *OrderLine `json:"-"` // related data popularized in some database calls
 }
 
 func (c *PreorderAllocation) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
@@ -31,8 +31,8 @@ type PreorderAllocationFilterOption struct {
 
 type PreorderAllocations []*PreorderAllocation
 
-func (p PreorderAllocations) IDs() []string {
-	return lo.Map(p, func(pr *PreorderAllocation, _ int) string { return pr.Id })
+func (p PreorderAllocations) IDs() []UUID {
+	return lo.Map(p, func(pr *PreorderAllocation, _ int) UUID { return pr.Id })
 }
 
 func (p *PreorderAllocation) GetOrderLine() *OrderLine { return p.orderLine }

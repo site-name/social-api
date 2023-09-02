@@ -3,14 +3,15 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"sort"
 	"strings"
 	"time"
-	"unicode/utf8"
+	"unsafe"
 
+	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
@@ -20,27 +21,26 @@ import (
 
 // constants used in package account
 const (
+	USER_FIRST_NAME_MAX_RUNES = 64
+	USER_LAST_NAME_MAX_RUNES  = 64
 	ME                        = "me"
 	PUSH_NOTIFY_PROP          = "push"
 	EMAIL_NOTIFY_PROP         = "email"
 	USER_NOTIFY_MENTION       = "mention"
 	MENTION_KEYS_NOTIFY_PROP  = "mention_keys"
-	USER_FIRST_NAME_MAX_RUNES = 64
-	USER_LAST_NAME_MAX_RUNES  = 64
-	USER_TIMEZONE_MAX_RUNES   = 256
 )
 
 // User contains the details about the user.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type User struct {
-	Id                       string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id                       UUID      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Email                    string    `json:"email" gorm:"type:varchar(128);unique:users_email_key;index:users_email_index_key;column:Email"`            // unique; varchar(128)
 	Username                 string    `json:"username" gorm:"type:varchar(64);unique:users_username_key;index:users_username_index_key;column:Username"` // unique; varchar(64)
 	FirstName                string    `json:"first_name" gorm:"type:varchar(64);index:users_firstname_key;column:FirstName"`                             // can be empty, varchar(64)
 	LastName                 string    `json:"last_name" gorm:"type:varchar(64);index:users_lastname_key;column:LastName"`                                // can be empty, varchar(64)
-	DefaultShippingAddressID *string   `json:"default_shipping_address,omitempty" gorm:"type:uuid;column:DefaultShippingAddressID"`
-	DefaultBillingAddressID  *string   `json:"default_billing_address,omitempty" gorm:"type:uuid;column:DefaultBillingAddressID"`
+	DefaultShippingAddressID *UUID     `json:"default_shipping_address,omitempty" gorm:"type:uuid;column:DefaultShippingAddressID"`
+	DefaultBillingAddressID  *UUID     `json:"default_billing_address,omitempty" gorm:"type:uuid;column:DefaultBillingAddressID"`
 	Password                 string    `json:"password,omitempty" gorm:"column:Password;type:varchar(128)"`  // varchar(128)
 	AuthData                 *string   `json:"auth_data,omitempty" gorm:"type:varchar(128);column:AuthData"` // varchar(128)
 	AuthService              string    `json:"auth_service" gorm:"type:varchar(20);column:AuthService"`      // varchar(20)
@@ -137,12 +137,8 @@ func (u UserSlice) Usernames() []string {
 }
 
 // IDs returns slice of uuids from slice of users
-func (u UserSlice) IDs() []string {
-	ids := make([]string, len(u))
-	for i, user := range u {
-		ids[i] = user.Id
-	}
-	return ids
+func (u UserSlice) IDs() []UUID {
+	return lo.Map(u, func(us *User, _ int) UUID { return us.Id })
 }
 
 func (u UserSlice) FilterByActive(active bool) UserSlice {
@@ -157,32 +153,34 @@ func (u UserSlice) FilterByActive(active bool) UserSlice {
 	return UserSlice(matches)
 }
 
-func (u UserSlice) FilterByID(ids []string) UserSlice {
-	var matches []*User
-	for _, user := range u {
-		for _, id := range ids {
-			if id == user.Id {
-				matches = append(matches, user)
-			}
+func (u UserSlice) FilterByID(ids []UUID) UserSlice {
+	res := make(UserSlice, 0, len(u))
+	idsMap := map[UUID]struct{}{}
+	for _, id := range ids {
+		idsMap[id] = struct{}{}
+	}
+
+	for _, us := range u {
+		if _, ok := idsMap[us.Id]; ok {
+			res = append(res, us)
 		}
 	}
-	return UserSlice(matches)
+	return res
 }
 
-func (u UserSlice) FilterWithoutID(ids []string) UserSlice {
-	var keep []*User
-	for _, user := range u {
-		present := false
-		for _, id := range ids {
-			if id == user.Id {
-				present = true
-			}
-		}
-		if !present {
-			keep = append(keep, user)
+func (u UserSlice) FilterWithoutID(ids []UUID) UserSlice {
+	res := make(UserSlice, 0, len(u))
+	idsMap := map[UUID]struct{}{}
+	for _, id := range ids {
+		idsMap[id] = struct{}{}
+	}
+
+	for _, us := range u {
+		if _, ok := idsMap[us.Id]; !ok {
+			res = append(res, us)
 		}
 	}
-	return UserSlice(keep)
+	return res
 }
 
 func (u *User) DeepCopy() *User {
@@ -210,38 +208,26 @@ func (u *User) DeepCopy() *User {
 // IsValid validates the user and returns an error if it isn't configured
 // correctly.
 func (u *User) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.user.is_valid.%s.app_error",
-		"user_id=",
-		"User.IsValid")
-
 	if !IsValidUsername(u.Username) {
-		return outer("username", &u.Id)
+		return NewAppError("User.IsValid", "model.user.is_valid.username.app_error", nil, "please provide valid user name", http.StatusBadRequest)
 	}
 	if u.Email == "" || !IsValidEmail(u.Email) {
-		return outer("email", &u.Id)
+		return NewAppError("User.IsValid", "model.user.is_valid.email.app_error", nil, "please provide valid email", http.StatusBadRequest)
 	}
 	if u.FirstName != "" && !IsValidNamePart(u.FirstName, FirstName) {
-		return outer("first_name", &u.Id)
+		return NewAppError("User.IsValid", "model.user.is_valid.first_name.app_error", nil, "please provide valid first name", http.StatusBadRequest)
 	}
 	if u.LastName != "" && !IsValidNamePart(u.LastName, LastName) {
-		return outer("last_name", &u.Id)
+		return NewAppError("User.IsValid", "model.user.is_valid.last_name.app_error", nil, "please provide valid last name", http.StatusBadRequest)
 	}
 	if u.AuthData != nil && *u.AuthData != "" && u.AuthService == "" {
-		return outer("auth_data_type", &u.Id)
+		return NewAppError("User.IsValid", "model.user.is_valid.auth_service.app_error", nil, "please provide valid auth service", http.StatusBadRequest)
 	}
 	if u.Password != "" && u.AuthData != nil && *u.AuthData != "" {
-		return outer("auth_data_pwd", &u.Id)
+		return NewAppError("User.IsValid", "model.user.is_valid.auth_date.app_error", nil, "please provide valid auth data", http.StatusBadRequest)
 	}
 	if !LanguageCodeEnum(u.Locale).IsValid() {
-		return outer("locale", &u.Id)
-	}
-	if len(u.Timezone) > 0 {
-		if tzJson, err := json.Marshal(u.Timezone); err != nil {
-			return NewAppError("User.IsValid", "user.is_valid.marshal.app_error", nil, err.Error(), http.StatusInternalServerError)
-		} else if utf8.RuneCount(tzJson) > USER_TIMEZONE_MAX_RUNES {
-			return outer("timezone_limit", &u.Id)
-		}
+		return NewAppError("User.IsValid", "model.user.is_valid.locale.app_error", nil, "please provide valid locale", http.StatusBadRequest)
 	}
 
 	return nil
@@ -596,7 +582,7 @@ var (
 )
 
 func (u *User) GetId() string {
-	return u.Id
+	return string(u.Id)
 }
 
 func (u *User) GetPassword() string {
@@ -722,5 +708,40 @@ func (p ModelMetadata) DeepCopy() ModelMetadata {
 	return ModelMetadata{
 		p.Metadata.DeepCopy(),
 		p.PrivateMetadata.DeepCopy(),
+	}
+}
+
+type UUID string
+
+func (UUID) ImplementsGraphQLType(name string) bool { return name == "UUID" }
+
+func (u *UUID) UnmarshalGraphQL(input any) error {
+	switch v := input.(type) {
+	case string:
+		uid, err := uuid.Parse(v)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse uuid value")
+		}
+		strUid := uid.String()
+		*u = *(*UUID)(unsafe.Pointer(&strUid))
+		return nil
+
+	case []byte:
+		uid, err := uuid.Parse(string(v))
+		if err != nil {
+			return errors.Wrap(err, "failed to parse uuid value")
+		}
+
+		strUid := uid.String()
+		*u = *(*UUID)(unsafe.Pointer(&strUid))
+		return nil
+
+	case uuid.UUID:
+		strUid := v.String()
+		*u = *(*UUID)(unsafe.Pointer(&strUid))
+		return nil
+
+	default:
+		return fmt.Errorf("unsupported uuid value type: %T", input)
 	}
 }

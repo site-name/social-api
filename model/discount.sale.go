@@ -13,7 +13,7 @@ import (
 )
 
 type Sale struct {
-	Id        string            `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	Id        UUID              `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
 	Name      string            `json:"name" gorm:"type:varchar(255);column:Name"`
 	Type      DiscountValueType `json:"type" gorm:"type:varchar(10);column:Type"` // DEFAULT `fixed`
 	StartDate time.Time         `json:"start_date" gorm:"column:StartDate"`
@@ -35,23 +35,23 @@ func (c *Sale) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid(
 func (c *Sale) TableName() string             { return SaleTableName }
 
 type SaleCollection struct {
-	SaleID       string
-	CollectionID string
+	SaleID       UUID
+	CollectionID UUID
 }
 
 type SaleProduct struct {
-	SaleID    string
-	ProductID string
+	SaleID    UUID
+	ProductID UUID
 }
 
 type SaleCategory struct {
-	SaleID     string
-	CategoryID string
+	SaleID     UUID
+	CategoryID UUID
 }
 
 type SaleProductVariant struct {
-	SaleID           string
-	ProductVariantID string
+	SaleID           UUID
+	ProductVariantID UUID
 }
 
 // SaleFilterOption can be used to
@@ -69,8 +69,8 @@ type SaleFilterOption struct {
 
 type Sales []*Sale
 
-func (s Sales) IDs() []string {
-	return lo.Map(s, func(sa *Sale, _ int) string { return sa.Id })
+func (s Sales) IDs() []UUID {
+	return lo.Map(s, func(sa *Sale, _ int) UUID { return sa.Id })
 }
 
 func (s *Sale) String() string {
@@ -105,10 +105,10 @@ func (s *Sale) commonPre() {
 }
 
 type SaleTranslation struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	LanguageCode string `json:"language_code" gorm:"type:varchar(5);column:LanguageCode"`
 	Name         string `json:"name" gorm:"type:varchar(255);column:Name"`
-	SaleID       string `json:"sale_id" gorm:"type:uuid;column:SaleID"`
+	SaleID       UUID   `json:"sale_id" gorm:"type:uuid;column:SaleID"`
 }
 
 func (s *SaleTranslation) commonPre() {

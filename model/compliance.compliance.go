@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"gorm.io/gorm"
@@ -18,9 +19,9 @@ const (
 )
 
 type Compliance struct {
-	Id       string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id       UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	UserId   string `json:"user_id" gorm:"type:uuid;column:UserId"`
+	UserId   UUID   `json:"user_id" gorm:"type:uuid;column:UserId"`
 	Status   string `json:"status" gorm:"type:varchar(64);column:Status"`
 	Count    int    `json:"count" gorm:"column:Count"`
 	Desc     string `json:"desc" gorm:"type:varchar(512);column:Desc"`
@@ -73,28 +74,23 @@ func (c *Compliance) JobName() string {
 		jobName += "-" + c.Desc
 	}
 
-	jobName += "-" + c.Id
+	jobName += "-" + string(c.Id)
 
 	return jobName
 }
 
 func (c *Compliance) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.compliance.is_valid.%s.app_error",
-		"compliance_id=",
-		"Compliance.IsValid",
-	)
 	if c.Desc == "" {
-		return outer("desc", &c.Id)
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.desc.app_error", nil, "please provide valid desc", http.StatusBadRequest)
 	}
 	if c.StartAt == 0 {
-		return outer("start_at", &c.Id)
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.start_at.app_error", nil, "please provide valid start at", http.StatusBadRequest)
 	}
 	if c.EndAt == 0 {
-		return outer("end_at", &c.Id)
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.end_at.app_error", nil, "please provide valid end at", http.StatusBadRequest)
 	}
 	if c.EndAt <= c.StartAt {
-		return outer("start_end_at", &c.Id)
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.start_end_at.app_error", nil, "start_at must <= end_at", http.StatusBadRequest)
 	}
 
 	return nil

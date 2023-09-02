@@ -172,7 +172,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 			return nil, err
 		}
 
-		var attributeValueMap = map[string]model.AttributeValues{} // keys are attribute ids
+		var attributeValueMap = map[model.UUID]model.AttributeValues{} // keys are attribute ids
 		for _, value := range attributeValues {
 			attributeValueMap[value.AttributeID] = append(attributeValueMap[value.AttributeID], value)
 		}

@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
 
 type InvoiceEventType string
 
@@ -27,12 +31,12 @@ var InVoiceEventTypeString = map[InvoiceEventType]string{
 
 // Model used to store events that happened during the invoice lifecycle.
 type InvoiceEvent struct {
-	Id        string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id        UUID             `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt  int64            `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 	Type      InvoiceEventType `json:"type" gorm:"type:varchar(255);column:Type"`
-	InvoiceID *string          `json:"invoice_id" gorm:"type:uuid;column:InvoiceID"`
-	OrderID   *string          `json:"order_id" gorm:"type:uuid;column:OrderID"`
-	UserID    *string          `json:"user_id" gorm:"type:uuid;column:UserID"`
+	InvoiceID *UUID            `json:"invoice_id" gorm:"type:uuid;column:InvoiceID"`
+	OrderID   *UUID            `json:"order_id" gorm:"type:uuid;column:OrderID"`
+	UserID    *UUID            `json:"user_id" gorm:"type:uuid;column:UserID"`
 	// if provided, it should contains below keys:
 	//  "number", "url", "invoice_id"
 	Parameters StringMap `json:"parameters" gorm:"type:jsonb;column:Parameters"`
@@ -54,23 +58,17 @@ type InvoiceEventCreationOptions struct {
 }
 
 func (i *InvoiceEvent) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.invoice_event.is_valid.%s.app_error",
-		"invoice_event_id=",
-		"InvoiceEvent.IsValid",
-	)
-
 	if !i.Type.IsValid() {
-		return outer("type", &i.Id)
+		return NewAppError("InvoiceEvent.IsValid", "model.invoice_event.is_valid.type.app_error", nil, "please provide valid invoice event type", http.StatusBadRequest)
 	}
 	if i.UserID != nil && !IsValidId(*i.UserID) {
-		return outer("user_id", &i.Id)
+		return NewAppError("InvoiceEvent.IsValid", "model.invoice_event.is_valid.user_id.app_error", nil, "please provide valid invoice event user id", http.StatusBadRequest)
 	}
 	if i.OrderID != nil && !IsValidId(*i.OrderID) {
-		return outer("order_id", &i.Id)
+		return NewAppError("InvoiceEvent.IsValid", "model.invoice_event.is_valid.order_id.app_error", nil, "please provide valid invoice event order id", http.StatusBadRequest)
 	}
 	if i.InvoiceID != nil && !IsValidId(*i.InvoiceID) {
-		return outer("invoice_id", &i.Id)
+		return NewAppError("InvoiceEvent.IsValid", "model.invoice_event.is_valid.invoice_id.app_error", nil, "please provide valid invoice event invoice id", http.StatusBadRequest)
 	}
 
 	return nil

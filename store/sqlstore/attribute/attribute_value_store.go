@@ -37,7 +37,7 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 	err := as.GetMaster().Save(av).Error
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", "attributevalues_slug_attributeid_key"}) {
-			return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
+			return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+string(av.AttributeID))
 		}
 		return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", av.Id)
 	}
@@ -139,7 +139,7 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorm.DB, values model.
 		err := transaction.Save(value).Error
 		if err != nil {
 			if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(model.AttributeValueTableName) + "_slug_attributeid_key"}) {
-				return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", value.Slug+"/"+value.AttributeID)
+				return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", value.Slug+"/"+string(value.AttributeID))
 			}
 			return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", value.Id)
 		}

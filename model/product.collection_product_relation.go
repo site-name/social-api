@@ -8,9 +8,9 @@ import (
 )
 
 type CollectionProduct struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CollectionID string `json:"collection_id" gorm:"type:uuid;column:CollectionID"`
-	ProductID    string `json:"product_id" gorm:"type:uuid;column:ProductID"`
+	Id           UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CollectionID UUID `json:"collection_id" gorm:"type:uuid;column:CollectionID"`
+	ProductID    UUID `json:"product_id" gorm:"type:uuid;column:ProductID"`
 	Sortable
 
 	collection *Collection `gorm:"-"` // get populated if CollectionProductFilterOptions.SelectRelatedCollection is true

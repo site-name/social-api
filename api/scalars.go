@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -92,6 +94,26 @@ type Date struct {
 
 func (Date) ImplementsGraphQLType(name string) bool {
 	return name == "Date"
+}
+
+type WeightScalar struct {
+	Unit  measurement.WeightUnit `json:"unit"`
+	Value float64                `json:"value"`
+}
+
+func (WeightScalar) ImplementsGraphQLType(name string) bool { return name == "WeightScalar" }
+
+// input should
+func (w *WeightScalar) UnmarshalGraphQL(input any) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(v, w)
+	case string:
+		return json.Unmarshal([]byte(v), w)
+
+	default:
+		return fmt.Errorf("unsupported weight scalar type: %T", input)
+	}
 }
 
 // DateTime implementes custom graphql scalar DateTime

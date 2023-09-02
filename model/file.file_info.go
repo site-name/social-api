@@ -14,11 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	FILEINFO_SORT_BY_CREATED = "CreateAt"
-	FILEINFO_SORT_BY_SIZE    = "Size"
-)
-
 // GetFileInfosOptions contains options for getting FileInfos
 type GetFileInfosOptions struct {
 	Conditions squirrel.Sqlizer
@@ -34,9 +29,9 @@ type FileForIndexing struct {
 }
 
 type FileInfo struct {
-	Id              string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CreatorId       string  `json:"user_id" gorm:"type:uuid;column:CreatorId"`
-	ParentID        string  `json:"parent_id,omitempty" gorm:"type:uuid;column:ParentID"` // can be a product's id, comment's id
+	Id              UUID    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreatorId       UUID    `json:"user_id" gorm:"type:uuid;column:CreatorId"`
+	ParentID        UUID    `json:"parent_id,omitempty" gorm:"type:uuid;column:ParentID"` // can be a product's id, comment's id
 	CreateAt        int64   `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	UpdateAt        int64   `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoUpdateTime:milli"`
 	DeleteAt        int64   `json:"delete_at" gorm:"type:bigint;column:DeleteAt"`
@@ -96,20 +91,14 @@ func (f FileInfos) DeepCopy() FileInfos {
 }
 
 func (fi *FileInfo) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.file_info.is_valid.%s.app_error",
-		"file_info_id=",
-		"FileInfo.IsValid",
-	)
-
 	if !IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
-		return outer("creator_id", &fi.Id)
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.creator_id.app_error", nil, "please provide valid creator id", http.StatusBadRequest)
 	}
 	if fi.ParentID != "" && !IsValidId(fi.ParentID) {
-		return outer("product_id", &fi.Id)
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.parent_id.app_error", nil, "please provide valid parent id", http.StatusBadRequest)
 	}
 	if fi.Path == "" {
-		return outer("path", &fi.Id)
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.path.app_error", nil, "please provide valid path", http.StatusBadRequest)
 	}
 
 	return nil

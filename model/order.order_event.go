@@ -103,10 +103,10 @@ var OrderEventTypeStrings = map[OrderEventType]string{
 
 // Model used to store events that happened during the order lifecycle.
 type OrderEvent struct {
-	Id       string         `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id       UUID           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt int64          `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	Type     OrderEventType `json:"type" gorm:"type:varchar(255);column:Type"`
-	OrderID  string         `json:"order_id" gorm:"type:uuid;column:OrderID"`
+	OrderID  UUID           `json:"order_id" gorm:"type:uuid;column:OrderID"`
 	// To reduce number of type assertion steps, below are
 	// possible keys and their according values TYPES you must follow when storing things into this field:
 	//  "email": string
@@ -156,7 +156,7 @@ type OrderEvent struct {
 	//    "old_amount_value": float64,
 	//  }
 	Parameters StringInterface `json:"parameters" gorm:"type:jsonb;column:Parameters"`
-	UserID     *string         `json:"user_id" gorm:"type:uuid;column:UserID"`
+	UserID     *UUID           `json:"user_id" gorm:"type:uuid;column:UserID"`
 }
 
 func (c *OrderEvent) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
@@ -221,6 +221,9 @@ type OrderEventOption struct {
 
 type OrderEventFilterOptions struct {
 	Conditions squirrel.Sqlizer
+
+	CountTotal              bool
+	GraphqlPaginationValues GraphqlPaginationValues
 }
 
 func (o *OrderEvent) IsValid() *AppError {

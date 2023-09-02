@@ -7,9 +7,9 @@ import (
 )
 
 type Audit struct {
-	Id        string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id        UUID   `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt  int64  `json:"create_at" gorm:"type:bigint;default:autoCreateTime:milli;column:CreateAt"`
-	UserId    string `json:"user_id" gorm:"type:uuid;column:UserId"`
+	UserId    UUID   `json:"user_id" gorm:"type:uuid;column:UserId"`
 	Action    string `json:"action" gorm:"type:varchar(512);column:Action"`         // varchar(512)
 	ExtraInfo string `json:"extra_info" gorm:"type:varchar(1024);column:ExtraInfo"` // varchar(1024)
 	IpAddress string `json:"ip_address" gorm:"type:varchar(64);column:IpAddress"`   // varchar(64)

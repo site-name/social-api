@@ -97,7 +97,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 		}
 
 		// orderLinesMap has keys are order line ids
-		var orderLinesMap = map[string]*model.OrderLine{}
+		var orderLinesMap = map[model.UUID]*model.OrderLine{}
 		for _, line := range orderLines {
 			orderLinesMap[line.Id] = line
 		}
@@ -112,7 +112,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 			}
 
 			// productVariantsMap has keys are product variants ids
-			var productVariantsMap = map[string]*model.ProductVariant{}
+			var productVariantsMap = map[model.UUID]*model.ProductVariant{}
 			for _, variant := range productVariants {
 				productVariantsMap[variant.Id] = variant
 			}
