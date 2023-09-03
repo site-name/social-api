@@ -32,7 +32,7 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscount *mo
 func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
 	var res model.OrderDiscount
 
-	err := ods.GetReplica().First(&res, "WHERE Id = ?", orderDiscountID).Error
+	err := ods.GetReplica().First(&res, "Id = ?", orderDiscountID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderDiscountTableName, orderDiscountID)
@@ -45,8 +45,13 @@ func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDisco
 
 // FilterbyOption filters order discounts that satisfy given option, then returns them
 func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
+	db := ods.GetReplica()
+	if option.PreloadOrder {
+		db = db.Preload("Order")
+	}
+
 	var res []*model.OrderDiscount
-	err := ods.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err := db.Find(&res, store.BuildSqlizer(option.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order discounts with given option")
 	}

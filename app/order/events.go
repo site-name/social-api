@@ -55,7 +55,7 @@ func (s *ServiceOrder) LinesPerQuantityToLineObjectList(quantitiesPerOrderLine [
 	})
 }
 
-func prepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) model.StringInterface {
+func (s *ServiceOrder) PrepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) model.StringInterface {
 	discountParameters := model.StringInterface{
 		"value":        orderDiscount.Value,
 		"amount_value": orderDiscount.AmountValue,
@@ -107,7 +107,7 @@ func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.
 		userID = model.NewPrimitive(user.Id)
 	}
 
-	discountParameters := prepareDiscountObject(orderDiscount, oldOrderDiscount)
+	discountParameters := a.PrepareDiscountObject(orderDiscount, oldOrderDiscount)
 
 	return a.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID:    ord.Id,
@@ -127,12 +127,9 @@ func getPaymentData(amount *decimal.Decimal, payMent model.Payment) map[string]i
 
 func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError) {
 	var userID *string
-	if user == nil || !model.IsValidId(user.Id) {
-		userID = nil
-	} else {
-		userID = model.NewPrimitive(user.Id)
+	if user != nil || model.IsValidId(user.Id) {
+		userID = &user.Id
 	}
-
 	discountParameters := map[string]interface{}{
 		"value":        line.UnitDiscountValue,
 		"amount_value": line.UnitDiscountAmount,

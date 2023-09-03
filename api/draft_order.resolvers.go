@@ -95,6 +95,14 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 			var channelSlug string
 			if savedOrder.Channel != nil {
 				channelSlug = savedOrder.Channel.Slug
+			} else {
+				channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
+					Conditions: squirrel.Expr(model.ChannelTableName+".Id = ?", savedOrder.ChannelID),
+				})
+				if appErr != nil {
+					return nil, appErr
+				}
+				channelSlug = channel.Slug
 			}
 
 			inSufStockErr, appErr := embedCtx.App.Srv().WarehouseService().AllocateStocks(model.OrderLineDatas{lineData}, country, channelSlug, pluginMng, model.StringInterface{})

@@ -18,8 +18,8 @@ type ProductVariantChannelListing struct {
 	VariantID                 string           `json:"variant_id" gorm:"type:uuid;column:VariantID"` // not null
 	ChannelID                 string           `json:"channel_id" gorm:"type:uuid;column:ChannelID"` // not null
 	Currency                  string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
-	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty" gorm:"column:PriceAmount"` // can be NULL
-	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount" gorm:"column:CostPriceAmount"`  // can be NULL
+	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty" gorm:"column:PriceAmount;type:decimal(12,3)"` // can be NULL
+	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount" gorm:"column:CostPriceAmount;type:decimal(12,3)"`  // can be NULL
 	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold" gorm:"column:PreorderQuantityThreshold"`
 	CreateAt                  int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 
@@ -113,19 +113,6 @@ func (p *ProductVariantChannelListing) IsValid() *AppError {
 	}
 	if unit, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(unit.String(), p.Currency) {
 		return NewAppError("ProductVariantChannelListing.IsValid", "model.product_variant_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
-	}
-
-	for _, deci := range []struct {
-		name  string
-		value *decimal.Decimal
-	}{
-		{"CostPriceAmount", p.CostPriceAmount},
-		{"PriceAmount", p.PriceAmount},
-	} {
-		err := ValidateDecimal("ProductVariantChannelListing.IsValid."+deci.name, deci.value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

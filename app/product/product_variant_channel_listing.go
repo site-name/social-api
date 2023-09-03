@@ -47,7 +47,7 @@ func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string,
 				model.ProductVariantChannelListingTableName + ".VariantID": variantIds,
 				model.ProductVariantChannelListingTableName + ".ChannelID": channelId,
 			},
-			squirrel.Expr(model.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NUL"),
+			squirrel.Expr(model.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NULL"),
 		},
 	})
 	if appErr != nil {

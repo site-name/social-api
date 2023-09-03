@@ -34,14 +34,15 @@ type OrderDiscount struct {
 	OrderID        *string           `json:"order_id" gorm:"type:uuid;column:OrderID"`
 	Type           OrderDiscountType `json:"type" gorm:"type:varchar(10);column:Type"`
 	ValueType      DiscountValueType `json:"value_type" gorm:"type:varchar(10);column:ValueType"`
-	Value          *decimal.Decimal  `json:"value" gorm:"default:0;column:Value"`              // default 0
-	AmountValue    *decimal.Decimal  `json:"amount_value" gorm:"default:0;column:AmountValue"` // default 0
+	Value          *decimal.Decimal  `json:"value" gorm:"default:0;column:Value;type:decimal(12,3)"`              // default 0
+	AmountValue    *decimal.Decimal  `json:"amount_value" gorm:"default:0;column:AmountValue;type:decimal(12,3)"` // default 0
 	Currency       string            `json:"currency" gorm:"type:varchar(3);column:Currency"`
 	Name           *string           `json:"name" gorm:"type:varchar(255);column:Name"`
 	TranslatedName *string           `json:"translated_name" gorm:"type:varchar(255);column:TranslatedName"`
 	Reason         *string           `json:"reason" gorm:"column:Reason"`
 
-	Amount *goprices.Money `json:"amount,omitempty" gorm:"-"`
+	Amount *goprices.Money `json:"-" gorm:"-"`
+	Order  *Order          `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 }
 
 func (c *OrderDiscount) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -49,7 +50,8 @@ func (c *OrderDiscount) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c
 func (c *OrderDiscount) TableName() string             { return OrderDiscountTableName }
 
 type OrderDiscountFilterOption struct {
-	Conditions squirrel.Sqlizer
+	Conditions   squirrel.Sqlizer
+	PreloadOrder bool // if true, you can access .Order field of returned OrderDiscount(s)
 }
 
 type OrderDiscounts []*OrderDiscount
@@ -84,12 +86,6 @@ func (o *OrderDiscount) IsValid() *AppError {
 	if unit, err := currency.ParseISO(o.Currency); err != nil ||
 		!strings.EqualFold(unit.String(), o.Currency) {
 		return NewAppError("OrderDiscount.IsValid", "model.order_discount.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
-	}
-	if err := ValidateDecimal("OrderDiscount.IsValid.Value", o.Value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
-		return err
-	}
-	if err := ValidateDecimal("OrderDiscount.IsValid.AmountValue", o.AmountValue, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
-		return err
 	}
 
 	return nil

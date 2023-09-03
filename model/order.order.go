@@ -12,17 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// max lengths for some fields of order model
-const (
-	ORDER_STATUS_MAX_LENGTH                = 32
-	ORDER_TRACKING_CLIENT_ID_MAX_LENGTH    = 36
-	ORDER_ORIGIN_MAX_LENGTH                = 32
-	ORDER_SHIPPING_METHOD_NAME_MAX_LENGTH  = 255
-	ORDER_TOKEN_MAX_LENGTH                 = 36
-	ORDER_CHECKOUT_TOKEN_MAX_LENGTH        = 36
-	ORDER_COLLECTION_POINT_NAME_MAX_LENGTH = 255
-)
-
 // order's Origin field type. Can be either "checkout", "draft" or "reissue"
 type OrderOrigin string
 
@@ -85,8 +74,8 @@ type Order struct {
 	Currency            string                 `json:"currency" gorm:"type:varchar(3);column:Currency"`
 	ShippingMethodID    *string                `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID"`
 	CollectionPointID   *string                `json:"collection_point_id" gorm:"type:uuid;column:CollectionPointID"`             // foreign key warehosue
-	ShippingMethodName  *string                `json:"shipping_method_name" gorm:"type:varchar(255);column:ShippingMethodName"`   // NUL, NOT editable
-	CollectionPointName *string                `json:"collection_point_name" gorm:"type:varchar(255);column:CollectionPointName"` // NUL, NOT editable
+	ShippingMethodName  *string                `json:"shipping_method_name" gorm:"type:varchar(255);column:ShippingMethodName"`   // NULL, NOT editable
+	CollectionPointName *string                `json:"collection_point_name" gorm:"type:varchar(255);column:CollectionPointName"` // NULL, NOT editable
 	ChannelID           string                 `json:"channel_id" gorm:"type:uuid;column:ChannelID"`                              //
 	Token               string                 `json:"token" gorm:"type:varchar(36);column:Token;uniqueIndex:token_unique_key"`   // unique
 	CheckoutToken       string                 `json:"checkout_token" gorm:"type:varchar(36);column:CheckoutToken"`               //
@@ -96,26 +85,26 @@ type Order struct {
 	WeightAmount        float32                `json:"weight_amount" gorm:"default:0;column:WeightAmount"`
 	WeightUnit          measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit;type:varchar(5)"` // default 'kg'
 	RedirectUrl         *string                `json:"redirect_url" gorm:"type:varchar(200);column:RedirectUrl"`
-	ShippingTaxRate     *decimal.Decimal       `json:"shipping_tax_rate" gorm:"default:0;column:ShippingTaxRate"` // default Decimal(0)
+	ShippingTaxRate     *decimal.Decimal       `json:"shipping_tax_rate" gorm:"default:0;column:ShippingTaxRate;type:decimal(5, 4)"` // default Decimal(0)
 
-	TotalPaidAmount *decimal.Decimal `json:"total_paid_amount" gorm:"default:0;column:TotalPaidAmount"`
+	TotalPaidAmount *decimal.Decimal `json:"total_paid_amount" gorm:"default:0;column:TotalPaidAmount;type:decimal(12,3)"`
 	TotalPaid       *goprices.Money  `json:"total_paid" gorm:"-"`
 
-	TotalNetAmount   *decimal.Decimal     `json:"total_net_amount" gorm:"default:0;column:TotalNetAmount"` // default Decimal(0)
+	TotalNetAmount   *decimal.Decimal     `json:"total_net_amount" gorm:"default:0;column:TotalNetAmount;type:decimal(12,3)"` // default Decimal(0)
 	TotalNet         *goprices.Money      `json:"total_net" gorm:"-"`
-	TotalGrossAmount *decimal.Decimal     `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount"`
+	TotalGrossAmount *decimal.Decimal     `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount;type:decimal(12,3)"`
 	TotalGross       *goprices.Money      `json:"total_gross" gorm:"-"`
 	Total            *goprices.TaxedMoney `json:"total" gorm:"-"` // from TotalNet, TotalGross
 
-	UnDiscountedTotalNetAmount   *decimal.Decimal     `json:"undiscounted_total_net_amount" gorm:"default:0;column:UnDiscountedTotalNetAmount"`
+	UnDiscountedTotalNetAmount   *decimal.Decimal     `json:"undiscounted_total_net_amount" gorm:"default:0;column:UnDiscountedTotalNetAmount;type:decimal(12,3)"`
 	UnDiscountedTotalNet         *goprices.Money      `json:"undiscounted_total_net" gorm:"-"`
-	UnDiscountedTotalGrossAmount *decimal.Decimal     `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount"`
+	UnDiscountedTotalGrossAmount *decimal.Decimal     `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount;type:decimal(12,3)"`
 	UnDiscountedTotalGross       *goprices.Money      `json:"undiscounted_total_gross" gorm:"-"`
 	UnDiscountedTotal            *goprices.TaxedMoney `json:"undiscounted_total" gorm:"-"` // from UnDiscountedTotalNet, UnDiscountedTotalGross
 
-	ShippingPriceNetAmount   *decimal.Decimal     `json:"shipping_price_net_amount" gorm:"default:0;column:ShippingPriceNetAmount"` // NOT editable, default Zero
+	ShippingPriceNetAmount   *decimal.Decimal     `json:"shipping_price_net_amount" gorm:"default:0;column:ShippingPriceNetAmount;type:decimal(12,3)"` // NOT editable, default Zero
 	ShippingPriceNet         *goprices.Money      `json:"shipping_price_net" gorm:"-"`
-	ShippingPriceGrossAmount *decimal.Decimal     `json:"shipping_price_gross_amount" gorm:"default:0;column:ShippingPriceGrossAmount"` // NOT editable
+	ShippingPriceGrossAmount *decimal.Decimal     `json:"shipping_price_gross_amount" gorm:"default:0;column:ShippingPriceGrossAmount;type:decimal(12,3)"` // NOT editable
 	ShippingPriceGross       *goprices.Money      `json:"shipping_price_gross" gorm:"-"`
 	ShippingPrice            *goprices.TaxedMoney `json:"shipping_price" gorm:"-"` // from ShippingPriceNet, ShippingPriceGross
 
@@ -124,8 +113,8 @@ type Order struct {
 	ModelMetadata
 	GiftCards            []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
 	OrderLines           OrderLines  `json:"-" gorm:"foreignKey:OrderID"`
-	Channel              *Channel    `json:"-"`
 	populatedNonDBFields bool        `gorm:"-"`
+	Channel              *Channel    `json:"-"`
 }
 
 func (c *Order) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -243,26 +232,6 @@ func (o *Order) IsValid() *AppError {
 	}
 	if o.RedirectUrl != nil && !IsValidHTTPURL(*o.RedirectUrl) {
 		return outer("redirect_url", &o.Id)
-	}
-
-	for _, deci := range []struct {
-		field string
-		value *decimal.Decimal
-	}{
-		{"ShippingPriceNetAmount", o.ShippingPriceNetAmount},
-		{"ShippingPriceGrossAmount", o.ShippingPriceGrossAmount},
-		{"TotalNetAmount", o.TotalNetAmount},
-		{"UnDiscountedTotalNetAmount", o.UnDiscountedTotalNetAmount},
-		{"TotalGrossAmount", o.TotalGrossAmount},
-		{"UnDiscountedTotalGrossAmount", o.UnDiscountedTotalGrossAmount},
-		{"TotalPaidAmount", o.TotalPaidAmount},
-	} {
-		if err := ValidateDecimal("Order.IsValid."+deci.field, deci.value, 12, 3); err != nil {
-			return err
-		}
-	}
-	if err := ValidateDecimal("Order.IsValid.ShippingTaxRate", o.ShippingTaxRate, 5, 4); err != nil {
-		return err
 	}
 
 	return nil

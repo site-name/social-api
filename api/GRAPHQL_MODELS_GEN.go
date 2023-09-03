@@ -2760,6 +2760,16 @@ type OrderLineCreateInput struct {
 	VariantID string `json:"variantId"`
 }
 
+func (o *OrderLineCreateInput) validate(where string) *model.AppError {
+	if !model.IsValidId(o.VariantID) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantID"}, "please provide valid variant id", http.StatusBadRequest)
+	}
+	if o.Quantity <= 0 {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, "quantity must be greater than 0", http.StatusBadRequest)
+	}
+	return nil
+}
+
 type OrderLineDelete struct {
 	Order     *Order        `json:"order"`
 	OrderLine *OrderLine    `json:"orderLine"`

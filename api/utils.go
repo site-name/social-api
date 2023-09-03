@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -25,7 +26,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-//go:embed graphql-schema
+//go:embed graphql/schemas
 var assets embed.FS
 
 // stringsContainSqlExpr is used to validate strings values contain sql statements or not
@@ -42,15 +43,17 @@ const WebCtx CTXKey = iota
 
 // constructSchema constructs schema from *.graphql(s) files
 func constructSchema() (string, error) {
-	entries, err := assets.ReadDir("schemas")
+	entries, err := assets.ReadDir("graphql/schemas")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to read schema dir")
 	}
 
 	var builder strings.Builder
 	for _, entry := range entries {
-		if !entry.IsDir() && strings.Contains(entry.Name(), ".graphql") {
-			data, err := assets.ReadFile(filepath.Join("schemas", entry.Name()))
+		extname := path.Ext(entry.Name())
+
+		if !entry.IsDir() && (extname == ".graphql" || extname == ".graphqls") {
+			data, err := assets.ReadFile(filepath.Join("graphql/schemas", entry.Name()))
 			if err != nil {
 				return "", errors.Wrapf(err, "failed to read schema file: %s", filepath.Join("schemas", entry.Name()))
 			}

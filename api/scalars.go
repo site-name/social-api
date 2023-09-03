@@ -39,6 +39,10 @@ func (PositiveDecimal) ImplementsGraphQLType(name string) bool {
 	return name == "PositiveDecimal"
 }
 
+func (p *PositiveDecimal) IsZero() bool {
+	return decimal.Zero.Equal(decimal.Decimal(*p))
+}
+
 func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
 	if input == nil {
 		return errors.New("input can't be nil")

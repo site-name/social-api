@@ -60,11 +60,11 @@ type Payment struct {
 	UpdateAt           int64               `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
 	ChargeStatus       PaymentChargeStatus `json:"charge_status" gorm:"type:varchar(20);column:ChargeStatus;index:chargestatus_key"` // default 'not_charged'
 	Token              string              `json:"token" gorm:"type:varchar(512);column:Token"`
-	Total              *decimal.Decimal    `json:"total" gorm:"default:0;column:Total"`                        // DEFAULT decimal(0)
-	CapturedAmount     *decimal.Decimal    `json:"captured_amount" gorm:"default:0;column:CapturedAmount"`     // DEFAULT decimal(0)
-	Currency           string              `json:"currency" gorm:"type:varchar(5);column:Currency"`            // default 'USD'
-	CheckoutID         *string             `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`             // foreign key to checkout
-	OrderID            *string             `json:"order_id" gorm:"type:uuid;column:OrderID;index:orderid_key"` // foreign key to order
+	Total              *decimal.Decimal    `json:"total" gorm:"default:0;column:Total;type:decimal(12,3)"`                    // DEFAULT decimal(0)
+	CapturedAmount     *decimal.Decimal    `json:"captured_amount" gorm:"default:0;column:CapturedAmount;type:decimal(12,3)"` // DEFAULT decimal(0)
+	Currency           string              `json:"currency" gorm:"type:varchar(5);column:Currency"`                           // default 'USD'
+	CheckoutID         *string             `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`                            // foreign key to checkout
+	OrderID            *string             `json:"order_id" gorm:"type:uuid;column:OrderID;index:orderid_key"`                // foreign key to order
 	BillingEmail       string              `json:"billing_email" gorm:"type:varchar(128);column:BillingEmail"`
 	BillingFirstName   string              `json:"billing_first_name" gorm:"type:varchar(256);column:BillingFirstName"`
 	BillingLastName    string              `json:"billing_last_name" gorm:"type:varchar(256);column:BillingLastName"`
@@ -219,19 +219,6 @@ func (p *Payment) IsValid() *AppError {
 	}
 	if !p.StorePaymentMethod.IsValid() {
 		return outer("store_payment_method", &p.Id)
-	}
-
-	for _, deci := range []struct {
-		name  string
-		value *decimal.Decimal
-	}{
-		{"CapturedAmount", p.CapturedAmount},
-		{"Total", p.Total},
-	} {
-		err := ValidateDecimal("Product.IsValid."+deci.name, deci.value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

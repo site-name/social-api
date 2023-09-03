@@ -68,7 +68,7 @@ type OrderService interface {
 	// DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
 	DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) *model.AppError
 	// DeleteOrderLine Delete an order line from an order.
-	DeleteOrderLine(lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
+	DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// DeleteOrderLines perform bulk delete given order lines
 	DeleteOrderLines(orderLineIDs []string) *model.AppError
 	// FilterOrdersByOptions is common method for filtering orders by given option
@@ -253,7 +253,7 @@ type OrderService interface {
 	// NOTE: `kwargs` can be nil
 	RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model.AppError
 	// RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
-	RemoveDiscountFromOrderLine(orderLine model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	RemoveDiscountFromOrderLine(transaction *gorm.DB,orderLine model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
 	RemoveOrderDiscountFromOrder(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount) *model.AppError
 	// RestockFulfillmentLines Return fulfilled products to corresponding stocks.
@@ -275,7 +275,7 @@ type OrderService interface {
 	// UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 	//
 	// `reason`, `valueType` can be empty. `value` can be nil
-	UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateDiscountForOrderLine(tx *gorm.DB, orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountValueType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 	//
 	// `reason`, `valueType` and `value` can be nil
@@ -334,4 +334,5 @@ type OrderService interface {
 	ValidateProductIsPublishedInChannel(variants model.ProductVariants, channelID string) *model.AppError
 	LinesPerQuantityToLineObjectList(quantitiesPerOrderLine []*model.QuantityOrderLine) []model.StringInterface
 	LinePerQuantityToLineObject(quantity int, line *model.OrderLine) model.StringInterface
+	PrepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) model.StringInterface
 }

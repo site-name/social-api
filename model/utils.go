@@ -917,23 +917,3 @@ const (
 	DESC OrderDirection = "DESC"
 	ASC  OrderDirection = "ASC"
 )
-
-func ValidateDecimal(where string, value *decimal.Decimal, maxDigits, numOfDecimalPlaces int) *AppError {
-	if value == nil {
-		return nil
-	}
-
-	strDecimal := value.String()
-	if len(strDecimal)-1 > maxDigits { // 12.345 remove dot (.)
-		return NewAppError(where, "app.validate_decimal.max_digits.app_error", nil, fmt.Sprintf("number of digits (%d) exceeds %d", len(strDecimal)-1, maxDigits), http.StatusBadRequest)
-	}
-
-	splitDecimal := strings.Split(strDecimal, ".")
-	if len(splitDecimal) == 2 {
-		if len(splitDecimal[1]) > numOfDecimalPlaces {
-			return NewAppError(where, "app.validate_decimal.decimal_places.app_error", nil, fmt.Sprintf("number of decimal places (%d) exceeds %d", len(splitDecimal[1]), numOfDecimalPlaces), http.StatusBadRequest)
-		}
-	}
-
-	return nil
-}

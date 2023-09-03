@@ -21,7 +21,7 @@ type ProductChannelListing struct {
 	VisibleInListings     bool             `json:"visible_in_listings" gorm:"column:VisibleInListings"`
 	AvailableForPurchase  *time.Time       `json:"available_for_purchase" gorm:"column:AvailableForPurchase"` // precision to date. E.g 2021-09-08
 	Currency              string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
-	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount" gorm:"column:DiscountedPriceAmount"` // can be NULL
+	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount" gorm:"column:DiscountedPriceAmount;type:decimal(12,3)"` // can be NULL
 	CreateAt              uint64           `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
 	Publishable
 
@@ -62,9 +62,6 @@ func (p *ProductChannelListing) IsValid() *AppError {
 	}
 	if un, err := currency.ParseISO(p.Currency); !strings.EqualFold(un.String(), p.Currency) || err != nil {
 		return NewAppError("ProductChannelListing.IsValid", "model.product_channel_listing.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
-	}
-	if err := ValidateDecimal("ProductChannelListing.IsValid", p.DiscountedPriceAmount, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
-		return err
 	}
 	return nil
 }

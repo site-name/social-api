@@ -31,7 +31,7 @@ type ServiceOrder struct {
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc {
-	return func(transaction *gorm.DB, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
+	return func(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]interface{})
 		}
@@ -52,19 +52,19 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 		}
 
 		if calculateDiscount {
-			discount, notApplicableErr, appErr = a.GetVoucherDiscountForOrder(ord)
+			discount, notApplicableErr, appErr = a.GetVoucherDiscountForOrder(order)
 			if appErr != nil {
 				return appErr
 			}
 			if notApplicableErr != nil {
-				discount, _ = util.ZeroMoney(ord.Currency)
+				discount, _ = util.ZeroMoney(order.Currency)
 			}
 		}
 
 		// set discount
 		kwargs["discount"] = discount
 
-		return fun(transaction, ord, kwargs)
+		return fun(transaction, order, kwargs)
 	}
 }
 

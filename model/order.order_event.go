@@ -166,6 +166,8 @@ func (c *OrderEvent) TableName() string             { return OrderEventTableName
 // OrderEventOption contains parameters to create new order event instance
 type OrderEventOption struct {
 	OrderID string
+	Type    OrderEventType
+	UserID  *string
 	// To reduce number of type assertion steps, below are
 	// possible keys and their according values TYPES you must follow when storing things into this field:
 	//  "email": string
@@ -215,8 +217,6 @@ type OrderEventOption struct {
 	//    "old_amount_value": float64,
 	//  }
 	Parameters StringInterface
-	Type       OrderEventType
-	UserID     *string
 }
 
 type OrderEventFilterOptions struct {

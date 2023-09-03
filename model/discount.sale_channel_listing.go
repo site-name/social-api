@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -13,7 +14,7 @@ type SaleChannelListing struct {
 	Id            string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	SaleID        string           `json:"sale_id" gorm:"type:uuid;column:SaleID"`
 	ChannelID     string           `json:"channel_id" gorm:"type:uuid;column:ChannelID"`
-	DiscountValue *decimal.Decimal `json:"discount_value" gorm:"default:0;column:DiscountValue"` // default decimal(0)
+	DiscountValue *decimal.Decimal `json:"discount_value" gorm:"default:0;column:DiscountValue;type:decimal(12,3)"` // default decimal(0)
 	Currency      string           `json:"currency" gorm:"type:varchar(3);column:Currency"`
 	CreateAt      int64            `json:"create_at" gorm:"autoCreateTime:milli;column:CreateAt"`
 
@@ -59,23 +60,14 @@ func (s *SaleChannelListing) commonPre() {
 }
 
 func (s *SaleChannelListing) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.sale_channel_listing.is_valid.%s.app_error",
-		"sale_channel_listing_id=",
-		"SaleChannelListing.IsValid",
-	)
 	if !IsValidId(s.SaleID) {
-		return outer("sale_id", &s.Id)
+		return NewAppError("SaleChannelListing.IsValid", "model.sale_channel_listing.is_valid.sale_id.app_error", nil, "please provie valid sale id", http.StatusBadRequest)
 	}
 	if !IsValidId(s.ChannelID) {
-		return outer("channel_id", &s.Id)
+		return NewAppError("SaleChannelListing.IsValid", "model.sale_channel_listing.is_valid.channel_id.app_error", nil, "please provie valid channel id", http.StatusBadRequest)
 	}
-	if unit, err := currency.ParseISO(s.Currency); err == nil || !strings.EqualFold(unit.String(), s.Currency) {
-		return outer("currency", &s.Id)
-	}
-	err := ValidateDecimal("SaleChannelListing.IsValid.DiscountValue", s.DiscountValue, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED)
-	if err != nil {
-		return err
+	if _, err := currency.ParseISO(s.Currency); err != nil {
+		return NewAppError("SaleChannelListing.IsValid", "model.sale_channel_listing.is_valid.currency.app_error", nil, "please provie valid currency", http.StatusBadRequest)
 	}
 
 	return nil

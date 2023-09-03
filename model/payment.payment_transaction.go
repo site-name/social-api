@@ -65,7 +65,7 @@ type PaymentTransaction struct {
 	ActionRequired     bool             `json:"action_required" gorm:"column:ActionRequired"`
 	ActionRequiredData StringInterface  `json:"action_required_data" gorm:"type:jsonb;column:ActionRequiredData"`
 	Currency           string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
-	Amount             *decimal.Decimal `json:"amount" gorm:"default:0;column:Amount"` // DEFAULT decimal(0)
+	Amount             *decimal.Decimal `json:"amount" gorm:"default:0;column:Amount;type:decimal(12,3)"` // DEFAULT decimal(0)
 	Error              *string          `json:"error" gorm:"type:varchar(256);column:Error"`
 	CustomerID         *string          `json:"customer_id" gorm:"type:varchar(256);column:CustomerID"`
 	GatewayResponse    StringInterface  `json:"gateway_response" gorm:"type:jsonb;column:GatewayResponse"`
@@ -106,9 +106,6 @@ func (p *PaymentTransaction) IsValid() *AppError {
 	}
 	if !p.Kind.IsValid() {
 		return NewAppError("Transaction.IsValid", "model.transaction.is_valid.kind.app_error", nil, "please provide valid kind", http.StatusBadRequest)
-	}
-	if err := ValidateDecimal("Transaction.IsValid.Amount", p.Amount, 12, 3); err != nil {
-		return err
 	}
 
 	return nil

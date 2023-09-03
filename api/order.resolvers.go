@@ -162,3 +162,17 @@ func (r *Resolver) OrdersTotal(ctx context.Context, args struct {
 func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token string }) (*Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
+	Input   OrderDiscountCommonInput
+	OrderID string
+}) (*OrderDiscountAdd, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
+	DiscountID string
+	Input      OrderDiscountCommonInput
+}) (*OrderDiscountUpdate, error) {
+	panic(fmt.Errorf("not implemented"))
+}

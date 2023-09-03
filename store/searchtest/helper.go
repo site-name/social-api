@@ -190,9 +190,7 @@ func (th *SearchTestHelper) deleteUser(user *model.User) error {
 }
 
 func (th *SearchTestHelper) cleanAllUsers() error {
-	users, err := th.Store.User().FilterByOptions(context.Background(), &model.UserFilterOptions{
-		OrderBy: "Users.Username ASC",
-	})
+	_, users, err := th.Store.User().FilterByOptions(context.Background(), &model.UserFilterOptions{})
 	if err != nil {
 		return err
 	}
