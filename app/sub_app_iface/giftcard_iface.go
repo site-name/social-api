@@ -45,7 +45,7 @@ type GiftcardService interface {
 	AddGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model.AppError
 	// relations must be []*Order || []*Checkout
 	RemoveGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model.AppError
-	DeactivateOrderGiftcards(orderID string, user *model.User, _ interface{}) *model.AppError
+	DeactivateOrderGiftcards(tx *gorm.DB, orderID string, user *model.User, _ interface{}) *model.AppError
 	DeleteGiftcards(transaction *gorm.DB, ids []string) *model.AppError
 	FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model.AppError)
 	GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface

@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"gorm.io/gorm"
 )
 
-func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError) {
+func (a *ServiceAccount) CommonCustomerCreateEvent(tx *gorm.DB, userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError) {
 	event := &model.CustomerEvent{
 		Type:       eventType,
 		Parameters: params,
@@ -14,7 +15,7 @@ func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *stri
 		UserID:     userID,
 	}
 
-	event, err := a.srv.Store.CustomerEvent().Save(event)
+	event, err := a.srv.Store.CustomerEvent().Save(tx, event)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -31,5 +32,5 @@ func (s *ServiceAccount) CustomerPlacedOrderEvent(user *model.User, orDer model.
 		return nil, nil
 	}
 
-	return s.CommonCustomerCreateEvent(&user.Id, &orDer.Id, model.CUSTOMER_EVENT_TYPE_PLACED_ORDER, nil)
+	return s.CommonCustomerCreateEvent(nil, &user.Id, &orDer.Id, model.CUSTOMER_EVENT_TYPE_PLACED_ORDER, nil)
 }

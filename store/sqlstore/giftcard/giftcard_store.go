@@ -273,9 +273,13 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 // DeactivateOrderGiftcards update giftcards
 // which have giftcard events with type == 'bought', parameters.order_id == given order id
 // by setting their IsActive attribute to false
-func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
 	giftcardIDs := []string{}
-	err := gs.GetMaster().Raw(`UPDATE `+model.GiftcardTableName+`SET
+
+	if tx == nil {
+		tx = gs.GetMaster()
+	}
+	err := tx.Raw(`UPDATE `+model.GiftcardTableName+`SET
 IsActive = false
 WHERE (
 	EXISTS (

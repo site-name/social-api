@@ -158,7 +158,7 @@ type AccountService interface {
 	CheckProviderAttributes(user *model.User, patch *model.UserPatch) string
 	CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError
 	ClearUserSessionCacheLocal(userID string)
-	CommonCustomerCreateEvent(userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError)
+	CommonCustomerCreateEvent(tx *gorm.DB, userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError)
 	CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model.AppError)
 	CreateUser(c *request.Context, user *model.User) (*model.User, *model.AppError)
 	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError)

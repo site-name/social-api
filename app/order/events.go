@@ -341,3 +341,23 @@ func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilte
 
 	return events, nil
 }
+
+func (s *ServiceOrder) OrderNoteAddedEvent(tx *gorm.DB, order *model.Order, user *model.User, message string) (*model.OrderEvent, *model.AppError) {
+	if user != nil && model.IsValidId(user.Id) {
+		if order.UserID != nil && *order.UserID == user.Id {
+			_, appErr := s.srv.AccountService().CommonCustomerCreateEvent(tx, &user.Id, &order.Id, model.CUSTOMER_EVENT_TYPE_NOTE_ADDED_TO_ORDER, model.StringInterface{"message": message})
+			if appErr != nil {
+				return nil, appErr
+			}
+		}
+	}
+
+	return s.CommonCreateOrderEvent(tx, &model.OrderEventOption{
+		OrderID: order.Id,
+		UserID:  &user.Id,
+		Type:    model.ORDER_EVENT_TYPE_NOTE_ADDED,
+		Parameters: model.StringInterface{
+			"message": message,
+		},
+	})
+}

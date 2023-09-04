@@ -6,39 +6,110 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
 
-	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
-func (r *Resolver) HomepageEvents(ctx context.Context, args GraphqlParams) (*OrderEventCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) OrderSettingsUpdate(ctx context.Context, args struct {
-	Input OrderSettingsUpdateInput
-}) (*OrderSettingsUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) GiftCardSettingsUpdate(ctx context.Context, args struct {
-	Input GiftCardSettingsUpdateInput
-}) (*GiftCardSettingsUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 	Order string
 	Input OrderAddNoteInput
 }) (*OrderAddNote, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.Order) {
+		return nil, model.NewAppError("OrderAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Order"}, "please provide valid order id", http.StatusBadRequest)
+	}
+	args.Input.Message = strings.TrimSpace(args.Input.Message)
+	if args.Input.Message == "" {
+		return nil, model.NewAppError("OrderAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Message"}, "please provide non empty message", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin transaction
+	tx := embedCtx.App.Srv().Store.GetMaster()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderAddNote", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := embedCtx.App.Srv().Account.UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderEvent, appErr := embedCtx.App.Srv().OrderService().OrderNoteAddedEvent(tx, order, user, args.Input.Message)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderAddNote", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderAddNote{
+		Order: SystemOrderToGraphqlOrder(order),
+		Event: SystemOrderEventToGraphqlOrderEvent(orderEvent),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id string }) (*OrderCancel, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("OrderCancel", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin transaction
+	tx := embedCtx.App.Srv().Store.GetMaster()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderCancel", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := embedCtx.App.Srv().Account.UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	appErr = embedCtx.App.Srv().OrderService().CancelOrder(tx, order, user, nil, pluginMng)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().GiftcardService().DeactivateOrderGiftcards(tx, order.Id, user, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderCancel", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderCancel{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderCapture(ctx context.Context, args struct {
-	Amount *decimal.Decimal
+	Amount PositiveDecimal
 	Id     string
 }) (*OrderCapture, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -99,7 +170,7 @@ func (r *Resolver) OrderMarkAsPaid(ctx context.Context, args struct {
 }
 
 func (r *Resolver) OrderRefund(ctx context.Context, args struct {
-	Amount *decimal.Decimal
+	Amount PositiveDecimal
 	Id     string
 }) (*OrderRefund, error) {
 	panic(fmt.Errorf("not implemented"))

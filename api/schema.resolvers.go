@@ -13,6 +13,10 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+func (r *Resolver) HomepageEvents(ctx context.Context, args GraphqlParams) (*OrderEventCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *Resolver) FileUpload(ctx context.Context, args struct{ File graphql.Upload }) (*FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
 }

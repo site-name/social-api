@@ -16,8 +16,11 @@ func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	return &SqlCustomerEventStore{s}
 }
 
-func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.CustomerEvent, error) {
-	err := cs.GetMaster().Create(event).Error
+func (cs *SqlCustomerEventStore) Save(tx *gorm.DB, event *model.CustomerEvent) (*model.CustomerEvent, error) {
+	if tx == nil {
+		tx = cs.GetMaster()
+	}
+	err := tx.Save(event).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to save customer event")
 	}

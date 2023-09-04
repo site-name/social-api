@@ -612,7 +612,7 @@ type (
 		// DeactivateOrderGiftcards update giftcards
 		// which have giftcard events with type == 'bought', parameters.order_id == given order id
 		// by setting their IsActive model to false
-		DeactivateOrderGiftcards(orderID string) ([]string, error)
+		DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error)
 		AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error    // relations must be either []*Order or []*Checkout
 		RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error // relations must be either []*Order or []*Checkout
 	}
@@ -869,7 +869,7 @@ type (
 		UpdateTokenDisable(tokenID string) error
 	}
 	CustomerEventStore interface {
-		Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error)
+		Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
 		FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error)

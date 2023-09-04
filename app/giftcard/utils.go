@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
+	"gorm.io/gorm"
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
@@ -331,8 +332,8 @@ func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*model.GiftCard, u
 	return nil
 }
 
-func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.User, _ interface{}) *model.AppError {
-	giftcardIDs, err := s.srv.Store.GiftCard().DeactivateOrderGiftcards(orderID)
+func (s *ServiceGiftcard) DeactivateOrderGiftcards(tx *gorm.DB, orderID string, user *model.User, _ interface{}) *model.AppError {
+	giftcardIDs, err := s.srv.Store.GiftCard().DeactivateOrderGiftcards(tx, orderID)
 	if err != nil {
 		return model.NewAppError("DeactivateOrderGiftcards", "app.giftcard.error_updating_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -351,7 +352,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.U
 		})
 	}
 
-	_, appErr := s.BulkUpsertGiftcardEvents(nil, events...)
+	_, appErr := s.BulkUpsertGiftcardEvents(tx, events...)
 	return appErr
 }
 
