@@ -100,7 +100,7 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 		// validate given max order price > min order price
 		if channelInput.MinimumOrderPrice != nil &&
 			channelInput.MaximumOrderPrice != nil &&
-			channelInput.MaximumOrderPrice.LessThanOrEqual(*channelInput.MinimumOrderPrice) {
+			channelInput.MaximumOrderPrice.LessThanOrEqual(decimal.Decimal(*channelInput.MinimumOrderPrice)) {
 			return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "max prices must be greater than min prices", http.StatusBadRequest)
 		}
 	}

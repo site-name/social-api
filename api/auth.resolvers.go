@@ -102,7 +102,7 @@ func (r *Resolver) PasswordChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	_, appErr = embedCtx.App.Srv().AccountService().CommonCustomerCreateEvent(&embedCtx.AppContext.Session().UserId, nil, model.CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED, nil)
+	_, appErr = embedCtx.App.Srv().AccountService().CommonCustomerCreateEvent(nil, &embedCtx.AppContext.Session().UserId, nil, model.CUSTOMER_EVENT_TYPE_PASSWORD_CHANGED, nil)
 	if appErr != nil {
 		return nil, appErr
 	}

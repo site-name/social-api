@@ -78,6 +78,7 @@ func (a *ServiceProduct) IncrementDownloadCount(contentURL *model.DigitalContent
 
 		if orderLine != nil && userByOrderId != nil {
 			_, appErr = a.srv.AccountService().CommonCustomerCreateEvent(
+				nil,
 				&userByOrderId.Id,
 				&orderLine.OrderID,
 				model.CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,

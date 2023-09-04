@@ -58,6 +58,9 @@ func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *m
 	if appError != nil {
 		return nil, appError
 	}
+	if len(payments) == 0 {
+		return nil, model.NewAppError("GetLastOrderPayment", "app.payment.order_has_no_payment.app_error", nil, "order has no payment yet", http.StatusNotFound)
+	}
 
 	var latestPayment *model.Payment
 	for _, payment := range payments {

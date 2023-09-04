@@ -8,19 +8,18 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"unsafe"
 
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
-	Order string
+	Order UUID
 	Input OrderAddNoteInput
 }) (*OrderAddNote, error) {
-	if !model.IsValidId(args.Order) {
-		return nil, model.NewAppError("OrderAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Order"}, "please provide valid order id", http.StatusBadRequest)
-	}
 	args.Input.Message = strings.TrimSpace(args.Input.Message)
 	if args.Input.Message == "" {
 		return nil, model.NewAppError("OrderAddNote", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Message"}, "please provide non empty message", http.StatusBadRequest)
@@ -35,7 +34,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 	}
 	defer tx.Rollback()
 
-	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order)
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order.String())
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -62,11 +61,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 }
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
-func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id string }) (*OrderCancel, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("OrderCancel", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "please provide valid order id", http.StatusBadRequest)
-	}
-
+func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id UUID }) (*OrderCancel, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction
@@ -76,7 +71,7 @@ func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id string }) (*
 	}
 	defer tx.Rollback()
 
-	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id)
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -110,9 +105,72 @@ func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id string }) (*
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	Amount PositiveDecimal
-	Id     string
+	Id     UUID
 }) (*OrderCapture, error) {
-	panic(fmt.Errorf("not implemented"))
+	if args.Amount.LessThanOrEqual(decimal.Zero) {
+		return nil, model.NewAppError("OrderCapture", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
+	}
+	decimalAmount := (*decimal.Decimal)(unsafe.Pointer(&args.Amount))
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// NOTE: lastPayment can possibly be nil
+	lastPayment, appErr := embedCtx.App.Srv().PaymentService().GetLastOrderPayment(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = cleanOrderCapture("api.OrderCapture", lastPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// begin
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	paymentTransaction, pmErr, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *lastPayment, pluginMng, order.ChannelID, decimalAmount, nil, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if pmErr != nil {
+		return nil, logAndReturnPaymentFailedAppError("OrderCapture", embedCtx, tx, pmErr, order, lastPayment)
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// Confirm that we changed the status to capture. Some payment can receive
+	// asynchronous webhook with update status
+	if paymentTransaction.Kind == model.CAPTURE {
+		insufStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCaptured(*order, user, nil, decimalAmount, *lastPayment, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+		if insufStockErr != nil {
+			return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderCapture", insufStockErr)
+		}
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderCapture", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderCapture{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
 func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id string }) (*OrderConfirm, error) {

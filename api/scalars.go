@@ -1,28 +1,29 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"time"
 	"unsafe"
 
+	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // JSONString implements JSONString custom graphql scalar type
-type JSONString map[string]interface{}
+type JSONString map[string]any
 
 func (JSONString) ImplementsGraphQLType(name string) bool {
 	return name == "JSONString"
 }
 
-func (j *JSONString) UnmarshalGraphQL(input interface{}) error {
+func (j *JSONString) UnmarshalGraphQL(input any) error {
 	switch t := input.(type) {
 	case model.StringInterface:
 		*j = JSONString(t)
-	case map[string]interface{}:
+	case map[string]any:
 		*j = t
 
 	default:
@@ -32,6 +33,41 @@ func (j *JSONString) UnmarshalGraphQL(input interface{}) error {
 	return nil
 }
 
+type UUID string
+
+func (UUID) ImplementsGraphQLType(name string) bool {
+	return name == "UUID"
+}
+
+func (u *UUID) String() string {
+	return *(*string)(unsafe.Pointer(u))
+}
+
+func (j *UUID) UnmarshalGraphQL(input any) error {
+	switch t := input.(type) {
+	case string:
+		uid, err := uuid.Parse(t)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse uuid value")
+		}
+		strUid := uid.String()
+		*j = *(*UUID)(unsafe.Pointer(&strUid))
+		return nil
+
+	case []byte:
+		uid, err := uuid.ParseBytes(t)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse uuid value")
+		}
+		strUid := uid.String()
+		*j = *(*UUID)(unsafe.Pointer(&strUid))
+		return nil
+
+	default:
+		return fmt.Errorf("unsupported input type: %T", input)
+	}
+}
+
 // PositiveDecimal implements custom graphql scalar type
 type PositiveDecimal decimal.Decimal
 
@@ -39,11 +75,7 @@ func (PositiveDecimal) ImplementsGraphQLType(name string) bool {
 	return name == "PositiveDecimal"
 }
 
-func (p *PositiveDecimal) IsZero() bool {
-	return decimal.Zero.Equal(decimal.Decimal(*p))
-}
-
-func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
+func (j *PositiveDecimal) UnmarshalGraphQL(input any) error {
 	if input == nil {
 		return errors.New("input can't be nil")
 	}
@@ -83,9 +115,8 @@ func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
 // LessThanOrEqual checks if current decimal <= given other.
 //
 // NOTE: LessThanOrEqual returns false if given other is nil
-func (p *PositiveDecimal) LessThanOrEqual(other PositiveDecimal) bool {
-	return (*decimal.Decimal)(unsafe.Pointer(p)).
-		LessThanOrEqual(*(*decimal.Decimal)(unsafe.Pointer(&other)))
+func (p *PositiveDecimal) LessThanOrEqual(other decimal.Decimal) bool {
+	return (*decimal.Decimal)(unsafe.Pointer(p)).LessThanOrEqual(other)
 }
 
 // Date implementes custom graphql scalar Date
@@ -107,7 +138,7 @@ func (DateTime) ImplementsGraphQLType(name string) bool {
 	return name == "DateTime"
 }
 
-func (j *DateTime) UnmarshalGraphQL(input interface{}) error {
+func (j *DateTime) UnmarshalGraphQL(input any) error {
 	if input == nil {
 		return errors.New("input can't be nil")
 	}
@@ -126,7 +157,7 @@ func (j *DateTime) UnmarshalGraphQL(input interface{}) error {
 	return err
 }
 
-func (j *Date) UnmarshalGraphQL(input interface{}) error {
+func (j *Date) UnmarshalGraphQL(input any) error {
 	err := j.DateTime.UnmarshalGraphQL(input)
 	if err != nil {
 		return err
