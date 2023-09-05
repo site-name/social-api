@@ -216,13 +216,13 @@ func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ 
 	})
 }
 
-func (s *ServiceOrder) OrderConfirmedEvent(orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderConfirmedEvent(tx *gorm.DB, orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
-	return s.CommonCreateOrderEvent(nil, &model.OrderEventOption{
+	return s.CommonCreateOrderEvent(tx, &model.OrderEventOption{
 		UserID:  userID,
 		OrderID: orDer.Id,
 		Type:    model.ORDER_EVENT_TYPE_CONFIRMED,

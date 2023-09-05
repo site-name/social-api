@@ -120,7 +120,7 @@ type PaymentService interface {
 	GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError)
-	// if order has no payment, returning error will be nol-nil
+	// if order has no payment, returning error will be non-nil
 	GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError)
 	GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model.AppError)
 	GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError)

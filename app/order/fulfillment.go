@@ -59,8 +59,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction *gorm.DB, fulfillment *mode
 }
 
 // FulfillmentByOption returns 1 fulfillment filtered using given options
-func (a *ServiceOrder) FulfillmentByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
-	option.Transaction = transaction
+func (a *ServiceOrder) FulfillmentByOption(option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
 	fulfillment, err := a.srv.Store.Fulfillment().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

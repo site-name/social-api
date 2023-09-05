@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
@@ -173,30 +174,199 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	}, nil
 }
 
-func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id string }) (*OrderConfirm, error) {
-	panic(fmt.Errorf("not implemented"))
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id UUID }) (*OrderConfirm, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !order.IsUnconfirmed() {
+		return nil, model.NewAppError("OrderConfirm", "app.order.order_status_different_than_unconfirmed.app_error", nil, "given order has status different than unconfirmed", http.StatusNotAcceptable)
+	}
+	orderLines, appErr := embedCtx.App.Srv().OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+		Conditions: squirrel.Expr(model.OrderLineTableName+".OrderID = ?", args.Id),
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(orderLines) == 0 {
+		return nil, model.NewAppError("OrderConfirm", "app.order.order_has_no_lines.app_error", nil, "given order cotains no product", http.StatusNotAcceptable)
+	}
+
+	// begin transaction
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderConfirm", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	// update order
+	order.Status = model.ORDER_STATUS_UNFULFILLED
+
+	order, appErr = embedCtx.App.Srv().OrderService().UpsertOrder(tx, order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	lastPayment, appErr := embedCtx.App.Srv().PaymentService().GetLastOrderPayment(order.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	paymentAuthorized, appErr := embedCtx.App.Srv().PaymentService().PaymentIsAuthorized(lastPayment.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if paymentAuthorized && lastPayment.CanCapture() {
+		_, pmError, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *lastPayment, pluginMng, order.ChannelID, nil, nil, false)
+		if appErr != nil {
+			return nil, appErr
+		}
+		if pmError != nil {
+			return nil, model.NewAppError("OrderConfirm", "app.order.payment_error.app_error", nil, pmError.Error(), http.StatusInternalServerError)
+		}
+
+		inSufStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCaptured(*order, user, nil, nil, *lastPayment, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+		if inSufStockErr != nil {
+			return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderConfirm", inSufStockErr)
+		}
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().OrderConfirmed(tx, *order, user, nil, pluginMng, true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderConfirm", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderConfirm{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
-func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
-	Input OrderFulfillInput
-	Order *string
-}) (*OrderFulfill, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderFulfillmentCancel(ctx context.Context, args struct {
-	Id    string
+	Id    UUID
 	Input *FulfillmentCancelInput
 }) (*FulfillmentCancel, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	fulfillment, appErr := embedCtx.App.Srv().OrderService().FulfillmentByOption(&model.FulfillmentFilterOption{
+		Conditions:         squirrel.Expr(model.FulfillmentTableName+".Id = ?", args.Id),
+		SelectRelatedOrder: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderHasGiftcards, appErr := embedCtx.App.Srv().GiftcardService().OrderHasGiftcardLines(fulfillment.GetOrder())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if orderHasGiftcards {
+		return nil, model.NewAppError("OrderFulfillmentCancel", "app.order.cancel_fulfillment_with_giftcards.app_error", nil, "cannot cancel fulfillment with giftcard lines", http.StatusNotAcceptable)
+	}
+
+	// validate fulfillment
+	if !fulfillment.CanEdit() {
+		return nil, model.NewAppError("OrderFulfillmentCancel", "app.order.fulfillment_cannot_cancel.app_error", nil, "this fulfillment can not be canceled", http.StatusNotAcceptable)
+	}
+
+	var warehouse *model.WareHouse = nil
+	if args.Input != nil && args.Input.WarehouseID != nil {
+		warehouse, appErr = embedCtx.App.Srv().WarehouseService().WarehouseByOption(&model.WarehouseFilterOption{
+			Conditions: squirrel.Expr(model.WarehouseTableName+".Id = ?", *args.Input.WarehouseID),
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	if fulfillment.Status != model.FULFILLMENT_WAITING_FOR_APPROVAL && warehouse == nil {
+		return nil, model.NewAppError("OrderFulfillmentCancel", "app.order.fulfillment_require_warehouse.app_error", nil, "warehouse is required for this fulfillment", http.StatusNotAcceptable)
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	if fulfillment.Status == model.FULFILLMENT_WAITING_FOR_APPROVAL {
+		appErr = embedCtx.App.Srv().OrderService().CancelWaitingFulfillment(*fulfillment, user, nil, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+	} else {
+		fulfillment, appErr = embedCtx.App.Srv().OrderService().CancelFulfillment(*fulfillment, user, nil, warehouse, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &FulfillmentCancel{
+		Order:       SystemOrderToGraphqlOrder(fulfillment.GetOrder()),
+		Fulfillment: SystemFulfillmentToGraphqlFulfillment(fulfillment),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderFulfillmentApprove(ctx context.Context, args struct {
 	AllowStockToBeExceeded *bool
-	Id                     string
+	Id                     UUID
 	NotifyCustomer         bool
 }) (*FulfillmentApprove, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	fulfillment, appErr := embedCtx.App.Srv().OrderService().FulfillmentByOption(&model.FulfillmentFilterOption{
+		Conditions: squirrel.Expr(model.FulfillmentTableName+".Id = ?", args.Id.String()),
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	shopSettings := embedCtx.App.Config().ShopSettings
+
+	_, insufStockErr, appErr := embedCtx.App.Srv().OrderService().ApproveFulfillment(fulfillment, user, nil, pluginMng, shopSettings, args.NotifyCustomer, *args.AllowStockToBeExceeded)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if insufStockErr != nil {
+		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderFulfillmentApprove", insufStockErr)
+	}
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(fulfillment.OrderID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &FulfillmentApprove{
+		Fulfillment: SystemFulfillmentToGraphqlFulfillment(fulfillment),
+		Order:       SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
 func (r *Resolver) OrderFulfillmentUpdateTracking(ctx context.Context, args struct {
@@ -288,8 +458,23 @@ func (r *Resolver) OrdersTotal(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token string }) (*Order, error) {
-	panic(fmt.Errorf("not implemented"))
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token UUID }) (*Order, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+		Conditions: squirrel.And{
+			squirrel.Expr(model.OrderTableName+".Status != ?", model.ORDER_STATUS_DRAFT),
+			squirrel.Expr(model.OrderTableName+".Token = ?", args.Token),
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(orders) == 0 {
+		return nil, nil
+	}
+
+	return SystemOrderToGraphqlOrder(orders[0]), nil
 }
 
 func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
@@ -303,5 +488,13 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 	DiscountID string
 	Input      OrderDiscountCommonInput
 }) (*OrderDiscountUpdate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
+	Input OrderFulfillInput
+	Order *UUID
+}) (*OrderFulfill, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -625,7 +625,7 @@ func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.C
 		}
 	}
 
-	insufficientStock, appErr := s.srv.OrderService().OrderCreated(*createdNewOrder, user, nil, manager, false)
+	insufficientStock, appErr := s.srv.OrderService().OrderCreated(transaction, *createdNewOrder, user, nil, manager, false)
 	if insufficientStock != nil || appErr != nil {
 		return nil, insufficientStock, appErr
 	}

@@ -1976,7 +1976,7 @@ type FulfillmentCancel struct {
 }
 
 type FulfillmentCancelInput struct {
-	WarehouseID *string `json:"warehouseId"`
+	WarehouseID *UUID `json:"warehouseId"`
 }
 
 type FulfillmentRefundProducts struct {
