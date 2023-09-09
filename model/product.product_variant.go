@@ -3,10 +3,12 @@ package model
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +22,7 @@ type ProductVariant struct {
 	WeightUnit              measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
 	TrackInventory          *bool                  `json:"track_inventory" gorm:"column:TrackInventory"` // default *true
 	IsPreOrder              bool                   `json:"is_preorder" gorm:"column:IsPreOrder"`
-	PreorderEndDate         *int64                 `json:"preorder_end_date" gorm:"type:bigint;column:PreorderEndDate"`
+	PreorderEndDate         *time.Time             `json:"preorder_end_date" gorm:"type:bigint;column:PreorderEndDate"`
 	PreOrderGlobalThreshold *int                   `json:"preorder_global_threshold" gorm:"type:smallint;column:PreOrderGlobalThreshold"`
 	Sortable
 	ModelMetadata
@@ -136,7 +138,7 @@ func (p *ProductVariant) String() string {
 }
 
 func (p *ProductVariant) IsPreorderActive() bool {
-	return p.IsPreOrder && (p.PreorderEndDate == nil || GetMillis() <= *p.PreorderEndDate)
+	return p.IsPreOrder && (p.PreorderEndDate == nil || p.PreorderEndDate.After(util.StartOfDay(time.Now())))
 }
 
 func (p *ProductVariant) commonPre() {

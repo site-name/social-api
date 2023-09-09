@@ -129,25 +129,15 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 		return false, appErr
 	}
 
-	var orderLineProductVariantHasDigitalContent bool
-
 	// check if there is a digital content accompanies order line's product variant:
 	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
 		Conditions: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			orderLineProductVariantHasDigitalContent = false
-		} else {
-			return false, appErr
-		}
+		return false, appErr
 	}
 
-	if digitalContent != nil {
-		orderLineProductVariantHasDigitalContent = true
-	}
-
-	return productVariantIsDigital && orderLineProductVariantHasDigitalContent, nil
+	return productVariantIsDigital && digitalContent != nil, nil
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines

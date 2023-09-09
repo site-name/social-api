@@ -28,3 +28,11 @@ func (s *ServiceAttribute) AttributeProductsByOption(option *model.AttributeProd
 	}
 	return attributeProducts, nil
 }
+
+func (s *ServiceAttribute) AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model.AppError) {
+	assignedProductAttributes, err := s.srv.Store.AssignedProductAttribute().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("AssignedProductAttributesByOption", "app.attribute.assigned_product_attributes_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return assignedProductAttributes, nil
+}

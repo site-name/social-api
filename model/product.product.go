@@ -125,7 +125,7 @@ func (p Products) CategoryIDs() []string {
 }
 
 func (p *Product) WeightString() string {
-	if p == nil || p.Weight == nil {
+	if p.Weight == nil {
 		return ""
 	}
 

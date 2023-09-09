@@ -91,6 +91,12 @@ func (f Fulfillments) IDs() []string {
 	return lo.Map(f, func(item *Fulfillment, _ int) string { return item.Id })
 }
 
+var trackingNumberRg = regexp.MustCompile(`^[-\w]+://`)
+
+func (f *Fulfillment) IsTrackingNumberURL() bool {
+	return trackingNumberRg.MatchString(f.TrackingNumber)
+}
+
 func (f *Fulfillment) IsValid() *AppError {
 	if !f.Status.IsValid() {
 		return NewAppError("Fulfillment.IsValid", "model.fulfillment.is_valid.status.app_error", nil, "please provide valid status", http.StatusBadRequest)

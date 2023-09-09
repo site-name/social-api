@@ -66,7 +66,7 @@ type PluginManagerInterface interface {
 	ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model.AppError)
 	ListPaymentGateways(currency string, checkOut *model.Checkout, channelID string, activeOnly bool) []*model.PaymentGateway
 	ListPaymentSources(gateway, customerID, channelID string) ([]*model.CustomerSource, error)
-	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model.AppError)
+	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model.AppError) // NOTE: pluginID can be empty
 	OrderCancelled(order model.Order) (interface{}, *model.AppError)
 	OrderConfirmed(order model.Order) (interface{}, *model.AppError)
 	OrderCreated(order model.Order) (interface{}, *model.AppError)

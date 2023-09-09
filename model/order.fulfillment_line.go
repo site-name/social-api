@@ -15,7 +15,7 @@ type FulfillmentLine struct {
 	Quantity      int     `json:"quantity" gorm:"type:integer;column:Quantity"`
 	StockID       *string `json:"stock_id" gorm:"type:uuid;column:StockID"`
 
-	OrderLine *OrderLine `json:"-" db:"-"`
+	OrderLine *OrderLine `json:"-"`
 }
 
 func (c *FulfillmentLine) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }

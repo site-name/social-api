@@ -336,4 +336,5 @@ type OrderService interface {
 	LinePerQuantityToLineObject(quantity int, line *model.OrderLine) model.StringInterface
 	PrepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) model.StringInterface
 	OrderNoteAddedEvent(tx *gorm.DB, order *model.Order, user *model.User, message string) (*model.OrderEvent, *model.AppError)
+	SendFulfillmentUpdate(order *model.Order, fulfillment *model.Fulfillment, manager interfaces.PluginManagerInterface) *model.AppError
 }

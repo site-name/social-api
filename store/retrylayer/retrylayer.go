@@ -3308,11 +3308,11 @@ func (s *RetryLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, err
 
 }
 
-func (s *RetryLayerCustomerEventStore) Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerEventStore.Save(customemrEvent)
+		result, err := s.CustomerEventStore.Save(tx, customemrEvent)
 		if err == nil {
 			return result, nil
 		}
@@ -4200,11 +4200,11 @@ func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...
 
 }
 
-func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
 
 	tries := 0
 	for {
-		result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
+		result, err := s.GiftCardStore.DeactivateOrderGiftcards(tx, orderID)
 		if err == nil {
 			return result, nil
 		}

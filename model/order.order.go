@@ -92,13 +92,13 @@ type Order struct {
 
 	TotalNetAmount   *decimal.Decimal     `json:"total_net_amount" gorm:"default:0;column:TotalNetAmount;type:decimal(12,3)"` // default Decimal(0)
 	TotalNet         *goprices.Money      `json:"total_net" gorm:"-"`
-	TotalGrossAmount *decimal.Decimal     `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount;type:decimal(12,3)"`
+	TotalGrossAmount *decimal.Decimal     `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount;type:decimal(12,3)"` // default decimal(0)
 	TotalGross       *goprices.Money      `json:"total_gross" gorm:"-"`
 	Total            *goprices.TaxedMoney `json:"total" gorm:"-"` // from TotalNet, TotalGross
 
 	UnDiscountedTotalNetAmount   *decimal.Decimal     `json:"undiscounted_total_net_amount" gorm:"default:0;column:UnDiscountedTotalNetAmount;type:decimal(12,3)"`
 	UnDiscountedTotalNet         *goprices.Money      `json:"undiscounted_total_net" gorm:"-"`
-	UnDiscountedTotalGrossAmount *decimal.Decimal     `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount;type:decimal(12,3)"`
+	UnDiscountedTotalGrossAmount *decimal.Decimal     `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount;type:decimal(12,3)"` // default 0
 	UnDiscountedTotalGross       *goprices.Money      `json:"undiscounted_total_gross" gorm:"-"`
 	UnDiscountedTotal            *goprices.TaxedMoney `json:"undiscounted_total" gorm:"-"` // from UnDiscountedTotalNet, UnDiscountedTotalGross
 

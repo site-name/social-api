@@ -282,6 +282,7 @@ func AppErrorFromJSon(data io.Reader) *AppError {
 	return &er
 }
 
+// Merge addkey-value pairs from `other` to current StringInterface
 func (m StringInterface) Merge(other StringInterface) {
 	for key, value := range other {
 		m[key] = value
@@ -917,3 +918,18 @@ const (
 	DESC OrderDirection = "DESC"
 	ASC  OrderDirection = "ASC"
 )
+
+// E.g
+//
+//	var name = "hello"
+//	var namePtr *string = nil
+//
+//	GetValueOfpointerOrNil(&name) == "hello"
+//	GetValueOfpointerOrNil(namePtr) == nil
+func GetValueOfpointerOrNil[T any](pointer *T) any {
+	if pointer == nil {
+		return nil
+	}
+
+	return *pointer
+}

@@ -129,7 +129,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 		return nil, appErr
 	}
 
-	insufficientStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCreated(*savedOrder, requester, nil, pluginMng, true)
+	insufficientStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCreated(nil, *savedOrder, requester, nil, pluginMng, true)
 	if appErr != nil {
 		return nil, appErr
 	}

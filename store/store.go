@@ -277,6 +277,7 @@ type (
 		FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error)
 	}
 	AttributeProductStore interface {
+		ScanFields(attrPrd *model.AttributeProduct) []any
 		Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error)                // Save inserts given model product relationship into database then returns it and an error
 		Get(attributeProductID string) (*model.AttributeProduct, error)                                // Get finds an attributeProduct relationship and returns it with an error
 		GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error)       // GetByOption returns an attributeProduct with given condition

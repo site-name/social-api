@@ -181,7 +181,7 @@ func (p *ProductVariant) Preorder(ctx context.Context) (*PreorderData, error) {
 			res.globalThreshold = model.NewPrimitive(int32(*t))
 		}
 		if ed := p.p.PreorderEndDate; ed != nil {
-			res.EndDate = &DateTime{util.TimeFromMillis(*ed)}
+			res.EndDate = &DateTime{*ed}
 		}
 		return res, nil
 	}

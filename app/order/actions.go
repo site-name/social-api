@@ -873,8 +873,9 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(order model.Order, manag
 		return nil, nil
 	}
 
-	fulfillment, appErr := a.FulfillmentByOption(transaction, &model.FulfillmentFilterOption{
-		Conditions: squirrel.Eq{model.FulfillmentTableName + ".OrderID": order.Id},
+	fulfillment, appErr := a.FulfillmentByOption(&model.FulfillmentFilterOption{
+		Conditions:  squirrel.Eq{model.FulfillmentTableName + ".OrderID": order.Id},
+		Transaction: transaction,
 	})
 	if appErr != nil {
 		if appErr.StatusCode != http.StatusNotFound {

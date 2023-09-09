@@ -16,6 +16,16 @@ func NewSqlAttributeProductStore(s store.Store) store.AttributeProductStore {
 	return &SqlAttributeProductStore{s}
 }
 
+func (s *SqlAttributeProductStore) ScanFields(attrPrd *model.AttributeProduct) []any {
+	return []any{
+		&attrPrd.Id,
+		&attrPrd.AttributeID,
+		&attrPrd.ProductTypeID,
+		&attrPrd.Id,
+		&attrPrd.SortOrder,
+	}
+}
+
 func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
 	err := as.GetMaster().Create(attributeProduct).Error
 	if err != nil {

@@ -2847,10 +2847,10 @@ func (s *TimerLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, err
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
-	result, err := s.CustomerEventStore.Save(customemrEvent)
+	result, err := s.CustomerEventStore.Save(tx, customemrEvent)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3581,10 +3581,10 @@ func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
 	start := timemodule.Now()
 
-	result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
+	result, err := s.GiftCardStore.DeactivateOrderGiftcards(tx, orderID)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

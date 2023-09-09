@@ -229,3 +229,11 @@ func GetProtocol(r *http.Request) string {
 	}
 	return "http"
 }
+
+func (s *Server) GetSiteContext() model.StringInterface {
+	settings := s.Config().ServiceSettings
+	return model.StringInterface{
+		"domain":    settings.SiteURL,
+		"site_name": settings.SiteName,
+	}
+}

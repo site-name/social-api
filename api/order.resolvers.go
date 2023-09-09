@@ -369,11 +369,58 @@ func (r *Resolver) OrderFulfillmentApprove(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderFulfillmentUpdateTracking(ctx context.Context, args struct {
-	Id    string
+	Id    UUID
 	Input FulfillmentUpdateTrackingInput
 }) (*FulfillmentUpdateTracking, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	fulfillment, appErr := embedCtx.App.Srv().OrderService().FulfillmentByOption(&model.FulfillmentFilterOption{
+		Conditions:         squirrel.Expr(model.FulfillmentTableName+".Id = ?", args.Id),
+		SelectRelatedOrder: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	order := fulfillment.GetOrder()
+
+	if args.Input.TrackingNumber != nil {
+		fulfillment.TrackingNumber = *args.Input.TrackingNumber
+	}
+
+	fulfillment, appErr = embedCtx.App.Srv().OrderService().UpsertFulfillment(nil, fulfillment)
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var trackingNumber string
+	if args.Input.TrackingNumber != nil {
+		trackingNumber = *args.Input.TrackingNumber
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().FulfillmentTrackingUpdated(fulfillment, user, nil, trackingNumber, pluginMng)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if args.Input.NotifyCustomer != nil && *args.Input.NotifyCustomer {
+		appErr = embedCtx.App.Srv().OrderService().SendFulfillmentUpdate(order, fulfillment, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &FulfillmentUpdateTracking{
+		Fulfillment: SystemFulfillmentToGraphqlFulfillment(fulfillment),
+		Order:       SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
 func (r *Resolver) OrderFulfillmentRefundProducts(ctx context.Context, args struct {

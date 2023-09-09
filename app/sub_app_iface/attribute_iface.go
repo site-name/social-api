@@ -12,6 +12,7 @@ import (
 type AttributeService interface {
 	// AssignedPageAttributeByOption returns 1 assigned page attribute
 	AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model.AppError)
+	AssignedProductAttributesByOption(options *model.AssignedProductAttributeFilterOption) (model.AssignedProductAttributes, *model.AppError)
 	// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
 	AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model.AppError)
 	// AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option

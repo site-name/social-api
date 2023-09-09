@@ -44,7 +44,7 @@ func (ps *SqlProductVariantStore) Save(transaction *gorm.DB, variant *model.Prod
 		transaction = ps.GetMaster()
 	}
 
-	if err := transaction.Create(variant).Error; err != nil {
+	if err := transaction.Save(variant).Error; err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(model.ProductVariantTableName, "Sku", variant.Sku)
 		}

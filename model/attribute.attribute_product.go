@@ -14,6 +14,7 @@ type AttributeProduct struct {
 	ProductTypeID string `json:"product_type_id" gorm:"type:uuid;column:ProductTypeID;index:attributeid_producttypeid_key"` // to ProductType
 	Sortable
 
+	Attribute          *Attribute                  `json:"-"`
 	AssignedProducts   Products                    `json:"-" gorm:"many2many:AssignedProductAttributes"`
 	ProductAssignments []*AssignedProductAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 }
@@ -59,6 +60,7 @@ type AssignedProductAttribute struct {
 
 	Values                  AttributeValues                  `json:"-" gorm:"many2many:AssignedProductAttributeValues"`
 	ProductValueAssignments []*AssignedProductAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
+	AttributeProduct        *AttributeProduct                `json:"-"`
 }
 
 func (*AssignedProductAttribute) TableName() string               { return AssignedProductAttributeTableName }
@@ -70,6 +72,8 @@ type AssignedProductAttributes []*AssignedProductAttribute
 // AssignedProductAttributeFilterOption is used to filter or creat new AssignedProductAttribute
 type AssignedProductAttributeFilterOption struct {
 	Conditions squirrel.Sqlizer
+
+	Preloads []string
 
 	AttributeProduct_Attribute_VisibleInStoreFront *bool // INNER JOIN AttributeProduct ON ... INNER JOIN Attribute ON ... WHERE Attribute.VisibleInStoreFront ...
 }

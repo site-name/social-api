@@ -3075,7 +3075,7 @@ func (s *OpenTracingLayerCustomerEventStore) Get(id string) (*model.CustomerEven
 	return result, err
 }
 
-func (s *OpenTracingLayerCustomerEventStore) Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
+func (s *OpenTracingLayerCustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerEventStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -3084,7 +3084,7 @@ func (s *OpenTracingLayerCustomerEventStore) Save(customemrEvent *model.Customer
 	}()
 
 	defer span.Finish()
-	result, err := s.CustomerEventStore.Save(customemrEvent)
+	result, err := s.CustomerEventStore.Save(tx, customemrEvent)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3893,7 +3893,7 @@ func (s *OpenTracingLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCar
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+func (s *OpenTracingLayerGiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.DeactivateOrderGiftcards")
 	s.Root.Store.SetContext(newCtx)
@@ -3902,7 +3902,7 @@ func (s *OpenTracingLayerGiftCardStore) DeactivateOrderGiftcards(orderID string)
 	}()
 
 	defer span.Finish()
-	result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
+	result, err := s.GiftCardStore.DeactivateOrderGiftcards(tx, orderID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
