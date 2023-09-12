@@ -2815,13 +2815,13 @@ type OrderRefund struct {
 }
 
 type OrderRefundFulfillmentLineInput struct {
-	FulfillmentLineID string `json:"fulfillmentLineId"`
-	Quantity          int32  `json:"quantity"`
+	FulfillmentLineID UUID  `json:"fulfillmentLineId"`
+	Quantity          int32 `json:"quantity"`
 }
 
 type OrderRefundLineInput struct {
-	OrderLineID string `json:"orderLineId"`
-	Quantity    int32  `json:"quantity"`
+	OrderLineID UUID  `json:"orderLineId"`
+	Quantity    int32 `json:"quantity"`
 }
 
 type OrderRefundProductsInput struct {

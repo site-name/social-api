@@ -383,7 +383,6 @@ func (r *Resolver) OrderFulfillmentUpdateTracking(ctx context.Context, args stru
 	if appErr != nil {
 		return nil, appErr
 	}
-	order := fulfillment.GetOrder()
 
 	if args.Input.TrackingNumber != nil {
 		fulfillment.TrackingNumber = *args.Input.TrackingNumber
@@ -411,7 +410,7 @@ func (r *Resolver) OrderFulfillmentUpdateTracking(ctx context.Context, args stru
 	}
 
 	if args.Input.NotifyCustomer != nil && *args.Input.NotifyCustomer {
-		appErr = embedCtx.App.Srv().OrderService().SendFulfillmentUpdate(order, fulfillment, pluginMng)
+		appErr = embedCtx.App.Srv().OrderService().SendFulfillmentUpdate(fulfillment.GetOrder(), fulfillment, pluginMng)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -419,15 +418,92 @@ func (r *Resolver) OrderFulfillmentUpdateTracking(ctx context.Context, args stru
 
 	return &FulfillmentUpdateTracking{
 		Fulfillment: SystemFulfillmentToGraphqlFulfillment(fulfillment),
-		Order:       SystemOrderToGraphqlOrder(order),
+		Order:       SystemOrderToGraphqlOrder(fulfillment.GetOrder()),
 	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderFulfillmentRefundProducts(ctx context.Context, args struct {
 	Input OrderRefundProductsInput
-	Order string
+	Order UUID
 }) (*FulfillmentRefundProducts, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	lastPayment, appErr := embedCtx.App.Srv().PaymentService().GetLastOrderPayment(order.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// clean order payment
+	appErr = cleanOrderPayment("OrderFulfillmentRefundProducts", lastPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	amountToRefund := (*decimal.Decimal)(unsafe.Pointer(args.Input.AmountToRefund))
+	appErr = cleanAmountToRefund(embedCtx, "OrderFulfillmentRefundProducts", order, lastPayment, amountToRefund)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		cleanedOrderLines      model.OrderLineDatas
+		cleanedFulfillmentLins []*model.FulfillmentLineData
+	)
+	if len(args.Input.OrderLines) > 0 {
+		cleanedOrderLines, appErr = cleanLines(embedCtx, "OrderFulfillmentRefundProducts", args.Input.OrderLines)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if len(args.Input.FulfillmentLines) > 0 {
+		cleanedFulfillmentLins, appErr = cleanFulfillmentLines(embedCtx, "OrderFulfillmentRefundProducts", args.Input.FulfillmentLines, []model.FulfillmentStatus{
+			model.FULFILLMENT_FULFILLED,
+			model.FULFILLMENT_RETURNED,
+			model.FULFILLMENT_WAITING_FOR_APPROVAL,
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	requester, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var includingShippingCosts bool
+	if args.Input.IncludeShippingCosts != nil {
+		includingShippingCosts = *args.Input.IncludeShippingCosts
+	}
+
+	fulfillment, paymentErr, appErr := embedCtx.App.Srv().OrderService().CreateRefundFulfillment(
+		requester,
+		nil,
+		*order,
+		*lastPayment,
+		cleanedOrderLines,
+		cleanedFulfillmentLins,
+		embedCtx.App.Srv().Plugin.GetPluginManager(),
+		amountToRefund,
+		includingShippingCosts,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if paymentErr != nil {
+		return nil, model.NewAppError("OrderFulfillmentRefundProducts", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	}
+
+	return &FulfillmentRefundProducts{
+		Order:       SystemOrderToGraphqlOrder(order),
+		Fulfillment: SystemFulfillmentToGraphqlFulfillment(fulfillment),
+	}, nil
 }
 
 func (r *Resolver) OrderFulfillmentReturnProducts(ctx context.Context, args struct {

@@ -205,7 +205,7 @@ type OrderService interface {
 	// unfulfilled lines will be deallocated.
 	//
 	// NOTE: `refundShippingCosts` default to false
-	CreateRefundFulfillment(requester *model.User, _ interface{}, order model.Order, payMent model.Payment, orderLinesToRefund []*model.OrderLineData, fulfillmentLinesToRefund []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface, amount *decimal.Decimal, refundShippingCosts bool) (interface{}, *model.PaymentError, *model.AppError)
+	CreateRefundFulfillment(requester *model.User, _ interface{}, order model.Order, payMent model.Payment, orderLinesToRefund []*model.OrderLineData, fulfillmentLinesToRefund []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface, amount *decimal.Decimal, refundShippingCosts bool) (*model.Fulfillment, *model.PaymentError, *model.AppError)
 	// Process the request for replacing or returning the products.
 	//
 	// Process the refund when the refund is set to True. The amount of refund will be

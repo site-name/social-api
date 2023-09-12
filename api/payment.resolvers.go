@@ -6,7 +6,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
@@ -14,19 +13,19 @@ import (
 
 func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
 	Amount    *decimal.Decimal
-	PaymentID string
+	PaymentID UUID
 }) (*PaymentCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
 	Amount    *decimal.Decimal
-	PaymentID string
+	PaymentID UUID
 }) (*PaymentRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID string }) (*PaymentVoid, error) {
+func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID UUID }) (*PaymentVoid, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -39,12 +38,8 @@ func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
 }
 
 // NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
-func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*Payment, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("Payment", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid payment id", http.StatusBadRequest)
-	}
-
-	payment, err := PaymentByIdLoader.Load(ctx, args.Id)()
+func (r *Resolver) Payment(ctx context.Context, args struct{ Id UUID }) (*Payment, error) {
+	payment, err := PaymentByIdLoader.Load(ctx, args.Id.String())()
 	if err != nil {
 		return nil, err
 	}

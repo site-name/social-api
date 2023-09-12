@@ -415,8 +415,8 @@ func (s *ServiceOrder) getDefaultFulfillmentLinePayload(line *model.FulfillmentL
 
 func (s *ServiceOrder) getDefaultFulfillmentPayload(order *model.Order, fulfillment *model.Fulfillment) (model.StringInterface, *model.AppError) {
 	fulfillmentLines, appErr := s.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		PrefetchRelatedOrderLine: true,
-		Conditions:               squirrel.Expr(model.FulfillmentLineTableName+".FulfillmentID = ?", fulfillment.Id),
+		Conditions: squirrel.Expr(model.FulfillmentLineTableName+".FulfillmentID = ?", fulfillment.Id),
+		Preloads:   []string{"OrderLine"},
 	})
 	if appErr != nil {
 		return nil, appErr

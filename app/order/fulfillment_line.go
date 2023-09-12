@@ -10,19 +10,8 @@ import (
 // FulfillmentLinesByOption returns all fulfillment lines by option
 func (a *ServiceOrder) FulfillmentLinesByOption(option *model.FulfillmentLineFilterOption) (model.FulfillmentLines, *model.AppError) {
 	fulfillmentLines, err := a.srv.Store.FulfillmentLine().FilterbyOption(option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(fulfillmentLines) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("FulfillmentLinesByOption", "app.order.error_finding_fulfillment_lines_by_options.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("FulfillmentLinesByOption", "app.order.error_finding_fulfillment_lines_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return fulfillmentLines, nil

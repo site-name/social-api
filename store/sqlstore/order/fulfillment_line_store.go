@@ -69,12 +69,9 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 		option.FulfillmentStatus != nil {
 		query = query.InnerJoin(model.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)")
 
-		if option.FulfillmentOrderID != nil {
-			query = query.Where(option.FulfillmentOrderID)
-		}
-		if option.FulfillmentStatus != nil {
-			query = query.Where(option.FulfillmentStatus)
-		}
+		query = query.
+			Where(option.FulfillmentOrderID).
+			Where(option.FulfillmentStatus)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -82,55 +79,17 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	var fulfillmentLines model.FulfillmentLines
-	err = fls.GetReplica().Raw(queryString, args...).Scan(&fulfillmentLines).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find fulfillment lines by given options")
+	db := fls.GetReplica()
+	if len(option.Preloads) > 0 {
+		for _, preload := range option.Preloads {
+			db = db.Preload(preload)
+		}
 	}
 
-	// check if we need to prefetch related order lines.
-	if orderLineIDs := fulfillmentLines.OrderLineIDs(); option.PrefetchRelatedOrderLine && len(orderLineIDs) > 0 {
-		var orderLines model.OrderLines
-		err = fls.GetReplica().Find(&orderLines, "Id IN ?", orderLineIDs).Error
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to prefetch related order lines of fulfillment lines")
-		}
-
-		// orderLinesMap has keys are order line ids
-		var orderLinesMap = map[string]*model.OrderLine{}
-		for _, line := range orderLines {
-			orderLinesMap[line.Id] = line
-		}
-
-		// Check if we need to prefetch related product variants of related order lines of returning fulfillment lines.
-		// This code goes inside related order lines prefetch block, since this prefetching is possible IF and ONLY IF related order lines prefetching is required.
-		if productVariantIDs := orderLines.ProductVariantIDs(); option.PrefetchRelatedOrderLine_ProductVariant && len(productVariantIDs) > 0 {
-			var productVariants model.ProductVariants
-			err = fls.GetReplica().Find(&productVariants, "Id IN ?", productVariantIDs).Error
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to prefetch related product variants of related order lines of fulfillment lines")
-			}
-
-			// productVariantsMap has keys are product variants ids
-			var productVariantsMap = map[string]*model.ProductVariant{}
-			for _, variant := range productVariants {
-				productVariantsMap[variant.Id] = variant
-			}
-
-			// join related product variants to order lines
-			for _, orderLine := range orderLines {
-				if variantID := orderLine.VariantID; variantID != nil && productVariantsMap[*variantID] != nil {
-					orderLine.ProductVariant = productVariantsMap[*variantID]
-				}
-			}
-		}
-
-		// Join related order lines to fulfillment lines
-		for _, fulfillmentLine := range fulfillmentLines {
-			if orderLine := orderLinesMap[fulfillmentLine.OrderLineID]; orderLine != nil {
-				fulfillmentLine.OrderLine = orderLine
-			}
-		}
+	var fulfillmentLines model.FulfillmentLines
+	err = db.Raw(queryString, args...).Scan(&fulfillmentLines).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find fulfillment lines by given options")
 	}
 
 	return fulfillmentLines, nil

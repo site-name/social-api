@@ -23,6 +23,10 @@ const (
 	CHANNEL_INACTIVE            PaymentErrorCode = "channel_inactive"
 )
 
+const (
+	ErrPayment = "app.payment.payment_error.app_error"
+)
+
 type PaymentError struct {
 	Where   string
 	Message string

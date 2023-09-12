@@ -545,8 +545,8 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 	}
 
 	fulfillmentLinesOfFulfillment, appErr := s.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		Conditions:               squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment_.Id},
-		PrefetchRelatedOrderLine: true, // this make us able to access OrderLine fields of returned fulfillment lines
+		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment_.Id},
+		Preloads:   []string{"OrderLine"},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -616,14 +616,11 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 	}
 
 	fulfillmentLines, appErr := s.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		Conditions:                              squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
-		PrefetchRelatedOrderLine:                true, // NOTE: this make us able to get OrderLine of returning fulfillment lines
-		PrefetchRelatedOrderLine_ProductVariant: true,
+		Conditions: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
+		Preloads:   []string{"Orderline.ProductVariant"},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, nil, appErr
-		}
+		return nil, nil, appErr
 	}
 
 	_, appErr = s.FulfillmentFulfilledItemsEvent(transaction, order, user, nil, fulfillmentLines)
@@ -1439,9 +1436,10 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
 
-) (interface{}, *model.PaymentError, *model.AppError) {
+) (*model.Fulfillment, *model.PaymentError, *model.AppError) {
 	shippingRefundAmount := getShippingRefundAmount(refundShippingCosts, amount, order.ShippingPriceGrossAmount)
 
+	// begin transaction
 	transaction := a.srv.Store.GetMaster().Begin()
 	if transaction.Error != nil {
 		return nil, nil, model.NewAppError("CreateRefundFulfillment", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
@@ -1460,17 +1458,17 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 		ShippingRefundAmount: shippingRefundAmount,
 	})
 	if appErr != nil {
-		return nil, paymentErr, appErr
+		return nil, nil, appErr
 	}
 
 	createdFulfillmentLines, appErr := a.moveOrderLinesToTargetFulfillment(orderLinesToRefund, refundedFulfillment, manager)
 	if appErr != nil {
-		return nil, paymentErr, appErr
+		return nil, nil, appErr
 	}
 
 	appErr = a.moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToRefund, createdFulfillmentLines, refundedFulfillment)
 	if appErr != nil {
-		return nil, paymentErr, appErr
+		return nil, nil, appErr
 	}
 
 	// delete fulfillments without lines after lines are removed
@@ -1486,13 +1484,13 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 		Transaction:       transaction,
 	})
 	if appErr != nil {
-		return nil, paymentErr, appErr
+		return nil, nil, appErr
 	}
 
 	if len(fulfillments) != 0 {
 		appErr = a.BulkDeleteFulfillments(transaction, fulfillments)
 		if appErr != nil {
-			return nil, paymentErr, appErr
+			return nil, nil, appErr
 		}
 	}
 
@@ -1503,7 +1501,7 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 
 	_, appErr = manager.OrderUpdated(order)
 	if appErr != nil {
-		return nil, paymentErr, appErr
+		return nil, nil, appErr
 	}
 
 	return refundedFulfillment, nil, nil

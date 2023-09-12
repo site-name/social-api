@@ -15,7 +15,8 @@ type FulfillmentLine struct {
 	Quantity      int     `json:"quantity" gorm:"type:integer;column:Quantity"`
 	StockID       *string `json:"stock_id" gorm:"type:uuid;column:StockID"`
 
-	OrderLine *OrderLine `json:"-"`
+	OrderLine   *OrderLine   `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+	Fulfillment *Fulfillment `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 }
 
 func (c *FulfillmentLine) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
@@ -26,12 +27,12 @@ func (c *FulfillmentLine) TableName() string             { return FulfillmentLin
 type FulfillmentLineFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	FulfillmentOrderID                      squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
-	FulfillmentStatus                       squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
-	PrefetchRelatedOrderLine                bool             // this asks to prefetch related order lines of returning fulfillment lines
-	PrefetchRelatedOrderLine_ProductVariant bool             // this asks to prefetch related product variants of associated order lines of returning fulfillment lines
+	FulfillmentOrderID squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
+	FulfillmentStatus  squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
 
-	PrefetchRelatedStock bool
+	// E.g:
+	//  []string{"OrderLine", "Fulfillment"}
+	Preloads []string
 }
 
 type FulfillmentLines []*FulfillmentLine
