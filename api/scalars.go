@@ -39,8 +39,8 @@ func (UUID) ImplementsGraphQLType(name string) bool {
 	return name == "UUID"
 }
 
-func (u *UUID) String() string {
-	return *(*string)(unsafe.Pointer(u))
+func (u UUID) String() string {
+	return *(*string)(unsafe.Pointer(&u))
 }
 
 func (j *UUID) UnmarshalGraphQL(input any) error {
@@ -70,6 +70,10 @@ func (j *UUID) UnmarshalGraphQL(input any) error {
 
 // PositiveDecimal implements custom graphql scalar type
 type PositiveDecimal decimal.Decimal
+
+func (p PositiveDecimal) ToDecimal() decimal.Decimal {
+	return *(*decimal.Decimal)(unsafe.Pointer(&p))
+}
 
 func (PositiveDecimal) ImplementsGraphQLType(name string) bool {
 	return name == "PositiveDecimal"
@@ -110,13 +114,6 @@ func (j *PositiveDecimal) UnmarshalGraphQL(input any) error {
 	*j = PositiveDecimal(deci)
 
 	return nil
-}
-
-// LessThanOrEqual checks if current decimal <= given other.
-//
-// NOTE: LessThanOrEqual returns false if given other is nil
-func (p *PositiveDecimal) LessThanOrEqual(other decimal.Decimal) bool {
-	return (*decimal.Decimal)(unsafe.Pointer(p)).LessThanOrEqual(other)
 }
 
 // Date implementes custom graphql scalar Date

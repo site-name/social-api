@@ -79,7 +79,7 @@ func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model.App
 	}
 
 	for _, tran := range trans {
-		if tran.Kind == model.AUTH && tran.IsSuccess && !tran.ActionRequired {
+		if tran.Kind == model.TRANSACTION_KIND_AUTH && tran.IsSuccess && !tran.ActionRequired {
 			return true, nil
 		}
 	}
@@ -101,14 +101,14 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(pm *model.Payment) (*goprice
 	// There is no authorized amount anymore when capture is succeeded
 	// since capture can only be made once, even it is a partial capture
 	for _, tran := range trans {
-		if tran.Kind == model.CAPTURE && tran.IsSuccess {
+		if tran.Kind == model.TRANSACTION_KIND_CAPTURE && tran.IsSuccess {
 			return authorizedMoney, nil
 		}
 	}
 
 	// Filter the succeeded auth transactions
 	for _, tran := range trans {
-		if tran.Kind == model.AUTH && tran.IsSuccess && !tran.ActionRequired {
+		if tran.Kind == model.TRANSACTION_KIND_AUTH && tran.IsSuccess && !tran.ActionRequired {
 			authorizedMoney, err = authorizedMoney.Add(&goprices.Money{
 				Amount:   *tran.Amount,
 				Currency: tran.Currency,

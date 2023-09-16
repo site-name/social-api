@@ -11,8 +11,10 @@ import (
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
@@ -108,7 +110,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	Amount PositiveDecimal
 	Id     UUID
 }) (*OrderCapture, error) {
-	if args.Amount.LessThanOrEqual(decimal.Zero) {
+	if args.Amount.ToDecimal().LessThanOrEqual(decimal.Zero) {
 		return nil, model.NewAppError("OrderCapture", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
 	}
 	decimalAmount := (*decimal.Decimal)(unsafe.Pointer(&args.Amount))
@@ -139,12 +141,12 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 
-	paymentTransaction, pmErr, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *lastPayment, pluginMng, order.ChannelID, decimalAmount, nil, false)
+	paymentTransaction, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *lastPayment, pluginMng, order.ChannelID, decimalAmount, nil, false)
 	if appErr != nil {
 		return nil, appErr
 	}
-	if pmErr != nil {
-		return nil, logAndReturnPaymentFailedAppError("OrderCapture", embedCtx, tx, pmErr, order, lastPayment)
+	if paymentErr != nil {
+		return nil, logAndReturnPaymentFailedAppError("OrderCapture", embedCtx, tx, paymentErr, order, lastPayment)
 	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
@@ -154,7 +156,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 
 	// Confirm that we changed the status to capture. Some payment can receive
 	// asynchronous webhook with update status
-	if paymentTransaction.Kind == model.CAPTURE {
+	if paymentTransaction.Kind == model.TRANSACTION_KIND_CAPTURE {
 		insufStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCaptured(*order, user, nil, decimalAmount, *lastPayment, pluginMng)
 		if appErr != nil {
 			return nil, appErr
@@ -456,13 +458,15 @@ func (r *Resolver) OrderFulfillmentRefundProducts(ctx context.Context, args stru
 		cleanedFulfillmentLins []*model.FulfillmentLineData
 	)
 	if len(args.Input.OrderLines) > 0 {
-		cleanedOrderLines, appErr = cleanLines(embedCtx, "OrderFulfillmentRefundProducts", args.Input.OrderLines)
+		orderLineRefundIfaces := lo.Map(args.Input.OrderLines, func(item *OrderRefundLineInput, _ int) orderLineReturnRefundLineCommon { return item })
+		cleanedOrderLines, appErr = cleanLines(embedCtx, "OrderFulfillmentRefundProducts", orderLineRefundIfaces)
 		if appErr != nil {
 			return nil, appErr
 		}
 	}
 	if len(args.Input.FulfillmentLines) > 0 {
-		cleanedFulfillmentLins, appErr = cleanFulfillmentLines(embedCtx, "OrderFulfillmentRefundProducts", args.Input.FulfillmentLines, []model.FulfillmentStatus{
+		fulfillmentLineRefundIfaces := lo.Map(args.Input.FulfillmentLines, func(item *OrderRefundFulfillmentLineInput, _ int) orderRefundReturnFulfillmentLineCommon { return item })
+		cleanedFulfillmentLins, appErr = cleanFulfillmentLines(embedCtx, "OrderFulfillmentRefundProducts", fulfillmentLineRefundIfaces, []model.FulfillmentStatus{
 			model.FULFILLMENT_FULFILLED,
 			model.FULFILLMENT_RETURNED,
 			model.FULFILLMENT_WAITING_FOR_APPROVAL,
@@ -506,39 +510,412 @@ func (r *Resolver) OrderFulfillmentRefundProducts(ctx context.Context, args stru
 	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderFulfillmentReturnProducts(ctx context.Context, args struct {
 	Input OrderReturnProductsInput
-	Order string
+	Order UUID
 }) (*FulfillmentReturnProducts, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	lastPaymentOfOrder, appErr := embedCtx.App.Srv().PaymentService().GetLastOrderPayment(order.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = cleanOrderPayment("OrderFulfillmentReturnProducts", lastPaymentOfOrder)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	amountToRefund := (*decimal.Decimal)(unsafe.Pointer(args.Input.AmountToRefund))
+	appErr = cleanAmountToRefund(embedCtx, "OrderFulfillmentReturnProducts", order, lastPaymentOfOrder, amountToRefund)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		cleanedOrderLines       model.OrderLineDatas
+		cleanedFulfillmentLines []*model.FulfillmentLineData
+	)
+	if len(args.Input.OrderLines) > 0 {
+		orderLineReturnIfaces := lo.Map(args.Input.OrderLines, func(item *OrderReturnLineInput, _ int) orderLineReturnRefundLineCommon { return item })
+		cleanedOrderLines, appErr = cleanLines(embedCtx, "OrderFulfillmentReturnProducts", orderLineReturnIfaces)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if len(args.Input.FulfillmentLines) > 0 {
+		fulfillmenLineReturnIfaces := lo.Map(args.Input.FulfillmentLines, func(item *OrderReturnFulfillmentLineInput, _ int) orderRefundReturnFulfillmentLineCommon { return item })
+		cleanedFulfillmentLines, appErr = cleanFulfillmentLines(embedCtx, "OrderFulfillmentReturnProducts", fulfillmenLineReturnIfaces, []model.FulfillmentStatus{
+			model.FULFILLMENT_FULFILLED,
+			model.FULFILLMENT_REFUNDED,
+			model.FULFILLMENT_WAITING_FOR_APPROVAL,
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// perform mutation
+	requester, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var refund, refundShipingCosts bool
+	if args.Input.Refund != nil {
+		refund = *args.Input.Refund
+	}
+	if args.Input.IncludeShippingCosts != nil {
+		refundShipingCosts = *args.Input.Refund
+	}
+	returnFulfillment, replaceFulfillment, replaceOrder, paymentErr, appErr := embedCtx.App.Srv().OrderService().CreateFulfillmentsForReturnedProducts(
+		requester,
+		nil,
+		*order,
+		lastPaymentOfOrder,
+		cleanedOrderLines,
+		cleanedFulfillmentLines,
+		embedCtx.App.Srv().Plugin.GetPluginManager(),
+		refund,
+		amountToRefund,
+		refundShipingCosts,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if paymentErr != nil {
+		return nil, model.NewAppError("OrderFulfillmentReturnProducts", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	}
+
+	return &FulfillmentReturnProducts{
+		Order:              SystemOrderToGraphqlOrder(order),
+		ReplaceOrder:       SystemOrderToGraphqlOrder(replaceOrder),
+		ReturnFulfillment:  SystemFulfillmentToGraphqlFulfillment(returnFulfillment),
+		ReplaceFulfillment: SystemFulfillmentToGraphqlFulfillment(replaceFulfillment),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderMarkAsPaid(ctx context.Context, args struct {
-	Id                   string
+	Id                   UUID
 	TransactionReference *string
 }) (*OrderMarkAsPaid, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+	if order.BillingAddressID == nil {
+		return nil, model.NewAppError("OrderMarkAsPaid", "app.order.order_no_billing_address.app_error", nil, "order billing address is required to mark order as paid", http.StatusNotAcceptable)
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().CleanMarkOrderAsPaid(order)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		return nil, logAndReturnPaymentFailedAppError("OrderMarkAsPaid", embedCtx, nil, nil, order, nil)
+	}
+
+	requester, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	var externalReference string
+	if args.TransactionReference != nil {
+		externalReference = *args.TransactionReference
+	}
+
+	paymentErr, appErr := embedCtx.App.Srv().OrderService().MarkOrderAsPaid(*order, requester, nil, pluginMng, externalReference)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if paymentErr != nil {
+		return nil, model.NewAppError("OrderMarkAsPaid", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderMarkAsPaid{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 	Amount PositiveDecimal
-	Id     string
+	Id     UUID
 }) (*OrderRefund, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	amount := *(*decimal.Decimal)(unsafe.Pointer(&args.Amount))
+	if amount.LessThanOrEqual(decimal.Zero) {
+		return nil, model.NewAppError("OrderRefund", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount must be positive", http.StatusBadRequest)
+	}
+
+	appErr = cleanOrderRefund("OrderRefund", embedCtx.App, order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	lastOrderPayment, appErr := embedCtx.App.Srv().PaymentService().GetLastOrderPayment(order.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = cleanRefundPayment("OrderRefund", lastOrderPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	transaction, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Refund(tx, *lastOrderPayment, pluginMng, order.ChannelID, &amount)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if paymentErr != nil {
+		return nil, logAndReturnPaymentFailedAppError("OrderRefund", embedCtx, tx, paymentErr, order, lastOrderPayment)
+	}
+
+	// create fufillment
+	_, appErr = embedCtx.App.Srv().OrderService().UpsertFulfillment(tx, &model.Fulfillment{
+		Status:            model.FULFILLMENT_REFUNDED,
+		OrderID:           order.Id,
+		TotalRefundAmount: &amount,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// Confirm that we changed the status to refund. Some payment can receive
+	// asynchronous webhook with update status
+	if transaction.Kind == model.TRANSACTION_KIND_REFUND {
+		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		appErr = embedCtx.App.Srv().OrderService().OrderRefunded(*order, user, nil, amount, *lastOrderPayment, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderRefund", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderRefund{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
+// NOTE: currently only shop staffs can update order.
+// TODO: check if we can let orders' owners update themself.
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderUpdate(ctx context.Context, args struct {
-	Id    string
+	Id    UUID
 	Input OrderUpdateInput
 }) (*OrderUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if args.Input.UserEmail != nil && !model.IsValidEmail(*args.Input.UserEmail) {
+		return nil, model.NewAppError("OrderUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "UserEmail"}, "please proide valid user email", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if order.Status == model.ORDER_STATUS_DRAFT {
+		return nil, model.NewAppError("OrderUpdate", "api.order.wrong_method.app_error", nil, "use DraftOrderUpdate method instead", http.StatusBadRequest)
+	}
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	// update addresses
+	for _, addressInput := range []*AddressInput{
+		args.Input.BillingAddress,
+		args.Input.ShippingAddress,
+	} {
+		if addressInput != nil {
+			appErr = addressInput.validate("OrderUpdate")
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			var newAddress model.Address
+			addressInput.PatchAddress(&newAddress)
+
+			savedAddress, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(tx, &newAddress)
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			switch addressInput {
+			case args.Input.BillingAddress:
+				order.BillingAddressID = &savedAddress.Id
+
+			case args.Input.ShippingAddress:
+				order.ShippingAddressID = &savedAddress.Id
+			}
+		}
+	}
+
+	// update user
+	if args.Input.UserEmail != nil {
+		user, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+			Conditions: squirrel.Expr(model.UserTableName+".Email = ?", *args.Input.UserEmail),
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		order.UserID = &user.Id
+		order.UserEmail = *args.Input.UserEmail
+	}
+
+	// update order
+	updatedOrder, appErr := embedCtx.App.Srv().OrderService().UpsertOrder(tx, order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	shopSettings := embedCtx.App.Config().ShopSettings
+	appErr = embedCtx.App.Srv().OrderService().UpdateOrderPrices(tx, *updatedOrder, pluginMng, *shopSettings.IncludeTaxesInPrice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	_, appErr = pluginMng.OrderUpdated(*updatedOrder)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &OrderUpdate{
+		Order: SystemOrderToGraphqlOrder(updatedOrder),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderUpdateShipping(ctx context.Context, args struct {
-	Order string
+	Order UUID
 	Input OrderUpdateShippingInput
 }) (*OrderUpdateShipping, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if args.Input.ShippingMethod == nil {
+		orderRequiresShipping, appErr := embedCtx.App.Srv().OrderService().OrderShippingIsRequired(order.Id)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		if !order.IsDraft() && orderRequiresShipping {
+			return nil, model.NewAppError("OrderUpdateShipping", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ShippingMethod"}, "shipping method is required for this order", http.StatusBadRequest)
+		}
+
+		order.ShippingMethodID = nil
+		order.ShippingPrice, _ = util.ZeroTaxedMoney(order.Currency)
+		order.ShippingMethodName = nil
+		updatedOrder, appErr := embedCtx.App.Srv().OrderService().UpsertOrder(nil, order)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(nil, updatedOrder, map[string]interface{}{})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return &OrderUpdateShipping{
+			Order: SystemOrderToGraphqlOrder(updatedOrder),
+		}, nil
+	}
+
+	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
+		Conditions: squirrel.Expr(model.ShippingMethodTableName+".Id = ?", args.Input.ShippingMethod),
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	appErr = cleanOrderUpdateShipping("", embedCtx.App, order, shippingMethod)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	order.ShippingMethodID = &shippingMethod.Id
+	shippingPrice, appErr := pluginMng.CalculateOrderShipping(*order)
+	if appErr != nil {
+		return nil, appErr
+	}
+	shippingTaxRate, appErr := pluginMng.GetOrderShippingTaxRate(*order, *shippingPrice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	order.ShippingTaxRate = shippingTaxRate
+	order.ShippingPrice = shippingPrice
+	order.ShippingMethodName = &shippingMethod.Name
+
+	updatedOrder, appErr := embedCtx.App.Srv().OrderService().UpsertOrder(nil, order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	shopSettings := embedCtx.App.Config().ShopSettings
+	appErr = embedCtx.App.Srv().OrderService().UpdateOrderPrices(nil, *updatedOrder, pluginMng, *shopSettings.IncludeTaxesInPrice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().OrderShippingUpdated(*updatedOrder, pluginMng)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &OrderUpdateShipping{
+		Order: SystemOrderToGraphqlOrder(updatedOrder),
+	}, nil
 }
 
 func (r *Resolver) OrderVoid(ctx context.Context, args struct{ Id string }) (*OrderVoid, error) {

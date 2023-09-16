@@ -221,7 +221,7 @@ func (a *ServicePayment) CreatePayment(
 		Total:              total,
 		ReturnUrl:          &returnUrl,
 		PspReference:       &externalReference,
-		IsActive:           model.NewPrimitive(true),
+		IsActive:           model.GetPointerOfValue(true),
 		CustomerIpAddress:  &customerIpAddress,
 		ExtraData:          model.ModelToJson(extraData),
 		Token:              paymentToken,
@@ -421,9 +421,9 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 	}
 
 	switch paymentTransaction.Kind {
-	case model.CAPTURE, model.REFUND_REVERSED:
-		payMent.CapturedAmount = model.NewPrimitive(payMent.CapturedAmount.Add(*paymentTransaction.Amount))
-		payMent.IsActive = model.NewPrimitive(true)
+	case model.TRANSACTION_KIND_CAPTURE, model.TRANSACTION_KIND_REFUND_REVERSED:
+		payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Add(*paymentTransaction.Amount))
+		payMent.IsActive = model.GetPointerOfValue(true)
 		// Set payment charge status to fully charged
 		// only if there is no more amount needs to charge
 		payMent.ChargeStatus = model.PARTIALLY_CHARGED
@@ -432,35 +432,35 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		}
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 
-	case model.VOID:
-		payMent.IsActive = model.NewPrimitive(false)
+	case model.TRANSACTION_KIND_VOID:
+		payMent.IsActive = model.GetPointerOfValue(false)
 		changedFields = append(changedFields, "is_active", "update_at")
 
-	case model.REFUND:
+	case model.TRANSACTION_KIND_REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
-		payMent.CapturedAmount = model.NewPrimitive(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
+		payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
 		payMent.ChargeStatus = model.PARTIALLY_REFUNDED
 		if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-			payMent.CapturedAmount = &decimal.Zero
+			payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
 			payMent.ChargeStatus = model.FULLY_REFUNDED
-			payMent.IsActive = model.NewPrimitive(false)
+			payMent.IsActive = model.GetPointerOfValue(false)
 		}
 
-	case model.PENDING_:
+	case model.TRANSACTION_KIND_PENDING:
 		payMent.ChargeStatus = model.PENDING
 		changedFields = append(changedFields, "charge_status")
 
-	case model.CANCEL:
+	case model.TRANSACTION_KIND_CANCEL:
 		payMent.ChargeStatus = model.CANCELLED
-		payMent.IsActive = model.NewPrimitive(false)
+		payMent.IsActive = model.GetPointerOfValue(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
 
-	case model.CAPTURE_FAILED:
+	case model.TRANSACTION_KIND_CAPTURE_FAILED:
 		if payMent.ChargeStatus == model.PARTIALLY_CHARGED || payMent.ChargeStatus == model.FULLY_CHARGED {
-			payMent.CapturedAmount = model.NewPrimitive(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
+			payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
 			payMent.ChargeStatus = model.PARTIALLY_CHARGED
 			if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-				payMent.CapturedAmount = &decimal.Zero
+				payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
 			}
 			changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 		}
@@ -574,7 +574,7 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{
-			model.TransactionTableName + ".Kind":      model.AUTH,
+			model.TransactionTableName + ".Kind":      model.TRANSACTION_KIND_AUTH,
 			model.TransactionTableName + ".IsSuccess": true,
 		},
 	})

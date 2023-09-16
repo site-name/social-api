@@ -98,16 +98,16 @@ func (p *ProductType) commonPre() {
 	p.Name = SanitizeUnicode(p.Name)
 
 	if p.HasVariants == nil {
-		p.HasVariants = NewPrimitive(true)
+		p.HasVariants = GetPointerOfValue(true)
 	}
 	if p.IsShippingRequired == nil {
-		p.IsShippingRequired = NewPrimitive(true)
+		p.IsShippingRequired = GetPointerOfValue(true)
 	}
 	if p.IsDigital == nil {
-		p.IsDigital = NewPrimitive(false)
+		p.IsDigital = GetPointerOfValue(false)
 	}
 	if p.Weight == nil {
-		p.Weight = NewPrimitive[float32](0)
+		p.Weight = GetPointerOfValue[float32](0)
 	}
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT

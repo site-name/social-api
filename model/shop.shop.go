@@ -190,34 +190,34 @@ func (s *Shop) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 	s.Description = SanitizeUnicode(s.Description)
 	if s.IncludeTaxesInPrice == nil {
-		s.IncludeTaxesInPrice = NewPrimitive(true)
+		s.IncludeTaxesInPrice = GetPointerOfValue(true)
 	}
 	if s.DisplayGrossPrices == nil {
-		s.DisplayGrossPrices = NewPrimitive(true)
+		s.DisplayGrossPrices = GetPointerOfValue(true)
 	}
 	if s.ChargeTaxesOnShipping == nil {
-		s.ChargeTaxesOnShipping = NewPrimitive(true)
+		s.ChargeTaxesOnShipping = GetPointerOfValue(true)
 	}
 	if s.TrackInventoryByDefault == nil {
-		s.TrackInventoryByDefault = NewPrimitive(true)
+		s.TrackInventoryByDefault = GetPointerOfValue(true)
 	}
 	if s.AutomaticallyConfirmAllNewOrders == nil {
-		s.AutomaticallyConfirmAllNewOrders = NewPrimitive(true)
+		s.AutomaticallyConfirmAllNewOrders = GetPointerOfValue(true)
 	}
 	if s.FulfillmentAllowUnPaid == nil {
-		s.FulfillmentAllowUnPaid = NewPrimitive(true)
+		s.FulfillmentAllowUnPaid = GetPointerOfValue(true)
 	}
 	if s.FulfillmentAutoApprove == nil {
-		s.FulfillmentAutoApprove = NewPrimitive(true)
+		s.FulfillmentAutoApprove = GetPointerOfValue(true)
 	}
 	if s.AutomaticallyFulfillNonShippableGiftcard == nil {
-		s.AutomaticallyFulfillNonShippableGiftcard = NewPrimitive(true)
+		s.AutomaticallyFulfillNonShippableGiftcard = GetPointerOfValue(true)
 	}
 	if len(s.GiftcardExpiryType) == 0 {
 		s.GiftcardExpiryType = NEVER_EXPIRE
 	}
 	if s.GiftcardExpiryPeriod != nil && *s.GiftcardExpiryPeriod < 0 {
-		s.GiftcardExpiryPeriod = NewPrimitive(0)
+		s.GiftcardExpiryPeriod = GetPointerOfValue(0)
 	}
 }
 
@@ -230,55 +230,55 @@ func (s *Shop) DeepCopy() *Shop {
 	res := *s
 
 	if s.TopMenuID != nil {
-		res.TopMenuID = NewPrimitive(*s.TopMenuID)
+		res.TopMenuID = GetPointerOfValue(*s.TopMenuID)
 	}
 	if s.BottomMenuID != nil {
-		res.BottomMenuID = NewPrimitive(*s.BottomMenuID)
+		res.BottomMenuID = GetPointerOfValue(*s.BottomMenuID)
 	}
 	if s.IncludeTaxesInPrice != nil {
-		res.IncludeTaxesInPrice = NewPrimitive(*s.IncludeTaxesInPrice)
+		res.IncludeTaxesInPrice = GetPointerOfValue(*s.IncludeTaxesInPrice)
 	}
 	if s.DisplayGrossPrices != nil {
-		res.DisplayGrossPrices = NewPrimitive(*s.DisplayGrossPrices)
+		res.DisplayGrossPrices = GetPointerOfValue(*s.DisplayGrossPrices)
 	}
 	if s.ChargeTaxesOnShipping != nil {
-		res.ChargeTaxesOnShipping = NewPrimitive(*s.ChargeTaxesOnShipping)
+		res.ChargeTaxesOnShipping = GetPointerOfValue(*s.ChargeTaxesOnShipping)
 	}
 	if s.TrackInventoryByDefault != nil {
-		res.TrackInventoryByDefault = NewPrimitive(*s.TrackInventoryByDefault)
+		res.TrackInventoryByDefault = GetPointerOfValue(*s.TrackInventoryByDefault)
 	}
 	if s.AutomaticFulfillmentDigitalProducts != nil {
-		res.AutomaticFulfillmentDigitalProducts = NewPrimitive(*s.AutomaticFulfillmentDigitalProducts)
+		res.AutomaticFulfillmentDigitalProducts = GetPointerOfValue(*s.AutomaticFulfillmentDigitalProducts)
 	}
 	if s.DefaultDigitalMaxDownloads != nil {
-		res.DefaultDigitalMaxDownloads = NewPrimitive(*s.DefaultDigitalMaxDownloads)
+		res.DefaultDigitalMaxDownloads = GetPointerOfValue(*s.DefaultDigitalMaxDownloads)
 	}
 	if s.DefaultDigitalUrlValidDays != nil {
-		res.DefaultDigitalUrlValidDays = NewPrimitive(*s.DefaultDigitalUrlValidDays)
+		res.DefaultDigitalUrlValidDays = GetPointerOfValue(*s.DefaultDigitalUrlValidDays)
 	}
 	if s.AddressID != nil {
-		res.AddressID = NewPrimitive(*s.AddressID)
+		res.AddressID = GetPointerOfValue(*s.AddressID)
 	}
 	if s.CompanyAddressID != nil {
-		res.CompanyAddressID = NewPrimitive(*s.CompanyAddressID)
+		res.CompanyAddressID = GetPointerOfValue(*s.CompanyAddressID)
 	}
 	if s.CustomerSetPasswordUrl != nil {
-		res.CustomerSetPasswordUrl = NewPrimitive(*s.CustomerSetPasswordUrl)
+		res.CustomerSetPasswordUrl = GetPointerOfValue(*s.CustomerSetPasswordUrl)
 	}
 	if s.AutomaticallyConfirmAllNewOrders != nil {
-		res.AutomaticallyConfirmAllNewOrders = NewPrimitive(*s.AutomaticallyConfirmAllNewOrders)
+		res.AutomaticallyConfirmAllNewOrders = GetPointerOfValue(*s.AutomaticallyConfirmAllNewOrders)
 	}
 	if s.FulfillmentAutoApprove != nil {
-		res.FulfillmentAutoApprove = NewPrimitive(*s.FulfillmentAutoApprove)
+		res.FulfillmentAutoApprove = GetPointerOfValue(*s.FulfillmentAutoApprove)
 	}
 	if s.FulfillmentAllowUnPaid != nil {
-		res.FulfillmentAllowUnPaid = NewPrimitive(*s.FulfillmentAllowUnPaid)
+		res.FulfillmentAllowUnPaid = GetPointerOfValue(*s.FulfillmentAllowUnPaid)
 	}
 	if s.GiftcardExpiryPeriod != nil {
-		res.GiftcardExpiryPeriod = NewPrimitive(*s.GiftcardExpiryPeriod)
+		res.GiftcardExpiryPeriod = GetPointerOfValue(*s.GiftcardExpiryPeriod)
 	}
 	if s.AutomaticallyFulfillNonShippableGiftcard != nil {
-		res.AutomaticallyFulfillNonShippableGiftcard = NewPrimitive(*s.AutomaticallyFulfillNonShippableGiftcard)
+		res.AutomaticallyFulfillNonShippableGiftcard = GetPointerOfValue(*s.AutomaticallyFulfillNonShippableGiftcard)
 	}
 	if s.companyAddress != nil {
 		res.companyAddress = s.companyAddress.DeepCopy()

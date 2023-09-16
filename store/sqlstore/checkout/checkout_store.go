@@ -57,9 +57,9 @@ func (cs *SqlCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Chec
 		if checkout.Token == "" {
 			err = transaction.Create(checkout).Error
 		} else {
-			checkout.ShippingAddressID = model.NewPrimitive("") // prevent update
-			checkout.BillingAddressID = model.NewPrimitive("")  // prevent update
-			checkout.CreateAt = 0                               // prevent update
+			checkout.ShippingAddressID = model.GetPointerOfValue("") // prevent update
+			checkout.BillingAddressID = model.GetPointerOfValue("")  // prevent update
+			checkout.CreateAt = 0                                    // prevent update
 
 			err = transaction.Model(checkout).Updates(checkout).Error
 		}

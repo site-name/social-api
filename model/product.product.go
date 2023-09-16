@@ -236,7 +236,7 @@ func (p *Product) commonPre() {
 		p.WeightUnit = measurement.G
 	}
 	if p.ChargeTaxes == nil {
-		p.ChargeTaxes = NewPrimitive(true)
+		p.ChargeTaxes = GetPointerOfValue(true)
 	}
 	p.Seo.commonPre()
 }

@@ -52,26 +52,26 @@ func (d *DigitalContent) IsValid() *AppError {
 func (d *DigitalContent) DeepCopy() *DigitalContent {
 	res := *d
 	if d.UseDefaultSettings != nil {
-		res.UseDefaultSettings = NewPrimitive(*d.UseDefaultSettings)
+		res.UseDefaultSettings = GetPointerOfValue(*d.UseDefaultSettings)
 	}
 	if d.AutomaticFulfillment != nil {
-		res.AutomaticFulfillment = NewPrimitive(*d.AutomaticFulfillment)
+		res.AutomaticFulfillment = GetPointerOfValue(*d.AutomaticFulfillment)
 	}
 	if d.MaxDownloads != nil {
-		res.MaxDownloads = NewPrimitive(*d.MaxDownloads)
+		res.MaxDownloads = GetPointerOfValue(*d.MaxDownloads)
 	}
 	if d.UrlValidDays != nil {
-		res.UrlValidDays = NewPrimitive(*d.UrlValidDays)
+		res.UrlValidDays = GetPointerOfValue(*d.UrlValidDays)
 	}
 	return &res
 }
 
 func (d *DigitalContent) commonPre() {
 	if d.UseDefaultSettings == nil {
-		d.UseDefaultSettings = NewPrimitive(true)
+		d.UseDefaultSettings = GetPointerOfValue(true)
 	}
 	if d.AutomaticFulfillment == nil {
-		d.AutomaticFulfillment = NewPrimitive(false)
+		d.AutomaticFulfillment = GetPointerOfValue(false)
 	}
 	if d.ContentType != FILE {
 		d.ContentType = FILE

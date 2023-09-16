@@ -31,7 +31,7 @@ func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string 
 	}
 
 	if giftcard.IsActive != nil && !*giftcard.IsActive {
-		giftcard.IsActive = model.NewPrimitive(true)
+		giftcard.IsActive = model.GetPointerOfValue(true)
 		giftcards, appErr := embedCtx.App.Srv().GiftcardService().UpsertGiftcards(nil, giftcard)
 		if appErr != nil {
 			return nil, appErr
@@ -170,7 +170,7 @@ func (r *Resolver) GiftCardDeactivate(ctx context.Context, args struct{ Id strin
 	}
 
 	if giftcard.IsActive != nil && *giftcard.IsActive {
-		giftcard.IsActive = model.NewPrimitive(false)
+		giftcard.IsActive = model.GetPointerOfValue(false)
 		giftcards, appErr := embedCtx.App.Srv().GiftcardService().UpsertGiftcards(nil, giftcard)
 		if appErr != nil {
 			return nil, appErr
@@ -425,7 +425,7 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 
 	// update
 	for _, gc := range giftcards {
-		gc.IsActive = model.NewPrimitive(true)
+		gc.IsActive = model.GetPointerOfValue(true)
 	}
 	_, appErr = embedCtx.App.Srv().GiftcardService().UpsertGiftcards(transaction, giftcards...)
 	if appErr != nil {
@@ -468,7 +468,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 
 	// update
 	for _, gc := range giftcards {
-		gc.IsActive = model.NewPrimitive(false)
+		gc.IsActive = model.GetPointerOfValue(false)
 	}
 	_, appErr = embedCtx.App.Srv().GiftcardService().UpsertGiftcards(transaction, giftcards...)
 	if appErr != nil {

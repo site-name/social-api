@@ -37,12 +37,12 @@ func (v *VoucherChannelListing) commonPre() {
 	if v.Discount != nil {
 		v.DiscountValue = &v.Discount.Amount
 	} else {
-		v.DiscountValue = &decimal.Zero
+		v.DiscountValue = GetPointerOfValue(decimal.Zero)
 	}
 	if v.MinSpent == nil {
 		v.MinSpentAmount = &v.MinSpent.Amount
 	} else {
-		v.MinSpentAmount = &decimal.Zero
+		v.MinSpentAmount = GetPointerOfValue(decimal.Zero)
 	}
 	if v.Currency != "" {
 		v.Currency = strings.ToUpper(v.Currency)

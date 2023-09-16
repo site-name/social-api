@@ -115,9 +115,9 @@ type PaymentPatch struct {
 // Retrieve the maximum capture possible.
 func (p *Payment) GetChargeAmount() *decimal.Decimal {
 	if p.Total == nil || p.CapturedAmount == nil {
-		return &decimal.Zero
+		return GetPointerOfValue(decimal.Zero)
 	}
-	return NewPrimitive(p.Total.Sub(*p.CapturedAmount))
+	return GetPointerOfValue(p.Total.Sub(*p.CapturedAmount))
 }
 
 // NotCharged checks if current payment's charge status is "not_charged"
@@ -229,16 +229,16 @@ func (p *Payment) commonPre() {
 	p.BillingFirstName = SanitizeUnicode(CleanNamePart(p.BillingFirstName, FirstName))
 	p.BillingLastName = SanitizeUnicode(CleanNamePart(p.BillingLastName, LastName))
 	if p.Total == nil || p.Total.LessThanOrEqual(decimal.Zero) {
-		p.Total = &decimal.Zero
+		p.Total = GetPointerOfValue(decimal.Zero)
 	}
 	if p.CapturedAmount == nil || p.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-		p.CapturedAmount = &decimal.Zero
+		p.CapturedAmount = GetPointerOfValue(decimal.Zero)
 	}
 	if !p.ChargeStatus.IsValid() {
 		p.ChargeStatus = NOT_CHARGED
 	}
 	if p.IsActive == nil {
-		p.IsActive = NewPrimitive(true)
+		p.IsActive = GetPointerOfValue(true)
 	}
 	if p.Currency == "" {
 		p.Currency = DEFAULT_CURRENCY

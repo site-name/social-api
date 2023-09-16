@@ -108,10 +108,10 @@ func (o *OrderDiscount) commonPre() {
 		o.ValueType = DISCOUNT_VALUE_TYPE_FIXED
 	}
 	if o.Value == nil {
-		o.Value = &decimal.Zero
+		o.Value = GetPointerOfValue(decimal.Zero)
 	}
 	if o.AmountValue == nil {
-		o.AmountValue = &decimal.Zero
+		o.AmountValue = GetPointerOfValue(decimal.Zero)
 	}
 	if o.Name != nil {
 		*o.Name = SanitizeUnicode(*o.Name)

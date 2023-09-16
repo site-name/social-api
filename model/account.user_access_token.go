@@ -34,6 +34,6 @@ func (t *UserAccessToken) commonPre() {
 		t.Token = NewId()
 	}
 	if t.IsActive == nil {
-		t.IsActive = NewPrimitive(true)
+		t.IsActive = GetPointerOfValue(true)
 	}
 }

@@ -85,7 +85,7 @@ func (c *Collection) DeepCopy() *Collection {
 	}
 	res.ModelMetadata = c.ModelMetadata.DeepCopy()
 	if c.BackgroundImage != nil {
-		res.BackgroundImage = NewPrimitive(*c.BackgroundImage)
+		res.BackgroundImage = GetPointerOfValue(*c.BackgroundImage)
 	}
 
 	return &res

@@ -144,7 +144,7 @@ func (p *ProductVariant) IsPreorderActive() bool {
 func (p *ProductVariant) commonPre() {
 	p.Name = SanitizeUnicode(p.Name)
 	if p.TrackInventory == nil {
-		p.TrackInventory = NewPrimitive(true)
+		p.TrackInventory = GetPointerOfValue(true)
 	}
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.G

@@ -291,7 +291,7 @@ func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo model.CheckoutIn
 		defaultValue = deci
 	}
 
-	return model.NewPrimitive(deci.Round(4)), nil
+	return model.GetPointerOfValue(deci.Round(4)), nil
 }
 
 func (m *PluginManager) GetOrderShippingTaxRate(orDer model.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
@@ -314,7 +314,7 @@ func (m *PluginManager) GetOrderShippingTaxRate(orDer model.Order, shippingPrice
 		defaultValue = deci
 	}
 
-	return model.NewPrimitive(deci.Round(4)), nil
+	return model.GetPointerOfValue(deci.Round(4)), nil
 }
 
 func (m *PluginManager) CalculateOrderlineTotal(orDer model.Order, orderLine model.OrderLine, variant model.ProductVariant, product model.Product) (*goprices.TaxedMoney, *model.AppError) {
@@ -421,7 +421,7 @@ func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo model.CheckoutInfo, 
 		defaultValue = deci
 	}
 
-	return model.NewPrimitive(deci.RoundUp(4)), nil
+	return model.GetPointerOfValue(deci.RoundUp(4)), nil
 }
 
 func (m *PluginManager) GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
@@ -444,7 +444,7 @@ func (m *PluginManager) GetOrderLineTaxRate(orDer model.Order, product model.Pro
 		defaultValue = deci
 	}
 
-	return model.NewPrimitive(deci.RoundUp(4)), nil
+	return model.GetPointerOfValue(deci.RoundUp(4)), nil
 }
 
 func (m *PluginManager) GetTaxRateTypeChoices() ([]*model.TaxType, *model.AppError) {
@@ -1562,7 +1562,7 @@ func (m *PluginManager) GetTaxRatePercentageValue(obj interface{}, country strin
 		defaultValue = *deci
 	}
 
-	return model.NewPrimitive(deci.Round(0)), nil
+	return model.GetPointerOfValue(deci.Round(0)), nil
 }
 
 func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, cleanedData model.StringInterface) (*model.PluginConfiguration, *model.AppError) {

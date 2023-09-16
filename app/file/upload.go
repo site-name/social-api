@@ -178,7 +178,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd
 	info.CreatorId = us.UserID
 	info.Path = us.Path
 
-	// info.RemoteId = model.NewPrimitive(us.RemoteId)
+	// info.RemoteId = model.GetPointerOfValue(us.RemoteId)
 	// if us.ReqFileId != "" {
 	// 	info.Id = us.ReqFileId
 	// }

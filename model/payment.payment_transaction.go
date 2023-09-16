@@ -16,19 +16,19 @@ type TransactionKind string
 
 // valid values for payment transaction's kind
 const (
-	EXTERNAL          TransactionKind = "external"
-	AUTH              TransactionKind = "auth"
-	CAPTURE           TransactionKind = "capture"
-	CAPTURE_FAILED    TransactionKind = "capture_failed" // ?
-	ACTION_TO_CONFIRM TransactionKind = "action_to_confirm"
-	VOID              TransactionKind = "void"
-	REFUND            TransactionKind = "refund"
-	REFUND_ONGOING    TransactionKind = "refund_ongoing"
-	REFUND_FAILED     TransactionKind = "refund_failed"   // ?
-	REFUND_REVERSED   TransactionKind = "refund_reversed" // ?
-	CONFIRM           TransactionKind = "confirm"
-	CANCEL            TransactionKind = "cancel"
-	PENDING_          TransactionKind = "pending"
+	TRANSACTION_KIND_EXTERNAL          TransactionKind = "external"
+	TRANSACTION_KIND_AUTH              TransactionKind = "auth"
+	TRANSACTION_KIND_CAPTURE           TransactionKind = "capture"
+	TRANSACTION_KIND_CAPTURE_FAILED    TransactionKind = "capture_failed" // ?
+	TRANSACTION_KIND_ACTION_TO_CONFIRM TransactionKind = "action_to_confirm"
+	TRANSACTION_KIND_VOID              TransactionKind = "void"
+	TRANSACTION_KIND_REFUND            TransactionKind = "refund"
+	TRANSACTION_KIND_REFUND_ONGOING    TransactionKind = "refund_ongoing"
+	TRANSACTION_KIND_REFUND_FAILED     TransactionKind = "refund_failed"   // ?
+	TRANSACTION_KIND_REFUND_REVERSED   TransactionKind = "refund_reversed" // ?
+	TRANSACTION_KIND_CONFIRM           TransactionKind = "confirm"
+	TRANSACTION_KIND_CANCEL            TransactionKind = "cancel"
+	TRANSACTION_KIND_PENDING           TransactionKind = "pending"
 )
 
 func (t TransactionKind) String() string {
@@ -40,16 +40,16 @@ func (t TransactionKind) IsValid() bool {
 }
 
 var TransactionKindString = map[TransactionKind]string{
-	EXTERNAL:          "External reference",
-	AUTH:              "Authorization",
-	PENDING_:          "Pending", // transaction and payment share this value
-	ACTION_TO_CONFIRM: "Action to confirm",
-	REFUND:            "Refund",
-	REFUND_ONGOING:    "Refund in progress",
-	CAPTURE:           "Capture",
-	VOID:              "Void",
-	CONFIRM:           "Confirm",
-	CANCEL:            "Cancel",
+	TRANSACTION_KIND_EXTERNAL:          "External reference",
+	TRANSACTION_KIND_AUTH:              "Authorization",
+	TRANSACTION_KIND_PENDING:           "Pending", // transaction and payment share this value
+	TRANSACTION_KIND_ACTION_TO_CONFIRM: "Action to confirm",
+	TRANSACTION_KIND_REFUND:            "Refund",
+	TRANSACTION_KIND_REFUND_ONGOING:    "Refund in progress",
+	TRANSACTION_KIND_CAPTURE:           "Capture",
+	TRANSACTION_KIND_VOID:              "Void",
+	TRANSACTION_KIND_CONFIRM:           "Confirm",
+	TRANSACTION_KIND_CANCEL:            "Cancel",
 }
 
 // Represents a single payment operation.
@@ -116,7 +116,7 @@ func (p *PaymentTransaction) commonPre() {
 		*p.Error = SanitizeUnicode(*p.Error)
 	}
 	if p.Amount == nil || p.Amount.LessThanOrEqual(decimal.Zero) {
-		p.Amount = &decimal.Zero
+		p.Amount = GetPointerOfValue(decimal.Zero)
 	}
 	if p.ActionRequiredData == nil {
 		p.ActionRequiredData = make(StringInterface)

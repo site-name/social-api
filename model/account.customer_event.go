@@ -141,6 +141,6 @@ func (*StaffNotificationRecipient) TableName() string {
 
 func (c *StaffNotificationRecipient) commonPre() {
 	if c.StaffEmail != nil {
-		c.StaffEmail = NewPrimitive(NormalizeEmail(*c.StaffEmail))
+		c.StaffEmail = GetPointerOfValue(NormalizeEmail(*c.StaffEmail))
 	}
 }

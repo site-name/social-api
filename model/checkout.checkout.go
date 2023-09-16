@@ -138,7 +138,7 @@ func (c *Checkout) commonPre() {
 	if c.Discount != nil {
 		c.DiscountAmount = &c.Discount.Amount
 	} else {
-		c.DiscountAmount = &decimal.Zero
+		c.DiscountAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	c.Note = SanitizeUnicode(c.Note)
@@ -165,41 +165,41 @@ func (c *Checkout) DeepCopy() *Checkout {
 
 	res := *c
 	if c.UserID != nil {
-		res.UserID = NewPrimitive(*c.UserID)
+		res.UserID = GetPointerOfValue(*c.UserID)
 	}
 	if c.BillingAddressID != nil {
-		res.BillingAddressID = NewPrimitive(*c.BillingAddressID)
+		res.BillingAddressID = GetPointerOfValue(*c.BillingAddressID)
 	}
 	if c.ShippingAddressID != nil {
-		res.ShippingAddressID = NewPrimitive(*c.ShippingAddressID)
+		res.ShippingAddressID = GetPointerOfValue(*c.ShippingAddressID)
 	}
 	if c.ShippingMethodID != nil {
-		res.ShippingMethodID = NewPrimitive(*c.ShippingMethodID)
+		res.ShippingMethodID = GetPointerOfValue(*c.ShippingMethodID)
 	}
 	if c.CollectionPointID != nil {
-		res.CollectionPointID = NewPrimitive(*c.CollectionPointID)
+		res.CollectionPointID = GetPointerOfValue(*c.CollectionPointID)
 	}
 	if c.DiscountName != nil {
-		res.DiscountName = NewPrimitive(*c.DiscountName)
+		res.DiscountName = GetPointerOfValue(*c.DiscountName)
 	}
 	if c.TranslatedDiscountName != nil {
-		res.TranslatedDiscountName = NewPrimitive(*c.TranslatedDiscountName)
+		res.TranslatedDiscountName = GetPointerOfValue(*c.TranslatedDiscountName)
 	}
 	if c.VoucherCode != nil {
-		res.VoucherCode = NewPrimitive(*c.VoucherCode)
+		res.VoucherCode = GetPointerOfValue(*c.VoucherCode)
 	}
 	if c.RedirectURL != nil {
-		res.RedirectURL = NewPrimitive(*c.RedirectURL)
+		res.RedirectURL = GetPointerOfValue(*c.RedirectURL)
 	}
 	if c.TrackingCode != nil {
-		res.TrackingCode = NewPrimitive(*c.TrackingCode)
+		res.TrackingCode = GetPointerOfValue(*c.TrackingCode)
 	}
 	if c.RedirectURL != nil {
-		res.RedirectURL = NewPrimitive(*c.RedirectURL)
+		res.RedirectURL = GetPointerOfValue(*c.RedirectURL)
 	}
 
 	if c.DiscountAmount != nil {
-		res.DiscountAmount = NewPrimitive(*c.DiscountAmount)
+		res.DiscountAmount = GetPointerOfValue(*c.DiscountAmount)
 	}
 
 	if c.channel != nil {

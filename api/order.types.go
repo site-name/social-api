@@ -795,7 +795,7 @@ func (o *Order) Original(ctx context.Context) (*string, error) {
 	}
 	value := append([]byte("Order"), *o.order.OriginalID...)
 
-	return model.NewPrimitive(base64.StdEncoding.EncodeToString(value)), nil
+	return model.GetPointerOfValue(base64.StdEncoding.EncodeToString(value)), nil
 }
 
 func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Order] {

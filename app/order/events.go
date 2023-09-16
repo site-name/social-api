@@ -104,7 +104,7 @@ func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
 	} else {
-		userID = model.NewPrimitive(user.Id)
+		userID = model.GetPointerOfValue(user.Id)
 	}
 
 	discountParameters := a.PrepareDiscountObject(orderDiscount, oldOrderDiscount)

@@ -18,7 +18,7 @@ func (o *OrderLineData) DeepCopy() *OrderLineData {
 	res := *o
 	res.Line = *o.Line.DeepCopy()
 	if o.WarehouseID != nil {
-		res.WarehouseID = NewPrimitive(*o.WarehouseID)
+		res.WarehouseID = GetPointerOfValue(*o.WarehouseID)
 	}
 	if o.Variant != nil {
 		res.Variant = o.Variant.DeepCopy()

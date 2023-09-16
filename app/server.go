@@ -796,7 +796,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 		for currency, rate := range responseValue.Rates {
 			exchangeRate := &model.OpenExchangeRate{
 				ToCurrency: currency,
-				Rate:       model.NewPrimitive(decimal.NewFromFloat(rate)),
+				Rate:       model.GetPointerOfValue(decimal.NewFromFloat(rate)),
 			}
 			s.ExchangeRateMap.Store(currency, exchangeRate)
 			exchangeRateInstances = append(exchangeRateInstances, exchangeRate)

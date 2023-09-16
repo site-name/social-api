@@ -137,7 +137,7 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.O
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.AUTH},
+		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.TRANSACTION_KIND_AUTH},
 		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
 		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
 
@@ -156,7 +156,7 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.CAPTURE},
+		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.TRANSACTION_KIND_CAPTURE},
 		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
 		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
 

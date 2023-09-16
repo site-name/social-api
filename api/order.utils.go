@@ -19,6 +19,67 @@ const (
 	ErrRefundAmountGreaterThanPossible                   = "app.order.refund_amount_greater_than_possible_amount.app_error"
 )
 
+type orderRefundReturnFulfillmentLineCommon interface {
+	getFulfillmentLineID() UUID
+	getQuantity() int32
+	getReplace() bool
+}
+
+var (
+	_ orderRefundReturnFulfillmentLineCommon = (*OrderRefundFulfillmentLineInput)(nil)
+	_ orderRefundReturnFulfillmentLineCommon = (*OrderReturnFulfillmentLineInput)(nil)
+)
+
+type OrderRefundFulfillmentLineInput struct {
+	FulfillmentLineID UUID  `json:"fulfillmentLineId"`
+	Quantity          int32 `json:"quantity"`
+}
+
+func (o *OrderRefundFulfillmentLineInput) getFulfillmentLineID() UUID { return o.FulfillmentLineID }
+func (o *OrderRefundFulfillmentLineInput) getQuantity() int32         { return o.Quantity }
+func (o *OrderRefundFulfillmentLineInput) getReplace() bool           { return false }
+
+type OrderReturnFulfillmentLineInput struct {
+	OrderRefundFulfillmentLineInput
+	Replace *bool `json:"replace"`
+}
+
+func (o *OrderReturnFulfillmentLineInput) getReplace() bool {
+	if o.Replace == nil {
+		return false
+	}
+	return *o.Replace
+}
+
+var _ orderLineReturnRefundLineCommon = (*OrderRefundLineInput)(nil)
+var _ orderLineReturnRefundLineCommon = (*OrderReturnLineInput)(nil)
+
+type orderLineReturnRefundLineCommon interface {
+	getOrderLineID() UUID
+	getQuantity() int32
+	getReplace() bool
+}
+
+func (o *OrderRefundLineInput) getOrderLineID() UUID { return o.OrderLineID }
+func (o *OrderRefundLineInput) getQuantity() int32   { return o.Quantity }
+func (o *OrderRefundLineInput) getReplace() bool     { return false }
+
+type OrderRefundLineInput struct {
+	OrderLineID UUID  `json:"orderLineId"`
+	Quantity    int32 `json:"quantity"`
+}
+type OrderReturnLineInput struct {
+	OrderRefundLineInput
+	Replace *bool `json:"replace"`
+}
+
+func (o *OrderReturnLineInput) getReplace() bool {
+	if o.Replace == nil {
+		return false
+	}
+	return *o.Replace
+}
+
 func cleanOrderUpdateShipping(where string, ap app.AppIface, order *model.Order, method *model.ShippingMethod) *model.AppError {
 	if order.ShippingAddressID == nil {
 		return model.NewAppError(where, "app.order.shipping_address_not_set.app_error", nil, "cannot choose a shipping method for an order without shipping address", http.StatusNotAcceptable)
@@ -138,7 +199,7 @@ func logAndReturnPaymentFailedAppError(where string, ctx *web.Context, tx *gorm.
 	}
 
 	// raise payment failed error
-	return model.NewAppError(where, "app.order.payment_failed.app_error", nil, paymentErr.Error(), http.StatusInternalServerError)
+	return model.NewAppError(where, model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
 }
 
 func cleanOrderPayment(where string, payment *model.Payment) *model.AppError {
@@ -169,8 +230,8 @@ func cleanAmountToRefund(embedCtx *web.Context, where string, order *model.Order
 	return nil
 }
 
-func cleanLines(embedCtx *web.Context, where string, linesData []*OrderRefundLineInput) (model.OrderLineDatas, *model.AppError) {
-	orderLineIds := lo.Map(linesData, func(item *OrderRefundLineInput, _ int) string { return item.OrderLineID.String() })
+func cleanLines(embedCtx *web.Context, where string, linesData []orderLineReturnRefundLineCommon) (model.OrderLineDatas, *model.AppError) {
+	orderLineIds := lo.Map(linesData, func(item orderLineReturnRefundLineCommon, _ int) string { return item.getOrderLineID().String() })
 
 	orderLines, appErr := embedCtx.App.Srv().OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": orderLineIds},
@@ -179,8 +240,8 @@ func cleanLines(embedCtx *web.Context, where string, linesData []*OrderRefundLin
 		return nil, appErr
 	}
 
-	lineDataMap := lo.SliceToMap(linesData, func(item *OrderRefundLineInput) (string, *OrderRefundLineInput) {
-		return item.OrderLineID.String(), item
+	lineDataMap := lo.SliceToMap(linesData, func(item orderLineReturnRefundLineCommon) (string, orderLineReturnRefundLineCommon) {
+		return item.getOrderLineID().String(), item
 	})
 
 	var res model.OrderLineDatas
@@ -188,18 +249,22 @@ func cleanLines(embedCtx *web.Context, where string, linesData []*OrderRefundLin
 	for i := 0; i < min(len(orderLines), len(lineDataMap)); i++ {
 		orderLine := orderLines[i]
 		lineData := lineDataMap[orderLine.Id]
-		quantity := int(lineData.Quantity)
+		quantity := int(lineData.getQuantity())
 
 		if orderLine.IsGiftcard {
 			return nil, model.NewAppError(where, "app.order.cannot_refund_giftcard_line.app_error", nil, "cannot refund or return giftcard line", http.StatusNotAcceptable)
 		}
 
 		if orderLine.Quantity < quantity {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", lineData.Quantity, orderLine.Quantity), http.StatusBadRequest)
+			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line quantity: %d", quantity, orderLine.Quantity), http.StatusBadRequest)
 		}
 
 		if unfulfilledQuantity := orderLine.QuantityUnFulfilled(); unfulfilledQuantity < quantity {
-			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", lineData.Quantity, unfulfilledQuantity), http.StatusBadRequest)
+			return nil, model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "quantity"}, fmt.Sprintf("provided quantity: %d bigger than order line unfulfilled quantity: %d", quantity, unfulfilledQuantity), http.StatusBadRequest)
+		}
+
+		if lineData.getReplace() && orderLine.VariantID == nil {
+			return nil, model.NewAppError(where, "app.order.replace_order_line_with_no_attached_product.app_error", nil, "cannot replace order line with no assigned product", http.StatusBadRequest)
 		}
 
 		res = append(res, &model.OrderLineData{
@@ -211,8 +276,10 @@ func cleanLines(embedCtx *web.Context, where string, linesData []*OrderRefundLin
 	return res, nil
 }
 
-func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLinesData []*OrderRefundFulfillmentLineInput, whitelistedStatuses []model.FulfillmentStatus) ([]*model.FulfillmentLineData, *model.AppError) {
-	fulfillmentLineIds := lo.Map(fulfillmentLinesData, func(item *OrderRefundFulfillmentLineInput, _ int) string { return item.FulfillmentLineID.String() })
+func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLinesData []orderRefundReturnFulfillmentLineCommon, whitelistedStatuses []model.FulfillmentStatus) ([]*model.FulfillmentLineData, *model.AppError) {
+	fulfillmentLineIds := lo.Map(fulfillmentLinesData, func(item orderRefundReturnFulfillmentLineCommon, _ int) string {
+		return item.getFulfillmentLineID().String()
+	})
 
 	fulfillmentLines, appErr := embedCtx.App.
 		Srv().
@@ -226,8 +293,8 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 		return nil, appErr
 	}
 
-	fulfillmentLineDataMap := lo.SliceToMap(fulfillmentLinesData, func(item *OrderRefundFulfillmentLineInput) (string, *OrderRefundFulfillmentLineInput) {
-		return item.FulfillmentLineID.String(), item
+	fulfillmentLineDataMap := lo.SliceToMap(fulfillmentLinesData, func(item orderRefundReturnFulfillmentLineCommon) (string, orderRefundReturnFulfillmentLineCommon) {
+		return item.getFulfillmentLineID().String(), item
 	})
 
 	res := []*model.FulfillmentLineData{}
@@ -235,7 +302,7 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 	for i := 0; i < min(len(fulfillmentLines), len(fulfillmentLineDataMap)); i++ {
 		fulfillmentLine := fulfillmentLines[0]
 		lineData := fulfillmentLineDataMap[fulfillmentLine.Id]
-		quantity := int(lineData.Quantity)
+		quantity := int(lineData.getQuantity())
 
 		if fulfillmentLine.OrderLine.IsGiftcard {
 			return nil, model.NewAppError(where, "app.order.cannot_refund_giftcard_line.app_error", nil, "cannot refund or return giftcard line", http.StatusNotAcceptable)

@@ -319,8 +319,8 @@ func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
 
 	return &Margin{
 		// TODO: Check if we need precision here
-		Start: model.NewPrimitive(int32(margin[0])),
-		Stop:  model.NewPrimitive(int32(margin[1])),
+		Start: model.GetPointerOfValue(int32(margin[0])),
+		Stop:  model.GetPointerOfValue(int32(margin[1])),
 	}, nil
 }
 
@@ -415,7 +415,7 @@ func systemProductVariantChannelListingToGraphqlProductVariantChannelListing(p *
 		SoldUnits: int32(p.Get_preorderQuantityAllocated()),
 	}
 	if qt := p.PreorderQuantityThreshold; qt != nil {
-		thresHold.Quantity = model.NewPrimitive(int32(*qt))
+		thresHold.Quantity = model.GetPointerOfValue(int32(*qt))
 	}
 
 	res := &ProductVariantChannelListing{
@@ -448,7 +448,7 @@ func (p *ProductVariantChannelListing) Margin(ctx context.Context) (*int32, erro
 	if margin == nil {
 		return nil, nil
 	}
-	return model.NewPrimitive(int32(*margin)), nil
+	return model.GetPointerOfValue(int32(*margin)), nil
 }
 
 type CollectionChannelListing struct {

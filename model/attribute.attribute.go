@@ -199,10 +199,10 @@ func (a *Attribute) DeepCopy() *Attribute {
 	res := *a
 
 	if a.EntityType != nil {
-		res.EntityType = NewPrimitive(*a.EntityType)
+		res.EntityType = GetPointerOfValue(*a.EntityType)
 	}
 	if a.Unit != nil {
-		res.Unit = NewPrimitive(*a.Unit)
+		res.Unit = GetPointerOfValue(*a.Unit)
 	}
 	res.ModelMetadata = a.ModelMetadata.DeepCopy()
 	res.AttributeValues = a.AttributeValues.DeepCopy()

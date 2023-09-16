@@ -120,7 +120,7 @@ func (a *ServicePayment) ProcessPayment(
 		}
 	}
 
-	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.CAPTURE, paymentData, actionRequired, response, errMsg)
+	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.TRANSACTION_KIND_CAPTURE, paymentData, actionRequired, response, errMsg)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -184,7 +184,7 @@ func (a *ServicePayment) Authorize(
 		}
 	}
 
-	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.CAPTURE, paymentData, false, response, errMsg)
+	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.TRANSACTION_KIND_CAPTURE, paymentData, false, response, errMsg)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -252,7 +252,7 @@ func (a *ServicePayment) Capture(
 		}
 	}
 
-	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.CAPTURE, paymentData, false, response, errMsg)
+	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.TRANSACTION_KIND_CAPTURE, paymentData, false, response, errMsg)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -309,9 +309,9 @@ func (a *ServicePayment) Refund(
 		return nil, model.NewPaymentError("Refund", "This payment cannot be refunded", model.INVALID), nil
 	}
 
-	kind := model.CAPTURE
+	kind := model.TRANSACTION_KIND_CAPTURE
 	if lockedPayment.IsManual() {
-		kind = model.EXTERNAL
+		kind = model.TRANSACTION_KIND_EXTERNAL
 	}
 
 	token, paymentErr, appErr := a.getPastTransactionToken(lockedPayment, kind)
@@ -328,7 +328,7 @@ func (a *ServicePayment) Refund(
 
 	if lockedPayment.IsManual() {
 		// for manual payment we just need to mark payment as a refunded
-		paymentTransaction, appErr = a.CreateTransaction(lockedPayment.Id, model.REFUND, paymentData, false, nil, "", true)
+		paymentTransaction, appErr = a.CreateTransaction(lockedPayment.Id, model.TRANSACTION_KIND_REFUND, paymentData, false, nil, "", true)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -336,7 +336,7 @@ func (a *ServicePayment) Refund(
 		response, errMsg := a.fetchGatewayResponse(manager.RefundPayment, lockedPayment.GateWay, *paymentData, channelID)
 		paymentTransaction, appErr = a.GetAlreadyProcessedTransactionOrCreateNewTransaction(
 			lockedPayment.Id,
-			model.REFUND,
+			model.TRANSACTION_KIND_REFUND,
 			paymentData,
 			false,
 			response,
@@ -375,7 +375,7 @@ func (a *ServicePayment) Void(dbTransaction *gorm.DB, payMent model.Payment, man
 		return nil, nil, appErr
 	}
 
-	token, paymentErr, appErr := a.getPastTransactionToken(lockedPayment, model.AUTH)
+	token, paymentErr, appErr := a.getPastTransactionToken(lockedPayment, model.TRANSACTION_KIND_AUTH)
 	if paymentErr != nil || appErr != nil {
 		return nil, paymentErr, appErr
 	}
@@ -388,7 +388,7 @@ func (a *ServicePayment) Void(dbTransaction *gorm.DB, payMent model.Payment, man
 	response, errMsg := a.fetchGatewayResponse(manager.VoidPayment, lockedPayment.GateWay, *paymentData, channelID)
 	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(
 		lockedPayment.Id,
-		model.VOID,
+		model.TRANSACTION_KIND_VOID,
 		paymentData,
 		false,
 		response,
@@ -437,7 +437,7 @@ func (a *ServicePayment) Confirm(
 
 	transactionsOfPayment, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Conditions: squirrel.Eq{
-			model.TransactionTableName + ".Kind":      model.ACTION_TO_CONFIRM,
+			model.TransactionTableName + ".Kind":      model.TRANSACTION_KIND_ACTION_TO_CONFIRM,
 			model.TransactionTableName + ".IsSuccess": true,
 		},
 	})
@@ -468,7 +468,7 @@ func (a *ServicePayment) Confirm(
 		}
 	}
 
-	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.CONFIRM, paymentData, actionRequired, response, errMsg)
+	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, model.TRANSACTION_KIND_CONFIRM, paymentData, actionRequired, response, errMsg)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -542,7 +542,7 @@ func (a *ServicePayment) validateRefundAmount(payMent *model.Payment, amount *de
 		return model.NewPaymentError("validateRefundAmount", "Amount should be positive number", model.INVALID)
 	}
 	if payMent.CapturedAmount == nil {
-		payMent.CapturedAmount = &decimal.Zero
+		payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
 	}
 	if amount.GreaterThan(*payMent.CapturedAmount) {
 		return model.NewPaymentError("validateRefundAmount", "Cannot refund more than captures.", model.INVALID)

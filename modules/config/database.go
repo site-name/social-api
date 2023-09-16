@@ -240,8 +240,8 @@ func (ds *DatabaseStore) Load() ([]byte, error) {
 	// Initialize from the default config if no active configuration could be found.
 	if len(configurationData) == 0 {
 		configWithDB := model.Config{}
-		configWithDB.SqlSettings.DriverName = model.NewPrimitive(ds.driverName)
-		configWithDB.SqlSettings.DataSource = model.NewPrimitive(ds.dataSourceName)
+		configWithDB.SqlSettings.DriverName = model.GetPointerOfValue(ds.driverName)
+		configWithDB.SqlSettings.DataSource = model.GetPointerOfValue(ds.dataSourceName)
 		return json.Marshal(configWithDB)
 	}
 

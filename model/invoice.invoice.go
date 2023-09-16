@@ -60,7 +60,7 @@ func (i *Invoice) DeepCopy() *Invoice {
 
 	res := *i
 	if i.OrderID != nil {
-		res.OrderID = NewPrimitive(*i.OrderID)
+		res.OrderID = GetPointerOfValue(*i.OrderID)
 	}
 	if i.order != nil {
 		res.order = i.order.DeepCopy()

@@ -247,10 +247,10 @@ func (o *Order) commonPre() {
 		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
 	}
 	if o.ShippingPriceNetAmount == nil {
-		o.ShippingPriceNetAmount = &decimal.Zero
+		o.ShippingPriceNetAmount = GetPointerOfValue(decimal.Zero)
 	}
 	if o.ShippingPriceGrossAmount == nil {
-		o.ShippingPriceGrossAmount = &decimal.Zero
+		o.ShippingPriceGrossAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	// total
@@ -262,17 +262,17 @@ func (o *Order) commonPre() {
 		o.TotalGrossAmount = &o.TotalGross.Amount
 	}
 	if o.TotalNetAmount == nil {
-		o.TotalNetAmount = &decimal.Zero
+		o.TotalNetAmount = GetPointerOfValue(decimal.Zero)
 	}
 	if o.TotalGrossAmount == nil {
-		o.TotalGrossAmount = &decimal.Zero
+		o.TotalGrossAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	// total paid
 	if o.TotalPaid != nil {
 		o.TotalPaidAmount = &o.TotalPaid.Amount
 	} else {
-		o.TotalPaidAmount = &decimal.Zero
+		o.TotalPaidAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	// un-discounted total
@@ -285,13 +285,13 @@ func (o *Order) commonPre() {
 	}
 
 	if o.DisplayGrossPrices == nil {
-		o.DisplayGrossPrices = NewPrimitive(true)
+		o.DisplayGrossPrices = GetPointerOfValue(true)
 	}
 	if o.WeightUnit == "" {
 		o.WeightUnit = measurement.KG
 	}
 	if o.ShippingMethodName != nil {
-		o.ShippingMethodName = NewPrimitive(SanitizeUnicode(*o.ShippingMethodName))
+		o.ShippingMethodName = GetPointerOfValue(SanitizeUnicode(*o.ShippingMethodName))
 	}
 	o.CustomerNote = SanitizeUnicode(o.CustomerNote)
 
@@ -310,7 +310,7 @@ func (o *Order) commonPre() {
 		o.Currency = DEFAULT_CURRENCY
 	}
 	if o.CollectionPointName != nil {
-		o.CollectionPointName = NewPrimitive(SanitizeUnicode(*o.CollectionPointName))
+		o.CollectionPointName = GetPointerOfValue(SanitizeUnicode(*o.CollectionPointName))
 	}
 	if o.Weight != nil {
 		o.WeightAmount = o.Weight.Amount

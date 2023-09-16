@@ -71,7 +71,7 @@ func (fi *FileInfo) PreSave() {
 	}
 
 	if fi.RemoteId == nil {
-		fi.RemoteId = NewPrimitive("")
+		fi.RemoteId = GetPointerOfValue("")
 	}
 }
 
@@ -82,7 +82,7 @@ func (fi *FileInfo) DeepCopy() *FileInfo {
 
 	res := *fi
 	if fi.RemoteId != nil {
-		res.RemoteId = NewPrimitive(*fi.RemoteId)
+		res.RemoteId = GetPointerOfValue(*fi.RemoteId)
 	}
 	if fi.MiniPreview != nil {
 		m := append([]byte{}, *fi.MiniPreview...)

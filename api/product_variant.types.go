@@ -49,10 +49,10 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 		Name:            variant.Name,
 		Sku:             &variant.Sku,
 		TrackInventory:  *variant.TrackInventory,
-		Channel:         model.NewPrimitive("unknown"), // ??
+		Channel:         model.GetPointerOfValue("unknown"), // ??
 		Metadata:        MetadataToSlice(variant.Metadata),
 		PrivateMetadata: MetadataToSlice(variant.PrivateMetadata),
-		Margin:          model.NewPrimitive[int32](0), // ??
+		Margin:          model.GetPointerOfValue[int32](0), // ??
 		p:               variant,
 	}
 	if variant.Weight != nil {
@@ -178,7 +178,7 @@ func (p *ProductVariant) Preorder(ctx context.Context) (*PreorderData, error) {
 		}
 
 		if t := p.p.PreOrderGlobalThreshold; t != nil {
-			res.globalThreshold = model.NewPrimitive(int32(*t))
+			res.globalThreshold = model.GetPointerOfValue(int32(*t))
 		}
 		if ed := p.p.PreorderEndDate; ed != nil {
 			res.EndDate = &DateTime{*ed}

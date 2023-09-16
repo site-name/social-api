@@ -64,9 +64,9 @@ func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(checkout *model.Checkou
 // ToggleGiftcardStatus set status of given giftcard to inactive/active
 func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model.AppError {
 	if *giftCard.IsActive {
-		giftCard.IsActive = model.NewPrimitive(false)
+		giftCard.IsActive = model.GetPointerOfValue(false)
 	} else {
-		giftCard.IsActive = model.NewPrimitive(true)
+		giftCard.IsActive = model.GetPointerOfValue(true)
 	}
 
 	_, appErr := a.UpsertGiftcards(nil, giftCard)

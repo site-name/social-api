@@ -108,7 +108,7 @@ func (w *WareHouse) commonPre() {
 		w.ClickAndCollectOption = DISABLED
 	}
 	if w.IsPrivate == nil {
-		w.IsPrivate = NewPrimitive(true)
+		w.IsPrivate = GetPointerOfValue(true)
 	}
 	w.ModelMetadata.PopulateFields()
 

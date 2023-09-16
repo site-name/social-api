@@ -114,7 +114,7 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 
 	var email *string
 	if em, ok := o.Parameters["email"]; ok && em != nil {
-		email = model.NewPrimitive(em.(string))
+		email = model.GetPointerOfValue(em.(string))
 	}
 
 	var emailType *OrderEventsEmailsEnum
@@ -127,32 +127,32 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 
 	var amount *float64
 	if am, ok := o.Parameters["amount"]; ok && am != nil {
-		amount = model.NewPrimitive(am.(float64))
+		amount = model.GetPointerOfValue(am.(float64))
 	}
 
 	var paymentID *string
 	if pi, ok := o.Parameters["payment_id"]; ok && pi != nil {
-		paymentID = model.NewPrimitive(pi.(string))
+		paymentID = model.GetPointerOfValue(pi.(string))
 	}
 
 	var paymentGateway *string
 	if pg, ok := o.Parameters["payment_gateway"]; ok && pg != nil {
-		paymentGateway = model.NewPrimitive(pg.(string))
+		paymentGateway = model.GetPointerOfValue(pg.(string))
 	}
 
 	var quantity *int32
 	if qt, ok := o.Parameters["quantity"]; ok && qt != nil {
-		quantity = model.NewPrimitive(int32(qt.(int)))
+		quantity = model.GetPointerOfValue(int32(qt.(int)))
 	}
 
 	var message *string
 	if msg, ok := o.Parameters["message"]; ok && msg != nil {
-		message = model.NewPrimitive(msg.(string))
+		message = model.GetPointerOfValue(msg.(string))
 	}
 
 	var composedID *string
 	if cpID, ok := o.Parameters["composed_id"]; ok && cpID != nil {
-		composedID = model.NewPrimitive(cpID.(string))
+		composedID = model.GetPointerOfValue(cpID.(string))
 	}
 
 	var overSoldItems []string
@@ -163,17 +163,17 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 
 	var invoiceNumber *string
 	if in, ok := o.Parameters["invoice_number"]; ok && in != nil {
-		invoiceNumber = model.NewPrimitive(in.(string))
+		invoiceNumber = model.GetPointerOfValue(in.(string))
 	}
 
 	var transactionReference *string
 	if tr, ok := o.Parameters["transaction_reference"]; ok && tr != nil {
-		transactionReference = model.NewPrimitive(tr.(string))
+		transactionReference = model.GetPointerOfValue(tr.(string))
 	}
 
 	var shippingCostsIncluded *bool
 	if si, ok := o.Parameters["shipping_costs_included"]; ok && si != nil {
-		shippingCostsIncluded = model.NewPrimitive(si.(bool))
+		shippingCostsIncluded = model.GetPointerOfValue(si.(bool))
 	}
 
 	res := &OrderEvent{

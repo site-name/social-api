@@ -135,7 +135,7 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 			}
 
 			previousSortOrder++
-			orderingMap[key] = model.NewPrimitive(previousSortOrder)
+			orderingMap[key] = model.GetPointerOfValue(previousSortOrder)
 		}
 
 		// cache
@@ -184,7 +184,7 @@ func (s *Reordering) processMoveOperation(pk string, move *int) {
 		return
 	}
 	if move == nil {
-		move = model.NewPrimitive(1)
+		move = model.GetPointerOfValue(1)
 	}
 
 	_, targetPos, newSortOrder := s.calculateNewSortOrder(pk, *move) // move is non-nil now
@@ -226,7 +226,7 @@ func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int)
 			continue
 		}
 
-		r.cachedOrderedNodeMap[pk] = model.NewPrimitive(valueToAdd + *sortOrder)
+		r.cachedOrderedNodeMap[pk] = model.GetPointerOfValue(valueToAdd + *sortOrder)
 	}
 }
 

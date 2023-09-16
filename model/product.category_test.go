@@ -3,12 +3,12 @@ package model
 // func TestClassifyCategories(t *testing.T) {
 // 	in := Categories{
 // 		&Category{Id: "1", ParentID: nil},
-// 		&Category{Id: "2", ParentID: NewPrimitive("1")},
-// 		&Category{Id: "3", ParentID: NewPrimitive("2")},
-// 		&Category{Id: "4", ParentID: NewPrimitive("3")},
-// 		&Category{Id: "5", ParentID: NewPrimitive("4")},
+// 		&Category{Id: "2", ParentID: GetPointerOfValue("1")},
+// 		&Category{Id: "3", ParentID: GetPointerOfValue("2")},
+// 		&Category{Id: "4", ParentID: GetPointerOfValue("3")},
+// 		&Category{Id: "5", ParentID: GetPointerOfValue("4")},
 // 		&Category{Id: "6", ParentID: nil},
-// 		&Category{Id: "7", ParentID: NewPrimitive("1")},
+// 		&Category{Id: "7", ParentID: GetPointerOfValue("1")},
 // 	}
 
 // 	t.Run("ello", func(t *testing.T) {

@@ -186,10 +186,10 @@ func (p *Payment) CreditCard(ctx context.Context) (*CreditCard, error) {
 		LastDigits:  p.p.CcLastDigits,
 	}
 	if m := p.p.CcExpMonth; m != nil {
-		res.ExpMonth = model.NewPrimitive(int32(*m))
+		res.ExpMonth = model.GetPointerOfValue(int32(*m))
 	}
 	if m := p.p.CcExpYear; m != nil {
-		res.ExpYear = model.NewPrimitive(int32(*m))
+		res.ExpYear = model.GetPointerOfValue(int32(*m))
 	}
 
 	return res, nil
@@ -278,7 +278,7 @@ func systemTransactionToGraphqlTransaction(t *model.PaymentTransaction) *Transac
 		ID:              t.Id,
 		Created:         DateTime{util.TimeFromMillis(t.CreateAt)},
 		Token:           t.Token,
-		Kind:            TransactionKind(t.Kind),
+		Kind:            t.Kind,
 		IsSuccess:       t.IsSuccess,
 		Error:           t.Error,
 		GatewayResponse: JSONString(t.GatewayResponse),

@@ -39,10 +39,10 @@ func systemDigitalContentToGraphqlDigitalContent(d *model.DigitalContent) *Digit
 		ContentFile:          d.ContentFile,
 	}
 	if d.MaxDownloads != nil {
-		res.MaxDownloads = model.NewPrimitive(int32(*d.MaxDownloads))
+		res.MaxDownloads = model.GetPointerOfValue(int32(*d.MaxDownloads))
 	}
 	if d.UrlValidDays != nil {
-		res.URLValidDays = model.NewPrimitive(int32(*d.UrlValidDays))
+		res.URLValidDays = model.GetPointerOfValue(int32(*d.UrlValidDays))
 	}
 
 	return res

@@ -148,7 +148,7 @@ func (s *ShippingMethod) getWeightTypeDisplay() string {
 func (s *ShippingMethod) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 	if s.MinimumOrderWeight == nil {
-		s.MinimumOrderWeight = NewPrimitive[float32](0)
+		s.MinimumOrderWeight = GetPointerOfValue[float32](0)
 	}
 }
 

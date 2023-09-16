@@ -54,7 +54,7 @@ type OrderService interface {
 	// NOTE: userID can be empty
 	ChangeOrderLineQuantity(transaction *gorm.DB, userID string, _ interface{}, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model.AppError)
 	// CleanMarkOrderAsPaid Check if an order can be marked as paid.
-	CleanMarkOrderAsPaid(order *model.Order) (*model.PaymentError, *model.AppError)
+	CleanMarkOrderAsPaid(order *model.Order) *model.AppError
 	// CommonCreateOrderEvent is common method for creating desired order event instance
 	CommonCreateOrderEvent(transaction *gorm.DB, option *model.OrderEventOption) (*model.OrderEvent, *model.AppError)
 	// CreateGiftcardsWhenApprovingFulfillment
@@ -281,7 +281,7 @@ type OrderService interface {
 	// `reason`, `valueType` and `value` can be nil
 	UpdateOrderDiscountForOrder(transaction *gorm.DB, order *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountValueType, value *decimal.Decimal) *model.AppError
 	// UpdateOrderPrices Update prices in order with given discounts and proper taxes.
-	UpdateOrderPrices(order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateOrderPrices(tx *gorm.DB, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderStatus Update order status depending on fulfillments
 	UpdateOrderStatus(transaction *gorm.DB, order model.Order) *model.AppError
 	// UpdateOrderTotalPaid update given order's total paid amount

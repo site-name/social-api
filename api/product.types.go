@@ -65,7 +65,7 @@ func SystemProductToGraphqlProduct(p *model.Product) *Product {
 		p:               p,
 	}
 	if p.Rating != nil {
-		res.Rating = model.NewPrimitive(float64(*p.Rating))
+		res.Rating = model.GetPointerOfValue(float64(*p.Rating))
 	}
 	if p.Weight != nil {
 		res.Weight = &Weight{
@@ -352,7 +352,7 @@ func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *Address
 		return &res, nil
 	}
 
-	return model.NewPrimitive(false), nil
+	return model.GetPointerOfValue(false), nil
 }
 
 func (p *Product) Attributes(ctx context.Context) ([]*SelectedAttribute, error) {
@@ -562,7 +562,7 @@ func systemProductMediaToGraphqlProductMedia(p *model.ProductMedia) *ProductMedi
 		res.OembedData = JSONString(p.OembedData)
 	}
 	if s := p.SortOrder; s != nil {
-		res.SortOrder = model.NewPrimitive(int32(*s))
+		res.SortOrder = model.GetPointerOfValue(int32(*s))
 	}
 
 	return res

@@ -267,11 +267,11 @@ func (a *ServiceOrder) OrderFulfilled(fulfillments []*model.Fulfillment, user *m
 
 	var order = fulfillments[0].GetOrder()
 	if order == nil {
-		order, appErr := a.OrderById(fulfillments[0].OrderID)
+		order_, appErr := a.OrderById(fulfillments[0].OrderID)
 		if appErr != nil {
 			return appErr
 		}
-		order = order
+		order = order_
 	}
 
 	appErr := a.UpdateOrderStatus(transaction, *order)
@@ -327,14 +327,14 @@ func (s *ServiceOrder) OrderAwaitsFulfillmentApproval(fulfillments []*model.Fulf
 	defer transaction.Rollback()
 
 	var order *model.Order
-	if order := fulfillments[0].GetOrder(); order != nil {
-		order = order
+	if order_ := fulfillments[0].GetOrder(); order != nil {
+		order = order_
 	} else {
-		order, appErr := s.OrderById(fulfillments[0].OrderID)
+		order_, appErr := s.OrderById(fulfillments[0].OrderID)
 		if appErr != nil {
 			return appErr
 		}
-		order = order
+		order = order_
 	}
 
 	appErr := s.UpdateOrderStatus(transaction, *order)
@@ -423,11 +423,11 @@ func (a *ServiceOrder) OrderCaptured(order model.Order, user *model.User, _ inte
 func (a *ServiceOrder) FulfillmentTrackingUpdated(fulfillment *model.Fulfillment, user *model.User, _ interface{}, trackingNumber string, manager interfaces.PluginManagerInterface) *model.AppError {
 	var order = fulfillment.GetOrder()
 	if order == nil {
-		order, appErr := a.OrderById(fulfillment.OrderID)
+		order_, appErr := a.OrderById(fulfillment.OrderID)
 		if appErr != nil {
 			return appErr
 		}
-		order = order
+		order = order_
 	}
 
 	_, appErr := a.FulfillmentTrackingUpdatedEvent(order, user, nil, trackingNumber, fulfillment)
@@ -750,7 +750,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(order model.Order, requestUser *model.Use
 	_, appErr = a.srv.PaymentService().SaveTransaction(transaction, &model.PaymentTransaction{
 		PaymentID:       savedPayment.Id,
 		ActionRequired:  false,
-		Kind:            model.EXTERNAL,
+		Kind:            model.TRANSACTION_KIND_EXTERNAL,
 		Token:           externalReference,
 		IsSuccess:       true,
 		Amount:          &order.Total.Gross.Amount,
@@ -788,22 +788,18 @@ func (a *ServiceOrder) MarkOrderAsPaid(order model.Order, requestUser *model.Use
 }
 
 // CleanMarkOrderAsPaid Check if an order can be marked as paid.
-func (a *ServiceOrder) CleanMarkOrderAsPaid(order *model.Order) (*model.PaymentError, *model.AppError) {
+func (a *ServiceOrder) CleanMarkOrderAsPaid(order *model.Order) *model.AppError {
 	paymentsForOrder, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": order.Id},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-		return nil, nil
+		return appErr
 	}
-
 	if len(paymentsForOrder) > 0 {
-		return model.NewPaymentError("CleanMarkOrderAsPaid", "Orders with payments can not be manually marked as paid.", model.INVALID), nil
+		return model.NewAppError("CleanMarkOrderAsPaid", "app.order.mark_order_with_payments_as_paid.app_error", nil, "cannot mark order with payments as paid", http.StatusNotAcceptable)
 	}
 
-	return nil, nil
+	return nil
 }
 
 func (s *ServiceOrder) increaseOrderLineQuantity(transaction *gorm.DB, orderLinesInfo []*model.OrderLineData) *model.AppError {
@@ -2213,7 +2209,7 @@ func (a *ServiceOrder) processRefund(
 			amount = payMent.CapturedAmount
 		}
 
-		_, paymentErr, appErr := a.srv.PaymentService().Refund(payMent, manager, order.ChannelID, amount)
+		_, paymentErr, appErr := a.srv.PaymentService().Refund(transaction, payMent, manager, order.ChannelID, amount)
 		if paymentErr != nil || appErr != nil {
 			return nil, paymentErr, appErr
 		}

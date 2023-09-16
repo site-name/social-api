@@ -467,12 +467,12 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 
 	msg, ok := event.Parameters["message"]
 	if ok && msg != nil {
-		res.Message = model.NewPrimitive(msg.(string))
+		res.Message = model.GetPointerOfValue(msg.(string))
 	}
 
 	count, ok := event.Parameters["count"]
 	if ok && count != nil {
-		res.Count = model.NewPrimitive(int32(count.(int)))
+		res.Count = model.GetPointerOfValue(int32(count.(int)))
 	}
 
 	res.event = event

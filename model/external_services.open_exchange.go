@@ -29,6 +29,6 @@ func (o *OpenExchangeRate) IsValid() *AppError {
 func (o *OpenExchangeRate) commonPre() {
 	o.ToCurrency = strings.ToUpper(o.ToCurrency)
 	if o.Rate == nil {
-		o.Rate = &decimal.Zero
+		o.Rate = GetPointerOfValue(decimal.Zero)
 	}
 }

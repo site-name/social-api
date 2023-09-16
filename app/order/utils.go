@@ -313,7 +313,7 @@ func (a *ServiceOrder) UpdateTaxesForOrderLines(lines model.OrderLines, order mo
 }
 
 // UpdateOrderPrices Update prices in order with given discounts and proper taxes.
-func (a *ServiceOrder) UpdateOrderPrices(order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateOrderPrices(tx *gorm.DB, order model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 	})
@@ -338,13 +338,13 @@ func (a *ServiceOrder) UpdateOrderPrices(order model.Order, manager interfaces.P
 			return appErr
 		}
 
-		_, appErr = a.UpsertOrder(nil, &order)
+		_, appErr = a.UpsertOrder(tx, &order)
 		if appErr != nil {
 			return appErr
 		}
 	}
 
-	return a.RecalculateOrder(nil, &order, nil)
+	return a.RecalculateOrder(tx, &order, map[string]interface{}{})
 }
 
 func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode model.CountryCode) (model.Warehouses, *model.AppError) {
@@ -908,7 +908,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 				giftCard.UsedByEmail = &usedByEmail
 			}
 
-			giftCard.LastUsedOn = model.NewPrimitive(model.GetMillis())
+			giftCard.LastUsedOn = model.GetPointerOfValue(model.GetMillis())
 			giftcardsToUpdate = append(giftcardsToUpdate, giftCard)
 		}
 	}
@@ -938,7 +938,7 @@ func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *model.GiftCard, totalPric
 		totalPriceLeft, _ = util.ZeroMoney(totalPriceLeft.Currency)
 	} else {
 		totalPriceLeft, _ = totalPriceLeft.Sub(giftCard.CurrentBalance)
-		giftCard.CurrentBalanceAmount = &decimal.Zero
+		*giftCard.CurrentBalanceAmount = decimal.Zero
 	}
 
 	return model.BalanceObject{
@@ -991,13 +991,13 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID stri
 
 		totalPriceNetAmount := orderLine.UnitPriceNetAmount.Mul(decimal.NewFromInt(int64(orderLine.Quantity)))
 		totalPriceGrossAmount := orderLine.UnitPriceGrossAmount.Mul(decimal.NewFromInt(int64(orderLine.Quantity)))
-		orderLine.TotalPriceNetAmount = model.NewPrimitive(totalPriceNetAmount.Round(3))
-		orderLine.TotalPriceGrossAmount = model.NewPrimitive(totalPriceGrossAmount.Round(3))
+		orderLine.TotalPriceNetAmount = model.GetPointerOfValue(totalPriceNetAmount.Round(3))
+		orderLine.TotalPriceGrossAmount = model.GetPointerOfValue(totalPriceGrossAmount.Round(3))
 
 		unDiscountedTotalPriceNetAmount := orderLine.UnDiscountedUnitPriceNetAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
 		unDiscountedTotalpriceGrossAmount := orderLine.UnDiscountedUnitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
-		orderLine.UnDiscountedTotalPriceNetAmount = model.NewPrimitive(unDiscountedTotalPriceNetAmount.Round(3))
-		orderLine.UnDiscountedTotalPriceGrossAmount = model.NewPrimitive(unDiscountedTotalpriceGrossAmount.Round(3))
+		orderLine.UnDiscountedTotalPriceNetAmount = model.GetPointerOfValue(unDiscountedTotalPriceNetAmount.Round(3))
+		orderLine.UnDiscountedTotalPriceGrossAmount = model.GetPointerOfValue(unDiscountedTotalpriceGrossAmount.Round(3))
 
 		_, appErr = a.UpsertOrderLine(transaction, &orderLine)
 		if appErr != nil {
@@ -1589,9 +1589,9 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(transaction *gorm.DB, orderLi
 	orderLine.PopulateNonDbFields()
 
 	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice
-	orderLine.UnitDiscountAmount = &decimal.Zero
-	orderLine.UnitDiscountValue = &decimal.Zero
-	orderLine.UnitDiscountReason = model.NewPrimitive("")
+	orderLine.UnitDiscountAmount = model.GetPointerOfValue(decimal.Zero)
+	orderLine.UnitDiscountValue = model.GetPointerOfValue(decimal.Zero)
+	orderLine.UnitDiscountReason = model.GetPointerOfValue("")
 	orderLine.TotalPrice = orderLine.UnitPrice.Mul(float64(orderLine.Quantity))
 
 	_, appErr := a.UpsertOrderLine(transaction, &orderLine)

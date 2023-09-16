@@ -38,7 +38,7 @@ func (s *SaleChannelListing) DeepCopy() *SaleChannelListing {
 
 	res := *s
 	if s.DiscountValue != nil {
-		res.DiscountValue = NewPrimitive(*s.DiscountValue)
+		res.DiscountValue = GetPointerOfValue(*s.DiscountValue)
 	}
 	if s.channel != nil {
 		res.channel = s.channel.DeepCopy()
@@ -54,7 +54,7 @@ type SaleChannelListingFilterOption struct {
 
 func (s *SaleChannelListing) commonPre() {
 	if s.DiscountValue == nil || s.DiscountValue.LessThan(decimal.Zero) {
-		s.DiscountValue = &decimal.Zero
+		s.DiscountValue = GetPointerOfValue(decimal.Zero)
 	}
 	s.Currency = strings.ToUpper(s.Currency)
 }

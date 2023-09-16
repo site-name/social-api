@@ -659,7 +659,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 				if voucherTranslation.Name != *voucher.Name {
 					checkout.TranslatedDiscountName = &voucherTranslation.Name
 				} else {
-					checkout.TranslatedDiscountName = model.NewPrimitive("")
+					checkout.TranslatedDiscountName = model.GetPointerOfValue("")
 				}
 			}
 		}
@@ -750,7 +750,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 		if voucherTranslation.Name != *voucher.Name {
 			checkout.TranslatedDiscountName = &voucherTranslation.Name
 		} else {
-			checkout.TranslatedDiscountName = model.NewPrimitive("")
+			checkout.TranslatedDiscountName = model.GetPointerOfValue("")
 		}
 	}
 	checkout.Discount = discountMoney
@@ -804,7 +804,7 @@ func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkout *model.Checkout) *m
 	checkout.VoucherCode = nil
 	checkout.DiscountName = nil
 	checkout.TranslatedDiscountName = nil
-	checkout.DiscountAmount = &decimal.Zero
+	checkout.DiscountAmount = model.GetPointerOfValue(decimal.Zero)
 
 	_, appErr := a.UpsertCheckouts(nil, []*model.Checkout{checkout})
 
@@ -912,9 +912,11 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 		// ignore not found error
 	}
 
-	totalPaid := &decimal.Zero
+	totalPaid := decimal.Zero
 	for _, payMent := range payments {
-		totalPaid = model.NewPrimitive(totalPaid.Add(*payMent.Total))
+		if payMent.Total != nil {
+			totalPaid = totalPaid.Add(*payMent.Total)
+		}
 	}
 	address := checkoutInfo.ShippingAddress
 	if address == nil {
@@ -941,7 +943,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 		checkoutTotal = zeroTaxedMoney
 	}
 
-	return checkoutTotal.Gross.Amount.LessThan(*totalPaid), nil
+	return checkoutTotal.Gross.Amount.LessThan(totalPaid), nil
 }
 
 // CancelActivePayments set all active payments belong to given checkout

@@ -71,7 +71,7 @@ func (s *ShippingZone) IsValid() *AppError {
 func (s *ShippingZone) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 	if s.Default == nil {
-		s.Default = NewPrimitive(false)
+		s.Default = GetPointerOfValue(false)
 	}
 	s.Description = SanitizeUnicode(s.Description)
 	s.Countries = strings.ToUpper(s.Countries)
@@ -81,7 +81,7 @@ func (s *ShippingZone) DeepCopy() *ShippingZone {
 	res := *s
 
 	if s.Default != nil {
-		res.Default = NewPrimitive(*s.Default)
+		res.Default = GetPointerOfValue(*s.Default)
 	}
 	res.ModelMetadata = s.ModelMetadata.DeepCopy()
 	return &res

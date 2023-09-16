@@ -81,13 +81,13 @@ func (a *AttributeValue) DeepCopy() *AttributeValue {
 		res.RichText = a.RichText.DeepCopy()
 	}
 	if a.FileUrl != nil {
-		res.FileUrl = NewPrimitive(*a.FileUrl)
+		res.FileUrl = GetPointerOfValue(*a.FileUrl)
 	}
 	if a.Boolean != nil {
-		res.Boolean = NewPrimitive(*a.Boolean)
+		res.Boolean = GetPointerOfValue(*a.Boolean)
 	}
 	if a.Datetime != nil {
-		res.Datetime = NewPrimitive(*a.Datetime)
+		res.Datetime = GetPointerOfValue(*a.Datetime)
 	}
 
 	return &res

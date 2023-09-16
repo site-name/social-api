@@ -209,27 +209,27 @@ func (o *OrderLine) commonPre() {
 	o.TranslatedVariantName = SanitizeUnicode(o.TranslatedVariantName)
 
 	if o.UnitDiscountReason != nil {
-		o.UnitDiscountReason = NewPrimitive(SanitizeUnicode(*o.UnitDiscountReason))
+		o.UnitDiscountReason = GetPointerOfValue(SanitizeUnicode(*o.UnitDiscountReason))
 	}
 	if !o.UnitDiscountType.IsValid() {
 		o.UnitDiscountType = DISCOUNT_VALUE_TYPE_FIXED
 	}
 	if o.UnitDiscountValue == nil {
-		o.UnitDiscountValue = &decimal.Zero
+		o.UnitDiscountValue = GetPointerOfValue(decimal.Zero)
 	}
 
 	if o.UnitDiscount != nil {
 		o.UnitDiscountAmount = &o.UnitDiscount.Amount
 	} else {
-		o.UnitDiscountAmount = &decimal.Zero
+		o.UnitDiscountAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	if o.UnitPrice != nil {
 		o.UnitPriceNetAmount = &o.UnitPrice.Net.Amount
 		o.UnitPriceGrossAmount = &o.UnitPrice.Gross.Amount
 	} else {
-		o.UnitPriceNetAmount = &decimal.Zero
-		o.UnitPriceGrossAmount = &decimal.Zero
+		o.UnitPriceNetAmount = GetPointerOfValue(decimal.Zero)
+		o.UnitPriceGrossAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	if o.TotalPrice != nil {
@@ -241,20 +241,20 @@ func (o *OrderLine) commonPre() {
 		o.UnDiscountedUnitPriceNetAmount = &o.UnDiscountedUnitPrice.Net.Amount
 		o.UnDiscountedUnitPriceGrossAmount = &o.UnDiscountedUnitPrice.Gross.Amount
 	} else {
-		o.UnDiscountedUnitPriceNetAmount = &decimal.Zero
-		o.UnDiscountedUnitPriceGrossAmount = &decimal.Zero
+		o.UnDiscountedUnitPriceNetAmount = GetPointerOfValue(decimal.Zero)
+		o.UnDiscountedUnitPriceGrossAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	if o.UnDiscountedTotalPrice != nil {
 		o.UnDiscountedTotalPriceNetAmount = &o.UnDiscountedTotalPrice.Net.Amount
 		o.UnDiscountedTotalPriceGrossAmount = &o.UnDiscountedTotalPrice.Gross.Amount
 	} else {
-		o.UnDiscountedTotalPriceNetAmount = &decimal.Zero
-		o.UnDiscountedTotalPriceGrossAmount = &decimal.Zero
+		o.UnDiscountedTotalPriceNetAmount = GetPointerOfValue(decimal.Zero)
+		o.UnDiscountedTotalPriceGrossAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	if o.TaxRate == nil {
-		o.TaxRate = &decimal.Zero
+		o.TaxRate = GetPointerOfValue(decimal.Zero)
 	}
 }
 
@@ -267,50 +267,50 @@ func (o *OrderLine) DeepCopy() *OrderLine {
 	orderLine := *o
 
 	if o.VariantID != nil {
-		orderLine.VariantID = NewPrimitive(*o.VariantID)
+		orderLine.VariantID = GetPointerOfValue(*o.VariantID)
 	}
 	if o.ProductSku != nil {
-		orderLine.ProductSku = NewPrimitive(*o.ProductSku)
+		orderLine.ProductSku = GetPointerOfValue(*o.ProductSku)
 	}
 	if o.ProductVariantID != nil {
-		orderLine.ProductVariantID = NewPrimitive(*o.ProductVariantID)
+		orderLine.ProductVariantID = GetPointerOfValue(*o.ProductVariantID)
 	}
 	if o.UnitDiscountReason != nil {
-		orderLine.UnitDiscountReason = NewPrimitive(*o.UnitDiscountReason)
+		orderLine.UnitDiscountReason = GetPointerOfValue(*o.UnitDiscountReason)
 	}
 
 	if o.UnitDiscountAmount != nil {
-		orderLine.UnitDiscountAmount = NewPrimitive(*o.UnitDiscountAmount)
+		orderLine.UnitDiscountAmount = GetPointerOfValue(*o.UnitDiscountAmount)
 	}
 	if o.UnitPriceNetAmount != nil {
-		orderLine.UnitPriceNetAmount = NewPrimitive(*o.UnitPriceNetAmount)
+		orderLine.UnitPriceNetAmount = GetPointerOfValue(*o.UnitPriceNetAmount)
 	}
 	if o.UnitDiscountValue != nil {
-		orderLine.UnitDiscountValue = NewPrimitive(*o.UnitDiscountValue)
+		orderLine.UnitDiscountValue = GetPointerOfValue(*o.UnitDiscountValue)
 	}
 	if o.UnitPriceGrossAmount != nil {
-		orderLine.UnitPriceGrossAmount = NewPrimitive(*o.UnitPriceGrossAmount)
+		orderLine.UnitPriceGrossAmount = GetPointerOfValue(*o.UnitPriceGrossAmount)
 	}
 	if o.TotalPriceNetAmount != nil {
-		orderLine.TotalPriceNetAmount = NewPrimitive(*o.TotalPriceNetAmount)
+		orderLine.TotalPriceNetAmount = GetPointerOfValue(*o.TotalPriceNetAmount)
 	}
 	if o.TotalPriceGrossAmount != nil {
-		orderLine.TotalPriceGrossAmount = NewPrimitive(*o.TotalPriceGrossAmount)
+		orderLine.TotalPriceGrossAmount = GetPointerOfValue(*o.TotalPriceGrossAmount)
 	}
 	if o.UnDiscountedUnitPriceNetAmount != nil {
-		orderLine.UnDiscountedUnitPriceNetAmount = NewPrimitive(*o.UnDiscountedUnitPriceNetAmount)
+		orderLine.UnDiscountedUnitPriceNetAmount = GetPointerOfValue(*o.UnDiscountedUnitPriceNetAmount)
 	}
 	if o.UnDiscountedUnitPriceGrossAmount != nil {
-		orderLine.UnDiscountedUnitPriceGrossAmount = NewPrimitive(*o.UnDiscountedUnitPriceGrossAmount)
+		orderLine.UnDiscountedUnitPriceGrossAmount = GetPointerOfValue(*o.UnDiscountedUnitPriceGrossAmount)
 	}
 	if o.UnDiscountedTotalPriceGrossAmount != nil {
-		orderLine.UnDiscountedTotalPriceGrossAmount = NewPrimitive(*o.UnDiscountedTotalPriceGrossAmount)
+		orderLine.UnDiscountedTotalPriceGrossAmount = GetPointerOfValue(*o.UnDiscountedTotalPriceGrossAmount)
 	}
 	if o.UnDiscountedTotalPriceNetAmount != nil {
-		orderLine.UnDiscountedTotalPriceNetAmount = NewPrimitive(*o.UnDiscountedTotalPriceNetAmount)
+		orderLine.UnDiscountedTotalPriceNetAmount = GetPointerOfValue(*o.UnDiscountedTotalPriceNetAmount)
 	}
 	if o.TaxRate != nil {
-		orderLine.TaxRate = NewPrimitive(*o.TaxRate)
+		orderLine.TaxRate = GetPointerOfValue(*o.TaxRate)
 	}
 	if o.ProductVariant != nil {
 		orderLine.ProductVariant = o.ProductVariant.DeepCopy()

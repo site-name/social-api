@@ -105,13 +105,13 @@ func (s *ShippingMethodChannelListing) PopulateNonDbFields() {
 
 func (s *ShippingMethodChannelListing) commonPre() {
 	if s.MinimumOrderPriceAmount == nil {
-		s.MinimumOrderPriceAmount = &decimal.Zero
+		s.MinimumOrderPriceAmount = GetPointerOfValue(decimal.Zero)
 	} else if s.MinimumOrderPrice != nil {
 		s.MinimumOrderPriceAmount = &s.MinimumOrderPrice.Amount
 	}
 
 	if s.PriceAmount == nil {
-		s.PriceAmount = &decimal.Zero
+		s.PriceAmount = GetPointerOfValue(decimal.Zero)
 	} else if s.Price != nil {
 		s.PriceAmount = &s.Price.Amount
 	}

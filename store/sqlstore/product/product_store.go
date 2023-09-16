@@ -263,7 +263,7 @@ func (ps *SqlProductStore) channelQuery(channel_Slug_or_ID string, isActive *boo
 //
 // refer to ./product_store_doc.md (line 1)
 func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
-	channelQuery := ps.channelQuery(channelSlug, model.NewPrimitive(true), model.ProductChannelListingTableName)
+	channelQuery := ps.channelQuery(channelSlug, model.GetPointerOfValue(true), model.ProductChannelListingTableName)
 
 	today := util.StartOfDay(time.Now())
 
@@ -362,7 +362,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelID string) (
 //
 // refer to ./product_store_doc.md (line 157)
 func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
-	channelQuery1 := ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), model.ProductChannelListingTableName)
+	channelQuery1 := ps.channelQuery(channelIdOrSlug, model.GetPointerOfValue(true), model.ProductChannelListingTableName)
 	today := util.StartOfDay(time.Now())
 
 	productChannelListingQuery := ps.
@@ -376,7 +376,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 		Suffix(")").
 		Limit(1)
 
-	channelQuery2 := ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), model.ProductVariantChannelListingTableName)
+	channelQuery2 := ps.channelQuery(channelIdOrSlug, model.GetPointerOfValue(true), model.ProductVariantChannelListingTableName)
 
 	productVariantChannelListingQuery := ps.
 		GetQueryBuilder(squirrel.Question).

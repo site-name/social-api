@@ -1779,9 +1779,9 @@ func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, 
 	}
 
 	// set address ids for order
-	for name, addrInput := range map[string]*AddressInput{
-		"billing":  d.BillingAddress,
-		"shipping": d.ShippingAddress,
+	for _, addrInput := range []*AddressInput{
+		d.BillingAddress,
+		d.ShippingAddress,
 	} {
 		if addrInput != nil {
 			var addr model.Address
@@ -1792,7 +1792,7 @@ func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, 
 				return appErr
 			}
 
-			if name == "billing" {
+			if addrInput == d.BillingAddress {
 				order.BillingAddressID = &savedAddr.Id
 			} else {
 				order.ShippingAddressID = &savedAddr.Id
@@ -1816,7 +1816,7 @@ func (d *DraftOrderInput) patchOrder(embedCtx *web.Context, order *model.Order, 
 		if orderRequireShipping {
 			for _, addrInput := range []*AddressInput{d.BillingAddress, d.ShippingAddress} {
 				if addrInput != nil {
-					appErr := embedCtx.App.Srv().OrderService().UpdateOrderPrices(*upsertedOrder, pluginManager, *embedCtx.App.Config().ShopSettings.IncludeTaxesInPrice)
+					appErr := embedCtx.App.Srv().OrderService().UpdateOrderPrices(nil, *upsertedOrder, pluginManager, *embedCtx.App.Config().ShopSettings.IncludeTaxesInPrice)
 					if appErr != nil {
 						return appErr
 					}
@@ -2814,35 +2814,6 @@ type OrderRefund struct {
 	Errors []*OrderError `json:"errors"`
 }
 
-type OrderRefundFulfillmentLineInput struct {
-	FulfillmentLineID UUID  `json:"fulfillmentLineId"`
-	Quantity          int32 `json:"quantity"`
-}
-
-type OrderRefundLineInput struct {
-	OrderLineID UUID  `json:"orderLineId"`
-	Quantity    int32 `json:"quantity"`
-}
-
-type OrderRefundProductsInput struct {
-	OrderLines           []*OrderRefundLineInput            `json:"orderLines"`
-	FulfillmentLines     []*OrderRefundFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *PositiveDecimal                   `json:"amountToRefund"`
-	IncludeShippingCosts *bool                              `json:"includeShippingCosts"`
-}
-
-type OrderReturnFulfillmentLineInput struct {
-	FulfillmentLineID string `json:"fulfillmentLineId"`
-	Quantity          int32  `json:"quantity"`
-	Replace           *bool  `json:"replace"`
-}
-
-type OrderReturnLineInput struct {
-	OrderLineID string `json:"orderLineId"`
-	Quantity    int32  `json:"quantity"`
-	Replace     *bool  `json:"replace"`
-}
-
 type OrderReturnProductsInput struct {
 	OrderLines           []*OrderReturnLineInput            `json:"orderLines"`
 	FulfillmentLines     []*OrderReturnFulfillmentLineInput `json:"fulfillmentLines"`
@@ -2860,6 +2831,13 @@ type OrderSettingsError struct {
 	Field   *string                `json:"field"`
 	Message *string                `json:"message"`
 	Code    OrderSettingsErrorCode `json:"code"`
+}
+
+type OrderRefundProductsInput struct {
+	OrderLines           []*OrderRefundLineInput            `json:"orderLines"`
+	FulfillmentLines     []*OrderRefundFulfillmentLineInput `json:"fulfillmentLines"`
+	AmountToRefund       *PositiveDecimal                   `json:"amountToRefund"`
+	IncludeShippingCosts *bool                              `json:"includeShippingCosts"`
 }
 
 type OrderSettingsUpdate struct {
@@ -2894,7 +2872,7 @@ type OrderUpdateShipping struct {
 }
 
 type OrderUpdateShippingInput struct {
-	ShippingMethod *string `json:"shippingMethod"`
+	ShippingMethod *UUID `json:"shippingMethod"`
 }
 
 type OrderVoid struct {
@@ -4301,7 +4279,7 @@ func (s *ShippingPriceInput) Patch(method *model.ShippingMethod) (updated bool) 
 		fallthrough
 
 	case s.MinimumOrderWeight != nil:
-		method.MinimumOrderWeight = model.NewPrimitive(float32(s.MinimumOrderWeight.Value))
+		method.MinimumOrderWeight = model.GetPointerOfValue(float32(s.MinimumOrderWeight.Value))
 		fallthrough
 
 	case s.MaximumOrderWeight != nil:

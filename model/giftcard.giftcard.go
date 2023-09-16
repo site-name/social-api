@@ -92,7 +92,7 @@ func (gc *GiftCard) DisplayCode() string {
 // PopulateNonDbFields populates money fields for giftcard
 func (gc *GiftCard) PopulateNonDbFields() {
 	if gc.InitialBalanceAmount == nil {
-		gc.InitialBalanceAmount = &decimal.Zero
+		gc.InitialBalanceAmount = GetPointerOfValue(decimal.Zero)
 	}
 	gc.InitialBalance = &goprices.Money{
 		Amount:   *gc.InitialBalanceAmount,
@@ -100,7 +100,7 @@ func (gc *GiftCard) PopulateNonDbFields() {
 	}
 
 	if gc.CurrentBalanceAmount == nil || gc.CurrentBalanceAmount.LessThan(decimal.Zero) {
-		gc.CurrentBalanceAmount = &decimal.Zero
+		gc.CurrentBalanceAmount = GetPointerOfValue(decimal.Zero)
 	}
 	gc.CurrentBalance = &goprices.Money{
 		Amount:   *gc.CurrentBalanceAmount,
@@ -152,15 +152,15 @@ func (gc *GiftCard) PreSave() {
 
 func (gc *GiftCard) commonPre() {
 	if gc.CurrentBalanceAmount == nil {
-		gc.CurrentBalanceAmount = &decimal.Zero
+		gc.CurrentBalanceAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	if gc.InitialBalanceAmount == nil {
-		gc.InitialBalanceAmount = &decimal.Zero
+		gc.InitialBalanceAmount = GetPointerOfValue(decimal.Zero)
 	}
 
 	if gc.IsActive == nil {
-		gc.IsActive = NewPrimitive(true)
+		gc.IsActive = GetPointerOfValue(true)
 	}
 
 	if gc.Currency == "" {

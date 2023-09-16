@@ -1,7 +1,6 @@
 package model
 
 import (
-	"cmp"
 	"crypto/rand"
 	"crypto/sha256"
 	"database/sql/driver"
@@ -26,7 +25,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
@@ -134,16 +132,16 @@ func (si StringInterface) Value() (driver.Value, error) {
 	return string(j), err
 }
 
-// NewPrimitive takes a primitive value, returns pointer to it.
+// GetPointerOfValue takes a primitive value, returns pointer to it.
 //
 // E.g:
 //
 //	2 => &2 // ^.^
-func NewPrimitive[T cmp.Ordered | bool | time.Time | decimal.Decimal](value T) *T {
+func GetPointerOfValue[T any](value T) *T {
 	return &value
 }
 
-func CopyPointer[T cmp.Ordered | bool | time.Time | decimal.Decimal](value *T) *T {
+func CopyPointer[T any](value *T) *T {
 	if value == nil {
 		return nil
 	}

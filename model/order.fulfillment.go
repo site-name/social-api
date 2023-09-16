@@ -126,10 +126,10 @@ func (f *Fulfillment) IstrackingNumber() bool {
 func (f *Fulfillment) DeepCopy() *Fulfillment {
 	res := *f
 	if f.ShippingRefundAmount != nil {
-		res.ShippingRefundAmount = NewPrimitive(*f.ShippingRefundAmount)
+		res.ShippingRefundAmount = GetPointerOfValue(*f.ShippingRefundAmount)
 	}
 	if f.TotalRefundAmount != nil {
-		res.TotalRefundAmount = NewPrimitive(*f.TotalRefundAmount)
+		res.TotalRefundAmount = GetPointerOfValue(*f.TotalRefundAmount)
 	}
 	res.ModelMetadata = f.ModelMetadata.DeepCopy()
 	if f.order != nil {
