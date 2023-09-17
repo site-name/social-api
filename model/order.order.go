@@ -133,7 +133,7 @@ type OrderFilterOption struct {
 	Preload []string
 }
 
-// PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
+// NOTE: this should be called when your orders are retrieve out of database.
 func (o *Order) PopulateNonDbFields() {
 	if o.populatedNonDBFields {
 		return

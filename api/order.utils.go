@@ -107,7 +107,7 @@ func cleanOrderCancel(where string, app app.AppIface, order *model.Order) *model
 		}
 
 		if !orderCanCancel {
-			return model.NewAppError(where, "app.order.order_can_cancel.app_error", nil, "this order cannot be canceled", http.StatusNotAcceptable)
+			return model.NewAppError(where, "app.order.order_cannot_cancel.app_error", map[string]interface{}{"OrderID": order.Id}, fmt.Sprintf("order with id=%s cannot be canceled", order.Id), http.StatusNotAcceptable)
 		}
 	}
 
@@ -162,8 +162,6 @@ func cleanRefundPayment(where string, payment *model.Payment) *model.AppError {
 
 	return nil
 }
-
-// func tryPaymentAction(app app.AppIface, order *model.Order, user *model.User, payment *model.Payment)
 
 func cleanOrderRefund(where string, app app.AppIface, order *model.Order) *model.AppError {
 	orderHasGiftcardLines, appErr := app.Srv().GiftcardService().OrderHasGiftcardLines(order)

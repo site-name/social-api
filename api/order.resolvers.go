@@ -918,44 +918,112 @@ func (r *Resolver) OrderUpdateShipping(ctx context.Context, args struct {
 	}, nil
 }
 
-func (r *Resolver) OrderVoid(ctx context.Context, args struct{ Id string }) (*OrderVoid, error) {
-	panic(fmt.Errorf("not implemented"))
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) OrderVoid(ctx context.Context, args struct{ Id UUID }) (*OrderVoid, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	lastOrderPayment, appErr := embedCtx.App.Srv().PaymentService().GetLastOrderPayment(order.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = cleanVoidPayment("OrderVoid", lastOrderPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	transaction, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Void(nil, *lastOrderPayment, pluginMng, order.ChannelID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if paymentErr != nil {
+		return nil, logAndReturnPaymentFailedAppError("OrderVoid", embedCtx, nil, paymentErr, order, lastOrderPayment)
+	}
+
+	// Confirm that we changed the status to void. Some payment can receive
+	// asynchronous webhook with update status
+	if transaction.Kind == model.TRANSACTION_KIND_VOID {
+		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		appErr = embedCtx.App.Srv().OrderService().OrderVoided(*order, user, nil, lastOrderPayment, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &OrderVoid{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
-func (r *Resolver) OrderBulkCancel(ctx context.Context, args struct{ Ids []string }) (*OrderBulkCancel, error) {
-	panic(fmt.Errorf("not implemented"))
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) OrderBulkCancel(ctx context.Context, args struct{ Ids []UUID }) (*OrderBulkCancel, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+		Conditions: squirrel.Eq{model.OrderTableName + ".Id": args.Ids},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	var totalOrdersCanceled int32 = 0
+
+	for _, order := range orders {
+		appErr = cleanOrderCancel("OrderBulkCancel", embedCtx.App, order)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		appErr = embedCtx.App.Srv().OrderService().CancelOrder(nil, order, user, nil, pluginMng)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		totalOrdersCanceled++
+	}
+
+	return &OrderBulkCancel{
+		Count: totalOrdersCanceled,
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderSettings(ctx context.Context) (*OrderSettings, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	shopSettings := embedCtx.App.Config().ShopSettings
+
+	return &OrderSettings{
+		AutomaticallyConfirmAllNewOrders:         *shopSettings.AutomaticallyConfirmAllNewOrders,
+		AutomaticallyFulfillNonShippableGiftCard: *shopSettings.AutomaticallyFulfillNonShippableGiftcard,
+	}, nil
 }
 
-func (r *Resolver) Order(ctx context.Context, args struct{ Id string }) (*Order, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) Order(ctx context.Context, args struct{ Id UUID }) (*Order, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-func (r *Resolver) Orders(ctx context.Context, args struct {
-	SortBy  *OrderSortingInput
-	Filter  *OrderFilterInput
-	Channel *string
-	GraphqlParams
-}) (*OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
+	if appErr != nil {
+		return nil, appErr
+	}
 
-func (r *Resolver) DraftOrders(ctx context.Context, args struct {
-	SortBy *OrderSortingInput
-	Filter *OrderDraftFilterInput
-	GraphqlParams
-}) (*OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) OrdersTotal(ctx context.Context, args struct {
-	Period  *ReportingPeriod
-	Channel *string
-}) (*TaxedMoney, error) {
-	panic(fmt.Errorf("not implemented"))
+	return SystemOrderToGraphqlOrder(order), nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
@@ -977,24 +1045,379 @@ func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token UUID }) 
 	return SystemOrderToGraphqlOrder(orders[0]), nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
 	Input   OrderDiscountCommonInput
-	OrderID string
+	OrderID UUID
 }) (*OrderDiscountAdd, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.OrderID.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !(order.IsDraft() || order.IsUnconfirmed()) {
+		return nil, model.NewAppError("OrderDiscountAdd", "app.order.only_draft_and_unconfirmed_order_can_update.app_error", nil, "only draft and unconfirmed order can be modified", http.StatusBadRequest)
+	}
+
+	orderDiscounts, appErr := embedCtx.App.Srv().OrderService().GetOrderDiscounts(order)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(orderDiscounts) > 0 {
+		return nil, model.NewAppError("OrderDiscountAdd", "app.order.order_already_has_discount.app_error", nil, "order already has discounts", http.StatusBadRequest)
+	}
+
+	order.PopulateNonDbFields()
+	appErr = validateOrderDiscountInput("OrderDiscountAdd", order.UnDiscountedTotal.Gross, args.Input)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderDiscountAdd", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	var reason string
+	if args.Input.Reason != nil {
+		reason = *args.Input.Reason
+	}
+	value := args.Input.Value.ToDecimal()
+
+	orderDiscount, appErr := embedCtx.App.Srv().OrderService().CreateOrderDiscountForOrder(tx, order, reason, args.Input.ValueType, &value)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(tx, &model.OrderEventOption{
+		OrderID: order.Id,
+		UserID:  &embedCtx.AppContext.Session().UserId,
+		Type:    model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_ADDED,
+		Parameters: model.StringInterface{
+			"discount": embedCtx.App.Srv().OrderService().PrepareDiscountObject(orderDiscount, nil),
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderDiscountAdd", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderDiscountAdd{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
-	DiscountID string
+	DiscountID UUID
 	Input      OrderDiscountCommonInput
 }) (*OrderDiscountUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	orderDiscouts, appErr := embedCtx.App.Srv().DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
+		Conditions:   squirrel.Expr(model.OrderDiscountTableName+".Id = ?", args.DiscountID),
+		PreloadOrder: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(orderDiscouts) == 0 {
+		return nil, model.NewAppError("OrderDiscountUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "DiscountID"}, "please provide valid order discount id", http.StatusBadRequest)
+	}
+
+	// validate order
+	orderDiscount := orderDiscouts[0]
+	order := orderDiscount.Order
+
+	if args.Input.Reason == nil || *args.Input.Reason == "" {
+		args.Input.Reason = orderDiscount.Reason
+	}
+	if args.Input.Value.ToDecimal().Equal(decimal.Zero) && orderDiscount.Value != nil {
+		args.Input.Value = PositiveDecimal(*orderDiscount.Value)
+	}
+	if !args.Input.ValueType.IsValid() {
+		args.Input.ValueType = orderDiscount.ValueType
+	}
+
+	if !(order.IsDraft() || order.IsUnconfirmed()) {
+		return nil, model.NewAppError("OrderDiscountUpdate", "app.order.only_draft_and_unconfirmed_order_can_update.app_error", nil, "only draft and unconfirmed orders can be updated", http.StatusBadRequest)
+	}
+
+	order.PopulateNonDbFields()
+	appErr = validateOrderDiscountInput("OrderDiscountUpdate", order.UnDiscountedTotal.Gross, args.Input)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderDiscountBeforeUpdate := orderDiscount.DeepCopy()
+
+	orderDiscount.Reason = args.Input.Reason
+	orderDiscount.Value = model.GetPointerOfValue(args.Input.Value.ToDecimal())
+	orderDiscount.ValueType = args.Input.ValueType
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderDiscountUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	orderDiscount, appErr = embedCtx.App.Srv().DiscountService().UpsertOrderDiscount(tx, orderDiscount)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(tx, order, map[string]interface{}{})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if orderDiscountBeforeUpdate.ValueType != args.Input.ValueType ||
+		(orderDiscountBeforeUpdate.Value != nil &&
+			!orderDiscountBeforeUpdate.Value.Equal(args.Input.Value.ToDecimal())) {
+
+		_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(tx, &model.OrderEventOption{
+			OrderID: order.Id,
+			UserID:  &embedCtx.AppContext.Session().UserId,
+			Type:    model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_UPDATED,
+			Parameters: model.StringInterface{
+				"discount": embedCtx.App.Srv().OrderService().PrepareDiscountObject(orderDiscount, orderDiscountBeforeUpdate),
+			},
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderDiscountUpdate{
+		Order: SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 	Input OrderFulfillInput
-	Order *UUID
+	Order UUID
 }) (*OrderFulfill, error) {
+	var notifyCustomer, allowStockToBeExceed bool
+	if args.Input.NotifyCustomer != nil {
+		notifyCustomer = *args.Input.NotifyCustomer
+	}
+	if args.Input.AllowStockToBeExceeded != nil {
+		allowStockToBeExceed = *args.Input.AllowStockToBeExceeded
+	}
+
+	// validate duplicates
+	lineIdsMeetMap := map[UUID]bool{}           // keys are order line ids
+	totalQuantityForLineMap := map[string]int{} // keys are order line ids
+
+	for _, lineInput := range args.Input.Lines {
+		if lineIdsMeetMap[lineInput.OrderLineID] {
+			return nil, model.NewAppError("OrderFulfill", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate order line ids detected", http.StatusBadRequest)
+		}
+		lineIdsMeetMap[lineInput.OrderLineID] = true
+
+		warehouseIdsOfLineMeetMap := map[UUID]bool{} // keys are warehouse ids
+		for _, stockInput := range lineInput.Stocks {
+			if warehouseIdsOfLineMeetMap[stockInput.Warehouse] {
+				return nil, model.NewAppError("OrderFulfill", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "duplicate warehouse ids detected", http.StatusBadRequest)
+			}
+			warehouseIdsOfLineMeetMap[stockInput.Warehouse] = true
+
+			totalQuantityForLineMap[lineInput.OrderLineID.String()] += int(stockInput.Quantity)
+		}
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	orderLines, appErr := embedCtx.App.Srv().OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".Id": lo.Keys(totalQuantityForLineMap)},
+		Preload: []string{
+			"ProductVariant",
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	for _, orderLine := range orderLines {
+		if totalQuantityForLineMap[orderLine.Id] > orderLine.QuantityUnFulfilled() {
+			return nil, model.NewAppError("OrderFulfill", "app.order.quantity_to_fulfill_greater_than_quantity_unfulfilled.app_error", map[string]interface{}{"OrderLine": orderLine.Id, "RemainToFulfill": orderLine.QuantityUnFulfilled()}, "required quantity to fulfill greater than remaining quantity to fulfill", http.StatusBadRequest)
+		}
+	}
+
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// clean input
+	shopSettings := embedCtx.App.Config().ShopSettings
+	if !order.IsFullyPaid() && *shopSettings.FulfillmentAutoApprove && *shopSettings.FulfillmentAllowUnPaid {
+		return nil, model.NewAppError("OrderFulfill", "app.order.cannot_fulfill_unpaid_order.app_error", nil, "cannot fulfill unpaid order", http.StatusNotAcceptable)
+	}
+
+	// check lines for preorder
+	if *shopSettings.FulfillmentAutoApprove {
+		for _, orderLine := range orderLines {
+			if orderLine.ProductVariant != nil && orderLine.ProductVariant.IsPreorderActive() {
+				return nil, model.NewAppError("OrderFulfill", "app.order.cannot_fulfill_preorder_variant.app_error", nil, "cannot fulfill preorder variant", http.StatusNotAcceptable)
+			}
+		}
+	}
+
+	// check total quantity of item
+	if lo.Sum(lo.Values(totalQuantityForLineMap)) <= 0 {
+		return nil, model.NewAppError("OrderFulfill", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "total fulfill quantity must be positive", http.StatusBadRequest)
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("OrderFulfill", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	if *shopSettings.FulfillmentAutoApprove {
+		giftardLines := lo.Filter(orderLines, func(item *model.OrderLine, _ int) bool { return item.IsGiftcard })
+
+		_, appErr = embedCtx.App.Srv().GiftcardService().GiftcardsCreate(
+			tx,
+			order,
+			giftardLines,
+			totalQuantityForLineMap,
+			shopSettings,
+			user,
+			nil,
+			pluginMng,
+		)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	orderLinesMap := lo.SliceToMap(orderLines, func(item *model.OrderLine) (string, *model.OrderLine) { return item.Id, item })
+	linesForWarehouse := map[string][]*model.QuantityOrderLine{}
+
+	for i := 0; i < min(len(args.Input.Lines), len(orderLinesMap)); i++ {
+		line := args.Input.Lines[i]
+		orderLine := orderLinesMap[line.OrderLineID.String()]
+
+		for _, stockInput := range line.Stocks {
+			if stockInput.Quantity > 0 {
+				linesForWarehouse[stockInput.Warehouse.String()] = append(linesForWarehouse[stockInput.Warehouse.String()], &model.QuantityOrderLine{
+					Quantity:  int(stockInput.Quantity),
+					OrderLine: orderLine,
+				})
+			}
+		}
+	}
+
+	fulfillments, insufficientStockErr, appErr := embedCtx.App.Srv().OrderService().CreateFulfillments(
+		user,
+		nil,
+		order,
+		linesForWarehouse,
+		pluginMng,
+		notifyCustomer,
+		*shopSettings.FulfillmentAutoApprove,
+		allowStockToBeExceed,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if insufficientStockErr != nil {
+		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderFulfill", insufficientStockErr)
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("OrderFulfill", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &OrderFulfill{
+		Order:        SystemOrderToGraphqlOrder(order),
+		Fulfillments: systemRecordsToGraphql(fulfillments, SystemFulfillmentToGraphqlFulfillment),
+	}, nil
+}
+
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) Orders(ctx context.Context, args struct {
+	SortBy  *OrderSortingInput
+	Filter  *OrderFilterInput
+	Channel *string
+	GraphqlParams
+}) (*OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) DraftOrders(ctx context.Context, args struct {
+	SortBy *OrderSortingInput
+	Filter *OrderDraftFilterInput
+	GraphqlParams
+}) (*OrderCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
+func (r *Resolver) OrdersTotal(ctx context.Context, args struct {
+	Period    ReportingPeriod
+	ChannelID UUID
+}) (*TaxedMoney, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	_, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
+		Conditions: squirrel.Expr(model.ChannelTableName+".Id = ?", args.ChannelID),
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	createTimeFilterOpt := reportingPeriodToDate(args.Period).UnixNano() / 1000
+	orderFilterOpts := model.OrderFilterOption{
+		Conditions: squirrel.And{
+			squirrel.NotEq{
+				model.OrderTableName + ".Status": []string{
+					string(model.ORDER_STATUS_CANCELED),
+					string(model.ORDER_STATUS_DRAFT),
+				},
+			},
+			squirrel.Expr(model.OrderTableName+".ChannelID = ?", args.ChannelID),
+			squirrel.Expr(model.OrderTableName+".CreateAt >= ?", createTimeFilterOpt),
+		},
+	}
+
+	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&orderFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderTotal, _ := util.ZeroTaxedMoney(orders[0].Currency)
+
+	for _, order := range orders {
+		order.PopulateNonDbFields()
+		orderTotal, _ = orderTotal.Add(order.Total)
+	}
+
+	return SystemTaxedMoneyToGraphqlTaxedMoney(orderTotal), nil
 }

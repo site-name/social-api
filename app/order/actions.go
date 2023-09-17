@@ -715,7 +715,7 @@ func (s *ServiceOrder) CreateGiftcardsWhenApprovingFulfillment(order *model.Orde
 		}
 	}
 
-	_, appErr := s.srv.GiftcardService().GiftcardsCreate(order, giftcardLines, quantities, settings, user, nil, manager)
+	_, appErr := s.srv.GiftcardService().GiftcardsCreate(nil, order, giftcardLines, quantities, settings, user, nil, manager)
 	return appErr
 }
 

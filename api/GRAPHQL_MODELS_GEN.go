@@ -2746,13 +2746,13 @@ type OrderFulfillInput struct {
 }
 
 type OrderFulfillLineInput struct {
-	OrderLineID *string                   `json:"orderLineId"`
+	OrderLineID UUID                      `json:"orderLineId"`
 	Stocks      []*OrderFulfillStockInput `json:"stocks"`
 }
 
 type OrderFulfillStockInput struct {
-	Quantity  int32  `json:"quantity"`
-	Warehouse string `json:"warehouse"`
+	Quantity  int32 `json:"quantity"`
+	Warehouse UUID  `json:"warehouse"`
 }
 
 type OrderLineCreateInput struct {
@@ -2853,6 +2853,24 @@ type OrderSettingsUpdateInput struct {
 type OrderSortingInput struct {
 	Direction OrderDirection `json:"direction"`
 	Field     OrderSortField `json:"field"`
+}
+
+type OrderSortField string
+
+const (
+	OrderSortFieldNumber            OrderSortField = "NUMBER"
+	OrderSortFieldCreationDate      OrderSortField = "CREATION_DATE"
+	OrderSortFieldCustomer          OrderSortField = "CUSTOMER"
+	OrderSortFieldPayment           OrderSortField = "PAYMENT"
+	OrderSortFieldFulfillmentStatus OrderSortField = "FULFILLMENT_STATUS"
+)
+
+func (e OrderSortField) IsValid() bool {
+	switch e {
+	case OrderSortFieldNumber, OrderSortFieldCreationDate, OrderSortFieldCustomer, OrderSortFieldPayment, OrderSortFieldFulfillmentStatus:
+		return true
+	}
+	return false
 }
 
 type OrderUpdate struct {
@@ -6257,24 +6275,6 @@ func (e OrderSettingsErrorCode) IsValid() bool {
 }
 
 type OrderStatus = model.OrderStatus
-
-type OrderSortField string
-
-const (
-	OrderSortFieldNumber            OrderSortField = "NUMBER"
-	OrderSortFieldCreationDate      OrderSortField = "CREATION_DATE"
-	OrderSortFieldCustomer          OrderSortField = "CUSTOMER"
-	OrderSortFieldPayment           OrderSortField = "PAYMENT"
-	OrderSortFieldFulfillmentStatus OrderSortField = "FULFILLMENT_STATUS"
-)
-
-func (e OrderSortField) IsValid() bool {
-	switch e {
-	case OrderSortFieldNumber, OrderSortFieldCreationDate, OrderSortFieldCustomer, OrderSortFieldPayment, OrderSortFieldFulfillmentStatus:
-		return true
-	}
-	return false
-}
 
 type OrderStatusFilter string
 

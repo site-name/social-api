@@ -78,7 +78,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model.
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model.AppError) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(order *model.Order, orderLines model.OrderLines, siteSettings model.ShopSettings, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model.AppError) {
 	if user != nil && !model.IsValidId(user.Id) {
 		user = nil
 	}
@@ -93,7 +93,7 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *model.Order, order
 		return nil, nil, nil
 	}
 
-	_, inSufErr, appErr := s.FulfillGiftcardLines(giftcardLines, user, nil, orDer, manager)
+	_, inSufErr, appErr := s.FulfillGiftcardLines(giftcardLines, user, nil, order, manager)
 	if inSufErr != nil || appErr != nil {
 		return nil, inSufErr, appErr
 	}
@@ -103,7 +103,7 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *model.Order, order
 		orderLineIDQuantityMap[line.Id] = line.Quantity
 	}
 
-	res, appErr := s.GiftcardsCreate(orDer, giftcardLines, orderLineIDQuantityMap, siteSettings, user, nil, manager)
+	res, appErr := s.GiftcardsCreate(nil, order, giftcardLines, orderLineIDQuantityMap, siteSettings, user, nil, manager)
 	return res, nil, appErr
 }
 
@@ -126,19 +126,19 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (
 }
 
 // GiftcardsCreate creates purchased gift cards
-func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsCreate(tx *gorm.DB, order *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings model.ShopSettings, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError) {
 	var (
 		customerUser          *model.User = nil
 		customerUserID        *string
 		appErr                *model.AppError
-		userEmail             = orDer.UserEmail
+		userEmail             = order.UserEmail
 		giftcards             = []*model.GiftCard{}
 		nonShippableGiftcards = []*model.GiftCard{}
 		expiryDate            = s.CalculateExpiryDate(settings)
 	)
 
-	if orDer.UserID != nil {
-		customerUser, appErr = s.srv.AccountService().UserById(context.Background(), *orDer.UserID)
+	if order.UserID != nil {
+		customerUser, appErr = s.srv.AccountService().UserById(context.Background(), *order.UserID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -184,18 +184,18 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines mode
 		}
 	}
 
-	giftcards, appErr = s.UpsertGiftcards(nil, giftcards...)
+	giftcards, appErr = s.UpsertGiftcards(tx, giftcards...)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	_, appErr = s.GiftcardsBoughtEvent(nil, giftcards, orDer.Id, requestorUser, nil)
+	_, appErr = s.GiftcardsBoughtEvent(tx, giftcards, order.Id, requestorUser, nil)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	channelOfOrder, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": orDer.ChannelID},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": order.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -356,10 +356,10 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(tx *gorm.DB, orderID string, 
 	return appErr
 }
 
-func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError) {
+func (s *ServiceGiftcard) OrderHasGiftcardLines(order *model.Order) (bool, *model.AppError) {
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions: squirrel.Eq{
-			model.OrderLineTableName + ".OrderID":    orDer.Id,
+			model.OrderLineTableName + ".OrderID":    order.Id,
 			model.OrderLineTableName + ".IsGiftcard": true,
 		},
 	})
