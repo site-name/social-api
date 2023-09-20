@@ -59,6 +59,32 @@ func (e OrderStatus) IsValid() bool {
 	return false
 }
 
+type OrderFilterStatus string
+
+const (
+	OrderStatusFilterReadyToFulfill     OrderFilterStatus = "ready_to_fulfill"
+	OrderStatusFilterReadyToCapture     OrderFilterStatus = "ready_to_capture"
+	OrderStatusFilterUnfulfilled        OrderFilterStatus = OrderFilterStatus(ORDER_STATUS_UNFULFILLED)
+	OrderStatusFilterUnconfirmed        OrderFilterStatus = OrderFilterStatus(ORDER_STATUS_UNCONFIRMED)
+	OrderStatusFilterPartiallyFulfilled OrderFilterStatus = OrderFilterStatus(ORDER_STATUS_PARTIALLY_FULFILLED)
+	OrderStatusFilterFulfilled          OrderFilterStatus = OrderFilterStatus(ORDER_STATUS_FULFILLED)
+	OrderStatusFilterCanceled           OrderFilterStatus = OrderFilterStatus(ORDER_STATUS_CANCELED)
+)
+
+func (e OrderFilterStatus) IsValid() bool {
+	switch e {
+	case OrderStatusFilterReadyToFulfill,
+		OrderStatusFilterReadyToCapture,
+		OrderStatusFilterUnfulfilled,
+		OrderStatusFilterUnconfirmed,
+		OrderStatusFilterPartiallyFulfilled,
+		OrderStatusFilterFulfilled,
+		OrderStatusFilterCanceled:
+		return true
+	}
+	return false
+}
+
 type Order struct {
 	Id                  string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt            int64                  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`         // NOT editable
@@ -111,10 +137,14 @@ type Order struct {
 	Weight *measurement.Weight `json:"weight" gorm:"-"` // default 0
 
 	ModelMetadata
-	GiftCards            []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
-	OrderLines           OrderLines  `json:"-" gorm:"foreignKey:OrderID"`
-	populatedNonDBFields bool        `gorm:"-"`
-	Channel              *Channel    `json:"-"`
+	GiftCards  []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
+	OrderLines OrderLines  `json:"-" gorm:"foreignKey:OrderID"`
+	Channel    *Channel    `json:"-"`
+
+	// fields below are used for sorting
+	BillingAddressLastName  string              `json:"-" gorm:"-"`
+	BillingAddressFirstName string              `json:"-" gorm:"-"`
+	LastPaymentChargeStatus PaymentChargeStatus `json:"-" gorm:"-"`
 }
 
 func (c *Order) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -124,22 +154,54 @@ func (c *Order) TableName() string             { return OrderTableName }
 // OrderFilterOption is used to build sql queries for filtering orders
 type OrderFilterOption struct {
 	Conditions squirrel.Sqlizer // filter by order's id
+	// if set:
+	/* o.UserEmail ILIKE ... OR
+	o.User.Email ILIKE ... OR
+	o.User.FirstName ILIKE ... OR
+	o.User.LastName ILIKE ...
+	*/
+	Customer string
 
-	ChannelSlug squirrel.Sqlizer // for comparing the channel of this order's slug
+	// If set:
+	/*
+		order.UserEmail ILIKE ... OR
+		EXISTS (
+			user.Email ILIKE ... OR
+			user.FirstName ILIKE ... OR
+			user.LastName ILIKE ...
+			WHERE user.Id = order.UserID
+		)
+		OR
+		EXISTS (
+			payment.PspReference = ...
+			WHERE payment.OrderID = order.Id
+		)
+	*/
+	Search string
+
+	PaymentChargeStatus squirrel.Sqlizer // INNER JOIN Payments ON ... WHERE Payments.IsActive AND Payments.ChargeStatus ...
+	ChannelSlug         squirrel.Sqlizer // INNER JOIN channels ON ... WHERE Channels.Slug ...
+	// contains string formats of OrderStatus, may be some additional values like:
+	//  "ready_to_fulfill", "ready_to_capture"
+	Statuses []string
+
+	CountTotal bool
+
+	GraphqlPaginationValues GraphqlPaginationValues
 
 	SelectForUpdate bool // if true, add FOR UPDATE to the end of sql queries. NOTE: Only applies if Transaction is set
 	Transaction     *gorm.DB
 
+	AnnotateBillingAddressNames     bool // if true, "BillingAddressLastName" and "BillingAddressFirstName" will be populated
+	AnnotateLastPaymentChargeStatus bool // if true, "LastPaymentChargeStatus" will be populated
+
+	// options should be
+	//  "GiftCards", "OrderLines", "Channel"
 	Preload []string
 }
 
 // NOTE: this should be called when your orders are retrieve out of database.
 func (o *Order) PopulateNonDbFields() {
-	if o.populatedNonDBFields {
-		return
-	}
-	o.populatedNonDBFields = true
-
 	// errors can be ignored since orders's Currencies were checked before saving into database
 	o.ShippingPriceNet = &goprices.Money{
 		Amount:   *o.ShippingPriceNetAmount,

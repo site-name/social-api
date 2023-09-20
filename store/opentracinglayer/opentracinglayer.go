@@ -4621,7 +4621,7 @@ func (s *OpenTracingLayerOrderStore) Delete(transaction *gorm.DB, ids []string) 
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
+func (s *OpenTracingLayerOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4630,13 +4630,13 @@ func (s *OpenTracingLayerOrderStore) FilterByOption(option *model.OrderFilterOpt
 	}()
 
 	defer span.Finish()
-	result, err := s.OrderStore.FilterByOption(option)
+	result, resultVar1, err := s.OrderStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerOrderStore) Get(id string) (*model.Order, error) {

@@ -197,10 +197,7 @@ func modelFieldKindInit() func(key string) (ModelFieldKind, bool) {
 	var modelFieldsTypeMap = map[string]ModelFieldKind{}
 
 	for _, model := range SystemModels {
-		typeOf := reflect.TypeOf(model)
-		if typeOf.Kind() == reflect.Pointer {
-			typeOf = typeOf.Elem()
-		}
+		typeOf := reflect.TypeOf(model).Elem()
 
 		for i := 0; i < typeOf.NumField(); i++ {
 			var (

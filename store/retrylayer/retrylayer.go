@@ -4992,21 +4992,21 @@ func (s *RetryLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64
 
 }
 
-func (s *RetryLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
+func (s *RetryLayerOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderStore.FilterByOption(option)
+		result, resultVar1, err := s.OrderStore.FilterByOption(option)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 

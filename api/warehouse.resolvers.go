@@ -340,7 +340,7 @@ func (r *Resolver) Warehouse(ctx context.Context, args struct{ Id string }) (*Wa
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) Warehouses(ctx context.Context, args struct {
 	Filter *WarehouseFilterInput
-	SortBy *WarehouseSortingInput // NOTE: currently warehouses are sorted by name
+	SortBy *WarehouseSortingInput // TODO: add support for this field
 	GraphqlParams
 }) (*WarehouseCountableConnection, error) {
 	// validate arguments:

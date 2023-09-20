@@ -72,7 +72,7 @@ type OrderService interface {
 	// DeleteOrderLines perform bulk delete given order lines
 	DeleteOrderLines(orderLineIDs []string) *model.AppError
 	// FilterOrdersByOptions is common method for filtering orders by given option
-	FilterOrdersByOptions(option *model.OrderFilterOption) ([]*model.Order, *model.AppError)
+	FilterOrdersByOptions(option *model.OrderFilterOption) (int64, []*model.Order, *model.AppError)
 	// Fulfill order.
 	//
 	//	Function create fulfillments with lines.

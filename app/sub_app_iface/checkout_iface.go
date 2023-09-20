@@ -165,7 +165,7 @@ type CheckoutService interface {
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)
 	CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model.AppError
 	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
-	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
+	CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError
 	DeleteCheckoutLines(transaction *gorm.DB, checkoutLineIDs []string) *model.AppError
 	GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model.AppError)

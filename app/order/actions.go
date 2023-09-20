@@ -739,7 +739,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(order model.Order, requestUser *model.Use
 		return paymentErr, appErr
 	}
 
-	payMent.ChargeStatus = model.FULLY_CHARGED
+	payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_FULLY_CHARGED
 	payMent.CapturedAmount = &order.Total.Gross.Amount
 
 	savedPayment, appErr := a.srv.PaymentService().UpsertPayment(transaction, payMent)

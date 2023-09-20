@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"unsafe"
@@ -969,7 +968,7 @@ func (r *Resolver) OrderVoid(ctx context.Context, args struct{ Id UUID }) (*Orde
 func (r *Resolver) OrderBulkCancel(ctx context.Context, args struct{ Ids []UUID }) (*OrderBulkCancel, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+	_, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.Eq{model.OrderTableName + ".Id": args.Ids},
 	})
 	if appErr != nil {
@@ -1029,7 +1028,7 @@ func (r *Resolver) Order(ctx context.Context, args struct{ Id UUID }) (*Order, e
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token UUID }) (*Order, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+	_, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Expr(model.OrderTableName+".Status != ?", model.ORDER_STATUS_DRAFT),
 			squirrel.Expr(model.OrderTableName+".Token = ?", args.Token),
@@ -1362,12 +1361,79 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
 func (r *Resolver) Orders(ctx context.Context, args struct {
-	SortBy  *OrderSortingInput
-	Filter  *OrderFilterInput
-	Channel *string
+	SortBy    *OrderSortingInput
+	Filter    *OrderFilterInput
+	ChannelID *UUID
 	GraphqlParams
 }) (*OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	var orderFilterOpts = new(model.OrderFilterOption)
+	var appErr *model.AppError
+
+	if args.Filter != nil {
+		orderFilterOpts, appErr = args.Filter.parse("Orders")
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	paginValues, appErr := args.GraphqlParams.Parse("Orders")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderFilterOpts.GraphqlPaginationValues = *paginValues
+	orderFilterOpts.CountTotal = true // ask store to count total too
+
+	// add filter for non-draft orders
+	orderFilterOpts.Conditions = append(
+		orderFilterOpts.Conditions.(squirrel.And),
+		squirrel.Expr(model.OrderTableName+".Status != ?", model.ORDER_STATUS_DRAFT),
+	)
+
+	// check if filter by channel id too
+	if args.ChannelID != nil {
+		orderFilterOpts.Conditions = append(
+			orderFilterOpts.Conditions.(squirrel.And),
+			squirrel.Expr(model.OrderTableName+".ChannelID = ?", *args.ChannelID),
+		)
+	}
+
+	if orderFilterOpts.GraphqlPaginationValues.OrderBy == "" {
+		// default sort to order numbers
+		orderSortFields := orderSortFieldsMap[OrderSortFieldNumber].fields
+
+		if args.SortBy != nil {
+			orderSortFields = orderSortFieldsMap[args.SortBy.Field].fields
+
+			switch args.SortBy.Field {
+			case OrderSortFieldCustomer:
+				orderFilterOpts.AnnotateBillingAddressNames = true
+
+			case OrderSortFieldPayment:
+				orderFilterOpts.AnnotateLastPaymentChargeStatus = true
+			}
+		}
+
+		ordering := args.GraphqlParams.orderDirection()
+		orderFilterOpts.GraphqlPaginationValues.OrderBy = orderSortFields.Map(func(_ int, item string) string { return item + " " + ordering }).Join(", ")
+	}
+
+	// find orders
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalCount, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(orderFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(orders))
+	keyFunc := orderSortFieldsMap[OrderSortFieldNumber].keyFunc
+	if args.SortBy != nil {
+		keyFunc = orderSortFieldsMap[args.SortBy.Field].keyFunc
+	}
+	connection := constructCountableConnection(orders, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemOrderToGraphqlOrder)
+
+	return (*OrderCountableConnection)(unsafe.Pointer(connection)), nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
@@ -1376,7 +1442,66 @@ func (r *Resolver) DraftOrders(ctx context.Context, args struct {
 	Filter *OrderDraftFilterInput
 	GraphqlParams
 }) (*OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	var orderFilterOpts = new(model.OrderFilterOption)
+	var appErr *model.AppError
+
+	if args.Filter != nil {
+		orderFilterOpts, appErr = args.Filter.parse("Orders")
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	paginValues, appErr := args.GraphqlParams.Parse("Orders")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderFilterOpts.GraphqlPaginationValues = *paginValues
+	orderFilterOpts.CountTotal = true // ask store to count total too
+
+	// add filter for draft orders only:
+	orderFilterOpts.Conditions = append(
+		orderFilterOpts.Conditions.(squirrel.And),
+		squirrel.Expr(model.OrderTableName+".Status = ?", model.ORDER_STATUS_DRAFT),
+	)
+
+	if orderFilterOpts.GraphqlPaginationValues.OrderBy == "" {
+		// default sort to order numbers
+		orderSortFields := orderSortFieldsMap[OrderSortFieldNumber].fields
+
+		if args.SortBy != nil {
+			orderSortFields = orderSortFieldsMap[args.SortBy.Field].fields
+
+			switch args.SortBy.Field {
+			case OrderSortFieldCustomer:
+				orderFilterOpts.AnnotateBillingAddressNames = true
+
+			case OrderSortFieldPayment:
+				orderFilterOpts.AnnotateLastPaymentChargeStatus = true
+			}
+		}
+
+		ordering := args.GraphqlParams.orderDirection()
+		orderFilterOpts.GraphqlPaginationValues.OrderBy = orderSortFields.Map(func(_ int, item string) string { return item + " " + ordering }).Join(", ")
+	}
+
+	// find orders
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalCount, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(orderFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(orders))
+	keyFunc := orderSortFieldsMap[OrderSortFieldNumber].keyFunc
+	if args.SortBy != nil {
+		keyFunc = orderSortFieldsMap[args.SortBy.Field].keyFunc
+	}
+	connection := constructCountableConnection(orders, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemOrderToGraphqlOrder)
+
+	return (*OrderCountableConnection)(unsafe.Pointer(connection)), nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/order.graphqls for details on directives used
@@ -1407,7 +1532,7 @@ func (r *Resolver) OrdersTotal(ctx context.Context, args struct {
 		},
 	}
 
-	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&orderFilterOpts)
+	_, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&orderFilterOpts)
 	if appErr != nil {
 		return nil, appErr
 	}

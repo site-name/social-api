@@ -546,7 +546,7 @@ type (
 		Delete(transaction *gorm.DB, ids []string) (int64, error)
 		ScanFields(holder *model.Order) []interface{}
 		Get(id string) (*model.Order, error)                                            // Get find order in database with given id
-		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)         // FilterByOption returns a list of orders, filtered by given option
+		FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error)  // FilterByOption returns a list of orders, filtered by given option
 		BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
 	}
 	OrderEventStore interface {

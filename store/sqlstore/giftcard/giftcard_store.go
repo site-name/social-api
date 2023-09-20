@@ -81,7 +81,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 
 	if option.OrderID != nil {
 		query = query.
-			InnerJoin(model.OrderGiftCardTableName + " ON OrderGiftCards.GiftCardID = GiftCards.Id").
+			InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.GiftCardID = %[2]s.Id", model.OrderGiftCardTableName, model.GiftcardTableName)).
 			Where(option.OrderID)
 	}
 	if option.CheckoutToken != nil {
@@ -100,20 +100,26 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 	}
 
 	// those annotations are used for pagination sorting
-	if option.AnnotateRelatedProductName ||
-		option.AnnotateRelatedProductSlug {
-		query = query.
-			InnerJoin(model.ProductTableName + " ON Products.Id = GiftCards.ProductID").
-			Column(`Products.Name AS "GiftCards.RelatedProductName"`).
-			Column(`Products.Slug AS "GiftCards.RelatedProductSlug"`)
+	if option.AnnotateRelatedProductName || option.AnnotateRelatedProductSlug {
+		query = query.InnerJoin(model.ProductTableName + " ON Products.Id = GiftCards.ProductID")
+
+		if option.AnnotateRelatedProductName {
+			query = query.Column(`Products.Name AS "GiftCards.RelatedProductName"`)
+		}
+		if option.AnnotateRelatedProductSlug {
+			query = query.Column(`Products.Slug AS "GiftCards.RelatedProductSlug"`)
+		}
 	}
 
-	if option.AnnotateUsedByFirstName ||
-		option.AnnotateRelatedProductSlug {
-		query = query.
-			InnerJoin(model.UserTableName + " ON GiftCards.UsedByID = Users.Id").
-			Column(`Users.FirstName AS "GiftCards.RelatedUsedByFirstName"`).
-			Column(`Users.LastName AS "GiftCards.RelatedUsedByLastName"`)
+	if option.AnnotateUsedByFirstName || option.AnnotateUsedByLastName {
+		query = query.InnerJoin(model.UserTableName + " ON GiftCards.UsedByID = Users.Id")
+
+		if option.AnnotateUsedByFirstName {
+			query = query.Column(`Users.FirstName AS "GiftCards.RelatedUsedByFirstName"`)
+		}
+		if option.AnnotateUsedByLastName {
+			query = query.Column(`Users.LastName AS "GiftCards.RelatedUsedByLastName"`)
+		}
 	}
 
 	var totalCount int64
@@ -153,11 +159,17 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 		var gc model.GiftCard
 		var scanFields = gs.ScanFields(&gc)
 
-		if option.AnnotateRelatedProductName || option.AnnotateRelatedProductSlug {
-			scanFields = append(scanFields, &gc.RelatedProductName, &gc.RelatedProductSlug)
+		if option.AnnotateRelatedProductName {
+			scanFields = append(scanFields, &gc.RelatedProductName)
 		}
-		if option.AnnotateUsedByFirstName || option.AnnotateUsedByLastName {
-			scanFields = append(scanFields, &gc.RelatedUsedByFirstName, &gc.RelatedUsedByLastName)
+		if option.AnnotateRelatedProductSlug {
+			scanFields = append(scanFields, &gc.RelatedProductSlug)
+		}
+		if option.AnnotateUsedByFirstName {
+			scanFields = append(scanFields, &gc.RelatedUsedByFirstName)
+		}
+		if option.AnnotateUsedByLastName {
+			scanFields = append(scanFields, &gc.RelatedUsedByLastName)
 		}
 
 		err := rows.Scan(scanFields...)

@@ -554,7 +554,7 @@ func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, er
 	}
 
 	if len(payments) == 0 {
-		notCharged := model.NOT_CHARGED
+		notCharged := model.PAYMENT_CHARGE_STATUS_NOT_CHARGED
 		return &notCharged, nil
 	}
 
@@ -577,7 +577,7 @@ func (o *Order) PaymentStatusDisplay(ctx context.Context) (string, error) {
 	}
 
 	if len(payments) == 0 {
-		return model.ChargeStatuString[model.NOT_CHARGED], nil
+		return model.ChargeStatuString[model.PAYMENT_CHARGE_STATUS_NOT_CHARGED], nil
 	}
 
 	// find latest payment
@@ -802,7 +802,7 @@ func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mo
 	res := make([]*dataloader.Result[*model.Order], len(ids))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	orders, appErr := embedCtx.App.Srv().
+	_, orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
 			Conditions: squirrel.Eq{model.OrderTableName + ".Id": ids},
@@ -829,7 +829,7 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	orders, appErr := embedCtx.App.Srv().
+	_, orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
 			Conditions: squirrel.Eq{model.OrderTableName + ".UserID": userIDs},

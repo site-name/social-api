@@ -1408,7 +1408,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(order *model.Order) (*
 }
 
 func (a *ServiceOrder) MatchOrdersWithNewUser(user *model.User) *model.AppError {
-	ordersByOption, appErr := a.FilterOrdersByOptions(&model.OrderFilterOption{
+	_, ordersByOption, appErr := a.FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Eq{model.OrderTableName + ".UserID": nil},
 			squirrel.Eq{model.OrderTableName + ".UserEmail": user.Email},

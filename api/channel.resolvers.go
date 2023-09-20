@@ -206,7 +206,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 			})
 	}
 
-	orders, appErr := embedCtx.App.Srv().
+	_, orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
 			Conditions:      squirrel.Eq{model.OrderTableName + ".ChannelID": args.Id},

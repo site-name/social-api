@@ -56,13 +56,13 @@ func (a *ServiceOrder) BulkUpsertOrders(transaction *gorm.DB, orders []*model.Or
 }
 
 // FilterOrdersByOptions is common method for filtering orders by given option
-func (a *ServiceOrder) FilterOrdersByOptions(option *model.OrderFilterOption) ([]*model.Order, *model.AppError) {
-	orders, err := a.srv.Store.Order().FilterByOption(option)
+func (a *ServiceOrder) FilterOrdersByOptions(option *model.OrderFilterOption) (int64, []*model.Order, *model.AppError) {
+	totalCount, orders, err := a.srv.Store.Order().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model.NewAppError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return orders, nil
+	return totalCount, orders, nil
 }
 
 // OrderById retuns an order with given id

@@ -426,9 +426,9 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		payMent.IsActive = model.GetPointerOfValue(true)
 		// Set payment charge status to fully charged
 		// only if there is no more amount needs to charge
-		payMent.ChargeStatus = model.PARTIALLY_CHARGED
+		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED
 		if payMent.GetChargeAmount().LessThanOrEqual(decimal.Zero) {
-			payMent.ChargeStatus = model.FULLY_CHARGED
+			payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_FULLY_CHARGED
 		}
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 
@@ -439,26 +439,26 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 	case model.TRANSACTION_KIND_REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
 		payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
-		payMent.ChargeStatus = model.PARTIALLY_REFUNDED
+		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PARTIALLY_REFUNDED
 		if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 			payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
-			payMent.ChargeStatus = model.FULLY_REFUNDED
+			payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_FULLY_REFUNDED
 			payMent.IsActive = model.GetPointerOfValue(false)
 		}
 
 	case model.TRANSACTION_KIND_PENDING:
-		payMent.ChargeStatus = model.PENDING
+		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PENDING
 		changedFields = append(changedFields, "charge_status")
 
 	case model.TRANSACTION_KIND_CANCEL:
-		payMent.ChargeStatus = model.CANCELLED
+		payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_CANCELLED
 		payMent.IsActive = model.GetPointerOfValue(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
 
 	case model.TRANSACTION_KIND_CAPTURE_FAILED:
-		if payMent.ChargeStatus == model.PARTIALLY_CHARGED || payMent.ChargeStatus == model.FULLY_CHARGED {
+		if payMent.ChargeStatus == model.PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED || payMent.ChargeStatus == model.PAYMENT_CHARGE_STATUS_FULLY_CHARGED {
 			payMent.CapturedAmount = model.GetPointerOfValue(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
-			payMent.ChargeStatus = model.PARTIALLY_CHARGED
+			payMent.ChargeStatus = model.PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED
 			if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 				payMent.CapturedAmount = model.GetPointerOfValue(decimal.Zero)
 			}

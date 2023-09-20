@@ -20,7 +20,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	orders, appErr := embedCtx.App.Srv().
+	_, orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
 			Conditions: squirrel.Expr(model.OrderTableName+".Id = ?", args.Id),
@@ -197,7 +197,7 @@ func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []
 
 	// validate all orders are draft
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+	_, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.Eq{model.OrderTableName + ".Id": args.Ids},
 	})
 	if appErr != nil {

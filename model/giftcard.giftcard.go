@@ -46,10 +46,10 @@ type GiftCard struct {
 	Orders    Orders      `json:"-" gorm:"many2many:OrderGiftCards"`
 
 	// NOTE: fields below are used for sorting purpose
-	RelatedProductName     string `json:"-" gorm:"column:-"`
-	RelatedProductSlug     string `json:"-" gorm:"column:-"`
-	RelatedUsedByFirstName string `json:"-" gorm:"column:-"`
-	RelatedUsedByLastName  string `json:"-" gorm:"column:-"`
+	RelatedProductSlug     string `json:"-" gorm:"-"`
+	RelatedProductName     string `json:"-" gorm:"-"`
+	RelatedUsedByFirstName string `json:"-" gorm:"-"`
+	RelatedUsedByLastName  string `json:"-" gorm:"-"`
 }
 
 func (c *GiftCard) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }

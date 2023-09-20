@@ -166,7 +166,7 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 		return appErr
 	}
 
-	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+	_, orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.Eq{
 			model.OrderTableName + ".Status": []model.OrderStatus{
 				model.ORDER_STATUS_UNCONFIRMED,

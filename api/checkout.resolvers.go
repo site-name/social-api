@@ -170,7 +170,7 @@ func (r *Resolver) CheckoutComplete(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+	_, orders, appErr := embedCtx.App.Srv().OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.Expr(model.OrderTableName+".CheckoutToken = ? AND Orders.Status != ?", args.Token, model.ORDER_STATUS_DRAFT),
 	})
 	if appErr != nil {

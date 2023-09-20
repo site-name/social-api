@@ -501,7 +501,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 func (s *ServiceCheckout) createOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, orderData model.StringInterface, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings model.ShopSettings) (*model.Order, *model.InsufficientStock, *model.AppError) {
 	checkout := checkoutInfo.Checkout
 
-	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+	_, orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
 		Conditions: squirrel.Eq{model.OrderTableName + ".CheckoutToken": checkout.Token},
 	})
 	if appErr != nil {
@@ -652,7 +652,7 @@ func (s *ServiceCheckout) prepareCheckout(transaction *gorm.DB, manager interfac
 		return nil, appErr
 	}
 
-	paymentErr, appErr := s.CleanCheckoutPayment(manager, checkoutInfo, lines, discoutns, payMent)
+	paymentErr, appErr := s.CleanCheckoutPayment(transaction, manager, checkoutInfo, lines, discoutns, payMent)
 	if paymentErr != nil || appErr != nil {
 		return paymentErr, appErr
 	}

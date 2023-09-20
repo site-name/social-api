@@ -5,6 +5,7 @@ import (
 
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"gorm.io/gorm"
 )
 
 // CleanCheckoutShipping
@@ -45,7 +46,7 @@ func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model.CheckoutInfo) *
 	return nil
 }
 
-func (a *ServiceCheckout) CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError) {
+func (a *ServiceCheckout) CleanCheckoutPayment(tx *gorm.DB, manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError) {
 	if appErr := a.CleanBillingAddress(checkoutInfo); appErr != nil {
 		return nil, appErr
 	}
@@ -56,7 +57,7 @@ func (a *ServiceCheckout) CleanCheckoutPayment(manager interfaces.PluginManagerI
 	}
 
 	if !isFullyPaid {
-		paymentErr, appErr := a.srv.PaymentService().PaymentRefundOrVoid(lastPayment, manager, checkoutInfo.Channel.Slug)
+		paymentErr, appErr := a.srv.PaymentService().PaymentRefundOrVoid(tx, lastPayment, manager, checkoutInfo.Channel.Slug)
 		if paymentErr != nil || appErr != nil {
 			return paymentErr, appErr
 		}

@@ -29,25 +29,25 @@ func (p PaymentChargeStatus) IsValid() bool {
 
 // Choices for charge status
 const (
-	NOT_CHARGED        PaymentChargeStatus = "not_charged"
-	PENDING            PaymentChargeStatus = "pending"
-	PARTIALLY_CHARGED  PaymentChargeStatus = "partially_charged"
-	FULLY_CHARGED      PaymentChargeStatus = "fully_charged"
-	PARTIALLY_REFUNDED PaymentChargeStatus = "partially_refunded"
-	FULLY_REFUNDED     PaymentChargeStatus = "fully_refunded"
-	REFUSED            PaymentChargeStatus = "refused"
-	CANCELLED          PaymentChargeStatus = "cancelled"
+	PAYMENT_CHARGE_STATUS_NOT_CHARGED        PaymentChargeStatus = "not_charged"
+	PAYMENT_CHARGE_STATUS_PENDING            PaymentChargeStatus = "pending"
+	PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED  PaymentChargeStatus = "partially_charged"
+	PAYMENT_CHARGE_STATUS_FULLY_CHARGED      PaymentChargeStatus = "fully_charged"
+	PAYMENT_CHARGE_STATUS_PARTIALLY_REFUNDED PaymentChargeStatus = "partially_refunded"
+	PAYMENT_CHARGE_STATUS_FULLY_REFUNDED     PaymentChargeStatus = "fully_refunded"
+	PAYMENT_CHARGE_STATUS_REFUSED            PaymentChargeStatus = "refused"
+	PAYMENT_CHARGE_STATUS_CANCELLED          PaymentChargeStatus = "cancelled"
 )
 
 var ChargeStatuString = map[PaymentChargeStatus]string{
-	NOT_CHARGED:        "Not charged",
-	PENDING:            "Pending",
-	PARTIALLY_CHARGED:  "Partially charged",
-	FULLY_CHARGED:      "Fully charged",
-	PARTIALLY_REFUNDED: "Partially refunded",
-	FULLY_REFUNDED:     "Fully refunded",
-	REFUSED:            "Refused",
-	CANCELLED:          "Cancelled",
+	PAYMENT_CHARGE_STATUS_NOT_CHARGED:        "Not charged",
+	PAYMENT_CHARGE_STATUS_PENDING:            "Pending",
+	PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED:  "Partially charged",
+	PAYMENT_CHARGE_STATUS_FULLY_CHARGED:      "Fully charged",
+	PAYMENT_CHARGE_STATUS_PARTIALLY_REFUNDED: "Partially refunded",
+	PAYMENT_CHARGE_STATUS_FULLY_REFUNDED:     "Fully refunded",
+	PAYMENT_CHARGE_STATUS_REFUSED:            "Refused",
+	PAYMENT_CHARGE_STATUS_CANCELLED:          "Cancelled",
 }
 
 // Payment represents payment from user to shop
@@ -122,7 +122,7 @@ func (p *Payment) GetChargeAmount() *decimal.Decimal {
 
 // NotCharged checks if current payment's charge status is "not_charged"
 func (p *Payment) NotCharged() bool {
-	return p.ChargeStatus == NOT_CHARGED
+	return p.ChargeStatus == PAYMENT_CHARGE_STATUS_NOT_CHARGED
 }
 
 // CanAuthorize checks if current payment is active and not charged
@@ -136,9 +136,9 @@ func (p *Payment) CanCapture() bool {
 }
 
 var canRefundChargeStatuses = util.AnyArray[PaymentChargeStatus]{
-	PARTIALLY_CHARGED,
-	FULLY_CHARGED,
-	PARTIALLY_REFUNDED,
+	PAYMENT_CHARGE_STATUS_PARTIALLY_CHARGED,
+	PAYMENT_CHARGE_STATUS_FULLY_CHARGED,
+	PAYMENT_CHARGE_STATUS_PARTIALLY_REFUNDED,
 }
 
 // CanRefund checks if current payment is active && (partially charged || fully charged || partially refunded)
@@ -235,7 +235,7 @@ func (p *Payment) commonPre() {
 		p.CapturedAmount = GetPointerOfValue(decimal.Zero)
 	}
 	if !p.ChargeStatus.IsValid() {
-		p.ChargeStatus = NOT_CHARGED
+		p.ChargeStatus = PAYMENT_CHARGE_STATUS_NOT_CHARGED
 	}
 	if p.IsActive == nil {
 		p.IsActive = GetPointerOfValue(true)

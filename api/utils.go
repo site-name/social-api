@@ -209,7 +209,7 @@ func convertGraphqlOperandsToString(operands []any) string {
 	return strings.Join(cursorStrings, cursorPartsSeperator)
 }
 
-// NOTE: Don't pass maps values
+// NOTE: Don't pass map[any]any values
 func compareOperands(a, b any, kind model.ModelFieldKind) int {
 	if a == b {
 		return 0

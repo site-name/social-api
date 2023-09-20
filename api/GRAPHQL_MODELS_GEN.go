@@ -19,6 +19,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
+	"github.com/uber/jaeger-client-go/utils"
 	"gorm.io/gorm"
 )
 
@@ -704,18 +705,8 @@ func (a *AttributeValueCreateInput) getValue() *string         { return a.Value 
 func (a *AttributeValueCreateInput) getJsonString() JSONString { return a.RichText }
 
 type AttributeValueUpdateInput struct {
-	Value       *string    `json:"value"`
-	RichText    JSONString `json:"richText"`
-	FileURL     *string    `json:"fileUrl"`
-	ContentType *string    `json:"contentType"`
-	Name        string     `json:"name"`
+	AttributeValueCreateInput
 }
-
-func (a *AttributeValueUpdateInput) getName() string           { return a.Name }
-func (a *AttributeValueUpdateInput) getFileURL() *string       { return a.FileURL }
-func (a *AttributeValueUpdateInput) getContentType() *string   { return a.ContentType }
-func (a *AttributeValueUpdateInput) getValue() *string         { return a.Value }
-func (a *AttributeValueUpdateInput) getJsonString() JSONString { return a.RichText }
 
 type AttributeValueBulkDelete struct {
 	Count  int32             `json:"count"`
@@ -2677,12 +2668,87 @@ type OrderDiscountUpdate struct {
 	Errors []*OrderError `json:"errors"`
 }
 
+type OrderFilterInput struct {
+	PaymentStatus []PaymentChargeStatusEnum `json:"paymentStatus"`
+	Status        []OrderStatusFilter       `json:"status"`
+	OrderDraftFilterInput
+}
+
+func (ip *OrderFilterInput) parse(where string) (*model.OrderFilterOption, *model.AppError) {
+	filterOpts, appErr := ip.OrderDraftFilterInput.parse(where)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	paymentChargeStatuses := lo.Filter(ip.PaymentStatus, func(item model.PaymentChargeStatus, _ int) bool { return item.IsValid() })
+	if len(paymentChargeStatuses) > 0 {
+		filterOpts.PaymentChargeStatus = squirrel.Eq{model.PaymentTableName + ".ChargeStatus": paymentChargeStatuses}
+	}
+
+	filterOpts.Statuses = *(*[]string)(unsafe.Pointer(&ip.Status))
+
+	return filterOpts, nil
+}
+
 type OrderDraftFilterInput struct {
-	Customer *string          `json:"customer"`
-	Created  *DateRangeInput  `json:"created"`
+	// if set:
+	/* o.UserEmail ILIKE ... OR
+	o.User.Email ILIKE ... OR
+	o.User.FirstName ILIKE ... OR
+	o.User.LastName ILIKE ...
+	*/
+	Customer *string `json:"customer"`
+	// o.CreateAt
+	Created   *DateRangeInput `json:"created"`
+	PaymentId UUID            `json:"paymentID"`
+	//
 	Search   *string          `json:"search"`
 	Metadata []*MetadataInput `json:"metadata"`
-	Channels []string         `json:"channels"`
+	Channels []UUID           `json:"channels"`
+}
+
+func (ip *OrderDraftFilterInput) parse(where string) (*model.OrderFilterOption, *model.AppError) {
+	var conditions = squirrel.And{}
+	var res model.OrderFilterOption
+
+	if ip.Customer != nil {
+		res.Customer = *ip.Customer
+	}
+	if ip.Created != nil {
+		appErr := ip.Created.validate(where)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		if ip.Created.Gte != nil {
+			conditions = append(conditions, squirrel.Expr(model.OrderTableName+".CreateAt >= ?", utils.TimeToMicrosecondsSinceEpochInt64(ip.Created.Gte.Time)))
+		}
+		if ip.Created.Lte != nil {
+			conditions = append(conditions, squirrel.Expr(model.OrderTableName+".CreateAt <= ?", utils.TimeToMicrosecondsSinceEpochInt64(ip.Created.Lte.Time)))
+		}
+	}
+	if ip.Search != nil && *ip.Search != "" {
+		res.Search = *ip.Search
+	}
+
+	for _, metaFilter := range ip.Metadata {
+		if metaFilter != nil && metaFilter.Key != "" {
+			if metaFilter.Value == "" {
+				expr := fmt.Sprintf(model.OrderTableName+".Metadata::jsonb ? '%s'", metaFilter.Key)
+				conditions = append(conditions, squirrel.Expr(expr))
+			} else {
+				expr := fmt.Sprintf(model.OrderTableName+".Metadata::jsonb @> '{%q:%q}'", metaFilter.Key, metaFilter.Value)
+				conditions = append(conditions, squirrel.Expr(expr))
+			}
+		}
+	}
+
+	if len(ip.Channels) > 0 {
+		conditions = append(conditions, squirrel.Eq{model.OrderTableName + ".ChannelID": ip.Channels})
+	}
+
+	res.Conditions = conditions
+	return &res, nil
 }
 
 type OrderError struct {
@@ -2721,16 +2787,6 @@ type OrderEventOrderLineObject struct {
 	OrderLine *OrderLine                `json:"orderLine"`
 	ItemName  *string                   `json:"itemName"`
 	Discount  *OrderEventDiscountObject `json:"discount"`
-}
-
-type OrderFilterInput struct {
-	PaymentStatus []*PaymentChargeStatusEnum `json:"paymentStatus"`
-	Status        []*OrderStatusFilter       `json:"status"`
-	Customer      *string                    `json:"customer"`
-	Created       *DateRangeInput            `json:"created"`
-	Search        *string                    `json:"search"`
-	Metadata      []*MetadataInput           `json:"metadata"`
-	Channels      []string                   `json:"channels"`
 }
 
 type OrderFulfill struct {
@@ -2853,6 +2909,69 @@ type OrderSettingsUpdateInput struct {
 type OrderSortingInput struct {
 	Direction OrderDirection `json:"direction"`
 	Field     OrderSortField `json:"field"`
+}
+
+type OrderSortFieldAttributes struct {
+	keyFunc func(*model.Order) []any
+	fields  util.AnyArray[string]
+}
+
+var orderSortFieldsMap = map[OrderSortField]OrderSortFieldAttributes{
+	OrderSortFieldNumber: {
+		keyFunc: func(o *model.Order) []any {
+			return []any{model.OrderTableName + ".Id", o.Id}
+		},
+		fields: []string{model.OrderTableName + ".Id"},
+	},
+	OrderSortFieldCreationDate: {
+		keyFunc: func(o *model.Order) []any {
+			return []any{
+				model.OrderTableName + ".CreateAt", o.CreateAt,
+				model.OrderTableName + ".Status", o.Status,
+			}
+		},
+		fields: []string{
+			model.OrderTableName + ".CreateAt",
+			model.OrderTableName + ".Status",
+		},
+	},
+	OrderSortFieldFulfillmentStatus: {
+		keyFunc: func(o *model.Order) []any {
+			return []any{
+				model.OrderTableName + ".Status", o.Status,
+				model.OrderTableName + ".UserEmail", o.UserEmail,
+			}
+		},
+		fields: []string{
+			model.OrderTableName + ".Status",
+			model.OrderTableName + ".UserEmail",
+		},
+	},
+	// NOTE: fields below are different
+	OrderSortFieldCustomer: {
+		keyFunc: func(o *model.Order) []any {
+			return []any{
+				model.OrderTableName + ".BillingAddressLastName", o.Id,
+				model.OrderTableName + ".BillingAddressFirstName", o.Id,
+			}
+		},
+		fields: []string{
+			model.OrderTableName + ".BillingAddressLastName",
+			model.OrderTableName + ".BillingAddressFirstName",
+		},
+	},
+	OrderSortFieldPayment: {
+		keyFunc: func(o *model.Order) []any {
+			return []any{
+				model.OrderTableName + ".LastPaymentChargeStatus", o.Id,
+				model.OrderTableName + ".Status", o.Status,
+			}
+		},
+		fields: []string{
+			model.OrderTableName + ".LastPaymentChargeStatus",
+			model.OrderTableName + ".Status",
+		},
+	},
 }
 
 type OrderSortField string
@@ -6276,25 +6395,7 @@ func (e OrderSettingsErrorCode) IsValid() bool {
 
 type OrderStatus = model.OrderStatus
 
-type OrderStatusFilter string
-
-const (
-	OrderStatusFilterReadyToFulfill     OrderStatusFilter = "READY_TO_FULFILL"
-	OrderStatusFilterReadyToCapture     OrderStatusFilter = "READY_TO_CAPTURE"
-	OrderStatusFilterUnfulfilled        OrderStatusFilter = "UNFULFILLED"
-	OrderStatusFilterUnconfirmed        OrderStatusFilter = "UNCONFIRMED"
-	OrderStatusFilterPartiallyFulfilled OrderStatusFilter = "PARTIALLY_FULFILLED"
-	OrderStatusFilterFulfilled          OrderStatusFilter = "FULFILLED"
-	OrderStatusFilterCanceled           OrderStatusFilter = "CANCELED"
-)
-
-func (e OrderStatusFilter) IsValid() bool {
-	switch e {
-	case OrderStatusFilterReadyToFulfill, OrderStatusFilterReadyToCapture, OrderStatusFilterUnfulfilled, OrderStatusFilterUnconfirmed, OrderStatusFilterPartiallyFulfilled, OrderStatusFilterFulfilled, OrderStatusFilterCanceled:
-		return true
-	}
-	return false
-}
+type OrderStatusFilter = model.OrderFilterStatus
 
 type PageErrorCode string
 

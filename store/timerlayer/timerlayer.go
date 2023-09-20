@@ -4237,10 +4237,10 @@ func (s *TimerLayerOrderStore) Delete(transaction *gorm.DB, ids []string) (int64
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
+func (s *TimerLayerOrderStore) FilterByOption(option *model.OrderFilterOption) (int64, []*model.Order, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderStore.FilterByOption(option)
+	result, resultVar1, err := s.OrderStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4250,7 +4250,7 @@ func (s *TimerLayerOrderStore) FilterByOption(option *model.OrderFilterOption) (
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerOrderStore) Get(id string) (*model.Order, error) {
