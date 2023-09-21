@@ -3242,7 +3242,7 @@ type PaymentError struct {
 }
 
 type PaymentFilterInput struct {
-	Checkouts []string `json:"checkouts"`
+	Checkouts []UUID `json:"checkouts"`
 }
 
 type PaymentInitialize struct {

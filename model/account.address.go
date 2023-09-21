@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"strings"
 	"unicode/utf8"
@@ -104,25 +105,20 @@ func (a *Address) commonPre() {
 
 // IsValid validates address and returns an error if data is not processed
 func (a *Address) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.address.is_valid.%s.app_error",
-		"address_id=",
-		"Address.IsValid",
-	)
 	if !IsValidNamePart(a.FirstName, FirstName) {
-		return outer("first_name", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.first_name.app_error", nil, "please provide valid first name", http.StatusBadRequest)
 	}
 	if !IsValidNamePart(a.LastName, LastName) {
-		return outer("last_name", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.last_name.app_error", nil, "please provide valid last name", http.StatusBadRequest)
 	}
 	if !IsAllNumbers(a.PostalCode) {
-		return outer("postal_code", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.postal_code.app_error", nil, "please provide valid postal code", http.StatusBadRequest)
 	}
 	if !a.Country.IsValid() {
-		return outer("country", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.country.app_error", nil, "please provide valid country code", http.StatusBadRequest)
 	}
 	if str, ok := util.ValidatePhoneNumber(a.Phone, a.Country.String()); !ok {
-		return outer("phone", &a.Id)
+		return NewAppError("Address.IsValid", "model.address.is_valid.phone.app_error", nil, "please provide valid phone", http.StatusBadRequest)
 	} else {
 		a.Phone = str
 	}

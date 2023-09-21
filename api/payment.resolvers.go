@@ -5,36 +5,224 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
 	Amount    *decimal.Decimal
 	PaymentID UUID
 }) (*PaymentCapture, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("PaymentCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	payment, appErr := embedCtx.App.Srv().PaymentService().PaymentByID(tx, args.PaymentID.String(), true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var channelID string
+	switch {
+	case payment.OrderID != nil:
+		order, appErr := embedCtx.App.Srv().OrderService().OrderById(*payment.OrderID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelID = order.ChannelID
+
+	case payment.CheckoutID != nil:
+		checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
+			Conditions: squirrel.Expr(model.CheckoutTableName+".Token = ?", *payment.CheckoutID),
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelID = checkout.ChannelID
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *payment, pluginMng, channelID, args.Amount, nil, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if paymentErr != nil {
+		return nil, model.NewAppError("PaymentCapture", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("PaymentCapture", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &PaymentCapture{
+		Payment: SystemPaymentToGraphqlPayment(payment),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
 	Amount    *decimal.Decimal
 	PaymentID UUID
 }) (*PaymentRefund, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("PaymentRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	payment, appErr := embedCtx.App.Srv().PaymentService().PaymentByID(tx, args.PaymentID.String(), true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var channelID string
+	switch {
+	case payment.OrderID != nil:
+		order, appErr := embedCtx.App.Srv().OrderService().OrderById(*payment.OrderID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelID = order.ChannelID
+
+	case payment.CheckoutID != nil:
+		checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
+			Conditions: squirrel.Expr(model.CheckoutTableName+".Token = ?", *payment.CheckoutID),
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelID = checkout.ChannelID
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Refund(tx, *payment, pluginMng, channelID, args.Amount)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if paymentErr != nil {
+		return nil, model.NewAppError("PaymentRefund", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("PaymentRefund", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &PaymentRefund{
+		Payment: SystemPaymentToGraphqlPayment(payment),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID UUID }) (*PaymentVoid, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("PaymentVoid", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	payment, appErr := embedCtx.App.Srv().PaymentService().PaymentByID(tx, args.PaymentID.String(), true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var channelID string
+	switch {
+	case payment.OrderID != nil:
+		order, appErr := embedCtx.App.Srv().OrderService().OrderById(*payment.OrderID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelID = order.ChannelID
+
+	case payment.CheckoutID != nil:
+		checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
+			Conditions: squirrel.Expr(model.CheckoutTableName+".Token = ?", *payment.CheckoutID),
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelID = checkout.ChannelID
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Void(tx, *payment, pluginMng, channelID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if paymentErr != nil {
+		return nil, model.NewAppError("PaymentVoid", model.ErrPayment, map[string]interface{}{"Code": paymentErr.Code}, paymentErr.Error(), http.StatusInternalServerError)
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("PaymentVoid", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &PaymentVoid{
+		Payment: SystemPaymentToGraphqlPayment(payment),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
-	Channel     *string
+	ChannelID   UUID
 	Gateway     string
 	PaymentData model.StringInterface
 }) (*PaymentInitialize, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": args.ChannelID},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !channel.IsActive {
+		return nil, model.NewAppError("PaymentInitialize", "app.channel.channel_not_active", nil, fmt.Sprintf("Channel with id=%s is inactive", args.ChannelID), http.StatusNotAcceptable)
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	response := pluginMng.InitializePayment(args.Gateway, args.PaymentData, channel.Id)
+
+	data, err := json.Marshal(response.Data)
+	if err != nil {
+		return nil, model.NewAppError("PaymentInitialize", model.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	var mapData = JSONString{}
+	err = json.Unmarshal(data, &mapData)
+	if err != nil {
+		return nil, model.NewAppError("PaymentInitialize", model.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &PaymentInitialize{
+		InitializedPayment: &PaymentInitialized{
+			Gateway: args.Gateway,
+			Name:    response.Name,
+			Data:    mapData,
+		},
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
@@ -47,9 +235,26 @@ func (r *Resolver) Payment(ctx context.Context, args struct{ Id UUID }) (*Paymen
 	return SystemPaymentToGraphqlPayment(payment), nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) Payments(ctx context.Context, args struct {
 	Filter *PaymentFilterInput
 	GraphqlParams
 }) (*PaymentCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// paginValues, appErr := args.GraphqlParams.Parse("Payments")
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// paymentFilterOpts := &model.PaymentFilterOption{}
+
+	// if args.Filter != nil && len(args.Filter.Checkouts) > 0 {
+	// 	paymentFilterOpts.Conditions = squirrel.Eq{model.PaymentTableName + ".CheckoutID": args.Filter.Checkouts}
+	// }
+
+	// payments, appErr := embedCtx.App.Srv().PaymentService().PaymentsByOption(paymentFilterOpts)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+	panic("not implemented")
 }

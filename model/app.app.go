@@ -1,6 +1,8 @@
 package model
 
 import (
+	"net/http"
+
 	"gorm.io/gorm"
 )
 
@@ -39,16 +41,8 @@ func (a *App) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid()
 func (*App) TableName() string               { return "Apps" }
 
 func (a *App) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.app.is_valid.%s.app_error",
-		"app_id=",
-		"App.IsValid",
-	)
 	if !a.Type.IsValid() {
-		return outer("type", &a.Id)
-	}
-	if a.CreateAt == 0 {
-		return outer("create_at", &a.Id)
+		return NewAppError("App.IsValid", "model.app.is_valid.type.app_error", nil, "please provide valid app type", http.StatusBadRequest)
 	}
 
 	return nil

@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
 
 type UserAccessToken struct {
 	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
@@ -15,16 +19,11 @@ func (c *UserAccessToken) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return
 func (*UserAccessToken) TableName() string               { return UserAccessTokenTableName }
 
 func (t *UserAccessToken) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.user_access_token.is_valid.%s.app_error",
-		"user_access_token_id=",
-		"UserAccessToken.IsValid",
-	)
 	if !IsValidId(t.Token) {
-		return outer("token", &t.Id)
+		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.token.app_error", nil, "please provide valid token", http.StatusBadRequest)
 	}
 	if !IsValidId(t.UserId) {
-		return outer("user_id", &t.Id)
+		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	return nil
 }

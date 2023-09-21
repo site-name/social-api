@@ -512,7 +512,10 @@ func (c *CollectionsArgs) parse(embedCtx *web.Context) (*model.CollectionFilterO
 	}
 
 	// parse pagination
-	paginationValues, _ := c.GraphqlParams.Parse("Collections")
+	paginationValues, appErr := c.GraphqlParams.Parse("Collections")
+	if appErr != nil {
+		return nil, appErr
+	}
 	res.GraphqlPaginationValues = *paginationValues
 
 	if res.GraphqlPaginationValues.OrderBy == "" {

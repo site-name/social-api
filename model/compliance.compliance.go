@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"gorm.io/gorm"
@@ -72,29 +73,20 @@ func (c *Compliance) JobName() string {
 	if c.Type == ComplianceTypeDaily {
 		jobName += "-" + c.Desc
 	}
-
 	jobName += "-" + c.Id
 
 	return jobName
 }
 
 func (c *Compliance) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.compliance.is_valid.%s.app_error",
-		"compliance_id=",
-		"Compliance.IsValid",
-	)
 	if c.Desc == "" {
-		return outer("desc", &c.Id)
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.desc.app_error", nil, "please provide valid desc", http.StatusBadRequest)
 	}
 	if c.StartAt == 0 {
-		return outer("start_at", &c.Id)
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.start_at.app_error", nil, "please provide valid start at", http.StatusBadRequest)
 	}
-	if c.EndAt == 0 {
-		return outer("end_at", &c.Id)
-	}
-	if c.EndAt <= c.StartAt {
-		return outer("start_end_at", &c.Id)
+	if c.EndAt == 0 || c.EndAt < c.StartAt {
+		return NewAppError("Compliance.IsValid", "model.compliance.is_valid.end_at.app_error", nil, "please provide valid end at", http.StatusBadRequest)
 	}
 
 	return nil

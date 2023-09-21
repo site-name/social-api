@@ -1,8 +1,6 @@
 package model
 
 import (
-	"strings"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -103,6 +101,9 @@ type PaymentFilterOption struct {
 
 	DbTransaction *gorm.DB
 	LockForUpdate bool
+
+	PaginationValues GraphqlPaginationValues
+	CountTotal       bool
 }
 
 // PaymentPatch is used to update payments
@@ -208,13 +209,13 @@ func (p *Payment) IsValid() *AppError {
 
 	// make sure country code and currency code are match:
 	region, _ := language.ParseRegion(string(p.BillingCountryCode))
-	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
+	if _, ok := currency.FromRegion(region); !ok {
 		return outer("currency", &p.Id)
 	}
-	if *p.CcExpMonth < MIN_CC_EXP_MONTH || *p.CcExpMonth > MAX_CC_EXP_MONTH {
+	if p.CcExpMonth != nil && *p.CcExpMonth < MIN_CC_EXP_MONTH || *p.CcExpMonth > MAX_CC_EXP_MONTH {
 		return outer("cc_exp_month", &p.Id)
 	}
-	if *p.CcExpYear < MIN_CC_EXP_YEAR {
+	if p.CcExpYear != nil && *p.CcExpYear < MIN_CC_EXP_YEAR {
 		return outer("cc_exp_year", &p.Id)
 	}
 	if !p.StorePaymentMethod.IsValid() {

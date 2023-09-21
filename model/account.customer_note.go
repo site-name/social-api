@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
 
 type CustomerNote struct {
 	Id         string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
@@ -24,16 +28,11 @@ func (*CustomerNote) TableName() string {
 }
 
 func (c *CustomerNote) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.customer_note.is_valid.%s.app_error",
-		"customer_note_id=",
-		"CustomerNote.IsValid",
-	)
 	if c.UserID != nil && !IsValidId(*c.UserID) {
-		return outer("user_id", &c.Id)
+		return NewAppError("CustomerNote.IsValid", "model.customer_note.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if !IsValidId(c.CustomerID) {
-		return outer("customer_id", &c.Id)
+		return NewAppError("CustomerNote.IsValid", "model.customer_note.is_valid.customer_id.app_error", nil, "please provide valid customer id", http.StatusBadRequest)
 	}
 	return nil
 }
