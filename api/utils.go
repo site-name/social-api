@@ -650,7 +650,7 @@ func newGraphqlPaginator[RawT any, DestT any](
 	return &graphqlPaginator[RawT, DestT]{data, keyFunc, modelTypeToGraphqlTypeFunc, params}
 }
 
-// CountableConnection shares similar memory layout as all graphql api Connections.
+// CountableConnection shares similar memory layout as all graphql api connections.
 type CountableConnection[D any] struct {
 	PageInfo   *PageInfo
 	Edges      []*CountableConnectionEdge[D]

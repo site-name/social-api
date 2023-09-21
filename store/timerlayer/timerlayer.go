@@ -4493,10 +4493,10 @@ func (s *TimerLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 	return err
 }
 
-func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
+func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.FilterByOption(option)
+	result, resultVar1, err := s.PaymentStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4506,7 +4506,7 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOptio
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.FilterByOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {

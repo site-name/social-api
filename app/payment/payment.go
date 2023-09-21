@@ -30,7 +30,7 @@ func init() {
 
 // PaymentByID returns a payment with given id
 func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
-	payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions:    squirrel.Expr(model.PaymentTableName+".Id = ?", paymentID),
 		DbTransaction: transaction,
 		LockForUpdate: lockForUpdate,
@@ -42,17 +42,17 @@ func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, loc
 }
 
 // PaymentsByOption returns all payments that satisfy given option
-func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) ([]*model.Payment, *model.AppError) {
-	payments, err := a.srv.Store.Payment().FilterByOption(option)
+func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, *model.AppError) {
+	totalCount, payments, err := a.srv.Store.Payment().FilterByOption(option)
 	if err != nil {
-		return nil, model.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, nil, model.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return payments, nil
+	return totalCount, payments, nil
 }
 
 func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError) {
-	payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
 	})
 	if appError != nil {
@@ -157,7 +157,7 @@ func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Paym
 
 // GetAllPaymentsByCheckout returns all payments that belong to given checkout
 func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model.AppError) {
-	payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkoutToken},
 	})
 	if appErr != nil {

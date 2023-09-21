@@ -104,7 +104,7 @@ type PaymentService interface {
 	// PaymentRefundOrVoid
 	PaymentRefundOrVoid(dbTransaction *gorm.DB, payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError)
 	// PaymentsByOption returns all payments that satisfy given option
-	PaymentsByOption(option *model.PaymentFilterOption) ([]*model.Payment, *model.AppError)
+	PaymentsByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, *model.AppError)
 	// StoreCustomerId stores new value into given user's PrivateMetadata
 	StoreCustomerId(userID string, gateway string, customerID string) *model.AppError
 	// TransactionsByOption returns a list of transactions filtered based on given option

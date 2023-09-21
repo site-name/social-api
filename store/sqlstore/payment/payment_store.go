@@ -98,7 +98,7 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 }
 
 // FilterByOption finds and returns a list of payments that satisfy given option
-func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
+func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
 	query := ps.GetQueryBuilder().
 		Select(model.PaymentTableName + ".*").
 		From(model.PaymentTableName).
@@ -122,18 +122,35 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 			Where(andConds)
 	}
 
+	// count if needed
+	var totalCount int64
+	if option.CountTotal {
+		countQuery, args, err := ps.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOption_CountTotal_ToSql")
+		}
+
+		err = ps.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total payments by options")
+		}
+	}
+
+	// paginate if needed
+	option.PaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
+
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+		return 0, nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
 	var payments []*model.Payment
 	err = ps.GetReplica().Raw(queryString, args...).Scan(&payments).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds payments with given option")
+		return 0, nil, errors.Wrap(err, "failed to finds payments with given option")
 	}
 
-	return payments, nil
+	return totalCount, payments, nil
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout

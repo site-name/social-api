@@ -899,7 +899,7 @@ func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *
 // Note that these payments may not be captured or charged at all.
 func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError) {
 	checkout := checkoutInfo.Checkout
-	payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{
 			model.PaymentTableName + ".CheckoutID": checkout.Token,
 			model.PaymentTableName + ".IsActive":   true,

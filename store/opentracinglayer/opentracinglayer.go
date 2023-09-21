@@ -4909,7 +4909,7 @@ func (s *OpenTracingLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutTo
 	return err
 }
 
-func (s *OpenTracingLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4918,13 +4918,13 @@ func (s *OpenTracingLayerPaymentStore) FilterByOption(option *model.PaymentFilte
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentStore.FilterByOption(option)
+	result, resultVar1, err := s.PaymentStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {

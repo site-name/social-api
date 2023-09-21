@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
@@ -240,21 +242,42 @@ func (r *Resolver) Payments(ctx context.Context, args struct {
 	Filter *PaymentFilterInput
 	GraphqlParams
 }) (*PaymentCountableConnection, error) {
-	// paginValues, appErr := args.GraphqlParams.Parse("Payments")
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	paginValues, appErr := args.GraphqlParams.Parse("Payments")
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	// paymentFilterOpts := &model.PaymentFilterOption{}
+	paymentFilterOpts := &model.PaymentFilterOption{
+		PaginationValues: *paginValues,
+		CountTotal:       true,
+	}
 
-	// if args.Filter != nil && len(args.Filter.Checkouts) > 0 {
-	// 	paymentFilterOpts.Conditions = squirrel.Eq{model.PaymentTableName + ".CheckoutID": args.Filter.Checkouts}
-	// }
+	if paymentFilterOpts.PaginationValues.OrderBy == "" {
+		// default ordering by gateway and createAt
+		ordering := args.GraphqlParams.orderDirection()
+		paymentFilterOpts.PaginationValues.OrderBy = util.AnyArray[string]{model.PaymentTableName + ".GateWay", model.PaymentTableName + ".CreateAt"}.
+			Map(func(_ int, item string) string {
+				return item + " " + ordering
+			}).Join(",")
+	}
 
-	// payments, appErr := embedCtx.App.Srv().PaymentService().PaymentsByOption(paymentFilterOpts)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
-	panic("not implemented")
+	if args.Filter != nil && len(args.Filter.Checkouts) > 0 {
+		paymentFilterOpts.Conditions = squirrel.Eq{model.PaymentTableName + ".CheckoutID": args.Filter.Checkouts}
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalCount, payments, appErr := embedCtx.App.Srv().PaymentService().PaymentsByOption(paymentFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(payments))
+	keyFunc := func(p *model.Payment) []any {
+		return []any{
+			model.PaymentTableName + ".GateWay", p.GateWay,
+			model.PaymentTableName + ".CreateAt", p.CreateAt,
+		}
+	}
+	connection := constructCountableConnection(payments, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemPaymentToGraphqlPayment)
+	return (*PaymentCountableConnection)(unsafe.Pointer(connection)), nil
 }

@@ -509,7 +509,7 @@ type (
 		Save(transaction *gorm.DB, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
 		Update(transaction *gorm.DB, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                             // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
-		FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error)                            // FilterByOption finds and returns a list of payments that satisfy given option
+		FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error)                     // FilterByOption finds and returns a list of payments that satisfy given option
 		UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
 		PaymentOwnedByUser(userID, paymentID string) (bool, error)
 	}

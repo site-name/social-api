@@ -789,7 +789,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(order model.Order, requestUser *model.Use
 
 // CleanMarkOrderAsPaid Check if an order can be marked as paid.
 func (a *ServiceOrder) CleanMarkOrderAsPaid(order *model.Order) *model.AppError {
-	paymentsForOrder, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+	_, paymentsForOrder, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": order.Id},
 	})
 	if appErr != nil {

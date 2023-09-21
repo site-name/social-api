@@ -110,7 +110,7 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 
 // UpdateOrderTotalPaid update given order's total paid amount
 func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.Order) *model.AppError {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": orDer.Id},
 	})
 	if appErr != nil {
@@ -136,7 +136,7 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.O
 
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.TRANSACTION_KIND_AUTH},
 		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
 		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
@@ -155,7 +155,7 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.TRANSACTION_KIND_CAPTURE},
 		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
 		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
@@ -270,7 +270,7 @@ func (a *ServiceOrder) OrderCanRefund(ord *model.Order, payment *model.Payment) 
 func (a *ServiceOrder) CanMarkOrderAsPaid(ord *model.Order, payments []*model.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+		_, payments, appErr = a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 			Conditions: squirrel.Eq{model.PaymentTableName + ".OrderID": ord.Id},
 		})
 	}
