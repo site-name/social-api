@@ -6240,6 +6240,26 @@ func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*mo
 
 }
 
+func (s *RetryLayerProductMediaStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductMediaStore.Delete(tx, ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 
 	tries := 0
@@ -6280,11 +6300,11 @@ func (s *RetryLayerProductMediaStore) Get(id string) (*model.ProductMedia, error
 
 }
 
-func (s *RetryLayerProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
+func (s *RetryLayerProductMediaStore) Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductMediaStore.Upsert(media)
+		result, err := s.ProductMediaStore.Upsert(tx, medias)
 		if err == nil {
 			return result, nil
 		}
@@ -6365,6 +6385,26 @@ func (s *RetryLayerProductTypeStore) Count(options *model.ProductTypeFilterOptio
 	tries := 0
 	for {
 		result, err := s.ProductTypeStore.Count(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTypeStore.Delete(tx, ids)
 		if err == nil {
 			return result, nil
 		}
@@ -6480,11 +6520,11 @@ func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []strin
 
 }
 
-func (s *RetryLayerProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
+func (s *RetryLayerProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductTypeStore.Save(productType)
+		result, err := s.ProductTypeStore.Save(tx, productType)
 		if err == nil {
 			return result, nil
 		}

@@ -13,7 +13,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
 )
 
@@ -255,10 +254,7 @@ func (r *Resolver) Payments(ctx context.Context, args struct {
 	if paymentFilterOpts.PaginationValues.OrderBy == "" {
 		// default ordering by gateway and createAt
 		ordering := args.GraphqlParams.orderDirection()
-		paymentFilterOpts.PaginationValues.OrderBy = util.AnyArray[string]{model.PaymentTableName + ".GateWay", model.PaymentTableName + ".CreateAt"}.
-			Map(func(_ int, item string) string {
-				return item + " " + ordering
-			}).Join(",")
+		paymentFilterOpts.PaginationValues.OrderBy = fmt.Sprintf("%[1]s.GateWay %[2]s, %[1]s.CreateAt %[2]s", model.PaymentTableName, ordering)
 	}
 
 	if args.Filter != nil && len(args.Filter.Checkouts) > 0 {

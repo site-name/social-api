@@ -1466,7 +1466,6 @@ func (m *PluginManager) ListExternalAuthentications(activeOnly bool) ([]model.St
 
 // AssignTaxCodeToObjectMeta requires obj must be Product or ProductType
 func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode string) (*model.TaxType, *model.AppError) {
-
 	// validate obj
 	switch obj.(type) {
 	case model.Product,

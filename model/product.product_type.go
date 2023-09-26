@@ -41,7 +41,6 @@ type ProductType struct {
 
 	ProductAttributes Attributes `json:"-" gorm:"many2many:AttributeProducts"`
 	VariantAttributes Attributes `json:"-" gorm:"many2many:AttributeVariants"`
-	PageAttributes    Attributes `json:"-" gorm:"many2many:AttributePages"`
 }
 
 func (c *ProductType) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }

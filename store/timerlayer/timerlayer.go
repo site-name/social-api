@@ -5280,6 +5280,22 @@ func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*mo
 	return result, err
 }
 
+func (s *TimerLayerProductMediaStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductMediaStore.Delete(tx, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductMediaStore.Delete", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	start := timemodule.Now()
 
@@ -5312,10 +5328,10 @@ func (s *TimerLayerProductMediaStore) Get(id string) (*model.ProductMedia, error
 	return result, err
 }
 
-func (s *TimerLayerProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
+func (s *TimerLayerProductMediaStore) Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductMediaStore.Upsert(media)
+	result, err := s.ProductMediaStore.Upsert(tx, medias)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5388,6 +5404,22 @@ func (s *TimerLayerProductTypeStore) Count(options *model.ProductTypeFilterOptio
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Count", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.Delete(tx, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Delete", success, elapsed)
 	}
 	return result, err
 }
@@ -5472,10 +5504,10 @@ func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []strin
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
+func (s *TimerLayerProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductTypeStore.Save(productType)
+	result, err := s.ProductTypeStore.Save(tx, productType)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

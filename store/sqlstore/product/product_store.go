@@ -46,7 +46,7 @@ func (ps *SqlProductStore) ScanFields(prd *model.Product) []interface{} {
 
 // Save inserts given product into database then returns it
 func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) {
-	if err := ps.GetMaster().Create(product).Error; err != nil {
+	if err := ps.GetMaster().Save(product).Error; err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Name", "products_name_key", "idx_products_name_unique"}) {
 			return nil, store.NewErrInvalidInput("Product", "name", product.Name)
 		}
@@ -90,7 +90,8 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 			Where(option.SaleID)
 	}
 	if option.CollectionID != nil {
-		query = query.InnerJoin(model.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
+		query = query.
+			InnerJoin(model.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
 			Where(option.CollectionID)
 	}
 
@@ -217,6 +218,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 
 // GetByOption finds and returns 1 product that satisfies given option
 func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
+	option.Limit = 0
 	queryString, args, err := ps.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")

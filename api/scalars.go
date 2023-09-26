@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 	"unsafe"
@@ -197,4 +198,24 @@ func IsValidDeliveryMethod(v DeliveryMethod) bool {
 	default:
 		return false
 	}
+}
+
+type WeightScalar struct {
+	Value float64         `json:"value"`
+	Unit  WeightUnitsEnum `json:"unit"`
+}
+
+func (w *WeightScalar) UnmarshalGraphQL(input any) error {
+	switch v := input.(type) {
+	case []byte:
+		return json.Unmarshal(v, w)
+	case string:
+		return json.Unmarshal([]byte(v), w)
+	default:
+		return fmt.Errorf("unsupported value type: %T", input)
+	}
+}
+
+func (w WeightScalar) ImplementsGraphQLType(name string) bool {
+	return name == "WeightScalar"
 }

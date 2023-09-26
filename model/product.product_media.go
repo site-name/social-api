@@ -37,6 +37,7 @@ type ProductMedia struct {
 	Sortable
 
 	ProductVariants ProductVariants `json:"-" gorm:"many2many:VariantMedias"`
+	Product         *Product        `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 }
 
 func (c *ProductMedia) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
@@ -52,6 +53,10 @@ type ProductMedias []*ProductMedia
 // ProductMediaFilterOption is used for building squirrel sql queries
 type ProductMediaFilterOption struct {
 	Conditions squirrel.Sqlizer
+
+	// should be like:
+	//  "ProductVariants", "Product"
+	Preloads []string
 
 	VariantID squirrel.Sqlizer // INNER JOIN VariantMedias ON VariantMedias.MediaID = ProductMedias.Id Where VariantMedias.VariantID ...
 }

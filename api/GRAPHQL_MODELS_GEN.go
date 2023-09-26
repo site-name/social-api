@@ -3484,7 +3484,7 @@ type ProductCreateInput struct {
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
 	Seo         *SeoInput              `json:"seo"`
-	Weight      *string                `json:"weight"`
+	Weight      *WeightScalar          `json:"weight"`
 	Rating      *float64               `json:"rating"`
 	ProductType string                 `json:"productType"`
 }
@@ -3681,7 +3681,7 @@ type ProductInput struct {
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
 	Seo         *SeoInput              `json:"seo"`
-	Weight      *string                `json:"weight"`
+	Weight      *WeightScalar          `json:"weight"`
 	Rating      *float64               `json:"rating"`
 }
 
@@ -3722,7 +3722,7 @@ type ProductMediaUpdate struct {
 }
 
 type ProductMediaUpdateInput struct {
-	Alt *string `json:"alt"`
+	Alt string `json:"alt"`
 }
 
 type ProductOrder struct {
@@ -3843,12 +3843,46 @@ type ProductTypeInput struct {
 	Slug               *string              `json:"slug"`
 	Kind               *ProductTypeKindEnum `json:"kind"`
 	HasVariants        *bool                `json:"hasVariants"`
-	ProductAttributes  []string             `json:"productAttributes"`
-	VariantAttributes  []string             `json:"variantAttributes"`
 	IsShippingRequired *bool                `json:"isShippingRequired"`
 	IsDigital          *bool                `json:"isDigital"`
-	Weight             *string              `json:"weight"`
+	Weight             *WeightScalar        `json:"weight"`
 	TaxCode            *string              `json:"taxCode"`
+	ProductAttributes  []UUID               `json:"productAttributes"`
+	VariantAttributes  []UUID               `json:"variantAttributes"`
+}
+
+func (p *ProductTypeInput) validate(where string) *model.AppError {
+	if slugg := p.Slug; slugg != nil && !slug.IsSlug(*slugg) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Slug"}, "please provide valid slug", http.StatusBadRequest)
+	}
+	if p.Kind != nil && !p.Kind.IsValid() {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Kind"}, "please provide valid kind", http.StatusBadRequest)
+	}
+	if p.Weight != nil && p.Weight.Value < 0 {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Weight"}, "weight value cannot be less than 0", http.StatusBadRequest)
+	}
+	return nil
+}
+
+// NOTE: call this after calling validate to eliminate every invalid data problems
+func (p *ProductTypeInput) patch(productType *model.ProductType) {
+	if p.Name != nil {
+		productType.Name = *p.Name
+	}
+	if p.Slug != nil {
+		productType.Slug = *p.Slug
+	}
+	if p.Kind != nil {
+		productType.Kind = *p.Kind
+	}
+	productType.HasVariants = p.HasVariants
+	productType.IsShippingRequired = p.IsShippingRequired
+	productType.IsDigital = p.IsDigital
+	// TODO: check if we need to handle tax code here
+	if p.Weight != nil {
+		productType.Weight = (*float32)(unsafe.Pointer(&p.Weight.Value))
+		productType.WeightUnit = p.Weight.Unit
+	}
 }
 
 type ProductTypeReorderAttributes struct {
@@ -3881,7 +3915,7 @@ type ProductVariantBulkCreateInput struct {
 	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
 	Sku             *string                                 `json:"sku"`
 	TrackInventory  *bool                                   `json:"trackInventory"`
-	Weight          *string                                 `json:"weight"`
+	Weight          *WeightScalar                           `json:"weight"`
 	Stocks          []*StockInput                           `json:"stocks"`
 	ChannelListings []*ProductVariantChannelListingAddInput `json:"channelListings"`
 }
@@ -3927,7 +3961,7 @@ type ProductVariantCreateInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *string                `json:"weight"`
+	Weight         *WeightScalar          `json:"weight"`
 	Product        string                 `json:"product"`
 	Stocks         []*StockInput          `json:"stocks"`
 }
@@ -3947,7 +3981,7 @@ type ProductVariantInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *string                `json:"weight"`
+	Weight         *WeightScalar          `json:"weight"`
 }
 
 type ProductVariantReorder struct {
@@ -4387,8 +4421,8 @@ type ShippingPriceExcludeProductsInput struct {
 type ShippingPriceInput struct {
 	Name                  *string                                    `json:"name"`
 	Description           JSONString                                 `json:"description"`
-	MinimumOrderWeight    *Weight                                    `json:"minimumOrderWeight"`
-	MaximumOrderWeight    *Weight                                    `json:"maximumOrderWeight"`
+	MinimumOrderWeight    *WeightScalar                              `json:"minimumOrderWeight"`
+	MaximumOrderWeight    *WeightScalar                              `json:"maximumOrderWeight"`
 	MaximumDeliveryDays   *int32                                     `json:"maximumDeliveryDays"`
 	MinimumDeliveryDays   *int32                                     `json:"minimumDeliveryDays"`
 	Type                  *ShippingMethodTypeEnum                    `json:"type"`
@@ -6723,7 +6757,6 @@ var saleSortFieldsMap = map[SaleSortField]*saleSortFieldValues{
 }
 
 func (s *SaleSortField) IsValid() bool {
-	// model.Sale
 	return saleSortFieldsMap[*s] != nil
 }
 

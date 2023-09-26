@@ -27,7 +27,7 @@ func (r *Resolver) MenuCreate(ctx context.Context, args struct{ Input MenuCreate
 	var menu = &model.Menu{
 		Name: args.Input.Name,
 	}
-	if args.Input.Slug != nil {
+	if slugg := args.Input.Slug; slugg != nil && slug.IsSlug(*slugg) {
 		menu.Slug = *args.Input.Slug
 	}
 
@@ -39,6 +39,11 @@ func (r *Resolver) MenuCreate(ctx context.Context, args struct{ Input MenuCreate
 
 	// save menu items
 	for _, itemInput := range args.Input.Items {
+		appErr = itemInput.validate("MenuCreate")
+		if appErr != nil {
+			return nil, appErr
+		}
+
 		menuItem := &model.MenuItem{}
 		itemInput.patchMenuItem(menuItem)
 

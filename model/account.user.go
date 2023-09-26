@@ -709,6 +709,7 @@ type ModelMetadata struct {
 	PrivateMetadata StringMAP `json:"private_metadata,omitempty" gorm:"type:jsonb;column:PrivateMetadata"`
 }
 
+// PopulateFields checks if PrivateMetadata or Metadata is nil, if yes then assign them empty maps
 func (m *ModelMetadata) PopulateFields() {
 	if m.PrivateMetadata == nil {
 		m.PrivateMetadata = make(map[string]string)
@@ -723,4 +724,32 @@ func (p ModelMetadata) DeepCopy() ModelMetadata {
 		p.Metadata.DeepCopy(),
 		p.PrivateMetadata.DeepCopy(),
 	}
+}
+
+func (m *ModelMetadata) SetMetadata(key, value string) {
+	m.PopulateFields()
+	m.Metadata[key] = value
+}
+
+func (m *ModelMetadata) DelMetadata(key string) bool {
+	m.PopulateFields()
+	_, ok := m.Metadata[key]
+	if ok {
+		delete(m.Metadata, key)
+	}
+	return ok
+}
+
+func (m *ModelMetadata) SetPrivateMetadata(key, value string) {
+	m.PopulateFields()
+	m.PrivateMetadata[key] = value
+}
+
+func (m *ModelMetadata) DelPrivateMetadata(key string) bool {
+	m.PopulateFields()
+	_, ok := m.PrivateMetadata[key]
+	if ok {
+		delete(m.PrivateMetadata, key)
+	}
+	return ok
 }

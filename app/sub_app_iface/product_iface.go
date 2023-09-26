@@ -154,4 +154,9 @@ type ProductService interface {
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
 	UpsertDigitalContent(digitalContent *model.DigitalContent) (*model.DigitalContent, *model.AppError)
+	DeleteProductMedias(tx *gorm.DB, ids []string) (int64, *model.AppError)
+	UpsertProductMedias(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, *model.AppError)
+	DeleteProductTypes(tx *gorm.DB, ids []string) (int64, *model.AppError)
+	UpsertProductType(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, *model.AppError)
+	ToggleProductTypeAttributeRelations(tx *gorm.DB, productTypeID string, variantAttributes, productAttributes model.Attributes, isDelete bool) *model.AppError
 }

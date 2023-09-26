@@ -5775,6 +5775,24 @@ func (s *OpenTracingLayerProductChannelListingStore) Get(channelListingID string
 	return result, err
 }
 
+func (s *OpenTracingLayerProductMediaStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductMediaStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductMediaStore.Delete(tx, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductMediaStore.FilterByOption")
@@ -5811,7 +5829,7 @@ func (s *OpenTracingLayerProductMediaStore) Get(id string) (*model.ProductMedia,
 	return result, err
 }
 
-func (s *OpenTracingLayerProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
+func (s *OpenTracingLayerProductMediaStore) Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductMediaStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -5820,7 +5838,7 @@ func (s *OpenTracingLayerProductMediaStore) Upsert(media *model.ProductMedia) (*
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductMediaStore.Upsert(media)
+	result, err := s.ProductMediaStore.Upsert(tx, medias)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5893,6 +5911,24 @@ func (s *OpenTracingLayerProductTypeStore) Count(options *model.ProductTypeFilte
 
 	defer span.Finish()
 	result, err := s.ProductTypeStore.Count(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductTypeStore.Delete(tx, ids)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5991,7 +6027,7 @@ func (s *OpenTracingLayerProductTypeStore) ProductTypesByProductIDs(productIDs [
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
+func (s *OpenTracingLayerProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -6000,7 +6036,7 @@ func (s *OpenTracingLayerProductTypeStore) Save(productType *model.ProductType) 
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductTypeStore.Save(productType)
+	result, err := s.ProductTypeStore.Save(tx, productType)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

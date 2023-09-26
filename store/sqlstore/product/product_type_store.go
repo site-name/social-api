@@ -32,8 +32,14 @@ func (ps *SqlProductTypeStore) ScanFields(productType *model.ProductType) []inte
 	}
 }
 
-func (ps *SqlProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
-	if err := ps.GetMaster().Create(productType).Error; err != nil {
+func (ps *SqlProductTypeStore) Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error) {
+	if tx == nil {
+		tx = ps.GetMaster()
+	}
+	if err := tx.Save(productType).Error; err != nil {
+		if ps.IsUniqueConstraintError(err, []string{"slug_key", "slug"}) {
+			return nil, store.NewErrInvalidInput(model.ProductTypeTableName, "slug", productType.Slug)
+		}
 		return nil, errors.Wrapf(err, "failed to save product type withh id=%s", productType.Id)
 	}
 
@@ -112,7 +118,8 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 func (pts *SqlProductTypeStore) commonQueryBuilder(options *model.ProductTypeFilterOption) squirrel.SelectBuilder {
 	query := pts.GetQueryBuilder().
 		Select(model.ProductTypeTableName + ".*").
-		From(model.ProductTypeTableName).Where(options.Conditions)
+		From(model.ProductTypeTableName).
+		Where(options.Conditions)
 
 	if options.AttributeProducts_AttributeID != nil {
 		query = query.
@@ -178,4 +185,48 @@ func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (i
 	}
 
 	return count, nil
+}
+
+func (s *SqlProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+	if tx == nil {
+		tx = s.GetMaster()
+	}
+
+	res := tx.Where("Id IN ?", ids).Delete(&model.ProductType{})
+	if res.Error != nil {
+		return 0, errors.Wrap(res.Error, "failed to delete product types")
+	}
+	return res.RowsAffected, nil
+}
+
+func (s *SqlProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes, variantAttributes model.Attributes, isDelete bool) error {
+	if tx == nil {
+		tx = s.GetMaster()
+	}
+
+	relationsMap := map[string]model.Attributes{
+		"ProductAttributes": productAttributes,
+		"VariantAttributes": variantAttributes,
+	}
+
+	for assocName, relations := range relationsMap {
+		if len(relations) > 0 {
+			var err error
+			if isDelete {
+				err = tx.Model(&model.ProductType{Id: productTypeID}).Association(assocName).Delete(relations)
+			} else {
+				err = tx.Model(&model.ProductType{Id: productTypeID}).Association(assocName).Append(relations)
+			}
+
+			if err != nil {
+				action := "add"
+				if isDelete {
+					action = "delete"
+				}
+				return errors.Wrapf(err, "failed to %s %s relations", action, assocName)
+			}
+		}
+	}
+
+	return nil
 }

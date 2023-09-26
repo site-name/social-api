@@ -417,9 +417,10 @@ type (
 		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
 	}
 	ProductMediaStore interface {
-		Upsert(media *model.ProductMedia) (*model.ProductMedia, error)                        // Upsert depends on given media's Id property to decide insert or update it
+		Upsert(tx *gorm.DB, medias model.ProductMedias) (model.ProductMedias, error)          // Upsert depends on given media's Id property to decide insert or update it
 		Get(id string) (*model.ProductMedia, error)                                           // Get finds and returns 1 product media with given id
 		FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) // FilterByOption finds and returns a list of product medias with given id
+		Delete(tx *gorm.DB, ids []string) (int64, error)
 	}
 	DigitalContentUrlStore interface {
 		Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) // Upsert inserts or updates given digital content url into database then returns it
@@ -467,8 +468,10 @@ type (
 		FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) // FilterByOption finds and returns product translations filtered using given options
 	}
 	ProductTypeStore interface {
+		ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes, variantAttributes model.Attributes, isDelete bool) error
+		Delete(tx *gorm.DB, ids []string) (int64, error)
 		FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error)
-		Save(productType *model.ProductType) (*model.ProductType, error)                      // Save try inserting new product type into database then returns it
+		Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error)         // Save try inserting new product type into database then returns it
 		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) // FilterProductTypesByCheckoutToken is used to check if a model requires model
 		ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error)           // ProductTypesByProductIDs returns all product types belong to given products
 		ProductTypeByProductVariantID(variantID string) (*model.ProductType, error)           // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant

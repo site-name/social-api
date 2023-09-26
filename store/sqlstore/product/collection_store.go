@@ -36,6 +36,9 @@ func (ps *SqlCollectionStore) ScanFields(col *model.Collection) []interface{} {
 func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
 	err := cs.GetMaster().Save(collection).Error
 	if err != nil {
+		if cs.IsUniqueConstraintError(err, []string{"slug_unique_key", "slug"}) {
+			return nil, store.NewErrInvalidInput(model.CollectionTableName, "Slug", collection.Slug)
+		}
 		return nil, errors.Wrap(err, "failed to upsert collection")
 	}
 	return collection, nil
