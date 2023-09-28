@@ -1,6 +1,8 @@
 package product
 
 import (
+	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -192,11 +194,75 @@ func (s *SqlProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 		tx = s.GetMaster()
 	}
 
-	res := tx.Where("Id IN ?", ids).Delete(&model.ProductType{})
-	if res.Error != nil {
-		return 0, errors.Wrap(res.Error, "failed to delete product types")
+	// delete attribute values that are in relations with given product types
+	attributeValueQuery, args, err := s.GetQueryBuilder().
+		Select(model.AttributeValueTableName + ".Id").
+		From(model.AttributeValueTableName).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.AttributeID", model.AttributeTableName, model.AttributeValueTableName)).
+		//
+		InnerJoin(fmt.Sprintf("%[1]s ON %[2]s.Id = %[1]s.ValueID", model.AssignedProductAttributeValueTableName, model.AttributeValueTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.AssignmentID", model.AssignedProductAttributeTableName, model.AssignedProductAttributeValueTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.AssignmentID", model.AttributeProductTableName, model.AssignedProductAttributeTableName)).
+		//
+		InnerJoin(fmt.Sprintf("%[1]s ON %[2]s.Id = %[1]s.ValueID", model.AssignedVariantAttributeValueTableName, model.AttributeValueTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.AssignmentID", model.AssignedVariantAttributeTableName, model.AssignedVariantAttributeValueTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.AssignmentID", model.AttributeVariantTableName, model.AssignedVariantAttributeTableName)).
+		//
+		Where(squirrel.Eq{model.AttributeTableName + ".InputType": model.TYPES_WITH_UNIQUE_VALUES}).
+		Where(squirrel.Or{
+			squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": ids},
+			squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": ids},
+		}).
+		ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "Delete_AttributeValues_ToSql")
 	}
-	return res.RowsAffected, nil
+
+	var attributeValueIDs []string
+	err = s.GetReplica().Raw(attributeValueQuery, args...).Scan(&attributeValueIDs).Error
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to find related attribute values of given product types")
+	}
+
+	_, err = s.AttributeValue().Delete(tx, attributeValueIDs...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to delete related attribute values of given product types")
+	}
+
+	// delete relate DRAFT order lines
+
+	orderLineQuery, args, err := s.GetQueryBuilder().
+		Select(model.OrderLineTableName+".Id").
+		From(model.OrderLineTableName).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.VariantID", model.ProductVariantTableName, model.OrderLineTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.OrderID", model.OrderTableName, model.OrderLineTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Id = %[2]s.ProductID", model.ProductTableName, model.ProductVariantTableName)).
+		Where(model.OrderTableName+".Status = ?", model.ORDER_STATUS_DRAFT).
+		Where(squirrel.Eq{model.ProductTableName + ".ProductTypeID": ids}).
+		ToSql()
+
+	if err != nil {
+		return 0, errors.Wrap(err, "Delete_OrderLine_ToSql")
+	}
+
+	var orderLineIDs []string
+	err = s.GetReplica().Raw(orderLineQuery, args...).Scan(&orderLineIDs).Error
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to find related order line ids of given product types")
+	}
+
+	err = s.OrderLine().BulkDelete(tx, orderLineIDs)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to delete related draft order lines of given product types")
+	}
+
+	// delete product types
+	delRes := tx.Raw("DELETE FROM "+model.ProductTypeTableName+" WHERE Id IN ?", ids)
+	if delRes.Error != nil {
+		return 0, errors.Wrap(delRes.Error, "failed to delete product types by given ids")
+	}
+
+	return delRes.RowsAffected, nil
 }
 
 func (s *SqlProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes, variantAttributes model.Attributes, isDelete bool) error {

@@ -1959,7 +1959,7 @@ func (s *OpenTracingLayerAttributeValueStore) Count(options *model.AttributeValu
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
+func (s *OpenTracingLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -1968,7 +1968,7 @@ func (s *OpenTracingLayerAttributeValueStore) Delete(ids ...string) (int64, erro
 	}()
 
 	defer span.Finish()
-	result, err := s.AttributeValueStore.Delete(ids...)
+	result, err := s.AttributeValueStore.Delete(tx, ids...)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4783,7 +4783,7 @@ func (s *OpenTracingLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent 
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
+func (s *OpenTracingLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.BulkDelete")
 	s.Root.Store.SetContext(newCtx)
@@ -4792,7 +4792,7 @@ func (s *OpenTracingLayerOrderLineStore) BulkDelete(orderLineIDs []string) error
 	}()
 
 	defer span.Finish()
-	err := s.OrderLineStore.BulkDelete(orderLineIDs)
+	err := s.OrderLineStore.BulkDelete(tx, orderLineIDs)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6043,6 +6043,24 @@ func (s *OpenTracingLayerProductTypeStore) Save(tx *gorm.DB, productType *model.
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes model.Attributes, variantAttributes model.Attributes, isDelete bool) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.ToggleProductTypeRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {

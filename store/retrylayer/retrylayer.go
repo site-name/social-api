@@ -2068,11 +2068,11 @@ func (s *RetryLayerAttributeValueStore) Count(options *model.AttributeValueFilte
 
 }
 
-func (s *RetryLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
+func (s *RetryLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeValueStore.Delete(ids...)
+		result, err := s.AttributeValueStore.Delete(tx, ids...)
 		if err == nil {
 			return result, nil
 		}
@@ -5172,11 +5172,11 @@ func (s *RetryLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
+func (s *RetryLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
 
 	tries := 0
 	for {
-		err := s.OrderLineStore.BulkDelete(orderLineIDs)
+		err := s.OrderLineStore.BulkDelete(tx, orderLineIDs)
 		if err == nil {
 			return nil
 		}
@@ -6535,6 +6535,26 @@ func (s *RetryLayerProductTypeStore) Save(tx *gorm.DB, productType *model.Produc
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes model.Attributes, variantAttributes model.Attributes, isDelete bool) error {
+
+	tries := 0
+	for {
+		err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

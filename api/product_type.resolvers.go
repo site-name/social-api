@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -77,14 +78,61 @@ func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ Input Pro
 
 // NOTE: Please refer to ./graphql/schemas/product_media.graphqls for details on directives used
 func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id UUID }) (*ProductTypeDelete, error) {
-	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	// embedCtx.App.Srv().ProductService().DeleteProductTypes(nil, []string{args.Id.String()})
-	panic("not implemented")
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("ProductTypeDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	_, appErr := embedCtx.App.Srv().ProductService().DeleteProductTypes(tx, []string{args.Id.String()})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("ProductTypeDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &ProductTypeDelete{
+		ProductType: &ProductType{
+			ID: args.Id.String(),
+		},
+	}, nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/product_media.graphqls for details on directives used
-func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ProductTypeBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids []UUID }) (*ProductTypeBulkDelete, error) {
+	if len(args.Ids) == 0 {
+		return &ProductTypeBulkDelete{
+			Count: 0,
+		}, nil
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("ProductTypeBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	ids := *(*[]string)(unsafe.Pointer(&args.Ids))
+	delCount, appErr := embedCtx.App.Srv().ProductService().DeleteProductTypes(tx, ids)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("ProductTypeBulkDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &ProductTypeBulkDelete{
+		Count: int32(delCount),
+	}, nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/product_media.graphqls for details on directives used
@@ -92,7 +140,61 @@ func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
 	Id    UUID
 	Input ProductTypeInput
 }) (*ProductTypeUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	appErr := args.Input.validate("ProductTypeUpdate")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	productType, appErr := embedCtx.App.Srv().ProductService().ProductTypeByOption(&model.ProductTypeFilterOption{
+		Conditions: squirrel.Eq{model.ProductTypeTableName + ".Id": args.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	args.Input.patch(productType)
+	updatedProductType, appErr := embedCtx.App.Srv().ProductService().UpsertProductType(nil, productType)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// NOTE: original code does rename related product variants
+	// but this code doesn't do that
+	// we should consider whether to add that
+
+	// NOTE: product attributes go first [0], then variant attributes [1]
+	var attributes = [2]model.Attributes{}
+
+	for idx, ids := range [2][]UUID{
+		args.Input.ProductAttributes,
+		args.Input.VariantAttributes,
+	} {
+		if len(ids) > 0 {
+			var appErr *model.AppError
+			attributes[idx], appErr = embedCtx.App.Srv().AttributeService().AttributesByOption(&model.AttributeFilterOption{
+				Conditions: squirrel.Eq{model.AttributeTableName + ".Id": ids},
+			})
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			// check if there are some attribute(s) that is not product type
+			if attributes[idx] != nil && lo.SomeBy(attributes[idx], func(item *model.Attribute) bool { return item.Type != model.PRODUCT_TYPE }) {
+				return nil, model.NewAppError("ProductTypeUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "please provide attributes with types are product type", http.StatusBadRequest)
+			}
+		}
+	}
+
+	// add many to many attributes
+	appErr = embedCtx.App.Srv().ProductService().ToggleProductTypeAttributeRelations(nil, updatedProductType.Id, attributes[1], attributes[0], false)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &ProductTypeUpdate{
+		ProductType: SystemProductTypeToGraphqlProductType(updatedProductType),
+	}, nil
 }
 
 // NOTE: Please refer to ./graphql/schemas/product_media.graphqls for details on directives used

@@ -215,7 +215,7 @@ type (
 	AttributeValueStore interface {
 		ScanFields(attributeValue *model.AttributeValue) []interface{}
 		Count(options *model.AttributeValueFilterOptions) (int64, error)
-		Delete(ids ...string) (int64, error)
+		Delete(tx *gorm.DB, ids ...string) (int64, error)
 		Upsert(av *model.AttributeValue) (*model.AttributeValue, error)
 		BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error)
 		Get(attributeID string) (*model.AttributeValue, error)                                    // Get finds an model value with given id then returns it with an error
@@ -541,7 +541,7 @@ type (
 		ScanFields(orderLine *model.OrderLine) []interface{}
 		Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*model.OrderLine, error)                                                    // Get returns a order line with id of given id
-		BulkDelete(orderLineIDs []string) error                                                     // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+		BulkDelete(tx *gorm.DB, orderLineIDs []string) error                                        // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 		FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error)             // FilterbyOption finds and returns order lines by given option
 		BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}

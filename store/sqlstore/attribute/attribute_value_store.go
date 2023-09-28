@@ -121,8 +121,11 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 	return res, nil
 }
 
-func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
-	result := as.GetMaster().Raw("DELETE FROM "+model.AttributeValueTableName+" WHERE Id IN ?", ids)
+func (as *SqlAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
+	if tx == nil {
+		tx = as.GetMaster()
+	}
+	result := tx.Raw("DELETE FROM "+model.AttributeValueTableName+" WHERE Id IN ?", ids)
 	if result.Error != nil {
 		return 0, errors.Wrap(result.Error, "failed to delete attribute values")
 	}

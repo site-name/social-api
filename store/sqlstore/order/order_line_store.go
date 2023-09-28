@@ -96,8 +96,11 @@ func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 }
 
 // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
-	err := ols.GetMaster().Raw("DELETE FROM "+model.OrderLineTableName+" WHERE Id IN ?", orderLineIDs).Error
+func (ols *SqlOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
+	if tx == nil {
+		tx = ols.GetMaster()
+	}
+	err := tx.Raw("DELETE FROM "+model.OrderLineTableName+" WHERE Id IN ?", orderLineIDs).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order lines with given ids")
 	}

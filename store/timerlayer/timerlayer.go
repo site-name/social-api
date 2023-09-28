@@ -1855,10 +1855,10 @@ func (s *TimerLayerAttributeValueStore) Count(options *model.AttributeValueFilte
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
+func (s *TimerLayerAttributeValueStore) Delete(tx *gorm.DB, ids ...string) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.AttributeValueStore.Delete(ids...)
+	result, err := s.AttributeValueStore.Delete(tx, ids...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4381,10 +4381,10 @@ func (s *TimerLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
+func (s *TimerLayerOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
 	start := timemodule.Now()
 
-	err := s.OrderLineStore.BulkDelete(orderLineIDs)
+	err := s.OrderLineStore.BulkDelete(tx, orderLineIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5518,6 +5518,22 @@ func (s *TimerLayerProductTypeStore) Save(tx *gorm.DB, productType *model.Produc
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes model.Attributes, variantAttributes model.Attributes, isDelete bool) error {
+	start := timemodule.Now()
+
+	err := s.ProductTypeStore.ToggleProductTypeRelations(tx, productTypeID, productAttributes, variantAttributes, isDelete)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.ToggleProductTypeRelations", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
