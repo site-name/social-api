@@ -470,13 +470,13 @@ type (
 	ProductTypeStore interface {
 		ToggleProductTypeRelations(tx *gorm.DB, productTypeID string, productAttributes, variantAttributes model.Attributes, isDelete bool) error
 		Delete(tx *gorm.DB, ids []string) (int64, error)
-		FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error)
+		FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error)
 		Save(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, error)         // Save try inserting new product type into database then returns it
 		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) // FilterProductTypesByCheckoutToken is used to check if a model requires model
 		ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error)           // ProductTypesByProductIDs returns all product types belong to given products
 		ProductTypeByProductVariantID(variantID string) (*model.ProductType, error)           // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 		GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)       // GetByOption finds and returns a product type with given options
-		Count(options *model.ProductTypeFilterOption) (int64, error)
+		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
 	CategoryTranslationStore interface{}
 	CategoryStore            interface {
@@ -851,6 +851,7 @@ type (
 		GetUnreadCount(userID string) (int64, error) // TODO: consider me
 		FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error)
 		GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error)
+		IsEmpty() (bool, error)
 	}
 	TokenStore interface {
 		Save(recovery *model.Token) error

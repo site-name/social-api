@@ -62,25 +62,25 @@ func (_m *GiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.Gi
 	return r0, r1
 }
 
-// DeactivateOrderGiftcards provides a mock function with given fields: orderID
-func (_m *GiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
-	ret := _m.Called(orderID)
+// DeactivateOrderGiftcards provides a mock function with given fields: tx, orderID
+func (_m *GiftCardStore) DeactivateOrderGiftcards(tx *gorm.DB, orderID string) ([]string, error) {
+	ret := _m.Called(tx, orderID)
 
 	var r0 []string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) ([]string, error)); ok {
-		return rf(orderID)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, string) ([]string, error)); ok {
+		return rf(tx, orderID)
 	}
-	if rf, ok := ret.Get(0).(func(string) []string); ok {
-		r0 = rf(orderID)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, string) []string); ok {
+		r0 = rf(tx, orderID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(orderID)
+	if rf, ok := ret.Get(1).(func(*gorm.DB, string) error); ok {
+		r1 = rf(tx, orderID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -103,29 +103,36 @@ func (_m *GiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) err
 }
 
 // FilterByOption provides a mock function with given fields: option
-func (_m *GiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (_m *GiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (int64, []*model.GiftCard, error) {
 	ret := _m.Called(option)
 
-	var r0 []*model.GiftCard
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.GiftCardFilterOption) ([]*model.GiftCard, error)); ok {
+	var r0 int64
+	var r1 []*model.GiftCard
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.GiftCardFilterOption) (int64, []*model.GiftCard, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.GiftCardFilterOption) []*model.GiftCard); ok {
+	if rf, ok := ret.Get(0).(func(*model.GiftCardFilterOption) int64); ok {
 		r0 = rf(option)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.GiftCard)
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.GiftCardFilterOption) []*model.GiftCard); ok {
+		r1 = rf(option)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.GiftCard)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.GiftCardFilterOption) error); ok {
-		r1 = rf(option)
+	if rf, ok := ret.Get(2).(func(*model.GiftCardFilterOption) error); ok {
+		r2 = rf(option)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // GetById provides a mock function with given fields: id

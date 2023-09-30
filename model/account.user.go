@@ -709,6 +709,11 @@ type ModelMetadata struct {
 	PrivateMetadata StringMAP `json:"private_metadata,omitempty" gorm:"type:jsonb;column:PrivateMetadata"`
 }
 
+const (
+	ModelMetadataColumnMetadata        = "Metadata"
+	ModelMetadataColumnPrivateMetadata = "PrivateMetadata"
+)
+
 // PopulateFields checks if PrivateMetadata or Metadata is nil, if yes then assign them empty maps
 func (m *ModelMetadata) PopulateFields() {
 	if m.PrivateMetadata == nil {

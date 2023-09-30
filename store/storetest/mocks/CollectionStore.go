@@ -35,29 +35,36 @@ func (_m *CollectionStore) Delete(ids ...string) error {
 }
 
 // FilterByOption provides a mock function with given fields: option
-func (_m *CollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
+func (_m *CollectionStore) FilterByOption(option *model.CollectionFilterOption) (int64, []*model.Collection, error) {
 	ret := _m.Called(option)
 
-	var r0 []*model.Collection
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.CollectionFilterOption) ([]*model.Collection, error)); ok {
+	var r0 int64
+	var r1 []*model.Collection
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.CollectionFilterOption) (int64, []*model.Collection, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.CollectionFilterOption) []*model.Collection); ok {
+	if rf, ok := ret.Get(0).(func(*model.CollectionFilterOption) int64); ok {
 		r0 = rf(option)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Collection)
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.CollectionFilterOption) []*model.Collection); ok {
+		r1 = rf(option)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.Collection)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.CollectionFilterOption) error); ok {
-		r1 = rf(option)
+	if rf, ok := ret.Get(2).(func(*model.CollectionFilterOption) error); ok {
+		r2 = rf(option)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // Get provides a mock function with given fields: collectionID

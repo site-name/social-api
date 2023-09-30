@@ -60,11 +60,11 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	queryString, args, err := ps.GetQueryBuilder().
 		Select(model.ProductTypeTableName+".*").
 		From(model.ProductTypeTableName).
-		InnerJoin(model.ProductTableName+" ON (ProductTypes.Id = Products.ProductTypeID)").
-		InnerJoin(model.ProductVariantTableName+" ON (ProductVariants.ProductID = Products.Id)").
-		InnerJoin(model.CheckoutLineTableName+" ON (CheckoutLines.VariantID = ProductVariants.Id)").
-		InnerJoin(model.CheckoutTableName+" ON (Checkouts.Token = CheckoutLines.CheckoutID)").
-		Where("Checkouts.Token = ?", checkoutToken).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[2]s.Id = %[1]s.ProductTypeID", model.ProductTableName, model.ProductTypeTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.ProductID = %[2]s.Id", model.ProductVariantTableName, model.ProductTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.VariantID = %[2]s.Id", model.CheckoutLineTableName, model.ProductVariantTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.Token = %[2]s.CheckoutID", model.CheckoutTableName, model.CheckoutLineTableName)).
+		Where(model.CheckoutTableName+".Token = ?", checkoutToken).
 		ToSql()
 
 	if err != nil {
@@ -72,7 +72,6 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	}
 
 	var productTypes []*model.ProductType
-
 	err = ps.GetReplica().Raw(queryString, args...).Scan(&productTypes).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find product types related to checkout with token=%s", checkoutToken)
@@ -96,9 +95,9 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	query := pts.GetQueryBuilder().
 		Select(model.ProductTypeTableName+".*").
 		From(model.ProductTypeTableName).
-		InnerJoin(model.ProductTableName+" ON (Products.ProductTypeID = ProductTypes.Id)").
-		InnerJoin(model.ProductVariantTableName+" ON (Products.Id = ProductVariants.ProductID)").
-		Where("ProductVariants.Id = ?", variantID)
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.ProductTypeID = %[2]s.Id", model.ProductTableName, model.ProductTypeTableName)).
+		InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.ProductID = %[2]s.Id", model.ProductVariantTableName, model.ProductTableName)).
+		Where(model.ProductVariantTableName+".Id = ?", variantID)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -125,12 +124,12 @@ func (pts *SqlProductTypeStore) commonQueryBuilder(options *model.ProductTypeFil
 
 	if options.AttributeProducts_AttributeID != nil {
 		query = query.
-			InnerJoin(model.AttributeProductTableName + " ON AttributeProducts.ProductTypeID = ProductTypes.Id").
+			InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.ProductTypeID = %[2]s.Id", model.AttributeProductTableName, model.ProductTypeTableName)).
 			Where(options.AttributeProducts_AttributeID)
 	}
 	if options.AttributeVariants_AttributeID != nil {
 		query = query.
-			InnerJoin(model.AttributeVariantTableName + " ON AttributeVariants.ProductTypeID = ProductTypes.Id").
+			InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.ProductTypeID = %[2]s.Id", model.AttributeVariantTableName, model.ProductTypeTableName)).
 			Where(options.AttributeVariants_AttributeID)
 	}
 
@@ -157,37 +156,55 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 }
 
 // FilterbyOption finds and returns a slice of product types filtered using given options
-func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
-	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
+func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
+	query := pts.commonQueryBuilder(options)
+
+	// count if needed
+	var totalCount int64
+	if options.CountTotal {
+		countQuery, args, err := pts.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "FilterByOption_CountTotal_ToSql")
+		}
+		err = pts.GetReplica().Raw(countQuery, args...).Scan(totalCount).Error
+		if err != nil {
+			return 0, nil, errors.Wrap(err, "failed to count total product types by given options")
+		}
+	}
+
+	// apply pagination if needed
+	options.GraphqlPaginationValues.AddPaginationToSelectBuilderIfNeeded(&query)
+
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+		return 0, nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
 	var res []*model.ProductType
 	err = pts.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product types with given option")
+		return 0, nil, errors.Wrap(err, "failed to find product types with given option")
 	}
 
-	return res, nil
+	return totalCount, res, nil
 }
 
-func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
-	countQuery := pts.commonQueryBuilder(options)
+// func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
+// 	countQuery := pts.commonQueryBuilder(options)
 
-	queryStr, args, err := pts.GetQueryBuilder().Select("COUNT(*)").FromSelect(countQuery, "c").ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "Count_ToSql")
-	}
+// 	queryStr, args, err := pts.GetQueryBuilder().Select("COUNT(*)").FromSelect(countQuery, "c").ToSql()
+// 	if err != nil {
+// 		return 0, errors.Wrap(err, "Count_ToSql")
+// 	}
 
-	var count int64
-	err = pts.GetReplica().Raw(queryStr, args...).Scan(&count).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of product types by options")
-	}
+// 	var count int64
+// 	err = pts.GetReplica().Raw(queryStr, args...).Scan(&count).Error
+// 	if err != nil {
+// 		return 0, errors.Wrap(err, "failed to count number of product types by options")
+// 	}
 
-	return count, nil
-}
+// 	return count, nil
+// }
 
 func (s *SqlProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 	if tx == nil {

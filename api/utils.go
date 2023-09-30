@@ -573,9 +573,9 @@ func (g *GraphqlParams) queryLimit() uint64 {
 	}
 }
 
-func (g *GraphqlParams) checkNextPageAndPreviousPage(lengthOfRecordSliceFounded int) (hasNextPage, hasPreviousPage bool) {
+func (g *GraphqlParams) checkNextPageAndPreviousPage(numOfRecorsCound int) (hasNextPage, hasPreviousPage bool) {
 	queryLimit := g.queryLimit()
-	hasNextPage = queryLimit != 0 && lengthOfRecordSliceFounded == int(queryLimit)
+	hasNextPage = queryLimit != 0 && numOfRecorsCound == int(queryLimit)
 	hasPreviousPage = queryLimit != 0 && (g.Before != nil || g.After != nil)
 	return
 }
@@ -665,7 +665,7 @@ type CountableConnectionEdge[D any] struct {
 func constructCountableConnection[R any, D any](
 	data []R,
 	totalCount int64,
-	hasNextPage, hasPreviousPage bool,
+	graphqlParams GraphqlParams,
 	keyFunc func(R) []any, // E.g func(p *model.Product) []any{"Products.CreateAt", 1674545, "Products.Name", "hello world"}
 	modelTypeToGraphqlTypeFunc func(R) D,
 ) *CountableConnection[D] {
@@ -680,9 +680,11 @@ func constructCountableConnection[R any, D any](
 			}
 		}),
 	}
+
+	hasNextPage, hasPrevPage := graphqlParams.checkNextPageAndPreviousPage(len(data))
 	res.PageInfo = &PageInfo{
 		HasNextPage:     hasNextPage,
-		HasPreviousPage: hasPreviousPage,
+		HasPreviousPage: hasPrevPage,
 	}
 	if len(res.Edges) > 0 {
 		res.PageInfo.StartCursor = &res.Edges[0].Cursor
@@ -712,11 +714,11 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 	}
 
 	var (
-		resultData                   []RawT
-		hasNextPage, hasPreviousPage bool
-		index                        int
-		limit                        = g.First
-		totalCount                   = g.Len()
+		resultData []RawT
+		index      int
+		limit      = g.First
+		totalCount = g.Len()
+		// hasNextPage, hasPreviousPage bool
 	)
 
 	// return immediately when no data passed
@@ -731,7 +733,7 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 	if operand == nil {
 		if *limit < int32(totalCount) { // prevent slicing out of range
 			resultData = g.data[:*limit]
-			hasNextPage = true
+			// hasNextPage = true
 		} else {
 			resultData = g.data
 		}
@@ -752,16 +754,16 @@ func (g *graphqlPaginator[RawT, DestT]) parse(where string) (*CountableConnectio
 		return nil, model.NewAppError(where, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
 	}
 
-	hasPreviousPage = true
+	// hasPreviousPage = true
 	resultData = g.data[index+1:]
 
 	if *limit < int32(len(resultData)) {
 		resultData = resultData[:*limit]
-		hasNextPage = true
+		// hasNextPage = true
 	}
 
 result:
-	return constructCountableConnection(resultData, int64(totalCount), hasNextPage, hasPreviousPage, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
+	return constructCountableConnection(resultData, int64(totalCount), g.GraphqlParams, g.keyFunc, g.modelTypeToGraphqlTypeFunc), nil
 }
 
 func reportingPeriodToDate(period ReportingPeriod) time.Time {

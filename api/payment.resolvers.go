@@ -267,13 +267,12 @@ func (r *Resolver) Payments(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(payments))
 	keyFunc := func(p *model.Payment) []any {
 		return []any{
 			model.PaymentTableName + ".GateWay", p.GateWay,
 			model.PaymentTableName + ".CreateAt", p.CreateAt,
 		}
 	}
-	connection := constructCountableConnection(payments, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemPaymentToGraphqlPayment)
+	connection := constructCountableConnection(payments, totalCount, args.GraphqlParams, keyFunc, SystemPaymentToGraphqlPayment)
 	return (*PaymentCountableConnection)(unsafe.Pointer(connection)), nil
 }

@@ -1066,9 +1066,8 @@ func (r *Resolver) Checkouts(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(checkouts))
 	keyFunc := func(c *model.Checkout) []any { return []any{model.CheckoutTableName + ".CreateAt", c.CreateAt} }
-	res := constructCountableConnection(checkouts, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemCheckoutToGraphqlCheckout)
+	res := constructCountableConnection(checkouts, totalCount, args.GraphqlParams, keyFunc, SystemCheckoutToGraphqlCheckout)
 
 	return (*CheckoutCountableConnection)(unsafe.Pointer(res)), nil
 }

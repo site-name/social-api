@@ -18,6 +18,27 @@ const (
 	defaultPostgresqlDSN = "postgres://minh:anhyeuem98@localhost:5432/sitename_test?sslmode=disable&connect_timeout=10"
 )
 
+func getEnv(name, defaultValue string) string {
+	if value := os.Getenv(name); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func log(message string) {
+	verbose := false
+	if verboseFlag := flag.Lookup("test.v"); verboseFlag != nil {
+		verbose = verboseFlag.Value.String() != ""
+	}
+	if verboseFlag := flag.Lookup("v"); verboseFlag != nil {
+		verbose = verboseFlag.Value.String() != ""
+	}
+
+	if verbose {
+		fmt.Println(message)
+	}
+}
+
 func getDefaultPostgresqlDSN() string {
 	if os.Getenv("IS_CI") == "true" {
 		return strings.ReplaceAll(defaultPostgresqlDSN, "localhost", "postgres")
@@ -42,7 +63,7 @@ func PostgreSQLSettings() *model.SqlSettings {
 	}
 
 	// Generate a random database name
-	dsnURL.Path = "db" + model.NewId()
+	dsnURL.Path = "db" + model.NewRandomString(26)
 
 	return databaseSettings("postgres", dsnURL.String())
 }
@@ -77,13 +98,6 @@ func postgreSQLRootDSN(dsn string) string {
 	if err != nil {
 		panic("failed to parse dsn " + dsn + ": " + err.Error())
 	}
-
-	// // Assume the unittesting database has the same password.
-	// password := ""
-	// if dsnUrl.User != nil {
-	// 	password, _ = dsnUrl.User.Password()
-	// }
-
 	// dsnUrl.User = url.UserPassword("", password)
 	dsnURL.Path = "postgres"
 
@@ -113,30 +127,20 @@ func postgreSQLDSNDatabase(dsn string) string {
 	return path.Base(dsnURL.Path)
 }
 
-func log(message string) {
-	verbose := false
-	if verboseFlag := flag.Lookup("test.v"); verboseFlag != nil {
-		verbose = verboseFlag.Value.String() != ""
-	}
-	if verboseFlag := flag.Lookup("v"); verboseFlag != nil {
-		verbose = verboseFlag.Value.String() != ""
-	}
-
-	if verbose {
-		fmt.Println(message)
-	}
-}
-
 func MakeSqlSettings(driver string, withReplica bool) *model.SqlSettings {
 	settings := PostgreSQLSettings()
 	dbName := postgreSQLDSNDatabase(*settings.DataSource)
+
+	if err := execAsRoot(settings, "CREATE DATABASE "+dbName); err != nil {
+		panic("failed to create temporary database " + dbName + ": " + err.Error())
+	}
 
 	if err := execAsRoot(settings, "GRANT ALL PRIVILEGES ON DATABASE \""+dbName+"\" TO minh"); err != nil {
 		panic("failed to grant minh permission to " + dbName + ":" + err.Error())
 	}
 
 	log("Created temporary " + driver + " database " + dbName)
-	// settings.ReplicaMonitorIntervalSeconds = model.NewInt(5)
+	settings.ReplicaMonitorIntervalSeconds = model.GetPointerOfValue(5)
 
 	return settings
 }

@@ -40,29 +40,36 @@ func (_m *DiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleFil
 }
 
 // FilterSalesByOption provides a mock function with given fields: option
-func (_m *DiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
+func (_m *DiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) (int64, []*model.Sale, error) {
 	ret := _m.Called(option)
 
-	var r0 []*model.Sale
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.SaleFilterOption) ([]*model.Sale, error)); ok {
+	var r0 int64
+	var r1 []*model.Sale
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.SaleFilterOption) (int64, []*model.Sale, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.SaleFilterOption) []*model.Sale); ok {
+	if rf, ok := ret.Get(0).(func(*model.SaleFilterOption) int64); ok {
 		r0 = rf(option)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Sale)
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.SaleFilterOption) []*model.Sale); ok {
+		r1 = rf(option)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.Sale)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.SaleFilterOption) error); ok {
-		r1 = rf(option)
+	if rf, ok := ret.Get(2).(func(*model.SaleFilterOption) error); ok {
+		r2 = rf(option)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // Get provides a mock function with given fields: saleID

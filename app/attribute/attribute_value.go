@@ -293,8 +293,8 @@ func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, opera
 	return nil
 }
 
-func (s *ServiceAttribute) DeleteAttributeValues(ids ...string) (int64, *model.AppError) {
-	numDeleted, err := s.srv.Store.AttributeValue().Delete(ids...)
+func (s *ServiceAttribute) DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model.AppError) {
+	numDeleted, err := s.srv.Store.AttributeValue().Delete(tx, ids...)
 	if err != nil {
 		return 0, model.NewAppError("DeleteAttributeValues", "app.attribute.error_delete_attribute_values_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

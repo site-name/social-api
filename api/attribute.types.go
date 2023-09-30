@@ -215,7 +215,7 @@ func (a *Attribute) Choices(
 func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	productTypes, appErr := embedCtx.App.Srv().
+	_, productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductTypesByOptions(&model.ProductTypeFilterOption{
 			AttributeProducts_AttributeID: squirrel.Eq{model.AttributeProductTableName + ".AttributeID": a.ID},
@@ -238,7 +238,7 @@ func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*Prod
 func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	productTypes, appErr := embedCtx.App.Srv().
+	_, productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductTypesByOptions(&model.ProductTypeFilterOption{
 			AttributeVariants_AttributeID: squirrel.Eq{model.AttributeVariantTableName + ".AttributeID": a.ID},

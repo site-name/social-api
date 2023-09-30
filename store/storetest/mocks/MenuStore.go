@@ -14,6 +14,32 @@ type MenuStore struct {
 	mock.Mock
 }
 
+// Delete provides a mock function with given fields: ids
+func (_m *MenuStore) Delete(ids []string) (int64, *model.AppError) {
+	ret := _m.Called(ids)
+
+	var r0 int64
+	var r1 *model.AppError
+	if rf, ok := ret.Get(0).(func([]string) (int64, *model.AppError)); ok {
+		return rf(ids)
+	}
+	if rf, ok := ret.Get(0).(func([]string) int64); ok {
+		r0 = rf(ids)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func([]string) *model.AppError); ok {
+		r1 = rf(ids)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*model.AppError)
+		}
+	}
+
+	return r0, r1
+}
+
 // FilterByOptions provides a mock function with given fields: options
 func (_m *MenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
 	ret := _m.Called(options)

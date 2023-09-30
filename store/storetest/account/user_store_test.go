@@ -11,12 +11,14 @@ import (
 
 func TestUserStore(t *testing.T) {
 	storetest.StoreTestWithSqlStore(t, func(t *testing.T, ss store.Store, s storetest.SqlStore) {
-		users, err := ss.User().GetAllProfiles(&model.UserGetOptions{})
-		require.NoError(t, err, "failed cleaning test users")
+		users, err := ss.User().GetAllProfiles(&model.UserGetOptions{
+			Sort: model.UserTableName + ".Username ASC",
+		})
+		require.NoError(t, err, "failed cleaning up test users")
 
-		for _, u := range users {
-			err := ss.User().PermanentDelete(u.Id)
-			require.NoError(t, err, "failed cleaning up test user %s", u.Username)
+		for _, user := range users {
+			err := ss.User().PermanentDelete(user.Id)
+			require.NoError(t, err, "failed cleaning up test user %s", user.Username)
 		}
 
 		t.Run("IsEmpty", func(t *testing.T) { testIsEmpty(t, ss) })
@@ -24,25 +26,26 @@ func TestUserStore(t *testing.T) {
 }
 
 func testIsEmpty(t *testing.T, ss store.Store) {
-	numOfUsers, err := ss.User().Count(model.UserCountOptions{})
+	empty, err := ss.User().IsEmpty()
 	require.NoError(t, err)
-	require.Equal(t, 0, numOfUsers, "expected 0 users, got %d", numOfUsers)
+	require.True(t, empty)
 
 	u := &model.User{
-		Email:    "leminhon2398@outlook.com",
-		Username: model.NewId(),
+		Email: storetest.MakeEmail(),
+		Id:    model.NewId(),
 	}
+
 	u, err = ss.User().Save(u)
 	require.NoError(t, err)
 
-	numOfUsers, err = ss.User().Count(model.UserCountOptions{})
+	empty, err = ss.User().IsEmpty()
 	require.NoError(t, err)
-	require.Greater(t, numOfUsers, 0, "expected at least 1 user in database, got 0")
+	require.False(t, empty)
 
 	err = ss.User().PermanentDelete(u.Id)
 	require.NoError(t, err)
 
-	numOfUsers, err = ss.User().Count(model.UserCountOptions{})
+	empty, err = ss.User().IsEmpty()
 	require.NoError(t, err)
-	require.Equal(t, 0, numOfUsers, "expected 0 users, got %d", numOfUsers)
+	require.True(t, empty)
 }

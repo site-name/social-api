@@ -66,6 +66,7 @@ require (
 	golang.org/x/crypto v0.11.0
 	golang.org/x/image v0.8.0
 	golang.org/x/net v0.11.0
+	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.11.0
 	golang.org/x/tools v0.10.0
 	gopkg.in/mail.v2 v2.3.1
@@ -76,13 +77,10 @@ require (
 )
 
 require (
-	github.com/bahlo/generic-list-go v0.2.0 // indirect
-	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
-	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 )
 
 require (

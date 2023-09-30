@@ -7,6 +7,7 @@ package mocks
 import (
 	model "github.com/sitename/sitename/model"
 	mock "github.com/stretchr/testify/mock"
+	gorm "gorm.io/gorm"
 
 	squirrel "github.com/Masterminds/squirrel"
 )
@@ -92,25 +93,25 @@ func (_m *CustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: customemrEvent
-func (_m *CustomerEventStore) Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
-	ret := _m.Called(customemrEvent)
+// Save provides a mock function with given fields: tx, customemrEvent
+func (_m *CustomerEventStore) Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
+	ret := _m.Called(tx, customemrEvent)
 
 	var r0 *model.CustomerEvent
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.CustomerEvent) (*model.CustomerEvent, error)); ok {
-		return rf(customemrEvent)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.CustomerEvent) (*model.CustomerEvent, error)); ok {
+		return rf(tx, customemrEvent)
 	}
-	if rf, ok := ret.Get(0).(func(*model.CustomerEvent) *model.CustomerEvent); ok {
-		r0 = rf(customemrEvent)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.CustomerEvent) *model.CustomerEvent); ok {
+		r0 = rf(tx, customemrEvent)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.CustomerEvent)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.CustomerEvent) error); ok {
-		r1 = rf(customemrEvent)
+	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.CustomerEvent) error); ok {
+		r1 = rf(tx, customemrEvent)
 	} else {
 		r1 = ret.Error(1)
 	}

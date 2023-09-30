@@ -547,8 +547,7 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(giftcards))
-	res := constructCountableConnection(giftcards, totalCount, hasNextPage, hasPrevPage, giftcardKeyFunc, SystemGiftcardToGraphqlGiftcard)
+	res := constructCountableConnection(giftcards, totalCount, args.GraphqlParams, giftcardKeyFunc, SystemGiftcardToGraphqlGiftcard)
 
 	return (*GiftCardCountableConnection)(unsafe.Pointer(res)), nil
 }

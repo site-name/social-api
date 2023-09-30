@@ -162,13 +162,12 @@ func (r *Resolver) DigitalContents(ctx context.Context, args GraphqlParams) (*Di
 		CountTotal:       true,
 	})
 
-	hasNextPage, hasPrevPage := args.checkNextPageAndPreviousPage(len(contents))
 	keyFunc := func(d *model.DigitalContent) []any {
 		return []any{
 			model.DigitalContentTableName + ".ContentType", d.ContentType,
 			model.DigitalContentTableName + ".ContentFile", d.ContentFile,
 		}
 	}
-	res := constructCountableConnection(contents, totalCount, hasNextPage, hasPrevPage, keyFunc, systemDigitalContentToGraphqlDigitalContent)
+	res := constructCountableConnection(contents, totalCount, args, keyFunc, systemDigitalContentToGraphqlDigitalContent)
 	return (*DigitalContentCountableConnection)(unsafe.Pointer(res)), nil
 }

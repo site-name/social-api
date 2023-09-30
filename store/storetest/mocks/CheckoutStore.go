@@ -80,29 +80,36 @@ func (_m *CheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.
 }
 
 // FilterByOption provides a mock function with given fields: option
-func (_m *CheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
+func (_m *CheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (int64, []*model.Checkout, error) {
 	ret := _m.Called(option)
 
-	var r0 []*model.Checkout
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.CheckoutFilterOption) ([]*model.Checkout, error)); ok {
+	var r0 int64
+	var r1 []*model.Checkout
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.CheckoutFilterOption) (int64, []*model.Checkout, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.CheckoutFilterOption) []*model.Checkout); ok {
+	if rf, ok := ret.Get(0).(func(*model.CheckoutFilterOption) int64); ok {
 		r0 = rf(option)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Checkout)
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.CheckoutFilterOption) []*model.Checkout); ok {
+		r1 = rf(option)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.Checkout)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.CheckoutFilterOption) error); ok {
-		r1 = rf(option)
+	if rf, ok := ret.Get(2).(func(*model.CheckoutFilterOption) error); ok {
+		r2 = rf(option)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // GetByOption provides a mock function with given fields: option

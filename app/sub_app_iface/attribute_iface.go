@@ -51,7 +51,7 @@ type AttributeService interface {
 	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError)
 	BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model.AppError)
-	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
+	DeleteAttributeValues(tx *gorm.DB, ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)
 	PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError

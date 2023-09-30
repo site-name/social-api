@@ -43,6 +43,19 @@ type ProductType struct {
 	VariantAttributes Attributes `json:"-" gorm:"many2many:AttributeVariants"`
 }
 
+// column names of product type's fields
+const (
+	ProductTypeColumnId                 = "Id"
+	ProductTypeColumnName               = "Name"
+	ProductTypeColumnSlug               = "Slug"
+	ProductTypeColumnKind               = "Kind"
+	ProductTypeColumnHasVariants        = "HasVariants"
+	ProductTypeColumnIsShippingRequired = "IsShippingRequired"
+	ProductTypeColumnIsDigital          = "IsDigital"
+	ProductTypeColumnWeight             = "Weight"
+	ProductTypeColumnWeightUnit         = "WeightUnit"
+)
+
 func (c *ProductType) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
 func (c *ProductType) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *ProductType) TableName() string             { return ProductTypeTableName }
@@ -53,6 +66,9 @@ type ProductTypeFilterOption struct {
 
 	AttributeProducts_AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
 	AttributeVariants_AttributeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON (...) WHERE AttributeVariants.AttributeID ...
+
+	CountTotal              bool
+	GraphqlPaginationValues GraphqlPaginationValues
 }
 
 func (p *ProductType) DeepCopy() *ProductType {

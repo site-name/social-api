@@ -757,7 +757,29 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 }
 
 func (us *SqlUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
-	panic("not implemented")
+	replicaDB := us.GetReplica()
+
+	if options != nil {
+		if options.Inactive {
+			replicaDB = replicaDB.Where(model.UserTableName+".IsActive = ?", false)
+		} else if options.Active {
+			replicaDB = replicaDB.Where(model.UserTableName + ".IsActive")
+		}
+
+		if options.Role != "" {
+			replicaDB = replicaDB.Where(model.UserTableName+".Roles LIKE %LOWER(?)%", options.Role)
+		}
+		if options.Sort != "" {
+			replicaDB = replicaDB.Order(options.Sort)
+		}
+	}
+
+	var res []*model.User
+	err := replicaDB.Find(&res).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find user profiles")
+	}
+	return res, nil
 }
 
 func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions) squirrel.SelectBuilder {
@@ -948,4 +970,13 @@ func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, rela
 	}
 
 	return nil
+}
+
+func (s *SqlUserStore) IsEmpty() (bool, error) {
+	var hasRows bool
+	err := s.GetReplica().Raw("SELECT EXISTS (SELECT 1 FROM " + model.UserTableName + ")").Scan(&hasRows).Error
+	if err != nil {
+		return false, errors.Wrap(err, "failed to check if user table has any row or not")
+	}
+	return !hasRows, nil
 }

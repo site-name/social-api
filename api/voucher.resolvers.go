@@ -426,8 +426,7 @@ func (r *Resolver) Vouchers(ctx context.Context, args VoucherFilterArgs) (*Vouch
 		keyFunc = voucherSortFieldsMap[args.SortBy.Field].keyFunc
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(vouchers))
-	res := constructCountableConnection(vouchers, totalCount, hasNextPage, hasPrevPage, keyFunc, systemVoucherToGraphqlVoucher)
+	res := constructCountableConnection(vouchers, totalCount, args.GraphqlParams, keyFunc, systemVoucherToGraphqlVoucher)
 
 	return (*VoucherCountableConnection)(unsafe.Pointer(res)), nil
 }

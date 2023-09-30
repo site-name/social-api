@@ -15,13 +15,13 @@ type OrderLineStore struct {
 	mock.Mock
 }
 
-// BulkDelete provides a mock function with given fields: orderLineIDs
-func (_m *OrderLineStore) BulkDelete(orderLineIDs []string) error {
-	ret := _m.Called(orderLineIDs)
+// BulkDelete provides a mock function with given fields: tx, orderLineIDs
+func (_m *OrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) error {
+	ret := _m.Called(tx, orderLineIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]string) error); ok {
-		r0 = rf(orderLineIDs)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) error); ok {
+		r0 = rf(tx, orderLineIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

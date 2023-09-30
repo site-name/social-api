@@ -562,8 +562,7 @@ func (r *Resolver) Sales(ctx context.Context, args SalesArgs) (*SaleCountableCon
 		saleKeyFunc = saleSortFieldsMap[args.SortBy.Field].keyFunc
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(sales))
-	res := constructCountableConnection(sales, totalSales, hasNextPage, hasPrevPage, saleKeyFunc, systemSaleToGraphqlSale)
+	res := constructCountableConnection(sales, totalSales, args.GraphqlParams, saleKeyFunc, systemSaleToGraphqlSale)
 
 	return (*SaleCountableConnection)(unsafe.Pointer(res)), nil
 }

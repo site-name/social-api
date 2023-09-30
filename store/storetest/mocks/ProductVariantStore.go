@@ -57,6 +57,32 @@ func (_m *ProductVariantStore) FilterByOption(option *model.ProductVariantFilter
 	return r0, r1
 }
 
+// FindVariantsAvailableForPurchase provides a mock function with given fields: variantIds, channelID
+func (_m *ProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
+	ret := _m.Called(variantIds, channelID)
+
+	var r0 model.ProductVariants
+	var r1 error
+	if rf, ok := ret.Get(0).(func([]string, string) (model.ProductVariants, error)); ok {
+		return rf(variantIds, channelID)
+	}
+	if rf, ok := ret.Get(0).(func([]string, string) model.ProductVariants); ok {
+		r0 = rf(variantIds, channelID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(model.ProductVariants)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func([]string, string) error); ok {
+		r1 = rf(variantIds, channelID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *ProductVariantStore) Get(id string) (*model.ProductVariant, error) {
 	ret := _m.Called(id)

@@ -433,16 +433,10 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(stocks))
-	if hasNextPage {
-		stocks = stocks[:len(stocks)-1]
-	}
-
 	res := constructCountableConnection(
 		stocks,
 		totalCount,
-		hasNextPage,
-		hasPrevPage,
+		args.GraphqlParams,
 		func(st *model.Stock) []any { return []any{model.StockTableName + ".CreateAt", st.CreateAt} },
 		SystemStockToGraphqlStock,
 	)

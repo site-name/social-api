@@ -5392,22 +5392,6 @@ func (s *TimerLayerProductTranslationStore) Upsert(translation *model.ProductTra
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductTypeStore.Count(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Count", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 	start := timemodule.Now()
 
@@ -5440,10 +5424,10 @@ func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutT
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
+func (s *TimerLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductTypeStore.FilterbyOption(options)
+	result, resultVar1, err := s.ProductTypeStore.FilterbyOption(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5453,7 +5437,7 @@ func (s *TimerLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFi
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterbyOption", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
@@ -7514,6 +7498,22 @@ func (s *TimerLayerUserStore) InvalidateProfileCacheForUser(userID string) {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.InvalidateProfileCacheForUser", success, elapsed)
 	}
+}
+
+func (s *TimerLayerUserStore) IsEmpty() (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.IsEmpty()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.IsEmpty", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerUserStore) PermanentDelete(userID string) error {

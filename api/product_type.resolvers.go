@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"unsafe"
 
@@ -203,7 +202,18 @@ func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, args struct
 	ProductTypeID UUID
 	Type          ProductAttributeType
 }) (*ProductTypeReorderAttributes, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	// if !args.Type.IsValid() {
+	// 	return nil, model.NewAppError("ProductTypeReorderAttributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Type"}, "please provide valid product attribute type", http.StatusBadRequest)
+	// }
+
+	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// embedCtx.App.Srv().ProductService().ProductTypeByOption(&model.ProductTypeFilterOption{
+	// 	Conditions: squirrel.Expr(model.ProductTypeTableName + ".Id = ?", args.ProductTypeID),
+	// })
+
+	panic("not implemented")
 }
 
 // NOTE: Please refer to ./graphql/schemas/product_media.graphqls for details on directives used
@@ -219,10 +229,44 @@ func (r *Resolver) ProductType(ctx context.Context, args struct{ Id UUID }) (*Pr
 	return SystemProductTypeToGraphqlProductType(productType), nil
 }
 
+// NOTE: Please refer to ./graphql/schemas/product_media.graphqls for details on directives used
 func (r *Resolver) ProductTypes(ctx context.Context, args struct {
 	Filter *ProductTypeFilterInput
 	SortBy *ProductTypeSortingInput
 	GraphqlParams
 }) (*ProductTypeCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	paginValues, appErr := args.GraphqlParams.Parse("ProductTypes")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	filterOpts := args.Filter.parse("ProductTypes")
+	filterOpts.GraphqlPaginationValues = *paginValues
+	filterOpts.CountTotal = true
+
+	if filterOpts.GraphqlPaginationValues.OrderBy == "" {
+		orderFields := productTypeSortFieldsMap[ProductTypeSortFieldName].fields
+
+		if args.SortBy != nil && args.SortBy.Field.IsValid() {
+			orderFields = productTypeSortFieldsMap[args.SortBy.Field].fields
+		}
+
+		ordering := args.GraphqlParams.orderDirection()
+		filterOpts.GraphqlPaginationValues.OrderBy = orderFields.
+			Map(func(_ int, item string) string { return item + " " + ordering }).
+			Join(",")
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	totalCount, productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(filterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	keyFunc := productTypeSortFieldsMap[ProductTypeSortFieldName].keyFunc
+	if args.SortBy != nil {
+		keyFunc = productTypeSortFieldsMap[args.SortBy.Field].keyFunc
+	}
+	res := constructCountableConnection(productTypes, totalCount, args.GraphqlParams, keyFunc, SystemProductTypeToGraphqlProductType)
+	return (*ProductTypeCountableConnection)(unsafe.Pointer(res)), nil
 }

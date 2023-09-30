@@ -6380,26 +6380,6 @@ func (s *RetryLayerProductTranslationStore) Upsert(translation *model.ProductTra
 
 }
 
-func (s *RetryLayerProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductTypeStore.Count(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 
 	tries := 0
@@ -6440,21 +6420,21 @@ func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutT
 
 }
 
-func (s *RetryLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
+func (s *RetryLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductTypeStore.FilterbyOption(options)
+		result, resultVar1, err := s.ProductTypeStore.FilterbyOption(options)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 
@@ -8939,6 +8919,26 @@ func (s *RetryLayerUserStore) InferSystemInstallDate() (int64, error) {
 func (s *RetryLayerUserStore) InvalidateProfileCacheForUser(userID string) {
 
 	s.UserStore.InvalidateProfileCacheForUser(userID)
+
+}
+
+func (s *RetryLayerUserStore) IsEmpty() (bool, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.IsEmpty()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 

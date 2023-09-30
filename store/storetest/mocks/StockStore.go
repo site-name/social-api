@@ -57,54 +57,37 @@ func (_m *StockStore) ChangeQuantity(stockID string, quantity int) error {
 	return r0
 }
 
-// CountByOptions provides a mock function with given fields: options
-func (_m *StockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+// FilterByOption provides a mock function with given fields: options
+func (_m *StockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	ret := _m.Called(options)
 
-	var r0 int32
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) (int32, error)); ok {
+	var r0 int64
+	var r1 []*model.Stock
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) (int64, []*model.Stock, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) int32); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) int64); ok {
 		r0 = rf(options)
 	} else {
-		r0 = ret.Get(0).(int32)
+		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(*model.StockFilterOption) []*model.Stock); ok {
 		r1 = rf(options)
 	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterByOption provides a mock function with given fields: options
-func (_m *StockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
-	ret := _m.Called(options)
-
-	var r0 []*model.Stock
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) ([]*model.Stock, error)); ok {
-		return rf(options)
-	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterOption) []*model.Stock); ok {
-		r0 = rf(options)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Stock)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.Stock)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterOption) error); ok {
-		r1 = rf(options)
+	if rf, ok := ret.Get(2).(func(*model.StockFilterOption) error); ok {
+		r2 = rf(options)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // FilterForChannel provides a mock function with given fields: options

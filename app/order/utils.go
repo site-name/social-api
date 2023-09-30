@@ -1064,7 +1064,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.O
 }
 
 // DeleteOrderLine Delete an order line from an order.
-func (a *ServiceOrder) DeleteOrderLine(tran *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError) {
 	order, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
 		return nil, appErr
@@ -1077,7 +1077,7 @@ func (a *ServiceOrder) DeleteOrderLine(tran *gorm.DB, lineInfo *model.OrderLineD
 		}
 	}
 
-	return nil, a.DeleteOrderLines([]string{lineInfo.Line.Id})
+	return nil, a.DeleteOrderLines(tx, []string{lineInfo.Line.Id})
 }
 
 // RestockOrderLines Return ordered products to corresponding stocks

@@ -138,7 +138,6 @@ type ProductService interface {
 	VisibleCollectionsToUser(channelSlug string, userIsShopStaff bool) ([]*model.Collection, *model.AppError)
 	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
 	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
-	CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError)
 	CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError)
 	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model.AppError)
 	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) (int64, []*model.DigitalContent, *model.AppError)
@@ -151,7 +150,7 @@ type ProductService interface {
 	GetVisibleToUserProducts(channel_IdOrSlug string, userCanSeeAllProducts bool) (model.Products, *model.AppError)
 	IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
-	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
+	ProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
 	UpsertDigitalContent(digitalContent *model.DigitalContent) (*model.DigitalContent, *model.AppError)
 	DeleteProductMedias(tx *gorm.DB, ids []string) (int64, *model.AppError)

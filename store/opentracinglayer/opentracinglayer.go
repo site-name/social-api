@@ -5901,24 +5901,6 @@ func (s *OpenTracingLayerProductTranslationStore) Upsert(translation *model.Prod
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Count")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductTypeStore.Count(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerProductTypeStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Delete")
@@ -5955,7 +5937,7 @@ func (s *OpenTracingLayerProductTypeStore) FilterProductTypesByCheckoutToken(che
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
+func (s *OpenTracingLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -5964,13 +5946,13 @@ func (s *OpenTracingLayerProductTypeStore) FilterbyOption(options *model.Product
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductTypeStore.FilterbyOption(options)
+	result, resultVar1, err := s.ProductTypeStore.FilterbyOption(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
@@ -8258,6 +8240,24 @@ func (s *OpenTracingLayerUserStore) InvalidateProfileCacheForUser(userID string)
 	defer span.Finish()
 	s.UserStore.InvalidateProfileCacheForUser(userID)
 
+}
+
+func (s *OpenTracingLayerUserStore) IsEmpty() (bool, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.IsEmpty")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.UserStore.IsEmpty()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerUserStore) PermanentDelete(userID string) error {

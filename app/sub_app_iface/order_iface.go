@@ -70,7 +70,7 @@ type OrderService interface {
 	// DeleteOrderLine Delete an order line from an order.
 	DeleteOrderLine(tx *gorm.DB, lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// DeleteOrderLines perform bulk delete given order lines
-	DeleteOrderLines(orderLineIDs []string) *model.AppError
+	DeleteOrderLines(tx *gorm.DB, orderLineIDs []string) *model.AppError
 	// FilterOrdersByOptions is common method for filtering orders by given option
 	FilterOrdersByOptions(option *model.OrderFilterOption) (int64, []*model.Order, *model.AppError)
 	// Fulfill order.

@@ -118,6 +118,22 @@ func (_m *AttributeProductStore) Save(attributeProduct *model.AttributeProduct) 
 	return r0, r1
 }
 
+// ScanFields provides a mock function with given fields: attrPrd
+func (_m *AttributeProductStore) ScanFields(attrPrd *model.AttributeProduct) []interface{} {
+	ret := _m.Called(attrPrd)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(*model.AttributeProduct) []interface{}); ok {
+		r0 = rf(attrPrd)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewAttributeProductStore interface {
 	mock.TestingT
 	Cleanup(func())

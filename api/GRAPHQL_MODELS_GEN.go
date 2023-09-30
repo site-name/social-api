@@ -454,7 +454,7 @@ type AttributeFilterInput struct {
 	AvailableInGrid        *bool              `json:"availableInGrid"`
 	Metadata               []*MetadataInput   `json:"metadata"`
 	Search                 *string            `json:"search"`
-	Ids                    []string           `json:"ids"`
+	Ids                    []UUID             `json:"ids"`
 	Type                   *AttributeTypeEnum `json:"type"`
 	InCollection           *string            `json:"inCollection"`
 	InCategory             *string            `json:"inCategory"`
@@ -463,9 +463,6 @@ type AttributeFilterInput struct {
 }
 
 func (a *AttributeFilterInput) validate(where string) *model.AppError {
-	if !lo.EveryBy(a.Ids, model.IsValidId) {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid attribute ids", http.StatusBadRequest)
-	}
 	if a.Search != nil && (stringsContainSqlExpr.MatchString(*a.Search) || *a.Search == "") {
 		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "search"}, "please provide valid search value", http.StatusBadRequest)
 	}
@@ -661,7 +658,7 @@ type AttributeUpdateInput struct {
 	Name                     *string                      `json:"name"`
 	Slug                     *string                      `json:"slug"`
 	Unit                     *MeasurementUnitsEnum        `json:"unit"`
-	RemoveValues             []string                     `json:"removeValues"`
+	RemoveValues             []UUID                       `json:"removeValues"`
 	AddValues                []*AttributeValueUpdateInput `json:"addValues"`
 	ValueRequired            *bool                        `json:"valueRequired"`
 	IsVariantOnly            *bool                        `json:"isVariantOnly"`
@@ -3830,12 +3827,70 @@ type ProductTypeDelete struct {
 }
 
 type ProductTypeFilterInput struct {
-	Search       *string                  `json:"search"`
-	Configurable *ProductTypeConfigurable `json:"configurable"`
+	Search       *string                  `json:"search"`       // by name or slug
+	Configurable *ProductTypeConfigurable `json:"configurable"` // filter by HasVariants
 	ProductType  *ProductTypeEnum         `json:"productType"`
 	Metadata     []*MetadataInput         `json:"metadata"`
 	Kind         *ProductTypeKindEnum     `json:"kind"`
-	Ids          []string                 `json:"ids"`
+	Ids          []UUID                   `json:"ids"`
+}
+
+func (p *ProductTypeFilterInput) parse(where string) *model.ProductTypeFilterOption {
+	var andConditions squirrel.And
+
+	if p.Search != nil && *p.Search != "" {
+		iLikeExpr := "%" + *p.Search + "%"
+		andConditions = append(
+			andConditions,
+			squirrel.Expr(
+				fmt.Sprintf("%[1]s.%[2]s ILIKE ? OR %[1]s.%[3]s ILIKE ?", model.ProductTypeTableName, model.ProductTypeColumnName, model.ProductTypeColumnSlug),
+				iLikeExpr,
+				iLikeExpr,
+			),
+		)
+	}
+	if p.Configurable != nil && p.Configurable.IsValid() {
+		hasVariants := *p.Configurable == ProductTypeConfigurableConfigurable
+		andConditions = append(andConditions, squirrel.Expr(
+			fmt.Sprintf("%s.%s = ?", model.ProductTypeTableName, model.ProductTypeColumnHasVariants),
+			hasVariants,
+		))
+	}
+	if p.ProductType != nil && p.ProductType.IsValid() {
+		checkingColumn := model.ProductTypeColumnIsDigital
+		if *p.ProductType == ProductTypeEnumShippable {
+			checkingColumn = model.ProductTypeColumnIsShippingRequired
+		}
+
+		andConditions = append(andConditions, squirrel.Expr(model.ProductTypeTableName+"."+checkingColumn))
+	}
+	if len(p.Metadata) > 0 {
+		for _, item := range p.Metadata {
+			if item != nil && item.Key != "" {
+				if item.Value == "" {
+					andConditions = append(
+						andConditions,
+						squirrel.Expr(fmt.Sprintf("%s.%s::jsonb ? '%s'", model.ProductTypeTableName, model.ModelMetadataColumnMetadata, item.Key)),
+					)
+				} else {
+					andConditions = append(
+						andConditions,
+						squirrel.Expr(fmt.Sprintf("%s.%s::jsonb @> '{%q:%q}'", model.ProductTypeTableName, model.ModelMetadataColumnMetadata, item.Key, item.Value)),
+					)
+				}
+			}
+		}
+	}
+	if p.Kind != nil && p.Kind.IsValid() {
+		andConditions = append(andConditions, squirrel.Expr(fmt.Sprintf("%s.%s = ?", model.ProductTypeTableName, model.ProductTypeColumnKind), *p.Kind))
+	}
+	if len(p.Ids) > 0 {
+		andConditions = append(andConditions, squirrel.Eq{model.ProductTypeTableName + "." + model.ProductTypeColumnId: p.Ids})
+	}
+
+	return &model.ProductTypeFilterOption{
+		Conditions: andConditions,
+	}
 }
 
 type ProductTypeInput struct {
@@ -6663,6 +6718,11 @@ const (
 	ProductTypeConfigurableSimple       ProductTypeConfigurable = "SIMPLE"
 )
 
+func (c *ProductTypeConfigurable) IsValid() bool {
+	return *c == ProductTypeConfigurableConfigurable ||
+		*c == ProductTypeConfigurableSimple
+}
+
 type ProductTypeEnum string
 
 const (
@@ -6670,15 +6730,77 @@ const (
 	ProductTypeEnumShippable ProductTypeEnum = "SHIPPABLE"
 )
 
+func (p *ProductTypeEnum) IsValid() bool {
+	return *p == ProductTypeEnumDigital ||
+		*p == ProductTypeEnumShippable
+}
+
 type ProductTypeKindEnum = model.ProductTypeKind
 
 type ProductTypeSortField string
 
 const (
-	ProductTypeSortFieldName             ProductTypeSortField = "NAME"
-	ProductTypeSortFieldDigital          ProductTypeSortField = "DIGITAL"
-	ProductTypeSortFieldShippingRequired ProductTypeSortField = "SHIPPING_REQUIRED"
+	ProductTypeSortFieldName             ProductTypeSortField = "NAME"              // Name, Slug
+	ProductTypeSortFieldDigital          ProductTypeSortField = "DIGITAL"           // IsDigital, Name, Slug
+	ProductTypeSortFieldShippingRequired ProductTypeSortField = "SHIPPING_REQUIRED" // IsShippingRequired, Name, Slug
 )
+
+func (p *ProductTypeSortField) IsValid() bool {
+	switch *p {
+	case ProductTypeSortFieldName, ProductTypeSortFieldDigital, ProductTypeSortFieldShippingRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+type productTypeSortFieldAttributes struct {
+	keyFunc func(*model.ProductType) []any
+	fields  util.AnyArray[string]
+}
+
+var productTypeSortFieldsMap = map[ProductTypeSortField]productTypeSortFieldAttributes{
+	ProductTypeSortFieldName: {
+		keyFunc: func(pt *model.ProductType) []any {
+			return []any{
+				model.ProductTypeTableName + ".Name", pt.Name,
+				model.ProductTypeTableName + ".Slug", pt.Slug,
+			}
+		},
+		fields: []string{
+			model.ProductTypeTableName + ".Name",
+			model.ProductTypeTableName + ".Slug",
+		},
+	},
+	ProductTypeSortFieldDigital: {
+		keyFunc: func(pt *model.ProductType) []any {
+			return []any{
+				model.ProductTypeTableName + ".IsDigital", pt.IsDigital,
+				model.ProductTypeTableName + ".Name", pt.Name,
+				model.ProductTypeTableName + ".Slug", pt.Slug,
+			}
+		},
+		fields: []string{
+			model.ProductTypeTableName + ".IsDigital",
+			model.ProductTypeTableName + ".Name",
+			model.ProductTypeTableName + ".Slug",
+		},
+	},
+	ProductTypeSortFieldShippingRequired: {
+		keyFunc: func(pt *model.ProductType) []any {
+			return []any{
+				model.ProductTypeTableName + ".IsShippingRequired", pt.IsShippingRequired,
+				model.ProductTypeTableName + ".Name", pt.Name,
+				model.ProductTypeTableName + ".Slug", pt.Slug,
+			}
+		},
+		fields: []string{
+			model.ProductTypeTableName + ".IsShippingRequired",
+			model.ProductTypeTableName + ".Name",
+			model.ProductTypeTableName + ".Slug",
+		},
+	},
+}
 
 type ReportingPeriod string
 

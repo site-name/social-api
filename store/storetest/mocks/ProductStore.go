@@ -137,13 +137,13 @@ func (_m *ProductStore) GetByOption(option *model.ProductFilterOption) (*model.P
 	return r0, r1
 }
 
-// NotPublishedProducts provides a mock function with given fields: channelSlug
-func (_m *ProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+// NotPublishedProducts provides a mock function with given fields: channelID
+func (_m *ProductStore) NotPublishedProducts(channelID string) ([]*struct {
 	model.Product
 	IsPublished     bool
 	PublicationDate *time.Time
 }, error) {
-	ret := _m.Called(channelSlug)
+	ret := _m.Called(channelID)
 
 	var r0 []*struct {
 		model.Product
@@ -156,14 +156,14 @@ func (_m *ProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
 		IsPublished     bool
 		PublicationDate *time.Time
 	}, error)); ok {
-		return rf(channelSlug)
+		return rf(channelID)
 	}
 	if rf, ok := ret.Get(0).(func(string) []*struct {
 		model.Product
 		IsPublished     bool
 		PublicationDate *time.Time
 	}); ok {
-		r0 = rf(channelSlug)
+		r0 = rf(channelID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*struct {
@@ -175,7 +175,7 @@ func (_m *ProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
 	}
 
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(channelSlug)
+		r1 = rf(channelID)
 	} else {
 		r1 = ret.Error(1)
 	}

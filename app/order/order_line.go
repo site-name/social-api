@@ -25,8 +25,8 @@ func (a *ServiceOrder) UpsertOrderLine(transaction *gorm.DB, orderLine *model.Or
 }
 
 // DeleteOrderLines perform bulk delete given order lines
-func (a *ServiceOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
-	err := a.srv.Store.OrderLine().BulkDelete(orderLineIDs)
+func (a *ServiceOrder) DeleteOrderLines(tx *gorm.DB, orderLineIDs []string) *model.AppError {
+	err := a.srv.Store.OrderLine().BulkDelete(tx, orderLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteOrderLines", "app.order.error_deleting_order_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

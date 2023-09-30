@@ -225,29 +225,36 @@ func (_m *UserStore) Count(options model.UserCountOptions) (int64, error) {
 }
 
 // FilterByOptions provides a mock function with given fields: ctx, options
-func (_m *UserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
+func (_m *UserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error) {
 	ret := _m.Called(ctx, options)
 
-	var r0 []*model.User
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) ([]*model.User, error)); ok {
+	var r0 int64
+	var r1 []*model.User
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) (int64, []*model.User, error)); ok {
 		return rf(ctx, options)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) []*model.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.UserFilterOptions) int64); ok {
 		r0 = rf(ctx, options)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *model.UserFilterOptions) []*model.User); ok {
+		r1 = rf(ctx, options)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *model.UserFilterOptions) error); ok {
-		r1 = rf(ctx, options)
+	if rf, ok := ret.Get(2).(func(context.Context, *model.UserFilterOptions) error); ok {
+		r2 = rf(ctx, options)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // GetAllProfiles provides a mock function with given fields: options
@@ -511,6 +518,30 @@ func (_m *UserStore) InferSystemInstallDate() (int64, error) {
 // InvalidateProfileCacheForUser provides a mock function with given fields: userID
 func (_m *UserStore) InvalidateProfileCacheForUser(userID string) {
 	_m.Called(userID)
+}
+
+// IsEmpty provides a mock function with given fields:
+func (_m *UserStore) IsEmpty() (bool, error) {
+	ret := _m.Called()
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func() (bool, error)); ok {
+		return rf()
+	}
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // PermanentDelete provides a mock function with given fields: userID

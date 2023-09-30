@@ -553,7 +553,7 @@ func productTypeByIdLoader(ctx context.Context, ids []string) []*dataloader.Resu
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(&model.ProductTypeFilterOption{
+	_, productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(&model.ProductTypeFilterOption{
 		Conditions: squirrel.Eq{model.ProductTypeTableName + ".Id": ids},
 	})
 	if appErr != nil {

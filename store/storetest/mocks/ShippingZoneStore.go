@@ -131,13 +131,13 @@ func (_m *ShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []inte
 	return r0
 }
 
-// ToggleRelations provides a mock function with given fields: transaction, zones, relations, delete
-func (_m *ShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, relations interface{}, delete bool) error {
-	ret := _m.Called(transaction, zones, relations, delete)
+// ToggleRelations provides a mock function with given fields: transaction, zones, warehouseIds, channelIds, delete
+func (_m *ShippingZoneStore) ToggleRelations(transaction *gorm.DB, zones model.ShippingZones, warehouseIds []string, channelIds []string, delete bool) error {
+	ret := _m.Called(transaction, zones, warehouseIds, channelIds, delete)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, model.ShippingZones, interface{}, bool) error); ok {
-		r0 = rf(transaction, zones, relations, delete)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, model.ShippingZones, []string, []string, bool) error); ok {
+		r0 = rf(transaction, zones, warehouseIds, channelIds, delete)
 	} else {
 		r0 = ret.Error(0)
 	}

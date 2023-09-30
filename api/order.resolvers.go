@@ -1426,12 +1426,11 @@ func (r *Resolver) Orders(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(orders))
 	keyFunc := orderSortFieldsMap[OrderSortFieldNumber].keyFunc
 	if args.SortBy != nil {
 		keyFunc = orderSortFieldsMap[args.SortBy.Field].keyFunc
 	}
-	connection := constructCountableConnection(orders, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemOrderToGraphqlOrder)
+	connection := constructCountableConnection(orders, totalCount, args.GraphqlParams, keyFunc, SystemOrderToGraphqlOrder)
 
 	return (*OrderCountableConnection)(unsafe.Pointer(connection)), nil
 }
@@ -1494,12 +1493,11 @@ func (r *Resolver) DraftOrders(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	hasNextPage, hasPrevPage := args.GraphqlParams.checkNextPageAndPreviousPage(len(orders))
 	keyFunc := orderSortFieldsMap[OrderSortFieldNumber].keyFunc
 	if args.SortBy != nil {
 		keyFunc = orderSortFieldsMap[args.SortBy.Field].keyFunc
 	}
-	connection := constructCountableConnection(orders, totalCount, hasNextPage, hasPrevPage, keyFunc, SystemOrderToGraphqlOrder)
+	connection := constructCountableConnection(orders, totalCount, args.GraphqlParams, keyFunc, SystemOrderToGraphqlOrder)
 
 	return (*OrderCountableConnection)(unsafe.Pointer(connection)), nil
 }

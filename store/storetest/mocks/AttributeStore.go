@@ -14,6 +14,30 @@ type AttributeStore struct {
 	mock.Mock
 }
 
+// CountByOptions provides a mock function with given fields: options
+func (_m *AttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+	ret := _m.Called(options)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*model.AttributeFilterOption) (int64, error)); ok {
+		return rf(options)
+	}
+	if rf, ok := ret.Get(0).(func(*model.AttributeFilterOption) int64); ok {
+		r0 = rf(options)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.AttributeFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Delete provides a mock function with given fields: ids
 func (_m *AttributeStore) Delete(ids ...string) (int64, error) {
 	_va := make([]interface{}, len(ids))

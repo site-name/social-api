@@ -569,12 +569,11 @@ func (r *Resolver) Collections(ctx context.Context, args CollectionsArgs) (*Coll
 	// add filter when requester is shop staff or outer customer
 
 	totalCount, collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(collectionFilterOpts)
-	hasNextPage, hasPrevPage := args.checkNextPageAndPreviousPage(len(collections))
 	keyFunc := collectionSortFieldMap[CollectionSortFieldName].keyFunc
 
 	if args.SortBy != nil {
 		keyFunc = collectionSortFieldMap[args.SortBy.Field].keyFunc
 	}
-	res := constructCountableConnection(collections, totalCount, hasNextPage, hasPrevPage, keyFunc, systemCollectionToGraphqlCollection)
+	res := constructCountableConnection(collections, totalCount, args.GraphqlParams, keyFunc, systemCollectionToGraphqlCollection)
 	return (*CollectionCountableConnection)(unsafe.Pointer(res)), nil
 }

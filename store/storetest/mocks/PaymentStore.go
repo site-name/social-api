@@ -30,55 +30,36 @@ func (_m *PaymentStore) CancelActivePaymentsOfCheckout(checkoutToken string) err
 }
 
 // FilterByOption provides a mock function with given fields: option
-func (_m *PaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
+func (_m *PaymentStore) FilterByOption(option *model.PaymentFilterOption) (int64, []*model.Payment, error) {
 	ret := _m.Called(option)
 
-	var r0 []*model.Payment
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.PaymentFilterOption) ([]*model.Payment, error)); ok {
+	var r0 int64
+	var r1 []*model.Payment
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.PaymentFilterOption) (int64, []*model.Payment, error)); ok {
 		return rf(option)
 	}
-	if rf, ok := ret.Get(0).(func(*model.PaymentFilterOption) []*model.Payment); ok {
+	if rf, ok := ret.Get(0).(func(*model.PaymentFilterOption) int64); ok {
 		r0 = rf(option)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.Payment)
-		}
+		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.PaymentFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(*model.PaymentFilterOption) []*model.Payment); ok {
 		r1 = rf(option)
 	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Get provides a mock function with given fields: transaction, id, lockForUpdate
-func (_m *PaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
-	ret := _m.Called(transaction, id, lockForUpdate)
-
-	var r0 *model.Payment
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string, bool) (*model.Payment, error)); ok {
-		return rf(transaction, id, lockForUpdate)
-	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string, bool) *model.Payment); ok {
-		r0 = rf(transaction, id, lockForUpdate)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Payment)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.Payment)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, string, bool) error); ok {
-		r1 = rf(transaction, id, lockForUpdate)
+	if rf, ok := ret.Get(2).(func(*model.PaymentFilterOption) error); ok {
+		r2 = rf(option)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // PaymentOwnedByUser provides a mock function with given fields: userID, paymentID
