@@ -388,7 +388,7 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 	return (*WarehouseCountableConnection)(unsafe.Pointer(res)), nil
 }
 
-// NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used. Thanks
+// NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used
 func (r *Resolver) Stock(ctx context.Context, args struct{ Id string }) (*Stock, error) {
 	// validate arguments:
 	if !model.IsValidId(args.Id) {
