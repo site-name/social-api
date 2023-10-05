@@ -11,12 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// max lengths for some channel's fields
-const (
-	CHANNEL_NAME_MAX_LENGTH = 250
-	CHANNEL_SLUG_MAX_LENGTH = 255
-)
-
 type Channel struct {
 	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name           string      `json:"name" gorm:"type:varchar(250);column:Name"`
@@ -30,6 +24,16 @@ type Channel struct {
 
 	hasOrders bool `gorm:"-"`
 }
+
+// column names for Channel table
+const (
+	ChannelColumnId             = "Id"
+	ChannelColumnName           = "Name"
+	ChannelColumnIsActive       = "IsActive"
+	ChannelColumnSlug           = "Slug"
+	ChannelColumnCurrency       = "Currency"
+	ChannelColumnDefaultCountry = "DefaultCountry"
+)
 
 func (c *Channel) GetHasOrders() bool            { return c.hasOrders }
 func (c *Channel) SetHasOrders(b bool)           { c.hasOrders = b }

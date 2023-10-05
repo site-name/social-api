@@ -17,6 +17,14 @@ type WishlistItem struct {
 	ProductVariants ProductVariants `json:"-" gorm:"many2many:WishlistItemProductVariants"`
 }
 
+// column names for table wishlistItem
+const (
+	WishlistItemColumnId         = "Id"
+	WishlistItemColumnWishlistID = "WishlistID"
+	WishlistItemColumnProductID  = "ProductID"
+	WishlistItemColumnCreateAt   = "CreateAt"
+)
+
 func (t *WishlistItem) TableName() string             { return WishlistItemTableName }
 func (t *WishlistItem) BeforeCreate(_ *gorm.DB) error { return t.IsValid() }
 func (t *WishlistItem) BeforeUpdate(_ *gorm.DB) error {

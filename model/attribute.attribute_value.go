@@ -10,6 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
+// constants related to attribute value model
+const (
+	AttributeValueNameMaxLength = 250
+)
+
 type AttributeValue struct {
 	Id          string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	Name        string          `json:"name" gorm:"type:varchar(250);column:Name"`                                       // varchar(250)

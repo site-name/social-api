@@ -32,6 +32,18 @@ type ProductVariantChannelListing struct {
 	variant                   *ProductVariant `gorm:"-"` // this field got populated in some store functions
 }
 
+// column names for table ProductVariantChannelListing
+const (
+	ProductVariantChannelListingColumnId                        = "Id"
+	ProductVariantChannelListingColumnVariantID                 = "VariantID"
+	ProductVariantChannelListingColumnChannelID                 = "ChannelID"
+	ProductVariantChannelListingColumnCurrency                  = "Currency"
+	ProductVariantChannelListingColumnPriceAmount               = "PriceAmount"
+	ProductVariantChannelListingColumnCostPriceAmount           = "CostPriceAmount"
+	ProductVariantChannelListingColumnPreorderQuantityThreshold = "PreorderQuantityThreshold"
+	ProductVariantChannelListingColumnCreateAt                  = "CreateAt"
+)
+
 func (c *ProductVariantChannelListing) BeforeCreate(_ *gorm.DB) error {
 	c.commonPre()
 	return c.IsValid()

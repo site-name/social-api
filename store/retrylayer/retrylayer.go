@@ -6134,11 +6134,11 @@ func (s *RetryLayerProductStore) PublishedWithVariants(channel_SlugOrID string) 
 
 }
 
-func (s *RetryLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
+func (s *RetryLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.Save(prd)
+		result, err := s.ProductStore.Save(tx, product)
 		if err == nil {
 			return result, nil
 		}
@@ -6540,26 +6540,6 @@ func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 
 }
 
-func (s *RetryLayerProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
-
-	tries := 0
-	for {
-		err := s.ProductVariantStore.AddProductVariantMedias(transaction, variants, medias)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
 func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 
 	tries := 0
@@ -6585,6 +6565,26 @@ func (s *RetryLayerProductVariantStore) FindVariantsAvailableForPurchase(variant
 	tries := 0
 	for {
 		result, err := s.ProductVariantStore.FindVariantsAvailableForPurchase(variantIds, channelID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantStore) FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.FindVariantsWithPreload(conditions, preloads)
 		if err == nil {
 			return result, nil
 		}
@@ -6675,6 +6675,26 @@ func (s *RetryLayerProductVariantStore) Save(transaction *gorm.DB, variant *mode
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.DB, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
+
+	tries := 0
+	for {
+		err := s.ProductVariantStore.ToggleProductVariantRelations(tx, variants, medias, sales, vouchers, wishlistItems, isDelete)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

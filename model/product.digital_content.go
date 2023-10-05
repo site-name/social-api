@@ -29,6 +29,18 @@ type DigitalContent struct {
 	ModelMetadata
 }
 
+// column names for table DigitalContent
+const (
+	DigitalContentColumnId                   = "Id"
+	DigitalContentColumnUseDefaultSettings   = "UseDefaultSettings"
+	DigitalContentColumnAutomaticFulfillment = "AutomaticFulfillment"
+	DigitalContentColumnContentType          = "ContentType"
+	DigitalContentColumnProductVariantID     = "ProductVariantID"
+	DigitalContentColumnContentFile          = "ContentFile"
+	DigitalContentColumnMaxDownloads         = "MaxDownloads"
+	DigitalContentColumnUrlValidDays         = "UrlValidDays"
+)
+
 func (c *DigitalContent) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *DigitalContent) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *DigitalContent) TableName() string             { return DigitalContentTableName }

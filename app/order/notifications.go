@@ -86,7 +86,7 @@ func (s *ServiceOrder) getProductPayload(product *model.Product) (model.StringIn
 }
 
 func (s *ServiceOrder) getProductVariantPayload(variant *model.ProductVariant) (model.StringInterface, *model.AppError) {
-	productMedias := variant.Medias
+	productMedias := variant.ProductMedias
 
 	if len(productMedias) == 0 {
 		var appErr *model.AppError

@@ -30,6 +30,18 @@ type ProductChannelListing struct {
 	channel *Channel `gorm:"-"` // this field may be populated when store performs prefetching
 }
 
+// column names for table ProductChannelListing
+const (
+	ProductChannelListingColumnId                    = "Id"
+	ProductChannelListingColumnProductID             = "ProductID"
+	ProductChannelListingColumnChannelID             = "ChannelID"
+	ProductChannelListingColumnVisibleInListings     = "VisibleInListings"
+	ProductChannelListingColumnAvailableForPurchase  = "AvailableForPurchase"
+	ProductChannelListingColumnCurrency              = "Currency"
+	ProductChannelListingColumnDiscountedPriceAmount = "DiscountedPriceAmount"
+	ProductChannelListingColumnCreateAt              = "CreateAt"
+)
+
 func (c *ProductChannelListing) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *ProductChannelListing) BeforeUpdate(_ *gorm.DB) error {
 	c.commonPre()

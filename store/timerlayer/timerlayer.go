@@ -5184,10 +5184,10 @@ func (s *TimerLayerProductStore) PublishedWithVariants(channel_SlugOrID string) 
 	return result
 }
 
-func (s *TimerLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
+func (s *TimerLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.Save(prd)
+	result, err := s.ProductStore.Save(tx, product)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5520,22 +5520,6 @@ func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 	return err
 }
 
-func (s *TimerLayerProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
-	start := timemodule.Now()
-
-	err := s.ProductVariantStore.AddProductVariantMedias(transaction, variants, medias)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.AddProductVariantMedias", success, elapsed)
-	}
-	return err
-}
-
 func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	start := timemodule.Now()
 
@@ -5564,6 +5548,22 @@ func (s *TimerLayerProductVariantStore) FindVariantsAvailableForPurchase(variant
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FindVariantsAvailableForPurchase", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantStore) FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.FindVariantsWithPreload(conditions, preloads)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FindVariantsWithPreload", success, elapsed)
 	}
 	return result, err
 }
@@ -5630,6 +5630,22 @@ func (s *TimerLayerProductVariantStore) Save(transaction *gorm.DB, variant *mode
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.DB, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
+	start := timemodule.Now()
+
+	err := s.ProductVariantStore.ToggleProductVariantRelations(tx, variants, medias, sales, vouchers, wishlistItems, isDelete)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.ToggleProductVariantRelations", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {

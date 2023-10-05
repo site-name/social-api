@@ -57,6 +57,38 @@ type OrderLine struct {
 	Allocations    Allocations     `json:"-" gorm:"foreignKey:OrderLineID"`
 }
 
+// OrderLine table column names
+const (
+	OrderLineColumnId                                = "Id"
+	OrderLineColumnCreateAt                          = "CreateAt"
+	OrderLineColumnOrderID                           = "OrderID"
+	OrderLineColumnVariantID                         = "VariantID"
+	OrderLineColumnProductName                       = "ProductName"
+	OrderLineColumnVariantName                       = "VariantName"
+	OrderLineColumnTranslatedProductName             = "TranslatedProductName"
+	OrderLineColumnTranslatedVariantName             = "TranslatedVariantName"
+	OrderLineColumnProductSku                        = "ProductSku"
+	OrderLineColumnProductVariantID                  = "ProductVariantID"
+	OrderLineColumnIsShippingRequired                = "IsShippingRequired"
+	OrderLineColumnIsGiftcard                        = "IsGiftcard"
+	OrderLineColumnQuantity                          = "Quantity"
+	OrderLineColumnQuantityFulfilled                 = "QuantityFulfilled"
+	OrderLineColumnCurrency                          = "Currency"
+	OrderLineColumnUnitDiscountAmount                = "UnitDiscountAmount"
+	OrderLineColumnUnitDiscountType                  = "UnitDiscountType"
+	OrderLineColumnUnitDiscountReason                = "UnitDiscountReason"
+	OrderLineColumnUnitPriceNetAmount                = "UnitPriceNetAmount"
+	OrderLineColumnUnitDiscountValue                 = "UnitDiscountValue"
+	OrderLineColumnUnitPriceGrossAmount              = "UnitPriceGrossAmount"
+	OrderLineColumnTotalPriceNetAmount               = "TotalPriceNetAmount"
+	OrderLineColumnTotalPriceGrossAmount             = "TotalPriceGrossAmount"
+	OrderLineColumnUnDiscountedUnitPriceGrossAmount  = "UnDiscountedUnitPriceGrossAmount"
+	OrderLineColumnUnDiscountedUnitPriceNetAmount    = "UnDiscountedUnitPriceNetAmount"
+	OrderLineColumnUnDiscountedTotalPriceGrossAmount = "UnDiscountedTotalPriceGrossAmount"
+	OrderLineColumnUnDiscountedTotalPriceNetAmount   = "UnDiscountedTotalPriceNetAmount"
+	OrderLineColumnTaxRate                           = "TaxRate"
+)
+
 func (c *OrderLine) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *OrderLine) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *OrderLine) TableName() string             { return OrderLineTableName }

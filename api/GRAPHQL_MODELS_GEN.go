@@ -611,100 +611,6 @@ type AttributeUpdate struct {
 	Errors    []*AttributeError `json:"errors"`
 }
 
-type AttributeCreateInput struct {
-	InputType                *AttributeInputTypeEnum      `json:"inputType"`
-	EntityType               *AttributeEntityTypeEnum     `json:"entityType"`
-	Name                     string                       `json:"name"`
-	Slug                     *string                      `json:"slug"`
-	Type                     AttributeTypeEnum            `json:"type"`
-	Unit                     *MeasurementUnitsEnum        `json:"unit"`
-	Values                   []*AttributeValueCreateInput `json:"values"`
-	ValueRequired            *bool                        `json:"valueRequired"`
-	IsVariantOnly            *bool                        `json:"isVariantOnly"`
-	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
-	FilterableInStorefront   *bool                        `json:"filterableInStorefront"`
-	FilterableInDashboard    *bool                        `json:"filterableInDashboard"`
-	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
-	AvailableInGrid          *bool                        `json:"availableInGrid"`
-}
-
-func (a *AttributeCreateInput) getInputType() model.AttributeInputType {
-	if a.InputType != nil {
-		return *a.InputType
-	}
-	return model.AttributeInputType("")
-}
-
-func (a *AttributeCreateInput) getFieldValueByString(field string) any {
-	switch field {
-	case "filterable_in_storefront":
-		return a.FilterableInStorefront
-	case "filterable_in_dashboard":
-		return a.FilterableInDashboard
-	case "available_in_grid":
-		return a.AvailableInGrid
-	case "storefront_search_position":
-		return a.StorefrontSearchPosition
-	case "values":
-		return a.Values
-	case "input_type":
-		return a.InputType
-	default:
-		return nil
-	}
-}
-
-type AttributeUpdateInput struct {
-	Name                     *string                      `json:"name"`
-	Slug                     *string                      `json:"slug"`
-	Unit                     *MeasurementUnitsEnum        `json:"unit"`
-	RemoveValues             []UUID                       `json:"removeValues"`
-	AddValues                []*AttributeValueUpdateInput `json:"addValues"`
-	ValueRequired            *bool                        `json:"valueRequired"`
-	IsVariantOnly            *bool                        `json:"isVariantOnly"`
-	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
-	FilterableInStorefront   *bool                        `json:"filterableInStorefront"`
-	FilterableInDashboard    *bool                        `json:"filterableInDashboard"`
-	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
-	AvailableInGrid          *bool                        `json:"availableInGrid"`
-}
-
-func (a *AttributeUpdateInput) getInputType() model.AttributeInputType {
-	return model.AttributeInputType("")
-}
-
-func (i *AttributeUpdateInput) getFieldValueByString(name string) any {
-	switch name {
-	case "add_values":
-		return i.AddValues
-	default:
-		return nil
-	}
-}
-
-var (
-	_ attributeValueInputIface = (*AttributeValueCreateInput)(nil)
-	_ attributeValueInputIface = (*AttributeValueUpdateInput)(nil)
-)
-
-type AttributeValueCreateInput struct {
-	Name        string     `json:"name"`
-	Value       *string    `json:"value"`
-	RichText    JSONString `json:"richText"`
-	FileURL     *string    `json:"fileUrl"`
-	ContentType *string    `json:"contentType"`
-}
-
-func (a *AttributeValueCreateInput) getName() string           { return a.Name }
-func (a *AttributeValueCreateInput) getFileURL() *string       { return a.FileURL }
-func (a *AttributeValueCreateInput) getContentType() *string   { return a.ContentType }
-func (a *AttributeValueCreateInput) getValue() *string         { return a.Value }
-func (a *AttributeValueCreateInput) getJsonString() JSONString { return a.RichText }
-
-type AttributeValueUpdateInput struct {
-	AttributeValueCreateInput
-}
-
 type AttributeValueBulkDelete struct {
 	Count  int32             `json:"count"`
 	Errors []*AttributeError `json:"errors"`
@@ -738,7 +644,7 @@ type AttributeValueFilterInput struct {
 }
 
 type AttributeValueInput struct {
-	ID          *string    `json:"id"`
+	ID          *UUID      `json:"id"`
 	Values      []string   `json:"values"`
 	File        *string    `json:"file"`
 	ContentType *string    `json:"contentType"`
@@ -3966,15 +3872,6 @@ type ProductVariantBulkCreate struct {
 	Errors          []*BulkProductError `json:"errors"`
 }
 
-type ProductVariantBulkCreateInput struct {
-	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
-	Sku             *string                                 `json:"sku"`
-	TrackInventory  *bool                                   `json:"trackInventory"`
-	Weight          *WeightScalar                           `json:"weight"`
-	Stocks          []*StockInput                           `json:"stocks"`
-	ChannelListings []*ProductVariantChannelListingAddInput `json:"channelListings"`
-}
-
 type ProductVariantBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
@@ -3986,7 +3883,7 @@ type PreorderThreshold struct {
 }
 
 type ProductVariantChannelListingAddInput struct {
-	ChannelID string           `json:"channelId"`
+	ChannelID UUID             `json:"channelId"`
 	Price     PositiveDecimal  `json:"price"`
 	CostPrice *PositiveDecimal `json:"costPrice"`
 }
@@ -4012,13 +3909,74 @@ type ProductVariantCreate struct {
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
+type PreorderSettingsInput struct {
+	GlobalThreshold *int32
+	EndDate         *DateTime
+}
+
+type ProductVariantBulkCreateInput struct {
+	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
+	Sku             *string                                 `json:"sku"`
+	TrackInventory  *bool                                   `json:"trackInventory"`
+	Weight          *WeightScalar                           `json:"weight"`
+	Stocks          []*StockInput                           `json:"stocks"`
+	ChannelListings []*ProductVariantChannelListingAddInput `json:"channelListings"`
+}
+
 type ProductVariantCreateInput struct {
+	ProductVariantInput
+
+	Product UUID          `json:"product"`
+	Stocks  []*StockInput `json:"stocks"`
+}
+
+type ProductVariantInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
 	Weight         *WeightScalar          `json:"weight"`
-	Product        string                 `json:"product"`
-	Stocks         []*StockInput          `json:"stocks"`
+	PreOrder       *PreorderSettingsInput `json:"preorder"`
+}
+
+func (p *ProductVariantInput) validate(where string, ctx *web.Context, instance *model.ProductVariant) *model.AppError {
+	if p.Weight != nil && p.Weight.Value < 0 {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "weight"}, "please provide positive weight value", http.StatusBadRequest)
+	}
+	if p.Sku != nil {
+		*p.Sku = strings.TrimSpace(*p.Sku)
+	}
+
+	productTypes, appErr := ctx.App.Srv().ProductService().ProductTypesByProductIDs([]string{instance.ProductID})
+	if appErr != nil {
+		return appErr
+	}
+	productType := productTypes[0]
+
+	if productType != nil && *productType.HasVariants {
+		if len(p.Attributes) > 0 {
+
+		}
+	}
+}
+
+// NOTE: instance can be nil
+func (p *ProductVariantCreateInput) validate(where string, ctx *web.Context) *model.AppError {
+	appErr := p.ProductVariantInput.validate(where, ctx, nil)
+	if appErr != nil {
+		return appErr
+	}
+
+	// check duplicate warehouses
+	stockMeetMap := map[UUID]bool{}
+	for _, stockInput := range p.Stocks {
+		if stockInput != nil {
+			if stockMeetMap[stockInput.Warehouse] {
+				return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique stocks", http.StatusBadRequest)
+			}
+			stockMeetMap[stockInput.Warehouse] = true
+		}
+	}
+
 }
 
 type ProductVariantDelete struct {
@@ -4030,13 +3988,6 @@ type ProductVariantFilterInput struct {
 	Search   *string          `json:"search"`
 	Sku      []string         `json:"sku"`
 	Metadata []*MetadataInput `json:"metadata"`
-}
-
-type ProductVariantInput struct {
-	Attributes     []*AttributeValueInput `json:"attributes"`
-	Sku            *string                `json:"sku"`
-	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *WeightScalar          `json:"weight"`
 }
 
 type ProductVariantReorder struct {
@@ -4835,8 +4786,8 @@ type StockFilterInput struct {
 }
 
 type StockInput struct {
-	Warehouse string `json:"warehouse"`
-	Quantity  int32  `json:"quantity"`
+	Warehouse UUID  `json:"warehouse"`
+	Quantity  int32 `json:"quantity"`
 }
 
 type TaxedMoney struct {

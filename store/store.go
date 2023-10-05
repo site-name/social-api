@@ -447,6 +447,7 @@ type (
 		FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
+		FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error)
 		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error)
 		ScanFields(variant *model.ProductVariant) []interface{}
 		Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
@@ -455,7 +456,15 @@ type (
 		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                        // GetByOrderLineID finds and returns a product variant by given orderLineID
 		FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error)  // FilterByOption finds and returns product variants based on given option
 		Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) // Update updates given product variant and returns it
-		AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error
+		ToggleProductVariantRelations(
+			tx *gorm.DB,
+			variants model.ProductVariants,
+			medias model.ProductMedias,
+			sales model.Sales,
+			vouchers model.Vouchers,
+			wishlistItems model.WishlistItems,
+			isDelete bool,
+		) error
 	}
 	ProductChannelListingStore interface {
 		BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings
@@ -486,8 +495,8 @@ type (
 		FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error)             // FilterByOption finds and returns a list of categories satisfy given option
 	}
 	ProductStore interface {
-		ScanFields(prd *model.Product) []interface{}
-		Save(prd *model.Product) (*model.Product, error)
+		ScanFields(product *model.Product) []interface{}
+		Save(tx *gorm.DB, product *model.Product) (*model.Product, error)
 		GetByOption(option *model.ProductFilterOption) (*model.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) // FilterByOption finds and returns all products that satisfy given option
 		PublishedProducts(channelSlug string) ([]*model.Product, error)             // FilterPublishedProducts finds and returns products that belong to given channel slug and are published

@@ -17,7 +17,7 @@ type ProductVariant struct {
 	Id                      string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
 	Name                    string                 `json:"name" gorm:"type:varchar(255);column:Name"` // varchar(255)
 	ProductID               string                 `json:"product_id" gorm:"type:uuid;index:productvariants_productid_index_key;column:ProductID"`
-	Sku                     string                 `json:"sku" gorm:"type:varchar(255);column:Sku"` // varchar(255)
+	Sku                     string                 `json:"sku" gorm:"type:varchar(255);column:Sku;unique"` // varchar(255)
 	Weight                  *float32               `json:"weight" gorm:"column:Weight"`
 	WeightUnit              measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
 	TrackInventory          *bool                  `json:"track_inventory" gorm:"column:TrackInventory"` // default *true
@@ -27,18 +27,32 @@ type ProductVariant struct {
 	Sortable
 	ModelMetadata
 
-	variantChannelListings ProductVariantChannelListings `json:"-" gorm:"-"`
+	variantChannelListings ProductVariantChannelListings `json:"-" gorm:"foreignKey:VariantID"`
 	Stocks                 Stocks                        `json:"-" gorm:"foreignKey:ProductVariantID"`
-	DigitalContent         *DigitalContent               `json:"-"` // for storing value returned by prefetching
+	DigitalContent         *DigitalContent               `json:"-" gorm:"foreignKey:ProductVariantID"` // for storing value returned by prefetching
+	Attributes             []*AssignedVariantAttribute   `json:"-" gorm:"foreignKey:VariantID"`
+	OrderLines             OrderLines                    `json:"-" gorm:"foreignKey:VariantID"`
 	Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
 	Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
-	Medias                 ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
-	Attributes             []*AssignedVariantAttribute   `json:"-" gorm:"foreignKey:VariantID"`
+	ProductMedias          ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
 	AttributesRelated      []*AttributeVariant           `json:"-" gorm:"many2many:AssignedVariantAttributes"`
 	WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
-	OrderLines             OrderLines                    `json:"-" gorm:"foreignKey:VariantID"`
 	Product                *Product                      `json:"-"`
 }
+
+// column names for product variant table
+const (
+	ProductVariantColumnId                      = "Id"
+	ProductVariantColumnName                    = "Name"
+	ProductVariantColumnProductID               = "ProductID"
+	ProductVariantColumnSku                     = "Sku"
+	ProductVariantColumnWeight                  = "Weight"
+	ProductVariantColumnWeightUnit              = "WeightUnit"
+	ProductVariantColumnTrackInventory          = "TrackInventory"
+	ProductVariantColumnIsPreOrder              = "IsPreOrder"
+	ProductVariantColumnPreorderEndDate         = "PreorderEndDate"
+	ProductVariantColumnPreOrderGlobalThreshold = "PreOrderGlobalThreshold"
+)
 
 func (c *ProductVariant) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *ProductVariant) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }

@@ -45,8 +45,11 @@ func (ps *SqlProductStore) ScanFields(prd *model.Product) []interface{} {
 }
 
 // Save inserts given product into database then returns it
-func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) {
-	if err := ps.GetMaster().Save(product).Error; err != nil {
+func (ps *SqlProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
+	if tx == nil {
+		tx = ps.GetMaster()
+	}
+	if err := tx.Save(product).Error; err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Name", "products_name_key", "idx_products_name_unique"}) {
 			return nil, store.NewErrInvalidInput("Product", "name", product.Name)
 		}

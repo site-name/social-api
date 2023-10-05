@@ -1,6 +1,8 @@
 package order
 
 import (
+	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -119,14 +121,6 @@ func (ols *SqlOrderLineStore) BulkDelete(tx *gorm.DB, orderLineIDs []string) err
 //     +) find all order lines that satisfy given option
 //     +) if above operation founds order lines, prefetch the product variants, digital products that are related to found order lines
 func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
-	// selectFields := []string{model.OrderLineTableName + ".*"}
-	// if option.SelectRelatedOrder {
-	// 	selectFields = append(selectFields, model.OrderTableName+".*")
-	// }
-	// if option.SelectRelatedVariant {
-	// 	selectFields = append(selectFields, model.ProductVariantTableName+".*")
-	// }
-
 	query := ols.GetReplica()
 	if len(option.Preload) > 0 {
 		for _, rel := range option.Preload {
@@ -134,22 +128,58 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		}
 	}
 
-	conds, args, err := squirrel.And{
+	conditions := squirrel.And{
 		option.Conditions,
-		option.OrderChannelID,
-		option.VariantDigitalContentID,
-		option.VariantProductID,
-	}.ToSql()
+	}
+
+	if option.OrderChannelID != nil {
+		query = query.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.OrderTableName,         // 1
+				model.OrderLineTableName,     // 2
+				model.OrderColumnId,          // 3
+				model.OrderLineColumnOrderID, // 4
+			),
+		)
+
+		conditions = append(conditions, option.OrderChannelID)
+	}
+
+	if option.VariantDigitalContentID != nil || option.VariantProductID != nil {
+		query = query.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductVariantTableName,         // 1
+				model.OrderLineTableName,              // 2
+				model.ProductVariantColumnId,          // 3
+				model.OrderLineColumnProductVariantID, // 4
+			),
+		)
+		conditions = append(conditions, option.VariantProductID)
+
+		if option.VariantDigitalContentID != nil {
+			query = query.Joins(
+				fmt.Sprintf(
+					"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.DigitalContentTableName,              // 1
+					model.ProductVariantTableName,              // 2
+					model.DigitalContentColumnProductVariantID, // 3
+					model.ProductVariantColumnId,               // 4
+				),
+			)
+			conditions = append(conditions, option.VariantDigitalContentID)
+		}
+	}
+
+	conds, args, err := conditions.ToSql()
 
 	if err != nil {
 		return nil, errors.Wrap(err, "please provide valid lookup conditions")
 	}
-	if conds != "" {
-		query = query.Where(conds, args...)
-	}
 
 	var orderLines model.OrderLines
-	err = query.Find(&orderLines).Error
+	err = query.Find(&orderLines, []any{conds, args}...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines by given options")
 	}

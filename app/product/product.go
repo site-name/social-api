@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type ServiceProduct struct {
@@ -28,6 +29,20 @@ func init() {
 
 		return nil
 	})
+}
+
+func (s *ServiceProduct) UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model.AppError) {
+	product, err := s.srv.Store.Product().Save(tx, product)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("UpsertProduct", "app.product.upsert_product.app_error", nil, err.Error(), statusCode)
+	}
+
+	return product, nil
 }
 
 // ProductById returns 1 product by given id

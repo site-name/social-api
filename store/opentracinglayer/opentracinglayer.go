@@ -5672,7 +5672,7 @@ func (s *OpenTracingLayerProductStore) PublishedWithVariants(channel_SlugOrID st
 	return result
 }
 
-func (s *OpenTracingLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
+func (s *OpenTracingLayerProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -5681,7 +5681,7 @@ func (s *OpenTracingLayerProductStore) Save(prd *model.Product) (*model.Product,
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.Save(prd)
+	result, err := s.ProductStore.Save(tx, product)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6045,24 +6045,6 @@ func (s *OpenTracingLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.D
 	return err
 }
 
-func (s *OpenTracingLayerProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.AddProductVariantMedias")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.ProductVariantStore.AddProductVariantMedias(transaction, variants, medias)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
 func (s *OpenTracingLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FilterByOption")
@@ -6091,6 +6073,24 @@ func (s *OpenTracingLayerProductVariantStore) FindVariantsAvailableForPurchase(v
 
 	defer span.Finish()
 	result, err := s.ProductVariantStore.FindVariantsAvailableForPurchase(variantIds, channelID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductVariantStore) FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FindVariantsWithPreload")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductVariantStore.FindVariantsWithPreload(conditions, preloads)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6169,6 +6169,24 @@ func (s *OpenTracingLayerProductVariantStore) Save(transaction *gorm.DB, variant
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.DB, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.ToggleProductVariantRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ProductVariantStore.ToggleProductVariantRelations(tx, variants, medias, sales, vouchers, wishlistItems, isDelete)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {

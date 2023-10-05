@@ -40,6 +40,19 @@ type ProductMedia struct {
 	Product         *Product        `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 }
 
+// column names of product media table
+const (
+	ProductMediaColumnId          = "Id"
+	ProductMediaColumnCreateAt    = "CreateAt"
+	ProductMediaColumnProductID   = "ProductID"
+	ProductMediaColumnPpoi        = "Ppoi"
+	ProductMediaColumnImage       = "Image"
+	ProductMediaColumnAlt         = "Alt"
+	ProductMediaColumnType        = "Type"
+	ProductMediaColumnExternalUrl = "ExternalUrl"
+	ProductMediaColumnOembedData  = "OembedData"
+)
+
 func (c *ProductMedia) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *ProductMedia) BeforeUpdate(_ *gorm.DB) error {
 	c.commonPre()

@@ -816,7 +816,7 @@ func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*
 
 		variant := variantsMap[id]
 		if variant != nil {
-			medias = variant.Medias
+			medias = variant.ProductMedias
 		}
 		res[idx] = &dataloader.Result[[]*model.ProductMedia]{Data: medias}
 	}

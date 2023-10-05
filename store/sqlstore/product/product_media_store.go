@@ -3,6 +3,7 @@ package product
 import (
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -46,23 +47,6 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 
 // FilterByOption finds and returns a list of product medias with given id
 func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
-	query := ps.GetQueryBuilder().
-		Select(model.ProductMediaTableName + ".*").
-		From(model.ProductMediaTableName).
-		Where(option.Conditions)
-
-	// parse options
-	if option.VariantID != nil {
-		query = query.
-			InnerJoin(fmt.Sprintf("%[1]s ON %[1]s.MediaID = %[2]s.Id", model.ProductVariantMediaTableName, model.ProductMediaTableName)).
-			Where(option.VariantID)
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-
 	db := ps.GetReplica()
 	if len(option.Preloads) > 0 {
 		for _, preload := range option.Preloads {
@@ -70,8 +54,24 @@ func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterO
 		}
 	}
 
+	conditions := squirrel.And{}
+	if option.Conditions != nil {
+		conditions = append(conditions, option.Conditions)
+	}
+	if option.VariantID != nil {
+		conditions = append(conditions, option.VariantID)
+
+		db = db.Joins(fmt.Sprintf(
+			"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+			model.ProductVariantMediaTableName, // 1
+			model.ProductMediaTableName,        // 2
+			"media_id",                         // 3
+			model.ProductMediaColumnId,         // 4
+		))
+	}
+
 	var res model.ProductMedias
-	err = db.Raw(queryString, args...).Scan(&res).Error
+	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product medias by given option")
 	}

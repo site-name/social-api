@@ -44,6 +44,24 @@ type Product struct {
 	ShippingMethodsExcluded ShippingMethods           `json:"-" gorm:"many2many:ShippingMethodExcludedProducts"`
 }
 
+// column names for product table
+const (
+	ProductColumnId                   = "Id"
+	ProductColumnProductTypeID        = "ProductTypeID"
+	ProductColumnName                 = "Name"
+	ProductColumnSlug                 = "Slug"
+	ProductColumnDescription          = "Description"
+	ProductColumnDescriptionPlainText = "DescriptionPlainText"
+	ProductColumnCategoryID           = "CategoryID"
+	ProductColumnCreateAt             = "CreateAt"
+	ProductColumnUpdateAt             = "UpdateAt"
+	ProductColumnChargeTaxes          = "ChargeTaxes"
+	ProductColumnWeight               = "Weight"
+	ProductColumnWeightUnit           = "WeightUnit"
+	ProductColumnDefaultVariantID     = "DefaultVariantID"
+	ProductColumnRating               = "Rating"
+)
+
 func (p *Product) GetProductType() *ProductType                        { return p.productType }
 func (p *Product) SetProductType(pt *ProductType)                      { p.productType = pt }
 func (p *Product) GetProductVariants() ProductVariants                 { return p.productVariants }

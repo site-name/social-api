@@ -4,9 +4,18 @@ import (
 	"time"
 )
 
+// column names for [Sortable] model
+const SortTableColumnSortOrder = "SortOrder"
+
 type Sortable struct {
 	SortOrder *int `json:"sort_order" gorm:"type:integer;column:SortOrder;index:sort_order_key;"`
 }
+
+// column names for "Publishable" model
+const (
+	PublishableColumnPublicationDate = "PublicationDate"
+	PublishableColumnIsPublished     = "IsPublished"
+)
 
 type Publishable struct {
 	PublicationDate *time.Time `json:"publication_date" gorm:"column:PublicationDate"` // precision to day only

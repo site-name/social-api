@@ -5,6 +5,12 @@ type Seo struct {
 	SeoDescription string `json:"seo_description,omitempty" gorm:"type:varchar(300);column:SeoDescription"`
 }
 
+// column names for Sep model
+const (
+	SeoColumnSeoTitle       = "SeoTitle"
+	SeoColumnSeoDescription = "SeoDescription"
+)
+
 func (s *Seo) commonPre() {
 	s.SeoTitle = SanitizeUnicode(s.SeoTitle)
 	s.SeoDescription = SanitizeUnicode(s.SeoDescription)

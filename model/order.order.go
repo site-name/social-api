@@ -85,6 +85,43 @@ func (e OrderFilterStatus) IsValid() bool {
 	return false
 }
 
+// column names of order table
+const (
+	OrderColumnId                           = "Id"
+	OrderColumnCreateAt                     = "CreateAt"
+	OrderColumnStatus                       = "Status"
+	OrderColumnUserId                       = "UserID"
+	OrderColumnLanguageCode                 = "LanguageCode"
+	OrderColumnTrackingClientId             = "TrackingClientID"
+	OrderColumnBillingAddressId             = "BillingAddressID"
+	OrderColumnShippingAddressId            = "ShippingAddressID"
+	OrderColumnUserEmail                    = "UserEmail"
+	OrderColumnOriginalId                   = "OriginalID"
+	OrderColumnOrigin                       = "Origin"
+	OrderColumnCurrency                     = "Currency"
+	OrderColumnShippingMethodId             = "ShippingMethodID"
+	OrderColumnCollectionPointId            = "CollectionPointID"
+	OrderColumnShippingMethodName           = "ShippingMethodName"
+	OrderColumnCollectionPointName          = "CollectionPointName"
+	OrderColumnChannelId                    = "ChannelID"
+	OrderColumnToken                        = "Token"
+	OrderColumnCheckoutToken                = "CheckoutToken"
+	OrderColumnVoucherId                    = "VoucherID"
+	OrderColumnDisplayGrossPrices           = "DisplayGrossPrices"
+	OrderColumnCustomerNote                 = "CustomerNote"
+	OrderColumnWeightAmount                 = "WeightAmount"
+	OrderColumnWeightUnit                   = "WeightUnit"
+	OrderColumnRedirectUrl                  = "RedirectUrl"
+	OrderColumnShippingTaxRate              = "ShippingTaxRate"
+	OrderColumnTotalPaidAmount              = "TotalPaidAmount"
+	OrderColumnTotalNetAmount               = "TotalNetAmount"
+	OrderColumnTotalGrossAmount             = "TotalGrossAmount"
+	OrderColumnUnDiscountedTotalNetAmount   = "UnDiscountedTotalNetAmount"
+	OrderColumnUnDiscountedTotalGrossAmount = "UnDiscountedTotalGrossAmount"
+	OrderColumnShippingPriceNetAmount       = "ShippingPriceNetAmount"
+	OrderColumnShippingPriceGrossAmount     = "ShippingPriceGrossAmount"
+)
+
 type Order struct {
 	Id                  string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
 	CreateAt            int64                  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`         // NOT editable

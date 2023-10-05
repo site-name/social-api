@@ -11,21 +11,17 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
-// AttributeUpsertInputIface represents AttributeUpdateInput | AttributeCreateInput
-type AttributeUpsertInputIface interface {
+// attributeUpsertInputIface represents AttributeUpdateInput | AttributeCreateInput
+type attributeUpsertInputIface interface {
 	getFieldValueByString(name string) any
 	// getInputType. NOTE: make sure to check result by call its .IsValid() method
 	getInputType() model.AttributeInputType
 }
 
-var (
-	_ AttributeUpsertInputIface = (*AttributeUpdateInput)(nil)
-	_ AttributeUpsertInputIface = (*AttributeCreateInput)(nil)
-)
-
-type attributeValueInputIface interface {
+type attributeValueUpsertInputIface interface {
 	getName() string
 	getFileURL() *string
 	getContentType() *string
@@ -33,18 +29,116 @@ type attributeValueInputIface interface {
 	getJsonString() JSONString
 }
 
-type AttributeMixin[T AttributeUpsertInputIface] struct {
+var (
+	_ attributeValueUpsertInputIface = (*AttributeValueCreateInput)(nil)
+	_ attributeValueUpsertInputIface = (*AttributeValueUpdateInput)(nil)
+	_ attributeUpsertInputIface      = (*AttributeUpdateInput)(nil)
+	_ attributeUpsertInputIface      = (*AttributeCreateInput)(nil)
+)
+
+type AttributeUpdateInput struct {
+	Name                     *string                      `json:"name"`
+	Slug                     *string                      `json:"slug"`
+	Unit                     *MeasurementUnitsEnum        `json:"unit"`
+	RemoveValues             []UUID                       `json:"removeValues"`
+	AddValues                []*AttributeValueUpdateInput `json:"addValues"`
+	ValueRequired            *bool                        `json:"valueRequired"`
+	IsVariantOnly            *bool                        `json:"isVariantOnly"`
+	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
+	FilterableInStorefront   *bool                        `json:"filterableInStorefront"`
+	FilterableInDashboard    *bool                        `json:"filterableInDashboard"`
+	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
+	AvailableInGrid          *bool                        `json:"availableInGrid"`
+}
+
+func (a *AttributeUpdateInput) getInputType() model.AttributeInputType {
+	var res model.AttributeInputType
+	return res
+}
+
+// current returns value only when name == "add_values"
+func (i *AttributeUpdateInput) getFieldValueByString(name string) any {
+	if name == "add_values" {
+		return i.AddValues
+	}
+	return nil
+}
+
+type AttributeCreateInput struct {
+	InputType                *AttributeInputTypeEnum      `json:"inputType"`
+	EntityType               *AttributeEntityTypeEnum     `json:"entityType"`
+	Name                     string                       `json:"name"`
+	Slug                     *string                      `json:"slug"`
+	Type                     AttributeTypeEnum            `json:"type"`
+	Unit                     *MeasurementUnitsEnum        `json:"unit"`
+	Values                   []*AttributeValueCreateInput `json:"values"`
+	ValueRequired            *bool                        `json:"valueRequired"`
+	IsVariantOnly            *bool                        `json:"isVariantOnly"`
+	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
+	FilterableInStorefront   *bool                        `json:"filterableInStorefront"`
+	FilterableInDashboard    *bool                        `json:"filterableInDashboard"`
+	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
+	AvailableInGrid          *bool                        `json:"availableInGrid"`
+}
+
+func (a *AttributeCreateInput) getInputType() model.AttributeInputType {
+	if a.InputType != nil {
+		return *a.InputType
+	}
+
+	var res model.AttributeInputType
+	return res
+}
+
+func (a *AttributeCreateInput) getFieldValueByString(field string) any {
+	switch field {
+	case "filterable_in_storefront":
+		return a.FilterableInStorefront
+	case "filterable_in_dashboard":
+		return a.FilterableInDashboard
+	case "available_in_grid":
+		return a.AvailableInGrid
+	case "storefront_search_position":
+		return a.StorefrontSearchPosition
+	case "values":
+		return a.Values
+	case "input_type":
+		return a.InputType
+	default:
+		return nil
+	}
+}
+
+type AttributeValueCreateInput struct {
+	Name        string     `json:"name"`
+	Value       *string    `json:"value"`
+	RichText    JSONString `json:"richText"`
+	FileURL     *string    `json:"fileUrl"`
+	ContentType *string    `json:"contentType"`
+}
+
+func (a *AttributeValueCreateInput) getName() string           { return a.Name }
+func (a *AttributeValueCreateInput) getFileURL() *string       { return a.FileURL }
+func (a *AttributeValueCreateInput) getContentType() *string   { return a.ContentType }
+func (a *AttributeValueCreateInput) getValue() *string         { return a.Value }
+func (a *AttributeValueCreateInput) getJsonString() JSONString { return a.RichText }
+
+type AttributeValueUpdateInput struct {
+	AttributeValueCreateInput
+}
+
+type AttributeMixin[T attributeUpsertInputIface] struct {
 	ATTRIBUTE_VALUES_FIELD string // must be either "values" or "add_values"
 	srv                    *app.Server
 }
 
-func newAttributeMixin[T AttributeUpsertInputIface](srv *app.Server, ATTRIBUTE_VALUES_FIELD string) *AttributeMixin[T] {
+func newAttributeMixin[T attributeUpsertInputIface](srv *app.Server, ATTRIBUTE_VALUES_FIELD string) *AttributeMixin[T] {
 	return &AttributeMixin[T]{ATTRIBUTE_VALUES_FIELD, srv}
 }
 
-func (a *AttributeMixin[T]) cleanValues(cleanedInput AttributeUpsertInputIface, attribute *model.Attribute) (model.AttributeValues, *model.AppError) {
+func (a *AttributeMixin[T]) cleanValues(cleanedInput attributeUpsertInputIface, attribute *model.Attribute) (model.AttributeValues, *model.AppError) {
 	value := cleanedInput.getFieldValueByString(a.ATTRIBUTE_VALUES_FIELD)
-	valuesInput := []attributeValueInputIface{}
+	valuesInput := []attributeValueUpsertInputIface{}
 	if value != nil {
 		switch t := value.(type) {
 		case []*AttributeValueUpdateInput:
@@ -85,7 +179,7 @@ func (a *AttributeMixin[T]) cleanValues(cleanedInput AttributeUpsertInputIface, 
 	return validatedAttributeValues, nil
 }
 
-func (a *AttributeMixin[T]) checkValuesAreUnique(valuesInput []attributeValueInputIface, attribute *model.Attribute) *model.AppError {
+func (a *AttributeMixin[T]) checkValuesAreUnique(valuesInput []attributeValueUpsertInputIface, attribute *model.Attribute) *model.AppError {
 	attributeValues, appErr := a.srv.AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attribute.Id},
 	})
@@ -96,16 +190,16 @@ func (a *AttributeMixin[T]) checkValuesAreUnique(valuesInput []attributeValueInp
 	uniqueSlugMap := map[string]struct{}{}
 
 	for _, valueData := range valuesInput {
-		slug := slug.Make(valueData.getName())
+		slugg := slug.Make(valueData.getName())
 
-		_, exist := oldAttributeValueSlugs[slug]
+		_, exist := oldAttributeValueSlugs[slugg]
 		if exist {
 			return model.NewAppError("checkValuesAreUnique", "api.attribute.value_exist_within_attribute.app_error", nil, fmt.Sprintf("attribute value %s already exist within attribute", valueData.getName()), http.StatusBadRequest)
 		}
 
-		_, found := uniqueSlugMap[slug]
+		_, found := uniqueSlugMap[slugg]
 		if !found {
-			uniqueSlugMap[slug] = struct{}{}
+			uniqueSlugMap[slugg] = struct{}{}
 		}
 	}
 
@@ -115,7 +209,7 @@ func (a *AttributeMixin[T]) checkValuesAreUnique(valuesInput []attributeValueInp
 	return nil
 }
 
-func validateValue(attribute *model.Attribute, valueData attributeValueInputIface, isNumericAttr, isSwatchAttr bool) (*model.AttributeValue, *model.AppError) {
+func validateValue(attribute *model.Attribute, valueData attributeValueUpsertInputIface, isNumericAttr, isSwatchAttr bool) (*model.AttributeValue, *model.AppError) {
 	name := valueData.getName()
 	appErr := cleanValueInputData(valueData, isSwatchAttr)
 	if appErr != nil {
@@ -160,7 +254,7 @@ func validateValue(attribute *model.Attribute, valueData attributeValueInputIfac
 	return attributeValue, nil
 }
 
-func validateSwatchAttributeValue(valueData attributeValueInputIface) *model.AppError {
+func validateSwatchAttributeValue(valueData attributeValueUpsertInputIface) *model.AppError {
 	var (
 		value   = valueData.getValue()
 		fileUrl = valueData.getFileURL()
@@ -181,7 +275,7 @@ func validateNumericValue(value string) *model.AppError {
 	return nil
 }
 
-func cleanValueInputData(valueData attributeValueInputIface, isSwatchAttr bool) *model.AppError {
+func cleanValueInputData(valueData attributeValueUpsertInputIface, isSwatchAttr bool) *model.AppError {
 	var (
 		contentType = valueData.getContentType()
 		fileUrl     = valueData.getFileURL()
@@ -198,7 +292,7 @@ func cleanValueInputData(valueData attributeValueInputIface, isSwatchAttr bool) 
 	return nil
 }
 
-func cleanAttributeSettings(instance *model.Attribute, cleanedInput AttributeUpsertInputIface) *model.AppError {
+func cleanAttributeSettings(instance *model.Attribute, cleanedInput attributeUpsertInputIface) *model.AppError {
 	inputType := cleanedInput.getInputType()
 	if !inputType.IsValid() {
 		inputType = instance.InputType
@@ -212,4 +306,215 @@ func cleanAttributeSettings(instance *model.Attribute, cleanedInput AttributeUps
 	}
 
 	return nil
+}
+
+func preSaveValues(ctx *web.Context, attribute *model.Attribute, attributeValues AttrValuesInput) (model.AttributeValues, *model.AppError) {
+	res := make(model.AttributeValues, 0, len(attributeValues.Values))
+	for _, name := range attributeValues.Values {
+		if name != "" {
+			attrValue, appErr := ctx.App.Srv().AttributeService().UpsertAttributeValue(&model.AttributeValue{
+				Name:        name,
+				AttributeID: attribute.Id,
+			})
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			res = append(res, attrValue)
+		}
+	}
+
+	return res, nil
+}
+
+type AttrValuesInput struct {
+	GlobalID    string
+	Values      []string
+	References  []string
+	FileUrl     *string
+	ContentType *string
+	RichText    model.StringInterface
+	Boolean     *bool
+	Date        *string
+	DateTime    *string
+}
+
+// type attributeValidator func(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model.AppError
+
+func isValueRequired(attribute *model.Attribute, variantValidation bool) bool {
+	return attribute.ValueRequired ||
+		(variantValidation && model.ALLOWED_IN_VARIANT_SELECTION.Contains(attribute.InputType))
+}
+
+func validateFileAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model.AppError {
+	if (attributeValues.FileUrl == nil || *attributeValues.FileUrl == "") &&
+		isValueRequired(attribute, variantValidation) {
+		return model.NewAppError("validateFileAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "FileUrl"}, "please provide file", http.StatusBadRequest)
+	}
+	return nil
+}
+
+func validateReferenceAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValiation bool) *model.AppError {
+	if len(attributeValues.References) == 0 && isValueRequired(attribute, variantValiation) {
+		return model.NewAppError("validateReferenceAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "References"}, "please provide references", http.StatusBadRequest)
+	}
+	return nil
+}
+
+func validateBooleanInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model.AppError {
+	if attribute.ValueRequired && attributeValues.Boolean == nil {
+		return model.NewAppError("validateBooleanInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Boolean"}, "please provide boolean value", http.StatusBadRequest)
+	}
+	return nil
+}
+
+func validateRichTextAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model.AppError {
+	if (attributeValues.RichText == nil || len(attributeValues.RichText) == 0) && attribute.ValueRequired {
+		return model.NewAppError("validateRichTextAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RichText"}, "please provide rich text", http.StatusBadRequest)
+	}
+	return nil
+}
+
+func validateStandardAttributesInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model.AppError {
+	if len(attributeValues.Values) == 0 && isValueRequired(attribute, variantValidation) {
+		return model.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide values", http.StatusBadRequest)
+	}
+	if attribute.InputType != model.AttributeInputTypeMultiSelect && len(attributeValues.Values) != 1 {
+		return model.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "only 1 value allowed", http.StatusBadRequest)
+	}
+
+	isNumeric := attribute.InputType == model.AttributeInputTypeNumeric
+
+	for _, value := range attributeValues.Values {
+		if !isNumeric && strings.TrimSpace(value) == "" {
+			return model.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide non empty values", http.StatusBadRequest)
+		}
+		if !isNumeric && len(value) > model.AttributeValueNameMaxLength {
+			return model.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, fmt.Sprintf("some value has length exceeds allowed (%d)", model.AttributeValueNameMaxLength), http.StatusBadRequest)
+		}
+
+		if isNumeric {
+			_, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return model.NewAppError("validateStandardAttributesInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Values"}, "please provide numeric values. err: "+err.Error(), http.StatusBadRequest)
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateDatetimeInput(attribute *model.Attribute, attributeValues AttrValuesInput, variantValidation bool) *model.AppError {
+	isBlankDate := attribute.InputType == model.AttributeInputTypeDate && attributeValues.Date == nil
+	isBlankDatetime := attribute.InputType == model.AttributeInputTypeDateTime && attributeValues.DateTime == nil
+
+	if attribute.ValueRequired && (isBlankDate || isBlankDatetime) {
+		return model.NewAppError("validateDatetimeInput", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "date/datetime"}, "please provide date or datetime value", http.StatusBadRequest)
+	}
+	return nil
+}
+
+type attributeInput struct {
+	attribute            model.Attribute
+	attributeValuesInput AttrValuesInput
+}
+
+func validateRequiredAttributes(inputData []attributeInput, attributes []*model.Attribute) *model.AppError {
+	providedAttributeIdsMap := lo.SliceToMap(inputData, func(item attributeInput) (string, bool) { return item.attribute.Id, true })
+
+	if lo.SomeBy(attributes, func(item *model.Attribute) bool {
+		return item.ValueRequired && !providedAttributeIdsMap[item.Id]
+	}) {
+		return model.NewAppError("validateRequiredAttributes", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributes"}, "All attributes flagged as having a value required must be supplied.", http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+func validateAttributesInput(inputData []attributeInput, attributes []*model.Attribute, isPageAttributes, variantValidation bool) *model.AppError {
+	for _, item := range inputData {
+
+		var appErr *model.AppError
+		switch item.attribute.InputType {
+		case model.AttributeInputTypeFile:
+			appErr = validateFileAttributesInput(&item.attribute, item.attributeValuesInput, variantValidation)
+		case model.AttributeInputTypeReference:
+			appErr = validateReferenceAttributesInput(&item.attribute, item.attributeValuesInput, variantValidation)
+		case model.AttributeInputTypeRichText:
+			appErr = validateRichTextAttributesInput(&item.attribute, item.attributeValuesInput, variantValidation)
+		case model.AttributeInputTypeBoolean:
+			appErr = validateBooleanInput(&item.attribute, item.attributeValuesInput, variantValidation)
+		case model.AttributeInputTypeDate,
+			model.AttributeInputTypeDateTime:
+			appErr = validateDatetimeInput(&item.attribute, item.attributeValuesInput, variantValidation)
+		default:
+			appErr = validateStandardAttributesInput(&item.attribute, item.attributeValuesInput, variantValidation)
+		}
+
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	if !variantValidation {
+		appErr := validateRequiredAttributes(inputData, attributes)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
+}
+
+type attributeAssignmentMixin struct {
+	ctx *web.Context
+}
+
+func (a *attributeAssignmentMixin) preSaveNumericValues(attribute *model.Attribute, attrValues AttrValuesInput) (*model.AttributeValue, *model.AppError) {
+	if len(attrValues.Values) == 0 {
+		return nil, nil
+	}
+
+	return a.ctx.App.Srv().AttributeService().UpsertAttributeValue(&model.AttributeValue{
+		AttributeID: attribute.Id,
+		Name:        attrValues.Values[0],
+	})
+}
+
+func (a *attributeAssignmentMixin) preSaveValues(attribute *model.Attribute, attrValues AttrValuesInput)
+
+func (a *attributeAssignmentMixin) resolveAttributeNodes(attributes []*model.Attribute, globalIds, pks, slugs []string) ([]*model.Attribute, *model.AppError) {
+	pksMap := lo.SliceToMap(pks, func(item string) (string, bool) { return item, true })
+	slugsMap := lo.SliceToMap(slugs, func(item string) (string, bool) { return item, true })
+
+	attributes = lo.Filter(attributes, func(item *model.Attribute, index int) bool {
+		return item != nil && (pksMap[item.Id] || slugsMap[item.Slug])
+	})
+
+	if len(attributes) == 0 {
+		return nil, model.NewAppError("resolveAttributeNodes", "app.attribute.cannot_resolve_node.app_error", nil, "could not resolve to a note", http.StatusBadRequest)
+	}
+
+	var (
+		attributePksMap   = map[string]bool{}
+		attributeSlugsMap = map[string]bool{}
+	)
+	for _, attribute := range attributes {
+		attributePksMap[attribute.Id] = true
+		attributeSlugsMap[attribute.Slug] = true
+	}
+
+	for i := 0; i < min(len(pks), len(globalIds)); i++ {
+		if !attributePksMap[pks[i]] {
+			return nil, model.NewAppError("resolveAttributeNodes", "app.attribute.cannot_resolve_node.app_error", nil, "could not resolve id "+globalIds[i]+" to attribute", http.StatusBadRequest)
+		}
+	}
+
+	for _, slug := range slugs {
+		if !attributeSlugsMap[slug] {
+			return nil, model.NewAppError("resolveAttributeNodes", "app.attribute.cannot_resolve_node.app_error", nil, "could not resolve slug "+slug+" to attribute", http.StatusBadRequest)
+		}
+	}
+
+	return attributes, nil
 }

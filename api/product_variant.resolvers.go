@@ -9,39 +9,41 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
 
-// NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
-	MediaID   string
-	VariantID string
+	MediaID   UUID
+	VariantID UUID
 }) (*VariantMediaUnassign, error) {
-	// validate params
-	if !model.IsValidId(args.MediaID) {
-		return nil, model.NewAppError("VariantMediaUnassign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
-	}
-	if !model.IsValidId(args.VariantID) {
-		return nil, model.NewAppError("VariantMediaUnassign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
-	}
-
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	// create transaction:
-	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if transaction.Error != nil {
-		return nil, model.NewAppError("VariantMediaUnassign", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	// create tx:
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("VariantMediaUnassign", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer tx.Rollback()
 
-	// NOTE: delete does not return error on wrong values provided.
-	err := transaction.Model(&model.ProductVariant{Id: args.VariantID}).Association("ProductMedias").Delete(&model.ProductMedia{Id: args.MediaID})
+	err := embedCtx.App.Srv().Store.
+		ProductVariant().
+		ToggleProductVariantRelations(
+			tx,
+			model.ProductVariants{{Id: args.VariantID.String()}},
+			model.ProductMedias{{Id: args.MediaID.String()}},
+			nil,
+			nil,
+			nil,
+			true,
+		)
 	if err != nil {
 		return nil, model.NewAppError("VariantMediaUnassign", "app.product.delete_variant_media_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	if err := transaction.Commit().Error; err != nil {
+	if err := tx.Commit().Error; err != nil {
 		return nil, model.NewAppError("VariantMediaUnassign", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -54,26 +56,18 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	// }
 
 	return &VariantMediaUnassign{
-		ProductVariant: &ProductVariant{ID: args.VariantID},
-		Media:          &ProductMedia{ID: args.MediaID},
+		ProductVariant: &ProductVariant{ID: args.VariantID.String()},
+		Media:          &ProductMedia{ID: args.MediaID.String()},
 	}, nil
 }
 
-// NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
-	MediaID   string
-	VariantID string
+	MediaID   UUID
+	VariantID UUID
 }) (*VariantMediaAssign, error) {
-	// validate params
-	if !model.IsValidId(args.MediaID) {
-		return nil, model.NewAppError("VariantMediaAssign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
-	}
-	if !model.IsValidId(args.VariantID) {
-		return nil, model.NewAppError("VariantMediaAssign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
-	}
-
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	productVariant, appErr := embedCtx.App.Srv().ProductService().ProductVariantById(args.VariantID)
+	productVariant, appErr := embedCtx.App.Srv().ProductService().ProductVariantById(args.VariantID.String())
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -82,32 +76,42 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 		Conditions: squirrel.Eq{model.ProductMediaTableName + ".Id": args.MediaID},
 	})
 	if appErr != nil {
-		// NOTE: This appError covers 404 code also so no need to worry if productMedias is empty
 		return nil, appErr
+	}
+	if len(productMedias) == 0 {
+		return nil, model.NewAppError("VariantMediaAssign", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "mediaID"}, "please provide valid product media id", http.StatusBadRequest)
 	}
 	media := productMedias[0]
 
-	// create transaction:
-	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	if transaction.Error != nil {
-		return nil, model.NewAppError("VariantMediaAssign", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
-	}
-	defer transaction.Rollback()
-
-	if media != nil && productVariant != nil {
-		// check if the given image and variant can be matched together
-		if media.ProductID == productVariant.ProductID {
-			err := transaction.Model(&model.ProductVariant{Id: args.VariantID}).Association("ProductMedias").Append(&model.ProductMedia{Id: args.MediaID})
-			if err != nil {
-				return nil, model.NewAppError("VariantMediaAssign", "app.product.upsert_variant_media.app_error", nil, err.Error(), http.StatusInternalServerError)
-			}
-		} else {
-			return nil, model.NewAppError("VariantMediaAssign", "app.product.product_does_not_own_media.app_error", nil, "This media doesn't belong to that product.", http.StatusNotAcceptable)
-		}
+	// check if the given image and variant can be matched together
+	if media.ProductID != productVariant.ProductID {
+		return nil, model.NewAppError("VariantMediaAssign", "app.product.product_does_not_own_media.app_error", nil, "This media doesn't belong to that product.", http.StatusNotAcceptable)
 	}
 
-	// commit transaction
-	err := transaction.Commit().Error
+	// create tx:
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("VariantMediaAssign", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	err := embedCtx.App.Srv().Store.
+		ProductVariant().
+		ToggleProductVariantRelations(
+			tx,
+			model.ProductVariants{{Id: args.VariantID.String()}},
+			model.ProductMedias{{Id: args.MediaID.String()}},
+			nil,
+			nil,
+			nil,
+			false,
+		)
+	if err != nil {
+		return nil, model.NewAppError("VariantMediaAssign", "app.product.upsert_variant_media.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// commit tx
+	err = tx.Commit().Error
 	if err != nil {
 		return nil, model.NewAppError("VariantMediaAssign", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -126,102 +130,163 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantReorder(ctx context.Context, args struct {
 	Moves     []*ReorderInput
-	ProductID string
+	ProductID UUID
 }) (*ProductVariantReorder, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantCreate(ctx context.Context, args struct {
 	Input ProductVariantCreateInput
 }) (*ProductVariantCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductVariantDelete(ctx context.Context, args struct{ Id string }) (*ProductVariantDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) ProductVariantBulkCreate(ctx context.Context, args struct {
-	Product  string
-	Variants []*ProductVariantBulkCreateInput
-}) (*ProductVariantBulkCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ProductVariantBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
-	Stocks    []StockInput
-	VariantID string
-}) (*ProductVariantStocksCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) ProductVariantStocksDelete(ctx context.Context, args struct {
-	VariantID    string
-	WarehouseIds []string
-}) (*ProductVariantStocksDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) ProductVariantStocksUpdate(ctx context.Context, args struct {
-	Stocks    []StockInput
-	VariantID string
-}) (*ProductVariantStocksUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantUpdate(ctx context.Context, args struct {
-	Id    string
+	Id    UUID
 	Input ProductVariantInput
 }) (*ProductVariantUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductVariantSetDefault(ctx context.Context, args struct {
-	ProductID string
-	VariantID string
-}) (*ProductVariantSetDefault, error) {
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantDelete(ctx context.Context, args struct{ Id UUID }) (*ProductVariantDelete, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin tc
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer tx.Rollback()
+
+	// find draft order lines of variant
+	embedCtx.App.Srv().OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+		Conditions: squirrel.Eq{
+			model.OrderLineTableName + "." + model.OrderLineColumnProductVariantID: args.Id,
+			// model.OrderLineTableName + "." + model.
+		},
+	})
+}
+
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantBulkCreate(ctx context.Context, args struct {
+	Product  UUID
+	Variants []*ProductVariantBulkCreateInput
+}) (*ProductVariantBulkCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []UUID }) (*ProductVariantBulkDelete, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
+	Stocks    []StockInput
+	VariantID UUID
+}) (*ProductVariantStocksCreate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantStocksDelete(ctx context.Context, args struct {
+	VariantID    UUID
+	WarehouseIds []UUID
+}) (*ProductVariantStocksDelete, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantStocksUpdate(ctx context.Context, args struct {
+	Stocks    []StockInput
+	VariantID UUID
+}) (*ProductVariantStocksUpdate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) ProductVariantSetDefault(ctx context.Context, args struct {
+	ProductID UUID
+	VariantID UUID
+}) (*ProductVariantSetDefault, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// check if given variant is really belong to given product:
+	product, appErr := embedCtx.App.Srv().ProductService().ProductByOption(&model.ProductFilterOption{
+		Conditions:              squirrel.Expr(model.ProductTableName+"."+model.ProductColumnId+" = ?", args.ProductID),
+		PrefetchRelatedVariants: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	variant, found := lo.Find(product.GetProductVariants(), func(item *model.ProductVariant) bool { return item != nil && item.Id == args.VariantID.String() })
+	if !found || variant == nil {
+		return nil, model.NewAppError("ProductVariantSetDefault", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product variant does not belong to given product", http.StatusBadRequest)
+	}
+
+	product.DefaultVariantID = &variant.Id
+
+	updatedProduct, appErr := embedCtx.App.Srv().ProductService().UpsertProduct(nil, product)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginMng.ProductUpdated(*product)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &ProductVariantSetDefault{
+		Product: SystemProductToGraphqlProduct(updatedProduct),
+	}, nil
+}
+
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantTranslate(ctx context.Context, args struct {
-	Id           string
+	Id           UUID
 	Input        NameTranslationInput
 	LanguageCode LanguageCodeEnum
 }) (*ProductVariantTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantChannelListingUpdate(ctx context.Context, args struct {
-	Id    string
+	Id    UUID
 	Input []ProductVariantChannelListingAddInput
 }) (*ProductVariantChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantReorderAttributeValues(ctx context.Context, args struct {
-	AttributeID string
+	AttributeID UUID
 	Moves       []*ReorderInput
-	VariantID   string
+	VariantID   UUID
 }) (*ProductVariantReorderAttributeValues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariant(ctx context.Context, args struct {
-	Id      *string
+	Id      *UUID
 	Sku     *string
 	Channel *string
 }) (*ProductVariant, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariants(ctx context.Context, args struct {
-	Ids     []string
+	Ids     []UUID
 	Channel *string
 	Filter  *ProductVariantFilterInput
 	GraphqlParams

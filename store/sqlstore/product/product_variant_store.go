@@ -2,6 +2,7 @@ package product
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -39,13 +40,13 @@ func (ps *SqlProductVariantStore) ScanFields(variant *model.ProductVariant) []in
 	}
 }
 
-func (ps *SqlProductVariantStore) Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	if transaction == nil {
-		transaction = ps.GetMaster()
+func (ps *SqlProductVariantStore) Save(tx *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
+	if tx == nil {
+		tx = ps.GetMaster()
 	}
 
-	if err := transaction.Save(variant).Error; err != nil {
-		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
+	if err := tx.Save(variant).Error; err != nil {
+		if ps.IsUniqueConstraintError(err, []string{"sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(model.ProductVariantTableName, "Sku", variant.Sku)
 		}
 		return nil, errors.Wrapf(err, "failed to save product variant with id=%s", variant.Id)
@@ -55,14 +56,14 @@ func (ps *SqlProductVariantStore) Save(transaction *gorm.DB, variant *model.Prod
 }
 
 // Update updates given product variant and returns it
-func (ps *SqlProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	if transaction == nil {
-		transaction = ps.GetMaster()
+func (ps *SqlProductVariantStore) Update(tx *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
+	if tx == nil {
+		tx = ps.GetMaster()
 	}
 
-	err := transaction.Model(variant).Updates(variant).Error
+	err := tx.Updates(variant).Error
 	if err != nil {
-		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
+		if ps.IsUniqueConstraintError(err, []string{"sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(model.ProductVariantTableName, "Sku", variant.Sku)
 		}
 		return nil, errors.Wrapf(err, "failed to update product variant with id=%s", variant.Id)
@@ -73,7 +74,7 @@ func (ps *SqlProductVariantStore) Update(transaction *gorm.DB, variant *model.Pr
 
 func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) {
 	var variant model.ProductVariant
-	err := ps.GetReplica().First(&variant, "Id = ?", id).Error
+	err := ps.GetReplica().First(&variant, model.ProductVariantColumnId+" = ?", id).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -87,24 +88,46 @@ func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) 
 
 // GetWeight returns either given variant's weight or the accompany product's weight or product type of accompany product's weight
 func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
-	queryString, args, err := ps.GetQueryBuilder().
-		Select(
-			"ProductVariants.Weight",
-			"ProductVariants.WeightUnit",
-			"Products.Weight",
-			"Products.WeightUnit",
-			"ProductTypes.Weight",
-			"ProductTypes.WeightUnit",
-		).
-		From(model.ProductVariantTableName).
-		InnerJoin(model.ProductTableName + " ON Products.Id = ProductVariants.ProductID").
-		InnerJoin(model.ProductTypeTableName + " ON ProductTypes.Id = Products.ProductTypeID").
-		Where(squirrel.Eq{"ProductVariants.Id": productVariantID}).
-		ToSql()
+	queryString := fmt.Sprintf(`SELECT 
+	%[1]s.%[2]s,
+	%[1]s.%[3]s,
 
-	if err != nil {
-		return nil, errors.Wrap(err, "GetWeight_ToSql")
-	}
+	%[4]s.%[5]s,
+	%[4]s.%[6]s,
+
+	%[7]s.%[8]s,
+	%[7]s.%[9]s
+	FROM
+		%[1]s
+	INNER JOIN %[4]s
+	ON
+		%[4]s.%[10]s = %[1]s.%[11]s
+	INNER JOIN %[7]s
+	ON
+		%[7]s.%[12]s = %[4]s.%[13]s
+	WHERE
+		%[1]s.%[14]s = ?
+	`,
+		model.ProductVariantTableName,        // 1
+		model.ProductVariantColumnWeight,     // 2
+		model.ProductVariantColumnWeightUnit, // 3
+
+		model.ProductTableName,    // 4
+		model.ProductColumnWeight, // 5
+		model.ProductColumnWeight, // 6
+
+		model.ProductTypeTableName,        // 7
+		model.ProductTypeColumnWeight,     // 8
+		model.ProductTypeColumnWeightUnit, // 9
+
+		model.ProductColumnId,               // 10
+		model.ProductVariantColumnProductID, // 11
+
+		model.ProductTypeColumnId,        // 12
+		model.ProductColumnProductTypeID, // 13
+
+		model.ProductVariantColumnId, // 14
+	)
 
 	var (
 		variantWeightAmount *float32
@@ -116,9 +139,9 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		productTypeWeightAmount *float32
 		productTypeWeightUnit   measurement.WeightUnit
 	)
-	err = ps.
+	err := ps.
 		GetReplica().
-		Raw(queryString, args...).
+		Raw(queryString, productVariantID).
 		Row().
 		Scan(
 			&variantWeightAmount,
@@ -152,11 +175,22 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.ProductVariant, error) {
 	var res model.ProductVariant
 
-	query := "SELECT " +
-		model.ProductVariantTableName + ".*" +
-		" FROM " + model.ProductVariantTableName +
-		" INNER JOIN " + model.OrderLineTableName +
-		" ON ProductVariants.Id = Orderlines.VariantID WHERE Orderlines.Id = ?"
+	query := fmt.Sprintf(
+		`SELECT %[1]s.*
+	FROM
+		%[1]s
+	INNER JOIN 
+		%[2]s
+	ON 
+		%[1]s.%[3]s = %[2]s.%[4]s
+	WHERE 
+		%[2]s.%[5]s = ?`,
+		model.ProductVariantTableName,  // 1
+		model.OrderLineTableName,       // 2
+		model.ProductVariantColumnId,   // 3
+		model.OrderLineColumnVariantID, // 4
+		model.OrderLineColumnId,        // 5
+	)
 
 	err := vs.GetReplica().Raw(query, orderLineID).Scan(&res).Error
 	if err != nil {
@@ -178,20 +212,15 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 
 	query := vs.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.ProductVariantTableName).Where(option.Conditions)
-
-	// parse option
-	for _, opt := range []squirrel.Sqlizer{
-		option.ProductVariantChannelListingPriceAmount,
-		option.ProductVariantChannelListingChannelID,
-		option.ProductVariantChannelListingChannelSlug,
-		option.WishlistItemID,
-		option.WishlistID,
-	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
+		From(model.ProductVariantTableName).
+		Where(option.Conditions).
+		Where(squirrel.And{
+			option.ProductVariantChannelListingPriceAmount,
+			option.ProductVariantChannelListingChannelID,
+			option.ProductVariantChannelListingChannelSlug,
+			option.WishlistItemID,
+			option.WishlistID,
+		})
 
 	if option.Distinct {
 		query = query.Distinct()
@@ -201,24 +230,64 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 	if option.ProductVariantChannelListingPriceAmount != nil ||
 		option.ProductVariantChannelListingChannelID != nil ||
 		option.ProductVariantChannelListingChannelSlug != nil {
-		query = query.InnerJoin(model.ProductVariantChannelListingTableName + " ON ProductVariantChannelListings.VariantID = ProductVariants.Id")
+		query = query.InnerJoin(
+			fmt.Sprintf(
+				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductVariantChannelListingTableName,       // 1
+				model.ProductVariantTableName,                     // 2
+				model.ProductVariantChannelListingColumnVariantID, // 3
+				model.ProductVariantColumnId,
+			),
+		)
 
 		if option.ProductVariantChannelListingChannelSlug != nil {
-			query = query.InnerJoin(model.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID")
+			query = query.InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.ChannelTableName,                            // 1
+					model.ProductVariantChannelListingTableName,       // 2
+					model.ChannelColumnId,                             // 3
+					model.ProductVariantChannelListingColumnChannelID, // 4
+				),
+			)
 		}
 	}
 
 	if option.WishlistItemID != nil ||
 		option.WishlistID != nil {
-		query = query.InnerJoin(model.WishlistItemProductVariantTableName + " ON WishlistItemProductVariants.ProductVariantID = ProductVariants.Id")
+		query = query.InnerJoin(
+			fmt.Sprintf(
+				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.WishlistItemProductVariantTableName, // 1
+				model.ProductVariantTableName,             // 2
+				"product_variant_id",                      // 3
+				model.ProductVariantColumnId,              // 4
+			),
+		)
 
 		if option.WishlistID != nil {
-			query = query.InnerJoin(model.WishlistItemTableName + " ON WishlistItemProductVariants.WishlistItemID = WishlistItems.Id")
+			query = query.InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.WishlistItemTableName,               // 1
+					model.WishlistItemProductVariantTableName, // 2
+					"wishlist_item_id",                        // 3
+					model.WishlistItemColumnId,                // 4
+				),
+			)
 		}
 	}
 
 	if option.SelectRelatedDigitalContent {
-		query = query.InnerJoin(model.DigitalContentTableName + " ON ProductVariants.Id = DigitalContents.ProductVariantID")
+		query = query.InnerJoin(
+			fmt.Sprintf(
+				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.DigitalContentTableName,              // 1
+				model.ProductVariantTableName,              // 2
+				model.DigitalContentColumnProductVariantID, // 3
+				model.ProductVariantColumnId,               // 4
+			),
+		)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -258,15 +327,48 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 	return res, nil
 }
 
-func (s *SqlProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
-	if transaction == nil {
-		transaction = s.GetMaster()
+func (s *SqlProductVariantStore) ToggleProductVariantRelations(
+	tx *gorm.DB,
+	variants model.ProductVariants,
+	medias model.ProductMedias,
+	sales model.Sales,
+	vouchers model.Vouchers,
+	wishlistItems model.WishlistItems,
+	isDelete bool,
+) error {
+	if tx == nil {
+		tx = s.GetMaster()
 	}
 
+	/*
+		Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
+		Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
+		ProductMedias          ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
+		WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
+	*/
+
 	for _, variant := range variants {
-		err := transaction.Model(variant).Association(model.ProductMediaTableName).Append(medias)
-		if err != nil {
-			return errors.Wrap(err, "failed to add product variant-productmedia relations")
+		if variant == nil {
+			continue
+		}
+
+		for assocName, relations := range map[string]any{
+			"ProductMedias": medias,
+			"Sales":         sales,
+			"Vouchers":      vouchers,
+			"WishlistItems": wishlistItems,
+		} {
+			if relations != nil {
+				var err error
+				if isDelete {
+					err = tx.Model(variant).Association(assocName).Delete(relations)
+				} else {
+					err = tx.Model(variant).Association(assocName).Append(relations)
+				}
+				if err != nil {
+					return errors.Wrap(err, "failed to toggle "+assocName+" product variant relations")
+				}
+			}
 		}
 	}
 
@@ -274,17 +376,56 @@ func (s *SqlProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, v
 }
 
 func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error) {
-	query := "SELECT PV.* FROM " +
-		model.ProductChannelListingTableName + " PCL INNER JOIN " +
-		model.ProductTableName + " P ON (PCL.ProductID = P.Id) INNER JOIN " +
-		model.ProductVariantTableName + " PV ON (P.Id = PV.ProductID) " +
-		" WHERE PCL.ChannelID = ? AND PCL.AvailableForPurchase <= ? AND Pv.Id IN ?"
+	query := fmt.Sprintf(
+		`SELECT %[1]s.*
+	FROM
+		%[1]s
+	INNER JOIN 
+		%[2]s
+	ON
+		%[1]s.%[3]s = %[2]s.%[4]s
+	INNER JOIN 
+		%[5]s
+	ON
+		%[5]s.%[6]s = %[2]s.%[4]s
+	WHERE
+		%[5]s.%[7]s = ?      -- productChannelListing.ChannelId 
+		AND %[5]s.%[8]s <= ? -- productChannelListing.AvailableForPurchase
+		AND %[1]s.%[9]s IN ? -- productVariant.Id`,
+
+		model.ProductVariantTableName,                         // 1
+		model.ProductTableName,                                // 2
+		model.ProductVariantColumnProductID,                   // 3
+		model.ProductColumnId,                                 // 4
+		model.ProductChannelListingTableName,                  // 5
+		model.ProductChannelListingColumnProductID,            // 6
+		model.ProductChannelListingColumnChannelID,            // 7
+		model.ProductChannelListingColumnAvailableForPurchase, // 8
+		model.ProductVariantColumnId,                          // 9
+	)
 
 	now := util.StartOfDay(time.Now())
 	var res model.ProductVariants
 	err := s.GetReplica().Raw(query, channelID, now, variantIds).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find availabe for purchase product variants")
+	}
+
+	return res, nil
+}
+
+// NOTE: preloads should contain items like: ""
+func (s *SqlProductVariantStore) FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error) {
+	// model.ProductVariant
+	db := s.GetReplica()
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+
+	var res model.ProductVariants
+	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product variants with given conditions")
 	}
 
 	return res, nil
