@@ -622,3 +622,10 @@ func newGormDBWrapper(handle *sql.DB, sqlSettings *model.SqlSettings) (*gorm.DB,
 		Logger: gormLog,
 	})
 }
+
+func (s *SqlStore) FinalizeTransaction(tx *gorm.DB) {
+	err := tx.Rollback().Error
+	if err != nil && !errors.Is(err, sql.ErrTxDone) {
+		slog.Error("failed to rollback a transaction", slog.Err(err))
+	}
+}

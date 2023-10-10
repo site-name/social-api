@@ -25,6 +25,7 @@ type Store interface {
 	CheckIntegrity() <-chan model.IntegrityCheckResult
 	DropAllTables()                              // DropAllTables drop all tables in databases
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
+	FinalizeTransaction(tx *gorm.DB)             // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
 
 	GetMaster(noTimeout ...bool) *gorm.DB  // GetMaster returns a gorm wrapper
 	GetReplica(noTimeout ...bool) *gorm.DB // GetReplica returns a gorm wrapper
@@ -336,14 +337,14 @@ type (
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}
 		// CountByOptions(options *model.StockFilterOption) (int32, error)
-		Get(stockID string) (*model.Stock, error)                                                                       // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
-		FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
-		FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
-		ChangeQuantity(stockID string, quantity int) error                                                              // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error)                                 // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error)                                 // BulkUpsert performs upserts or inserts given stocks, then returns them
-		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)          // FilterForChannel finds and returns stocks that satisfy given options
+		Get(stockID string) (*model.Stock, error)                                                                              // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
+		FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
+		FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
+		ChangeQuantity(stockID string, quantity int) error                                                                     // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error)                                        // BulkUpsert performs upserts or inserts given stocks, then returns them
+		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)                 // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
 		BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) // BulkUpsert performs update, insert given allocations then returns them afterward
@@ -447,15 +448,14 @@ type (
 		FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
-		FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error)
+		Delete(tx *gorm.DB, ids []string) (int64, error)
 		FindVariantsAvailableForPurchase(variantIds []string, channelID string) (model.ProductVariants, error)
 		ScanFields(variant *model.ProductVariant) []interface{}
-		Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
-		Get(id string) (*model.ProductVariant, error)                                              // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                            // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                        // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error)  // FilterByOption finds and returns product variants based on given option
-		Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) // Update updates given product variant and returns it
+		Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error)  // Save inserts product variant instance to database
+		Get(id string) (*model.ProductVariant, error)                                             // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                           // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                       // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) // FilterByOption finds and returns product variants based on given option
 		ToggleProductVariantRelations(
 			tx *gorm.DB,
 			variants model.ProductVariants,
@@ -551,7 +551,7 @@ type (
 		Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*model.OrderLine, error)                                                    // Get returns a order line with id of given id
 		BulkDelete(tx *gorm.DB, orderLineIDs []string) error                                        // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-		FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error)             // FilterbyOption finds and returns order lines by given option
+		FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error)               // FilterbyOption finds and returns order lines by given option
 		BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {

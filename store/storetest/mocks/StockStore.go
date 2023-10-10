@@ -126,15 +126,15 @@ func (_m *StockStore) FilterForChannel(options *model.StockFilterForChannelOptio
 }
 
 // FilterForCountryAndChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (_m *StockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	ret := _m.Called(options)
 
 	var r0 []*model.Stock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForCountryAndChannel) ([]*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForCountryAndChannel) []*model.Stock); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) []*model.Stock); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
@@ -142,7 +142,7 @@ func (_m *StockStore) FilterForCountryAndChannel(options *model.StockFilterForCo
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(*model.StockFilterOptionsForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -152,15 +152,15 @@ func (_m *StockStore) FilterForCountryAndChannel(options *model.StockFilterForCo
 }
 
 // FilterProductStocksForCountryAndChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	ret := _m.Called(options)
 
 	var r0 []*model.Stock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForCountryAndChannel) ([]*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForCountryAndChannel) []*model.Stock); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) []*model.Stock); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
@@ -168,7 +168,7 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *model.Sto
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(*model.StockFilterOptionsForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
@@ -178,15 +178,15 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *model.Sto
 }
 
 // FilterVariantStocksForCountry provides a mock function with given fields: options
-func (_m *StockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (_m *StockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	ret := _m.Called(options)
 
 	var r0 []*model.Stock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForCountryAndChannel) ([]*model.Stock, error)); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.StockFilterForCountryAndChannel) []*model.Stock); ok {
+	if rf, ok := ret.Get(0).(func(*model.StockFilterOptionsForCountryAndChannel) []*model.Stock); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
@@ -194,7 +194,7 @@ func (_m *StockStore) FilterVariantStocksForCountry(options *model.StockFilterFo
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.StockFilterForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(*model.StockFilterOptionsForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)

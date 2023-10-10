@@ -70,33 +70,74 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	// parse options
 	if option.ProductID != nil {
 		query = query.
-			InnerJoin(model.CollectionProductRelationTableName + " ON Collections.Id = ProductCollections.CollectionID").
+			InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.CollectionProductRelationTableName,  // 1
+					model.CollectionTableName,                 // 2
+					model.CollectionProductColumnCollectionID, // 3
+					model.CollectionColumnId,                  // 4
+				),
+			).
 			Where(option.ProductID)
 	}
 	if option.VoucherID != nil {
 		query = query.
-			InnerJoin(model.VoucherCollectionTableName + " ON Collections.Id = VoucherCollections.CollectionID").
+			InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.VoucherCollectionTableName, // 1
+					model.CollectionTableName,        // 2
+					"collection_id",                  // 3
+					model.CollectionColumnId,         // 4
+				),
+			).
 			Where(option.VoucherID)
 	}
 	if option.SaleID != nil {
 		query = query.
-			InnerJoin(model.SaleCollectionTableName + " ON Collections.Id = SaleCollections.CollectionID").
+			InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.SaleCollectionTableName, // 1
+					model.CollectionTableName,     // 2
+					"collection_id",               // 3
+					model.CollectionColumnId,      // 4
+				),
+			).
 			Where(option.SaleID)
 	}
 
 	if option.ChannelListingPublicationDate != nil ||
 		option.ChannelListingIsPublished != nil ||
+
 		option.ChannelListingChannelSlug != nil ||
 		option.ChannelListingChannelIsActive != nil {
 		query = query.
-			InnerJoin(model.CollectionChannelListingTableName + " ON Collections.Id = CollectionChannelListings.CollectionID").
+			InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.CollectionChannelListingTableName,          // 1
+					model.CollectionTableName,                        // 2
+					model.CollectionChannelListingColumnCollectionID, // 3
+					model.CollectionColumnId,                         // 4
+				),
+			).
 			Where(option.ChannelListingPublicationDate).
 			Where(option.ChannelListingIsPublished)
 
 		if option.ChannelListingChannelSlug != nil ||
 			option.ChannelListingChannelIsActive != nil {
 			query = query.
-				InnerJoin(model.ChannelTableName + " ON Channels.Id = CollectionChannelListings.ChannelID").
+				InnerJoin(
+					fmt.Sprintf(
+						"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+						model.ChannelTableName,                        // 1
+						model.CollectionChannelListingTableName,       // 2
+						model.ChannelColumnId,                         // 3
+						model.CollectionChannelListingColumnChannelID, // 4
+					),
+				).
 				Where(option.ChannelListingChannelSlug).
 				Where(option.ChannelListingChannelIsActive)
 		}
@@ -106,47 +147,73 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	if option.AnnotateProductCount {
 		query = query.
 			Column(fmt.Sprintf(`COUNT (%s.Id) AS "%s.ProductCount"`, model.CollectionProductRelationTableName, model.CollectionTableName)).
-			LeftJoin(model.CollectionProductRelationTableName + " ON ProductCollections.CollectionID = Collections.Id").
+			LeftJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.CollectionProductRelationTableName,  // 1
+					model.CollectionTableName,                 // 2
+					model.CollectionProductColumnCollectionID, // 3
+					model.CollectionColumnId,                  // 4
+				),
+			).
 			GroupBy(model.CollectionTableName + ".Id")
 
 	} else if option.AnnotateIsPublished && option.ChannelSlugForIsPublishedAndPublicationDateAnnotation != "" {
-		isPublishedExpr := fmt.Sprintf(`(
+		isPublishedExpr := fmt.Sprintf(
+			`(
 			SELECT
-				CCL.IsPublished
-			FROM %[1]s CCL
-			INNER JOIN %[2]s C ON C.Id = CCL.ChannelID
+				%[1]s.%[4]s
+			FROM %[1]s
+			INNER JOIN
+				%[2]s ON %[2]s.%[5]s = %[1]s.%[6]s
 			WHERE (
-				C.Slug = ?
-				AND CCL.CollectionID = %[3]s.Id
+				%[2]s.%[7]s = ?
+				AND %[1]s.%[8]s = %[3]s.%[9]s
 			)
 			LIMIT 1
 		) AS "%[3]s.IsPublished"`,
-			model.CollectionChannelListingTableName,
-			model.ChannelTableName,
-			model.CollectionTableName,
+			model.CollectionChannelListingTableName,          // 1
+			model.ChannelTableName,                           // 2
+			model.CollectionTableName,                        // 3
+			model.PublishableColumnIsPublished,               // 4
+			model.ChannelColumnId,                            // 5
+			model.CollectionChannelListingColumnChannelID,    // 6
+			model.ChannelColumnSlug,                          // 7
+			model.CollectionChannelListingColumnCollectionID, // 8
+			model.CollectionColumnId,                         // 9
 		)
+
 		query = query.Column(isPublishedExpr, option.ChannelSlugForIsPublishedAndPublicationDateAnnotation)
 
 	} else if option.AnnotatePublicationDate && option.ChannelSlugForIsPublishedAndPublicationDateAnnotation != "" {
 		publicationDateExpr := fmt.Sprintf(`(
 			SELECT
-				CCL.PublicationDate
+				%[1]s.%[4]s
 			FROM
-				%[1]s CCL
-			INNER JOIN %[2]s C ON C.Id = CCL.ChannelID
+				%[1]s
+			INNER JOIN
+				%[2]s ON %[2]s.%[5]s = %[1]s.%[6]s
 			WHERE (
-				C.Slug = ?
-				AND CCL.CollectionID = %[3]s.Id
+				%[2]s.%[7]s = ?
+				AND %[1]s.%[8]s = %[3]s.%[9]s
 			)
 			LIMIT 1
 		) AS "%[3]s.PublicationDate"`,
-			model.CollectionChannelListingTableName,
-			model.ChannelTableName,
-			model.CollectionTableName,
+			model.CollectionChannelListingTableName,          // 1
+			model.ChannelTableName,                           // 2
+			model.CollectionTableName,                        // 3
+			model.PublishableColumnPublicationDate,           // 4
+			model.ChannelColumnId,                            // 5
+			model.CollectionChannelListingColumnChannelID,    // 6
+			model.ChannelColumnSlug,                          // 7
+			model.CollectionChannelListingColumnCollectionID, // 8
+			model.CollectionColumnId,                         // 9
 		)
 
 		query = query.Column(publicationDateExpr, option.ChannelSlugForIsPublishedAndPublicationDateAnnotation)
 	}
+
+	var runner = cs.GetReplica()
 
 	// NOTE: count total must be applied right before pagination like this
 	var totalCount int64
@@ -156,7 +223,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 			return 0, nil, errors.Wrap(err, "FilterByOption_CountTotal_ToSql")
 		}
 
-		err = cs.GetReplica().Raw(countQuery, args...).Scan(&totalCount).Error
+		err = runner.Raw(countQuery, args...).Scan(&totalCount).Error
 		if err != nil {
 			return 0, nil, errors.Wrap(err, "failed to count total collections by options")
 		}
@@ -170,7 +237,6 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 		return 0, nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var runner = cs.GetReplica()
 	for _, preload := range option.Preload {
 		runner = runner.Preload(preload)
 	}
@@ -207,7 +273,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 }
 
 func (s *SqlCollectionStore) Delete(ids ...string) error {
-	err := s.GetMaster().Raw("DELETE FROM "+model.CollectionTableName+" WHERE Id IN ?", ids).Error
+	err := s.GetMaster().Delete(&model.Collection{}, "Id IN ?", ids).Error
 	if err != nil {
 		errors.Wrap(err, "failed to delete collection(s) by given ids")
 	}

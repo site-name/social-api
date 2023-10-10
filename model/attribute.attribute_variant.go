@@ -18,6 +18,13 @@ type AttributeVariant struct {
 	VariantAssignments []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:AssignmentID"`
 }
 
+// column names for table attribute variants
+const (
+	AttributeVariantColumnId          = "Id"
+	AttributeVariantColumnAttributeID = "AttributeID"
+	AttributeVariantProductTypeID     = "ProductTypeID"
+)
+
 func (a *AttributeVariant) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AttributeVariant) BeforeUpdate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AttributeVariant) TableName() string             { return AttributeVariantTableName }
@@ -41,7 +48,7 @@ func (a *AttributeVariant) IsValid() *AppError {
 
 // Associate a product type attribute and selected values to a given variant.
 type AssignedVariantAttribute struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Id           string `json:"id" gorm:"column:Id;type:uuid;primaryKey;default:gen_random_uuid()"`
 	VariantID    string `json:"variant_id" gorm:"column:VariantID;index:variantid_assignmentid_key"`       // to ProductVariant
 	AssignmentID string `json:"assignment_id" gorm:"column:AssignmentID;index:variantid_assignmentid_key"` // to AttributeVariant
 
@@ -49,17 +56,27 @@ type AssignedVariantAttribute struct {
 	VariantValueAssignment []*AssignedVariantAttributeValue `json:"-" gorm:"foreignKey:AssignmentID"`
 }
 
+// column names for table AssignedVariantAttribute
+const (
+	AssignedVariantAttributeColumnId           = "Id"
+	AssignedVariantAttributeColumnVariantID    = "VariantID"
+	AssignedVariantAttributeColumnAssignmentID = "AssignmentID"
+)
+
 func (a *AssignedVariantAttribute) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AssignedVariantAttribute) BeforeUpdate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AssignedVariantAttribute) TableName() string             { return AssignedVariantAttributeTableName }
 
 // AssignedVariantAttributeFilterOption is used for lookup, if cannot found, creating new instance
 type AssignedVariantAttributeFilterOption struct {
-	Conditions                               squirrel.Sqlizer
-	Assignment_Attribute_VisibleInStoreFront *bool // INNER JOIN AttributeVariant ON ... INNER JOIN Attributes ON ... WHERE Attributes.VisibleInStoreFront ...
+	Conditions squirrel.Sqlizer
 
-	AssignmentAttributeInputType squirrel.Sqlizer // INNER JOIN AttributeVariants ON () INNER JOIN Attributes ON () WHERE Attributes.InputType
-	AssignmentAttributeType      squirrel.Sqlizer // INNER JOIN AttributeVariants ON () INNER JOIN Attributes ON () WHERE Attributes.Type
+	Assignment_Conditions           squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants...
+	Assignment_Attribute_Conditions squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... INNER JOIN Attributes ON ... WHERE Attributes...
+
+	// E.g:
+	//  "Values"
+	Preloads []string
 }
 
 func (a *AssignedVariantAttribute) IsValid() *AppError {
@@ -75,11 +92,18 @@ func (a *AssignedVariantAttribute) IsValid() *AppError {
 
 // ValueID unique together with AssignmentID
 type AssignedVariantAttributeValue struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ValueID      string `json:"value_id" gorm:"primaryKey;index:valueid_assignmentid_key;type:uuid;column:ValueID"`
-	AssignmentID string `json:"assignment_id" gorm:"primaryKey;index:valueid_assignmentid_key;type:uuid;column:AssignmentID"`
+	Id           string `json:"id" gorm:"column:Id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	ValueID      string `json:"value_id" gorm:"column:ValueID;primaryKey;index:valueid_assignmentid_key;type:uuid"`
+	AssignmentID string `json:"assignment_id" gorm:"column:AssignmentID;primaryKey;index:valueid_assignmentid_key;type:uuid"`
 	Sortable
 }
+
+// column names for table AssignedVariantAttributeValue
+const (
+	AssignedVariantAttributeValueColumnId           = "Id"
+	AssignedVariantAttributeValueColumnValueID      = "ValueID"
+	AssignedVariantAttributeValueColumnAssignmentID = "AssignmentID"
+)
 
 func (a *AssignedVariantAttributeValue) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }
 func (a *AssignedVariantAttributeValue) BeforeUpdate(_ *gorm.DB) error { return a.IsValid() }

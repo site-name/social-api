@@ -1007,8 +1007,8 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *model.Fulfillment, wa
 	}
 
 	productVariants, appErr := a.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		Conditions:                  squirrel.Eq{model.ProductVariantTableName + ".Id": variantIDs},
-		SelectRelatedDigitalContent: true, // NOTE: this asks store to populate related DigitalContent data to returned product variants
+		Conditions: squirrel.Eq{model.ProductVariantTableName + ".Id": variantIDs},
+		Preloads:   []string{"DigitalContent"},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

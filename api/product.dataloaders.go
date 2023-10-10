@@ -650,8 +650,8 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 	variants, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			Conditions:                            squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
-			ProductVariantChannelListingChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			Conditions: squirrel.Eq{model.ProductVariantTableName + "." + model.ProductVariantColumnProductID: productIDs},
+			RelatedProductVariantChannelListingConditions: squirrel.Eq{model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnChannelID: channelIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -714,9 +714,11 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	variants, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			Conditions:                              squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
-			ProductVariantChannelListingChannelID:   squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
-			ProductVariantChannelListingPriceAmount: squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			Conditions: squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+			RelatedProductVariantChannelListingConditions: squirrel.And{
+				squirrel.Eq{model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnChannelID: channelIDs},
+				squirrel.NotEq{model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnCostPriceAmount: nil},
+			},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -1499,7 +1501,7 @@ func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoleAny("assignedVariantAttributesByProductVariantId", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	if embedCtx.Err != nil {
-		filterOptions.Assignment_Attribute_VisibleInStoreFront = model.GetPointerOfValue(true)
+		filterOptions.Assignment_Attribute_Conditions = squirrel.Eq{model.AttributeTableName + "." + model.AttributeColumnVisibleInStoreFront: true}
 	}
 
 	assignedVariantAttributes, err := embedCtx.App.Srv().Store.AssignedVariantAttribute().FilterByOption(filterOptions)

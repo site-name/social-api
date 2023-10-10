@@ -143,67 +143,6 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	return nil, returningStocks, nil
 }
 
-// func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
-// 	query := s.GetQueryBuilder().Select("COUNT(DISTINCT Stocks.Id)").From(model.StockTableName)
-
-// 	var stockSearchOpts squirrel.Sqlizer = nil
-// 	if options.Search != "" {
-// 		expr := "%" + options.Search + "%"
-
-// 		stockSearchOpts = squirrel.Or{
-// 			squirrel.ILike{model.ProductTableName + ".Name": expr},
-// 			squirrel.ILike{model.ProductVariantTableName + ".Name": expr},
-// 			squirrel.ILike{model.WarehouseTableName + ".Name": expr},
-// 			squirrel.ILike{model.AddressTableName + ".CompanyName": expr},
-// 		}
-// 	}
-
-// 	// parse options:
-// 	for _, opt := range []squirrel.Sqlizer{
-// 		options.Conditions,
-// 		options.Warehouse_ShippingZone_countries,
-// 		options.Warehouse_ShippingZone_ChannelID,
-// 		stockSearchOpts, //
-// 	} {
-// 		query = query.Where(opt)
-// 	}
-
-// 	if options.Search != "" ||
-// 		options.Warehouse_ShippingZone_countries != nil ||
-// 		options.Warehouse_ShippingZone_ChannelID != nil {
-
-// 		query = query.InnerJoin(model.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID")
-
-// 		if options.Warehouse_ShippingZone_countries != nil ||
-// 			options.Warehouse_ShippingZone_ChannelID != nil {
-// 			query = query.
-// 				InnerJoin(model.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
-// 				InnerJoin(model.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
-
-// 			if options.Warehouse_ShippingZone_ChannelID != nil {
-// 				query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
-// 			}
-// 		}
-
-// 		if options.Search != "" {
-// 			query = query.InnerJoin(model.AddressTableName + " ON Addresses.Id = Warehouses.AddressID")
-// 		}
-// 	}
-
-// 	queryStr, args, err := query.ToSql()
-// 	if err != nil {
-// 		return 0, errors.Wrap(err, "CountByOptions_ToSql")
-// 	}
-
-// 	var res int32
-// 	err = s.GetReplica().Raw(queryStr, args...).Scan(&res).Error
-// 	if err != nil {
-// 		return 0, errors.Wrap(err, "failed to count stocks by given options")
-// 	}
-
-// 	return res, nil
-// }
-
 // FilterByOption finds and returns a slice of stocks that satisfy given option
 func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	selectFields := []string{model.StockTableName + ".*"}
@@ -371,7 +310,7 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) (int64
 }
 
 // FilterForCountryAndChannel finds and returns stocks with given options
-func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	warehouseIDQuery := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
 		PlaceholderFormat(squirrel.Question)
@@ -476,11 +415,11 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 	return returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	return ss.FilterForCountryAndChannel(options)
 }
 
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	// TODO: finish me
 	return ss.FilterForCountryAndChannel(options)
 }

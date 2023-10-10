@@ -17,6 +17,13 @@ type CollectionProduct struct {
 	product    *Product    `gorm:"-"` // get populated if CollectionProductFilterOptions.SelectRelatedProduct is true
 }
 
+// column names of collection-product table
+const (
+	CollectionProductColumnId           = "Id"
+	CollectionProductColumnCollectionID = "CollectionID"
+	CollectionProductColumnProductID    = "ProductID"
+)
+
 func (c *CollectionProduct) GetCollection() *Collection    { return c.collection }
 func (c *CollectionProduct) SetCollection(col *Collection) { c.collection = col }
 func (c *CollectionProduct) GetProduct() *Product          { return c.product }

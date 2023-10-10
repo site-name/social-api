@@ -93,19 +93,12 @@ func (c *OrderLine) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsV
 func (c *OrderLine) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *OrderLine) TableName() string             { return OrderLineTableName }
 
-// OrderLinePrefetchRelated
-// type OrderLinePrefetchRelated struct {
-// 	VariantProduct        bool // This tells store to prefetch related ProductVariant(s) and Product(s) as well
-// 	VariantDigitalContent bool
-// 	VariantStocks         bool
-// 	AllocationsStock      bool
-// }
-
 // OrderLineFilterOption is used for build sql queries
 type OrderLineFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	OrderChannelID   squirrel.Sqlizer // INNER JOIN Orders ON ... WHERE Orders.ChannelID ...
+	RelatedOrderConditions squirrel.Sqlizer // INNER JOIN Orders ON ... WHERE Orders....
+
 	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants ON ... WHERE ProductVariants.ProductID ...
 
 	// INNER JOIN ProductVariants ON OrderLines.VariantID = ProductVariants.Id
@@ -117,6 +110,7 @@ type OrderLineFilterOption struct {
 	// E.g
 	//  "ProductVariant" // will fetch related product variant(s)
 	//  "ProductVariant.Product" // will fetch related variants, product
+	//  "Order"
 	Preload []string
 }
 

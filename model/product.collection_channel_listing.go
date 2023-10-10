@@ -8,12 +8,20 @@ import (
 )
 
 type CollectionChannelListing struct {
-	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	CreateAt     int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
-	CollectionID string `json:"collection_id" gorm:"type:uuid;column:CollectionID"`
-	ChannelID    string `json:"channel_id" gorm:"type:uuid;column:ChannelID"`
+	Id           string `json:"id" gorm:"column:Id;type:uuid;primaryKey;default:gen_random_uuid()"`
+	CreateAt     int64  `json:"create_at" gorm:"column:CreateAt;type:bigint;autoCreateTime:milli"`
+	CollectionID string `json:"collection_id" gorm:"column:CollectionID;type:uuid"`
+	ChannelID    string `json:"channel_id" gorm:"column:ChannelID;type:uuid"`
 	Publishable
 }
+
+// column names for collection-channel-listing table
+const (
+	CollectionChannelListingColumnId           = "Id"
+	CollectionChannelListingColumnCreateAt     = "CreateAt"
+	CollectionChannelListingColumnCollectionID = "CollectionID"
+	CollectionChannelListingColumnChannelID    = "ChannelID"
+)
 
 func (c *CollectionChannelListing) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
 func (c *CollectionChannelListing) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }

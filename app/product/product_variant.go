@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
@@ -99,8 +100,8 @@ func (a *ServiceProduct) DisplayProduct(productVariant *model.ProductVariant, tr
 // ProductVariantsAvailableInChannel returns product variants based on given channel slug
 func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model.AppError) {
 	productVariants, appErr := a.ProductVariantsByOption(&model.ProductVariantFilterOption{
-		ProductVariantChannelListingPriceAmount: squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
-		ProductVariantChannelListingChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
+		RelatedProductVariantChannelListingConditions: squirrel.NotEq{model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnPriceAmount: nil},
+		ProductVariantChannelListingChannelSlug:       squirrel.Eq{model.ChannelTableName + "." + model.ChannelColumnSlug: channelSlug},
 	})
 
 	if appErr != nil {
@@ -112,15 +113,7 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
 func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
-	var (
-		upsertedVariant *model.ProductVariant
-		err             error
-	)
-	if !model.IsValidId(variant.Id) {
-		upsertedVariant, err = s.srv.Store.ProductVariant().Save(transaction, variant)
-	} else {
-		upsertedVariant, err = s.srv.Store.ProductVariant().Update(transaction, variant)
-	}
+	upsertedVariant, err := s.srv.Store.ProductVariant().Save(transaction, variant)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -136,4 +129,61 @@ func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *mod
 	}
 
 	return upsertedVariant, nil
+}
+
+func (s *ServiceProduct) DeleteProductVariants(tx *gorm.DB, variantIds []string, requesterID string) (int64, *model.AppError) {
+	// find all draft order lines related to given variants
+	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+		Conditions:             squirrel.Eq{model.OrderLineTableName + "." + model.OrderLineColumnVariantID: variantIds},
+		RelatedOrderConditions: squirrel.Eq{model.OrderTableName + "." + model.OrderColumnStatus: model.ORDER_STATUS_DRAFT},
+		Preload:                []string{"Order"},
+	})
+	if appErr != nil {
+		return 0, appErr
+	}
+
+	// create order events on order lines
+	orderOrderLinesMap := map[string]model.OrderLines{}
+	orders := model.Orders{}
+	for _, line := range orderLines {
+		_, exist := orderOrderLinesMap[line.OrderID]
+		if !exist {
+			orders = append(orders, line.Order)
+		}
+		orderOrderLinesMap[line.OrderID] = append(orderOrderLinesMap[line.OrderID], line)
+	}
+
+	for orderID, orderLines := range orderOrderLinesMap {
+		quantityOrderLines := lo.Map(orderLines, func(item *model.OrderLine, _ int) *model.QuantityOrderLine {
+			return &model.QuantityOrderLine{Quantity: item.Quantity, OrderLine: item}
+		})
+
+		_, appErr = s.srv.OrderService().CommonCreateOrderEvent(tx, &model.OrderEventOption{
+			OrderID: orderID,
+			UserID:  &requesterID,
+			Type:    model.ORDER_EVENT_TYPE_ORDER_LINE_VARIANT_DELETED,
+			Parameters: model.StringInterface{
+				"lines": s.srv.OrderService().LinesPerQuantityToLineObjectList(quantityOrderLines),
+			},
+		})
+		if appErr != nil {
+			return 0, appErr
+		}
+	}
+
+	// actually delete variants, related draft order lines and related attribute values
+	numDeleted, err := s.srv.Store.ProductVariant().Delete(tx, variantIds)
+	if err != nil {
+		return 0, model.NewAppError("DeleteProductVariants", "app.product.error_deleting_variants.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// perform recalculate orders
+	for _, order := range orders {
+		appErr := s.srv.OrderService().RecalculateOrder(tx, order, map[string]interface{}{})
+		if appErr != nil {
+			return 0, appErr
+		}
+	}
+
+	return numDeleted, nil
 }

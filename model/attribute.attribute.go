@@ -130,6 +130,24 @@ type Attribute struct {
 	PageTypes           []*PageType         `json:"-" gorm:"many2many:AttributePages"`
 }
 
+// column names for table attributes
+const (
+	AttributeColumnId                       = "Id"
+	AttributeColumnSlug                     = "Slug"
+	AttributeColumnName                     = "Name"
+	AttributeColumnType                     = "Type"
+	AttributeColumnInputType                = "InputType"
+	AttributeColumnEntityType               = "EntityType"
+	AttributeColumnUnit                     = "Unit"
+	AttributeColumnValueRequired            = "ValueRequired"
+	AttributeColumnIsVariantOnly            = "IsVariantOnly"
+	AttributeColumnVisibleInStoreFront      = "VisibleInStoreFront"
+	AttributeColumnFilterableInStorefront   = "FilterableInStorefront"
+	AttributeColumnFilterableInDashboard    = "FilterableInDashboard"
+	AttributeColumnStorefrontSearchPosition = "StorefrontSearchPosition"
+	AttributeColumnAvailableInGrid          = "AvailableInGrid"
+)
+
 func (a *Attribute) BeforeCreate(_ *gorm.DB) error { a.PreSave(); return a.IsValid() }
 func (a *Attribute) BeforeUpdate(_ *gorm.DB) error { a.PreUpdate(); return a.IsValid() }
 func (a *Attribute) TableName() string             { return AttributeTableName }

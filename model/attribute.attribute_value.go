@@ -37,6 +37,20 @@ type AttributeValue struct {
 	ProductValueAssignments []*AssignedProductAttributeValue `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
 }
 
+// column names of attribute value table
+const (
+	AttributeValueColumnId          = "Id"
+	AttributeValueColumnName        = "Name"
+	AttributeValueColumnValue       = "Value"
+	AttributeValueColumnSlug        = "Slug"
+	AttributeValueColumnAttributeID = "AttributeID"
+	AttributeValueColumnFileUrl     = "FileUrl"
+	AttributeValueColumnContentType = "ContentType"
+	AttributeValueColumnRichText    = "RichText"
+	AttributeValueColumnBoolean     = "Boolean"
+	AttributeValueColumnDatetime    = "Datetime"
+)
+
 func (a *AttributeValue) BeforeCreate(_ *gorm.DB) error { a.PreSave(); return a.IsValid() }
 func (a *AttributeValue) BeforeUpdate(_ *gorm.DB) error { a.PreUpdate(); return a.IsValid() }
 func (a *AttributeValue) TableName() string             { return AttributeValueTableName }

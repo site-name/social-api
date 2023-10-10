@@ -1,6 +1,7 @@
 package attribute
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -19,7 +20,7 @@ func NewSqlAssignedVariantAttributeStore(s store.Store) store.AssignedVariantAtt
 }
 
 func (as *SqlAssignedVariantAttributeStore) Save(variant *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
-	if err := as.GetMaster().Create(variant).Error; err != nil {
+	if err := as.GetMaster().Save(variant).Error; err != nil {
 		if as.IsUniqueConstraintError(err, []string{"VariantID", "AssignmentID", strings.ToLower(model.AssignedVariantAttributeTableName) + "_variantid_assignmentid_key"}) {
 			return nil, store.NewErrInvalidInput(model.AssignedVariantAttributeTableName, "VariantID/AssignmentID", variant.VariantID+"/"+variant.AssignmentID)
 		}
@@ -44,43 +45,56 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*model.Assign
 }
 
 // builFilterQuery is common method for building filter queries
-func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.AssignedVariantAttributeFilterOption) (string, []interface{}, error) {
-	query := as.GetQueryBuilder().
-		Select("AssignedVariantAttributes.*").
-		From(model.AssignedVariantAttributeTableName).
-		Where(option.Conditions)
+func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.AssignedVariantAttributeFilterOption) (*gorm.DB, squirrel.Sqlizer) {
+	db := as.GetReplica()
+	if option == nil {
+		return db, nil
+	}
 
-	// parse option
-	if option.AssignmentAttributeInputType != nil ||
-		option.Assignment_Attribute_VisibleInStoreFront != nil ||
-		option.AssignmentAttributeType != nil {
-		query = query.
-			InnerJoin(model.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
-			InnerJoin(model.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
+	conditions := squirrel.And{}
+	if option.Conditions != nil {
+		conditions = append(conditions, option.Conditions)
+	}
 
-		if option.AssignmentAttributeInputType != nil {
-			query = query.Where(option.AssignmentAttributeInputType)
-		}
-		if option.AssignmentAttributeType != nil {
-			query = query.Where(option.AssignmentAttributeType)
-		}
-		if value := option.Assignment_Attribute_VisibleInStoreFront; value != nil {
-			query = query.Where(squirrel.Eq{model.AttributeTableName + ".VisibleInStoreFront": *value})
+	for _, preload := range option.Preloads {
+		db = db.Preload(preload)
+	}
+
+	if option.Assignment_Conditions != nil || option.Assignment_Attribute_Conditions != nil {
+		conditions = append(conditions, option.Assignment_Conditions)
+		db = db.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.AttributeVariantTableName,                  // 1
+				model.AssignedVariantAttributeTableName,          // 2
+				model.AttributeVariantColumnId,                   // 3
+				model.AssignedVariantAttributeColumnAssignmentID, // 4
+			),
+		)
+
+		if option.Assignment_Attribute_Conditions != nil {
+			conditions = append(conditions, option.Assignment_Attribute_Conditions)
+			db = db.Joins(
+				fmt.Sprintf(
+					"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.AttributeTableName,                // 1
+					model.AttributeVariantTableName,         // 2
+					model.AttributeColumnId,                 // 3
+					model.AttributeVariantColumnAttributeID, // 4
+				),
+			)
 		}
 	}
 
-	return query.ToSql()
+	return db, conditions
 }
 
 // GetWithOption finds and returns 1 assigned variant attribute with given option
 func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
-	queryString, args, err := as.builFilterQuery(option)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetWithOption_ToSql")
-	}
+	db, conditions := as.builFilterQuery(option)
 
 	var res model.AssignedVariantAttribute
-	err = as.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	err := db.First(&res, store.BuildSqlizer(conditions)...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, "option")
@@ -93,13 +107,10 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.Assigned
 
 // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
 func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
-	queryString, args, err := as.builFilterQuery(option)
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
+	db, conditions := as.builFilterQuery(option)
 
 	var res []*model.AssignedVariantAttribute
-	err = as.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attributes by given option")
 	}

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -157,20 +158,34 @@ func (r *Resolver) ProductVariantUpdate(ctx context.Context, args struct {
 func (r *Resolver) ProductVariantDelete(ctx context.Context, args struct{ Id UUID }) (*ProductVariantDelete, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	// begin tc
+	// begin tx
 	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
-		return nil, model.NewAppError("", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("ProductVariantDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
-	// find draft order lines of variant
-	embedCtx.App.Srv().OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions: squirrel.Eq{
-			model.OrderLineTableName + "." + model.OrderLineColumnProductVariantID: args.Id,
-			// model.OrderLineTableName + "." + model.
-		},
-	})
+	// delete variants, delete related draft order lines, create order events
+	_, appErr := embedCtx.App.Srv().ProductService().DeleteProductVariants(tx, []string{args.Id.String()}, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	err := tx.Commit().Error
+	if err != nil {
+		return nil, model.NewAppError("ProductVariantDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginMng.ProductVariantDeleted(model.ProductVariant{Id: args.Id.String()})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &ProductVariantDelete{
+		ProductVariant: &ProductVariant{ID: args.Id.String()},
+	}, nil
 }
 
 // NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
@@ -183,7 +198,39 @@ func (r *Resolver) ProductVariantBulkCreate(ctx context.Context, args struct {
 
 // NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []UUID }) (*ProductVariantBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("ProductVariantBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
+
+	// delete variants, delete related draft order lines, create order events
+	stringIds := *(*[]string)(unsafe.Pointer(&args.Ids))
+	numDeleted, appErr := embedCtx.App.Srv().ProductService().DeleteProductVariants(tx, stringIds, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit
+	err := tx.Commit().Error
+	if err != nil {
+		return nil, model.NewAppError("ProductVariantBulkDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	for _, id := range stringIds {
+		_, appErr = pluginMng.ProductVariantDeleted(model.ProductVariant{Id: id})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &ProductVariantBulkDelete{
+		Count: int32(numDeleted),
+	}, nil
 }
 
 // NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
@@ -191,7 +238,74 @@ func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
 	Stocks    []StockInput
 	VariantID UUID
 }) (*ProductVariantStocksCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	if len(args.Stocks) == 0 {
+		return nil, model.NewAppError("ProductVariantStocksCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide stock information to create", http.StatusBadRequest)
+	}
+
+	// validate duplication:
+	warehouseIdsForStocksMap := map[string]bool{} // keys are warehouse ids
+	stocksToCreate := make(model.Stocks, len(args.Stocks))
+	strVariantID := args.VariantID.String()
+
+	for idx, stockInput := range args.Stocks {
+		strWarehouseID := stockInput.Warehouse.String()
+		if warehouseIdsForStocksMap[strWarehouseID] {
+			return nil, model.NewAppError("ProductVariantStocksCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique warehouse ids", http.StatusBadRequest)
+		}
+
+		warehouseIdsForStocksMap[strWarehouseID] = true
+		stocksToCreate[idx] = &model.Stock{
+			WarehouseID:      strWarehouseID,
+			ProductVariantID: strVariantID,
+			Quantity:         int(stockInput.Quantity),
+		}
+	}
+
+	// check if given variant does already have stocks that belong to any of given warehouses
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	_, stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(&model.StockFilterOption{
+		Conditions: squirrel.Eq{
+			model.StockTableName + "." + model.StockColumnWarehouseID:      lo.Keys(warehouseIdsForStocksMap),
+			model.StockTableName + "." + model.StockColumnProductVariantID: args.VariantID,
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	existedStock, found := lo.Find(stocks, func(item *model.Stock) bool { return item != nil && warehouseIdsForStocksMap[item.WarehouseID] })
+	if found {
+		return nil, model.NewAppError("ProductVariantStocksCreate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "stocks"}, fmt.Sprintf("there is already a stock in warehouse with id=%s existed for given variant", existedStock.WarehouseID), http.StatusBadRequest)
+	}
+
+	// begin tx
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("ProductVariantStocksCreate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
+
+	stocks, appErr = embedCtx.App.Srv().WarehouseService().BulkUpsertStocks(tx, stocksToCreate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("ProductVariantStocksCreate", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	for _, stock := range stocks {
+		appErr = pluginMng.ProductVariantBackInStock(*stock)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &ProductVariantStocksCreate{
+		ProductVariant: &ProductVariant{ID: args.VariantID.String()},
+	}, nil
 }
 
 // NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.

@@ -4413,7 +4413,7 @@ func (s *TimerLayerOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines [
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.FilterbyOption(option)
@@ -5520,6 +5520,22 @@ func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 	return err
 }
 
+func (s *TimerLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) error {
+	start := timemodule.Now()
+
+	err := s.ProductVariantStore.Delete(tx, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	start := timemodule.Now()
 
@@ -5548,22 +5564,6 @@ func (s *TimerLayerProductVariantStore) FindVariantsAvailableForPurchase(variant
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FindVariantsAvailableForPurchase", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductVariantStore) FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductVariantStore.FindVariantsWithPreload(conditions, preloads)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FindVariantsWithPreload", success, elapsed)
 	}
 	return result, err
 }
@@ -5646,22 +5646,6 @@ func (s *TimerLayerProductVariantStore) ToggleProductVariantRelations(tx *gorm.D
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.ToggleProductVariantRelations", success, elapsed)
 	}
 	return err
-}
-
-func (s *TimerLayerProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductVariantStore.Update(transaction, variant)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Update", success, elapsed)
-	}
-	return result, err
 }
 
 func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
@@ -6735,7 +6719,7 @@ func (s *TimerLayerStockStore) FilterForChannel(options *model.StockFilterForCha
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterForCountryAndChannel(options)
@@ -6751,7 +6735,7 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *model.StockFi
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
@@ -6767,7 +6751,7 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterVariantStocksForCountry(options)

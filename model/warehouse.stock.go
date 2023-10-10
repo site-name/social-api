@@ -26,10 +26,19 @@ type Stock struct {
 	ProductVariantID string `json:"product_variant_id" gorm:"type:uuid;column:ProductVariantID;index:warehouseid_productvariantid_key"` // NOT NULL
 	Quantity         int    `json:"quantity" gorm:"check:Quantity >= 0;column:Quantity"`                                                // DEFAULT 0
 
-	AvailableQuantity int             `json:"-" gorm:"-"` // this field will be populated in same queries
+	AvailableQuantity int             `json:"-" gorm:"-"` // this field will be populated in some queries
 	warehouse         *WareHouse      `gorm:"-"`          // this foreign field is populated with select related data
 	productVariant    *ProductVariant `gorm:"-"`          // this foreign field is populated with select related data
 }
+
+// column names for table stocks
+const (
+	StockColumnId               = "Id"
+	StockColumnCreateAt         = "CreateAt"
+	StockColumnWarehouseID      = "WarehouseID"
+	StockColumnProductVariantID = "ProductVariantID"
+	StockColumnQuantity         = "Quantity"
+)
 
 func (s *Stock) GetWarehouse() *WareHouse            { return s.warehouse }
 func (s *Stock) SetWarehouse(w *WareHouse)           { s.warehouse = w }
@@ -106,7 +115,7 @@ type StockFilterOption struct {
 	Distinct   bool // if true, SELECT DISTINCT is applied
 }
 
-type StockFilterForCountryAndChannel struct {
+type StockFilterOptionsForCountryAndChannel struct {
 	CountryCode      CountryCode
 	ChannelSlug      string
 	WarehouseID      string

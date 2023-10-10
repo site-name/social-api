@@ -75,6 +75,26 @@ type Voucher struct {
 	DiscountValue  *decimal.Decimal `json:"-" gorm:"-"` // this field is used for sorting vouchers.
 }
 
+// column names of voucher table
+const (
+	VoucherColumnId                       = "Id"
+	VoucherColumnType                     = "Type"
+	VoucherColumnName                     = "Name"
+	VoucherColumnCode                     = "Code"
+	VoucherColumnUsageLimit               = "UsageLimit"
+	VoucherColumnUsed                     = "Used"
+	VoucherColumnStartDate                = "StartDate"
+	VoucherColumnEndDate                  = "EndDate"
+	VoucherColumnApplyOncePerOrder        = "ApplyOncePerOrder"
+	VoucherColumnApplyOncePerCustomer     = "ApplyOncePerCustomer"
+	VoucherColumnOnlyForStaff             = "OnlyForStaff"
+	VoucherColumnDiscountValueType        = "DiscountValueType"
+	VoucherColumnCountries                = "Countries"
+	VoucherColumnMinCheckoutItemsQuantity = "MinCheckoutItemsQuantity"
+	VoucherColumnCreateAt                 = "CreateAt"
+	VoucherColumnUpdateAt                 = "UpdateAt"
+)
+
 func (c *Voucher) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Voucher) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Voucher) TableName() string             { return VoucherTableName }

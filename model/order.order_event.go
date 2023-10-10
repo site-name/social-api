@@ -34,6 +34,8 @@ const (
 	ORDER_EVENT_TYPE_ORDER_DISCOUNT_DELETED               OrderEventType = "order_discount_deleted"
 	ORDER_EVENT_TYPE_ORDER_LINE_DISCOUNT_UPDATED          OrderEventType = "order_line_discount_updated"
 	ORDER_EVENT_TYPE_ORDER_LINE_DISCOUNT_REMOVED          OrderEventType = "order_line_discount_removed"
+	ORDER_EVENT_TYPE_ORDER_LINE_PRODUCT_DELETED           OrderEventType = "order_line_product_deleted"
+	ORDER_EVENT_TYPE_ORDER_LINE_VARIANT_DELETED           OrderEventType = "order_line_variant_deleted"
 	ORDER_EVENT_TYPE_UPDATED_ADDRESS                      OrderEventType = "updated_address"
 	ORDER_EVENT_TYPE_EMAIL_SENT                           OrderEventType = "email_sent"
 	ORDER_EVENT_TYPE_PAYMENT_AUTHORIZED                   OrderEventType = "payment_authorized"

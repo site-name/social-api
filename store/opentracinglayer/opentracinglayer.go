@@ -4819,7 +4819,7 @@ func (s *OpenTracingLayerOrderLineStore) BulkUpsert(transaction *gorm.DB, orderL
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
+func (s *OpenTracingLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) (model.OrderLines, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -6045,6 +6045,24 @@ func (s *OpenTracingLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.D
 	return err
 }
 
+func (s *OpenTracingLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ProductVariantStore.Delete(tx, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FilterByOption")
@@ -6073,24 +6091,6 @@ func (s *OpenTracingLayerProductVariantStore) FindVariantsAvailableForPurchase(v
 
 	defer span.Finish()
 	result, err := s.ProductVariantStore.FindVariantsAvailableForPurchase(variantIds, channelID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerProductVariantStore) FindVariantsWithPreload(conditions squirrel.Sqlizer, preloads []string) (model.ProductVariants, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FindVariantsWithPreload")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductVariantStore.FindVariantsWithPreload(conditions, preloads)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6187,24 +6187,6 @@ func (s *OpenTracingLayerProductVariantStore) ToggleProductVariantRelations(tx *
 	}
 
 	return err
-}
-
-func (s *OpenTracingLayerProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductVariantStore.Update(transaction, variant)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
 }
 
 func (s *OpenTracingLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
@@ -7408,7 +7390,7 @@ func (s *OpenTracingLayerStockStore) FilterForChannel(options *model.StockFilter
 	return result, resultVar1, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7426,7 +7408,7 @@ func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *model.S
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterProductStocksForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7444,7 +7426,7 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(opt
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterVariantStocksForCountry")
 	s.Root.Store.SetContext(newCtx)

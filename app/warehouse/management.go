@@ -38,7 +38,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		return nil, nil
 	}
 
-	stockFilterOption := &model.StockFilterForCountryAndChannel{
+	stockFilterOption := &model.StockFilterOptionsForCountryAndChannel{
 		CountryCode:            countryCode,
 		ChannelSlug:            channelSlug,
 		ProductVariantIDFilter: squirrel.Eq{model.StockTableName + ".ProductVariantID": orderLineInfos.Variants().IDs()},

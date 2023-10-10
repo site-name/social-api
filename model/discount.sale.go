@@ -34,6 +34,7 @@ func (c *Sale) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid(
 func (c *Sale) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Sale) TableName() string             { return SaleTableName }
 
+// SaleCollection represents a relationship between a sale and a collection
 type SaleCollection struct {
 	SaleID       string
 	CollectionID string

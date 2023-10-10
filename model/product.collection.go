@@ -33,6 +33,16 @@ type Collection struct {
 	ProductCount    int64      `json:"-" gorm:"-"`
 }
 
+// column names of table collections
+const (
+	CollectionColumnId                 = "Id"
+	CollectionColumnName               = "Name"
+	CollectionColumnSlug               = "Slug"
+	CollectionColumnBackgroundImage    = "BackgroundImage"
+	CollectionColumnBackgroundImageAlt = "BackgroundImageAlt"
+	CollectionColumnDescription        = "Description"
+)
+
 func (c *Collection) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
 func (c *Collection) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
 func (c *Collection) TableName() string             { return CollectionTableName }

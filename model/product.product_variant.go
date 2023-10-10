@@ -27,17 +27,16 @@ type ProductVariant struct {
 	Sortable
 	ModelMetadata
 
-	variantChannelListings ProductVariantChannelListings `json:"-" gorm:"foreignKey:VariantID"`
-	Stocks                 Stocks                        `json:"-" gorm:"foreignKey:ProductVariantID"`
-	DigitalContent         *DigitalContent               `json:"-" gorm:"foreignKey:ProductVariantID"` // for storing value returned by prefetching
-	Attributes             []*AssignedVariantAttribute   `json:"-" gorm:"foreignKey:VariantID"`
-	OrderLines             OrderLines                    `json:"-" gorm:"foreignKey:VariantID"`
-	Sales                  Sales                         `json:"-" gorm:"many2many:SaleProductVariants"`
-	Vouchers               Vouchers                      `json:"-" gorm:"many2many:VoucherVariants"`
-	ProductMedias          ProductMedias                 `json:"-" gorm:"many2many:VariantMedias"`
-	AttributesRelated      []*AttributeVariant           `json:"-" gorm:"many2many:AssignedVariantAttributes"`
-	WishlistItems          WishlistItems                 `json:"-" gorm:"many2many:WishlistItemProductVariants"`
-	Product                *Product                      `json:"-"`
+	Stocks            Stocks                      `json:"-" gorm:"foreignKey:ProductVariantID"`
+	DigitalContent    *DigitalContent             `json:"-" gorm:"foreignKey:ProductVariantID"` // for storing value returned by prefetching
+	Attributes        []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:VariantID"`
+	OrderLines        OrderLines                  `json:"-" gorm:"foreignKey:VariantID"`
+	Sales             Sales                       `json:"-" gorm:"many2many:SaleProductVariants"`
+	Vouchers          Vouchers                    `json:"-" gorm:"many2many:VoucherVariants"`
+	ProductMedias     ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
+	AttributesRelated []*AttributeVariant         `json:"-" gorm:"many2many:AssignedVariantAttributes"`
+	WishlistItems     WishlistItems               `json:"-" gorm:"many2many:WishlistItemProductVariants"`
+	Product           *Product                    `json:"-"`
 }
 
 // column names for product variant table
@@ -65,16 +64,21 @@ type ProductVariantFilterOption struct {
 	WishlistItemID squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
 	WishlistID     squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...
 
-	ProductVariantChannelListingPriceAmount squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... WHERE ProductVariantChannelListing.PriceAmount ...
-	ProductVariantChannelListingChannelSlug squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
-	ProductVariantChannelListingChannelID   squirrel.Sqlizer // INNER JOIN ProductVariantChannelListing ON ... WHERE ProductVariantChannelListing.ChannelID ...
+	RelatedProductVariantChannelListingConditions squirrel.Sqlizer // INNER JOIN ProductVariantChannelListing ON ... WHERE ProductVariantChannelListing ...
+	ProductVariantChannelListingChannelSlug       squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
 
 	Distinct bool // if true, use SELECT DISTINCT
 
-	VoucherID squirrel.Sqlizer // INNER JOIN VariantVouchers ON ... WHERE VariantVouchers.VoucherID ...
-	SaleID    squirrel.Sqlizer // INNER JOIN VariantSales ON ... WHERE VariantSales.SaleID ...
+	// NOTE: the key must be:
+	//  "VariantVouchers.voucher_id"
+	VoucherID squirrel.Sqlizer // INNER JOIN VariantVouchers ON ... WHERE VariantVouchers.voucher_id ...
+	// NOTE: the key must be:
+	//  "VariantSales.sale_id"
+	SaleID squirrel.Sqlizer // INNER JOIN VariantSales ON ... WHERE VariantSales.sale_id ...
 
-	SelectRelatedDigitalContent bool // if true, JOIN Digital content table and attach related values to returning values(s)
+	// can be:
+	//  "DigitalContent", ...
+	Preloads []string
 }
 
 func (p *ProductVariant) WeightString() string {
@@ -93,25 +97,6 @@ type ProductVariants []*ProductVariant
 
 func (p ProductVariants) DeepCopy() ProductVariants {
 	return lo.Map(p, func(v *ProductVariant, _ int) *ProductVariant { return v.DeepCopy() })
-}
-
-// func (s *ProductVariant) SetStocks(stk Stocks) { s.stocks = stk }
-// func (p *ProductVariant) GetStocks() Stocks    { return p.stocks }
-
-// func (s *ProductVariant) SetProduct(prd *Product) { s.product = prd }
-// func (p *ProductVariant) GetProduct() *Product    { return p.product }
-
-// func (s *ProductVariant) SetDigitalContent(d *DigitalContent) { s.digitalContent = d }
-// func (p *ProductVariant) GetDigitalContent() *DigitalContent  { return p.digitalContent }
-
-func (s *ProductVariant) SetVariantChannelListings(d ProductVariantChannelListings) {
-	s.variantChannelListings = d
-}
-func (s *ProductVariant) AppendVariantChannelListing(d *ProductVariantChannelListing) {
-	s.variantChannelListings = append(s.variantChannelListings, d)
-}
-func (p *ProductVariant) GetVariantChannelListings() ProductVariantChannelListings {
-	return p.variantChannelListings
 }
 
 // FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants

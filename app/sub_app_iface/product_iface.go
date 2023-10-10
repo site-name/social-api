@@ -159,4 +159,5 @@ type ProductService interface {
 	UpsertProductType(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, *model.AppError)
 	ToggleProductTypeAttributeRelations(tx *gorm.DB, productTypeID string, variantAttributes, productAttributes model.Attributes, isDelete bool) *model.AppError
 	UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model.AppError)
+	DeleteProductVariants(tx *gorm.DB, variantIds []string, requesterID string) (int64, *model.AppError)
 }

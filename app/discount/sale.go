@@ -120,7 +120,7 @@ func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID strin
 // SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
 func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model.AppError) {
 	var res []*model.SaleCollection
-	err := s.srv.Store.GetReplica().Table("SaleCollections").Find(&res, store.BuildSqlizer(options)...).Error
+	err := s.srv.Store.GetReplica().Table(model.SaleCollectionTableName).Find(&res, store.BuildSqlizer(options)...).Error
 	if err != nil {
 		return nil, model.NewAppError("SaleCollectionsByOptions", "app.discount.sale_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

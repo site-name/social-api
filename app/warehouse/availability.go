@@ -164,7 +164,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	variants = variants.FilterNils()
 
 	// build a filter option
-	allVariantStockFilterOption := &model.StockFilterForCountryAndChannel{
+	allVariantStockFilterOption := &model.StockFilterOptionsForCountryAndChannel{
 		CountryCode:               countryCode,
 		ChannelSlug:               channelSlug,
 		ProductVariantIDFilter:    squirrel.Eq{model.StockTableName + ".ProductVariantID": variants.IDs()},

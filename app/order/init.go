@@ -68,18 +68,18 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 	}
 }
 
-func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
-	ord.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
+func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model.AppError {
+	order.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 	})
 	if appErr != nil {
 		return appErr
 	}
 
-	totalPrice := ord.ShippingPrice
+	totalPrice := order.ShippingPrice
 	for _, orderLine := range orderLines {
 		orderLine.PopulateNonDbFields() // NOTE: call this before performing money calculations
 
@@ -94,7 +94,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, ord *model.Order, kwa
 
 	unDiscountedTotal, _ := goprices.NewTaxedMoney(totalPrice.Net, totalPrice.Gross) // ignore error here
 
-	voucherDiscount, _ := util.ZeroMoney(ord.Currency) // ignore error since order's Currency is validated before being insert into db
+	voucherDiscount, _ := util.ZeroMoney(order.Currency) // ignore error since order's Currency is validated before being insert into db
 	if discountIface := kwargs["discount"]; discountIface != nil {
 		if discountValue, ok := discountIface.(*goprices.Money); ok {
 			voucherDiscount = discountValue
@@ -111,11 +111,11 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorm.DB, ord *model.Order, kwa
 	}
 	totalPrice = subResult
 
-	ord.Total = totalPrice
-	ord.UnDiscountedTotal = unDiscountedTotal
+	order.Total = totalPrice
+	order.UnDiscountedTotal = unDiscountedTotal
 
 	if !voucherDiscount.Amount.Equal(decimal.Zero) { // != 0.0
-		assignedOrderDiscount, apErr := a.GetVoucherDiscountAssignedToOrder(ord)
+		assignedOrderDiscount, apErr := a.GetVoucherDiscountAssignedToOrder(order)
 		if apErr != nil {
 			return apErr
 		}
