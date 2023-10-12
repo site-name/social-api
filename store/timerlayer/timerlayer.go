@@ -5520,10 +5520,10 @@ func (s *TimerLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 	return err
 }
 
-func (s *TimerLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) error {
+func (s *TimerLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 	start := timemodule.Now()
 
-	err := s.ProductVariantStore.Delete(tx, ids)
+	result, err := s.ProductVariantStore.Delete(tx, ids)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5533,7 +5533,7 @@ func (s *TimerLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) error 
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Delete", success, elapsed)
 	}
-	return err
+	return result, err
 }
 
 func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
@@ -6685,6 +6685,22 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.ChangeQuantity", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.Delete(tx, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Delete", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {

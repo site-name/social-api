@@ -137,13 +137,14 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.O
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.TRANSACTION_KIND_AUTH},
-		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
-		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
-
+		RelatedTransactionConditions: squirrel.Eq{
+			model.TransactionTableName + "." + model.TransactionColumnKind:           model.TRANSACTION_KIND_AUTH,
+			model.TransactionTableName + "." + model.TransactionColumnActionRequired: false,
+			model.TransactionTableName + "." + model.TransactionColumnIsSuccess:      true,
+		},
 		Conditions: squirrel.Eq{
-			model.PaymentTableName + ".OrderID":  orderID,
-			model.PaymentTableName + ".IsActive": true,
+			model.PaymentTableName + "." + model.PaymentColumnOrderID:  orderID,
+			model.PaymentTableName + "." + model.PaymentColumnIsActive: true,
 		},
 	})
 	if appErr != nil {
@@ -156,13 +157,15 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	_, payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.TRANSACTION_KIND_CAPTURE},
-		TransactionsActionRequired: squirrel.Eq{model.TransactionTableName + ".ActionRequired": false},
-		TransactionsIsSuccess:      squirrel.Eq{model.TransactionTableName + ".IsSuccess": true},
+		RelatedTransactionConditions: squirrel.Eq{
+			model.TransactionTableName + "." + model.TransactionColumnKind:           model.TRANSACTION_KIND_CAPTURE,
+			model.TransactionTableName + "." + model.TransactionColumnActionRequired: false,
+			model.TransactionTableName + "." + model.TransactionColumnIsSuccess:      true,
+		},
 
 		Conditions: squirrel.Eq{
-			model.PaymentTableName + ".OrderID":  orderID,
-			model.PaymentTableName + ".IsActive": true,
+			model.PaymentTableName + "." + model.PaymentColumnOrderID:  orderID,
+			model.PaymentTableName + "." + model.PaymentColumnIsActive: true,
 		},
 	})
 	if appErr != nil {

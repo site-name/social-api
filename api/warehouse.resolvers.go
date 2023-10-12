@@ -324,13 +324,8 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
-func (r *Resolver) Warehouse(ctx context.Context, args struct{ Id string }) (*Warehouse, error) {
-	// validate arguments:
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("Stock", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid stock id", http.StatusBadRequest)
-	}
-
-	warehouse, err := WarehouseByIdLoader.Load(ctx, args.Id)()
+func (r *Resolver) Warehouse(ctx context.Context, args struct{ Id UUID }) (*Warehouse, error) {
+	warehouse, err := WarehouseByIdLoader.Load(ctx, args.Id.String())()
 	if err != nil {
 		return nil, err
 	}
@@ -389,13 +384,8 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used
-func (r *Resolver) Stock(ctx context.Context, args struct{ Id string }) (*Stock, error) {
-	// validate arguments:
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("Stock", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid stock id", http.StatusBadRequest)
-	}
-
-	stock, err := StocksByIDLoader.Load(ctx, args.Id)()
+func (r *Resolver) Stock(ctx context.Context, args struct{ Id UUID }) (*Stock, error) {
+	stock, err := StocksByIDLoader.Load(ctx, args.Id.String())()
 	if err != nil {
 		return nil, err
 	}

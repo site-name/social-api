@@ -72,6 +72,24 @@ type PaymentTransaction struct {
 	AlreadyProcessed   bool             `json:"already_processed" gorm:"column:AlreadyProcessed"`
 }
 
+// coumn names for payment transaction table
+const (
+	TransactionColumnId                 = "Id"
+	TransactionColumnCreateAt           = "CreateAt"
+	TransactionColumnPaymentID          = "PaymentID"
+	TransactionColumnToken              = "Token"
+	TransactionColumnKind               = "Kind"
+	TransactionColumnIsSuccess          = "IsSuccess"
+	TransactionColumnActionRequired     = "ActionRequired"
+	TransactionColumnActionRequiredData = "ActionRequiredData"
+	TransactionColumnCurrency           = "Currency"
+	TransactionColumnAmount             = "Amount"
+	TransactionColumnError              = "Error"
+	TransactionColumnCustomerID         = "CustomerID"
+	TransactionColumnGatewayResponse    = "GatewayResponse"
+	TransactionColumnAlreadyProcessed   = "AlreadyProcessed"
+)
+
 func (c *PaymentTransaction) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *PaymentTransaction) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *PaymentTransaction) TableName() string             { return TransactionTableName }

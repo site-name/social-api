@@ -88,6 +88,45 @@ type Payment struct {
 	ModelMetadata
 }
 
+// column names for payment table
+const (
+	PaymentColumnId                 = "Id"
+	PaymentColumnGateWay            = "GateWay"
+	PaymentColumnIsActive           = "IsActive"
+	PaymentColumnToConfirm          = "ToConfirm"
+	PaymentColumnCreateAt           = "CreateAt"
+	PaymentColumnUpdateAt           = "UpdateAt"
+	PaymentColumnChargeStatus       = "ChargeStatus"
+	PaymentColumnToken              = "Token"
+	PaymentColumnTotal              = "Total"
+	PaymentColumnCapturedAmount     = "CapturedAmount"
+	PaymentColumnCurrency           = "Currency"
+	PaymentColumnCheckoutID         = "CheckoutID"
+	PaymentColumnOrderID            = "OrderID"
+	PaymentColumnBillingEmail       = "BillingEmail"
+	PaymentColumnBillingFirstName   = "BillingFirstName"
+	PaymentColumnBillingLastName    = "BillingLastName"
+	PaymentColumnBillingCompanyName = "BillingCompanyName"
+	PaymentColumnBillingAddress1    = "BillingAddress1"
+	PaymentColumnBillingAddress2    = "BillingAddress2"
+	PaymentColumnBillingCity        = "BillingCity"
+	PaymentColumnBillingCityArea    = "BillingCityArea"
+	PaymentColumnBillingPostalCode  = "BillingPostalCode"
+	PaymentColumnBillingCountryCode = "BillingCountryCode"
+	PaymentColumnBillingCountryArea = "BillingCountryArea"
+	PaymentColumnCcFirstDigits      = "CcFirstDigits"
+	PaymentColumnCcLastDigits       = "CcLastDigits"
+	PaymentColumnCcBrand            = "CcBrand"
+	PaymentColumnCcExpMonth         = "CcExpMonth"
+	PaymentColumnCcExpYear          = "CcExpYear"
+	PaymentColumnPaymentMethodType  = "PaymentMethodType"
+	PaymentColumnCustomerIpAddress  = "CustomerIpAddress"
+	PaymentColumnExtraData          = "ExtraData"
+	PaymentColumnReturnUrl          = "ReturnUrl"
+	PaymentColumnPspReference       = "PspReference"
+	PaymentColumnStorePaymentMethod = "StorePaymentMethod"
+)
+
 func (c *Payment) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Payment) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Payment) TableName() string             { return PaymentTableName }
@@ -95,9 +134,7 @@ func (c *Payment) TableName() string             { return PaymentTableName }
 type PaymentFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	TransactionsKind           squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.Kind ...
-	TransactionsActionRequired squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.ActionRequired ...
-	TransactionsIsSuccess      squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.IsSuccess ...
+	RelatedTransactionConditions squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions... ...
 
 	DbTransaction *gorm.DB
 	LockForUpdate bool

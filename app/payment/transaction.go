@@ -17,25 +17,17 @@ func (a *ServicePayment) TransactionsByOption(option *model.PaymentTransactionFi
 	return transactions, nil
 }
 
-func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError) {
-	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Conditions: squirrel.Eq{model.TransactionTableName + ".PaymentID": paymentID},
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return transactions, nil
-}
-
 func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model.AppError) {
-	trans, appErr := a.GetAllPaymentTransactions(paymentID)
+	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
+		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
+	})
+
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	if len(trans) == 0 {
-		return nil, nil
+		return nil, model.NewAppError("GetLastPaymentTransaction", "app.payment.get_last_transaction_of_payment.app_error", nil, "payment has no transaction", http.StatusNotFound)
 	}
 
 	var lastTran *model.PaymentTransaction

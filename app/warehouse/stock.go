@@ -3,6 +3,7 @@ package warehouse
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
@@ -117,4 +118,46 @@ func (a *ServiceWarehouse) StockDecreaseQuantity(stockID string, quantity int) *
 		return model.NewAppError("StockIncrease", "app.warehouse.error_increasing_stock_quantity", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
+}
+
+func (s *ServiceWarehouse) DeleteStocks(options *model.StockFilterOption) (int64, *model.AppError) {
+	// begin
+	tx := s.srv.Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return 0, model.NewAppError("DeleteStocks", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(tx)
+
+	_, stocksToDelete, appErr := s.StocksByOption(options)
+	if appErr != nil {
+		return 0, appErr
+	}
+
+	numDeleted, err := s.srv.Store.Stock().Delete(tx, &model.StockFilterOption{
+		Conditions: squirrel.Eq{model.StockTableName + "." + model.StockColumnId: stocksToDelete.IDs()},
+	})
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return 0, model.NewAppError("DeleteStocks", "app.warehouse.delete_stocks.app_error", nil, err.Error(), statusCode)
+	}
+
+	// commit
+	err = tx.Commit().Error
+	if err != nil {
+		return 0, model.NewAppError("DeleteStocks", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// perform plugin callbacks
+	pluginMng := s.srv.PluginService().GetPluginManager()
+	for _, stock := range stocksToDelete {
+		appErr = pluginMng.ProductVariantOutOfStock(*stock)
+		if appErr != nil {
+			return 0, appErr
+		}
+	}
+
+	return numDeleted, nil
 }

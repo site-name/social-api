@@ -1,7 +1,8 @@
 package payment
 
 import (
-	"github.com/Masterminds/squirrel"
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -108,18 +109,18 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) (in
 		query = query.Suffix("FOR UPDATE")
 	}
 
-	if option.TransactionsKind != nil ||
-		option.TransactionsActionRequired != nil ||
-		option.TransactionsIsSuccess != nil {
-		andConds := squirrel.And{
-			option.TransactionsKind,
-			option.TransactionsActionRequired,
-			option.TransactionsIsSuccess,
-		}
-
+	if option.RelatedTransactionConditions != nil {
 		query = query.
-			InnerJoin(model.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
-			Where(andConds)
+			InnerJoin(
+				fmt.Sprintf(
+					"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.TransactionTableName,       //
+					model.PaymentTableName,           // 2
+					model.TransactionColumnPaymentID, // 3
+					model.PaymentColumnId,            // 4
+				),
+			).
+			Where(option.RelatedTransactionConditions)
 	}
 
 	// count if needed

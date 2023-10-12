@@ -8,6 +8,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -131,7 +132,7 @@ func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *mod
 	return upsertedVariant, nil
 }
 
-func (s *ServiceProduct) DeleteProductVariants(tx *gorm.DB, variantIds []string, requesterID string) (int64, *model.AppError) {
+func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID string) (int64, *model.AppError) {
 	// find all draft order lines related to given variants
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Conditions:             squirrel.Eq{model.OrderLineTableName + "." + model.OrderLineColumnVariantID: variantIds},
@@ -140,6 +141,12 @@ func (s *ServiceProduct) DeleteProductVariants(tx *gorm.DB, variantIds []string,
 	})
 	if appErr != nil {
 		return 0, appErr
+	}
+
+	// begin tx
+	tx := s.srv.Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return 0, model.NewAppError("DeleteProductVariants", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
 
 	// create order events on order lines
@@ -177,9 +184,41 @@ func (s *ServiceProduct) DeleteProductVariants(tx *gorm.DB, variantIds []string,
 		return 0, model.NewAppError("DeleteProductVariants", "app.product.error_deleting_variants.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
+	var finishTransaction = func() *model.AppError {
+		// commit
+		err = tx.Commit().Error
+		if err != nil {
+			return model.NewAppError("DeleteProductVariants", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		}
+		s.srv.Store.FinalizeTransaction(tx)
+		return nil
+	}
+
 	// perform recalculate orders
-	for _, order := range orders {
-		appErr := s.srv.OrderService().RecalculateOrder(tx, order, map[string]interface{}{})
+	if len(orders) > 0 {
+		s.srv.Go(func() {
+			for _, order := range orders {
+				appErr := s.srv.OrderService().RecalculateOrder(tx, order, model.StringInterface{})
+				if appErr != nil {
+					slog.Error("failed to recalculate order after deleting product variants", slog.String("orderID", order.Id), slog.Err(appErr))
+				}
+			}
+
+			appErr := finishTransaction()
+			if appErr != nil {
+				slog.Error("failed to finish transaction", slog.Err(appErr))
+			}
+		})
+	}
+
+	appErr = finishTransaction()
+	if appErr != nil {
+		return 0, appErr
+	}
+
+	pluginMng := s.srv.PluginService().GetPluginManager()
+	for _, variantID := range variantIds {
+		_, appErr = pluginMng.ProductVariantDeleted(model.ProductVariant{Id: variantID})
 		if appErr != nil {
 			return 0, appErr
 		}

@@ -152,3 +152,43 @@ func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFil
 	}
 	return products, nil
 }
+
+func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model.AppError) {
+	// validate if given variant belongs to given product
+	variant, appErr := s.ProductVariantById(variantID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if variant.ProductID != productID {
+		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "given product does not have given variant", http.StatusBadRequest)
+	}
+
+	// begin tx
+	tx := s.srv.Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(tx)
+
+	product, appErr := s.UpsertProduct(tx, &model.Product{
+		Id:               productID,
+		DefaultVariantID: &variantID,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit tx
+	if err := tx.Commit().Error; err != nil {
+		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	pluginMng := s.srv.PluginService().GetPluginManager()
+	_, appErr = pluginMng.ProductUpdated(*product)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return product, nil
+}

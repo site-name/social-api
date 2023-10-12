@@ -117,7 +117,6 @@ type PaymentService interface {
 	UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
 	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
-	GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError)
 	// if order has no payment, returning error will be non-nil

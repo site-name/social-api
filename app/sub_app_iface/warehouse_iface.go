@@ -146,4 +146,5 @@ type WarehouseService interface {
 	// WarehouseCountries returns countries of given warehouse
 	WarehouseCountries(warehouseID string) ([]string, *model.AppError)
 	CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError)
+	DeleteStocks(options *model.StockFilterOption) (int64, *model.AppError)
 }

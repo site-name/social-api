@@ -243,7 +243,9 @@ func (a *ServicePayment) CreatePayment(
 
 func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model.AppError) {
 	// get all transactions that belong to given payment
-	trans, appErr := a.GetAllPaymentTransactions(paymentID)
+	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
+		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}

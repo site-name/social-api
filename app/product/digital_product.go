@@ -1,7 +1,6 @@
 package product
 
 import (
-	"context"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -57,38 +56,40 @@ func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalConte
 	return true, nil
 }
 
-func (a *ServiceProduct) IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError {
+func (a *ServiceProduct) IncrementDownloadCount(contentURL model.DigitalContentUrl) (*model.DigitalContentUrl, *model.AppError) {
 	contentURL.DownloadNum++
-	_, appErr := a.UpsertDigitalContentURL(contentURL)
+	updatedContentUrl, appErr := a.UpsertDigitalContentURL(&contentURL)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
+	// create order event for this download
 	if contentURL.LineID != nil {
-		orderLine, appErr := a.srv.OrderService().OrderLineById(*contentURL.LineID)
-		if appErr != nil {
-			return appErr
-		}
-		userByOrderId, appErr := a.srv.AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
-			OrderID: squirrel.Eq{model.OrderTableName + ".Id": orderLine.OrderID},
+		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
+			Conditions: squirrel.Eq{model.OrderLineTableName + "." + model.OrderLineColumnId: *contentURL.LineID},
+			Preload:    []string{"Order"},
 		})
 		if appErr != nil {
-			return appErr
+			return nil, appErr
+		}
+		if len(orderLines) == 0 {
+			return updatedContentUrl, nil
 		}
 
-		if orderLine != nil && userByOrderId != nil {
-			_, appErr = a.srv.AccountService().CommonCustomerCreateEvent(
-				nil,
-				&userByOrderId.Id,
-				&orderLine.OrderID,
-				model.CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,
-				map[string]interface{}{"order_line_pk": orderLine.Id},
-			)
-			if appErr != nil {
-				return appErr
-			}
+		orderLine := orderLines[0]
+
+		_, appErr = a.srv.AccountService().CommonCustomerCreateEvent(
+			nil,
+			orderLine.Order.UserID,
+			&orderLine.OrderID,
+			model.CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,
+			model.StringInterface{"order_line_pk": orderLine.Id},
+		)
+		if appErr != nil {
+			return nil, appErr
 		}
+
 	}
 
-	return nil
+	return updatedContentUrl, nil
 }

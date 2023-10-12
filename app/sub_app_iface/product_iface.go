@@ -148,7 +148,7 @@ type ProductService interface {
 	GetProductPriceRange(product model.Product, variants model.ProductVariants, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.MoneyRange, *model.AppError)
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model.AppError)
 	GetVisibleToUserProducts(channel_IdOrSlug string, userCanSeeAllProducts bool) (model.Products, *model.AppError)
-	IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError
+	IncrementDownloadCount(contentURL model.DigitalContentUrl) (*model.DigitalContentUrl, *model.AppError)
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
@@ -159,5 +159,6 @@ type ProductService interface {
 	UpsertProductType(tx *gorm.DB, productType *model.ProductType) (*model.ProductType, *model.AppError)
 	ToggleProductTypeAttributeRelations(tx *gorm.DB, productTypeID string, variantAttributes, productAttributes model.Attributes, isDelete bool) *model.AppError
 	UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model.AppError)
-	DeleteProductVariants(tx *gorm.DB, variantIds []string, requesterID string) (int64, *model.AppError)
+	DeleteProductVariants(variantIds []string, requesterID string) (int64, *model.AppError)
+	SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model.AppError)
 }

@@ -571,3 +571,9 @@ func systemProductMediaToGraphqlProductMedia(p *model.ProductMedia) *ProductMedi
 func (p *ProductMedia) URL(ctx context.Context, args struct{ Size *int32 }) (string, error) {
 	panic("not implemented")
 }
+
+// ProductVariantStockUpsertInput is used in "productVariantCreate" and "productVariantUpdate" methods
+type ProductVariantStockUpsertInput struct {
+	Stocks    []StockInput
+	VariantID UUID
+}

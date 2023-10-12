@@ -16,8 +16,8 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
 }
 
-func (ss *SqlStockStore) ScanFields(stock *model.Stock) []interface{} {
-	return []interface{}{
+func (ss *SqlStockStore) ScanFields(stock *model.Stock) []any {
+	return []any{
 		&stock.Id,
 		&stock.CreateAt,
 		&stock.WarehouseID,
@@ -453,4 +453,20 @@ func (ss *SqlStockStore) ChangeQuantity(stockID string, quantity int) error {
 	}
 
 	return nil
+}
+
+func (s *SqlStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+	if tx == nil {
+		tx = s.GetMaster()
+	}
+	if options == nil || options.Conditions == nil {
+		return 0, store.NewErrInvalidInput(model.StockTableName, "Conditions", "")
+	}
+
+	result := tx.Delete(&model.Stock{}, store.BuildSqlizer(options.Conditions)...)
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "failed to delete stocks by given options")
+	}
+
+	return result.RowsAffected, nil
 }

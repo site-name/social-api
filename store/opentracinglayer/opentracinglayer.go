@@ -6045,7 +6045,7 @@ func (s *OpenTracingLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.D
 	return err
 }
 
-func (s *OpenTracingLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) error {
+func (s *OpenTracingLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -6054,13 +6054,13 @@ func (s *OpenTracingLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) 
 	}()
 
 	defer span.Finish()
-	err := s.ProductVariantStore.Delete(tx, ids)
+	result, err := s.ProductVariantStore.Delete(tx, ids)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return err
+	return result, err
 }
 
 func (s *OpenTracingLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
@@ -7352,6 +7352,24 @@ func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.StockStore.Delete(tx, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerStockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {

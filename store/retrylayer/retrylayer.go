@@ -6540,21 +6540,21 @@ func (s *RetryLayerProductTypeStore) ToggleProductTypeRelations(tx *gorm.DB, pro
 
 }
 
-func (s *RetryLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) error {
+func (s *RetryLayerProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
 
 	tries := 0
 	for {
-		err := s.ProductVariantStore.Delete(tx, ids)
+		result, err := s.ProductVariantStore.Delete(tx, ids)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
 		}
 	}
 
@@ -7981,6 +7981,26 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.Delete(tx, options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 

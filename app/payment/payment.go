@@ -73,9 +73,11 @@ func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *m
 }
 
 func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
-	trans, err := a.GetAllPaymentTransactions(paymentID)
-	if err != nil {
-		return false, err
+	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
+		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: paymentID},
+	})
+	if appErr != nil {
+		return false, appErr
 	}
 
 	for _, tran := range trans {
@@ -87,13 +89,15 @@ func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model.App
 	return false, nil
 }
 
-func (a *ServicePayment) PaymentGetAuthorizedAmount(pm *model.Payment) (*goprices.Money, *model.AppError) {
-	authorizedMoney, err := util.ZeroMoney(pm.Currency)
+func (a *ServicePayment) PaymentGetAuthorizedAmount(payment *model.Payment) (*goprices.Money, *model.AppError) {
+	authorizedMoney, err := util.ZeroMoney(payment.Currency)
 	if err != nil {
 		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	trans, appErr := a.GetAllPaymentTransactions(pm.Id)
+	trans, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
+		Conditions: squirrel.Eq{model.TransactionTableName + "." + model.TransactionColumnPaymentID: payment.Id},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
