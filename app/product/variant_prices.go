@@ -120,8 +120,8 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 		defer atomicValue.Add(-1)
 
 		listings, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			Conditions:      squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": product.Id},
-			PrefetchChannel: true, // this will populate `Channel` fields of every product channel listings
+			Conditions: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": product.Id},
+			Preloads:   []string{"Channel"}, // this will populate `Channel` fields of every product channel listings
 		})
 		if appErr != nil {
 			appError <- appErr
@@ -148,13 +148,13 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, prod
 			continue
 		}
 
-		if listing.GetChannel() != nil { // check if there is a channel populated
+		if listing.Channel != nil { // check if there is a channel populated
 			productDiscountedPrice, appErr := a.getProductDiscountedPrice(
 				variantPrices,
 				product,
 				collectionsContainProduct,
 				discounts,
-				*listing.GetChannel(),
+				*listing.Channel,
 			)
 			if appErr != nil {
 				return appErr

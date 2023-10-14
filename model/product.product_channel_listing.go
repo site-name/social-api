@@ -26,8 +26,7 @@ type ProductChannelListing struct {
 	Publishable
 
 	DiscountedPrice *goprices.Money `json:"discounted_price,omitempty" gorm:"-"` // can be NULL
-
-	channel *Channel `gorm:"-"` // this field may be populated when store performs prefetching
+	Channel         *Channel        `json:"-"`                                   // this field may be populated when store performs prefetching
 }
 
 // column names for table ProductChannelListing
@@ -48,17 +47,18 @@ func (c *ProductChannelListing) BeforeUpdate(_ *gorm.DB) error {
 	c.CreateAt = 0 // prevent updating
 	return c.IsValid()
 }
-func (c *ProductChannelListing) TableName() string     { return ProductChannelListingTableName }
-func (p *ProductChannelListing) GetChannel() *Channel  { return p.channel }
-func (p *ProductChannelListing) SetChannel(c *Channel) { p.channel = c }
+func (c *ProductChannelListing) TableName() string { return ProductChannelListingTableName }
 
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	ProductVariantsId squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
-	ChannelSlug       squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels.Slug ...
-	PrefetchChannel   bool             // this tell store to prefetch channel instances also
+	ProductVariantsId        squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
+	RelatedChannelConditions squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels ...
+
+	// E.g
+	//  "Channel", "Product"
+	Preloads []string
 }
 
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
@@ -103,8 +103,8 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 	}
 
 	res := *p
-	if p.channel != nil {
-		res.channel = p.channel.DeepCopy()
+	if p.Channel != nil {
+		res.Channel = p.Channel.DeepCopy()
 	}
 	res.AvailableForPurchase = CopyPointer(p.AvailableForPurchase)
 	res.Publishable = *p.Publishable.DeepCopy()

@@ -223,25 +223,25 @@ func (_m *ProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.
 	return r0
 }
 
-// Save provides a mock function with given fields: prd
-func (_m *ProductStore) Save(prd *model.Product) (*model.Product, error) {
-	ret := _m.Called(prd)
+// Save provides a mock function with given fields: tx, product
+func (_m *ProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Product, error) {
+	ret := _m.Called(tx, product)
 
 	var r0 *model.Product
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.Product) (*model.Product, error)); ok {
-		return rf(prd)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.Product) (*model.Product, error)); ok {
+		return rf(tx, product)
 	}
-	if rf, ok := ret.Get(0).(func(*model.Product) *model.Product); ok {
-		r0 = rf(prd)
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.Product) *model.Product); ok {
+		r0 = rf(tx, product)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.Product)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.Product) error); ok {
-		r1 = rf(prd)
+	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.Product) error); ok {
+		r1 = rf(tx, product)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -249,13 +249,13 @@ func (_m *ProductStore) Save(prd *model.Product) (*model.Product, error) {
 	return r0, r1
 }
 
-// ScanFields provides a mock function with given fields: prd
-func (_m *ProductStore) ScanFields(prd *model.Product) []interface{} {
-	ret := _m.Called(prd)
+// ScanFields provides a mock function with given fields: product
+func (_m *ProductStore) ScanFields(product *model.Product) []interface{} {
+	ret := _m.Called(product)
 
 	var r0 []interface{}
 	if rf, ok := ret.Get(0).(func(*model.Product) []interface{}); ok {
-		r0 = rf(prd)
+		r0 = rf(product)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})

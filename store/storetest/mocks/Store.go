@@ -721,6 +721,11 @@ func (_m *Store) FileInfo() store.FileInfoStore {
 	return r0
 }
 
+// FinalizeTransaction provides a mock function with given fields: tx
+func (_m *Store) FinalizeTransaction(tx *gorm.DB) {
+	_m.Called(tx)
+}
+
 // Fulfillment provides a mock function with given fields:
 func (_m *Store) Fulfillment() store.FulfillmentStore {
 	ret := _m.Called()

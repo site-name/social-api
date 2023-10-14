@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -44,8 +45,8 @@ func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string,
 	variantChannelListings, appErr := s.ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		Conditions: squirrel.And{
 			squirrel.Eq{
-				model.ProductVariantChannelListingTableName + ".VariantID": variantIds,
-				model.ProductVariantChannelListingTableName + ".ChannelID": channelId,
+				model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnVariantID: variantIds,
+				model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnChannelID: channelId,
 			},
 			squirrel.Expr(model.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NULL"),
 		},
@@ -60,4 +61,77 @@ func (s *ServiceProduct) ValidateVariantsAvailableInChannel(variantIds []string,
 	}
 
 	return nil
+}
+
+func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model.AppError {
+	tx := s.srv.Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return model.NewAppError("UpdateOrCreateProductVariantChannelListings", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+
+	relationsToUpsert := make(model.ProductVariantChannelListings, len(inputList))
+
+	for idx, input := range inputList {
+		existingRelations, appErr := s.ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
+			Conditions: squirrel.Eq{
+				model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnChannelID: input.ChannelID,
+				model.ProductVariantChannelListingTableName + "." + model.ProductVariantChannelListingColumnVariantID: variantID,
+			},
+		})
+		if appErr != nil {
+			return appErr
+		}
+
+		if len(existingRelations) > 0 {
+			relation := existingRelations[0]
+			relation.Patch(input)
+
+			relationsToUpsert[idx] = relation
+			continue
+		}
+
+		relationsToUpsert[idx] = &model.ProductVariantChannelListing{
+			VariantID:                 variantID,
+			ChannelID:                 input.ChannelID,
+			PriceAmount:               &input.Price,
+			CostPriceAmount:           input.CostPrice,
+			PreorderQuantityThreshold: input.PreorderThreshold,
+		}
+	}
+
+	_, appErr := s.BulkUpsertProductVariantChannelListings(tx, relationsToUpsert)
+	if appErr != nil {
+		return appErr
+	}
+
+	// update product discounted price
+	s.srv.Go(func() {
+		product, appErr := s.ProductByOption(&model.ProductFilterOption{
+			ProductVariantID: squirrel.Eq{model.ProductVariantTableName + "." + model.ProductVariantColumnId: variantID},
+		})
+		if appErr != nil {
+			slog.Error("failed to find parent product of given variant", slog.Err(appErr))
+			return
+		}
+
+		appErr = s.UpdateProductDiscountedPrice(tx, *product, []*model.DiscountInfo{})
+		if appErr != nil {
+			slog.Error("failed to update discounted price for parent product of given channel", slog.Err(appErr))
+		}
+
+		err := tx.Commit().Error
+		if err != nil {
+			slog.Error("failed to commit transaction after updating discounted price for parent product of given variant", slog.Err(err))
+		}
+		s.srv.Store.FinalizeTransaction(tx)
+	})
+
+	productVariant, appErr := s.ProductVariantById(variantID)
+	if appErr != nil {
+		return appErr
+	}
+
+	pluginMng := s.srv.PluginService().GetPluginManager()
+	_, appErr = pluginMng.ProductVariantUpdated(*productVariant)
+	return appErr
 }

@@ -49,6 +49,9 @@ type Store struct {
 	PluginStore           mocks.PluginStore
 }
 
+// FinalizeTransaction implements store.Store.
+func (*Store) FinalizeTransaction(tx *gorm.DB) {}
+
 func (s *Store) SetContext(ctx context.Context) { s.context = ctx }
 func (s *Store) Context() context.Context       { return s.context }
 func (s *Store) User() store.UserStore          { return &s.UserStore }

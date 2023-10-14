@@ -52,6 +52,31 @@ type Checkout struct {
 	Giftcards      Giftcards       `json:"-" gorm:"many2many:GiftcardCheckouts"`
 }
 
+// column names of table checkout
+const (
+	CheckoutColumnToken                  = "Token"
+	CheckoutColumnCreateAt               = "CreateAt"
+	CheckoutColumnUpdateAt               = "UpdateAt"
+	CheckoutColumnUserID                 = "UserID"
+	CheckoutColumnEmail                  = "Email"
+	CheckoutColumnQuantity               = "Quantity"
+	CheckoutColumnChannelID              = "ChannelID"
+	CheckoutColumnBillingAddressID       = "BillingAddressID"
+	CheckoutColumnShippingAddressID      = "ShippingAddressID"
+	CheckoutColumnShippingMethodID       = "ShippingMethodID"
+	CheckoutColumnCollectionPointID      = "CollectionPointID"
+	CheckoutColumnNote                   = "Note"
+	CheckoutColumnCurrency               = "Currency"
+	CheckoutColumnCountry                = "Country"
+	CheckoutColumnDiscountAmount         = "DiscountAmount"
+	CheckoutColumnDiscountName           = "DiscountName"
+	CheckoutColumnTranslatedDiscountName = "TranslatedDiscountName"
+	CheckoutColumnVoucherCode            = "VoucherCode"
+	CheckoutColumnRedirectURL            = "RedirectURL"
+	CheckoutColumnTrackingCode           = "TrackingCode"
+	CheckoutColumnLanguageCode           = "LanguageCode"
+)
+
 func (c *Checkout) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
 func (c *Checkout) BeforeUpdate(_ *gorm.DB) error {
 	c.PreUpdate()

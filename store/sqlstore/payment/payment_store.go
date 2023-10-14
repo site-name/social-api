@@ -184,19 +184,42 @@ func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction *gorm.DB, checko
 }
 
 func (ps *SqlPaymentStore) PaymentOwnedByUser(userID, paymentID string) (bool, error) {
-	query := `SELECT * FROM ` +
-		model.PaymentTableName +
-		` P INNER JOIN ` +
-		model.OrderTableName +
-		` O ON O.Id = P.OrderID INNER JOIN ` +
-		model.CheckoutTableName +
-		` C ON C.Id = P.CheckoutID WHERE (O.UserID = $1 OR C.UserID = $2) AND (P.Id = $3 OR P.Token = $4)`
+	query := fmt.Sprintf(
+		`SELECT
+			COUNT(*)
+		FROM
+			%[1]s
+		INNER JOIN 
+			%[2]s ON %[1]s.%[3]s = %[2]s.%[4]s
+		INNER JOIN
+			%[5]s ON %[5]s.%[6]s = %[1]s.%[7]s
+		WHERE (
+			%[2]s.%[8]s = $1
+			OR %[5]s.%[9]s = $1
+		)
+		AND (
+			%[1]s.%[10]s = $2
+			OR %[1]s.%[11]s = $2
+		)`,
 
-	var payments []*model.Payment
-	err := ps.GetReplica().Raw(query, userID, userID, paymentID, paymentID).Scan(&payments).Error
+		model.PaymentTableName,        // 1
+		model.OrderTableName,          // 2
+		model.PaymentColumnOrderID,    // 3
+		model.OrderColumnId,           // 4
+		model.CheckoutTableName,       // 5
+		model.CheckoutColumnToken,     // 6
+		model.PaymentColumnCheckoutID, // 7
+		model.OrderColumnUserId,       // 8
+		model.CheckoutColumnUserID,    // 9
+		model.PaymentColumnId,         // 10
+		model.PaymentColumnToken,      // 11
+	)
+
+	var paymentCount int64
+	err := ps.GetReplica().Raw(query, userID, paymentID).Scan(&paymentCount).Error
 	if err != nil {
 		return false, errors.Wrap(err, "failed to find payments belong to given user")
 	}
 
-	return len(payments) > 0, nil
+	return paymentCount > 0, nil
 }

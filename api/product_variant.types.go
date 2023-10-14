@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
@@ -384,4 +386,54 @@ func (p *PreorderData) GlobalThreshold(ctx context.Context) (*int32, error) {
 // NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
 func (p *PreorderData) GlobalSoldUnits(ctx context.Context) (int32, error) {
 	return p.globalSoldUnits, nil
+}
+
+type ProductVariantChannelListingUpdateInput struct {
+	Id    UUID // product variant id
+	Input []ProductVariantChannelListingAddInput
+}
+
+func (p *ProductVariantChannelListingUpdateInput) validate(where string, ctx *web.Context) *model.AppError {
+	// validate channels:
+	channelIDsMeetMap := map[UUID]bool{}
+	for _, item := range p.Input {
+		existed := channelIDsMeetMap[item.ChannelID]
+		if existed {
+			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "please provide different channel ids", http.StatusBadRequest)
+		}
+		channelIDsMeetMap[item.ChannelID] = true
+	}
+
+	// validate parent product of given product variant is assigned to given channels
+	productChannelListings, appErr := ctx.App.Srv().ProductService().ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
+		ProductVariantsId: squirrel.Eq{model.ProductVariantTableName + "." + model.ProductVariantColumnId: p.Id},
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	if len(channelIDsMeetMap) != len(productChannelListings) {
+		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Input"}, "some channels have no relation with parent product of given variant", http.StatusBadRequest)
+	}
+
+	// clean prices
+	channels, appErr := ctx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{
+		Conditions: squirrel.Eq{model.ChannelTableName + "." + model.ChannelColumnId: lo.Keys(channelIDsMeetMap)},
+	})
+	if appErr != nil {
+		return appErr
+	}
+	channelsMap := lo.SliceToMap(channels, func(item *model.Channel) (string, *model.Channel) { return item.Id, item })
+
+	for idx, input := range p.Input {
+		currency := channelsMap[input.ChannelID.String()].Currency
+		precision, _ := goprices.GetCurrencyPrecision(currency)
+
+		p.Input[idx].Price.Round(precision)
+		if input.CostPrice != nil {
+			p.Input[idx].CostPrice.Round(precision)
+		}
+	}
+
+	return nil
 }

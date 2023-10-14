@@ -66,29 +66,36 @@ func (_m *ProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken stri
 }
 
 // FilterbyOption provides a mock function with given fields: options
-func (_m *ProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
+func (_m *ProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) (int64, []*model.ProductType, error) {
 	ret := _m.Called(options)
 
-	var r0 []*model.ProductType
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*model.ProductTypeFilterOption) ([]*model.ProductType, error)); ok {
+	var r0 int64
+	var r1 []*model.ProductType
+	var r2 error
+	if rf, ok := ret.Get(0).(func(*model.ProductTypeFilterOption) (int64, []*model.ProductType, error)); ok {
 		return rf(options)
 	}
-	if rf, ok := ret.Get(0).(func(*model.ProductTypeFilterOption) []*model.ProductType); ok {
+	if rf, ok := ret.Get(0).(func(*model.ProductTypeFilterOption) int64); ok {
 		r0 = rf(options)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.ProductType)
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.ProductTypeFilterOption) []*model.ProductType); ok {
+		r1 = rf(options)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*model.ProductType)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*model.ProductTypeFilterOption) error); ok {
-		r1 = rf(options)
+	if rf, ok := ret.Get(2).(func(*model.ProductTypeFilterOption) error); ok {
+		r2 = rf(options)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // GetByOption provides a mock function with given fields: options

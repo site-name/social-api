@@ -114,8 +114,8 @@ func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductM
 	return productMedias[0], nil
 }
 
-func (a *ServiceProduct) GetVisibleToUserProducts(channel_IdOrSlug string, userCanSeeAllProducts bool) (model.Products, *model.AppError) {
-	productQuery := a.srv.Store.Product().VisibleToUserProductsQuery(channel_IdOrSlug, userCanSeeAllProducts)
+func (a *ServiceProduct) GetVisibleToUserProducts(channelIdOrSlug string, userCanSeeAllProducts bool) (model.Products, *model.AppError) {
+	productQuery := a.srv.Store.Product().VisibleToUserProductsQuery(channelIdOrSlug, userCanSeeAllProducts)
 	products, err := a.srv.Store.Product().FilterByQuery(productQuery)
 	if err != nil {
 		return nil, model.NewAppError("GetVisibleToUserProducts", "app.product.get_visible_products_for_user.app_error", nil, err.Error(), http.StatusInternalServerError)

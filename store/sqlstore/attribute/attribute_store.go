@@ -61,7 +61,6 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 		Where(option.Conditions)
 
 	// parse options
-
 	if option.Distinct {
 		query = query.Distinct()
 	}
@@ -273,6 +272,7 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 }
 
 func (s *SqlAttributeStore) CountByOptions(options *model.AttributeFilterOption) (int64, error) {
+	options.GraphqlPaginationValues = model.GraphqlPaginationValues{}
 	query := s.commonQueryBuilder(options)
 	countQuery, args, err := s.GetQueryBuilder().Select("COUNT (*)").FromSelect(query, "subquery").ToSql()
 	if err != nil {

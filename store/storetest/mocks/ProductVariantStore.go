@@ -17,18 +17,28 @@ type ProductVariantStore struct {
 	mock.Mock
 }
 
-// AddProductVariantMedias provides a mock function with given fields: transaction, variants, medias
-func (_m *ProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
-	ret := _m.Called(transaction, variants, medias)
+// Delete provides a mock function with given fields: tx, ids
+func (_m *ProductVariantStore) Delete(tx *gorm.DB, ids []string) (int64, error) {
+	ret := _m.Called(tx, ids)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, model.ProductVariants, model.ProductMedias) error); ok {
-		r0 = rf(transaction, variants, medias)
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) (int64, error)); ok {
+		return rf(tx, ids)
+	}
+	if rf, ok := ret.Get(0).(func(*gorm.DB, []string) int64); ok {
+		r0 = rf(tx, ids)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(*gorm.DB, []string) error); ok {
+		r1 = rf(tx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // FilterByOption provides a mock function with given fields: option
@@ -203,30 +213,18 @@ func (_m *ProductVariantStore) ScanFields(variant *model.ProductVariant) []inter
 	return r0
 }
 
-// Update provides a mock function with given fields: transaction, variant
-func (_m *ProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	ret := _m.Called(transaction, variant)
+// ToggleProductVariantRelations provides a mock function with given fields: tx, variants, medias, sales, vouchers, wishlistItems, isDelete
+func (_m *ProductVariantStore) ToggleProductVariantRelations(tx *gorm.DB, variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) error {
+	ret := _m.Called(tx, variants, medias, sales, vouchers, wishlistItems, isDelete)
 
-	var r0 *model.ProductVariant
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.ProductVariant) (*model.ProductVariant, error)); ok {
-		return rf(transaction, variant)
-	}
-	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.ProductVariant) *model.ProductVariant); ok {
-		r0 = rf(transaction, variant)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, model.ProductVariants, model.ProductMedias, model.Sales, model.Vouchers, model.WishlistItems, bool) error); ok {
+		r0 = rf(tx, variants, medias, sales, vouchers, wishlistItems, isDelete)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.ProductVariant)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.ProductVariant) error); ok {
-		r1 = rf(transaction, variant)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 type mockConstructorTestingTNewProductVariantStore interface {

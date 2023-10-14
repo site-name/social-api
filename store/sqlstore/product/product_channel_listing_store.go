@@ -1,6 +1,9 @@
 package product
 
 import (
+	"fmt"
+
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -72,65 +75,49 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductCh
 
 // FilterByOption finds and returns all ProductChannelListings filtered by given option
 func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
-	selectFields := []string{model.ProductChannelListingTableName + ".*"}
-	if option.PrefetchChannel {
-		selectFields = append(selectFields, model.ChannelTableName+".*")
+	db := ps.GetReplica()
+	conditions := squirrel.And{}
+	for _, preload := range option.Preloads {
+		db = db.Preload(preload)
 	}
-	query := ps.
-		GetQueryBuilder().
-		Select(selectFields...).
-		From(model.ProductChannelListingTableName).
-		Where(option.Conditions)
 
-	// parse option
-	if option.ChannelSlug != nil || option.PrefetchChannel {
-		query = query.InnerJoin(model.ChannelTableName + " ON Channels.Id = ProductChannelListings.ChannelID")
-
-		if option.ChannelSlug != nil {
-			query = query.Where(option.ChannelSlug)
-		}
+	if option.Conditions != nil {
+		conditions = append(conditions, option.Conditions)
+	}
+	if option.RelatedChannelConditions != nil {
+		db = db.Joins(fmt.Sprintf(
+			"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+			model.ChannelTableName,                     // 1
+			model.ProductChannelListingTableName,       // 2
+			model.ChannelColumnId,                      // 3
+			model.ProductChannelListingColumnChannelID, // 4
+		))
+		conditions = append(conditions, option.RelatedChannelConditions)
 	}
 	if option.ProductVariantsId != nil {
-		query = query.
-			InnerJoin(model.ProductTableName + " ON Products.Id = ProductChannelListings.ProductID").
-			InnerJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
-			Where(option.ProductVariantsId)
+		conditions = append(conditions, option.ProductVariantsId)
+		db = db.
+			Joins(fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductTableName,                     // 1
+				model.ProductChannelListingTableName,       // 2
+				model.ProductColumnId,                      // 3
+				model.ProductChannelListingColumnProductID, // 4
+			)).
+			Joins(fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductVariantTableName,       // 1
+				model.ProductTableName,              // 2
+				model.ProductVariantColumnProductID, // 3
+				model.ProductColumnId,               // 4
+			))
 	}
 
-	sqlString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-
-	rows, err := ps.GetReplica().Raw(sqlString, args...).Rows()
+	var res model.ProductChannelListings
+	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
 	}
-	defer rows.Close()
 
-	var listings model.ProductChannelListings
-
-	for rows.Next() {
-		var (
-			productChannelListing model.ProductChannelListing
-			channel               model.Channel
-			scanFields            = ps.ScanFields(&productChannelListing)
-		)
-		if option.PrefetchChannel {
-			scanFields = append(scanFields, ps.Channel().ScanFields(&channel)...)
-		}
-
-		err := rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of product channel listing")
-		}
-
-		if option.PrefetchChannel {
-			productChannelListing.SetChannel(&channel)
-		}
-
-		listings = append(listings, &productChannelListing)
-	}
-
-	return listings, nil
+	return res, nil
 }

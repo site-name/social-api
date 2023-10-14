@@ -76,6 +76,10 @@ func (p PositiveDecimal) ToDecimal() decimal.Decimal {
 	return *(*decimal.Decimal)(unsafe.Pointer(&p))
 }
 
+func (p *PositiveDecimal) Round(precision int) {
+	*p = PositiveDecimal(p.ToDecimal().RoundUp(int32(precision)))
+}
+
 func (PositiveDecimal) ImplementsGraphQLType(name string) bool {
 	return name == "PositiveDecimal"
 }

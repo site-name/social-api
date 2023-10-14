@@ -505,8 +505,8 @@ type (
 			IsPublished     bool
 			PublicationDate *timemodule.Time
 		}, error) // NotPublishedProducts finds all not published products belong to given channel
-		PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder                                                                                    // PublishedWithVariants finds and returns products.
-		VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                          // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder                                                                                     // PublishedWithVariants finds and returns products.
+		VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                           // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                                              // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                                      // FilterByQuery finds and returns products with given query, limit, createdAtGt

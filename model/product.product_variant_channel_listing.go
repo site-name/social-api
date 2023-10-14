@@ -32,6 +32,23 @@ type ProductVariantChannelListing struct {
 	variant                   *ProductVariant `gorm:"-"` // this field got populated in some store functions
 }
 
+type ProductVariantChannelListingAddInput struct {
+	ChannelID         string           `json:"channelId"`
+	Price             decimal.Decimal  `json:"price"`
+	CostPrice         *decimal.Decimal `json:"costPrice"`
+	PreorderThreshold *int             `json:"preorderThreshold"`
+}
+
+func (p *ProductVariantChannelListing) Patch(values ProductVariantChannelListingAddInput) {
+	p.PriceAmount = GetPointerOfValue(values.Price)
+	if values.CostPrice != nil {
+		p.CostPriceAmount = values.CostPrice
+	}
+	if values.PreorderThreshold != nil {
+		p.PreorderQuantityThreshold = values.PreorderThreshold
+	}
+}
+
 // column names for table ProductVariantChannelListing
 const (
 	ProductVariantChannelListingColumnId                        = "Id"

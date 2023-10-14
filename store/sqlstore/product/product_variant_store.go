@@ -349,16 +349,16 @@ func (s *SqlProductVariantStore) FindVariantsAvailableForPurchase(variantIds []s
 		`SELECT %[1]s.*
 	FROM
 		%[1]s
-	INNER JOIN 
+	INNER JOIN
 		%[2]s
 	ON
 		%[1]s.%[3]s = %[2]s.%[4]s
-	INNER JOIN 
+	INNER JOIN
 		%[5]s
 	ON
 		%[5]s.%[6]s = %[2]s.%[4]s
 	WHERE
-		%[5]s.%[7]s = ?      -- productChannelListing.ChannelId 
+		%[5]s.%[7]s = ?      -- productChannelListing.ChannelId
 		AND %[5]s.%[8]s <= ? -- productChannelListing.AvailableForPurchase
 		AND %[1]s.%[9]s IN ? -- productVariant.Id`,
 

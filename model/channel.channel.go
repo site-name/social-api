@@ -22,7 +22,8 @@ type Channel struct {
 	ShippingZones ShippingZones `json:"-" gorm:"many2many:ShippingZoneChannels"`
 	Orders        Orders        `json:"-" gorm:"foreignKey:ChannelID"`
 
-	hasOrders bool `gorm:"-"`
+	hasOrders              bool                   `gorm:"-"`
+	ProductChannelListings ProductChannelListings `json:"-" gorm:"foreignKey:ChannelID"`
 }
 
 // column names for Channel table

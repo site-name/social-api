@@ -209,11 +209,11 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 				slog.Error("failed to finish transaction", slog.Err(appErr))
 			}
 		})
-	}
-
-	appErr = finishTransaction()
-	if appErr != nil {
-		return 0, appErr
+	} else {
+		appErr = finishTransaction()
+		if appErr != nil {
+			return 0, appErr
+		}
 	}
 
 	pluginMng := s.srv.PluginService().GetPluginManager()
@@ -226,3 +226,47 @@ func (s *ServiceProduct) DeleteProductVariants(variantIds []string, requesterID 
 
 	return numDeleted, nil
 }
+
+func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model.AppError {
+	// create tx:
+	tx := s.srv.Store.GetMaster().Begin()
+	if tx.Error != nil {
+		return model.NewAppError("ToggleVariantRelations", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(tx)
+
+	err := s.srv.Store.
+		ProductVariant().
+		ToggleProductVariantRelations(
+			tx,
+			variants,
+			medias,
+			sales,
+			vouchers,
+			wishlistItems,
+			isDelete,
+		)
+	if err != nil {
+		return model.NewAppError("ToggleVariantRelations", "app.product.toggle_variant_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// commit tx
+	err = tx.Commit().Error
+	if err != nil {
+		return model.NewAppError("ToggleVariantRelations", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	pluginMng := s.srv.PluginService().GetPluginManager()
+	for _, variant := range variants {
+		_, appErr := pluginMng.ProductVariantUpdated(*variant)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
+}
+
+// func (s *ServiceProduct) GetProductVariantsForRequester(id, sku, channelIdOrSlug string, requesterIsShopStaff bool) (model.ProductVariants, *model.AppError) {
+// 	query := s.srv.Store.Product().VisibleToUserProductsQuery(channelIdOrSlug, requesterIsShopStaff)
+// }

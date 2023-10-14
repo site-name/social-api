@@ -66,7 +66,7 @@ func (as *SqlAddressStore) Get(id string) (*model.Address, error) {
 // FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	var res []*model.Address
-	db := as.GetReplica().Table(model.AddressTableName)
+	db := as.GetReplica()
 	andConds := squirrel.And{
 		option.Id,
 		option.UserID,
@@ -74,7 +74,7 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	}
 
 	if option.OrderID != nil {
-		andConds = append(andConds, option.OrderID.Id) //
+		andConds = append(andConds, option.OrderID.Id)
 		db = db.Joins("INNER JOIN "+model.OrderTableName+" ON Orders.? = Addresses.Id", option.OrderID.On)
 	}
 	if option.UserID != nil {

@@ -57,6 +57,30 @@ func (_m *StockStore) ChangeQuantity(stockID string, quantity int) error {
 	return r0
 }
 
+// Delete provides a mock function with given fields: tx, options
+func (_m *StockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (int64, error) {
+	ret := _m.Called(tx, options)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.StockFilterOption) (int64, error)); ok {
+		return rf(tx, options)
+	}
+	if rf, ok := ret.Get(0).(func(*gorm.DB, *model.StockFilterOption) int64); ok {
+		r0 = rf(tx, options)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(*gorm.DB, *model.StockFilterOption) error); ok {
+		r1 = rf(tx, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterByOption provides a mock function with given fields: options
 func (_m *StockStore) FilterByOption(options *model.StockFilterOption) (int64, []*model.Stock, error) {
 	ret := _m.Called(options)

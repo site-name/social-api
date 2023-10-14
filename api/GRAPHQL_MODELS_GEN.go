@@ -3883,9 +3883,10 @@ type PreorderThreshold struct {
 }
 
 type ProductVariantChannelListingAddInput struct {
-	ChannelID UUID             `json:"channelId"`
-	Price     PositiveDecimal  `json:"price"`
-	CostPrice *PositiveDecimal `json:"costPrice"`
+	ChannelID         UUID             `json:"channelId"`
+	Price             PositiveDecimal  `json:"price"`
+	CostPrice         *PositiveDecimal `json:"costPrice"`
+	PreorderThreshold *int32           `json:"preorderThreshold"`
 }
 
 type ProductVariantChannelListingUpdate struct {
@@ -3939,44 +3940,46 @@ type ProductVariantInput struct {
 }
 
 func (p *ProductVariantInput) validate(where string, ctx *web.Context, instance *model.ProductVariant) *model.AppError {
-	if p.Weight != nil && p.Weight.Value < 0 {
-		return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "weight"}, "please provide positive weight value", http.StatusBadRequest)
-	}
-	if p.Sku != nil {
-		*p.Sku = strings.TrimSpace(*p.Sku)
-	}
+	// if p.Weight != nil && p.Weight.Value < 0 {
+	// 	return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "weight"}, "please provide positive weight value", http.StatusBadRequest)
+	// }
+	// if p.Sku != nil {
+	// 	*p.Sku = strings.TrimSpace(*p.Sku)
+	// }
 
-	productTypes, appErr := ctx.App.Srv().ProductService().ProductTypesByProductIDs([]string{instance.ProductID})
-	if appErr != nil {
-		return appErr
-	}
-	productType := productTypes[0]
+	// productTypes, appErr := ctx.App.Srv().ProductService().ProductTypesByProductIDs([]string{instance.ProductID})
+	// if appErr != nil {
+	// 	return appErr
+	// }
+	// productType := productTypes[0]
 
-	if productType != nil && *productType.HasVariants {
-		if len(p.Attributes) > 0 {
+	// if productType != nil && *productType.HasVariants {
+	// 	if len(p.Attributes) > 0 {
 
-		}
-	}
+	// 	}
+	// }
+	panic("not implemented")
 }
 
 // NOTE: instance can be nil
 func (p *ProductVariantCreateInput) validate(where string, ctx *web.Context) *model.AppError {
-	appErr := p.ProductVariantInput.validate(where, ctx, nil)
-	if appErr != nil {
-		return appErr
-	}
+	// appErr := p.ProductVariantInput.validate(where, ctx, nil)
+	// if appErr != nil {
+	// 	return appErr
+	// }
 
-	// check duplicate warehouses
-	stockMeetMap := map[UUID]bool{}
-	for _, stockInput := range p.Stocks {
-		if stockInput != nil {
-			if stockMeetMap[stockInput.Warehouse] {
-				return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique stocks", http.StatusBadRequest)
-			}
-			stockMeetMap[stockInput.Warehouse] = true
-		}
-	}
+	// // check duplicate warehouses
+	// stockMeetMap := map[UUID]bool{}
+	// for _, stockInput := range p.Stocks {
+	// 	if stockInput != nil {
+	// 		if stockMeetMap[stockInput.Warehouse] {
+	// 			return model.NewAppError(where, model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Stocks"}, "please provide unique stocks", http.StatusBadRequest)
+	// 		}
+	// 		stockMeetMap[stockInput.Warehouse] = true
+	// 	}
+	// }
 
+	panic("not implemented")
 }
 
 type ProductVariantDelete struct {
