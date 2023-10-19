@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -1706,11 +1705,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	if err != nil {
 		return model.NewAppError("app.order.ValidateDraftOrder", "app.product.error_finding_not_published_products.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if lo.SomeBy(notPublishedProducts, func(item *struct {
-		model.Product
-		IsPublished     bool
-		PublicationDate *time.Time
-	}) bool {
+	if lo.SomeBy(notPublishedProducts, func(item *model.Product) bool {
 		return productIDsMap[item.Id]
 	}) {
 		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.selected_un_published_product.app_error", nil, "you can't buy unpublished products", http.StatusNotAcceptable)
@@ -1762,11 +1757,7 @@ func (s *ServiceOrder) ValidateProductIsPublishedInChannel(variants model.Produc
 		return model.NewAppError("ValidateProductIsPublishedInChannel", "app.product.error_finding_not_published_products.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	var unPublisgedProductIdMap = lo.SliceToMap(unPublishedProductsWithData, func(item *struct {
-		model.Product
-		IsPublished     bool
-		PublicationDate *time.Time
-	}) (string, bool) {
+	var unPublisgedProductIdMap = lo.SliceToMap(unPublishedProductsWithData, func(item *model.Product) (string, bool) {
 		return item.Id, true
 	})
 

@@ -5132,11 +5132,7 @@ func (s *TimerLayerProductStore) GetByOption(option *model.ProductFilterOption) 
 	return result, err
 }
 
-func (s *TimerLayerProductStore) NotPublishedProducts(channelID string) ([]*struct {
-	model.Product
-	IsPublished     bool
-	PublicationDate *timemodule.Time
-}, error) {
+func (s *TimerLayerProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.NotPublishedProducts(channelID)
@@ -5168,10 +5164,10 @@ func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*model
 	return result, err
 }
 
-func (s *TimerLayerProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder {
+func (s *TimerLayerProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
-	result := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
+	result := s.ProductStore.PublishedWithVariants(channelIdOrSlug)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5216,10 +5212,10 @@ func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(tra
 	return result, err
 }
 
-func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
-	result := s.ProductStore.VisibleToUserProductsQuery(channel_SlugOrID, userHasOneOfProductpermissions)
+	result := s.ProductStore.VisibleToUserProductsQuery(channelIdOrSlug, userHasOneOfProductpermissions)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

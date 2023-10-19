@@ -6084,11 +6084,7 @@ func (s *RetryLayerProductStore) GetByOption(option *model.ProductFilterOption) 
 
 }
 
-func (s *RetryLayerProductStore) NotPublishedProducts(channelID string) ([]*struct {
-	model.Product
-	IsPublished     bool
-	PublicationDate *timemodule.Time
-}, error) {
+func (s *RetryLayerProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
 
 	tries := 0
 	for {
@@ -6128,9 +6124,9 @@ func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*model
 
 }
 
-func (s *RetryLayerProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder {
+func (s *RetryLayerProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
 
-	return s.ProductStore.PublishedWithVariants(channel_SlugOrID)
+	return s.ProductStore.PublishedWithVariants(channelIdOrSlug)
 
 }
 
@@ -6174,9 +6170,9 @@ func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(tra
 
 }
 
-func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 
-	return s.ProductStore.VisibleToUserProductsQuery(channel_SlugOrID, userHasOneOfProductpermissions)
+	return s.ProductStore.VisibleToUserProductsQuery(channelIdOrSlug, userHasOneOfProductpermissions)
 
 }
 

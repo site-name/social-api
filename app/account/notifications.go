@@ -42,8 +42,8 @@ func (s *ServiceAccount) SendPasswordResetNotification(redirectURL string, user 
 		"token":           token,
 		"reset_url":       resetURL,
 		"channel_id":      channelID,
-		"domain":          *&s.srv.Config().ServiceSettings.SiteURL,
-		"site_name":       *&s.srv.Config().ServiceSettings.SiteName,
+		"domain":          *s.srv.Config().ServiceSettings.SiteURL,
+		"site_name":       *s.srv.Config().ServiceSettings.SiteName,
 	}
 
 	_, appErr := manager.Notify(model.ACCOUNT_PASSWORD_RESET, payload, channelID, "")

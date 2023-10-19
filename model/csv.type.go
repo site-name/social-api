@@ -72,11 +72,16 @@ type ProductOrderField string
 
 func (p ProductOrderField) IsValid() bool {
 	switch p {
-	case ProductOrderFieldName, ProductOrderFieldRank,
-		ProductOrderFieldPrice, ProductOrderFieldMinimalPrice,
-		ProductOrderFieldDate, ProductOrderFieldType,
-		ProductOrderFieldPublished, ProductOrderFieldPublicationDate,
-		ProductOrderFieldCollection, ProductOrderFieldRating:
+	case ProductOrderFieldName,
+		ProductOrderFieldRank,
+		ProductOrderFieldPrice,
+		ProductOrderFieldMinimalPrice,
+		ProductOrderFieldDate,
+		ProductOrderFieldType,
+		ProductOrderFieldPublished,
+		ProductOrderFieldPublicationDate,
+		ProductOrderFieldCollection,
+		ProductOrderFieldRating:
 		return true
 	default:
 		return false

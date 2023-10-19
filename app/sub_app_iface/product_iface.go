@@ -161,5 +161,6 @@ type ProductService interface {
 	UpsertProduct(tx *gorm.DB, product *model.Product) (*model.Product, *model.AppError)
 	DeleteProductVariants(variantIds []string, requesterID string) (int64, *model.AppError)
 	SetDefaultProductVariantForProduct(productID, variantID string) (*model.Product, *model.AppError)
+	UpdateOrCreateProductVariantChannelListings(variantID string, inputList []model.ProductVariantChannelListingAddInput) *model.AppError	
 	ToggleVariantRelations(variants model.ProductVariants, medias model.ProductMedias, sales model.Sales, vouchers model.Vouchers, wishlistItems model.WishlistItems, isDelete bool) *model.AppError
 }

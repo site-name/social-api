@@ -487,7 +487,7 @@ type (
 		GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error)       // GetByOption finds and returns a product type with given options
 		// Count(options *model.ProductTypeFilterOption) (int64, error)
 	}
-	CategoryTranslationStore any
+	CategoryTranslationStore interface{}
 	CategoryStore            interface {
 		Upsert(category *model.Category) (*model.Category, error)                                 // Upsert depends on given category's Id field to decide update or insert it
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
@@ -497,14 +497,10 @@ type (
 	ProductStore interface {
 		ScanFields(product *model.Product) []any
 		Save(tx *gorm.DB, product *model.Product) (*model.Product, error)
-		GetByOption(option *model.ProductFilterOption) (*model.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
-		FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) // FilterByOption finds and returns all products that satisfy given option
-		PublishedProducts(channelSlug string) ([]*model.Product, error)             // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
-		NotPublishedProducts(channelID string) ([]*struct {
-			model.Product
-			IsPublished     bool
-			PublicationDate *timemodule.Time
-		}, error) // NotPublishedProducts finds all not published products belong to given channel
+		GetByOption(option *model.ProductFilterOption) (*model.Product, error)                                                                                   // GetByOption finds and returns 1 product that satisfies given option
+		FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error)                                                                              // FilterByOption finds and returns all products that satisfy given option
+		PublishedProducts(channelSlug string) ([]*model.Product, error)                                                                                          // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
+		NotPublishedProducts(channelID string) (model.Products, error)                                                                                           // NotPublishedProducts finds all not published products belong to given channel
 		PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder                                                                                     // PublishedWithVariants finds and returns products.
 		VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                                           // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.

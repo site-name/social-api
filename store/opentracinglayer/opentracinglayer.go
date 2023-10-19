@@ -5619,11 +5619,7 @@ func (s *OpenTracingLayerProductStore) GetByOption(option *model.ProductFilterOp
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelID string) ([]*struct {
-	model.Product
-	IsPublished     bool
-	PublicationDate *timemodule.Time
-}, error) {
+func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.NotPublishedProducts")
 	s.Root.Store.SetContext(newCtx)
@@ -5659,7 +5655,7 @@ func (s *OpenTracingLayerProductStore) PublishedProducts(channelSlug string) ([]
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder {
+func (s *OpenTracingLayerProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.PublishedWithVariants")
 	s.Root.Store.SetContext(newCtx)
@@ -5668,7 +5664,7 @@ func (s *OpenTracingLayerProductStore) PublishedWithVariants(channel_SlugOrID st
 	}()
 
 	defer span.Finish()
-	result := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
+	result := s.ProductStore.PublishedWithVariants(channelIdOrSlug)
 	return result
 }
 
@@ -5708,7 +5704,7 @@ func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogu
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (s *OpenTracingLayerProductStore) VisibleToUserProductsQuery(channelIdOrSlug string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.VisibleToUserProductsQuery")
 	s.Root.Store.SetContext(newCtx)
@@ -5717,7 +5713,7 @@ func (s *OpenTracingLayerProductStore) VisibleToUserProductsQuery(channel_SlugOr
 	}()
 
 	defer span.Finish()
-	result := s.ProductStore.VisibleToUserProductsQuery(channel_SlugOrID, userHasOneOfProductpermissions)
+	result := s.ProductStore.VisibleToUserProductsQuery(channelIdOrSlug, userHasOneOfProductpermissions)
 	return result
 }
 

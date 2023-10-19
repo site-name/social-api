@@ -241,17 +241,17 @@ func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*mode
 
 // channelQuery is a utility function to compose a filter query on `Channels` table.
 //
-// `channel_Slug_or_ID` is to filter attribute Channels.Slug = ... OR Channels.Id = ....
+// `channelSlugOrID` is to filter attribute Channels.Slug = ... OR Channels.Id = ....
 //
 // `compareToTable` is database table that has property `ChannelID`.
 // This argument can be `ProductChannelListings` or `ProductVariantChannelListings`
-func (ps *SqlProductStore) channelQuery(channel_Slug_or_ID string, isActive *bool, compareToTable string) squirrel.SelectBuilder {
+func (ps *SqlProductStore) channelQuery(channelSlugOrID string, isActive *bool, compareToTable string) squirrel.SelectBuilder {
 	var channelActiveExpr string
 	if isActive != nil {
 		if *isActive {
-			channelActiveExpr = "Channels.IsActive AND "
+			channelActiveExpr = fmt.Sprintf("%s.%s AND ", model.ChannelTableName, model.ChannelColumnIsActive)
 		} else {
-			channelActiveExpr = "NOT Channels.IsActive AND "
+			channelActiveExpr = fmt.Sprintf("NOT %s.%s AND ", model.ChannelTableName, model.ChannelColumnIsActive)
 		}
 	}
 	return ps.
@@ -259,7 +259,7 @@ func (ps *SqlProductStore) channelQuery(channel_Slug_or_ID string, isActive *boo
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(model.ChannelTableName).
-		Where(channelActiveExpr+"(Channels.Slug = ? OR Channels.Id = ?) AND Channels.Id = ?.ChannelID", channel_Slug_or_ID, channel_Slug_or_ID, compareToTable).
+		Where(channelActiveExpr+"(Channels.Slug = ? OR Channels.Id = ?) AND Channels.Id = ?.ChannelID", channelSlugOrID, channelSlugOrID, compareToTable).
 		Suffix(")").
 		Limit(1)
 }
@@ -308,40 +308,28 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 // FilterNotPublishedProducts finds all not published products belong to given channel
 //
 // refer to ./product_store_doc.md (line 45)
-func (ps *SqlProductStore) NotPublishedProducts(channelID string) (
-	[]*struct {
-		model.Product
-		IsPublished     bool
-		PublicationDate *time.Time
-	},
-	error,
-) {
+func (ps *SqlProductStore) NotPublishedProducts(channelID string) (model.Products, error) {
 	today := util.StartOfDay(time.Now()) // start of day
-
-	isPublishedColumnSelect := ps.GetQueryBuilder(squirrel.Question).
-		Select("ProductChannelListings.IsPublished").
-		From(model.ProductChannelListingTableName).
-		Where("ProductChannelListings.ProductID = Products.Id AND ProductChannelListings.ChannelID = ?", channelID).
-		Limit(1)
-
-	publicationDateColumnSelect := ps.GetQueryBuilder(squirrel.Question).
-		Select("ProductChannelListings.PublicationDate").
-		From(model.ProductChannelListingTableName).
-		Where("ProductChannelListings.ProductID = Products.Id AND ProductChannelListings.ChannelID = ?", channelID).
-		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
 		Select(model.ProductTableName + ".*").
-		Column(squirrel.Alias(isPublishedColumnSelect, "IsPublished")).
-		Column(squirrel.Alias(publicationDateColumnSelect, "PublicationDate")).
 		From(model.ProductTableName).
+		InnerJoin(
+			fmt.Sprintf(
+				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductChannelListingTableName,       // 1
+				model.ProductTableName,                     // 2
+				model.ProductChannelListingColumnProductID, // 3
+				model.ProductColumnId,                      // 4
+			),
+		).
 		Where(squirrel.Or{
 			squirrel.And{
-				squirrel.Expr("Products.PublicationDate > ?", today),
-				squirrel.Expr("Products.IsPublished"),
+				squirrel.Expr(model.ProductChannelListingTableName+"."+model.PublishableColumnPublicationDate+" > ?", today),
+				squirrel.Expr(model.ProductChannelListingTableName + "." + model.PublishableColumnIsPublished),
 			},
-			squirrel.Expr("NOT Products.IsPublished"),
-			squirrel.Expr("Products.IsPublished IS NULL"),
+			squirrel.Expr("NOT " + model.ProductChannelListingTableName + "." + model.PublishableColumnIsPublished),
+			squirrel.Expr(model.ProductChannelListingTableName + "." + model.PublishableColumnIsPublished + " IS NULL"),
 		}).
 		ToSql()
 
@@ -349,12 +337,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelID string) (
 		return nil, errors.Wrap(err, "NotPublishedProducts_ToSql")
 	}
 
-	var res []*struct {
-		model.Product
-		IsPublished     bool
-		PublicationDate *time.Time
-	}
-
+	var res model.Products
 	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find not published product with channel id=%s", channelID)
@@ -483,10 +466,6 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(transacti
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "SelectForUpdateDiscountedPricesOfCatalogues_ToSql")
-	}
-
-	if transaction == nil {
-		transaction = ps.GetMaster()
 	}
 
 	var products model.Products
@@ -675,7 +654,21 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 
 func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
 	var res []*model.ProductCountByCategoryID
-	err := s.GetMaster().Raw("SELECT P.CategoryID, COUNT(p.Id) AS ProductCount FROM Products P WHERE P.CategoryID IN ? GROUP BY P.CategoryID", categoryIDs).Scan(&res).Error
+	query := fmt.Sprintf(
+		`SELECT
+			%[1]s.%[2]s,
+			COUNT(%[1]s.%[3]s) AS ProductCount
+		FROM
+			%[1]s
+		WHERE
+			%[1]s.%[2]s IN ?
+		GROUP BY %[1]s.%[2]s`,
+
+		model.ProductTableName,        // 1
+		model.ProductColumnCategoryID, // 2
+		model.ProductColumnId,         // 3
+	)
+	err := s.GetMaster().Raw(query, categoryIDs).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to count products by given category ids")
 	}
