@@ -543,7 +543,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 	go func() {
 		categories, appErr := s.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
-			SaleID: squirrel.Eq{model.SaleCategoryTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleCategoryTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
 			appError <- appErr
@@ -554,7 +554,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 	go func() {
 		_, collections, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
-			SaleID: squirrel.Eq{model.SaleCollectionTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleCollectionTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
 			appError <- appErr
@@ -565,7 +565,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 	go func() {
 		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
-			SaleID: squirrel.Eq{model.SaleProductTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleProductTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
 			appError <- appErr
@@ -576,7 +576,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 	go func() {
 		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-			SaleID: squirrel.Eq{model.SaleProductVariantTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleProductVariantTableName + ".sale_id": instance.Id},
 		})
 		if appErr != nil {
 			appError <- appErr

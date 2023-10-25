@@ -7,7 +7,6 @@ import (
 	"unicode"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -179,18 +178,17 @@ func ExtractModelFieldNames(model any) util.AnyArray[string] {
 	return res
 }
 
-func BuildSqlizer(option squirrel.Sqlizer) []any {
+func BuildSqlizer(option squirrel.Sqlizer) ([]any, error) {
 	if option == nil {
-		return []any{}
+		return []any{}, nil
 	}
 
 	query, args, err := option.ToSql()
 	if err != nil {
-		slog.Error("BuildSqlizer failed to build Sqlizer", slog.Err(err))
-		return []any{}
+		return nil, err
 	}
 
 	res := make([]any, 0, len(args)+1)
 	res[0] = query
-	return append(res, args...)
+	return append(res, args...), nil
 }

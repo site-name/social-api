@@ -60,13 +60,15 @@ func (s *ServiceCsv) ExportProductsInBatches(
 		createAtGt = prds[len(prds)-1].CreateAt
 
 		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
-			Conditions:                               squirrel.Eq{model.ProductTableName + ".Id": prds.IDs()},
-			PrefetchRelatedAssignedProductAttributes: true,
-			PrefetchRelatedVariants:                  true,
-			PrefetchRelatedCollections:               true,
-			PrefetchRelatedMedia:                     true,
-			PrefetchRelatedProductType:               true,
-			PrefetchRelatedCategory:                  true,
+			Conditions: squirrel.Eq{model.ProductTableName + ".Id": prds.IDs()},
+			Preloads: []string{
+				"ProductMedias",
+				"ProductType",
+				"Category",
+				"Collections",
+				"ProductVariants",
+				"Attributes",
+			},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {

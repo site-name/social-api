@@ -1,6 +1,7 @@
 package model
 
 import (
+	"cmp"
 	"crypto/rand"
 	"crypto/sha256"
 	"database/sql/driver"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
@@ -141,7 +143,7 @@ func GetPointerOfValue[T any](value T) *T {
 	return &value
 }
 
-func CopyPointer[T any](value *T) *T {
+func CopyPointer[T cmp.Ordered | decimal.Decimal | time.Time | bool](value *T) *T {
 	if value == nil {
 		return nil
 	}

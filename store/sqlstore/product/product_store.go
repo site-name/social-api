@@ -62,158 +62,149 @@ func (ps *SqlProductStore) Save(tx *gorm.DB, product *model.Product) (*model.Pro
 	return product, nil
 }
 
-func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption) (string, []interface{}, error) {
-	query := ps.GetQueryBuilder().
-		Select(model.ProductTableName + ".*").
-		From(model.ProductTableName).Where(option.Conditions)
+func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption) (*gorm.DB, squirrel.Sqlizer) {
+	db := ps.GetReplica()
+	conditions := squirrel.And{}
 
-	// parse option
+	if option.Conditions != nil {
+		conditions = append(conditions, option.Conditions)
+	}
 	if option.Limit > 0 {
-		query = query.Limit(option.Limit)
+		db = db.Limit(int(option.Limit))
+	}
+	for _, preload := range option.Preloads {
+		db = db.Preload(preload)
 	}
 
 	if option.ProductVariantID != nil {
-		query = query.
-			InnerJoin(model.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID").
-			Where(option.ProductVariantID)
+		db = db.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductVariantTableName,       // 1
+				model.ProductTableName,              // 2
+				model.ProductVariantColumnProductID, // 3
+				model.ProductColumnId,               // 4
+			),
+		)
+		conditions = append(conditions, option.ProductVariantID)
 	} else if option.HasNoProductVariants {
-		query = query.
-			LeftJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
-			Where(model.ProductVariantTableName + ".ProductID IS NULL")
+		db = db.Joins(
+			fmt.Sprintf(
+				"LEFT JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.ProductVariantTableName,       // 1
+				model.ProductTableName,              // 2
+				model.ProductVariantColumnProductID, // 3
+				model.ProductColumnId,               // 4
+			),
+		)
+		conditions = append(conditions, squirrel.Expr(model.ProductVariantTableName+"."+model.ProductVariantColumnProductID+" IS NULL"))
 	}
-
 	if option.VoucherID != nil {
-		query = query.
-			InnerJoin(model.VoucherProductTableName + " ON Products.Id = VoucherProducts.ProductID").
-			Where(option.VoucherID)
+		db = db.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.VoucherProductTableName, // 1
+				model.ProductTableName,        // 2
+				"product_id",                  // 3
+				model.ProductColumnId,         // 4
+			),
+		)
+		conditions = append(conditions, option.VoucherID)
 	}
 	if option.SaleID != nil {
-		query = query.
-			InnerJoin(model.SaleProductTableName + " ON Products.Id = SaleProducts.ProductID").
-			Where(option.SaleID)
+		db = db.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.SaleProductTableName, // 1
+				model.ProductTableName,     // 2
+				"product_id",               // 3
+				model.ProductColumnId,      // 4
+			),
+		)
+		conditions = append(conditions, option.SaleID)
 	}
 	if option.CollectionID != nil {
-		query = query.
-			InnerJoin(model.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
-			Where(option.CollectionID)
+		db = db.Joins(
+			fmt.Sprintf(
+				"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+				model.CollectionProductRelationTableName, // 1
+				model.ProductTableName,                   // 2
+				model.CollectionProductColumnProductID,   // 3
+				model.ProductColumnId,                    // 4
+			),
+		)
+		conditions = append(conditions, option.CollectionID)
 	}
 
-	return query.ToSql()
+	return db, conditions
+
+	// query := ps.GetQueryBuilder().
+	// 	Select(model.ProductTableName + ".*").
+	// 	From(model.ProductTableName).
+	// 	Where(option.Conditions)
+
+	// // parse option
+	// if option.Limit > 0 {
+	// 	query = query.Limit(option.Limit)
+	// }
+
+	// if option.ProductVariantID != nil {
+	// 	query = query.
+	// 		InnerJoin(
+	// 			fmt.Sprintf(
+	// 				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+	// 				model.ProductVariantTableName,       // 1
+	// 				model.ProductTableName,              // 2
+	// 				model.ProductVariantColumnProductID, // 3
+	// 				model.ProductColumnId,               // 4
+	// 			),
+	// 		).
+	// 		Where(option.ProductVariantID)
+	// } else if option.HasNoProductVariants {
+	// 	query = query.
+	// 		LeftJoin(
+	// 			fmt.Sprintf(
+	// 				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+	// 				model.ProductVariantTableName,       // 1
+	// 				model.ProductTableName,              // 2
+	// 				model.ProductVariantColumnProductID, // 3
+	// 				model.ProductColumnId,               // 4
+	// 			),
+	// 		).
+	// 		Where(model.ProductVariantTableName + ".ProductID IS NULL")
+	// }
+
+	// if option.VoucherID != nil {
+	// 	query = query.
+	// 		InnerJoin(model.VoucherProductTableName + " ON Products.Id = VoucherProducts.ProductID").
+	// 		Where(option.VoucherID)
+	// }
+	// if option.SaleID != nil {
+	// 	query = query.
+	// 		InnerJoin(model.SaleProductTableName + " ON Products.Id = SaleProducts.ProductID").
+	// 		Where(option.SaleID)
+	// }
+	// if option.CollectionID != nil {
+	// 	query = query.
+	// 		InnerJoin(model.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
+	// 		Where(option.CollectionID)
+	// }
+
+	// return query.ToSql()
 }
 
 // FilterByOption finds and returns all products that satisfy given option
 func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
-	queryString, args, err := ps.commonQueryBuilder(option)
+	db, conditions := ps.commonQueryBuilder(option)
+	args, err := store.BuildSqlizer(conditions)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
 	var products model.Products
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&products).Error
+	err = db.Find(&products, args...).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find products by given option")
-	}
-
-	var (
-		productIDs  = make([]string, 0, len(products))
-		productsMap = map[string]*model.Product{} // productsMap has keys are product ids
-	)
-	for _, product := range products {
-		_, met := productsMap[product.Id]
-		if !met {
-			productsMap[product.Id] = product
-			productIDs = append(productIDs, product.Id)
-		}
-	}
-
-	// check if need prefetch related assigned product attribute
-	if option.PrefetchRelatedAssignedProductAttributes && len(productIDs) > 0 {
-		assignedAttributes, err := ps.AssignedProductAttribute().FilterByOptions(&model.AssignedProductAttributeFilterOption{
-			Conditions: squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": productIDs},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, attr := range assignedAttributes {
-			product, ok := productsMap[attr.ProductID]
-			if ok && product != nil {
-				product.Attributes = append(product.Attributes, attr)
-			}
-		}
-	}
-
-	// check if need prefetch related categories
-	if option.PrefetchRelatedCategory && len(productIDs) > 0 {
-		categories, err := ps.Category().FilterByOption(&model.CategoryFilterOption{
-			Conditions: squirrel.Eq{model.CategoryTableName + ".id": products.CategoryIDs()},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		var categoriesMap = map[string]*model.Category{}
-		for _, cate := range categories {
-			categoriesMap[cate.Id] = cate
-		}
-
-		for _, prd := range products {
-			if prd.CategoryID != nil {
-				prd.SetCategory(categoriesMap[*prd.CategoryID])
-			}
-		}
-	}
-
-	// check if need prefetch related collections
-	if option.PrefetchRelatedCollections && len(productIDs) > 0 {
-		collectionProducts, err := ps.CollectionProduct().FilterByOptions(&model.CollectionProductFilterOptions{
-			Conditions:              squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productIDs},
-			SelectRelatedCollection: true,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, rel := range collectionProducts {
-			product, ok := productsMap[rel.ProductID]
-			if ok && product != nil {
-				product.Collections = append(product.Collections, rel.GetCollection())
-			}
-		}
-	}
-
-	// check if we need to prefetch related product type
-	if option.PrefetchRelatedProductType && len(productIDs) > 0 {
-		productTypes, err := ps.ProductType().ProductTypesByProductIDs(productIDs)
-		if err != nil {
-			return nil, err
-		}
-
-		var productTypesMap = map[string]*model.ProductType{}
-		for _, prdType := range productTypes {
-			productTypesMap[prdType.Id] = prdType
-		}
-
-		for _, product := range products {
-			product.SetProductType(productTypesMap[product.ProductTypeID])
-		}
-	}
-
-	// check if we need to prefetch related file infos
-	if option.PrefetchRelatedMedia && len(productIDs) > 0 {
-		fileInfos, err := ps.FileInfo().GetWithOptions(&model.GetFileInfosOptions{
-			Conditions: squirrel.Eq{model.FileInfoTableName + ".ParentID": productIDs},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, info := range fileInfos {
-			product, ok := productsMap[info.ParentID]
-			if ok && product != nil {
-				product.SetMedias(append(product.GetMedias(), info))
-			}
-		}
+		return nil, errors.Wrap(err, "failed to find productswith given options")
 	}
 
 	return products, nil
@@ -222,13 +213,14 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 // GetByOption finds and returns 1 product that satisfies given option
 func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
 	option.Limit = 0
-	queryString, args, err := ps.commonQueryBuilder(option)
+	db, conditions := ps.commonQueryBuilder(option)
+	args, err := store.BuildSqlizer(conditions)
 	if err != nil {
-		return nil, errors.Wrap(err, "GetByOption_ToSql")
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
 	var res model.Product
-	err = ps.GetReplica().Raw(queryString, args...).Scan(&res).Error
+	err = db.First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTableName, "option")
@@ -277,10 +269,23 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(model.ProductChannelListingTableName).
-		Where(`(ProductChannelListings.PublicationDate <= ? OR 
-			ProductChannelListings.PublicationDate IS NULL)
-			AND ProductChannelListings.IsPublished
-			AND ProductChannelListings.ProductID = Products.Id`, today).
+		Where(
+			fmt.Sprintf(`(
+					%[1]s.%[2]s <= ?
+					OR %[1]s.%[2]s IS NULL
+				)
+				AND %[1]s.%[3]s
+				AND %[1]s.%[4]s = %[5]s.%[6]s`,
+
+				model.ProductChannelListingTableName,       // 1
+				model.PublishableColumnPublicationDate,     // 2
+				model.PublishableColumnIsPublished,         // 3
+				model.ProductChannelListingColumnProductID, // 4
+				model.ProductTableName,                     // 5
+				model.ProductColumnId,                      // 6
+			),
+			today,
+		).
 		Where(channelQuery).
 		Suffix(")").
 		Limit(1)

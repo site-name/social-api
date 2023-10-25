@@ -168,7 +168,7 @@ func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.Not
 	totalGiftcardsOfCheckout = len(allGiftcards)
 
 	// find active giftcards
-	// NOTE: active giftcards are active and has (ExpiryDate == NULL || ExpiryDate >= beginning of Today)
+	// NOTE: active giftcards are active and has (ExpiryDate IS NULL || ExpiryDate >= beginning of Today)
 	var expiryDateOfGiftcard *time.Time
 	for _, giftcard := range allGiftcards {
 		expiryDateOfGiftcard = giftcard.ExpiryDate

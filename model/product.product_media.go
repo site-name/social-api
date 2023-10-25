@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
@@ -62,6 +63,26 @@ func (c *ProductMedia) BeforeUpdate(_ *gorm.DB) error {
 func (c *ProductMedia) TableName() string { return ProductMediaTableName }
 
 type ProductMedias []*ProductMedia
+
+func (ps ProductMedias) DeepCopy() ProductMedias {
+	return lo.Map(ps, func(m *ProductMedia, _ int) *ProductMedia { return m.DeepCopy() })
+}
+
+func (p *ProductMedia) DeepCopy() *ProductMedia {
+	if p == nil {
+		return nil
+	}
+
+	res := *p
+	res.ExternalUrl = CopyPointer(res.ExternalUrl)
+	if p.ProductVariants != nil {
+		res.ProductVariants = p.ProductVariants.DeepCopy()
+	}
+	if p.Product != nil {
+		res.Product = p.Product.DeepCopy()
+	}
+	return &res
+}
 
 // ProductMediaFilterOption is used for building squirrel sql queries
 type ProductMediaFilterOption struct {

@@ -246,15 +246,15 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *g
 	)
 	switch t := discount.(type) {
 	case *model.Sale:
-		productFilterOption.SaleID = squirrel.Eq{model.SaleProductTableName + ".SaleID": t.Id}
-		categoryFilterOption.SaleID = squirrel.Eq{model.SaleCategoryTableName + ".SaleID": t.Id}
-		collectionFilterOption.SaleID = squirrel.Eq{model.SaleCollectionTableName + ".SaleID": t.Id}
-		variantFilterOptions.SaleID = squirrel.Eq{model.SaleProductVariantTableName + ".SaleID": t.Id}
+		productFilterOption.SaleID = squirrel.Eq{model.SaleProductTableName + ".sale_id": t.Id}
+		categoryFilterOption.SaleID = squirrel.Eq{model.SaleCategoryTableName + ".sale_id": t.Id}
+		collectionFilterOption.SaleID = squirrel.Eq{model.SaleCollectionTableName + ".sale_id": t.Id}
+		variantFilterOptions.SaleID = squirrel.Eq{model.SaleProductVariantTableName + ".sale_id": t.Id}
 	case *model.Voucher:
-		productFilterOption.VoucherID = squirrel.Eq{model.VoucherProductTableName + ".VoucherID": t.Id}
-		categoryFilterOption.VoucherID = squirrel.Eq{model.VoucherCategoryTableName + ".VoucherID": t.Id}
-		collectionFilterOption.VoucherID = squirrel.Eq{model.VoucherCollectionTableName + ".VoucherID": t.Id}
-		variantFilterOptions.VoucherID = squirrel.Eq{model.VoucherProductVariantTableName + ".VoucherID": t.Id}
+		productFilterOption.VoucherID = squirrel.Eq{model.VoucherProductTableName + ".voucher_id": t.Id}
+		categoryFilterOption.VoucherID = squirrel.Eq{model.VoucherCategoryTableName + ".voucher_id": t.Id}
+		collectionFilterOption.VoucherID = squirrel.Eq{model.VoucherCollectionTableName + ".voucher_id": t.Id}
+		variantFilterOptions.VoucherID = squirrel.Eq{model.VoucherProductVariantTableName + ".voucher_id": t.Id}
 
 	default:
 		return model.NewAppError("UpdateProductsDiscountedPricesOfDiscount", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)

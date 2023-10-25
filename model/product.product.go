@@ -30,12 +30,13 @@ type Product struct {
 	ModelMetadata
 	Seo
 
-	productType            *ProductType           `json:"-" gorm:"-"`
-	productVariants        ProductVariants        `json:"-" gorm:"-"`
-	category               *Category              `json:"-" gorm:"-"`
-	medias                 FileInfos              `json:"-" gorm:"-"`
-	productChannelListings ProductChannelListings `json:"-" gorm:"-"`
+	// medias FileInfos `json:"-" gorm:"-"`
 
+	ProductMedias           ProductMedias             `json:"-" gorm:"foreignKey:ProductID"`
+	ProductType             *ProductType              `json:"-"`
+	Category                *Category                 `json:"-"`
+	ProductChannelListings  ProductChannelListings    `json:"-" gorm:"foreignKey:ProductID"`
+	ProductVariants         ProductVariants           `json:"-" gorm:"foreignKey:ProductID"`
 	Collections             Collections               `json:"-" gorm:"many2many:ProductCollections"`
 	Sales                   Sales                     `json:"-" gorm:"many2many:SaleProducts"`
 	Vouchers                Vouchers                  `json:"-" gorm:"many2many:VoucherProducts"`
@@ -62,19 +63,19 @@ const (
 	ProductColumnRating               = "Rating"
 )
 
-func (p *Product) GetProductType() *ProductType                        { return p.productType }
-func (p *Product) SetProductType(pt *ProductType)                      { p.productType = pt }
-func (p *Product) GetProductVariants() ProductVariants                 { return p.productVariants }
-func (p *Product) SetProductVariants(pvs ProductVariants)              { p.productVariants = pvs }
-func (p *Product) GetCategory() *Category                              { return p.category }
-func (p *Product) SetCategory(c *Category)                             { p.category = c }
-func (p *Product) GetMedias() FileInfos                                { return p.medias }
-func (p *Product) SetMedias(ms FileInfos)                              { p.medias = ms }
-func (p *Product) GetProductChannelListings() ProductChannelListings   { return p.productChannelListings }
-func (p *Product) SetProductChannelListings(pc ProductChannelListings) { p.productChannelListings = pc }
-func (c *Product) BeforeCreate(_ *gorm.DB) error                       { c.PreSave(); return c.IsValid() }
-func (c *Product) BeforeUpdate(_ *gorm.DB) error                       { c.PreUpdate(); return c.IsValid() }
-func (c *Product) TableName() string                                   { return ProductTableName }
+// func (p *Product) GetProductType() *ProductType                        { return p.productType }
+// func (p *Product) SetProductType(pt *ProductType)                      { p.productType = pt }
+// func (p *Product) GetProductVariants() ProductVariants                 { return p.productVariants }
+// func (p *Product) SetProductVariants(pvs ProductVariants)              { p.productVariants = pvs }
+// func (p *Product) GetCategory() *Category                              { return p.category }
+// func (p *Product) SetCategory(c *Category)                             { p.category = c }
+// func (p *Product) SetProductChannelListings(pc ProductChannelListings) { p.productChannelListings = pc }
+// func (p *Product) GetProductChannelListings() ProductChannelListings   { return p.productChannelListings }
+// func (p *Product) GetMedias() FileInfos          { return p.medias }
+// func (p *Product) SetMedias(ms FileInfos)        { p.medias = ms }
+func (c *Product) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *Product) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *Product) TableName() string             { return ProductTableName }
 
 type ProductCountByCategoryID struct {
 	CategoryID   string `json:"category_id"`
@@ -94,23 +95,25 @@ type ProductFilterOption struct {
 	SaleID               squirrel.Sqlizer // INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
 	CollectionID         squirrel.Sqlizer // INNER JOIN ProductCollections ON ... WHERE ProductCollections.CollectionID ...
 
-	PrefetchRelatedAssignedProductAttributes bool
-	PrefetchRelatedVariants                  bool
-	PrefetchRelatedCollections               bool
-	PrefetchRelatedMedia                     bool
-	PrefetchRelatedProductType               bool
-	PrefetchRelatedCategory                  bool
+	// PrefetchRelatedAssignedProductAttributes bool
+	// PrefetchRelatedVariants                  bool
+	// PrefetchRelatedCollections               bool
+	// PrefetchRelatedMedia                     bool
+	// PrefetchRelatedProductType               bool
+	// PrefetchRelatedCategory                  bool
 
-	Prefetch_Related_AssignedProductAttribute_AttributeValues                                 bool
-	Prefetch_Related_AssignedProductAttribute_AttributeProduct_Attribute                      bool
-	Prefetch_Related_ProductChannelListings                                                   bool
-	Prefetch_Related_ProductChannelListings_Channel                                           bool
-	Prefetch_Related_ProductVariants_Stocks                                                   bool
-	Prefetch_Related_ProductVariants_Stocks_Warehouses                                        bool
-	Prefetch_Related_ProductVariants_AssignedVariantAttributeValue_AttributeValues            bool
-	Prefetch_Related_ProductVariants_AssignedVariantAttributeValue_AttributeVariant_Attribute bool
-	Prefetch_Related_ProductVariants_ProductVariantChannelListing_Channel                     bool
-	Prefetch_Related_ProductVariants_ProductVariantChannelListings                            bool
+	Preloads []string
+
+	// Prefetch_Related_AssignedProductAttribute_AttributeValues                                 bool
+	// Prefetch_Related_AssignedProductAttribute_AttributeProduct_Attribute                      bool
+	// Prefetch_Related_ProductChannelListings                                                   bool
+	// Prefetch_Related_ProductChannelListings_Channel                                           bool
+	// Prefetch_Related_ProductVariants_Stocks                                                   bool
+	// Prefetch_Related_ProductVariants_Stocks_Warehouses                                        bool
+	// Prefetch_Related_ProductVariants_AssignedVariantAttributeValue_AttributeValues            bool
+	// Prefetch_Related_ProductVariants_AssignedVariantAttributeValue_AttributeVariant_Attribute bool
+	// Prefetch_Related_ProductVariants_ProductVariantChannelListing_Channel                     bool
+	// Prefetch_Related_ProductVariants_ProductVariantChannelListings                            bool
 }
 
 type Products []*Product
@@ -163,19 +166,19 @@ func (ps Products) Flat() []StringInterface {
 	for _, prd := range ps {
 		maxLength := max(
 			len(prd.Collections),
-			len(prd.medias),
+			len(prd.ProductMedias),
 			len(prd.Attributes),
-			len(prd.productVariants),
+			len(prd.ProductVariants),
 		)
 
 		var categorySlug string
 		var productTypeName string
 
-		if prd.category != nil {
-			categorySlug = prd.category.Slug
+		if prd.Category != nil {
+			categorySlug = prd.Category.Slug
 		}
-		if prd.productType != nil {
-			productTypeName = prd.productType.Name
+		if prd.ProductType != nil {
+			productTypeName = prd.ProductType.Name
 		}
 
 		for i := 0; i < maxLength; i++ {
@@ -192,19 +195,19 @@ func (ps Products) Flat() []StringInterface {
 			if i < len(prd.Collections) {
 				data["collections__slug"] = prd.Collections[i].Slug
 			}
-			if i < len(prd.medias) {
-				data["media__image"] = prd.medias[i].Path
+			if i < len(prd.ProductMedias) {
+				data["media__image"] = prd.ProductMedias[i].Image
 			}
 			if i < len(prd.Attributes) {
 				panic("not implemented")
 			}
-			if i < len(prd.productVariants) {
-				data["variant_weight"] = prd.productVariants[i].WeightString()
-				data["variants__id"] = prd.productVariants[i].Id
-				data["variants__sku"] = prd.productVariants[i].Sku // can be nil
-				data["variants__is_preorder"] = prd.productVariants[i].IsPreOrder
-				data["variants__preorder_global_threshold"] = prd.productVariants[i].PreOrderGlobalThreshold // can be nil
-				data["variants__preorder_end_date"] = prd.productVariants[i].PreorderEndDate                 // can be nil
+			if i < len(prd.ProductVariants) {
+				data["variant_weight"] = prd.ProductVariants[i].WeightString()
+				data["variants__id"] = prd.ProductVariants[i].Id
+				data["variants__sku"] = prd.ProductVariants[i].Sku // can be nil
+				data["variants__is_preorder"] = prd.ProductVariants[i].IsPreOrder
+				data["variants__preorder_global_threshold"] = prd.ProductVariants[i].PreOrderGlobalThreshold // can be nil
+				data["variants__preorder_end_date"] = prd.ProductVariants[i].PreorderEndDate                 // can be nil
 			}
 
 			res = append(res, data)
@@ -275,23 +278,23 @@ func (p *Product) DeepCopy() *Product {
 	if p.Collections != nil {
 		res.Collections = p.Collections.DeepCopy()
 	}
-	if p.productType != nil {
-		res.productType = p.productType.DeepCopy()
+	if p.ProductType != nil {
+		res.ProductType = p.ProductType.DeepCopy()
 	}
 	if p.Attributes != nil {
 		res.Attributes = p.Attributes.DeepCopy()
 	}
-	if p.productVariants != nil {
-		res.productVariants = p.productVariants.DeepCopy()
+	if p.ProductVariants != nil {
+		res.ProductVariants = p.ProductVariants.DeepCopy()
 	}
-	if p.category != nil {
-		res.category = p.category.DeepCopy()
+	if p.Category != nil {
+		res.Category = p.Category.DeepCopy()
 	}
-	if p.medias != nil {
-		res.medias = p.medias.DeepCopy()
+	if p.ProductMedias != nil {
+		res.ProductMedias = p.ProductMedias.DeepCopy()
 	}
-	if p.productChannelListings != nil {
-		res.productChannelListings = p.productChannelListings.DeepCopy()
+	if p.ProductChannelListings != nil {
+		res.ProductChannelListings = p.ProductChannelListings.DeepCopy()
 	}
 	res.ModelMetadata = p.ModelMetadata.DeepCopy()
 

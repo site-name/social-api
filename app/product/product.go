@@ -79,7 +79,7 @@ func (a *ServiceProduct) ProductByOption(option *model.ProductFilterOption) (*mo
 // ProductsByVoucherID finds all products that have relationships with given voucher
 func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*model.Product, *model.AppError) {
 	products, appErr := a.ProductsByOption(&model.ProductFilterOption{
-		VoucherID: squirrel.Expr(model.VoucherProductTableName+".VoucherID = ?", voucherID),
+		VoucherID: squirrel.Expr(model.VoucherProductTableName+".voucher_id = ?", voucherID),
 	})
 	if appErr != nil {
 		return nil, appErr
