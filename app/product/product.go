@@ -169,7 +169,6 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 	if tx.Error != nil {
 		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer s.srv.Store.FinalizeTransaction(tx)
 
 	product, appErr := s.UpsertProduct(tx, &model.Product{
 		Id:               productID,
@@ -183,6 +182,7 @@ func (s *ServiceProduct) SetDefaultProductVariantForProduct(productID, variantID
 	if err := tx.Commit().Error; err != nil {
 		return nil, model.NewAppError("SetDefaultProductVariantForProduct", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
+	s.srv.Store.FinalizeTransaction(tx)
 
 	pluginMng := s.srv.PluginService().GetPluginManager()
 	_, appErr = pluginMng.ProductUpdated(*product)

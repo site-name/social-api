@@ -233,7 +233,6 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 	if tx.Error != nil {
 		return model.NewAppError("ToggleVariantRelations", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer s.srv.Store.FinalizeTransaction(tx)
 
 	err := s.srv.Store.
 		ProductVariant().
@@ -255,6 +254,7 @@ func (s *ServiceProduct) ToggleVariantRelations(variants model.ProductVariants, 
 	if err != nil {
 		return model.NewAppError("ToggleVariantRelations", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
+	s.srv.Store.FinalizeTransaction(tx)
 
 	pluginMng := s.srv.PluginService().GetPluginManager()
 	for _, variant := range variants {

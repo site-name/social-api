@@ -106,6 +106,8 @@ func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID s
 
 	// update product discounted price
 	s.srv.Go(func() {
+		defer s.srv.Store.FinalizeTransaction(tx)
+
 		product, appErr := s.ProductByOption(&model.ProductFilterOption{
 			ProductVariantID: squirrel.Eq{model.ProductVariantTableName + "." + model.ProductVariantColumnId: variantID},
 		})
@@ -117,13 +119,13 @@ func (s *ServiceProduct) UpdateOrCreateProductVariantChannelListings(variantID s
 		appErr = s.UpdateProductDiscountedPrice(tx, *product, []*model.DiscountInfo{})
 		if appErr != nil {
 			slog.Error("failed to update discounted price for parent product of given channel", slog.Err(appErr))
+			return
 		}
 
 		err := tx.Commit().Error
 		if err != nil {
 			slog.Error("failed to commit transaction after updating discounted price for parent product of given variant", slog.Err(err))
 		}
-		s.srv.Store.FinalizeTransaction(tx)
 	})
 
 	productVariant, appErr := s.ProductVariantById(variantID)
