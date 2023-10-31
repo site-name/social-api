@@ -30,7 +30,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction
-	tx := embedCtx.App.Srv().Store.GetMaster()
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderAddNote", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
@@ -67,7 +67,7 @@ func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id UUID }) (*Or
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction
-	tx := embedCtx.App.Srv().Store.GetMaster()
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderCancel", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
@@ -1415,7 +1415,7 @@ func (r *Resolver) Orders(ctx context.Context, args struct {
 			}
 		}
 
-		ordering := args.GraphqlParams.orderDirection()
+		ordering := args.GraphqlParams.orderDirection().String()
 		orderFilterOpts.GraphqlPaginationValues.OrderBy = orderSortFields.Map(func(_ int, item string) string { return item + " " + ordering }).Join(", ")
 	}
 
@@ -1482,7 +1482,7 @@ func (r *Resolver) DraftOrders(ctx context.Context, args struct {
 			}
 		}
 
-		ordering := args.GraphqlParams.orderDirection()
+		ordering := args.GraphqlParams.orderDirection().String()
 		orderFilterOpts.GraphqlPaginationValues.OrderBy = orderSortFields.Map(func(_ int, item string) string { return item + " " + ordering }).Join(", ")
 	}
 

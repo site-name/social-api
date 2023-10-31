@@ -150,7 +150,7 @@ func (r *Resolver) DigitalContents(ctx context.Context, args GraphqlParams) (*Di
 
 	// check if this is initial query, then no order by is passed, we need to provide it here
 	if graphqlPagin.OrderBy == "" {
-		orderDirection := args.orderDirection()
+		orderDirection := args.orderDirection().String()
 		graphqlPagin.OrderBy = util.AnyArray[string]{model.DigitalContentTableName + ".ContentType", model.DigitalContentTableName + ".ContentFile"}.
 			Map(func(_ int, item string) string { return item + " " + orderDirection }).
 			Join(", ")

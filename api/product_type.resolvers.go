@@ -251,7 +251,7 @@ func (r *Resolver) ProductTypes(ctx context.Context, args struct {
 			orderFields = productTypeSortFieldsMap[args.SortBy.Field].fields
 		}
 
-		ordering := args.GraphqlParams.orderDirection()
+		ordering := args.GraphqlParams.orderDirection().String()
 		filterOpts.GraphqlPaginationValues.OrderBy = orderFields.
 			Map(func(_ int, item string) string { return item + " " + ordering }).
 			Join(",")

@@ -536,7 +536,7 @@ func (r *Resolver) GiftCards(ctx context.Context, args struct {
 			sortFields = sortObj.fields
 			giftcardKeyFunc = sortObj.keyFunc
 		}
-		orderDirection := args.GraphqlParams.orderDirection()
+		orderDirection := args.GraphqlParams.orderDirection().String()
 		giftcardFilter.GraphqlPaginationValues.OrderBy = sortFields.Map(func(_ int, item string) string { return item + " " + orderDirection }).Join(",")
 	}
 

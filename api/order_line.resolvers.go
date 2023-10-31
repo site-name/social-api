@@ -207,7 +207,7 @@ func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }
 	}
 
 	// begin transaction
-	tx := embedCtx.App.Srv().Store.GetMaster()
+	tx := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderLineDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}

@@ -919,6 +919,10 @@ const (
 	ASC  OrderDirection = "ASC"
 )
 
+func (d OrderDirection) String() string {
+	return string(d)
+}
+
 // E.g
 //
 //	var name = "hello"

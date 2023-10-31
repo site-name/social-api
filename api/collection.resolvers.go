@@ -549,7 +549,7 @@ func (c *CollectionsArgs) parse(embedCtx *web.Context) (*model.CollectionFilterO
 			}
 		}
 
-		orderDirection := c.GraphqlParams.orderDirection()
+		orderDirection := c.GraphqlParams.orderDirection().String()
 		res.GraphqlPaginationValues.OrderBy = sortfields.
 			Map(func(_ int, item string) string { return item + " " + orderDirection }).
 			Join(", ")

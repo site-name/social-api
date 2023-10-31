@@ -552,11 +552,11 @@ type GraphqlParams struct {
 }
 
 // if First != nil, returns "ASC". Otherwise return "DESC"
-func (g *GraphqlParams) orderDirection() string {
+func (g *GraphqlParams) orderDirection() model.OrderDirection {
 	if g.First != nil {
-		return "ASC"
+		return model.ASC
 	}
-	return "DESC"
+	return model.DESC
 }
 
 // If First or Last is provided, return (First || Last) + 1
@@ -819,7 +819,7 @@ func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *mo
 		cursors          = make([]any, 0, len(operand)/2)
 		sortingFields    = make(util.AnyArray[string], 0, len(operand)/2)
 		orderDirection   = g.orderDirection()
-		sortingAscending = orderDirection == "ASC"
+		sortingAscending = orderDirection == model.ASC
 		conditions       = squirrel.Or{}
 	)
 
@@ -841,7 +841,7 @@ func (g *GraphqlParams) Parse(where string) (*model.GraphqlPaginationValues, *mo
 
 	res := &model.GraphqlPaginationValues{
 		Limit:   g.queryLimit(),
-		OrderBy: sortingFields.Map(func(_ int, item string) string { return item + " " + orderDirection }).Join(","),
+		OrderBy: sortingFields.Map(func(_ int, item string) string { return item + " " + orderDirection.String() }).Join(","),
 	}
 	if len(conditions) > 0 {
 		res.Condition = conditions

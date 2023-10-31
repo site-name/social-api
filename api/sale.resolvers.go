@@ -537,7 +537,7 @@ func (a *SalesArgs) parse() (*model.SaleFilterOption, *model.AppError) {
 			}
 		}
 
-		saleOrder := a.GraphqlParams.orderDirection()
+		saleOrder := a.GraphqlParams.orderDirection().String()
 		res.GraphqlPaginationValues.OrderBy = saleSortFields.Map(func(_ int, item string) string { return item + " " + saleOrder }).Join(",")
 	}
 

@@ -442,7 +442,7 @@ func (args *AttributesArgs) parse() (*model.AttributeFilterOption, *model.AppErr
 			attributeSortFields = attributeSortFieldMap[args.SortBy.Field].fields
 		}
 
-		orderDirection := args.GraphqlParams.orderDirection()
+		orderDirection := args.GraphqlParams.orderDirection().String()
 		attributeFilter.GraphqlPaginationValues.OrderBy = attributeSortFields.
 			Map(func(_ int, item string) string { return item + " " + orderDirection }).
 			Join(",")

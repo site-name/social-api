@@ -398,7 +398,7 @@ func (v *VoucherFilterArgs) parse() (*model.VoucherFilterOption, *model.AppError
 			}
 		}
 
-		orderDirection := v.GraphqlParams.orderDirection()
+		orderDirection := v.GraphqlParams.orderDirection().String()
 		voucherFilterOptions.GraphqlPaginationValues.OrderBy = voucherSortFields.Map(func(_ int, item string) string { return item + " " + orderDirection }).Join(",")
 	}
 

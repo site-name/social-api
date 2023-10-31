@@ -547,9 +547,9 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		})
 		if appErr != nil {
 			appError <- appErr
-		} else {
-			val <- categories
+			return
 		}
+		val <- categories
 	}()
 
 	go func() {
@@ -558,9 +558,9 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		})
 		if appErr != nil {
 			appError <- appErr
-		} else {
-			val <- collections
+			return
 		}
+		val <- collections
 	}()
 
 	go func() {
@@ -569,9 +569,9 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		})
 		if appErr != nil {
 			appError <- appErr
-		} else {
-			val <- products
+			return
 		}
+		val <- products
 	}()
 
 	go func() {
@@ -580,9 +580,9 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		})
 		if appErr != nil {
 			appError <- appErr
-		} else {
-			val <- productVariants
+			return
 		}
+		val <- productVariants
 	}()
 
 	for atmicValue.Load() != 0 {
