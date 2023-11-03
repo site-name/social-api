@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -37,12 +38,8 @@ func systemDigitalContentToGraphqlDigitalContent(d *model.DigitalContent) *Digit
 		UseDefaultSettings:   *d.UseDefaultSettings,
 		AutomaticFulfillment: *d.AutomaticFulfillment,
 		ContentFile:          d.ContentFile,
-	}
-	if d.MaxDownloads != nil {
-		res.MaxDownloads = model.GetPointerOfValue(int32(*d.MaxDownloads))
-	}
-	if d.UrlValidDays != nil {
-		res.URLValidDays = model.GetPointerOfValue(int32(*d.UrlValidDays))
+		MaxDownloads:         (*int32)(unsafe.Pointer(d.MaxDownloads)),
+		URLValidDays:         (*int32)(unsafe.Pointer(d.UrlValidDays)),
 	}
 
 	return res
