@@ -298,7 +298,7 @@ func cleanFulfillmentLines(embedCtx *web.Context, where string, fulfillmentLines
 	res := []*model.FulfillmentLineData{}
 
 	for i := 0; i < min(len(fulfillmentLines), len(fulfillmentLineDataMap)); i++ {
-		fulfillmentLine := fulfillmentLines[0]
+		fulfillmentLine := fulfillmentLines[i]
 		lineData := fulfillmentLineDataMap[fulfillmentLine.Id]
 		quantity := int(lineData.getQuantity())
 
