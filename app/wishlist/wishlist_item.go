@@ -97,7 +97,10 @@ func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorm.DB, opti
 // MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
 func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model.AppError {
 	transaction := a.srv.Store.GetMaster().Begin()
-	defer transaction.Rollback()
+	if transaction.Error != nil {
+		return model.NewAppError("MoveItemsBetweenWishlists", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var wishlistItems model.WishlistItems
 	err := transaction.

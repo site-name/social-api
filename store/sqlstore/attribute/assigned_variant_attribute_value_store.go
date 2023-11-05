@@ -119,8 +119,13 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 }
 
 func (s *SqlAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.AssignedVariantAttributeValue
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attribute values by given options")
 	}

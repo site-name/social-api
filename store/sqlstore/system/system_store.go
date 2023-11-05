@@ -1,6 +1,7 @@
 package system
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -109,8 +110,10 @@ func (s *SqlSystemStore) PermanentDeleteByName(name string) (*model.System, erro
 // InsertIfExists inserts a given system value if it does not already exist. If a value
 // already exists, it returns the old one, else returns the new one.
 func (s *SqlSystemStore) InsertIfExists(system *model.System) (*model.System, error) {
-	tx := s.GetMaster().Begin()
-	defer tx.Rollback()
+	tx := s.GetMaster().Begin(&sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
+	defer s.FinalizeTransaction(tx)
 
 	var origSystem model.System
 	if err := tx.First(&origSystem, `Name = ?`, system.Name).Error; err != nil && err != gorm.ErrRecordNotFound {

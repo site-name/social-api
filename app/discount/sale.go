@@ -119,8 +119,13 @@ func (s *ServiceDiscount) ToggleSaleRelations(transaction *gorm.DB, saleID strin
 
 // SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
 func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model.AppError) {
+	args, err := store.BuildSqlizer(options, "SaleCollectionsByOptions")
+	if err != nil {
+		return nil, model.NewAppError("SaleCollectionsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+	}
+
 	var res []*model.SaleCollection
-	err := s.srv.Store.GetReplica().Table(model.SaleCollectionTableName).Find(&res, store.BuildSqlizer(options)...).Error
+	err = s.srv.Store.GetReplica().Table(model.SaleCollectionTableName).Find(&res, args...).Error
 	if err != nil {
 		return nil, model.NewAppError("SaleCollectionsByOptions", "app.discount.sale_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -130,8 +135,13 @@ func (s *ServiceDiscount) SaleCollectionsByOptions(options squirrel.Sqlizer) ([]
 
 // SaleCategoriesByOption returns sale-category relations with an app error
 func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model.AppError) {
+	args, err := store.BuildSqlizer(option, "SaleCategoriesByOption")
+	if err != nil {
+		return nil, model.NewAppError("SaleCategoriesByOption", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+	}
+
 	var res []*model.SaleCategory
-	err := s.srv.Store.GetReplica().Table("SaleCategories").Find(&res, store.BuildSqlizer(option)...).Error
+	err = s.srv.Store.GetReplica().Table(model.SaleCategoryTableName).Find(&res, args...).Error
 	if err != nil {
 		return nil, model.NewAppError("SaleCategoriesByOption", "app.discount.sale_categories_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -141,8 +151,12 @@ func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*mo
 
 // SaleProductsByOptions returns a slice of sale-product relations filtered using given options
 func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model.AppError) {
+	args, err := store.BuildSqlizer(options, "SaleProductsByOptions")
+	if err != nil {
+		return nil, model.NewAppError("SaleProductsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+	}
 	var res []*model.SaleProduct
-	err := s.srv.Store.GetReplica().Table("sale_collections").Find(&res, store.BuildSqlizer(options)...).Error
+	err = s.srv.Store.GetReplica().Table(model.SaleProductTableName).Find(&res, args...).Error
 	if err != nil {
 		return nil, model.NewAppError("SaleProductsByOptions", "app.discount.sale_product_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -152,8 +166,12 @@ func (s *ServiceDiscount) SaleProductsByOptions(options squirrel.Sqlizer) ([]*mo
 
 // SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
 func (s *ServiceDiscount) SaleProductVariantsByOptions(options squirrel.Sqlizer) ([]*model.SaleProductVariant, *model.AppError) {
+	args, err := store.BuildSqlizer(options, "SaleProductVariantsByOptions")
+	if err != nil {
+		return nil, model.NewAppError("SaleProductVariantsByOptions", model.InvalidArgumentAppErrorID, nil, err.Error(), http.StatusBadRequest)
+	}
 	var res []*model.SaleProductVariant
-	err := s.srv.Store.GetReplica().Table("sale_productvariants").Find(&res, store.BuildSqlizer(options)...).Error
+	err = s.srv.Store.GetReplica().Table(model.SaleProductVariantTableName).Find(&res, args...).Error
 	if err != nil {
 		return nil, model.NewAppError("SaleProductVariantsByOptions", "app.discount.error_finding_sale_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

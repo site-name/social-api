@@ -29,8 +29,12 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer)
 
 // GetByOption finds and returns a voucher customer with given options
 func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "VoucherCustomerGetbyOption")
+	if err != nil {
+		return nil, err
+	}
 	var res model.VoucherCustomer
-	err := vcs.GetMaster().First(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = vcs.GetMaster().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherCustomerTableName, "options")
@@ -43,8 +47,12 @@ func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFi
 
 // FilterByOptions finds and returns a slice of voucher customers by given options
 func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "VoucherCustomerFilterByOption")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.VoucherCustomer
-	err := vcs.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = vcs.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher customers by options")
 	}
@@ -54,7 +62,11 @@ func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *model.VoucherCustom
 
 // DeleteInBulk deletes given voucher-customers with given id
 func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
-	err := vcs.GetMaster().Delete(&model.VoucherCustomer{}, store.BuildSqlizer(options.Conditions)...).Error
+	args, err := store.BuildSqlizer(options.Conditions, "VoucherCustomer_Delete")
+	if err != nil {
+		return err
+	}
+	err = vcs.GetMaster().Delete(&model.VoucherCustomer{}, args...).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete voucher-customer relations by given options")
 	}

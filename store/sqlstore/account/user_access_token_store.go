@@ -27,14 +27,19 @@ func (s *SqlUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.Use
 }
 
 func (s *SqlUserAccessTokenStore) Delete(tokenId string) error {
-	transaction := s.GetMaster().Begin()
-	defer transaction.Rollback()
+	tx := s.GetMaster().Begin()
+	if tx.Error != nil {
+		return errors.Wrap(tx.Error, "begin_transaction")
+	}
+	defer s.FinalizeTransaction(tx)
 
-	if err := s.deleteSessionsAndTokensById(transaction, tokenId); err == nil {
-		if err := transaction.Commit().Error; err != nil {
-			// don't need to rollback here since the transaction is already closed
-			return errors.Wrap(err, "commit_transaction")
-		}
+	err := s.deleteSessionsAndTokensById(tx, tokenId)
+	if err != nil {
+		return err
+	}
+	if err := tx.Commit().Error; err != nil {
+		// don't need to rollback here since the transaction is already closed
+		return errors.Wrap(err, "commit_transaction")
 	}
 
 	return nil
@@ -59,14 +64,17 @@ func (s *SqlUserAccessTokenStore) deleteTokensById(transaction *gorm.DB, tokenId
 }
 
 func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
-	transaction := s.GetMaster().Begin()
-	defer transaction.Rollback()
+	tx := s.GetMaster().Begin()
+	if tx.Error != nil {
+		return errors.Wrap(tx.Error, "begin_transaction")
+	}
+	defer s.FinalizeTransaction(tx)
 
-	if err := s.deleteSessionsandTokensByUser(transaction, userId); err != nil {
+	if err := s.deleteSessionsandTokensByUser(tx, userId); err != nil {
 		return err
 	}
 
-	if err := transaction.Commit().Error; err != nil {
+	if err := tx.Commit().Error; err != nil {
 		// don't need to rollback here since the transaction is already closed
 		return errors.Wrap(err, "commit_transaction")
 	}
@@ -159,13 +167,16 @@ func (s *SqlUserAccessTokenStore) UpdateTokenEnable(tokenId string) error {
 }
 
 func (s *SqlUserAccessTokenStore) UpdateTokenDisable(tokenId string) error {
-	transaction := s.GetMaster().Begin()
-	defer transaction.Rollback()
+	tx := s.GetMaster().Begin()
+	if tx.Error != nil {
+		return errors.Wrap(tx.Error, "begin_transaction")
+	}
+	defer s.FinalizeTransaction(tx)
 
-	if err := s.deleteSessionsAndDisableToken(transaction, tokenId); err != nil {
+	if err := s.deleteSessionsAndDisableToken(tx, tokenId); err != nil {
 		return err
 	}
-	if err := transaction.Commit().Error; err != nil {
+	if err := tx.Commit().Error; err != nil {
 		// don't need to rollback here since the transaction is already closed
 		return errors.Wrap(err, "commit_transaction")
 	}

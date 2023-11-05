@@ -63,8 +63,12 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 
 // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
 func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "VoucherChannelListingsByOptions")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.VoucherChannelListing
-	err := vcls.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = vcls.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher channel listing relationship instances with given option")
 	}
@@ -77,6 +81,14 @@ func (s *SqlVoucherChannelListingStore) Delete(transaction *gorm.DB, option *mod
 		transaction = s.GetMaster()
 	}
 
-	err := transaction.Raw("DELETE FROM "+model.VoucherChannelListingTableName, store.BuildSqlizer(option.Conditions)...).Error
-	return err
+	args, err := store.BuildSqlizer(option.Conditions, "VoucherChannelListingDelete")
+	if err != nil {
+		return err
+	}
+
+	err = transaction.Delete(model.VoucherChannelListingTableName, args...).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to delete voucher channel listing")
+	}
+	return nil
 }

@@ -139,7 +139,7 @@ func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string })
 	if tran.Error != nil {
 		return nil, model.NewAppError("GiftCardDelete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	appErr := embedCtx.App.Srv().GiftcardService().DeleteGiftcards(tran, []string{args.Id})
 	if appErr != nil {
@@ -421,7 +421,7 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 	if transaction.Error != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// update
 	for _, gc := range giftcards {
@@ -464,7 +464,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 	if transaction.Error != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// update
 	for _, gc := range giftcards {

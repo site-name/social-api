@@ -10024,11 +10024,11 @@ func (s *RetryLayerWishlistItemStore) FilterByOption(option *model.WishlistItemF
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetById(selector *gorm.DB, id string) (*model.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetById(id string) (*model.WishlistItem, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.GetById(selector, id)
+		result, err := s.WishlistItemStore.GetById(id)
 		if err == nil {
 			return result, nil
 		}

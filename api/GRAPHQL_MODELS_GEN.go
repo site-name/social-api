@@ -2588,7 +2588,7 @@ func (ip *OrderFilterInput) parse(where string) (*model.OrderFilterOption, *mode
 		filterOpts.PaymentChargeStatus = squirrel.Eq{model.PaymentTableName + ".ChargeStatus": paymentChargeStatuses}
 	}
 
-	filterOpts.Statuses = *(*[]string)(unsafe.Pointer(&ip.Status))
+	filterOpts.Statuses = ip.Status
 
 	return filterOpts, nil
 }

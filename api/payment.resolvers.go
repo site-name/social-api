@@ -28,7 +28,7 @@ func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("PaymentCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	payment, appErr := embedCtx.App.Srv().PaymentService().PaymentByID(tx, args.PaymentID.String(), true)
 	if appErr != nil {
@@ -84,7 +84,7 @@ func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("PaymentRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	payment, appErr := embedCtx.App.Srv().PaymentService().PaymentByID(tx, args.PaymentID.String(), true)
 	if appErr != nil {
@@ -138,7 +138,7 @@ func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID UUID 
 	if tx.Error != nil {
 		return nil, model.NewAppError("PaymentVoid", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	payment, appErr := embedCtx.App.Srv().PaymentService().PaymentByID(tx, args.PaymentID.String(), true)
 	if appErr != nil {

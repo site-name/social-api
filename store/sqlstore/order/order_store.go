@@ -214,12 +214,12 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) (int64,
 	if len(option.Statuses) > 0 {
 		statusOrConditions := squirrel.Or{}
 
-		nativeOrderStatuses := lo.Filter(option.Statuses, func(item string, _ int) bool { return model.OrderStatus(item).IsValid() })
+		nativeOrderStatuses := lo.Filter(option.Statuses, func(item model.OrderFilterStatus, _ int) bool { return model.OrderStatus(item).IsValid() })
 		if len(nativeOrderStatuses) > 0 {
 			statusOrConditions = append(statusOrConditions, squirrel.Eq{model.OrderTableName + ".Status": nativeOrderStatuses})
 		}
 
-		if lo.Contains(option.Statuses, string(model.OrderStatusFilterReadyToFulfill)) {
+		if lo.Contains(option.Statuses, model.OrderStatusFilterReadyToFulfill) {
 			query = query.
 				LeftJoin(fmt.Sprintf(`%[1]s ON %[1]s.OrderID = %[2]s.Id`, model.PaymentTableName, model.OrderTableName)).
 				Column(fmt.Sprintf(`SUM ( %[1]s.CapturedAmount ) AS AmountPaid`, model.PaymentTableName)).
@@ -239,7 +239,7 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) (int64,
 			})
 		}
 
-		if lo.Contains(option.Statuses, string(model.OrderStatusFilterReadyToCapture)) {
+		if lo.Contains(option.Statuses, model.OrderStatusFilterReadyToCapture) {
 			statusOrConditions = append(statusOrConditions, squirrel.And{
 				squirrel.NotEq{model.OrderTableName + ".Status": []model.OrderStatus{model.ORDER_STATUS_DRAFT, model.ORDER_STATUS_CANCELED}},
 				squirrel.Expr(

@@ -53,8 +53,13 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction,
 
 // FilterByOption finds and returns a list of transactions with given option
 func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "PaymentTransaction_FilterByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.PaymentTransaction
-	err := ps.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = ps.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")
 	}

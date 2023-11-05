@@ -16,17 +16,18 @@ type Allocation struct {
 	StockID           string `json:"stock_id" gorm:"type:uuid;column:StockID;index:orderlineid_stockid_key"`          // NOT NULL
 	QuantityAllocated int    `json:"quantity_allocated" gorm:"column:QuantityAllocated"`                              // default 0
 
-	stockAvailableQuantity int        `json:"-"` // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
-	Stock                  *Stock     `json:"-"` // this field is populated with related stock
-	orderLine              *OrderLine `json:"-"` //
+	StockAvailableQuantity int        `json:"-" gorm:"-"` // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
+	Stock                  *Stock     `json:"-"`          // this field is populated with related stock
+	OrderLine              *OrderLine `json:"-"`          //
 }
 
-// func (s *Allocation) SetStock(stk *Stock)                 { s.stock = stk }
-// func (s *Allocation) GetStock() *Stock                    { return s.stock }
-func (s *Allocation) SetOrderLine(line *OrderLine)        { s.orderLine = line }
-func (s *Allocation) GetOrderLine() *OrderLine            { return s.orderLine }
-func (s *Allocation) SetStockAvailableQuantity(value int) { s.stockAvailableQuantity = value }
-func (s *Allocation) GetStockAvailableQuantity() int      { return s.stockAvailableQuantity }
+const (
+	AllocationColumnId                = "Id"
+	AllocationColumnCreateAt          = "CreateAt"
+	AllocationColumnOrderLineID       = "OrderLineID"
+	AllocationColumnStockID           = "StockID"
+	AllocationColumnQuantityAllocated = "QuantityAllocated"
+)
 
 func (c *Allocation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *Allocation) BeforeUpdate(_ *gorm.DB) error {
@@ -116,8 +117,8 @@ func (a *Allocation) DeepCopy() *Allocation {
 	if a.Stock != nil {
 		res.Stock = a.Stock.DeepCopy()
 	}
-	if a.orderLine != nil {
-		res.orderLine = a.orderLine.DeepCopy()
+	if a.OrderLine != nil {
+		res.OrderLine = a.OrderLine.DeepCopy()
 	}
 	return &res
 }

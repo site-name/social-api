@@ -93,8 +93,13 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.Assign
 func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
 	db, conditions := as.builFilterQuery(option)
 
+	args, err := store.BuildSqlizer(conditions, "GetWithOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.AssignedVariantAttribute
-	err := db.First(&res, store.BuildSqlizer(conditions)...).Error
+	err = db.First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, "option")
@@ -109,8 +114,13 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.Assigned
 func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
 	db, conditions := as.builFilterQuery(option)
 
+	args, err := store.BuildSqlizer(conditions, "FilterByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.AssignedVariantAttribute
-	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
+	err = db.Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attributes by given option")
 	}

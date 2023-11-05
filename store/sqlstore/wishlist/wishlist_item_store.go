@@ -35,27 +35,25 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistItems m
 }
 
 // GetById finds and returns a wishlist item by given id
-func (ws *SqlWishlistItemStore) GetById(transaction *gorm.DB, id string) (*model.WishlistItem, error) {
-	var executor *gorm.DB = ws.GetReplica()
-	if transaction == nil {
-		transaction = ws.GetReplica()
-	}
-
+func (ws *SqlWishlistItemStore) GetById(id string) (*model.WishlistItem, error) {
 	var res model.WishlistItem
-	if err := executor.First(&res, "Id = ?", id).Error; err != nil {
+	if err := ws.GetReplica().First(&res, "Id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistItemTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find wishlist item with id=%s", id)
-	} else {
-		return &res, nil
 	}
+	return &res, nil
 }
 
 // FilterByOption finds and returns a slice of wishlist items filtered using given options
 func (ws *SqlWishlistItemStore) FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error) {
 	var items []*model.WishlistItem
-	if err := ws.GetReplica().Find(&items, store.BuildSqlizer(option.Conditions)...).Error; err != nil {
+	args, err := store.BuildSqlizer(option.Conditions, "WishlistItem_FilterByOption")
+	if err != nil {
+		return nil, err
+	}
+	if err := ws.GetReplica().Find(&items, args...).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to find wishlist items by given options")
 	} else {
 		return items, nil
@@ -65,7 +63,11 @@ func (ws *SqlWishlistItemStore) FilterByOption(option *model.WishlistItemFilterO
 // GetByOption finds and returns a wishlist item filtered by given option
 func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error) {
 	var res model.WishlistItem
-	err := ws.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
+	args, err := store.BuildSqlizer(option.Conditions, "WishlstItem_GetByOption")
+	if err != nil {
+		return nil, err
+	}
+	err = ws.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistItemTableName, "option")

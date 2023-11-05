@@ -32,8 +32,13 @@ func (ms *SqlMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 }
 
 func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "Menu_GetByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.Menu
-	err := ms.GetReplica().First(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = ms.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.MenuTableName, "")
@@ -45,8 +50,13 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 }
 
 func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "Menu_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.Menu
-	err := ms.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = ms.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find menus with given options")
 	}

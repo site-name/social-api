@@ -282,7 +282,7 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 	if tran.Error != nil {
 		return nil, model.NewAppError("VoucherChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	// perform database mutation:
 	listingsToAdd := lo.Map(args.Input.AddChannels, func(item *VoucherChannelListingAddInput, _ int) *model.VoucherChannelListing {

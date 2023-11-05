@@ -329,7 +329,7 @@ func (s *ServiceOrder) getDefaultOrderPayload(order *model.Order, redirectUrl *s
 	}
 	if len(orderAddressIds) > 0 {
 		orderAddresses, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Id: squirrel.Eq{model.AddressTableName + ".Id": orderAddressIds},
+			Conditions: squirrel.Eq{model.AddressTableName + ".Id": orderAddressIds},
 		})
 		if appErr != nil {
 			return nil, appErr

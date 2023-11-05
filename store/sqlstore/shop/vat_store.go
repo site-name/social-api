@@ -37,8 +37,13 @@ func (s *sqlVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.
 }
 
 func (s *sqlVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "Vat_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.Vat
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vat objects by options")
 	}

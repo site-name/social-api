@@ -50,8 +50,13 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilt
 		db = db.Preload("Order")
 	}
 
+	args, err := store.BuildSqlizer(option.Conditions, "FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.OrderDiscount
-	err := db.Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = db.Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order discounts with given option")
 	}

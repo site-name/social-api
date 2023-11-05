@@ -59,29 +59,6 @@ func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
 	return &res, nil
 }
 
-/*
-  // Sample pure SQL query when the option AnnotateStockAvailableQuantity is set to true
-
-SELECT
-  "warehouse_allocation"."id",
-  "warehouse_allocation"."order_line_id",
-  "warehouse_allocation"."stock_id",
-  "warehouse_allocation"."quantity_allocated",
-  (
-    "warehouse_stock"."quantity" - COALESCE(SUM(T3."quantity_allocated"), 0)
-  ) AS "stock_available_quantity"
-FROM
-  "warehouse_allocation"
-  INNER JOIN "warehouse_stock" ON (
-    "warehouse_allocation"."stock_id" = "warehouse_stock"."id"
-  )
-  LEFT OUTER JOIN "warehouse_allocation" T3 ON ("warehouse_stock"."id" = T3."stock_id")
-WHERE
-  "warehouse_allocation"."id" > 1
-GROUP BY
-  "warehouse_allocation"."id",
-  "warehouse_stock"."quantity";
-*/
 // FilterByOption finds and returns a list of allocation based on given option
 func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	// define fields to select:
@@ -146,11 +123,10 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 
 	for rows.Next() {
 		var (
-			allocation             model.Allocation
-			orderLine              model.OrderLine
-			stock                  model.Stock
-			stockAvailableQuantity int
-			scanFields             = as.ScanFields(&allocation)
+			allocation model.Allocation
+			orderLine  model.OrderLine
+			stock      model.Stock
+			scanFields = as.ScanFields(&allocation)
 		)
 
 		// NOTE: scan order must be identical to select order (like above)
@@ -161,22 +137,19 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 			scanFields = append(scanFields, as.OrderLine().ScanFields(&orderLine)...)
 		}
 		if option.AnnotateStockAvailableQuantity {
-			scanFields = append(scanFields, &stockAvailableQuantity)
+			scanFields = append(scanFields, &allocation.StockAvailableQuantity)
 		}
 
 		err = rows.Scan(scanFields...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row")
+			return nil, errors.Wrap(err, "failed to scan a row of allocation")
 		}
 
 		if option.SelectRelatedOrderLine {
-			allocation.SetOrderLine(&orderLine)
+			allocation.OrderLine = &orderLine
 		}
 		if option.SelectedRelatedStock {
 			allocation.Stock = &stock
-		}
-		if option.AnnotateStockAvailableQuantity {
-			allocation.SetStockAvailableQuantity(stockAvailableQuantity)
 		}
 		returnAllocations = append(returnAllocations, &allocation)
 	}

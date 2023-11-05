@@ -123,8 +123,13 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 }
 
 func (s *SqlAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.AssignedProductAttributeValue
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned product attributes by given options")
 	}

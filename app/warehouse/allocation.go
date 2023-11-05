@@ -9,7 +9,7 @@ import (
 )
 
 // AllocationsByOption returns all warehouse allocations filtered based on given option
-func (a *ServiceWarehouse) AllocationsByOption(option *model.AllocationFilterOption) ([]*model.Allocation, *model.AppError) {
+func (a *ServiceWarehouse) AllocationsByOption(option *model.AllocationFilterOption) (model.Allocations, *model.AppError) {
 	allocations, err := a.srv.Store.Allocation().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("AllocationByOption", "app.warehouse.error_finding_allocations_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

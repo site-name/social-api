@@ -49,7 +49,7 @@ func (a *ServiceAccount) UpsertAddress(transaction *gorm.DB, address *model.Addr
 
 func (a *ServiceAccount) AddressesByUserId(userID string) ([]*model.Address, *model.AppError) {
 	return a.AddressesByOption(&model.AddressFilterOption{
-		UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": userID},
+		UserID: squirrel.Eq{model.UserAddressTableName + ".user_id": userID},
 	})
 }
 
@@ -90,8 +90,8 @@ func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Addres
 	}
 
 	addresses, appErr := s.AddressesByOption(&model.AddressFilterOption{
-		UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": user.Id},
-		Other:  addressFilterOptions,
+		UserID:     squirrel.Eq{model.UserAddressTableName + ".user_id": user.Id},
+		Conditions: addressFilterOptions,
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

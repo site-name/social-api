@@ -48,6 +48,24 @@ type Address struct {
 	Users []*User `json:"-" gorm:"many2many:UserAddresses"`
 }
 
+// column names for addresses table
+const (
+	AddressColumnId             = "Id"
+	AddressColumnFirstName      = "FirstName"
+	AddressColumnLastName       = "LastName"
+	AddressColumnCompanyName    = "CompanyName"
+	AddressColumnStreetAddress1 = "StreetAddress1"
+	AddressColumnStreetAddress2 = "StreetAddress2"
+	AddressColumnCity           = "City"
+	AddressColumnCityArea       = "CityArea"
+	AddressColumnPostalCode     = "PostalCode"
+	AddressColumnCountry        = "Country"
+	AddressColumnCountryArea    = "CountryArea"
+	AddressColumnPhone          = "Phone"
+	AddressColumnCreateAt       = "CreateAt"
+	AddressColumnUpdateAt       = "UpdateAt"
+)
+
 func (a *Address) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
 func (a *Address) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
 func (*Address) TableName() string               { return AddressTableName }
@@ -63,30 +81,10 @@ func (a *Address) Equal(other *Address) bool {
 	return reflect.DeepEqual(*a, *other)
 }
 
-type WhichOrderAddressID string
-
-const (
-	ShippingAddressID WhichOrderAddressID = "shipping_address_id"
-	BillingAddressID  WhichOrderAddressID = "shipping_address_id"
-)
-
-type AddressFilterOrderOption struct {
-	Id squirrel.Sqlizer
-	// Either `shipping_address_id` or `shipping_address_id`.
-	//
-	// since `Orders` have `shipping_address_id` and `shipping_address_id`.
-	// This `On` specifies which Id to put in the ON () conditions:
-	//
-	// E.g: On = "shipping_address_id" => ON (Orders.shipping_address_id = Addresses.id)
-	On WhichOrderAddressID
-}
-
 // AddressFilterOption is used to build sql queries to filter address(es)
 type AddressFilterOption struct {
-	Id      squirrel.Sqlizer
-	OrderID *AddressFilterOrderOption
-	UserID  squirrel.Sqlizer // Id IN (SELECT AddressID FROM UserAddresses ON ... WHERE UserAddresses.UserID ...)
-	Other   squirrel.Sqlizer
+	UserID     squirrel.Sqlizer // Id IN (SELECT AddressID FROM UserAddresses ON ... WHERE UserAddresses.UserID ...)
+	Conditions squirrel.Sqlizer
 }
 
 func (a *Address) commonPre() {

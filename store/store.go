@@ -311,7 +311,7 @@ type (
 		GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) // GetByOption finds and returns a slice of wishlists by given option
 	}
 	WishlistItemStore interface {
-		GetById(selector *gorm.DB, id string) (*model.WishlistItem, error)                               // GetById returns a model item wish given id
+		GetById(id string) (*model.WishlistItem, error)                                                  // GetById returns a model item wish given id
 		BulkUpsert(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, error) // Upsert inserts or updates given model item then returns it
 		FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error)            // FilterByOption finds and returns a slice of model items filtered using given options
 		GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error)                 // GetByOption finds and returns a model item filtered by given option

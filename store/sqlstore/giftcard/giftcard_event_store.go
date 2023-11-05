@@ -54,8 +54,12 @@ func (gs *SqlGiftcardEventStore) Get(eventId string) (*model.GiftCardEvent, erro
 
 // FilterByOptions finds and returns a list of giftcard events with given options
 func (gs *SqlGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "GiftCardEvent_FilterByOption")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.GiftCardEvent
-	err := gs.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = gs.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find giftcard events with given options")
 	}

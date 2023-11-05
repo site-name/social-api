@@ -37,7 +37,7 @@ func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput 
 	if transaction.Error != nil {
 		return nil, model.NewAppError("Resolver.SaleCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// insert sale
 	sale, err := embedCtx.App.Srv().Store.DiscountSale().Upsert(transaction, sale)
@@ -91,7 +91,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 	if transaction.Error != nil {
 		return nil, model.NewAppError("Resolver.SaleDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	_, err := embedCtx.App.Srv().Store.DiscountSale().Delete(transaction, &model.SaleFilterOption{
 		Conditions: squirrel.Eq{model.SaleTableName + ".Id": args.Id},
@@ -177,7 +177,7 @@ func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("Resolver.SaleDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	sale, appErr = embedCtx.App.Srv().DiscountService().UpsertSale(transaction, sale)
 	if appErr != nil {
@@ -255,7 +255,7 @@ func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("Resolver.SaleCataloguesAdd", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// add sale relations
 	appErr = embedCtx.App.Srv().DiscountService().ToggleSaleRelations(transaction, args.Id, args.Input.Products, nil, args.Input.Categories, args.Input.Collections, false)
@@ -320,7 +320,7 @@ func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("SaleCataloguesRemove", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// remove sale relations
 	appErr = embedCtx.App.Srv().DiscountService().ToggleSaleRelations(transaction, args.Id, args.Input.Products, nil, args.Input.Categories, args.Input.Collections, true)
@@ -421,7 +421,7 @@ func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	if tran.Error != nil {
 		return nil, model.NewAppError("SaleChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	// perform insert/delete in database:
 	err := embedCtx.App.Srv().Store.DiscountSaleChannelListing().Delete(tran, &model.SaleChannelListingFilterOption{

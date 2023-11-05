@@ -101,7 +101,12 @@ func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *
 		transaction = fls.GetMaster()
 	}
 
-	err := transaction.Delete(&model.FulfillmentLine{}, store.BuildSqlizer(option.Conditions)...).Error
+	args, err := store.BuildSqlizer(option.Conditions, "FulfillmentLine_Delete")
+	if err != nil {
+		return err
+	}
+
+	err = transaction.Delete(&model.FulfillmentLine{}, args...).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete fulfillment lines by given option")
 	}

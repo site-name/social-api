@@ -288,8 +288,12 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		conditions = append(conditions, option.SaleID)
 	}
 
+	args, err := store.BuildSqlizer(conditions, "Productvariant_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
 	var res model.ProductVariants
-	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
+	err = db.Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variants iwth given options")
 	}

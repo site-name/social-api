@@ -41,8 +41,13 @@ func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation
 
 // FilterByOption returns a list of voucher translations filtered using given options
 func (vts *SqlVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "VoucherTranslation_FilterByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.VoucherTranslation
-	err := vts.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = vts.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher translations with given options")
 	}
@@ -52,8 +57,13 @@ func (vts *SqlVoucherTranslationStore) FilterByOption(option *model.VoucherTrans
 
 // GetByOption finds and returns 1 voucher translation by given options
 func (vts *SqlVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "VoucherTranslation_GetByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.VoucherTranslation
-	err := vts.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = vts.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, "options")

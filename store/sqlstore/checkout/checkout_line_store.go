@@ -224,8 +224,12 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 
 // CheckoutLinesByOption finds and returns checkout lines filtered using given option
 func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "CheckoutLinesByOption")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.CheckoutLine
-	err := cls.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = cls.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkout lines by given options")
 	}

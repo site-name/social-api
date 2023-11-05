@@ -51,7 +51,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 	if transaction.Error != nil {
 		return nil, model.NewAppError("ChannelCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	shippingZones := lo.Map(args.Input.AddShippingZones, func(id string, _ int) *model.ShippingZone {
 		return &model.ShippingZone{Id: id}
@@ -126,7 +126,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("ChannelUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer (transaction).Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// create relations between shipping zones and channel
 	if len(args.Input.AddShippingZones) > 0 {
@@ -222,6 +222,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 		if transaction.Error != nil {
 			return nil, model.NewAppError("ChannelDelete", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 		}
+		defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 		// delete checkouts of origin channel
 		appErr := deleteCheckoutsByChannelID(args.Id, transaction)
@@ -243,8 +244,6 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 		if err != nil {
 			return nil, model.NewAppError("ChannelDelete", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
-		(transaction).Rollback()
-
 	} else {
 		if len(orders) > 0 {
 			return nil, model.NewAppError("ChannelDelete", "api.channel.delete_channel_with_orders.app_error", nil, "you must specify a target channel to migrate orders of given channel to", http.StatusNotAcceptable)

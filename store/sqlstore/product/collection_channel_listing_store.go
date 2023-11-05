@@ -41,8 +41,12 @@ func (s *SqlCollectionChannelListingStore) Upsert(transaction *gorm.DB, relation
 }
 
 func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "CollentionChannelListing_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.CollectionChannelListing
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collection channel listings by given options")
 	}

@@ -28,14 +28,16 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	}
 
 	if role.Id == "" { // this means create new Role
-		transaction := s.GetMaster().Begin()
-		defer transaction.Rollback()
+		tx := s.GetMaster().Begin()
+		if tx.Error != nil {
+			return nil, errors.Wrap(tx.Error, "begin_transaction")
+		}
+		defer s.FinalizeTransaction(tx)
 
-		createdRole, err := s.createRole(role, transaction)
+		createdRole, err := s.createRole(role, tx)
 		if err != nil {
-			_ = transaction.Rollback()
 			return nil, errors.Wrap(err, "unable to create Role")
-		} else if err := transaction.Commit().Error; err != nil {
+		} else if err := tx.Commit().Error; err != nil {
 			return nil, errors.Wrap(err, "commit_transaction")
 		}
 		return createdRole, nil

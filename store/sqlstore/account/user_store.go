@@ -689,11 +689,14 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 	lastUserId := strings.Repeat("0", len(model.NewId()))
 
 	for {
-		transaction := us.GetMaster().Begin()
-		defer transaction.Rollback()
+		tx := us.GetMaster().Begin()
+		if tx.Error != nil {
+			return errors.Wrap(tx.Error, "begin_transaction")
+		}
+		defer us.FinalizeTransaction(tx)
 
 		var users []*model.User
-		if err := transaction.Raw("SELECT * FROM Users WHERE Id > ? ORDER BY Id LIMIT 1000", lastUserId).Find(&users).Error; err != nil {
+		if err := tx.Raw("SELECT * FROM Users WHERE Id > ? ORDER BY Id LIMIT 1000", lastUserId).Find(&users).Error; err != nil {
 			return errors.Wrapf(err, "failed to find Users with id > %s", lastUserId)
 		}
 
@@ -716,13 +719,13 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 
 			newRolesString := strings.Join(newRoles, " ")
 			if newRolesString != user.Roles {
-				if err := transaction.Raw("UPDATE Users SET Roles = ? WHERE Id = ?", newRolesString, user.Id).Error; err != nil {
+				if err := tx.Raw("UPDATE Users SET Roles = ? WHERE Id = ?", newRolesString, user.Id).Error; err != nil {
 					return errors.Wrap(err, "failed to update Users")
 				}
 			}
 		}
 
-		if err := transaction.Commit().Error; err != nil {
+		if err := tx.Commit().Error; err != nil {
 			return errors.Wrap(err, "commit_transaction")
 		}
 	}

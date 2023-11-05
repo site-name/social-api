@@ -165,7 +165,7 @@ func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string 
 	if tran.Error != nil {
 		return nil, model.NewAppError("DraftOrderDelete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	_, appErr = embedCtx.App.Srv().OrderService().DeleteOrders(tran, []string{args.Id})
 	if appErr != nil {
@@ -215,7 +215,7 @@ func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []
 	if tran.Error != nil {
 		return nil, model.NewAppError("DraftOrderBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	totalCount, appErr := embedCtx.App.Srv().OrderService().DeleteOrders(tran, args.Ids)
 	if appErr != nil {
@@ -248,7 +248,7 @@ func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("DraftOrderCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	var order model.Order
 	appErr = args.Input.patchOrder(embedCtx, &order, transaction, pluginMng)
@@ -304,7 +304,7 @@ func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("DraftOrderUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	appErr = args.Input.patchOrder(embedCtx, order, transaction, pluginMng, true)
 	if appErr != nil {

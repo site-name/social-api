@@ -137,70 +137,15 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 	}
 
 	return db, conditions
-
-	// query := ps.GetQueryBuilder().
-	// 	Select(model.ProductTableName + ".*").
-	// 	From(model.ProductTableName).
-	// 	Where(option.Conditions)
-
-	// // parse option
-	// if option.Limit > 0 {
-	// 	query = query.Limit(option.Limit)
-	// }
-
-	// if option.ProductVariantID != nil {
-	// 	query = query.
-	// 		InnerJoin(
-	// 			fmt.Sprintf(
-	// 				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-	// 				model.ProductVariantTableName,       // 1
-	// 				model.ProductTableName,              // 2
-	// 				model.ProductVariantColumnProductID, // 3
-	// 				model.ProductColumnId,               // 4
-	// 			),
-	// 		).
-	// 		Where(option.ProductVariantID)
-	// } else if option.HasNoProductVariants {
-	// 	query = query.
-	// 		LeftJoin(
-	// 			fmt.Sprintf(
-	// 				"%[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
-	// 				model.ProductVariantTableName,       // 1
-	// 				model.ProductTableName,              // 2
-	// 				model.ProductVariantColumnProductID, // 3
-	// 				model.ProductColumnId,               // 4
-	// 			),
-	// 		).
-	// 		Where(model.ProductVariantTableName + ".ProductID IS NULL")
-	// }
-
-	// if option.VoucherID != nil {
-	// 	query = query.
-	// 		InnerJoin(model.VoucherProductTableName + " ON Products.Id = VoucherProducts.ProductID").
-	// 		Where(option.VoucherID)
-	// }
-	// if option.SaleID != nil {
-	// 	query = query.
-	// 		InnerJoin(model.SaleProductTableName + " ON Products.Id = SaleProducts.ProductID").
-	// 		Where(option.SaleID)
-	// }
-	// if option.CollectionID != nil {
-	// 	query = query.
-	// 		InnerJoin(model.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
-	// 		Where(option.CollectionID)
-	// }
-
-	// return query.ToSql()
 }
 
 // FilterByOption finds and returns all products that satisfy given option
 func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
 	db, conditions := ps.commonQueryBuilder(option)
-	args, err := store.BuildSqlizer(conditions)
+	args, err := store.BuildSqlizer(conditions, "Product_FilterByOption")
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+		return nil, err
 	}
-
 	var products model.Products
 	err = db.Find(&products, args...).Error
 	if err != nil {
@@ -214,11 +159,10 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
 	option.Limit = 0
 	db, conditions := ps.commonQueryBuilder(option)
-	args, err := store.BuildSqlizer(conditions)
+	args, err := store.BuildSqlizer(conditions, "Product_GetByOption")
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+		return nil, err
 	}
-
 	var res model.Product
 	err = db.First(&res, args...).Error
 	if err != nil {
@@ -507,15 +451,15 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 	if len(input.Filter.Collections) > 0 {
 		query = ps.filterCollections(query, input.Filter.Collections)
 	}
-	if len(input.Filter.Categories) != 0 {
+	if len(input.Filter.Categories) > 0 {
 		query = ps.filterCategories(query, input.Filter.Categories)
 	}
 	if input.Filter.HasCategory != nil {
 		// default to has no category
-		condition := "Products.CategoryID IS NULL"
+		condition := fmt.Sprintf("%s.%s IS NULL", model.ProductTableName, model.ProductColumnCategoryID)
 
 		if *input.Filter.HasCategory {
-			condition = "Products.CategoryID IS NOT NULL"
+			condition = fmt.Sprintf("%s.%s IS NOT NULL", model.ProductTableName, model.ProductColumnCategoryID)
 		}
 		query = query.Where(condition)
 	}

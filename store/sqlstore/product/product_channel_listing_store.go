@@ -113,8 +113,12 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 			))
 	}
 
+	args, err := store.BuildSqlizer(conditions, "ProductChannelListing_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
 	var res model.ProductChannelListings
-	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
+	err = db.Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
 	}

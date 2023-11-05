@@ -36,17 +36,20 @@ func (s SqlPreferenceStore) DeleteUnusedFeatures() {
 
 func (s SqlPreferenceStore) Save(preferences model.Preferences) error {
 	// wrap in a transaction so that if one fails, everything fails
-	transaction := s.GetMaster().Begin()
-	defer transaction.Rollback()
+	tx := s.GetMaster().Begin()
+	if tx.Error != nil {
+		return errors.Wrap(tx.Error, "begin_transaction")
+	}
+	defer s.FinalizeTransaction(tx)
 
 	for _, preference := range preferences {
 		preference := preference
-		if upsertErr := s.save(transaction, &preference); upsertErr != nil {
+		if upsertErr := s.save(tx, &preference); upsertErr != nil {
 			return upsertErr
 		}
 	}
 
-	if err := transaction.Commit().Error; err != nil {
+	if err := tx.Commit().Error; err != nil {
 		// don't need to rollback here since the transaction is already closed
 		return errors.Wrap(err, "commit_transaction")
 	}

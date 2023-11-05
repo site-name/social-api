@@ -127,7 +127,7 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	if tran.Error != nil {
 		return nil, model.NewAppError("OrderLinesCreate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(tran, &model.OrderEventOption{
 		OrderID: order.Id,
@@ -211,7 +211,7 @@ func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderLineDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 	insufStockErr, appErr := embedCtx.App.Srv().OrderService().DeleteOrderLine(tx, lineInfo, pluginMng)
@@ -322,7 +322,7 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderLineUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Conditions: squirrel.Expr(model.ChannelTableName+".Id = ?", order.ChannelID),
@@ -396,7 +396,7 @@ func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ Discoun
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderDiscountDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	appErr = embedCtx.App.Srv().OrderService().RemoveOrderDiscountFromOrder(tx, order, orderDiscount)
 	if appErr != nil {
@@ -480,7 +480,7 @@ func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderLineDiscountUpdate", model.ErrorCommittingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	orderLineBeforeUpdate := orderLine.DeepCopy()
 
@@ -564,7 +564,7 @@ func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ Ord
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderLineDiscountRemove", model.ErrorCommittingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 	shopSettings := embedCtx.App.Config().ShopSettings

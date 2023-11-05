@@ -678,7 +678,7 @@ func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.Produc
 	if transaction.Error != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	channel := order.Channel
 	if channel == nil {

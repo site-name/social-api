@@ -31,7 +31,11 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 // GetByOption finds and returns a slice of wishlists by given option
 func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 	var res model.Wishlist
-	err := ws.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
+	args, err := store.BuildSqlizer(option.Conditions, "WishlistGetByOptions")
+	if err != nil {
+		return nil, err
+	}
+	err = ws.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistTableName, "option")

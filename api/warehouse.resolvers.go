@@ -209,6 +209,7 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 	if transaction.Error != nil {
 		return nil, model.NewAppError("DeleteWarehouse", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	err := embedCtx.App.Srv().Store.Warehouse().Delete(transaction, args.Id)
 	if err != nil {
@@ -220,7 +221,6 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 	if err != nil {
 		return nil, model.NewAppError("DeleteWarehouse", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	transaction.Rollback()
 
 	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 	_, stocks, appErr := embedCtx.App.Srv().

@@ -78,7 +78,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 
 	if billingAddressID != "" || shippingAddressID != "" {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Id: squirrel.Eq{model.AddressTableName + ".Id": []string{billingAddressID, shippingAddressID}},
+			Conditions: squirrel.Eq{model.AddressTableName + ".Id": []string{billingAddressID, shippingAddressID}},
 		})
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -389,7 +389,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 	if transaction.Error != nil {
 		return model.NewAppError("GatewayPostProcess", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
 		changedFields util.AnyArray[string]

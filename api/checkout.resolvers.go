@@ -110,7 +110,7 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	if transaction.Error != nil {
 		return nil, model.NewAppError("CheckoutBillingAddressUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	savedBillingAddress, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(transaction, &billingAddress)
 	if appErr != nil {
@@ -230,7 +230,7 @@ func (r *Resolver) CheckoutComplete(ctx context.Context, args struct {
 	if tran.Error != nil {
 		return nil, model.NewAppError("CheckoutComplete", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	order, actionRequired, actionData, paymentErr, appErr := embedCtx.App.Srv().CheckoutService().CompleteCheckout(
 		tran,
@@ -391,7 +391,7 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 	if transaction.Error != nil {
 		return nil, model.NewAppError("CheckoutCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// save checkout
 	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(transaction, []*model.Checkout{&checkout})
@@ -835,7 +835,7 @@ func (r *Resolver) CheckoutShippingAddressUpdate(ctx context.Context, args struc
 	if tran.Error != nil {
 		return nil, model.NewAppError("CheckoutShippingAddressUpdate", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	checkouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(tran, []*model.Checkout{checkout})
 	if appErr != nil {

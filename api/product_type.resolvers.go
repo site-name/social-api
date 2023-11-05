@@ -83,7 +83,7 @@ func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id UUID }
 	if tx.Error != nil {
 		return nil, model.NewAppError("ProductTypeDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	_, appErr := embedCtx.App.Srv().ProductService().DeleteProductTypes(tx, []string{args.Id.String()})
 	if appErr != nil {
@@ -116,7 +116,7 @@ func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids [
 	if tx.Error != nil {
 		return nil, model.NewAppError("ProductTypeBulkDelete", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	ids := *(*[]string)(unsafe.Pointer(&args.Ids))
 	delCount, appErr := embedCtx.App.Srv().ProductService().DeleteProductTypes(tx, ids)

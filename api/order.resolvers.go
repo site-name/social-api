@@ -34,7 +34,7 @@ func (r *Resolver) OrderAddNote(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderAddNote", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Order.String())
 	if appErr != nil {
@@ -71,7 +71,7 @@ func (r *Resolver) OrderCancel(ctx context.Context, args struct{ Id UUID }) (*Or
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderCancel", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
 	if appErr != nil {
@@ -136,7 +136,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderCapture", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 
@@ -202,7 +202,7 @@ func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id UUID }) (*O
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderConfirm", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	// update order
 	order.Status = model.ORDER_STATUS_UNFULFILLED
@@ -684,7 +684,7 @@ func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderRefund", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 	transaction, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Refund(tx, *lastOrderPayment, pluginMng, order.ChannelID, &amount)
@@ -757,7 +757,7 @@ func (r *Resolver) OrderUpdate(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	// update addresses
 	for _, addressInput := range []*AddressInput{
@@ -1079,7 +1079,7 @@ func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderDiscountAdd", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	var reason string
 	if args.Input.Reason != nil {
@@ -1167,7 +1167,7 @@ func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderDiscountUpdate", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	orderDiscount, appErr = embedCtx.App.Srv().DiscountService().UpsertOrderDiscount(tx, orderDiscount)
 	if appErr != nil {
@@ -1294,7 +1294,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 	if tx.Error != nil {
 		return nil, model.NewAppError("OrderFulfill", model.ErrorCreatingTransactionErrorID, nil, tx.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tx.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tx)
 
 	if *shopSettings.FulfillmentAutoApprove {
 		giftardLines := lo.Filter(orderLines, func(item *model.OrderLine, _ int) bool { return item.IsGiftcard })

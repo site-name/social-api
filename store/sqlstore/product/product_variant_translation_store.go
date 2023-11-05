@@ -44,8 +44,12 @@ func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*model.P
 
 // FilterByOption finds and returns product variant translations filtered using given options
 func (ps *SqlProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "ProductVariantTranslation_FilterByOption_ToSql")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.ProductVariantTranslation
-	err := ps.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = ps.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variant translations with given options")
 	}

@@ -30,7 +30,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 	if transaction.Error != nil {
 		return nil, model.NewAppError("AlloccateStocks", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	// allocation only applied to order lines with variants with track inventory set to True
 	orderLineInfos = a.GetOrderLinesWithTrackInventory(orderLineInfos)
@@ -41,7 +41,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 	stockFilterOption := &model.StockFilterOptionsForCountryAndChannel{
 		CountryCode:            countryCode,
 		ChannelSlug:            channelSlug,
-		ProductVariantIDFilter: squirrel.Eq{model.StockTableName + ".ProductVariantID": orderLineInfos.Variants().IDs()},
+		ProductVariantIDFilter: squirrel.Eq{model.StockTableName + "." + model.StockColumnProductVariantID: orderLineInfos.Variants().IDs()},
 		LockForUpdate:          true,                 // FOR UPDATE
 		ForUpdateOf:            model.StockTableName, // FOR UPDATE OF Stocks
 		Transaction:            transaction,
@@ -63,7 +63,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 
 	quantityAllocationList, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		Conditions: squirrel.And{
-			squirrel.Eq{model.AllocationTableName + ".StockID": model.Stocks(stocks).IDs()},
+			squirrel.Eq{model.AllocationTableName + ".StockID": stocks.IDs()},
 			squirrel.Gt{model.AllocationTableName + ".QuantityAllocated": 0},
 		},
 	})
@@ -224,7 +224,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	if transaction.Error != nil {
 		return nil, model.NewAppError("DeallocateStock", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	linesAllocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		Conditions:           squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLineDatas.OrderLines().IDs()},
@@ -314,7 +314,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	for _, allocation := range allocationsBeforeUpdate {
 		availableStockNow := max(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0)
 
-		if allocation.GetStockAvailableQuantity() <= 0 && availableStockNow > 0 {
+		if allocation.StockAvailableQuantity <= 0 && availableStockNow > 0 {
 			if appErr := manager.ProductVariantBackInStock(*allocation.Stock); appErr != nil {
 				return nil, appErr
 			}
@@ -339,7 +339,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 	if transaction.Error != nil {
 		return model.NewAppError("IncreseStock", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var stock *model.Stock
 
@@ -431,31 +431,32 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 	if transaction.Error != nil {
 		return nil, model.NewAppError("IncreaseAllocations", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		Conditions:             squirrel.Eq{model.AllocationTableName + ".OrderLineID": lineInfos.OrderLines().IDs()},
+		Conditions:             squirrel.Eq{model.AllocationTableName + "." + model.AllocationColumnOrderLineID: lineInfos.OrderLines().IDs()},
 		LockForUpdate:          true,
 		ForUpdateOf:            fmt.Sprintf("%s, %s", model.AllocationTableName, model.StockTableName),
 		SelectedRelatedStock:   true,
 		SelectRelatedOrderLine: true,
+		Transaction:            transaction,
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// evaluate allocations query to trigger select_for_update lock
-
 	var (
-		allocationIDsToDelete = model.Allocations(allocations).IDs()
+		allocationIDsToDelete = make([]string, len(allocations))
 
 		// keys are IDs of order lines.
 		// Values are lists of allocated quantities of allocations
 		allocationQuantityMap = map[string]util.AnyArray[int]{}
 	)
 
-	for _, allocation := range allocations {
+	for idx, allocation := range allocations {
 		allocationQuantityMap[allocation.OrderLineID] = append(allocationQuantityMap[allocation.OrderLineID], allocation.QuantityAllocated)
+		allocationIDsToDelete[idx] = allocation.Id
 	}
 
 	for _, lineInfo := range lineInfos {
@@ -471,11 +472,23 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 	}
 
 	// find address of order of orderLine
-	address, appErr := a.srv.OrderService().AnAddressOfOrder(lineInfos[0].Line.OrderID, model.ShippingAddressID)
+	order := lineInfos[0].Line.Order
+	if order == nil {
+		order, appErr = a.srv.OrderService().OrderById(lineInfos[0].Line.OrderID)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	if order.ShippingAddressID == nil {
+		return nil, model.NewAppError("IncreaseAllocations", "app.warehouse.no_country_to_allocate.app_error", nil, "order does not have shipping address set", http.StatusNotAcceptable)
+	}
+	shippingAddress, appErr := a.srv.AccountService().AddressById(*order.ShippingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}
-	insufficientErr, appErr := a.AllocateStocks(lineInfos, address.Country, channelSlug, manager, nil)
+
+	insufficientErr, appErr := a.AllocateStocks(lineInfos, shippingAddress.Country, channelSlug, manager, nil)
 	if insufficientErr != nil || appErr != nil {
 		return insufficientErr, appErr
 	}
@@ -519,7 +532,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 	if transaction.Error != nil {
 		return nil, model.NewAppError("DecreaseStock", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
 		variantIDs   = orderLineInfos.Variants().IDs()
@@ -707,7 +720,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 	if transaction.Error != nil {
 		return model.NewAppError("DeAllocateStockForOrder", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		Conditions:                     squirrel.Gt{model.AllocationTableName + ".QuantityAllocated": 0},
@@ -728,7 +741,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 
 		allocation.QuantityAllocated = 0
 
-		if allocation.GetStockAvailableQuantity() <= 0 {
+		if allocation.StockAvailableQuantity <= 0 {
 			allocationsToHandleAfterCommit = append(allocationsToHandleAfterCommit, allocation)
 		}
 	}
@@ -760,7 +773,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas
 	if transaction.Error != nil {
 		return nil, model.NewAppError("AllocatePreOrders", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	orderLinesInfoWithPreOrder := s.GetOrderLinesWithPreOrder(orderLinesInfo)
 	if len(orderLinesInfoWithPreOrder) == 0 {
@@ -939,7 +952,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 	if transaction.Error != nil {
 		return nil, model.NewAppError("DeactivatePreorderForVariant", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	if !productVariant.IsPreOrder {
 		return nil, nil

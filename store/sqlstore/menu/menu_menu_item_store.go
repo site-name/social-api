@@ -25,11 +25,16 @@ func (is *SqlMenuItemStore) Save(item *model.MenuItem) (*model.MenuItem, error) 
 }
 
 func (is *SqlMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "MenuItem_GetByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var menuItem model.MenuItem
-	err := is.GetReplica().First(&menuItem, store.BuildSqlizer(options.Conditions)...).Error
+	err = is.GetReplica().First(&menuItem, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.MenuItemTableName, "")
+			return nil, store.NewErrNotFound(model.MenuItemTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find menu item with given options")
 	}
@@ -38,8 +43,12 @@ func (is *SqlMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (
 }
 
 func (is *SqlMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "MenuItem_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.MenuItem
-	err := is.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = is.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find menu items by given options")
 	}

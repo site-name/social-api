@@ -65,8 +65,8 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model.Checkou
 		}
 
 		addressesOfUser, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Id:     squirrel.Eq{model.AddressTableName + ".Id": shippingAddress.Id},
-			UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": checkoutInfo.User.Id},
+			Conditions: squirrel.Eq{model.AddressTableName + ".Id": shippingAddress.Id},
+			UserID:     squirrel.Eq{model.UserAddressTableName + ".user_id": checkoutInfo.User.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode != http.StatusNotFound {
@@ -122,8 +122,8 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model.CheckoutInf
 		}
 
 		billingAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": checkoutInfo.User.Id},
-			Id:     squirrel.Eq{model.AddressTableName + ".Id": billingAddress.Id},
+			UserID:     squirrel.Eq{model.UserAddressTableName + ".user_id": checkoutInfo.User.Id},
+			Conditions: squirrel.Eq{model.AddressTableName + ".Id": billingAddress.Id},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr

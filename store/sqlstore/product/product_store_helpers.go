@@ -20,7 +20,7 @@ func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, catego
 		return query
 	}
 
-	return query.Where(squirrel.Eq{model.ProductTableName + ".CategoryID": categoryIDs})
+	return query.Where(squirrel.Eq{model.ProductTableName + "." + model.ProductColumnCategoryID: categoryIDs})
 }
 
 func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []string) squirrel.SelectBuilder {
@@ -33,8 +33,8 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 		Prefix("EXISTS (").
 		Suffix(")").
 		From(model.CollectionProductRelationTableName).
-		Where(squirrel.Eq{"ProductCollections.CollectionID": collectionIDs}).
-		Where("ProductCollections.ProductID = Products.Id").
+		Where(squirrel.Eq{model.CollectionProductRelationTableName + ".CollectionID": collectionIDs}).
+		Where(model.CollectionProductRelationTableName + ".ProductID = Products.Id").
 		Limit(1)
 
 	return query.Where(condition)

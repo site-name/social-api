@@ -150,7 +150,12 @@ func (s *SqlDiscountSaleStore) Delete(transaction *gorm.DB, options *model.SaleF
 		transaction = s.GetMaster()
 	}
 
-	result := transaction.Raw("DELETE FROM "+model.SaleTableName, store.BuildSqlizer(options.Conditions)...)
+	args, err := store.BuildSqlizer(options.Conditions, "DeleteSale")
+	if err != nil {
+		return 0, errors.Wrap(err, "Delete_ToSql")
+	}
+
+	result := transaction.Raw("DELETE FROM "+model.SaleTableName, args...)
 	if result.Error != nil {
 		return 0, errors.Wrap(result.Error, "failed to delete sale(s) by given options")
 	}

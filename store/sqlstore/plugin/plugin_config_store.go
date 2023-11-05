@@ -53,8 +53,13 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration
 
 // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
 func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "PluginConfiguration_FilterByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var configs model.PluginConfigurations
-	err := p.GetReplica().Find(&configs, store.BuildSqlizer(options.Conditions)...).Error
+	err = p.GetReplica().Find(&configs, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
 	}
@@ -83,8 +88,13 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 
 // GetByOptions finds and returns 1 plugin configuration with given options
 func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "PluginConfiguration_GetByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.PluginConfiguration
-	err := p.GetReplica().First(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = p.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, "options")

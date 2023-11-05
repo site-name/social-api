@@ -317,21 +317,6 @@ func (a *ServiceOrder) CustomerEmail(ord *model.Order) (string, *model.AppError)
 	return ord.UserEmail, nil
 }
 
-// AnAddressOfOrder returns shipping address of given order if presents
-func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID model.WhichOrderAddressID) (*model.Address, *model.AppError) {
-	addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-		OrderID: &model.AddressFilterOrderOption{
-			Id: squirrel.Eq{model.OrderTableName + ".Id": orderID},
-			On: whichAddressID,
-		},
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return addresses[0], nil
-}
-
 func (a *ServiceOrder) PrepareInsufficientStockOrderValidationAppError(where string, err *model.InsufficientStock) *model.AppError {
 	var warehouseIDs = make([]string, 0, len(err.Items))
 	var orderLineIDs = make([]string, 0, len(err.Items))

@@ -463,7 +463,11 @@ func (s *SqlStockStore) Delete(tx *gorm.DB, options *model.StockFilterOption) (i
 		return 0, store.NewErrInvalidInput(model.StockTableName, "Conditions", "")
 	}
 
-	result := tx.Delete(&model.Stock{}, store.BuildSqlizer(options.Conditions)...)
+	args, err := store.BuildSqlizer(options.Conditions, "Stock_Delete")
+	if err != nil {
+		return 0, err
+	}
+	result := tx.Delete(&model.Stock{}, args...)
 	if result.Error != nil {
 		return 0, errors.Wrap(result.Error, "failed to delete stocks by given options")
 	}

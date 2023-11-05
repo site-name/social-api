@@ -43,8 +43,13 @@ func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttr
 }
 
 func (as *SqlAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "GetByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.AssignedPageAttribute
-	err := as.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = as.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, "option")

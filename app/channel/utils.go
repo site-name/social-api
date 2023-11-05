@@ -18,5 +18,9 @@ func (a *ServiceChannel) GetDefaultChannel() (*model.Channel, *model.AppError) {
 }
 
 func (a *ServiceChannel) GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError) {
-	panic("not implemented")
+	channel, appErr := a.GetDefaultChannel()
+	if appErr != nil {
+		return "", appErr
+	}
+	return channel.Slug, nil
 }

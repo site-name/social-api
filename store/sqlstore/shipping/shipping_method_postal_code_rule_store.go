@@ -26,8 +26,12 @@ func (s *SqlShippingMethodPostalCodeRuleStore) ScanFields(rule *model.ShippingMe
 }
 
 func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "ShippingMethodPostalCodeRule_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
 	var res []*model.ShippingMethodPostalCodeRule
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping method postal code rules by given options")
 	}

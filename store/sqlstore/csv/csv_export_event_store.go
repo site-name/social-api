@@ -25,8 +25,13 @@ func (cs *SqlCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportE
 
 // FilterByOption finds and returns a list of export events filtered using given option
 func (cs *SqlCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.ExportEvent
-	err := cs.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = cs.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find export events based on given options")
 	}

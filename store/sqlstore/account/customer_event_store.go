@@ -43,16 +43,17 @@ func (cs *SqlCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 
 func (cs *SqlCustomerEventStore) Count() (int64, error) {
 	var count int64
-	return count, cs.GetReplica().Raw("SELECT COUNT(*) FROM " + model.CustomerEventTableName).Scan(&count).Error
+	return count, cs.GetReplica().Table(model.CustomerEventTableName).Count(&count).Error
 }
 
 func (cs *SqlCustomerEventStore) FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error) {
-	if options == nil {
-		return nil, store.NewErrInvalidInput(model.CustomerEventTableName, "options", nil)
+	args, err := store.BuildSqlizer(options, "FilterByOptions")
+	if err != nil {
+		return nil, err
 	}
 
 	var res []*model.CustomerEvent
-	err := cs.GetReplica().Find(&res, store.BuildSqlizer(options)...).Error
+	err = cs.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find customer events by given options")
 	}

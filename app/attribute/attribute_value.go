@@ -278,7 +278,10 @@ func (r *Reordering) Run(transaction *gorm.DB) *model.AppError {
 
 func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError {
 	transaction := s.srv.Store.GetMaster().Begin()
-	defer transaction.Rollback()
+	if transaction.Error != nil {
+		return model.NewAppError("PerformOrdering", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	appErr := s.newReordering(values, operations, "moves").Run(transaction)
 	if appErr != nil {

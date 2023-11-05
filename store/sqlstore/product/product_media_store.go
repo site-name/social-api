@@ -70,8 +70,12 @@ func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterO
 		))
 	}
 
+	args, err := store.BuildSqlizer(conditions, "ProductMedia_FilterByOption")
+	if err != nil {
+		return nil, err
+	}
 	var res model.ProductMedias
-	err := db.Find(&res, store.BuildSqlizer(conditions)...).Error
+	err = db.Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product medias by given option")
 	}

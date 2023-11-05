@@ -302,11 +302,29 @@ func (r *Resolver) ProductVariantReorderAttributeValues(ctx context.Context, arg
 func (r *Resolver) ProductVariant(ctx context.Context, args struct {
 	Id      *UUID
 	Sku     *string
-	Channel *string
+	Channel *string // slug
 }) (*ProductVariant, error) {
 	// validate atleast id or sku is provided
-	if args.Id == nil && args.Sku == nil {
+	if (args.Id == nil && args.Sku == nil) ||
+		(args.Id != nil && args.Sku != nil) {
 		return nil, model.NewAppError("ProductVariant", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/sku"}, "please provide id or sku", http.StatusBadRequest)
+	}
+
+	var channelSlug string
+	if args.Channel != nil {
+		channelSlug = *args.Channel
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("ProductVariant", model.ShopAdminRoleId, model.ShopStaffRoleId)
+	userIsShopStaff := embedCtx.Err == nil
+
+	if channelSlug == "" && !userIsShopStaff {
+		channel, appErr := embedCtx.App.Srv().ChannelService().GetDefaultChannel()
+		if appErr != nil {
+			return nil, appErr
+		}
+		channelSlug = channel.Slug
 	}
 
 	panic("not implemented")
@@ -315,7 +333,7 @@ func (r *Resolver) ProductVariant(ctx context.Context, args struct {
 // NOTE: Refer to ./graphql/schemas/product_variant.graphqls for details on directives used.
 func (r *Resolver) ProductVariants(ctx context.Context, args struct {
 	Ids     []UUID
-	Channel *string
+	Channel *string // slug
 	Filter  *ProductVariantFilterInput
 	GraphqlParams
 }) (*ProductVariantCountableConnection, error) {

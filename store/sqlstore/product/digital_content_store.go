@@ -42,8 +42,13 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 
 // GetByOption finds and returns 1 digital content filtered using given option
 func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "DigitalContent_GetByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.DigitalContent
-	err := ds.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = ds.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentTableName, "option")

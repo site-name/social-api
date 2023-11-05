@@ -82,7 +82,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*m
 	)
 	if len(checkoutAddressIDs) > 0 {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Id: squirrel.Eq{model.AddressTableName + ".Id": checkoutAddressIDs},
+			Conditions: squirrel.Eq{model.AddressTableName + ".Id": checkoutAddressIDs},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {

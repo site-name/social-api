@@ -9241,7 +9241,7 @@ func (s *OpenTracingLayerWishlistItemStore) FilterByOption(option *model.Wishlis
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) GetById(selector *gorm.DB, id string) (*model.WishlistItem, error) {
+func (s *OpenTracingLayerWishlistItemStore) GetById(id string) (*model.WishlistItem, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.GetById")
 	s.Root.Store.SetContext(newCtx)
@@ -9250,7 +9250,7 @@ func (s *OpenTracingLayerWishlistItemStore) GetById(selector *gorm.DB, id string
 	}()
 
 	defer span.Finish()
-	result, err := s.WishlistItemStore.GetById(selector, id)
+	result, err := s.WishlistItemStore.GetById(id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

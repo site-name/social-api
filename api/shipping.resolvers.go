@@ -107,7 +107,10 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// update
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	defer transaction.Rollback()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// add channels:
 	shippingMethodChannelListingsToAdd := lo.Map(args.Input.AddChannels, func(item *ShippingMethodChannelListingAddInput, _ int) *model.ShippingMethodChannelListing {
@@ -179,7 +182,10 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 
 	// start transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	defer transaction.Rollback()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("ShippingPriceCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	shippingMethod, appErr = embedCtx.App.Srv().ShippingService().UpsertShippingMethod(transaction, shippingMethod)
 	if appErr != nil {
@@ -269,7 +275,10 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 
 	// start transaction:
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	defer transaction.Rollback()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("ShippingPriceUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
 		Conditions:                squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
@@ -411,7 +420,10 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 
 	// begin transaction
 	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
-	defer transaction.Rollback()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("ShippingZoneCreate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
+	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	shippingZone := &model.ShippingZone{
 		Default:   args.Input.Default,
@@ -537,7 +549,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("ShippingZoneUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// find all shipping zones
 	allShippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{})

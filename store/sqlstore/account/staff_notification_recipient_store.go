@@ -26,8 +26,13 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificati
 }
 
 func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.StaffNotificationRecipient
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, err
 	}

@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -42,13 +43,6 @@ func MapStringsToQueryParams(list []string, paramPrefix string) (string, map[str
 
 	return "(" + keys.String() + ")", params
 }
-
-// finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
-// func FinalizeTransaction(transaction driver.Tx) {
-// 	if err := transaction.Rollback(); err != nil && err != sql.ErrTxDone {
-// 		slog.Error("Failed to rollback transaction", slog.Err(err))
-// 	}
-// }
 
 // removeNonAlphaNumericUnquotedTerms removes all unquoted words that only contain
 // non-alphanumeric chars from given line
@@ -178,14 +172,14 @@ func ExtractModelFieldNames(model any) util.AnyArray[string] {
 	return res
 }
 
-func BuildSqlizer(option squirrel.Sqlizer) ([]any, error) {
+func BuildSqlizer(option squirrel.Sqlizer, where string) ([]any, error) {
 	if option == nil {
 		return []any{}, nil
 	}
 
 	query, args, err := option.ToSql()
 	if err != nil {
-		return nil, err
+		return []any{}, errors.Wrap(err, where+"_ToSql")
 	}
 
 	res := make([]any, 0, len(args)+1)

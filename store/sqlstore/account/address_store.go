@@ -1,6 +1,7 @@
 package account
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
@@ -65,22 +66,33 @@ func (as *SqlAddressStore) Get(id string) (*model.Address, error) {
 
 // FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
-	var res []*model.Address
-	db := as.GetReplica()
-	andConds := squirrel.And{
-		option.Id,
-		option.UserID,
-		option.Other,
-	}
-
-	if option.OrderID != nil {
-		andConds = append(andConds, option.OrderID.Id)
-		db = db.Joins("INNER JOIN "+model.OrderTableName+" ON Orders.? = Addresses.Id", option.OrderID.On)
+	var (
+		res      []*model.Address
+		db       = as.GetReplica()
+		andConds = squirrel.And{}
+	)
+	if option.Conditions != nil {
+		andConds = append(andConds, option.Conditions)
 	}
 	if option.UserID != nil {
-		db = db.Joins("INNER JOIN " + model.UserAddressTableName + " ON UserAddresses.address_id = Addresses.Id")
+		andConds = append(andConds, option.UserID)
+		db = db.
+			Joins(
+				fmt.Sprintf(
+					"INNER JOIN %[1]s ON %[1]s.%[3]s = %[2]s.%[4]s",
+					model.UserAddressTableName, // 1
+					model.AddressTableName,     // 2
+					"address_id",               // 3
+					model.AddressColumnId,      // 4
+				),
+			)
 	}
-	err := db.Find(&res, store.BuildSqlizer(andConds)...).Error
+
+	args, err := store.BuildSqlizer(andConds, "FilterByOption")
+	if err != nil {
+		return nil, err
+	}
+	err = db.Find(&res, args...).Error
 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find addresses by given options")

@@ -70,7 +70,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Srv().
 		AccountService().
 		AddressesByOption(&model.AddressFilterOption{
-			Id: squirrel.Eq{model.AddressTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.AddressTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {

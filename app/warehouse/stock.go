@@ -67,7 +67,7 @@ func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(options *model.S
 }
 
 // FilterStocksForCountryAndChannel finds stocks by given options
-func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) ([]*model.Stock, *model.AppError) {
+func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(options *model.StockFilterOptionsForCountryAndChannel) (model.Stocks, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(options)
 
 	if err != nil {

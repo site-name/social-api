@@ -51,6 +51,7 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	if transaction.Error != nil {
 		return nil, model.NewAppError("CollectionAddProducts", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// add collection-product relations:
 	collectionProductRels := lo.Map(args.Products, func(pid string, _ int) *model.CollectionProduct {
@@ -79,7 +80,6 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	if err != nil {
 		return nil, model.NewAppError("CollectionAddProducts", model.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	transaction.Rollback()
 
 	// TODO: Determine if we need call plugins' product updated methods
 
@@ -162,7 +162,7 @@ func (r *Resolver) CollectionReorderProducts(ctx context.Context, args struct {
 	if tran.Error != nil {
 		return nil, model.NewAppError("CollectionReorderProducts", model.ErrorCreatingTransactionErrorID, nil, tran.Error.Error(), http.StatusInternalServerError)
 	}
-	defer tran.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(tran)
 
 	panic("not implemented")
 
@@ -308,7 +308,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args Coll
 	if transaction.Error != nil {
 		return nil, model.NewAppError("CollectionChannelListingUpdate", model.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer transaction.Rollback()
+	defer embedCtx.App.Srv().Store.FinalizeTransaction(transaction)
 
 	// delete collection-channel listings
 	err := embedCtx.App.Srv().Store.CollectionChannelListing().Delete(transaction, &model.CollectionChannelListingFilterOptions{

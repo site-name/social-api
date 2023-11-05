@@ -220,7 +220,7 @@ type OrderFilterOption struct {
 	ChannelSlug         squirrel.Sqlizer // INNER JOIN channels ON ... WHERE Channels.Slug ...
 	// contains string formats of OrderStatus, may be some additional values like:
 	//  "ready_to_fulfill", "ready_to_capture"
-	Statuses []string
+	Statuses []OrderFilterStatus
 
 	CountTotal bool
 

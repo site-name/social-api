@@ -82,8 +82,12 @@ func (me *SqlSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly 
 		cond = append(cond, squirrel.NotEq{"ExpiredNotify": true})
 	}
 
+	args, err := store.BuildSqlizer(cond, "GetSessionsExpired")
+	if err != nil {
+		return nil, err
+	}
 	var sessions []*model.Session
-	err := me.GetReplica().Find(&sessions, store.BuildSqlizer(cond)...).Error
+	err = me.GetReplica().Find(&sessions, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Sessions")
 	}

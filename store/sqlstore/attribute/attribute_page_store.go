@@ -40,8 +40,13 @@ func (as *SqlAttributePageStore) Get(id string) (*model.AttributePage, error) {
 }
 
 func (as *SqlAttributePageStore) GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error) {
+	args, err := store.BuildSqlizer(option.Conditions, "GetByOption")
+	if err != nil {
+		return nil, err
+	}
+
 	var res model.AttributePage
-	err := as.GetReplica().First(&res, store.BuildSqlizer(option.Conditions)...).Error
+	err = as.GetReplica().First(&res, args...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributePageTableName, "option")

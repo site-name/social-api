@@ -8392,10 +8392,10 @@ func (s *TimerLayerWishlistItemStore) FilterByOption(option *model.WishlistItemF
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) GetById(selector *gorm.DB, id string) (*model.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetById(id string) (*model.WishlistItem, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.GetById(selector, id)
+	result, err := s.WishlistItemStore.GetById(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

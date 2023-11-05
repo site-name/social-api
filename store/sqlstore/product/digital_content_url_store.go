@@ -47,8 +47,13 @@ func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, e
 }
 
 func (s *SqlDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
+	args, err := store.BuildSqlizer(options.Conditions, "DigitalContentUrl_FilterByOptions")
+	if err != nil {
+		return nil, err
+	}
+
 	var res []*model.DigitalContentUrl
-	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
+	err = s.GetReplica().Find(&res, args...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find digital content urls by options")
 	}
