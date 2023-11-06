@@ -16,6 +16,7 @@ type AttributePage struct {
 
 	PageAssignments []*AssignedPageAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 	AssignedPages   []*Page                  `json:"-" gorm:"many2many:AssignedPageAttributes"` // through AssignedPageAttribute
+	Attribute       *Attribute               `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
 }
 
 func (*AttributePage) TableName() string               { return AttributePageTableName }
@@ -43,6 +44,9 @@ type AssignedPageAttributeValue struct {
 	ValueID      string `json:"value_id" gorm:"primeryKey;type:uuid;column:ValueID;index:valueid_assignmentid_key"`           // AttributeValue
 	AssignmentID string `json:"assignment_id" gorm:"primeryKey;type:uuid;column:AssignmentID;index:valueid_assignmentid_key"` // AssignedPageAttribute
 	Sortable
+
+	AssignedPageAttribute *AssignedPageAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
+	AttributeValue        *AttributeValue        `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
 }
 
 func (a *AssignedPageAttributeValue) TableName() string             { return AssignedPageAttributeValueTableName }
@@ -77,6 +81,7 @@ type AssignedPageAttribute struct {
 
 	PageValueAssignments []*AssignedPageAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 	Values               AttributeValues               `json:"-" gorm:"many2many:AssignedPageAttributeValues"`
+	AttributePage        *AttributePage                `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 }
 
 func (a *AssignedPageAttribute) BeforeCreate(_ *gorm.DB) error { return a.IsValid() }

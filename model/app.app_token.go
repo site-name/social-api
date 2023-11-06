@@ -21,7 +21,7 @@ type AppToken struct {
 
 func (a *AppToken) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
 func (a *AppToken) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
-func (_ *AppToken) TableName() string             { return "AppTokens" }
+func (*AppToken) TableName() string               { return "AppTokens" }
 
 func (a *AppToken) IsValid() *AppError {
 	if !IsValidId(a.AppId) {

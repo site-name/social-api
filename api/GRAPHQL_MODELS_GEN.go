@@ -5859,7 +5859,7 @@ type collectionSortKeys struct {
 }
 
 var collectionSortFieldMap = map[CollectionSortField]*collectionSortKeys{
-	CollectionSortFieldName: &collectionSortKeys{
+	CollectionSortFieldName: {
 		fields: []string{model.CollectionTableName + ".Name"},
 		keyFunc: func(c *model.Collection) []any {
 			return []any{
@@ -5867,7 +5867,7 @@ var collectionSortFieldMap = map[CollectionSortField]*collectionSortKeys{
 			}
 		},
 	},
-	CollectionSortFieldAvailability: &collectionSortKeys{
+	CollectionSortFieldAvailability: {
 		fields: []string{model.CollectionTableName + ".IsPublished", model.CollectionTableName + ".Name"},
 		keyFunc: func(c *model.Collection) []any {
 			return []any{
@@ -5876,7 +5876,7 @@ var collectionSortFieldMap = map[CollectionSortField]*collectionSortKeys{
 			}
 		},
 	},
-	CollectionSortFieldProductCount: &collectionSortKeys{
+	CollectionSortFieldProductCount: {
 		fields: []string{model.CollectionTableName + ".ProductCount", model.CollectionTableName + ".Name"},
 		keyFunc: func(c *model.Collection) []any {
 			return []any{
@@ -5885,7 +5885,7 @@ var collectionSortFieldMap = map[CollectionSortField]*collectionSortKeys{
 			}
 		},
 	},
-	CollectionSortFieldPublicationDate: &collectionSortKeys{
+	CollectionSortFieldPublicationDate: {
 		fields: []string{model.CollectionTableName + ".PublicationDate", model.CollectionTableName + ".Name"},
 		keyFunc: func(c *model.Collection) []any {
 			return []any{

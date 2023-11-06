@@ -233,7 +233,7 @@ func (*Store) GetDbVersion(numerical bool) (string, error) {
 	return "", nil
 }
 
-func (*Store) GetMaster(noTimeout ...bool) *gorm.DB {
+func (*Store) GetMaster() *gorm.DB {
 	panic("unimplemented")
 }
 
@@ -242,7 +242,7 @@ func (*Store) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) 
 }
 
 // GetReplica implements store.Store.
-func (*Store) GetReplica(noTimeout ...bool) *gorm.DB {
+func (*Store) GetReplica() *gorm.DB {
 	panic("unimplemented")
 }
 

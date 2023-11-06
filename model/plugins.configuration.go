@@ -9,13 +9,13 @@ import (
 )
 
 type PluginConfiguration struct {
-	Id            string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Identifier    string          `json:"identifier" gorm:"type:varchar(128);column:Identifier;index:identifier_channelid_key"`
-	Name          string          `json:"name" gorm:"type:varchar(128);column:Name"`
-	ChannelID     string          `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:identifier_channelid_key"`
-	Description   string          `json:"description" gorm:"column:Description"`
-	Active        bool            `json:"active" gorm:"column:Active"`
-	Configuration StringInterface `json:"configuration" gorm:"type:jsonb;column:Configuration"`
+	Id            string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Identifier    string           `json:"identifier" gorm:"type:varchar(128);column:Identifier;index:identifier_channelid_key"`
+	Name          string           `json:"name" gorm:"type:varchar(128);column:Name"`
+	ChannelID     string           `json:"channel_id" gorm:"type:uuid;column:ChannelID;index:identifier_channelid_key"`
+	Description   string           `json:"description" gorm:"column:Description"`
+	Active        bool             `json:"active" gorm:"column:Active"`
+	Configuration StringInterfaces `json:"configuration" gorm:"type:jsonb;column:Configuration"`
 
 	relatedChannel *Channel `db:"-"` // this field is populated in some sql queries
 }
@@ -63,6 +63,6 @@ func (p *PluginConfiguration) commonPre() {
 	p.Description = SanitizeUnicode(p.Description)
 
 	if p.Configuration == nil {
-		p.Configuration = StringInterface{}
+		p.Configuration = StringInterfaces{}
 	}
 }

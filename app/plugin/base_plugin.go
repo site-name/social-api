@@ -19,7 +19,7 @@ const ErrorPluginbMethodNotImplemented = "app.plugin.method_not_implemented.app_
 type PluginConfig struct {
 	Active        bool
 	ChannelID     string
-	Configuration interfaces.PluginConfigurationType
+	Configuration model.StringInterfaces
 	Manager       *PluginManager
 	Manifest      *interfaces.PluginManifest
 }
@@ -32,7 +32,7 @@ type BasePlugin struct {
 	Manifest      *interfaces.PluginManifest
 	Active        bool
 	ChannelID     string
-	Configuration interfaces.PluginConfigurationType
+	Configuration model.StringInterfaces
 	Manager       *PluginManager
 }
 
@@ -58,11 +58,11 @@ func (b *BasePlugin) GetManifest() *interfaces.PluginManifest {
 	return b.Manifest
 }
 
-func (b *BasePlugin) GetConfiguration() interfaces.PluginConfigurationType {
+func (b *BasePlugin) GetConfiguration() model.StringInterfaces {
 	return b.Configuration
 }
 
-func (b *BasePlugin) SetConfiguration(config interfaces.PluginConfigurationType) {
+func (b *BasePlugin) SetConfiguration(config model.StringInterfaces) {
 	b.Configuration = config
 }
 
@@ -400,7 +400,7 @@ func (b *BasePlugin) GetDefaultActive() (bool, *model.AppError) {
 	return b.Manifest.DefaultActive, nil
 }
 
-func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface) (interfaces.PluginConfigurationType, *model.AppError) {
+func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface) (model.StringInterfaces, *model.AppError) {
 	var updatedConfiguration []model.StringInterface
 
 	configStructure := b.Manifest.ConfigStructure
@@ -458,9 +458,9 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 	return updatedConfiguration, nil
 }
 
-func (b *BasePlugin) GetPluginConfiguration(config interfaces.PluginConfigurationType) (interfaces.PluginConfigurationType, *model.AppError) {
+func (b *BasePlugin) GetPluginConfiguration(config model.StringInterfaces) (model.StringInterfaces, *model.AppError) {
 	if config == nil {
-		config = interfaces.PluginConfigurationType{}
+		config = model.StringInterfaces{}
 	}
 
 	config, _ = b.UpdateConfigurationStructure(config)
@@ -476,7 +476,12 @@ func (b *BasePlugin) GetPluginConfiguration(config interfaces.PluginConfiguratio
 	return config, nil
 }
 
-func (b *BasePlugin) AppendConfigStructure(config interfaces.PluginConfigurationType) (interfaces.PluginConfigurationType, *model.AppError) {
+// Append configuration structure to config from the database.
+//
+// Database stores "key: value" pairs, the definition of fields should be declared
+// inside of the plugin. Based on this, the plugin will generate a structure of
+// configuration with current values and provide access to it via API.
+func (b *BasePlugin) AppendConfigStructure(config model.StringInterfaces) (model.StringInterfaces, *model.AppError) {
 	configStructure := b.Manifest.ConfigStructure
 	if configStructure == nil {
 		configStructure = make(map[string]model.StringInterface)
@@ -490,9 +495,10 @@ func (b *BasePlugin) AppendConfigStructure(config interfaces.PluginConfiguration
 			for key, value := range structureToAdd {
 				configurationField[key] = value
 			}
-		} else {
-			fieldsWithoutStructure = append(fieldsWithoutStructure, configurationField)
+			continue
 		}
+
+		fieldsWithoutStructure = append(fieldsWithoutStructure, configurationField)
 	}
 
 	if len(fieldsWithoutStructure) > 0 {

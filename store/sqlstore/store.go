@@ -2,7 +2,6 @@ package sqlstore
 
 import (
 	"context"
-	"database/sql"
 	dbsql "database/sql"
 	"fmt"
 	"log"
@@ -12,7 +11,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	jackcpgconn "github.com/jackc/pgconn"
@@ -104,8 +102,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		slog.Fatal("Failed to apply database migrations.", slog.Err(err))
 	}
 
-	// set up tables before performing migrations:
-	store.setupTables()
+	store.setupStores()
 	return store
 }
 
@@ -168,14 +165,12 @@ func (ss *SqlStore) initConnection() error {
 	if err != nil {
 		return err
 	}
-	// ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
 	ss.master, err = newGormDBWrapper(handle, ss.settings)
 	if err != nil {
 		return err
 	}
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
-		// ss.replicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
 		ss.Replicas = make([]*gorm.DB, len(ss.settings.DataSourceReplicas))
 
 		for i, replica := range ss.settings.DataSourceReplicas {
@@ -184,7 +179,6 @@ func (ss *SqlStore) initConnection() error {
 			if err != nil {
 				return errors.Wrapf(err, "failed to setup replica connection: %s", replicaName)
 			}
-			// ss.replicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
 			ss.Replicas[i], err = newGormDBWrapper(handle, ss.settings)
 			if err != nil {
 				return err
@@ -245,46 +239,32 @@ func (ss *SqlStore) GetCurrentSchemaVersion() string {
 // If numerical is set to true, it attempts to return a numerical version string
 // that can be parsed by callers.
 func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
-	var sqlVersion string
+	var sqlVersionQuery string
 	if numerical {
-		sqlVersion = `SHOW server_version_num`
+		sqlVersionQuery = `SHOW server_version_num`
 	} else {
-		sqlVersion = `SHOW server_version`
+		sqlVersionQuery = `SHOW server_version`
 	}
 
 	var version string
 
-	if err := ss.GetReplica().Raw(sqlVersion).Scan(&sqlVersion).Error; err != nil {
+	if err := ss.GetReplica().Raw(sqlVersionQuery).Scan(&version).Error; err != nil {
 		return "", err
 	}
 
 	return version, nil
 }
 
-func (ss *SqlStore) GetMaster(noTimeout ...bool) *gorm.DB {
-	if len(noTimeout) > 0 && noTimeout[0] {
-		return ss.master
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*ss.settings.QueryTimeout)*time.Second)
-	defer cancel()
-	return ss.master.WithContext(ctx)
+func (ss *SqlStore) GetMaster() *gorm.DB {
+	return ss.master
 }
 
-func (ss *SqlStore) GetReplica(noTimeout ...bool) *gorm.DB {
+func (ss *SqlStore) GetReplica() *gorm.DB {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
-		return ss.GetMaster(noTimeout...)
+		return ss.GetMaster()
 	}
 	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
-	db := ss.Replicas[rrNum]
-
-	if len(noTimeout) > 0 && noTimeout[0] {
-		return db
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*ss.settings.QueryTimeout)*time.Second)
-	defer cancel()
-	return db.WithContext(ctx)
+	return ss.Replicas[rrNum]
 }
 
 // func (ss *SqlStore) GetSearchReplicaX() *gorm.DB {
@@ -511,10 +491,10 @@ END
 $func$;`)
 }
 
-func (ss *SqlStore) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) sq.StatementBuilderType {
+func (ss *SqlStore) GetQueryBuilder(placeholderFormats ...sq.PlaceholderFormat) sq.StatementBuilderType {
 	res := sq.StatementBuilder
 	if len(placeholderFormats) == 0 {
-		return res.PlaceholderFormat(squirrel.Dollar)
+		return res.PlaceholderFormat(sq.Dollar)
 	}
 	return res.PlaceholderFormat(placeholderFormats[0])
 }
@@ -604,7 +584,7 @@ func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 	return migrations, nil
 }
 
-func newGormDBWrapper(handle *sql.DB, sqlSettings *model.SqlSettings) (*gorm.DB, error) {
+func newGormDBWrapper(handle *dbsql.DB, sqlSettings *model.SqlSettings) (*gorm.DB, error) {
 	var gormLog logger.Interface
 	if *sqlSettings.Trace {
 		gormLog = logger.New(
@@ -625,7 +605,7 @@ func newGormDBWrapper(handle *sql.DB, sqlSettings *model.SqlSettings) (*gorm.DB,
 
 func (s *SqlStore) FinalizeTransaction(tx *gorm.DB) {
 	err := tx.Rollback().Error
-	if err != nil && !errors.Is(err, sql.ErrTxDone) {
+	if err != nil && !errors.Is(err, dbsql.ErrTxDone) {
 		slog.Error("failed to rollback a transaction", slog.Err(err))
 	}
 }

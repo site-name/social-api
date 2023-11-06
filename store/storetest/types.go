@@ -8,6 +8,6 @@ import (
 var _ SqlStore = (*sqlstore.SqlStore)(nil)
 
 type SqlStore interface {
-	GetMaster(noTimeout ...bool) *gorm.DB
+	GetMaster() *gorm.DB
 	DriverName() string
 }

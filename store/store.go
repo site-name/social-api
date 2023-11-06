@@ -27,8 +27,8 @@ type Store interface {
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
 	FinalizeTransaction(tx *gorm.DB)             // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
 
-	GetMaster(noTimeout ...bool) *gorm.DB  // GetMaster returns a gorm wrapper
-	GetReplica(noTimeout ...bool) *gorm.DB // GetReplica returns a gorm wrapper
+	GetMaster() *gorm.DB  // GetMaster returns a gorm wrapper
+	GetReplica() *gorm.DB // GetReplica returns a gorm wrapper
 
 	// GetQueryBuilder create squirrel sql query builder.
 	//

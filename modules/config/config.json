@@ -98,7 +98,6 @@
         "EnableReliableWebSockets": false,
         "EnablePermalinkPreviews": true,
         "EnableInlineLatex": true,
-        "MaxCheckoutLineQuantity": 50,
         "ImageProxyType": "",
         "ImageProxyURL": "",
         "ImageProxyOptions": "",
@@ -128,7 +127,8 @@
         "QueryTimeout": 30,
         "DisableDatabaseSearch": false,
         "MigrationsStatementTimeoutSeconds": 100000,
-        "ReplicaLagSettings": []
+        "ReplicaLagSettings": [],
+        "ReplicaMonitorIntervalSeconds": 5
     },
     "LogSettings": {
         "EnableConsole": true,
@@ -550,5 +550,36 @@
         "VatlayerAccessKey": "bb98bc77f97b4b060ca39b78e27396ec",
         "RateTypeURL": "http://apilayer.net/api/types?access_key=bb98bc77f97b4b060ca39b78e27396ec",
         "VateRateURL": "http://apilayer.net/api/rate_list?access_key=bb98bc77f97b4b060ca39b78e27396ec"
+    },
+    "ShopSettings": {
+        "IncludeTaxesInPrice": true,
+        "DisplayGrossPrices": true,
+        "ChargeTaxesOnShipping": true,
+        "TrackInventoryByDefault": true,
+        "DefaultWeightUnit": "kg",
+        "AutomaticFulfillmentDigitalProducts": false,
+        "DefaultDigitalMaxDownloads": 10,
+        "DefaultDigitalUrlValidDays": 10,
+        "DefaultMailSenderName": "",
+        "DefaultMailSenderAddress": "",
+        "CustomerSetPasswordUrl": "",
+        "Description": "",
+        "AutomaticallyConfirmAllNewOrders": true,
+        "FulfillmentAutoApprove": true,
+        "FulfillmentAllowUnPaid": true,
+        "GiftcardExpiryType": "never_expire",
+        "GiftcardExpiryPeriodType": "day",
+        "GiftcardExpiryPeriod": 10,
+        "AutomaticallyFulfillNonShippableGiftcard": true,
+        "MaxCheckoutLineQuantity": 50,
+        "Address": {
+            "id": "",
+            "first_name": "",
+            "last_name": "",
+            "city": "",
+            "postal_code": "",
+            "country": "",
+            "phone": ""
+        }
     }
 }

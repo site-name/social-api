@@ -40,7 +40,7 @@ type {{.Name}} struct {
 }
 
 // setup tables before performing database migration
-func (store *SqlStore) setupTables() {
+func (store *SqlStore) setupStores() {
   store.stores = &{{ .Name }} {
     {{ range $index, $element := .SubStores }} {{ $index | LowerFirstChar }}: {{ $index | FromWhichPackage }}.NewSql{{ $index }}Store(store{{ $index | StoreNeedMetric }}),
     {{ end }}

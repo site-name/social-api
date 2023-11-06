@@ -60,6 +60,7 @@ func IsSamlFile(saml *SamlSettings, filename string) bool {
 }
 
 type StringInterface map[string]any
+type StringInterfaces []StringInterface
 
 func (s StringInterface) DeepCopy() StringInterface {
 	if s == nil {
@@ -106,32 +107,37 @@ func (si *StringInterface) Scan(value any) error {
 		return nil
 	}
 
-	buf, ok := value.([]byte)
-	if ok {
-		return json.Unmarshal(buf, si)
+	switch t := value.(type) {
+	case []byte:
+		return json.Unmarshal(t, si)
+	case string:
+		return json.Unmarshal([]byte(t), si)
+	default:
+		return fmt.Errorf("unsupported value type: %T", value)
 	}
-
-	str, ok := value.(string)
-	if ok {
-		return json.Unmarshal([]byte(str), si)
-	}
-
-	return errors.New("received value is neither a byte slice nor string")
 }
 
 // Value converts StringInterface to database value
 func (si StringInterface) Value() (driver.Value, error) {
-	j, err := json.Marshal(si)
-	if err != nil {
-		return nil, err
+	return json.Marshal(si)
+}
+
+func (si *StringInterfaces) Scan(value any) error {
+	if value == nil {
+		return nil
 	}
 
-	if len(j) > maxPropSizeBytes {
-		return nil, ErrMaxPropSizeExceeded
+	switch t := value.(type) {
+	case []byte:
+		return json.Unmarshal(t, si)
+	default:
+		return fmt.Errorf("unsupported can value: %T", value)
 	}
+}
 
-	// non utf8 characters are not supported https://mattermost.atlassian.net/browse/MM-41066
-	return string(j), err
+// Value converts StringInterfaces to database value
+func (si StringInterfaces) Value() (driver.Value, error) {
+	return json.Marshal(si)
 }
 
 // GetPointerOfValue takes a primitive value, returns pointer to it.

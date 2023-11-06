@@ -20,8 +20,6 @@ const (
 	OUTPUT           ConfigurationTypeField = "OUTPUT"
 )
 
-type PluginConfigurationType []model.StringInterface
-
 // PluginManifest
 type PluginManifest struct {
 	PluginName              string
@@ -278,18 +276,18 @@ type BasePluginInterface interface {
 	// Database stores "key: value" pairs, the definition of fields should be declared
 	// inside of the plugin. Based on this, the plugin will generate a structure of
 	// configuration with current values and provide access to it via API.
-	AppendConfigStructure(configuration PluginConfigurationType) (PluginConfigurationType, *model.AppError)
+	AppendConfigStructure(configuration model.StringInterfaces) (model.StringInterfaces, *model.AppError)
 	//
-	UpdateConfigurationStructure(configuration []model.StringInterface) (PluginConfigurationType, *model.AppError)
+	UpdateConfigurationStructure(configuration []model.StringInterface) (model.StringInterfaces, *model.AppError)
 	//
 	GetDefaultActive() (bool, *model.AppError)
 	//
-	GetPluginConfiguration(configuration PluginConfigurationType) (PluginConfigurationType, *model.AppError)
+	GetPluginConfiguration(configuration model.StringInterfaces) (model.StringInterfaces, *model.AppError)
 	//
 	IsActive() bool
 	ChannelId() string
 	GetManifest() *PluginManifest
-	GetConfiguration() PluginConfigurationType
+	GetConfiguration() model.StringInterfaces
 	SetActive(active bool)
-	SetConfiguration(config PluginConfigurationType)
+	SetConfiguration(config model.StringInterfaces)
 }

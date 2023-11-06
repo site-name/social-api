@@ -14,7 +14,7 @@ type AttributeProduct struct {
 	ProductTypeID string `json:"product_type_id" gorm:"type:uuid;column:ProductTypeID;index:attributeid_producttypeid_key"` // to ProductType
 	Sortable
 
-	Attribute          *Attribute                  `json:"-"`
+	Attribute          *Attribute                  `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
 	AssignedProducts   Products                    `json:"-" gorm:"many2many:AssignedProductAttributes"`
 	ProductAssignments []*AssignedProductAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 }
@@ -60,7 +60,7 @@ type AssignedProductAttribute struct {
 
 	Values                  AttributeValues                  `json:"-" gorm:"many2many:AssignedProductAttributeValues"`
 	ProductValueAssignments []*AssignedProductAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
-	AttributeProduct        *AttributeProduct                `json:"-"`
+	AttributeProduct        *AttributeProduct                `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 }
 
 func (*AssignedProductAttribute) TableName() string               { return AssignedProductAttributeTableName }
@@ -114,6 +114,9 @@ type AssignedProductAttributeValue struct {
 	ValueID      string `json:"value_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:ValueID"`           // to AttributeValue
 	AssignmentID string `json:"assignment_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:AssignmentID"` // to AssignedProductAttribute
 	Sortable
+
+	AssignedProductAttribute *AssignedProductAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
+	AttributeValue           *AttributeValue           `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
 }
 
 func (*AssignedProductAttributeValue) TableName() string {

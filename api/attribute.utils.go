@@ -308,25 +308,6 @@ func cleanAttributeSettings(instance *model.Attribute, cleanedInput attributeUps
 	return nil
 }
 
-func preSaveValues(ctx *web.Context, attribute *model.Attribute, attributeValues AttrValuesInput) (model.AttributeValues, *model.AppError) {
-	res := make(model.AttributeValues, 0, len(attributeValues.Values))
-	for _, name := range attributeValues.Values {
-		if name != "" {
-			attrValue, appErr := ctx.App.Srv().AttributeService().UpsertAttributeValue(&model.AttributeValue{
-				Name:        name,
-				AttributeID: attribute.Id,
-			})
-			if appErr != nil {
-				return nil, appErr
-			}
-
-			res = append(res, attrValue)
-		}
-	}
-
-	return res, nil
-}
-
 type AttrValuesInput struct {
 	GlobalID    string
 	Values      []string
@@ -481,7 +462,46 @@ func (a *attributeAssignmentMixin) preSaveNumericValues(attribute *model.Attribu
 	})
 }
 
-func (a *attributeAssignmentMixin) preSaveValues(attribute *model.Attribute, attrValues AttrValuesInput)
+func (a *attributeAssignmentMixin) preSaveValues(attribute *model.Attribute, attrValues AttrValuesInput) (model.AttributeValues, *model.AppError) {
+	existingAttributeValuesWithAttributeIDAndName, appErr := a.ctx.App.Srv().
+		AttributeService().
+		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
+			Conditions: squirrel.Eq{
+				model.AttributeValueTableName + "." + model.AttributeValueColumnAttributeID: attribute.Id,
+				model.AttributeValueTableName + "." + model.AttributeValueColumnName:        attrValues.Values,
+			},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	attributeValuesMap := map[string]*model.AttributeValue{} // keys have format of : attributeID_attributeValueName
+	for _, value := range existingAttributeValuesWithAttributeIDAndName {
+		attributeValuesMap[value.AttributeID+"_"+value.Name] = value
+	}
+
+	for _, name := range attrValues.Values {
+		key := attribute.Id + "_" + name
+
+		_, existed := attributeValuesMap[key]
+
+		if !existed {
+			attrValue, appErr := a.ctx.App.Srv().
+				AttributeService().
+				UpsertAttributeValue(&model.AttributeValue{
+					AttributeID: attribute.Id,
+					Name:        name,
+				})
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			attributeValuesMap[key] = attrValue
+		}
+	}
+
+	return lo.Values(attributeValuesMap), nil
+}
 
 func (a *attributeAssignmentMixin) resolveAttributeNodes(attributes []*model.Attribute, globalIds, pks, slugs []string) ([]*model.Attribute, *model.AppError) {
 	pksMap := lo.SliceToMap(pks, func(item string) (string, bool) { return item, true })

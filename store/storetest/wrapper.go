@@ -13,8 +13,8 @@ func NewStoreTestWrapper(orig *sqlstore.SqlStore) *StoreTestWrapper {
 	return &StoreTestWrapper{orig}
 }
 
-func (w *StoreTestWrapper) GetMaster(noTimeout ...bool) *gorm.DB {
-	return w.orig.GetMaster(noTimeout...)
+func (w *StoreTestWrapper) GetMaster() *gorm.DB {
+	return w.orig.GetMaster()
 }
 
 func (w *StoreTestWrapper) DriverName() string {

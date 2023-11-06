@@ -96,6 +96,8 @@ type AssignedVariantAttributeValue struct {
 	ValueID      string `json:"value_id" gorm:"column:ValueID;primaryKey;index:valueid_assignmentid_key;type:uuid"`
 	AssignmentID string `json:"assignment_id" gorm:"column:AssignmentID;primaryKey;index:valueid_assignmentid_key;type:uuid"`
 	Sortable
+
+	AttributeValue *AttributeValue `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
 }
 
 // column names for table AssignedVariantAttributeValue
