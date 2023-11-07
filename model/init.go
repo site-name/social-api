@@ -98,7 +98,7 @@ var NormalModelKindsToAccordingPointerKindsMap = map[ModelFieldKind]ModelFieldKi
 
 // SystemModels holds all database struct models of the wholte system.
 // When a new struct model is defined, it must be added into this.
-var SystemModels = [...]TableModel{
+var SystemModels = []Modeler{
 	&Attribute{},                    // attribute
 	&AttributeValue{},               //
 	&AttributeTranslation{},         //
@@ -197,6 +197,7 @@ func modelFieldKindInit() func(key string) (ModelFieldKind, bool) {
 	var modelFieldsTypeMap = map[string]ModelFieldKind{}
 
 	for _, model := range SystemModels {
+
 		typeOf := reflect.TypeOf(model).Elem()
 
 		for i := 0; i < typeOf.NumField(); i++ {

@@ -506,18 +506,16 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 }
 
 type m2mRelation struct {
-	model     model.TableModel
+	table     model.Modeler
 	field     string
-	joinTable model.TableModel
+	joinTable model.Modeler
 }
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
 	// 1) migrating tables
-	for _, model := range model.SystemModels {
-		slog.Debug("migrating table", slog.String("model", model.TableName()))
-		if err := ss.master.AutoMigrate(model); err != nil {
-			return err
-		}
+	models := lo.Map(model.SystemModels, func(m model.Modeler, _ int) any { return m })
+	if err := ss.master.AutoMigrate(models...); err != nil {
+		return err
 	}
 
 	// 2) setup intermediate tables
@@ -534,8 +532,8 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		{&model.Attribute{}, "PageTypes", &model.AttributePage{}},
 		{&model.Collection{}, "Products", &model.CollectionProduct{}},
 	} {
-		slog.Debug("setting up intermediate table", slog.String("model", m2mRel.model.TableName()), slog.String("joinModel", m2mRel.joinTable.TableName()))
-		if err := ss.master.SetupJoinTable(m2mRel.model, m2mRel.field, m2mRel.joinTable); err != nil {
+		slog.Debug("setting up intermediate table", slog.String("model", m2mRel.table.TableName()), slog.String("joinModel", m2mRel.joinTable.TableName()))
+		if err := ss.master.SetupJoinTable(m2mRel.table, m2mRel.field, m2mRel.joinTable); err != nil {
 			return err
 		}
 	}

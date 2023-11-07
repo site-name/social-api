@@ -65,7 +65,7 @@ func (r *Resolver) GiftCardCreate(ctx context.Context, args struct{ Input GiftCa
 	giftcard.Tag = args.Input.Tag
 
 	if v := args.Input.ExpiryDate; v != nil {
-		giftcard.ExpiryDate = (*time.Time)(unsafe.Pointer(&v.DateTime.Time))
+		giftcard.ExpiryDate = &v.DateTime.Time
 	}
 	if v := args.Input.Balance; v != nil {
 		giftcard.Currency = v.Currency

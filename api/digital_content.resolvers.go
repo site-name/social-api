@@ -68,25 +68,18 @@ func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
 	content.UseDefaultSettings = &args.Input.UseDefaultSettings
 
 	// clean input
-	if !args.Input.UseDefaultSettings {
-		for name, field := range map[string]any{
-			"MaxDownloads":         args.Input.MaxDownloads,
-			"URLValidDays":         args.Input.URLValidDays,
-			"AutomaticFulfillment": args.Input.AutomaticFulfillment,
-		} {
-			if field == nil {
-				return nil, model.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": name}, "please provide "+name, http.StatusBadRequest)
-			}
-			switch name {
-			case "MaxDownloads":
-				content.MaxDownloads = (*int)(unsafe.Pointer(field.(*int32)))
-			case "URLValidDays":
-				content.UrlValidDays = (*int)(unsafe.Pointer(field.(*int32)))
-			default:
-				content.AutomaticFulfillment = field.(*bool)
-			}
-		}
+	switch {
+	case args.Input.MaxDownloads == nil:
+		return nil, model.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaxDownloads"}, "please provide MaxDownloads", http.StatusBadRequest)
+	case args.Input.URLValidDays == nil:
+		return nil, model.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "URLValidDays"}, "please provide URLValidDays", http.StatusBadRequest)
+	case args.Input.AutomaticFulfillment == nil:
+		return nil, model.NewAppError("DigitalContentUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AutomaticFulfillment"}, "please provide AutomaticFulfillment", http.StatusBadRequest)
 	}
+
+	content.MaxDownloads = (*int)(unsafe.Pointer(args.Input.MaxDownloads))
+	content.UrlValidDays = (*int)(unsafe.Pointer(args.Input.URLValidDays))
+	content.AutomaticFulfillment = args.Input.AutomaticFulfillment
 
 	content, appErr = embedCtx.App.Srv().ProductService().UpsertDigitalContent(content)
 	if appErr != nil {

@@ -112,7 +112,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	if args.Amount.ToDecimal().LessThanOrEqual(decimal.Zero) {
 		return nil, model.NewAppError("OrderCapture", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount should be a positive number.", http.StatusBadRequest)
 	}
-	decimalAmount := (*decimal.Decimal)(unsafe.Pointer(&args.Amount))
+	decimalAmount := args.Amount.ToDecimal()
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.Id.String())
@@ -140,7 +140,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 
-	paymentTransaction, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *lastPayment, pluginMng, order.ChannelID, decimalAmount, nil, false)
+	paymentTransaction, paymentErr, appErr := embedCtx.App.Srv().PaymentService().Capture(tx, *lastPayment, pluginMng, order.ChannelID, &decimalAmount, nil, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -156,7 +156,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 	// Confirm that we changed the status to capture. Some payment can receive
 	// asynchronous webhook with update status
 	if paymentTransaction.Kind == model.TRANSACTION_KIND_CAPTURE {
-		insufStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCaptured(*order, user, nil, decimalAmount, *lastPayment, pluginMng)
+		insufStockErr, appErr := embedCtx.App.Srv().OrderService().OrderCaptured(*order, user, nil, &decimalAmount, *lastPayment, pluginMng)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -659,7 +659,7 @@ func (r *Resolver) OrderRefund(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	amount := *(*decimal.Decimal)(unsafe.Pointer(&args.Amount))
+	amount := args.Amount.ToDecimal()
 	if amount.LessThanOrEqual(decimal.Zero) {
 		return nil, model.NewAppError("OrderRefund", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Amount"}, "amount must be positive", http.StatusBadRequest)
 	}

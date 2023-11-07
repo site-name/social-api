@@ -52,7 +52,7 @@ func (j *UUID) UnmarshalGraphQL(input any) error {
 			return errors.Wrap(err, "failed to parse uuid value")
 		}
 		strUid := uid.String()
-		*j = *(*UUID)(unsafe.Pointer(&strUid))
+		*j = UUID(strUid)
 		return nil
 
 	case []byte:
@@ -61,7 +61,7 @@ func (j *UUID) UnmarshalGraphQL(input any) error {
 			return errors.Wrap(err, "failed to parse uuid value")
 		}
 		strUid := uid.String()
-		*j = *(*UUID)(unsafe.Pointer(&strUid))
+		*j = UUID(strUid)
 		return nil
 
 	default:

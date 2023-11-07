@@ -12,7 +12,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
@@ -1981,7 +1980,7 @@ func (g *GiftCardCreateInput) validate() *model.AppError {
 			return model.NewAppError("GiftCardCreateInput.validate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Balance.Currency"}, g.Balance.Currency+" is not a valid currency", http.StatusBadRequest)
 		}
 
-		roundedAmount := (*(*decimal.Decimal)(unsafe.Pointer(&g.Balance.Amount))).Round(int32(precision))
+		roundedAmount := g.Balance.Amount.ToDecimal().Round((int32(precision)))
 		g.Balance.Amount = *(*PositiveDecimal)(unsafe.Pointer(&roundedAmount))
 	}
 

@@ -259,8 +259,8 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 				return nil, model.NewAppError("VoucherChannelListingUpdate", model.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discountValue"}, "please provide discount value to assign channel to voucher", http.StatusBadRequest)
 			}
 			precision, _ := goprices.GetCurrencyPrecision(channelToAdd.Currency)
-			roundedValue := decimal.Decimal(*addChannelObj.DiscountValue).RoundUp(int32(precision))
-			*addChannelObj.DiscountValue = *(*PositiveDecimal)(unsafe.Pointer(&roundedValue))
+			roundedValue := addChannelObj.DiscountValue.ToDecimal().RoundUp(int32(precision))
+			*addChannelObj.DiscountValue = PositiveDecimal(roundedValue)
 
 		case model.DISCOUNT_VALUE_TYPE_PERCENTAGE:
 			// discount percentage can't > 100
@@ -272,8 +272,8 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 		// validate min spent amount
 		if addChannelObj.MinAmountSpent != nil {
 			precision, _ := goprices.GetCurrencyPrecision(channelToAdd.Currency)
-			roundedValue := decimal.Decimal(*addChannelObj.MinAmountSpent).RoundUp(int32(precision))
-			*addChannelObj.MinAmountSpent = *(*PositiveDecimal)(unsafe.Pointer(&roundedValue))
+			roundedValue := addChannelObj.MinAmountSpent.ToDecimal().RoundUp(int32(precision))
+			*addChannelObj.MinAmountSpent = PositiveDecimal(roundedValue)
 		}
 	}
 
@@ -289,8 +289,8 @@ func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct 
 		return &model.VoucherChannelListing{
 			VoucherID:      args.Id,
 			ChannelID:      item.ChannelID,
-			DiscountValue:  (*decimal.Decimal)(unsafe.Pointer(item.DiscountValue)),
-			MinSpentAmount: (*decimal.Decimal)(unsafe.Pointer(item.MinAmountSpent)),
+			DiscountValue:  (*decimal.Decimal)(item.DiscountValue),
+			MinSpentAmount: (*decimal.Decimal)(item.MinAmountSpent),
 		}
 	})
 	_, err := embedCtx.App.Srv().Store.VoucherChannelListing().Upsert(tran, listingsToAdd)

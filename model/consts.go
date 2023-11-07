@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"unsafe"
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
@@ -133,7 +132,7 @@ func (c CountryCode) IsValid() bool {
 }
 
 func (c CountryCode) String() string {
-	return *(*string)(unsafe.Pointer(&c))
+	return string(c)
 }
 
 const (
@@ -396,7 +395,7 @@ func (l LanguageCodeEnum) IsValid() bool {
 }
 
 func (l LanguageCodeEnum) String() string {
-	return *(*string)(unsafe.Pointer(&l))
+	return string(l)
 }
 
 const (
@@ -2267,7 +2266,7 @@ type TaxType struct {
 	Descriptiton string
 }
 
-type TableModel interface {
+type Modeler interface {
 	TableName() string
 	BeforeCreate(*gorm.DB) error
 	BeforeUpdate(*gorm.DB) error
