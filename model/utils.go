@@ -117,7 +117,6 @@ func (si *StringInterface) Scan(value any) error {
 	}
 }
 
-// Value converts StringInterface to database value
 func (si StringInterface) Value() (driver.Value, error) {
 	return json.Marshal(si)
 }
@@ -130,12 +129,13 @@ func (si *StringInterfaces) Scan(value any) error {
 	switch t := value.(type) {
 	case []byte:
 		return json.Unmarshal(t, si)
+	case string:
+		return json.Unmarshal([]byte(t), si)
 	default:
-		return fmt.Errorf("unsupported can value: %T", value)
+		return fmt.Errorf("unsupported value type: %T", value)
 	}
 }
 
-// Value converts StringInterfaces to database value
 func (si StringInterfaces) Value() (driver.Value, error) {
 	return json.Marshal(si)
 }

@@ -1,5 +1,10 @@
 package model
 
+import (
+	"net/http"
+	"strings"
+)
+
 type CheckoutErrorCode string
 
 // checkout error codes
@@ -52,6 +57,21 @@ type InsufficientStockData struct {
 type InsufficientStock struct {
 	Items []*InsufficientStockData
 	Code  CheckoutErrorCode
+}
+
+func (err *InsufficientStock) ToAppError(where string) *AppError {
+	var warehouseIDs = make([]string, 0, len(err.Items))
+	var orderLineIDs = make([]string, 0, len(err.Items))
+	for _, item := range err.Items {
+		if item.WarehouseID != nil {
+			warehouseIDs = append(warehouseIDs, *item.WarehouseID)
+		}
+		if item.OrderLine != nil {
+			orderLineIDs = append(orderLineIDs, item.OrderLine.Id)
+		}
+	}
+
+	return NewAppError(where, "app.order.insufficient_stock.app_error", map[string]interface{}{"orderLines": strings.Join(orderLineIDs, ", "), "warehouses": strings.Join(warehouseIDs, ", ")}, "insufficient product stock", http.StatusNotAcceptable)
 }
 
 func NewInsufficientStock(items []*InsufficientStockData) *InsufficientStock {

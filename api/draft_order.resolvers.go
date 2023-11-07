@@ -110,7 +110,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 				return nil, appErr
 			}
 			if inSufStockErr != nil {
-				return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("DraftOrderComplete.AllocateStocks", inSufStockErr)
+				return nil, inSufStockErr.ToAppError("DraftOrderComplete.AllocateStocks")
 			}
 
 			// allocate pre order
@@ -119,7 +119,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 				return nil, appErr
 			}
 			if inSufStockErr != nil {
-				return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("DraftOrderComplete.AllocatePreOrders", inSufStockErr)
+				return nil, inSufStockErr.ToAppError("DraftOrderComplete.AllocatePreOrders")
 			}
 		}
 	}
@@ -134,7 +134,7 @@ func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id strin
 		return nil, appErr
 	}
 	if insufficientStockErr != nil {
-		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("DraftOrderComplete.AllocatePreOrders", insufficientStockErr)
+		return nil, insufficientStockErr.ToAppError("DraftOrderComplete.AllocatePreOrders")
 	}
 
 	return &DraftOrderComplete{

@@ -110,8 +110,8 @@ func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 			if appErr != nil {
 				return nil, appErr
 			}
-			if appErr != nil {
-				return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderLinesCreate", insufStockErr)
+			if insufStockErr != nil {
+				return nil, insufStockErr.ToAppError("OrderLinesCreate")
 			}
 
 			addedOrderLines = append(addedOrderLines, orderLine)
@@ -219,7 +219,7 @@ func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }
 		return nil, appErr
 	}
 	if insufStockErr != nil {
-		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderLineDelete", insufStockErr)
+		return nil, insufStockErr.ToAppError("OrderLineDelete")
 	}
 
 	orderRequiresShipping, appErr := embedCtx.App.Srv().OrderService().OrderShippingIsRequired(orderLine.OrderID)
@@ -345,7 +345,7 @@ func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if inSufStockErr != nil {
-		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderLineUpdate", inSufStockErr)
+		return nil, inSufStockErr.ToAppError("OrderLineUpdate")
 	}
 
 	appErr = embedCtx.App.Srv().OrderService().RecalculateOrder(tx, order, map[string]interface{}{})

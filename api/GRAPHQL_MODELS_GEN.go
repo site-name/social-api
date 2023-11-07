@@ -1478,7 +1478,7 @@ func (d *DraftOrderCreateInput) patchOrder(embedCtx *web.Context, order *model.O
 					return appErr
 				}
 				if insufErr != nil {
-					return embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("DraftOrderCreateInput.patchOrder", insufErr)
+					return insufErr.ToAppError("DraftOrderCreateInput.patchOrder")
 				}
 
 				lines = append(lines, &model.QuantityOrderLine{

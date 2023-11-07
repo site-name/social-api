@@ -161,7 +161,7 @@ func (r *Resolver) OrderCapture(ctx context.Context, args struct {
 			return nil, appErr
 		}
 		if insufStockErr != nil {
-			return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderCapture", insufStockErr)
+			return nil, insufStockErr.ToAppError("OrderCapture")
 		}
 	}
 
@@ -243,7 +243,7 @@ func (r *Resolver) OrderConfirm(ctx context.Context, args struct{ Id UUID }) (*O
 			return nil, appErr
 		}
 		if inSufStockErr != nil {
-			return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderConfirm", inSufStockErr)
+			return nil, inSufStockErr.ToAppError("OrderConfirm")
 		}
 	}
 
@@ -356,7 +356,7 @@ func (r *Resolver) OrderFulfillmentApprove(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if insufStockErr != nil {
-		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderFulfillmentApprove", insufStockErr)
+		return nil, insufStockErr.ToAppError("OrderFulfillmentApprove")
 	}
 
 	order, appErr := embedCtx.App.Srv().OrderService().OrderById(fulfillment.OrderID)
@@ -1345,7 +1345,7 @@ func (r *Resolver) OrderFulfill(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if insufficientStockErr != nil {
-		return nil, embedCtx.App.Srv().OrderService().PrepareInsufficientStockOrderValidationAppError("OrderFulfill", insufficientStockErr)
+		return nil, insufficientStockErr.ToAppError("OrderFulfill")
 	}
 
 	// commit tx

@@ -40,10 +40,9 @@ func (api *API) InitGraphql() error {
 			&AuthenticatedDirective{},
 			&HasPermissionAnyDirective{},
 		),
-	}
-
-	if model.BuildNumber != "dev" {
-		opts = append(opts, graphql.DisableIntrospection())
+		graphql.RestrictIntrospection(func(_ context.Context) bool {
+			return model.BuildNumber != "dev"
+		}),
 	}
 
 	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{}, opts...)
@@ -79,11 +78,11 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// if params.OperationName == "" {
-	// 	err2 := gqlerrors.Errorf("operation name not passed")
-	// 	response = &graphql.Response{Errors: []*gqlerrors.QueryError{err2}}
-	// 	return
-	// }
+	if params.OperationName == "" {
+		err2 := gqlerrors.Errorf("operation name not passed")
+		response = &graphql.Response{Errors: []*gqlerrors.QueryError{err2}}
+		return
+	}
 
 	c.GraphQLOperationName = params.OperationName
 
