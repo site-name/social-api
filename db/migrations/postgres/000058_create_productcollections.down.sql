@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS productcollections;
+DROP TABLE IF EXISTS product_collections;

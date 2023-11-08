@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS shippingmethodpostalcoderules;
+DROP TABLE IF EXISTS shipping_method_postal_code_rules;

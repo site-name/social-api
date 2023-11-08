@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS orderlines (
+CREATE TABLE IF NOT EXISTS order_lines (
   id character varying(36) NOT NULL PRIMARY KEY,
   createat bigint,
   orderid character varying(36),
@@ -30,14 +30,14 @@ CREATE TABLE IF NOT EXISTS orderlines (
   allocations text
 );
 
-CREATE INDEX idx_order_lines_product_name_lower_textpattern ON orderlines USING btree (lower((productname)::text) text_pattern_ops);
+CREATE INDEX idx_order_lines_product_name_lower_textpattern ON order_lines USING btree (lower((productname)::text) text_pattern_ops);
 
-CREATE INDEX idx_order_lines_translated_product_name ON orderlines USING btree (translatedproductname);
+CREATE INDEX idx_order_lines_translated_product_name ON order_lines USING btree (translatedproductname);
 
-CREATE INDEX idx_order_lines_translated_variant_name ON orderlines USING btree (translatedvariantname);
+CREATE INDEX idx_order_lines_translated_variant_name ON order_lines USING btree (translatedvariantname);
 
-CREATE INDEX idx_order_lines_variant_name ON orderlines USING btree (variantname);
+CREATE INDEX idx_order_lines_variant_name ON order_lines USING btree (variantname);
 
-CREATE INDEX idx_order_lines_variant_name_lower_textpattern ON orderlines USING btree (lower((variantname)::text) text_pattern_ops);
+CREATE INDEX idx_order_lines_variant_name_lower_textpattern ON order_lines USING btree (lower((variantname)::text) text_pattern_ops);
 
-CREATE INDEX idx_order_lines_product_name ON orderlines USING btree (productname);
+CREATE INDEX idx_order_lines_product_name ON order_lines USING btree (productname);

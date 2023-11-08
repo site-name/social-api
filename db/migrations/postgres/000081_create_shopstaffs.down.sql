@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS shopstaffs;
+DROP TABLE IF EXISTS shop_staffs;

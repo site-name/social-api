@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS pagetranslations;
+DROP TABLE IF EXISTS page_translations;

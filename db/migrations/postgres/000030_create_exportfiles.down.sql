@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS exportfiles;
+DROP TABLE IF EXISTS export_files;

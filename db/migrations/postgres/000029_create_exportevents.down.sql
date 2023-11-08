@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS exportevents;
+DROP TABLE IF EXISTS export_events;

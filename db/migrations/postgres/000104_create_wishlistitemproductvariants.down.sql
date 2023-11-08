@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS wishlistitemproductvariants;
+DROP TABLE IF EXISTS wishlist_item_product_variants;

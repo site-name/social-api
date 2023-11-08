@@ -1,2 +1,2 @@
-ALTER TABLE ONLY staffnotificationrecipients
-    ADD CONSTRAINT fk_staffnotificationrecipients_users FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY staff_notification_recipients
+    ADD CONSTRAINT fk_staff_notification_recipients_users FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE;

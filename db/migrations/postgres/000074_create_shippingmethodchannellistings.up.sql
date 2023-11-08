@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS shippingmethodchannellistings (
+CREATE TABLE IF NOT EXISTS shipping_method_channel_listings (
   id character varying(36) NOT NULL PRIMARY KEY,
   shippingmethodid character varying(36),
   channelid character varying(36),
@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS shippingmethodchannellistings (
   createat bigint
 );
 
-ALTER TABLE ONLY shippingmethodchannellistings
-    ADD CONSTRAINT shippingmethodchannellistings_shippingmethodid_channelid_key UNIQUE (shippingmethodid, channelid);
+ALTER TABLE ONLY shipping_method_channel_listings
+    ADD CONSTRAINT shipping_method_channel_listings_shippingmethodid_channelid_key UNIQUE (shippingmethodid, channelid);

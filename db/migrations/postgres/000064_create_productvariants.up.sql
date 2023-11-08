@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS productvariants (
+CREATE TABLE IF NOT EXISTS product_variants (
   id character varying(36) NOT NULL PRIMARY KEY,
   name character varying(255),
   productid character varying(36),
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS productvariants (
   privatemetadata jsonb
 );
 
-ALTER TABLE ONLY productvariants
-    ADD CONSTRAINT productvariants_sku_key UNIQUE (sku);
+ALTER TABLE ONLY product_variants
+    ADD CONSTRAINT product_variants_sku_key UNIQUE (sku);
 
-CREATE INDEX idx_product_variants_sku ON productvariants USING btree (sku);
+CREATE INDEX idx_product_variants_sku ON product_variants USING btree (sku);

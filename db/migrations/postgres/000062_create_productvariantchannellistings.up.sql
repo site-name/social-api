@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS productvariantchannellistings (
+CREATE TABLE IF NOT EXISTS product_variant_channel_listings (
   id character varying(36) NOT NULL PRIMARY KEY,
   variantid character varying(36) NOT NULL,
   channelid character varying(36) NOT NULL,
@@ -9,6 +9,6 @@ CREATE TABLE IF NOT EXISTS productvariantchannellistings (
   createat bigint
 );
 
-ALTER TABLE ONLY productvariantchannellistings
-    ADD CONSTRAINT productvariantchannellistings_variantid_channelid_key UNIQUE (variantid, channelid);
+ALTER TABLE ONLY product_variant_channel_listings
+    ADD CONSTRAINT product_variant_channel_listings_variantid_channelid_key UNIQUE (variantid, channelid);
 

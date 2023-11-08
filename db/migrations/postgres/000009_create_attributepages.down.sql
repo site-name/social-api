@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS attributepages;
+DROP TABLE IF EXISTS attribute_pages;

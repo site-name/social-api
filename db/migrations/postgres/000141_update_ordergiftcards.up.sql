@@ -1,4 +1,4 @@
-ALTER TABLE ONLY ordergiftcards
-    ADD CONSTRAINT fk_ordergiftcards_giftcards FOREIGN KEY (giftcardid) REFERENCES giftcards(id);
-ALTER TABLE ONLY ordergiftcards
-    ADD CONSTRAINT fk_ordergiftcards_orders FOREIGN KEY (orderid) REFERENCES orders(id);
+ALTER TABLE ONLY order_giftcards
+    ADD CONSTRAINT fk_order_giftcards_giftcards FOREIGN KEY (giftcardid) REFERENCES giftcards(id);
+ALTER TABLE ONLY order_giftcards
+    ADD CONSTRAINT fk_order_giftcards_orders FOREIGN KEY (orderid) REFERENCES orders(id);

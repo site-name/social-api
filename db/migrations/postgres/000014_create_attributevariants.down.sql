@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS attributevariants;
+DROP TABLE IF EXISTS attribute_variants;

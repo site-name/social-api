@@ -1,2 +1,2 @@
-ALTER TABLE ONLY customernotes
-    ADD CONSTRAINT fk_customernotes_users FOREIGN KEY (userid) REFERENCES users(id);
+ALTER TABLE ONLY customer_notes
+    ADD CONSTRAINT fk_customer_notes_users FOREIGN KEY (userid) REFERENCES users(id);

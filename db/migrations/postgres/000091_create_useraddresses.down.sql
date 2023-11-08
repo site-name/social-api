@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS useraddresses;
+DROP TABLE IF EXISTS user_addresses;

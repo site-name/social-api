@@ -1,2 +1,2 @@
-ALTER TABLE ONLY menuitemtranslations
-    ADD CONSTRAINT fk_menuitemtranslations_menuitems FOREIGN KEY (menuitemid) REFERENCES menuitems(id) ON DELETE CASCADE;
+ALTER TABLE ONLY menu_item_translations
+    ADD CONSTRAINT fk_menu_item_translations_menu_items FOREIGN KEY (menuitemid) REFERENCES menu_items(id) ON DELETE CASCADE;

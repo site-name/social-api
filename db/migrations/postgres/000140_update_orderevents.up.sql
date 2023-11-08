@@ -1,4 +1,4 @@
-ALTER TABLE ONLY orderevents
-    ADD CONSTRAINT fk_orderevents_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;
-ALTER TABLE ONLY orderevents
-    ADD CONSTRAINT fk_orderevents_users FOREIGN KEY (userid) REFERENCES users(id);
+ALTER TABLE ONLY order_events
+    ADD CONSTRAINT fk_order_events_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;
+ALTER TABLE ONLY order_events
+    ADD CONSTRAINT fk_order_events_users FOREIGN KEY (userid) REFERENCES users(id);

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS categorytranslations (
+CREATE TABLE IF NOT EXISTS category_translations (
   id character varying(36) NOT NULL PRIMARY KEY,
   languagecode character varying(5),
   categoryid character varying(36),
@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS categorytranslations (
   seodescription character varying(300)
 );
 
-CREATE INDEX idx_category_translations_name ON categorytranslations USING btree (name);
+CREATE INDEX idx_category_translations_name ON category_translations USING btree (name);
 
-CREATE INDEX idx_category_translations_name_lower_textpattern ON categorytranslations USING btree (lower((name)::text) text_pattern_ops);
+CREATE INDEX idx_category_translations_name_lower_textpattern ON category_translations USING btree (lower((name)::text) text_pattern_ops);

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS fulfillmentlines (
+CREATE TABLE IF NOT EXISTS fulfillment_lines (
   id character varying(36) NOT NULL PRIMARY KEY,
   orderlineid character varying(36),
   fulfillmentid character varying(36),

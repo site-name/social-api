@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS producttranslations (
+CREATE TABLE IF NOT EXISTS product_translations (
 id character varying(36) NOT NULL PRIMARY KEY,
   languagecode character varying(5),
   productid character varying(36),
@@ -8,8 +8,8 @@ id character varying(36) NOT NULL PRIMARY KEY,
   seodescription character varying(300)
 );
 
-ALTER TABLE ONLY producttranslations
-    ADD CONSTRAINT producttranslations_languagecode_productid_key UNIQUE (languagecode, productid);
+ALTER TABLE ONLY product_translations
+    ADD CONSTRAINT product_translations_languagecode_productid_key UNIQUE (languagecode, productid);
 
-ALTER TABLE ONLY producttranslations
-    ADD CONSTRAINT producttranslations_name_key UNIQUE (name);
+ALTER TABLE ONLY product_translations
+    ADD CONSTRAINT product_translations_name_key UNIQUE (name);

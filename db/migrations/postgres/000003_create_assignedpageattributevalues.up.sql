@@ -1,11 +1,11 @@
-CREATE TABLE IF NOT EXISTS assignedpageattributevalues (
+CREATE TABLE IF NOT EXISTS assigned_page_attribute_values (
   id character varying(36) NOT NULL PRIMARY KEY,
   valueid character varying(36),
   assignmentid character varying(36),
   sortorder integer
 );
 
-ALTER TABLE ONLY assignedpageattributevalues
-    ADD CONSTRAINT assignedpageattributevalues_valueid_assignmentid_key UNIQUE (valueid, assignmentid);
+ALTER TABLE ONLY assigned_page_attribute_values
+    ADD CONSTRAINT assigned_page_attribute_values_valueid_assignmentid_key UNIQUE (valueid, assignmentid);
 
 

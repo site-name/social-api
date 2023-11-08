@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS assignedvariantattributes;
+DROP TABLE IF EXISTS assigned_variant_attributes;

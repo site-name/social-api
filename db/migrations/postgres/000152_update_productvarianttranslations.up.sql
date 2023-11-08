@@ -1,2 +1,2 @@
-ALTER TABLE ONLY productvarianttranslations
-    ADD CONSTRAINT fk_productvarianttranslations_productvariants FOREIGN KEY (productvariantid) REFERENCES productvariants(id) ON DELETE CASCADE;
+ALTER TABLE ONLY product_variant_translations
+    ADD CONSTRAINT fk_product_variant_translations_product_variants FOREIGN KEY (productvariantid) REFERENCES product_variants(id) ON DELETE CASCADE;

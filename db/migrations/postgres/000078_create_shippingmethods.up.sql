@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS shippingmethods (
+CREATE TABLE IF NOT EXISTS shipping_methods (
   id character varying(36) NOT NULL PRIMARY KEY,
   name character varying(100),
   type character varying(30),
@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS shippingmethods (
   privatemetadata jsonb
 );
 
-CREATE INDEX idx_shipping_methods_name ON shippingmethods USING btree (name);
+CREATE INDEX idx_shipping_methods_name ON shipping_methods USING btree (name);
 
-CREATE INDEX idx_shipping_methods_name_lower_textpattern ON shippingmethods USING btree (lower((name)::text) text_pattern_ops);
+CREATE INDEX idx_shipping_methods_name_lower_textpattern ON shipping_methods USING btree (lower((name)::text) text_pattern_ops);

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS productchannellistings (
+CREATE TABLE IF NOT EXISTS product_channel_listings (
   id character varying(36) NOT NULL PRIMARY KEY,
   productid character varying(36),
   channelid character varying(36),
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS productchannellistings (
   ispublished boolean
 );
 
-ALTER TABLE ONLY productchannellistings
-    ADD CONSTRAINT productchannellistings_productid_channelid_key UNIQUE (productid, channelid);
+ALTER TABLE ONLY product_channel_listings
+    ADD CONSTRAINT product_channel_listings_productid_channelid_key UNIQUE (productid, channelid);
 
-CREATE INDEX idx_productchannellistings_puplication_date ON productchannellistings USING btree (publicationdate);
+CREATE INDEX idx_product_channel_listings_puplication_date ON product_channel_listings USING btree (publicationdate);

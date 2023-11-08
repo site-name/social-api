@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS productmedias (
+CREATE TABLE IF NOT EXISTS product_media (
   id character varying(36) NOT NULL PRIMARY KEY,
   createat bigint,
   productid character varying(36),

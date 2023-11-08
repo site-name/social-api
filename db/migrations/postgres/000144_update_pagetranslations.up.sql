@@ -1,2 +1,2 @@
-ALTER TABLE ONLY pagetranslations
-    ADD CONSTRAINT fk_pagetranslations_pages FOREIGN KEY (pageid) REFERENCES pages(id) ON DELETE CASCADE;
+ALTER TABLE ONLY page_translations
+    ADD CONSTRAINT fk_page_translations_pages FOREIGN KEY (pageid) REFERENCES pages(id) ON DELETE CASCADE;

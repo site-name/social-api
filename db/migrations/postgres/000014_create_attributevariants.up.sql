@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS attributevariants (
+CREATE TABLE IF NOT EXISTS attribute_variants (
   id character varying(36) NOT NULL PRIMARY KEY,
   attributeid character varying(36),
   producttypeid character varying(36),
@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS attributevariants (
   sortorder integer
 );
 
-ALTER TABLE ONLY attributevariants
-    ADD CONSTRAINT attributevariants_attributeid_producttypeid_key UNIQUE (attributeid, producttypeid);
+ALTER TABLE ONLY attribute_variants
+    ADD CONSTRAINT attribute_variants_attributeid_producttypeid_key UNIQUE (attributeid, producttypeid);
 

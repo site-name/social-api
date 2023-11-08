@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS baseassignedattributes;
+-- DROP TABLE IF EXISTS baseassignedattributes;

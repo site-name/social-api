@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS staffnotificationrecipients;
+DROP TABLE IF EXISTS staff_notification_recipients;

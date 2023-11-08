@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS collectiontranslations (
+CREATE TABLE IF NOT EXISTS collection_translations (
   id character varying(36) NOT NULL PRIMARY KEY,
   languagecode character varying(5),
   collectionid character varying(36),
@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS collectiontranslations (
   seodescription character varying(300)
 );
 
-ALTER TABLE ONLY collectiontranslations
-    ADD CONSTRAINT collectiontranslations_languagecode_collectionid_key UNIQUE (languagecode, collectionid);
+ALTER TABLE ONLY collection_translations
+    ADD CONSTRAINT collection_translations_languagecode_collectionid_key UNIQUE (languagecode, collectionid);
 

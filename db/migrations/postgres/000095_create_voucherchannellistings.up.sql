@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS voucherchannellistings (
+CREATE TABLE IF NOT EXISTS voucher_channel_listings (
   id character varying(36) NOT NULL PRIMARY KEY,
   createat bigint,
   voucherid character varying(36) NOT NULL,
@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS voucherchannellistings (
   minspenamount double precision
 );
 
-ALTER TABLE ONLY voucherchannellistings
-    ADD CONSTRAINT voucherchannellistings_voucherid_channelid_key UNIQUE (voucherid, channelid);
+ALTER TABLE ONLY voucher_channel_listings
+    ADD CONSTRAINT voucher_channel_listings_voucherid_channelid_key UNIQUE (voucherid, channelid);

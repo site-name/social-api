@@ -1,4 +1,4 @@
-DROP INDEX IF EXISTS idx_attributetranslations_name;
-DROP INDEX IF EXISTS idx_attributetranslations_name_lower_textpattern
+DROP INDEX IF EXISTS idx_attribute_translations_name;
+DROP INDEX IF EXISTS idx_attribute_translations_name_lower_textpattern
 
-DROP TABLE IF EXISTS attributetranslations;
+DROP TABLE IF EXISTS attribute_translations;

@@ -225,9 +225,15 @@ store-mocks: ## Creates mock files.
 	$(GO) install github.com/vektra/mockery/v2/...@v2.23.2
 	$(GOBIN)/mockery --dir store --name ".*Store" --output store/storetest/mocks --note 'Regenerate this file using `make store-mocks`.'
 
+model-gen:
+	$(GO) install github.com/volatiletech/sqlboiler/v4@latest
+	$(GO) install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
+
+	$(GOBIN)/sqlboiler psql
+
 migrate:
-	$(GO) get -d -modfile=go.tools.mod github.com/golang-migrate/migrate/v4@v4.15.2 github.com/lib/pq
-	$(GOBIN)/migrate -path db/migrations/postgres -database postgres://minh:anhyeuem98@localhost/sitename_test up 2
+#$(GO) get -d -modfile=go.tools.mod github.com/golang-migrate/migrate/v4@v4.15.2 github.com/lib/pq
+	$(GOBIN)/migrate -path db/migrations/postgres -database postgres://minh:anhyeuem98@localhost:5432/sitename_test?sslmode=disable up
 
 searchengine-mocks: ## Creates mock files for searchengines.
 	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4

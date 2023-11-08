@@ -7,4 +7,4 @@ DROP INDEX IF EXISTS idx_fileinfo_name_txt;
 DROP INDEX IF EXISTS idx_fileinfo_parent_id;
 DROP INDEX IF EXISTS idx_fileinfo_update_at;
 
-DROP TABLE IF EXISTS fileinfos;
+DROP TABLE IF EXISTS file_infos;

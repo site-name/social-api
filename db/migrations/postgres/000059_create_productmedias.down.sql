@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS productmedias;
+DROP TABLE IF EXISTS product_media;

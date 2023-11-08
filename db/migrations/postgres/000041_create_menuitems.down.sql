@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS menuitems;
+DROP TABLE IF EXISTS menu_items;

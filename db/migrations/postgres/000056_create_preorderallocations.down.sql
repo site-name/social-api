@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS preorderallocations;
+DROP TABLE IF EXISTS preorder_allocations;

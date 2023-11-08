@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS digitalcontents (
+CREATE TABLE IF NOT EXISTS digital_contents (
   id character varying(36) NOT NULL PRIMARY KEY,
   usedefaultsettings boolean,
   automaticfulfillment boolean,

@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS assignedpageattributes;
+DROP TABLE IF EXISTS assigned_page_attributes;

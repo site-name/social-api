@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS menuitemtranslations;
+DROP TABLE IF EXISTS menu_item_translations;

@@ -1,10 +1,10 @@
-CREATE TABLE IF NOT EXISTS assignedproductattributevalues (
+CREATE TABLE IF NOT EXISTS assigned_product_attribute_values (
   id character varying(36) NOT NULL PRIMARY KEY,
   valueid character varying(36),
   assignmentid character varying(36),
   sortorder integer
 );
 
-ALTER TABLE ONLY assignedproductattributevalues
-    ADD CONSTRAINT assignedproductattributevalues_valueid_assignmentid_key UNIQUE (valueid, assignmentid);
+ALTER TABLE ONLY assigned_product_attribute_values
+    ADD CONSTRAINT assigned_product_attribute_values_valueid_assignmentid_key UNIQUE (valueid, assignmentid);
 

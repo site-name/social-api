@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS shippingmethodexcludedproducts;
+DROP TABLE IF EXISTS shipping_method_excluded_products;

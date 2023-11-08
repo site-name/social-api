@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS termsofservices;
+DROP TABLE IF EXISTS terms_of_services;

@@ -1,4 +1,4 @@
 DROP INDEX IF EXISTS idx_shipping_methods_name;
 DROP INDEX IF EXISTS idx_shipping_methods_name_lower_textpattern;
 
-DROP TABLE IF EXISTS shippingmethods;
+DROP TABLE IF EXISTS shipping_methods;

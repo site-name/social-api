@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS shippingmethodchannellistings;
+DROP TABLE IF EXISTS shipping_method_channel_listings;

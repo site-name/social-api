@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS shoptranslations (
+CREATE TABLE IF NOT EXISTS shop_translations (
   id character varying(36) NOT NULL PRIMARY KEY,
   languagecode character varying(5),
   name character varying(110),

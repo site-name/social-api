@@ -1,6 +1,6 @@
 module github.com/sitename/sitename
 
-go 1.21
+go 1.20
 
 require (
 	code.sajari.com/docconv v1.3.5
@@ -15,9 +15,9 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/dyatlov/go-opengraph/opengraph v0.0.0-20220524092352-606d7b1e5f8a
 	github.com/francoispqt/gojay v1.2.13
+	github.com/friendsofgo/errors v0.9.2
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/getsentry/sentry-go v0.22.0
-	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/handlers v1.5.1
@@ -33,6 +33,7 @@ require (
 	github.com/hashicorp/memberlist v0.5.0
 	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80
 	github.com/lib/pq v1.10.9
 	github.com/mattermost/go-i18n v1.11.0
@@ -40,6 +41,7 @@ require (
 	github.com/mattermost/gziphandler v0.0.1
 	github.com/mattermost/ldap v3.0.4+incompatible
 	github.com/mattermost/logr/v2 v2.0.16
+	github.com/mattermost/morph v1.0.4
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/minio/minio-go/v7 v7.0.58
@@ -55,6 +57,7 @@ require (
 	github.com/site-name/go-prices v1.4.2-0.20230727053713-cee2990f2f91
 	github.com/site-name/i18naddress v0.0.4
 	github.com/spf13/cobra v1.7.0
+	github.com/spf13/viper v1.12.0
 	github.com/splitio/go-client/v6 v6.3.3
 	github.com/stretchr/testify v1.8.4
 	github.com/throttled/throttled v2.2.5+incompatible
@@ -63,6 +66,10 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vmihailenco/msgpack/v5 v5.3.5
+	github.com/volatiletech/null/v8 v8.1.2
+	github.com/volatiletech/randomize v0.0.1
+	github.com/volatiletech/sqlboiler/v4 v4.15.0
+	github.com/volatiletech/strmangle v0.0.5
 	golang.org/x/crypto v0.11.0
 	golang.org/x/image v0.8.0
 	golang.org/x/net v0.11.0
@@ -77,10 +84,18 @@ require (
 )
 
 require (
-	github.com/hashicorp/go-uuid v1.0.1 // indirect
-	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgio v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
+	github.com/gofrs/uuid v4.2.0+incompatible // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
+	github.com/spf13/afero v1.9.2 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/subosito/gotenv v1.4.1 // indirect
+	github.com/volatiletech/inflect v0.0.1 // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 )
 
 require (
@@ -133,10 +148,9 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jackc/pgconn v1.14.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgx/v5 v5.4.2
+	github.com/jackc/pgx/v5 v5.4.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

@@ -1,3 +1,3 @@
-DROP INDEX IF EXISTS idx_giftcardevents_date;
+DROP INDEX IF EXISTS idx_giftcard_events_date;
 
-DROP TABLE IF EXISTS giftcardevents;
+DROP TABLE IF EXISTS giftcard_events;

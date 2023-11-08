@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS vouchercategories;
+DROP TABLE IF EXISTS voucher_categories;

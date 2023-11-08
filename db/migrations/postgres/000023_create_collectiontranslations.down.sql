@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS collectiontranslations;
+DROP TABLE IF EXISTS collection_translations;

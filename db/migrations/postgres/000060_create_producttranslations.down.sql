@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS producttranslations;
+DROP TABLE IF EXISTS product_translations;

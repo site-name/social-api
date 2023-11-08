@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS digitalcontenturls;
+DROP TABLE IF EXISTS digital_content_urls;

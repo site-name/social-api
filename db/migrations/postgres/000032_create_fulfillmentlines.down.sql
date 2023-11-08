@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS fulfillmentlines;
+DROP TABLE IF EXISTS fulfillment_lines;

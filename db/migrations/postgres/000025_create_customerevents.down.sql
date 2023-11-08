@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS customerevents;
+DROP TABLE IF EXISTS customer_events;

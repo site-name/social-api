@@ -1,2 +1,2 @@
-ALTER TABLE ONLY vouchercustomers
-    ADD CONSTRAINT fk_vouchercustomers_vouchers FOREIGN KEY (voucherid) REFERENCES vouchers(id) ON DELETE CASCADE;
+ALTER TABLE ONLY voucher_customers
+    ADD CONSTRAINT fk_voucher_customers_vouchers FOREIGN KEY (voucherid) REFERENCES vouchers(id) ON DELETE CASCADE;

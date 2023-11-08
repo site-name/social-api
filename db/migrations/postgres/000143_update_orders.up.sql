@@ -5,7 +5,7 @@ ALTER TABLE ONLY orders
 ALTER TABLE ONLY orders
     ADD CONSTRAINT fk_orders_orders FOREIGN KEY (originalid) REFERENCES orders(id);
 ALTER TABLE ONLY orders
-    ADD CONSTRAINT fk_orders_shippingmethods FOREIGN KEY (shippingmethodid) REFERENCES shippingmethods(id);
+    ADD CONSTRAINT fk_orders_shipping_methods FOREIGN KEY (shippingmethodid) REFERENCES shipping_methods(id);
 ALTER TABLE ONLY orders
     ADD CONSTRAINT fk_orders_users FOREIGN KEY (userid) REFERENCES users(id);
 ALTER TABLE ONLY orders

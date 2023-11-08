@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS salechannellistings (
+CREATE TABLE IF NOT EXISTS sale_channel_listings (
   id character varying(36) NOT NULL PRIMARY KEY,
   saleid character varying(36),
   channelid character varying(36) NOT NULL,
@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS salechannellistings (
   createat bigint
 );
 
-ALTER TABLE ONLY salechannellistings
-    ADD CONSTRAINT salechannellistings_saleid_channelid_key UNIQUE (saleid, channelid);
+ALTER TABLE ONLY sale_channel_listings
+    ADD CONSTRAINT sale_channel_listings_saleid_channelid_key UNIQUE (saleid, channelid);
 

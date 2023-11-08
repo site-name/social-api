@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS productvariantchannellistings;
+DROP TABLE IF EXISTS product_variant_channel_listings;

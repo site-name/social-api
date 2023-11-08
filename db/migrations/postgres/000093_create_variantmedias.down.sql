@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS variantmedias;
+DROP TABLE IF EXISTS variant_media;

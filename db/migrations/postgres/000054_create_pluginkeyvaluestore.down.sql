@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS pluginkeyvaluestore;
+DROP TABLE IF EXISTS plugin_key_value_store;

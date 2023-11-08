@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS menuitems (
+CREATE TABLE IF NOT EXISTS menu_items (
   id character varying(36) NOT NULL PRIMARY KEY,
   menuid character varying(36),
   name character varying(128),

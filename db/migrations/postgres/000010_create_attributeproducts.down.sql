@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS attributeproducts;
+DROP TABLE IF EXISTS attribute_products;

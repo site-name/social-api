@@ -1,1 +1,3 @@
-CREATE TABLE IF NOT EXISTS baseassignedattributes ();
+-- CREATE TABLE IF NOT EXISTS baseassignedattributes (
+    
+-- );

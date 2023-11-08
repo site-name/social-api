@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS assignedproductattributes;
+DROP TABLE IF EXISTS assigned_product_attributes;

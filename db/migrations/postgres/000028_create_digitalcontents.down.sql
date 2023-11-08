@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS digitalcontents;
+DROP TABLE IF EXISTS digital_contents;

@@ -1,2 +1,2 @@
-ALTER TABLE ONLY collectiontranslations
-    ADD CONSTRAINT fk_collectiontranslations_collections FOREIGN KEY (collectionid) REFERENCES collections(id) ON DELETE CASCADE;
+ALTER TABLE ONLY collection_translations
+    ADD CONSTRAINT fk_collection_translations_collections FOREIGN KEY (collectionid) REFERENCES collections(id) ON DELETE CASCADE;

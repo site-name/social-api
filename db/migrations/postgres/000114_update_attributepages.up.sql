@@ -1,2 +1,2 @@
-ALTER TABLE ONLY attributepages
-    ADD CONSTRAINT fk_attributepages_pagetypes FOREIGN KEY (pagetypeid) REFERENCES pagetypes(id) ON DELETE CASCADE;
+ALTER TABLE ONLY attribute_pages
+    ADD CONSTRAINT fk_attribute_pages_page_types FOREIGN KEY (pagetypeid) REFERENCES page_types(id) ON DELETE CASCADE;

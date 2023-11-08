@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS exportevents (
+CREATE TABLE IF NOT EXISTS export_events (
   id character varying(36) NOT NULL PRIMARY KEY,
   date bigint,
   type character varying(255),

@@ -1,4 +1,4 @@
-ALTER TABLE ONLY orderlines
-    ADD CONSTRAINT fk_orderlines_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;
-ALTER TABLE ONLY orderlines
-    ADD CONSTRAINT fk_orderlines_productvariants FOREIGN KEY (variantid) REFERENCES productvariants(id);
+ALTER TABLE ONLY order_lines
+    ADD CONSTRAINT fk_order_lines_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;
+ALTER TABLE ONLY order_lines
+    ADD CONSTRAINT fk_order_lines_product_variants FOREIGN KEY (variantid) REFERENCES product_variants(id);

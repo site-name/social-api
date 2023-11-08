@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS attributevalues (
+CREATE TABLE IF NOT EXISTS attribute_values (
   id character varying(36) NOT NULL PRIMARY KEY,
   name character varying(250),
   value character varying(9),
@@ -12,12 +12,12 @@ CREATE TABLE IF NOT EXISTS attributevalues (
   sortorder integer
 );
 
-ALTER TABLE ONLY attributevalues
-    ADD CONSTRAINT attributevalues_slug_attributeid_key UNIQUE (slug, attributeid);
+ALTER TABLE ONLY attribute_values
+    ADD CONSTRAINT attribute_values_slug_attributeid_key UNIQUE (slug, attributeid);
 
-CREATE INDEX idx_attributevalues_name ON attributevalues USING btree (name);
+CREATE INDEX idx_attribute_values_name ON attribute_values USING btree (name);
 
-CREATE INDEX idx_attributevalues_name_lower_textpattern ON attributevalues USING btree (lower((name)::text) text_pattern_ops);
+CREATE INDEX idx_attribute_values_name_lower_textpattern ON attribute_values USING btree (lower((name)::text) text_pattern_ops);
 
-CREATE INDEX idx_attributevalues_slug ON attributevalues USING btree (slug);
+CREATE INDEX idx_attribute_values_slug ON attribute_values USING btree (slug);
 

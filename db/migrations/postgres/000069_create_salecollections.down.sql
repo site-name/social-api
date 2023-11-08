@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS salecollections;
+DROP TABLE IF EXISTS sale_collections;

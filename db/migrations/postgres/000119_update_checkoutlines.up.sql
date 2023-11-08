@@ -1,4 +1,4 @@
-ALTER TABLE ONLY checkoutlines
-    ADD CONSTRAINT fk_checkoutlines_checkouts FOREIGN KEY (checkoutid) REFERENCES checkouts(token) ON DELETE CASCADE;
-ALTER TABLE ONLY checkoutlines
-    ADD CONSTRAINT fk_checkoutlines_productvariants FOREIGN KEY (variantid) REFERENCES productvariants(id) ON DELETE CASCADE;
+ALTER TABLE ONLY checkout_lines
+    ADD CONSTRAINT fk_checkout_lines_checkouts FOREIGN KEY (checkoutid) REFERENCES checkouts(token) ON DELETE CASCADE;
+ALTER TABLE ONLY checkout_lines
+    ADD CONSTRAINT fk_checkout_lines_product_variants FOREIGN KEY (variantid) REFERENCES product_variants(id) ON DELETE CASCADE;

@@ -1,2 +1,2 @@
-ALTER TABLE ONLY digitalcontents
-    ADD CONSTRAINT fk_digitalcontents_productvariants FOREIGN KEY (productvariantid) REFERENCES productvariants(id) ON DELETE CASCADE;
+ALTER TABLE ONLY digital_contents
+    ADD CONSTRAINT fk_digital_contents_product_variants FOREIGN KEY (productvariantid) REFERENCES product_variants(id) ON DELETE CASCADE;

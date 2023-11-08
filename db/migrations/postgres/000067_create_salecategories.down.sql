@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS salecategories;
+DROP TABLE IF EXISTS sale_categories;

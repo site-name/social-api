@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS uploadsessions (
+CREATE TABLE IF NOT EXISTS upload_sessions (
   id character varying(36) NOT NULL PRIMARY KEY,
   type character varying(32),
   createat bigint,
@@ -9,6 +9,6 @@ CREATE TABLE IF NOT EXISTS uploadsessions (
   fileoffset bigint
 );
 
-CREATE INDEX idx_uploadsessions_create_at ON uploadsessions USING btree (createat);
+CREATE INDEX idx_upload_sessions_create_at ON upload_sessions USING btree (createat);
 
-CREATE INDEX idx_uploadsessions_user_id ON uploadsessions USING btree (type);
+CREATE INDEX idx_upload_sessions_user_id ON upload_sessions USING btree (type);

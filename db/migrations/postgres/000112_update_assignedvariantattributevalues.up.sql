@@ -1,4 +1,4 @@
-ALTER TABLE ONLY assignedvariantattributevalues
-    ADD CONSTRAINT fk_assignedvariantattributevalues_assignedvariantattributes FOREIGN KEY (assignmentid) REFERENCES assignedvariantattributes(id) ON DELETE CASCADE;
-ALTER TABLE ONLY assignedvariantattributevalues
-    ADD CONSTRAINT fk_assignedvariantattributevalues_attributevalues FOREIGN KEY (valueid) REFERENCES attributevalues(id) ON DELETE CASCADE;
+ALTER TABLE ONLY assigned_variant_attribute_values
+    ADD CONSTRAINT fk_assigned_variant_attribute_values_assigned_variant_attributes FOREIGN KEY (assignmentid) REFERENCES assigned_variant_attributes(id) ON DELETE CASCADE;
+ALTER TABLE ONLY assigned_variant_attribute_values
+    ADD CONSTRAINT fk_assigned_variant_attribute_values_attribute_values FOREIGN KEY (valueid) REFERENCES attribute_values(id) ON DELETE CASCADE;

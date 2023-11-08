@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS saleproductvariants;
+DROP TABLE IF EXISTS saleproduct_variants;

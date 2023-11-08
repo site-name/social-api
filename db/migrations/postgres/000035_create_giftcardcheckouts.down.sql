@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS giftcardcheckouts;
+DROP TABLE IF EXISTS giftcard_checkouts;
