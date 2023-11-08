@@ -232,7 +232,6 @@ model-gen:
 	$(GOBIN)/sqlboiler psql
 
 migrate:
-#$(GO) get -d -modfile=go.tools.mod github.com/golang-migrate/migrate/v4@v4.15.2 github.com/lib/pq
 	$(GOBIN)/migrate -path db/migrations/postgres -database postgres://minh:anhyeuem98@localhost:5432/sitename_test?sslmode=disable up
 
 searchengine-mocks: ## Creates mock files for searchengines.

@@ -1,8 +1,9 @@
-output   = "model"
+output   = "models"
 wipe     = true
 no-tests = false
 add-enum-types = true
-pkgname = "model"
+pkgname = "models"
+tracing = true
 
 [psql]
   dbname = "sitename_test"
