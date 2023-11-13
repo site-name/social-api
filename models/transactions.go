@@ -25,19 +25,19 @@ import (
 // Transaction is an object representing the database table.
 type Transaction struct {
 	ID                 string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat           null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Paymentid          null.String  `boil:"paymentid" json:"paymentid,omitempty" toml:"paymentid" yaml:"paymentid,omitempty"`
+	CreateAt           null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	PaymentID          null.String  `boil:"payment_id" json:"payment_id,omitempty" toml:"payment_id" yaml:"payment_id,omitempty"`
 	Token              null.String  `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
 	Kind               null.String  `boil:"kind" json:"kind,omitempty" toml:"kind" yaml:"kind,omitempty"`
-	Issuccess          null.Bool    `boil:"issuccess" json:"issuccess,omitempty" toml:"issuccess" yaml:"issuccess,omitempty"`
-	Actionrequired     null.Bool    `boil:"actionrequired" json:"actionrequired,omitempty" toml:"actionrequired" yaml:"actionrequired,omitempty"`
-	Actionrequireddata null.String  `boil:"actionrequireddata" json:"actionrequireddata,omitempty" toml:"actionrequireddata" yaml:"actionrequireddata,omitempty"`
+	IsSuccess          null.Bool    `boil:"is_success" json:"is_success,omitempty" toml:"is_success" yaml:"is_success,omitempty"`
+	ActionRequired     null.Bool    `boil:"action_required" json:"action_required,omitempty" toml:"action_required" yaml:"action_required,omitempty"`
+	ActionRequiredData null.String  `boil:"action_required_data" json:"action_required_data,omitempty" toml:"action_required_data" yaml:"action_required_data,omitempty"`
 	Currency           null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
 	Amount             null.Float64 `boil:"amount" json:"amount,omitempty" toml:"amount" yaml:"amount,omitempty"`
 	Error              null.String  `boil:"error" json:"error,omitempty" toml:"error" yaml:"error,omitempty"`
-	Customerid         null.String  `boil:"customerid" json:"customerid,omitempty" toml:"customerid" yaml:"customerid,omitempty"`
-	Gatewayresponse    null.String  `boil:"gatewayresponse" json:"gatewayresponse,omitempty" toml:"gatewayresponse" yaml:"gatewayresponse,omitempty"`
-	Alreadyprocessed   null.Bool    `boil:"alreadyprocessed" json:"alreadyprocessed,omitempty" toml:"alreadyprocessed" yaml:"alreadyprocessed,omitempty"`
+	CustomerID         null.String  `boil:"customer_id" json:"customer_id,omitempty" toml:"customer_id" yaml:"customer_id,omitempty"`
+	GatewayResponse    null.String  `boil:"gateway_response" json:"gateway_response,omitempty" toml:"gateway_response" yaml:"gateway_response,omitempty"`
+	AlreadyProcessed   null.Bool    `boil:"already_processed" json:"already_processed,omitempty" toml:"already_processed" yaml:"already_processed,omitempty"`
 
 	R *transactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L transactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,112 +45,112 @@ type Transaction struct {
 
 var TransactionColumns = struct {
 	ID                 string
-	Createat           string
-	Paymentid          string
+	CreateAt           string
+	PaymentID          string
 	Token              string
 	Kind               string
-	Issuccess          string
-	Actionrequired     string
-	Actionrequireddata string
+	IsSuccess          string
+	ActionRequired     string
+	ActionRequiredData string
 	Currency           string
 	Amount             string
 	Error              string
-	Customerid         string
-	Gatewayresponse    string
-	Alreadyprocessed   string
+	CustomerID         string
+	GatewayResponse    string
+	AlreadyProcessed   string
 }{
 	ID:                 "id",
-	Createat:           "createat",
-	Paymentid:          "paymentid",
+	CreateAt:           "create_at",
+	PaymentID:          "payment_id",
 	Token:              "token",
 	Kind:               "kind",
-	Issuccess:          "issuccess",
-	Actionrequired:     "actionrequired",
-	Actionrequireddata: "actionrequireddata",
+	IsSuccess:          "is_success",
+	ActionRequired:     "action_required",
+	ActionRequiredData: "action_required_data",
 	Currency:           "currency",
 	Amount:             "amount",
 	Error:              "error",
-	Customerid:         "customerid",
-	Gatewayresponse:    "gatewayresponse",
-	Alreadyprocessed:   "alreadyprocessed",
+	CustomerID:         "customer_id",
+	GatewayResponse:    "gateway_response",
+	AlreadyProcessed:   "already_processed",
 }
 
 var TransactionTableColumns = struct {
 	ID                 string
-	Createat           string
-	Paymentid          string
+	CreateAt           string
+	PaymentID          string
 	Token              string
 	Kind               string
-	Issuccess          string
-	Actionrequired     string
-	Actionrequireddata string
+	IsSuccess          string
+	ActionRequired     string
+	ActionRequiredData string
 	Currency           string
 	Amount             string
 	Error              string
-	Customerid         string
-	Gatewayresponse    string
-	Alreadyprocessed   string
+	CustomerID         string
+	GatewayResponse    string
+	AlreadyProcessed   string
 }{
 	ID:                 "transactions.id",
-	Createat:           "transactions.createat",
-	Paymentid:          "transactions.paymentid",
+	CreateAt:           "transactions.create_at",
+	PaymentID:          "transactions.payment_id",
 	Token:              "transactions.token",
 	Kind:               "transactions.kind",
-	Issuccess:          "transactions.issuccess",
-	Actionrequired:     "transactions.actionrequired",
-	Actionrequireddata: "transactions.actionrequireddata",
+	IsSuccess:          "transactions.is_success",
+	ActionRequired:     "transactions.action_required",
+	ActionRequiredData: "transactions.action_required_data",
 	Currency:           "transactions.currency",
 	Amount:             "transactions.amount",
 	Error:              "transactions.error",
-	Customerid:         "transactions.customerid",
-	Gatewayresponse:    "transactions.gatewayresponse",
-	Alreadyprocessed:   "transactions.alreadyprocessed",
+	CustomerID:         "transactions.customer_id",
+	GatewayResponse:    "transactions.gateway_response",
+	AlreadyProcessed:   "transactions.already_processed",
 }
 
 // Generated where
 
 var TransactionWhere = struct {
 	ID                 whereHelperstring
-	Createat           whereHelpernull_Int64
-	Paymentid          whereHelpernull_String
+	CreateAt           whereHelpernull_Int64
+	PaymentID          whereHelpernull_String
 	Token              whereHelpernull_String
 	Kind               whereHelpernull_String
-	Issuccess          whereHelpernull_Bool
-	Actionrequired     whereHelpernull_Bool
-	Actionrequireddata whereHelpernull_String
+	IsSuccess          whereHelpernull_Bool
+	ActionRequired     whereHelpernull_Bool
+	ActionRequiredData whereHelpernull_String
 	Currency           whereHelpernull_String
 	Amount             whereHelpernull_Float64
 	Error              whereHelpernull_String
-	Customerid         whereHelpernull_String
-	Gatewayresponse    whereHelpernull_String
-	Alreadyprocessed   whereHelpernull_Bool
+	CustomerID         whereHelpernull_String
+	GatewayResponse    whereHelpernull_String
+	AlreadyProcessed   whereHelpernull_Bool
 }{
 	ID:                 whereHelperstring{field: "\"transactions\".\"id\""},
-	Createat:           whereHelpernull_Int64{field: "\"transactions\".\"createat\""},
-	Paymentid:          whereHelpernull_String{field: "\"transactions\".\"paymentid\""},
+	CreateAt:           whereHelpernull_Int64{field: "\"transactions\".\"create_at\""},
+	PaymentID:          whereHelpernull_String{field: "\"transactions\".\"payment_id\""},
 	Token:              whereHelpernull_String{field: "\"transactions\".\"token\""},
 	Kind:               whereHelpernull_String{field: "\"transactions\".\"kind\""},
-	Issuccess:          whereHelpernull_Bool{field: "\"transactions\".\"issuccess\""},
-	Actionrequired:     whereHelpernull_Bool{field: "\"transactions\".\"actionrequired\""},
-	Actionrequireddata: whereHelpernull_String{field: "\"transactions\".\"actionrequireddata\""},
+	IsSuccess:          whereHelpernull_Bool{field: "\"transactions\".\"is_success\""},
+	ActionRequired:     whereHelpernull_Bool{field: "\"transactions\".\"action_required\""},
+	ActionRequiredData: whereHelpernull_String{field: "\"transactions\".\"action_required_data\""},
 	Currency:           whereHelpernull_String{field: "\"transactions\".\"currency\""},
 	Amount:             whereHelpernull_Float64{field: "\"transactions\".\"amount\""},
 	Error:              whereHelpernull_String{field: "\"transactions\".\"error\""},
-	Customerid:         whereHelpernull_String{field: "\"transactions\".\"customerid\""},
-	Gatewayresponse:    whereHelpernull_String{field: "\"transactions\".\"gatewayresponse\""},
-	Alreadyprocessed:   whereHelpernull_Bool{field: "\"transactions\".\"alreadyprocessed\""},
+	CustomerID:         whereHelpernull_String{field: "\"transactions\".\"customer_id\""},
+	GatewayResponse:    whereHelpernull_String{field: "\"transactions\".\"gateway_response\""},
+	AlreadyProcessed:   whereHelpernull_Bool{field: "\"transactions\".\"already_processed\""},
 }
 
 // TransactionRels is where relationship names are stored.
 var TransactionRels = struct {
-	PaymentidPayment string
+	Payment string
 }{
-	PaymentidPayment: "PaymentidPayment",
+	Payment: "Payment",
 }
 
 // transactionR is where relationships are stored.
 type transactionR struct {
-	PaymentidPayment *Payment `boil:"PaymentidPayment" json:"PaymentidPayment" toml:"PaymentidPayment" yaml:"PaymentidPayment"`
+	Payment *Payment `boil:"Payment" json:"Payment" toml:"Payment" yaml:"Payment"`
 }
 
 // NewStruct creates a new relationship struct
@@ -158,20 +158,20 @@ func (*transactionR) NewStruct() *transactionR {
 	return &transactionR{}
 }
 
-func (r *transactionR) GetPaymentidPayment() *Payment {
+func (r *transactionR) GetPayment() *Payment {
 	if r == nil {
 		return nil
 	}
-	return r.PaymentidPayment
+	return r.Payment
 }
 
 // transactionL is where Load methods for each relationship are stored.
 type transactionL struct{}
 
 var (
-	transactionAllColumns            = []string{"id", "createat", "paymentid", "token", "kind", "issuccess", "actionrequired", "actionrequireddata", "currency", "amount", "error", "customerid", "gatewayresponse", "alreadyprocessed"}
+	transactionAllColumns            = []string{"id", "create_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "amount", "error", "customer_id", "gateway_response", "already_processed"}
 	transactionColumnsWithoutDefault = []string{"id"}
-	transactionColumnsWithDefault    = []string{"createat", "paymentid", "token", "kind", "issuccess", "actionrequired", "actionrequireddata", "currency", "amount", "error", "customerid", "gatewayresponse", "alreadyprocessed"}
+	transactionColumnsWithDefault    = []string{"create_at", "payment_id", "token", "kind", "is_success", "action_required", "action_required_data", "currency", "amount", "error", "customer_id", "gateway_response", "already_processed"}
 	transactionPrimaryKeyColumns     = []string{"id"}
 	transactionGeneratedColumns      = []string{}
 )
@@ -454,10 +454,10 @@ func (q transactionQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	return count > 0, nil
 }
 
-// PaymentidPayment pointed to by the foreign key.
-func (o *Transaction) PaymentidPayment(mods ...qm.QueryMod) paymentQuery {
+// Payment pointed to by the foreign key.
+func (o *Transaction) Payment(mods ...qm.QueryMod) paymentQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Paymentid),
+		qm.Where("\"id\" = ?", o.PaymentID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -465,9 +465,9 @@ func (o *Transaction) PaymentidPayment(mods ...qm.QueryMod) paymentQuery {
 	return Payments(queryMods...)
 }
 
-// LoadPaymentidPayment allows an eager lookup of values, cached into the
+// LoadPayment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (transactionL) LoadPaymentidPayment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTransaction interface{}, mods queries.Applicator) error {
+func (transactionL) LoadPayment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTransaction interface{}, mods queries.Applicator) error {
 	var slice []*Transaction
 	var object *Transaction
 
@@ -498,8 +498,8 @@ func (transactionL) LoadPaymentidPayment(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &transactionR{}
 		}
-		if !queries.IsNil(object.Paymentid) {
-			args = append(args, object.Paymentid)
+		if !queries.IsNil(object.PaymentID) {
+			args = append(args, object.PaymentID)
 		}
 
 	} else {
@@ -510,13 +510,13 @@ func (transactionL) LoadPaymentidPayment(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Paymentid) {
+				if queries.Equal(a, obj.PaymentID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Paymentid) {
-				args = append(args, obj.Paymentid)
+			if !queries.IsNil(obj.PaymentID) {
+				args = append(args, obj.PaymentID)
 			}
 
 		}
@@ -565,22 +565,22 @@ func (transactionL) LoadPaymentidPayment(ctx context.Context, e boil.ContextExec
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.PaymentidPayment = foreign
+		object.R.Payment = foreign
 		if foreign.R == nil {
 			foreign.R = &paymentR{}
 		}
-		foreign.R.PaymentidTransactions = append(foreign.R.PaymentidTransactions, object)
+		foreign.R.Transactions = append(foreign.R.Transactions, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Paymentid, foreign.ID) {
-				local.R.PaymentidPayment = foreign
+			if queries.Equal(local.PaymentID, foreign.ID) {
+				local.R.Payment = foreign
 				if foreign.R == nil {
 					foreign.R = &paymentR{}
 				}
-				foreign.R.PaymentidTransactions = append(foreign.R.PaymentidTransactions, local)
+				foreign.R.Transactions = append(foreign.R.Transactions, local)
 				break
 			}
 		}
@@ -589,10 +589,10 @@ func (transactionL) LoadPaymentidPayment(ctx context.Context, e boil.ContextExec
 	return nil
 }
 
-// SetPaymentidPayment of the transaction to the related item.
-// Sets o.R.PaymentidPayment to related.
-// Adds o to related.R.PaymentidTransactions.
-func (o *Transaction) SetPaymentidPayment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Payment) error {
+// SetPayment of the transaction to the related item.
+// Sets o.R.Payment to related.
+// Adds o to related.R.Transactions.
+func (o *Transaction) SetPayment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Payment) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -602,7 +602,7 @@ func (o *Transaction) SetPaymentidPayment(ctx context.Context, exec boil.Context
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"transactions\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"paymentid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"payment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, transactionPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -616,54 +616,54 @@ func (o *Transaction) SetPaymentidPayment(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Paymentid, related.ID)
+	queries.Assign(&o.PaymentID, related.ID)
 	if o.R == nil {
 		o.R = &transactionR{
-			PaymentidPayment: related,
+			Payment: related,
 		}
 	} else {
-		o.R.PaymentidPayment = related
+		o.R.Payment = related
 	}
 
 	if related.R == nil {
 		related.R = &paymentR{
-			PaymentidTransactions: TransactionSlice{o},
+			Transactions: TransactionSlice{o},
 		}
 	} else {
-		related.R.PaymentidTransactions = append(related.R.PaymentidTransactions, o)
+		related.R.Transactions = append(related.R.Transactions, o)
 	}
 
 	return nil
 }
 
-// RemovePaymentidPayment relationship.
-// Sets o.R.PaymentidPayment to nil.
+// RemovePayment relationship.
+// Sets o.R.Payment to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Transaction) RemovePaymentidPayment(ctx context.Context, exec boil.ContextExecutor, related *Payment) error {
+func (o *Transaction) RemovePayment(ctx context.Context, exec boil.ContextExecutor, related *Payment) error {
 	var err error
 
-	queries.SetScanner(&o.Paymentid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("paymentid")); err != nil {
+	queries.SetScanner(&o.PaymentID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("payment_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.PaymentidPayment = nil
+		o.R.Payment = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.PaymentidTransactions {
-		if queries.Equal(o.Paymentid, ri.Paymentid) {
+	for i, ri := range related.R.Transactions {
+		if queries.Equal(o.PaymentID, ri.PaymentID) {
 			continue
 		}
 
-		ln := len(related.R.PaymentidTransactions)
+		ln := len(related.R.Transactions)
 		if ln > 1 && i < ln-1 {
-			related.R.PaymentidTransactions[i] = related.R.PaymentidTransactions[ln-1]
+			related.R.Transactions[i] = related.R.Transactions[ln-1]
 		}
-		related.R.PaymentidTransactions = related.R.PaymentidTransactions[:ln-1]
+		related.R.Transactions = related.R.Transactions[:ln-1]
 		break
 	}
 	return nil

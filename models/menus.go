@@ -27,9 +27,9 @@ type Menu struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Slug            null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Createat        null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata null.JSON   `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *menuR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L menuL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,32 +39,32 @@ var MenuColumns = struct {
 	ID              string
 	Name            string
 	Slug            string
-	Createat        string
+	CreateAt        string
 	Metadata        string
-	Privatemetadata string
+	PrivateMetadata string
 }{
 	ID:              "id",
 	Name:            "name",
 	Slug:            "slug",
-	Createat:        "createat",
+	CreateAt:        "create_at",
 	Metadata:        "metadata",
-	Privatemetadata: "privatemetadata",
+	PrivateMetadata: "private_metadata",
 }
 
 var MenuTableColumns = struct {
 	ID              string
 	Name            string
 	Slug            string
-	Createat        string
+	CreateAt        string
 	Metadata        string
-	Privatemetadata string
+	PrivateMetadata string
 }{
 	ID:              "menus.id",
 	Name:            "menus.name",
 	Slug:            "menus.slug",
-	Createat:        "menus.createat",
+	CreateAt:        "menus.create_at",
 	Metadata:        "menus.metadata",
-	Privatemetadata: "menus.privatemetadata",
+	PrivateMetadata: "menus.private_metadata",
 }
 
 // Generated where
@@ -73,31 +73,31 @@ var MenuWhere = struct {
 	ID              whereHelperstring
 	Name            whereHelpernull_String
 	Slug            whereHelpernull_String
-	Createat        whereHelpernull_Int64
+	CreateAt        whereHelpernull_Int64
 	Metadata        whereHelpernull_JSON
-	Privatemetadata whereHelpernull_JSON
+	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"menus\".\"id\""},
 	Name:            whereHelpernull_String{field: "\"menus\".\"name\""},
 	Slug:            whereHelpernull_String{field: "\"menus\".\"slug\""},
-	Createat:        whereHelpernull_Int64{field: "\"menus\".\"createat\""},
+	CreateAt:        whereHelpernull_Int64{field: "\"menus\".\"create_at\""},
 	Metadata:        whereHelpernull_JSON{field: "\"menus\".\"metadata\""},
-	Privatemetadata: whereHelpernull_JSON{field: "\"menus\".\"privatemetadata\""},
+	PrivateMetadata: whereHelpernull_JSON{field: "\"menus\".\"private_metadata\""},
 }
 
 // MenuRels is where relationship names are stored.
 var MenuRels = struct {
-	MenuidMenuItems string
-	TopmenuidShops  string
+	MenuItems    string
+	TopMenuShops string
 }{
-	MenuidMenuItems: "MenuidMenuItems",
-	TopmenuidShops:  "TopmenuidShops",
+	MenuItems:    "MenuItems",
+	TopMenuShops: "TopMenuShops",
 }
 
 // menuR is where relationships are stored.
 type menuR struct {
-	MenuidMenuItems MenuItemSlice `boil:"MenuidMenuItems" json:"MenuidMenuItems" toml:"MenuidMenuItems" yaml:"MenuidMenuItems"`
-	TopmenuidShops  ShopSlice     `boil:"TopmenuidShops" json:"TopmenuidShops" toml:"TopmenuidShops" yaml:"TopmenuidShops"`
+	MenuItems    MenuItemSlice `boil:"MenuItems" json:"MenuItems" toml:"MenuItems" yaml:"MenuItems"`
+	TopMenuShops ShopSlice     `boil:"TopMenuShops" json:"TopMenuShops" toml:"TopMenuShops" yaml:"TopMenuShops"`
 }
 
 // NewStruct creates a new relationship struct
@@ -105,27 +105,27 @@ func (*menuR) NewStruct() *menuR {
 	return &menuR{}
 }
 
-func (r *menuR) GetMenuidMenuItems() MenuItemSlice {
+func (r *menuR) GetMenuItems() MenuItemSlice {
 	if r == nil {
 		return nil
 	}
-	return r.MenuidMenuItems
+	return r.MenuItems
 }
 
-func (r *menuR) GetTopmenuidShops() ShopSlice {
+func (r *menuR) GetTopMenuShops() ShopSlice {
 	if r == nil {
 		return nil
 	}
-	return r.TopmenuidShops
+	return r.TopMenuShops
 }
 
 // menuL is where Load methods for each relationship are stored.
 type menuL struct{}
 
 var (
-	menuAllColumns            = []string{"id", "name", "slug", "createat", "metadata", "privatemetadata"}
+	menuAllColumns            = []string{"id", "name", "slug", "create_at", "metadata", "private_metadata"}
 	menuColumnsWithoutDefault = []string{"id"}
-	menuColumnsWithDefault    = []string{"name", "slug", "createat", "metadata", "privatemetadata"}
+	menuColumnsWithDefault    = []string{"name", "slug", "create_at", "metadata", "private_metadata"}
 	menuPrimaryKeyColumns     = []string{"id"}
 	menuGeneratedColumns      = []string{}
 )
@@ -408,37 +408,37 @@ func (q menuQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// MenuidMenuItems retrieves all the menu_item's MenuItems with an executor via menuid column.
-func (o *Menu) MenuidMenuItems(mods ...qm.QueryMod) menuItemQuery {
+// MenuItems retrieves all the menu_item's MenuItems with an executor.
+func (o *Menu) MenuItems(mods ...qm.QueryMod) menuItemQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"menu_items\".\"menuid\"=?", o.ID),
+		qm.Where("\"menu_items\".\"menu_id\"=?", o.ID),
 	)
 
 	return MenuItems(queryMods...)
 }
 
-// TopmenuidShops retrieves all the shop's Shops with an executor via topmenuid column.
-func (o *Menu) TopmenuidShops(mods ...qm.QueryMod) shopQuery {
+// TopMenuShops retrieves all the shop's Shops with an executor via top_menu_id column.
+func (o *Menu) TopMenuShops(mods ...qm.QueryMod) shopQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"shops\".\"topmenuid\"=?", o.ID),
+		qm.Where("\"shops\".\"top_menu_id\"=?", o.ID),
 	)
 
 	return Shops(queryMods...)
 }
 
-// LoadMenuidMenuItems allows an eager lookup of values, cached into the
+// LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuL) LoadMenuidMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
+func (menuL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
 	var slice []*Menu
 	var object *Menu
 
@@ -493,7 +493,7 @@ func (menuL) LoadMenuidMenuItems(ctx context.Context, e boil.ContextExecutor, si
 
 	query := NewQuery(
 		qm.From(`menu_items`),
-		qm.WhereIn(`menu_items.menuid in ?`, args...),
+		qm.WhereIn(`menu_items.menu_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -524,24 +524,24 @@ func (menuL) LoadMenuidMenuItems(ctx context.Context, e boil.ContextExecutor, si
 		}
 	}
 	if singular {
-		object.R.MenuidMenuItems = resultSlice
+		object.R.MenuItems = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &menuItemR{}
 			}
-			foreign.R.MenuidMenu = object
+			foreign.R.Menu = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Menuid) {
-				local.R.MenuidMenuItems = append(local.R.MenuidMenuItems, foreign)
+			if queries.Equal(local.ID, foreign.MenuID) {
+				local.R.MenuItems = append(local.R.MenuItems, foreign)
 				if foreign.R == nil {
 					foreign.R = &menuItemR{}
 				}
-				foreign.R.MenuidMenu = local
+				foreign.R.Menu = local
 				break
 			}
 		}
@@ -550,9 +550,9 @@ func (menuL) LoadMenuidMenuItems(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// LoadTopmenuidShops allows an eager lookup of values, cached into the
+// LoadTopMenuShops allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuL) LoadTopmenuidShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
+func (menuL) LoadTopMenuShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
 	var slice []*Menu
 	var object *Menu
 
@@ -607,7 +607,7 @@ func (menuL) LoadTopmenuidShops(ctx context.Context, e boil.ContextExecutor, sin
 
 	query := NewQuery(
 		qm.From(`shops`),
-		qm.WhereIn(`shops.topmenuid in ?`, args...),
+		qm.WhereIn(`shops.top_menu_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -638,24 +638,24 @@ func (menuL) LoadTopmenuidShops(ctx context.Context, e boil.ContextExecutor, sin
 		}
 	}
 	if singular {
-		object.R.TopmenuidShops = resultSlice
+		object.R.TopMenuShops = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &shopR{}
 			}
-			foreign.R.TopmenuidMenu = object
+			foreign.R.TopMenu = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Topmenuid) {
-				local.R.TopmenuidShops = append(local.R.TopmenuidShops, foreign)
+			if queries.Equal(local.ID, foreign.TopMenuID) {
+				local.R.TopMenuShops = append(local.R.TopMenuShops, foreign)
 				if foreign.R == nil {
 					foreign.R = &shopR{}
 				}
-				foreign.R.TopmenuidMenu = local
+				foreign.R.TopMenu = local
 				break
 			}
 		}
@@ -664,22 +664,22 @@ func (menuL) LoadTopmenuidShops(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// AddMenuidMenuItems adds the given related objects to the existing relationships
+// AddMenuItems adds the given related objects to the existing relationships
 // of the menu, optionally inserting them as new records.
-// Appends related to o.R.MenuidMenuItems.
-// Sets related.R.MenuidMenu appropriately.
-func (o *Menu) AddMenuidMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+// Appends related to o.R.MenuItems.
+// Sets related.R.Menu appropriately.
+func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Menuid, o.ID)
+			queries.Assign(&rel.MenuID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"menu_items\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"menuid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"menu_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -693,38 +693,38 @@ func (o *Menu) AddMenuidMenuItems(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Menuid, o.ID)
+			queries.Assign(&rel.MenuID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &menuR{
-			MenuidMenuItems: related,
+			MenuItems: related,
 		}
 	} else {
-		o.R.MenuidMenuItems = append(o.R.MenuidMenuItems, related...)
+		o.R.MenuItems = append(o.R.MenuItems, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &menuItemR{
-				MenuidMenu: o,
+				Menu: o,
 			}
 		} else {
-			rel.R.MenuidMenu = o
+			rel.R.Menu = o
 		}
 	}
 	return nil
 }
 
-// SetMenuidMenuItems removes all previously related items of the
+// SetMenuItems removes all previously related items of the
 // menu replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.MenuidMenu's MenuidMenuItems accordingly.
-// Replaces o.R.MenuidMenuItems with related.
-// Sets related.R.MenuidMenu's MenuidMenuItems accordingly.
-func (o *Menu) SetMenuidMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
-	query := "update \"menu_items\" set \"menuid\" = null where \"menuid\" = $1"
+// Sets o.R.Menu's MenuItems accordingly.
+// Replaces o.R.MenuItems with related.
+// Sets related.R.Menu's MenuItems accordingly.
+func (o *Menu) SetMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+	query := "update \"menu_items\" set \"menu_id\" = null where \"menu_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -737,35 +737,35 @@ func (o *Menu) SetMenuidMenuItems(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.MenuidMenuItems {
-			queries.SetScanner(&rel.Menuid, nil)
+		for _, rel := range o.R.MenuItems {
+			queries.SetScanner(&rel.MenuID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.MenuidMenu = nil
+			rel.R.Menu = nil
 		}
-		o.R.MenuidMenuItems = nil
+		o.R.MenuItems = nil
 	}
 
-	return o.AddMenuidMenuItems(ctx, exec, insert, related...)
+	return o.AddMenuItems(ctx, exec, insert, related...)
 }
 
-// RemoveMenuidMenuItems relationships from objects passed in.
-// Removes related items from R.MenuidMenuItems (uses pointer comparison, removal does not keep order)
-// Sets related.R.MenuidMenu.
-func (o *Menu) RemoveMenuidMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
+// RemoveMenuItems relationships from objects passed in.
+// Removes related items from R.MenuItems (uses pointer comparison, removal does not keep order)
+// Sets related.R.Menu.
+func (o *Menu) RemoveMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Menuid, nil)
+		queries.SetScanner(&rel.MenuID, nil)
 		if rel.R != nil {
-			rel.R.MenuidMenu = nil
+			rel.R.Menu = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("menuid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("menu_id")); err != nil {
 			return err
 		}
 	}
@@ -774,16 +774,16 @@ func (o *Menu) RemoveMenuidMenuItems(ctx context.Context, exec boil.ContextExecu
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.MenuidMenuItems {
+		for i, ri := range o.R.MenuItems {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.MenuidMenuItems)
+			ln := len(o.R.MenuItems)
 			if ln > 1 && i < ln-1 {
-				o.R.MenuidMenuItems[i] = o.R.MenuidMenuItems[ln-1]
+				o.R.MenuItems[i] = o.R.MenuItems[ln-1]
 			}
-			o.R.MenuidMenuItems = o.R.MenuidMenuItems[:ln-1]
+			o.R.MenuItems = o.R.MenuItems[:ln-1]
 			break
 		}
 	}
@@ -791,22 +791,22 @@ func (o *Menu) RemoveMenuidMenuItems(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// AddTopmenuidShops adds the given related objects to the existing relationships
+// AddTopMenuShops adds the given related objects to the existing relationships
 // of the menu, optionally inserting them as new records.
-// Appends related to o.R.TopmenuidShops.
-// Sets related.R.TopmenuidMenu appropriately.
-func (o *Menu) AddTopmenuidShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+// Appends related to o.R.TopMenuShops.
+// Sets related.R.TopMenu appropriately.
+func (o *Menu) AddTopMenuShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Topmenuid, o.ID)
+			queries.Assign(&rel.TopMenuID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"shops\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"topmenuid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"top_menu_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -820,38 +820,38 @@ func (o *Menu) AddTopmenuidShops(ctx context.Context, exec boil.ContextExecutor,
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Topmenuid, o.ID)
+			queries.Assign(&rel.TopMenuID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &menuR{
-			TopmenuidShops: related,
+			TopMenuShops: related,
 		}
 	} else {
-		o.R.TopmenuidShops = append(o.R.TopmenuidShops, related...)
+		o.R.TopMenuShops = append(o.R.TopMenuShops, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &shopR{
-				TopmenuidMenu: o,
+				TopMenu: o,
 			}
 		} else {
-			rel.R.TopmenuidMenu = o
+			rel.R.TopMenu = o
 		}
 	}
 	return nil
 }
 
-// SetTopmenuidShops removes all previously related items of the
+// SetTopMenuShops removes all previously related items of the
 // menu replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.TopmenuidMenu's TopmenuidShops accordingly.
-// Replaces o.R.TopmenuidShops with related.
-// Sets related.R.TopmenuidMenu's TopmenuidShops accordingly.
-func (o *Menu) SetTopmenuidShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
-	query := "update \"shops\" set \"topmenuid\" = null where \"topmenuid\" = $1"
+// Sets o.R.TopMenu's TopMenuShops accordingly.
+// Replaces o.R.TopMenuShops with related.
+// Sets related.R.TopMenu's TopMenuShops accordingly.
+func (o *Menu) SetTopMenuShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+	query := "update \"shops\" set \"top_menu_id\" = null where \"top_menu_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -864,35 +864,35 @@ func (o *Menu) SetTopmenuidShops(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.TopmenuidShops {
-			queries.SetScanner(&rel.Topmenuid, nil)
+		for _, rel := range o.R.TopMenuShops {
+			queries.SetScanner(&rel.TopMenuID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.TopmenuidMenu = nil
+			rel.R.TopMenu = nil
 		}
-		o.R.TopmenuidShops = nil
+		o.R.TopMenuShops = nil
 	}
 
-	return o.AddTopmenuidShops(ctx, exec, insert, related...)
+	return o.AddTopMenuShops(ctx, exec, insert, related...)
 }
 
-// RemoveTopmenuidShops relationships from objects passed in.
-// Removes related items from R.TopmenuidShops (uses pointer comparison, removal does not keep order)
-// Sets related.R.TopmenuidMenu.
-func (o *Menu) RemoveTopmenuidShops(ctx context.Context, exec boil.ContextExecutor, related ...*Shop) error {
+// RemoveTopMenuShops relationships from objects passed in.
+// Removes related items from R.TopMenuShops (uses pointer comparison, removal does not keep order)
+// Sets related.R.TopMenu.
+func (o *Menu) RemoveTopMenuShops(ctx context.Context, exec boil.ContextExecutor, related ...*Shop) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Topmenuid, nil)
+		queries.SetScanner(&rel.TopMenuID, nil)
 		if rel.R != nil {
-			rel.R.TopmenuidMenu = nil
+			rel.R.TopMenu = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("topmenuid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("top_menu_id")); err != nil {
 			return err
 		}
 	}
@@ -901,16 +901,16 @@ func (o *Menu) RemoveTopmenuidShops(ctx context.Context, exec boil.ContextExecut
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.TopmenuidShops {
+		for i, ri := range o.R.TopMenuShops {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.TopmenuidShops)
+			ln := len(o.R.TopMenuShops)
 			if ln > 1 && i < ln-1 {
-				o.R.TopmenuidShops[i] = o.R.TopmenuidShops[ln-1]
+				o.R.TopMenuShops[i] = o.R.TopMenuShops[ln-1]
 			}
-			o.R.TopmenuidShops = o.R.TopmenuidShops[:ln-1]
+			o.R.TopMenuShops = o.R.TopMenuShops[:ln-1]
 			break
 		}
 	}

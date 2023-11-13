@@ -25,9 +25,9 @@ import (
 // SaleProduct is an object representing the database table.
 type SaleProduct struct {
 	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Saleid    null.String `boil:"saleid" json:"saleid,omitempty" toml:"saleid" yaml:"saleid,omitempty"`
-	Productid null.String `boil:"productid" json:"productid,omitempty" toml:"productid" yaml:"productid,omitempty"`
-	Createat  null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	SaleID    null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
+	ProductID null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
+	CreateAt  null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 
 	R *saleProductR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleProductL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,55 +35,55 @@ type SaleProduct struct {
 
 var SaleProductColumns = struct {
 	ID        string
-	Saleid    string
-	Productid string
-	Createat  string
+	SaleID    string
+	ProductID string
+	CreateAt  string
 }{
 	ID:        "id",
-	Saleid:    "saleid",
-	Productid: "productid",
-	Createat:  "createat",
+	SaleID:    "sale_id",
+	ProductID: "product_id",
+	CreateAt:  "create_at",
 }
 
 var SaleProductTableColumns = struct {
 	ID        string
-	Saleid    string
-	Productid string
-	Createat  string
+	SaleID    string
+	ProductID string
+	CreateAt  string
 }{
 	ID:        "sale_products.id",
-	Saleid:    "sale_products.saleid",
-	Productid: "sale_products.productid",
-	Createat:  "sale_products.createat",
+	SaleID:    "sale_products.sale_id",
+	ProductID: "sale_products.product_id",
+	CreateAt:  "sale_products.create_at",
 }
 
 // Generated where
 
 var SaleProductWhere = struct {
 	ID        whereHelperstring
-	Saleid    whereHelpernull_String
-	Productid whereHelpernull_String
-	Createat  whereHelpernull_Int64
+	SaleID    whereHelpernull_String
+	ProductID whereHelpernull_String
+	CreateAt  whereHelpernull_Int64
 }{
 	ID:        whereHelperstring{field: "\"sale_products\".\"id\""},
-	Saleid:    whereHelpernull_String{field: "\"sale_products\".\"saleid\""},
-	Productid: whereHelpernull_String{field: "\"sale_products\".\"productid\""},
-	Createat:  whereHelpernull_Int64{field: "\"sale_products\".\"createat\""},
+	SaleID:    whereHelpernull_String{field: "\"sale_products\".\"sale_id\""},
+	ProductID: whereHelpernull_String{field: "\"sale_products\".\"product_id\""},
+	CreateAt:  whereHelpernull_Int64{field: "\"sale_products\".\"create_at\""},
 }
 
 // SaleProductRels is where relationship names are stored.
 var SaleProductRels = struct {
-	ProductidProduct string
-	SaleidSale       string
+	Product string
+	Sale    string
 }{
-	ProductidProduct: "ProductidProduct",
-	SaleidSale:       "SaleidSale",
+	Product: "Product",
+	Sale:    "Sale",
 }
 
 // saleProductR is where relationships are stored.
 type saleProductR struct {
-	ProductidProduct *Product `boil:"ProductidProduct" json:"ProductidProduct" toml:"ProductidProduct" yaml:"ProductidProduct"`
-	SaleidSale       *Sale    `boil:"SaleidSale" json:"SaleidSale" toml:"SaleidSale" yaml:"SaleidSale"`
+	Product *Product `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
+	Sale    *Sale    `boil:"Sale" json:"Sale" toml:"Sale" yaml:"Sale"`
 }
 
 // NewStruct creates a new relationship struct
@@ -91,27 +91,27 @@ func (*saleProductR) NewStruct() *saleProductR {
 	return &saleProductR{}
 }
 
-func (r *saleProductR) GetProductidProduct() *Product {
+func (r *saleProductR) GetProduct() *Product {
 	if r == nil {
 		return nil
 	}
-	return r.ProductidProduct
+	return r.Product
 }
 
-func (r *saleProductR) GetSaleidSale() *Sale {
+func (r *saleProductR) GetSale() *Sale {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSale
+	return r.Sale
 }
 
 // saleProductL is where Load methods for each relationship are stored.
 type saleProductL struct{}
 
 var (
-	saleProductAllColumns            = []string{"id", "saleid", "productid", "createat"}
+	saleProductAllColumns            = []string{"id", "sale_id", "product_id", "create_at"}
 	saleProductColumnsWithoutDefault = []string{"id"}
-	saleProductColumnsWithDefault    = []string{"saleid", "productid", "createat"}
+	saleProductColumnsWithDefault    = []string{"sale_id", "product_id", "create_at"}
 	saleProductPrimaryKeyColumns     = []string{"id"}
 	saleProductGeneratedColumns      = []string{}
 )
@@ -394,10 +394,10 @@ func (q saleProductQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	return count > 0, nil
 }
 
-// ProductidProduct pointed to by the foreign key.
-func (o *SaleProduct) ProductidProduct(mods ...qm.QueryMod) productQuery {
+// Product pointed to by the foreign key.
+func (o *SaleProduct) Product(mods ...qm.QueryMod) productQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productid),
+		qm.Where("\"id\" = ?", o.ProductID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -405,10 +405,10 @@ func (o *SaleProduct) ProductidProduct(mods ...qm.QueryMod) productQuery {
 	return Products(queryMods...)
 }
 
-// SaleidSale pointed to by the foreign key.
-func (o *SaleProduct) SaleidSale(mods ...qm.QueryMod) saleQuery {
+// Sale pointed to by the foreign key.
+func (o *SaleProduct) Sale(mods ...qm.QueryMod) saleQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Saleid),
+		qm.Where("\"id\" = ?", o.SaleID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +416,9 @@ func (o *SaleProduct) SaleidSale(mods ...qm.QueryMod) saleQuery {
 	return Sales(queryMods...)
 }
 
-// LoadProductidProduct allows an eager lookup of values, cached into the
+// LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleProductL) LoadProductidProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleProduct interface{}, mods queries.Applicator) error {
+func (saleProductL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleProduct interface{}, mods queries.Applicator) error {
 	var slice []*SaleProduct
 	var object *SaleProduct
 
@@ -449,8 +449,8 @@ func (saleProductL) LoadProductidProduct(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &saleProductR{}
 		}
-		if !queries.IsNil(object.Productid) {
-			args = append(args, object.Productid)
+		if !queries.IsNil(object.ProductID) {
+			args = append(args, object.ProductID)
 		}
 
 	} else {
@@ -461,13 +461,13 @@ func (saleProductL) LoadProductidProduct(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productid) {
+				if queries.Equal(a, obj.ProductID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productid) {
-				args = append(args, obj.Productid)
+			if !queries.IsNil(obj.ProductID) {
+				args = append(args, obj.ProductID)
 			}
 
 		}
@@ -516,22 +516,22 @@ func (saleProductL) LoadProductidProduct(ctx context.Context, e boil.ContextExec
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductidProduct = foreign
+		object.R.Product = foreign
 		if foreign.R == nil {
 			foreign.R = &productR{}
 		}
-		foreign.R.ProductidSaleProducts = append(foreign.R.ProductidSaleProducts, object)
+		foreign.R.SaleProducts = append(foreign.R.SaleProducts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productid, foreign.ID) {
-				local.R.ProductidProduct = foreign
+			if queries.Equal(local.ProductID, foreign.ID) {
+				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
 				}
-				foreign.R.ProductidSaleProducts = append(foreign.R.ProductidSaleProducts, local)
+				foreign.R.SaleProducts = append(foreign.R.SaleProducts, local)
 				break
 			}
 		}
@@ -540,9 +540,9 @@ func (saleProductL) LoadProductidProduct(ctx context.Context, e boil.ContextExec
 	return nil
 }
 
-// LoadSaleidSale allows an eager lookup of values, cached into the
+// LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleProductL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleProduct interface{}, mods queries.Applicator) error {
+func (saleProductL) LoadSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleProduct interface{}, mods queries.Applicator) error {
 	var slice []*SaleProduct
 	var object *SaleProduct
 
@@ -573,8 +573,8 @@ func (saleProductL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &saleProductR{}
 		}
-		if !queries.IsNil(object.Saleid) {
-			args = append(args, object.Saleid)
+		if !queries.IsNil(object.SaleID) {
+			args = append(args, object.SaleID)
 		}
 
 	} else {
@@ -585,13 +585,13 @@ func (saleProductL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Saleid) {
+				if queries.Equal(a, obj.SaleID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Saleid) {
-				args = append(args, obj.Saleid)
+			if !queries.IsNil(obj.SaleID) {
+				args = append(args, obj.SaleID)
 			}
 
 		}
@@ -640,22 +640,22 @@ func (saleProductL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.SaleidSale = foreign
+		object.R.Sale = foreign
 		if foreign.R == nil {
 			foreign.R = &saleR{}
 		}
-		foreign.R.SaleidSaleProducts = append(foreign.R.SaleidSaleProducts, object)
+		foreign.R.SaleProducts = append(foreign.R.SaleProducts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Saleid, foreign.ID) {
-				local.R.SaleidSale = foreign
+			if queries.Equal(local.SaleID, foreign.ID) {
+				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
 				}
-				foreign.R.SaleidSaleProducts = append(foreign.R.SaleidSaleProducts, local)
+				foreign.R.SaleProducts = append(foreign.R.SaleProducts, local)
 				break
 			}
 		}
@@ -664,10 +664,10 @@ func (saleProductL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// SetProductidProduct of the saleProduct to the related item.
-// Sets o.R.ProductidProduct to related.
-// Adds o to related.R.ProductidSaleProducts.
-func (o *SaleProduct) SetProductidProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
+// SetProduct of the saleProduct to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.SaleProducts.
+func (o *SaleProduct) SetProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -677,7 +677,7 @@ func (o *SaleProduct) SetProductidProduct(ctx context.Context, exec boil.Context
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"sale_products\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -691,63 +691,63 @@ func (o *SaleProduct) SetProductidProduct(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productid, related.ID)
+	queries.Assign(&o.ProductID, related.ID)
 	if o.R == nil {
 		o.R = &saleProductR{
-			ProductidProduct: related,
+			Product: related,
 		}
 	} else {
-		o.R.ProductidProduct = related
+		o.R.Product = related
 	}
 
 	if related.R == nil {
 		related.R = &productR{
-			ProductidSaleProducts: SaleProductSlice{o},
+			SaleProducts: SaleProductSlice{o},
 		}
 	} else {
-		related.R.ProductidSaleProducts = append(related.R.ProductidSaleProducts, o)
+		related.R.SaleProducts = append(related.R.SaleProducts, o)
 	}
 
 	return nil
 }
 
-// RemoveProductidProduct relationship.
-// Sets o.R.ProductidProduct to nil.
+// RemoveProduct relationship.
+// Sets o.R.Product to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *SaleProduct) RemoveProductidProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
+func (o *SaleProduct) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
 	var err error
 
-	queries.SetScanner(&o.Productid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productid")); err != nil {
+	queries.SetScanner(&o.ProductID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductidProduct = nil
+		o.R.Product = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductidSaleProducts {
-		if queries.Equal(o.Productid, ri.Productid) {
+	for i, ri := range related.R.SaleProducts {
+		if queries.Equal(o.ProductID, ri.ProductID) {
 			continue
 		}
 
-		ln := len(related.R.ProductidSaleProducts)
+		ln := len(related.R.SaleProducts)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductidSaleProducts[i] = related.R.ProductidSaleProducts[ln-1]
+			related.R.SaleProducts[i] = related.R.SaleProducts[ln-1]
 		}
-		related.R.ProductidSaleProducts = related.R.ProductidSaleProducts[:ln-1]
+		related.R.SaleProducts = related.R.SaleProducts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetSaleidSale of the saleProduct to the related item.
-// Sets o.R.SaleidSale to related.
-// Adds o to related.R.SaleidSaleProducts.
-func (o *SaleProduct) SetSaleidSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
+// SetSale of the saleProduct to the related item.
+// Sets o.R.Sale to related.
+// Adds o to related.R.SaleProducts.
+func (o *SaleProduct) SetSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -757,7 +757,7 @@ func (o *SaleProduct) SetSaleidSale(ctx context.Context, exec boil.ContextExecut
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"sale_products\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -771,54 +771,54 @@ func (o *SaleProduct) SetSaleidSale(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Saleid, related.ID)
+	queries.Assign(&o.SaleID, related.ID)
 	if o.R == nil {
 		o.R = &saleProductR{
-			SaleidSale: related,
+			Sale: related,
 		}
 	} else {
-		o.R.SaleidSale = related
+		o.R.Sale = related
 	}
 
 	if related.R == nil {
 		related.R = &saleR{
-			SaleidSaleProducts: SaleProductSlice{o},
+			SaleProducts: SaleProductSlice{o},
 		}
 	} else {
-		related.R.SaleidSaleProducts = append(related.R.SaleidSaleProducts, o)
+		related.R.SaleProducts = append(related.R.SaleProducts, o)
 	}
 
 	return nil
 }
 
-// RemoveSaleidSale relationship.
-// Sets o.R.SaleidSale to nil.
+// RemoveSale relationship.
+// Sets o.R.Sale to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *SaleProduct) RemoveSaleidSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
+func (o *SaleProduct) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
 	var err error
 
-	queries.SetScanner(&o.Saleid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+	queries.SetScanner(&o.SaleID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.SaleidSale = nil
+		o.R.Sale = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.SaleidSaleProducts {
-		if queries.Equal(o.Saleid, ri.Saleid) {
+	for i, ri := range related.R.SaleProducts {
+		if queries.Equal(o.SaleID, ri.SaleID) {
 			continue
 		}
 
-		ln := len(related.R.SaleidSaleProducts)
+		ln := len(related.R.SaleProducts)
 		if ln > 1 && i < ln-1 {
-			related.R.SaleidSaleProducts[i] = related.R.SaleidSaleProducts[ln-1]
+			related.R.SaleProducts[i] = related.R.SaleProducts[ln-1]
 		}
-		related.R.SaleidSaleProducts = related.R.SaleidSaleProducts[:ln-1]
+		related.R.SaleProducts = related.R.SaleProducts[:ln-1]
 		break
 	}
 	return nil

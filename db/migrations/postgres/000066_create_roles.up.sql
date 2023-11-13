@@ -1,14 +1,14 @@
 CREATE TABLE IF NOT EXISTS roles (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(64),
-  displayname character varying(128),
+  display_name character varying(128),
   description character varying(1024),
-  createat bigint,
-  updateat bigint,
-  deleteat bigint,
+  created_at bigint,
+  updated_at bigint,
+  delete_at bigint,
   permissions text,
-  schememanaged boolean,
-  builtin boolean
+  scheme_managed boolean,
+  built_in boolean
 );
 
 ALTER TABLE ONLY roles

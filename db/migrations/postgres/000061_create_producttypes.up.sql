@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS product_types (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(250),
   slug character varying(255),
   kind character varying(32),
-  hasvariants boolean,
-  isshippingrequired boolean,
-  isdigital boolean,
+  has_variants boolean,
+  is_shipping_required boolean,
+  is_digital boolean,
   weight real,
-  weightunit text,
+  weight_unit text,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 CREATE INDEX idx_product_types_name ON product_types USING btree (name);

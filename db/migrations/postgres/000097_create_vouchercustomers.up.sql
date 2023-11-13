@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS voucher_customers (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  voucherid character varying(36),
-  customeremail character varying(128)
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  voucher_id uuid,
+  customer_email character varying(128)
 );
 
 ALTER TABLE ONLY voucher_customers
-    ADD CONSTRAINT voucher_customers_voucherid_customeremail_key UNIQUE (voucherid, customeremail);
+    ADD CONSTRAINT voucher_customers_voucher_id_customer_email_key UNIQUE (voucher_id, customer_email);

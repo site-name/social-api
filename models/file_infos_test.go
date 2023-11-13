@@ -568,7 +568,7 @@ func testFileInfosSelect(t *testing.T) {
 }
 
 var (
-	fileInfoDBTypes = map[string]string{`ID`: `character varying`, `Creatorid`: `character varying`, `Parentid`: `character varying`, `Createat`: `bigint`, `Updateat`: `bigint`, `Deleteat`: `bigint`, `Path`: `character varying`, `Thumbnailpath`: `character varying`, `Previewpath`: `character varying`, `Name`: `character varying`, `Extension`: `character varying`, `Size`: `bigint`, `Mimetype`: `character varying`, `Width`: `integer`, `Height`: `integer`, `Haspreviewimage`: `boolean`, `Minipreview`: `bytea`, `Content`: `text`, `Remoteid`: `character varying`}
+	fileInfoDBTypes = map[string]string{`ID`: `character varying`, `CreatorID`: `character varying`, `ParentID`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `DeleteAt`: `bigint`, `Path`: `character varying`, `ThumbnailPath`: `character varying`, `PreviewPath`: `character varying`, `Name`: `character varying`, `Extension`: `character varying`, `Size`: `bigint`, `MimeType`: `character varying`, `Width`: `integer`, `Height`: `integer`, `HasPreviewImage`: `boolean`, `MiniPreview`: `bytea`, `Content`: `text`, `RemoteID`: `character varying`}
 	_               = bytes.MinRead
 )
 

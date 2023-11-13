@@ -1,8 +1,8 @@
-CREATE TABLE IF NOT EXISTS channelshops (
+CREATE TABLE IF NOT EXISTS channel_shops (
   id VARCHAR(36) NOT NULL PRIMARY KEY,
-  channelid VARCHAR(36),
-  createat BIGINT,
-  endat BIGINT
+  channel_id VARCHAR(36),
+  create_at BIGINT,
+  end_at BIGINT
 );
-ALTER TABLE ONLY channelshops
-ADD CONSTRAINT fk_channelshops_channel FOREIGN KEY (channelid) REFERENCES channels(id);
+ALTER TABLE ONLY channel_shops
+ADD CONSTRAINT fk_channel_shops_channel FOREIGN KEY (channel_id) REFERENCES channels(id);

@@ -25,8 +25,8 @@ import (
 // OrderGiftcard is an object representing the database table.
 type OrderGiftcard struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Giftcardid null.String `boil:"giftcardid" json:"giftcardid,omitempty" toml:"giftcardid" yaml:"giftcardid,omitempty"`
-	Orderid    null.String `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
+	GiftcardID null.String `boil:"giftcard_id" json:"giftcard_id,omitempty" toml:"giftcard_id" yaml:"giftcard_id,omitempty"`
+	OrderID    null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 
 	R *orderGiftcardR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderGiftcardL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,49 +34,49 @@ type OrderGiftcard struct {
 
 var OrderGiftcardColumns = struct {
 	ID         string
-	Giftcardid string
-	Orderid    string
+	GiftcardID string
+	OrderID    string
 }{
 	ID:         "id",
-	Giftcardid: "giftcardid",
-	Orderid:    "orderid",
+	GiftcardID: "giftcard_id",
+	OrderID:    "order_id",
 }
 
 var OrderGiftcardTableColumns = struct {
 	ID         string
-	Giftcardid string
-	Orderid    string
+	GiftcardID string
+	OrderID    string
 }{
 	ID:         "order_giftcards.id",
-	Giftcardid: "order_giftcards.giftcardid",
-	Orderid:    "order_giftcards.orderid",
+	GiftcardID: "order_giftcards.giftcard_id",
+	OrderID:    "order_giftcards.order_id",
 }
 
 // Generated where
 
 var OrderGiftcardWhere = struct {
 	ID         whereHelperstring
-	Giftcardid whereHelpernull_String
-	Orderid    whereHelpernull_String
+	GiftcardID whereHelpernull_String
+	OrderID    whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"order_giftcards\".\"id\""},
-	Giftcardid: whereHelpernull_String{field: "\"order_giftcards\".\"giftcardid\""},
-	Orderid:    whereHelpernull_String{field: "\"order_giftcards\".\"orderid\""},
+	GiftcardID: whereHelpernull_String{field: "\"order_giftcards\".\"giftcard_id\""},
+	OrderID:    whereHelpernull_String{field: "\"order_giftcards\".\"order_id\""},
 }
 
 // OrderGiftcardRels is where relationship names are stored.
 var OrderGiftcardRels = struct {
-	GiftcardidGiftcard string
-	OrderidOrder       string
+	Giftcard string
+	Order    string
 }{
-	GiftcardidGiftcard: "GiftcardidGiftcard",
-	OrderidOrder:       "OrderidOrder",
+	Giftcard: "Giftcard",
+	Order:    "Order",
 }
 
 // orderGiftcardR is where relationships are stored.
 type orderGiftcardR struct {
-	GiftcardidGiftcard *Giftcard `boil:"GiftcardidGiftcard" json:"GiftcardidGiftcard" toml:"GiftcardidGiftcard" yaml:"GiftcardidGiftcard"`
-	OrderidOrder       *Order    `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
+	Giftcard *Giftcard `boil:"Giftcard" json:"Giftcard" toml:"Giftcard" yaml:"Giftcard"`
+	Order    *Order    `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
 }
 
 // NewStruct creates a new relationship struct
@@ -84,27 +84,27 @@ func (*orderGiftcardR) NewStruct() *orderGiftcardR {
 	return &orderGiftcardR{}
 }
 
-func (r *orderGiftcardR) GetGiftcardidGiftcard() *Giftcard {
+func (r *orderGiftcardR) GetGiftcard() *Giftcard {
 	if r == nil {
 		return nil
 	}
-	return r.GiftcardidGiftcard
+	return r.Giftcard
 }
 
-func (r *orderGiftcardR) GetOrderidOrder() *Order {
+func (r *orderGiftcardR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
 // orderGiftcardL is where Load methods for each relationship are stored.
 type orderGiftcardL struct{}
 
 var (
-	orderGiftcardAllColumns            = []string{"id", "giftcardid", "orderid"}
+	orderGiftcardAllColumns            = []string{"id", "giftcard_id", "order_id"}
 	orderGiftcardColumnsWithoutDefault = []string{"id"}
-	orderGiftcardColumnsWithDefault    = []string{"giftcardid", "orderid"}
+	orderGiftcardColumnsWithDefault    = []string{"giftcard_id", "order_id"}
 	orderGiftcardPrimaryKeyColumns     = []string{"id"}
 	orderGiftcardGeneratedColumns      = []string{}
 )
@@ -387,10 +387,10 @@ func (q orderGiftcardQuery) Exists(ctx context.Context, exec boil.ContextExecuto
 	return count > 0, nil
 }
 
-// GiftcardidGiftcard pointed to by the foreign key.
-func (o *OrderGiftcard) GiftcardidGiftcard(mods ...qm.QueryMod) giftcardQuery {
+// Giftcard pointed to by the foreign key.
+func (o *OrderGiftcard) Giftcard(mods ...qm.QueryMod) giftcardQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Giftcardid),
+		qm.Where("\"id\" = ?", o.GiftcardID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -398,10 +398,10 @@ func (o *OrderGiftcard) GiftcardidGiftcard(mods ...qm.QueryMod) giftcardQuery {
 	return Giftcards(queryMods...)
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *OrderGiftcard) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *OrderGiftcard) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *OrderGiftcard) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// LoadGiftcardidGiftcard allows an eager lookup of values, cached into the
+// LoadGiftcard allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderGiftcardL) LoadGiftcardidGiftcard(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderGiftcard interface{}, mods queries.Applicator) error {
+func (orderGiftcardL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*OrderGiftcard
 	var object *OrderGiftcard
 
@@ -442,8 +442,8 @@ func (orderGiftcardL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 		if object.R == nil {
 			object.R = &orderGiftcardR{}
 		}
-		if !queries.IsNil(object.Giftcardid) {
-			args = append(args, object.Giftcardid)
+		if !queries.IsNil(object.GiftcardID) {
+			args = append(args, object.GiftcardID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (orderGiftcardL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Giftcardid) {
+				if queries.Equal(a, obj.GiftcardID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Giftcardid) {
-				args = append(args, obj.Giftcardid)
+			if !queries.IsNil(obj.GiftcardID) {
+				args = append(args, obj.GiftcardID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (orderGiftcardL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.GiftcardidGiftcard = foreign
+		object.R.Giftcard = foreign
 		if foreign.R == nil {
 			foreign.R = &giftcardR{}
 		}
-		foreign.R.GiftcardidOrderGiftcards = append(foreign.R.GiftcardidOrderGiftcards, object)
+		foreign.R.OrderGiftcards = append(foreign.R.OrderGiftcards, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Giftcardid, foreign.ID) {
-				local.R.GiftcardidGiftcard = foreign
+			if queries.Equal(local.GiftcardID, foreign.ID) {
+				local.R.Giftcard = foreign
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
 				}
-				foreign.R.GiftcardidOrderGiftcards = append(foreign.R.GiftcardidOrderGiftcards, local)
+				foreign.R.OrderGiftcards = append(foreign.R.OrderGiftcards, local)
 				break
 			}
 		}
@@ -533,9 +533,9 @@ func (orderGiftcardL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderGiftcardL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderGiftcard interface{}, mods queries.Applicator) error {
+func (orderGiftcardL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*OrderGiftcard
 	var object *OrderGiftcard
 
@@ -566,8 +566,8 @@ func (orderGiftcardL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &orderGiftcardR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -578,13 +578,13 @@ func (orderGiftcardL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -633,22 +633,22 @@ func (orderGiftcardL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidOrderGiftcards = append(foreign.R.OrderidOrderGiftcards, object)
+		foreign.R.OrderGiftcards = append(foreign.R.OrderGiftcards, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidOrderGiftcards = append(foreign.R.OrderidOrderGiftcards, local)
+				foreign.R.OrderGiftcards = append(foreign.R.OrderGiftcards, local)
 				break
 			}
 		}
@@ -657,10 +657,10 @@ func (orderGiftcardL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// SetGiftcardidGiftcard of the orderGiftcard to the related item.
-// Sets o.R.GiftcardidGiftcard to related.
-// Adds o to related.R.GiftcardidOrderGiftcards.
-func (o *OrderGiftcard) SetGiftcardidGiftcard(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Giftcard) error {
+// SetGiftcard of the orderGiftcard to the related item.
+// Sets o.R.Giftcard to related.
+// Adds o to related.R.OrderGiftcards.
+func (o *OrderGiftcard) SetGiftcard(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Giftcard) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -670,7 +670,7 @@ func (o *OrderGiftcard) SetGiftcardidGiftcard(ctx context.Context, exec boil.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_giftcards\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcardid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderGiftcardPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -684,63 +684,63 @@ func (o *OrderGiftcard) SetGiftcardidGiftcard(ctx context.Context, exec boil.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Giftcardid, related.ID)
+	queries.Assign(&o.GiftcardID, related.ID)
 	if o.R == nil {
 		o.R = &orderGiftcardR{
-			GiftcardidGiftcard: related,
+			Giftcard: related,
 		}
 	} else {
-		o.R.GiftcardidGiftcard = related
+		o.R.Giftcard = related
 	}
 
 	if related.R == nil {
 		related.R = &giftcardR{
-			GiftcardidOrderGiftcards: OrderGiftcardSlice{o},
+			OrderGiftcards: OrderGiftcardSlice{o},
 		}
 	} else {
-		related.R.GiftcardidOrderGiftcards = append(related.R.GiftcardidOrderGiftcards, o)
+		related.R.OrderGiftcards = append(related.R.OrderGiftcards, o)
 	}
 
 	return nil
 }
 
-// RemoveGiftcardidGiftcard relationship.
-// Sets o.R.GiftcardidGiftcard to nil.
+// RemoveGiftcard relationship.
+// Sets o.R.Giftcard to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderGiftcard) RemoveGiftcardidGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
+func (o *OrderGiftcard) RemoveGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
 	var err error
 
-	queries.SetScanner(&o.Giftcardid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcardid")); err != nil {
+	queries.SetScanner(&o.GiftcardID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.GiftcardidGiftcard = nil
+		o.R.Giftcard = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.GiftcardidOrderGiftcards {
-		if queries.Equal(o.Giftcardid, ri.Giftcardid) {
+	for i, ri := range related.R.OrderGiftcards {
+		if queries.Equal(o.GiftcardID, ri.GiftcardID) {
 			continue
 		}
 
-		ln := len(related.R.GiftcardidOrderGiftcards)
+		ln := len(related.R.OrderGiftcards)
 		if ln > 1 && i < ln-1 {
-			related.R.GiftcardidOrderGiftcards[i] = related.R.GiftcardidOrderGiftcards[ln-1]
+			related.R.OrderGiftcards[i] = related.R.OrderGiftcards[ln-1]
 		}
-		related.R.GiftcardidOrderGiftcards = related.R.GiftcardidOrderGiftcards[:ln-1]
+		related.R.OrderGiftcards = related.R.OrderGiftcards[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetOrderidOrder of the orderGiftcard to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidOrderGiftcards.
-func (o *OrderGiftcard) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the orderGiftcard to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.OrderGiftcards.
+func (o *OrderGiftcard) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -750,7 +750,7 @@ func (o *OrderGiftcard) SetOrderidOrder(ctx context.Context, exec boil.ContextEx
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_giftcards\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderGiftcardPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -764,54 +764,54 @@ func (o *OrderGiftcard) SetOrderidOrder(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &orderGiftcardR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidOrderGiftcards: OrderGiftcardSlice{o},
+			OrderGiftcards: OrderGiftcardSlice{o},
 		}
 	} else {
-		related.R.OrderidOrderGiftcards = append(related.R.OrderidOrderGiftcards, o)
+		related.R.OrderGiftcards = append(related.R.OrderGiftcards, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderGiftcard) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *OrderGiftcard) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidOrderGiftcards {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.OrderGiftcards {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidOrderGiftcards)
+		ln := len(related.R.OrderGiftcards)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidOrderGiftcards[i] = related.R.OrderidOrderGiftcards[ln-1]
+			related.R.OrderGiftcards[i] = related.R.OrderGiftcards[ln-1]
 		}
-		related.R.OrderidOrderGiftcards = related.R.OrderidOrderGiftcards[:ln-1]
+		related.R.OrderGiftcards = related.R.OrderGiftcards[:ln-1]
 		break
 	}
 	return nil

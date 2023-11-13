@@ -21,8 +21,8 @@ var TableNames = struct {
 	Attributes                     string
 	Categories                     string
 	CategoryTranslations           string
+	ChannelShops                   string
 	Channels                       string
-	Channelshops                   string
 	CheckoutLines                  string
 	Checkouts                      string
 	CollectionChannelListings      string
@@ -73,9 +73,9 @@ var TableNames = struct {
 	SaleCategories                 string
 	SaleChannelListings            string
 	SaleCollections                string
+	SaleProductVariants            string
 	SaleProducts                   string
 	SaleTranslations               string
-	SaleproductVariants            string
 	Sales                          string
 	SchemaMigrations               string
 	Sessions                       string
@@ -132,8 +132,8 @@ var TableNames = struct {
 	Attributes:                     "attributes",
 	Categories:                     "categories",
 	CategoryTranslations:           "category_translations",
+	ChannelShops:                   "channel_shops",
 	Channels:                       "channels",
-	Channelshops:                   "channelshops",
 	CheckoutLines:                  "checkout_lines",
 	Checkouts:                      "checkouts",
 	CollectionChannelListings:      "collection_channel_listings",
@@ -184,9 +184,9 @@ var TableNames = struct {
 	SaleCategories:                 "sale_categories",
 	SaleChannelListings:            "sale_channel_listings",
 	SaleCollections:                "sale_collections",
+	SaleProductVariants:            "sale_product_variants",
 	SaleProducts:                   "sale_products",
 	SaleTranslations:               "sale_translations",
-	SaleproductVariants:            "saleproduct_variants",
 	Sales:                          "sales",
 	SchemaMigrations:               "schema_migrations",
 	Sessions:                       "sessions",

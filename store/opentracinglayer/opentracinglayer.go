@@ -992,7 +992,7 @@ type OpenTracingLayerWishlistItemStore struct {
 	Root *OpenTracingLayer
 }
 
-func (s *OpenTracingLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
+func (s *OpenTracingLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.DeleteAddresses")
 	s.Root.Store.SetContext(newCtx)
@@ -1001,11 +1001,11 @@ func (s *OpenTracingLayerAddressStore) DeleteAddresses(transaction *gorm.DB, add
 	}()
 
 	defer span.Finish()
-	result := s.AddressStore.DeleteAddresses(transaction, addressIDs)
+	result := s.AddressStore.DeleteAddresses(tx, addressIDs)
 	return result
 }
 
-func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
+func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -1023,7 +1023,7 @@ func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilte
 	return result, err
 }
 
-func (s *OpenTracingLayerAddressStore) Get(addressID string) (*model.Address, error) {
+func (s *OpenTracingLayerAddressStore) Get(addressID string) (*models.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -1041,7 +1041,7 @@ func (s *OpenTracingLayerAddressStore) Get(addressID string) (*model.Address, er
 	return result, err
 }
 
-func (s *OpenTracingLayerAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
+func (s *OpenTracingLayerAddressStore) Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -1050,7 +1050,7 @@ func (s *OpenTracingLayerAddressStore) Upsert(transaction *gorm.DB, address *mod
 	}()
 
 	defer span.Finish()
-	result, err := s.AddressStore.Upsert(transaction, address)
+	result, err := s.AddressStore.Upsert(tx, address)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

@@ -494,7 +494,7 @@ func testCategoriesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testCategoryToManyParentidCategories(t *testing.T) {
+func testCategoryToManyParentCategories(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testCategoryToManyParentidCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Parentid, a.ID)
-	queries.Assign(&c.Parentid, a.ID)
+	queries.Assign(&b.ParentID, a.ID)
+	queries.Assign(&c.ParentID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testCategoryToManyParentidCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ParentidCategories().All(ctx, tx)
+	check, err := a.ParentCategories().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Parentid, b.Parentid) {
+		if queries.Equal(v.ParentID, b.ParentID) {
 			bFound = true
 		}
-		if queries.Equal(v.Parentid, c.Parentid) {
+		if queries.Equal(v.ParentID, c.ParentID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testCategoryToManyParentidCategories(t *testing.T) {
 	}
 
 	slice := CategorySlice{&a}
-	if err = a.L.LoadParentidCategories(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
+	if err = a.L.LoadParentCategories(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ParentidCategories); got != 2 {
+	if got := len(a.R.ParentCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ParentidCategories = nil
-	if err = a.L.LoadParentidCategories(ctx, tx, true, &a, nil); err != nil {
+	a.R.ParentCategories = nil
+	if err = a.L.LoadParentCategories(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ParentidCategories); got != 2 {
+	if got := len(a.R.ParentCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testCategoryToManyParentidCategories(t *testing.T) {
 	}
 }
 
-func testCategoryToManyCategoryidMenuItems(t *testing.T) {
+func testCategoryToManyMenuItems(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testCategoryToManyCategoryidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Categoryid, a.ID)
-	queries.Assign(&c.Categoryid, a.ID)
+	queries.Assign(&b.CategoryID, a.ID)
+	queries.Assign(&c.CategoryID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testCategoryToManyCategoryidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.CategoryidMenuItems().All(ctx, tx)
+	check, err := a.MenuItems().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Categoryid, b.Categoryid) {
+		if queries.Equal(v.CategoryID, b.CategoryID) {
 			bFound = true
 		}
-		if queries.Equal(v.Categoryid, c.Categoryid) {
+		if queries.Equal(v.CategoryID, c.CategoryID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testCategoryToManyCategoryidMenuItems(t *testing.T) {
 	}
 
 	slice := CategorySlice{&a}
-	if err = a.L.LoadCategoryidMenuItems(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
+	if err = a.L.LoadMenuItems(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CategoryidMenuItems); got != 2 {
+	if got := len(a.R.MenuItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.CategoryidMenuItems = nil
-	if err = a.L.LoadCategoryidMenuItems(ctx, tx, true, &a, nil); err != nil {
+	a.R.MenuItems = nil
+	if err = a.L.LoadMenuItems(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CategoryidMenuItems); got != 2 {
+	if got := len(a.R.MenuItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testCategoryToManyCategoryidMenuItems(t *testing.T) {
 	}
 }
 
-func testCategoryToManyCategoryidSaleCategories(t *testing.T) {
+func testCategoryToManySaleCategories(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testCategoryToManyCategoryidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Categoryid, a.ID)
-	queries.Assign(&c.Categoryid, a.ID)
+	queries.Assign(&b.CategoryID, a.ID)
+	queries.Assign(&c.CategoryID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testCategoryToManyCategoryidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.CategoryidSaleCategories().All(ctx, tx)
+	check, err := a.SaleCategories().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Categoryid, b.Categoryid) {
+		if queries.Equal(v.CategoryID, b.CategoryID) {
 			bFound = true
 		}
-		if queries.Equal(v.Categoryid, c.Categoryid) {
+		if queries.Equal(v.CategoryID, c.CategoryID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testCategoryToManyCategoryidSaleCategories(t *testing.T) {
 	}
 
 	slice := CategorySlice{&a}
-	if err = a.L.LoadCategoryidSaleCategories(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleCategories(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CategoryidSaleCategories); got != 2 {
+	if got := len(a.R.SaleCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.CategoryidSaleCategories = nil
-	if err = a.L.LoadCategoryidSaleCategories(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleCategories = nil
+	if err = a.L.LoadSaleCategories(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CategoryidSaleCategories); got != 2 {
+	if got := len(a.R.SaleCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testCategoryToManyCategoryidSaleCategories(t *testing.T) {
 	}
 }
 
-func testCategoryToManyCategoryidVoucherCategories(t *testing.T) {
+func testCategoryToManyVoucherCategories(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -750,8 +750,8 @@ func testCategoryToManyCategoryidVoucherCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Categoryid, a.ID)
-	queries.Assign(&c.Categoryid, a.ID)
+	queries.Assign(&b.CategoryID, a.ID)
+	queries.Assign(&c.CategoryID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -759,17 +759,17 @@ func testCategoryToManyCategoryidVoucherCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.CategoryidVoucherCategories().All(ctx, tx)
+	check, err := a.VoucherCategories().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Categoryid, b.Categoryid) {
+		if queries.Equal(v.CategoryID, b.CategoryID) {
 			bFound = true
 		}
-		if queries.Equal(v.Categoryid, c.Categoryid) {
+		if queries.Equal(v.CategoryID, c.CategoryID) {
 			cFound = true
 		}
 	}
@@ -782,18 +782,18 @@ func testCategoryToManyCategoryidVoucherCategories(t *testing.T) {
 	}
 
 	slice := CategorySlice{&a}
-	if err = a.L.LoadCategoryidVoucherCategories(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
+	if err = a.L.LoadVoucherCategories(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CategoryidVoucherCategories); got != 2 {
+	if got := len(a.R.VoucherCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.CategoryidVoucherCategories = nil
-	if err = a.L.LoadCategoryidVoucherCategories(ctx, tx, true, &a, nil); err != nil {
+	a.R.VoucherCategories = nil
+	if err = a.L.LoadVoucherCategories(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CategoryidVoucherCategories); got != 2 {
+	if got := len(a.R.VoucherCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -802,7 +802,7 @@ func testCategoryToManyCategoryidVoucherCategories(t *testing.T) {
 	}
 }
 
-func testCategoryToManyAddOpParentidCategories(t *testing.T) {
+func testCategoryToManyAddOpParentCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -839,7 +839,7 @@ func testCategoryToManyAddOpParentidCategories(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddParentidCategories(ctx, tx, i != 0, x...)
+		err = a.AddParentCategories(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -847,28 +847,28 @@ func testCategoryToManyAddOpParentidCategories(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Parentid) {
-			t.Error("foreign key was wrong value", a.ID, first.Parentid)
+		if !queries.Equal(a.ID, first.ParentID) {
+			t.Error("foreign key was wrong value", a.ID, first.ParentID)
 		}
-		if !queries.Equal(a.ID, second.Parentid) {
-			t.Error("foreign key was wrong value", a.ID, second.Parentid)
+		if !queries.Equal(a.ID, second.ParentID) {
+			t.Error("foreign key was wrong value", a.ID, second.ParentID)
 		}
 
-		if first.R.ParentidCategory != &a {
+		if first.R.Parent != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ParentidCategory != &a {
+		if second.R.Parent != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ParentidCategories[i*2] != first {
+		if a.R.ParentCategories[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ParentidCategories[i*2+1] != second {
+		if a.R.ParentCategories[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ParentidCategories().Count(ctx, tx)
+		count, err := a.ParentCategories().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -878,7 +878,7 @@ func testCategoryToManyAddOpParentidCategories(t *testing.T) {
 	}
 }
 
-func testCategoryToManySetOpParentidCategories(t *testing.T) {
+func testCategoryToManySetOpParentCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -909,25 +909,12 @@ func testCategoryToManySetOpParentidCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetParentidCategories(ctx, tx, false, &b, &c)
+	err = a.SetParentCategories(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ParentidCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetParentidCategories(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ParentidCategories().Count(ctx, tx)
+	count, err := a.ParentCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -935,41 +922,54 @@ func testCategoryToManySetOpParentidCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Parentid) {
+	err = a.SetParentCategories(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ParentCategories().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ParentID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Parentid) {
+	if !queries.IsValuerNil(c.ParentID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Parentid) {
-		t.Error("foreign key was wrong value", a.ID, d.Parentid)
+	if !queries.Equal(a.ID, d.ParentID) {
+		t.Error("foreign key was wrong value", a.ID, d.ParentID)
 	}
-	if !queries.Equal(a.ID, e.Parentid) {
-		t.Error("foreign key was wrong value", a.ID, e.Parentid)
-	}
-
-	if b.R.ParentidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ParentidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ParentidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ParentidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ParentID) {
+		t.Error("foreign key was wrong value", a.ID, e.ParentID)
 	}
 
-	if a.R.ParentidCategories[0] != &d {
+	if b.R.Parent != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Parent != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Parent != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Parent != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ParentCategories[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ParentidCategories[1] != &e {
+	if a.R.ParentCategories[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testCategoryToManyRemoveOpParentidCategories(t *testing.T) {
+func testCategoryToManyRemoveOpParentCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -994,12 +994,12 @@ func testCategoryToManyRemoveOpParentidCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddParentidCategories(ctx, tx, true, foreigners...)
+	err = a.AddParentCategories(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ParentidCategories().Count(ctx, tx)
+	count, err := a.ParentCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1007,12 +1007,12 @@ func testCategoryToManyRemoveOpParentidCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveParentidCategories(ctx, tx, foreigners[:2]...)
+	err = a.RemoveParentCategories(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ParentidCategories().Count(ctx, tx)
+	count, err = a.ParentCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1020,40 +1020,40 @@ func testCategoryToManyRemoveOpParentidCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Parentid) {
+	if !queries.IsValuerNil(b.ParentID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Parentid) {
+	if !queries.IsValuerNil(c.ParentID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ParentidCategory != nil {
+	if b.R.Parent != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ParentidCategory != nil {
+	if c.R.Parent != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ParentidCategory != &a {
+	if d.R.Parent != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ParentidCategory != &a {
+	if e.R.Parent != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ParentidCategories) != 2 {
+	if len(a.R.ParentCategories) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ParentidCategories[1] != &d {
+	if a.R.ParentCategories[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ParentidCategories[0] != &e {
+	if a.R.ParentCategories[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testCategoryToManyAddOpCategoryidMenuItems(t *testing.T) {
+func testCategoryToManyAddOpMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1090,7 +1090,7 @@ func testCategoryToManyAddOpCategoryidMenuItems(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCategoryidMenuItems(ctx, tx, i != 0, x...)
+		err = a.AddMenuItems(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1098,28 +1098,28 @@ func testCategoryToManyAddOpCategoryidMenuItems(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Categoryid) {
-			t.Error("foreign key was wrong value", a.ID, first.Categoryid)
+		if !queries.Equal(a.ID, first.CategoryID) {
+			t.Error("foreign key was wrong value", a.ID, first.CategoryID)
 		}
-		if !queries.Equal(a.ID, second.Categoryid) {
-			t.Error("foreign key was wrong value", a.ID, second.Categoryid)
+		if !queries.Equal(a.ID, second.CategoryID) {
+			t.Error("foreign key was wrong value", a.ID, second.CategoryID)
 		}
 
-		if first.R.CategoryidCategory != &a {
+		if first.R.Category != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.CategoryidCategory != &a {
+		if second.R.Category != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.CategoryidMenuItems[i*2] != first {
+		if a.R.MenuItems[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.CategoryidMenuItems[i*2+1] != second {
+		if a.R.MenuItems[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.CategoryidMenuItems().Count(ctx, tx)
+		count, err := a.MenuItems().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1129,7 +1129,7 @@ func testCategoryToManyAddOpCategoryidMenuItems(t *testing.T) {
 	}
 }
 
-func testCategoryToManySetOpCategoryidMenuItems(t *testing.T) {
+func testCategoryToManySetOpMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1160,25 +1160,12 @@ func testCategoryToManySetOpCategoryidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetCategoryidMenuItems(ctx, tx, false, &b, &c)
+	err = a.SetMenuItems(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CategoryidMenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCategoryidMenuItems(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CategoryidMenuItems().Count(ctx, tx)
+	count, err := a.MenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1186,41 +1173,54 @@ func testCategoryToManySetOpCategoryidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Categoryid) {
+	err = a.SetMenuItems(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.MenuItems().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.CategoryID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Categoryid) {
+	if !queries.IsValuerNil(c.CategoryID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Categoryid) {
-		t.Error("foreign key was wrong value", a.ID, d.Categoryid)
+	if !queries.Equal(a.ID, d.CategoryID) {
+		t.Error("foreign key was wrong value", a.ID, d.CategoryID)
 	}
-	if !queries.Equal(a.ID, e.Categoryid) {
-		t.Error("foreign key was wrong value", a.ID, e.Categoryid)
-	}
-
-	if b.R.CategoryidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.CategoryidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.CategoryidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.CategoryidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.CategoryID) {
+		t.Error("foreign key was wrong value", a.ID, e.CategoryID)
 	}
 
-	if a.R.CategoryidMenuItems[0] != &d {
+	if b.R.Category != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Category != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Category != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Category != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.MenuItems[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.CategoryidMenuItems[1] != &e {
+	if a.R.MenuItems[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testCategoryToManyRemoveOpCategoryidMenuItems(t *testing.T) {
+func testCategoryToManyRemoveOpMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1245,12 +1245,12 @@ func testCategoryToManyRemoveOpCategoryidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddCategoryidMenuItems(ctx, tx, true, foreigners...)
+	err = a.AddMenuItems(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CategoryidMenuItems().Count(ctx, tx)
+	count, err := a.MenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1258,12 +1258,12 @@ func testCategoryToManyRemoveOpCategoryidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveCategoryidMenuItems(ctx, tx, foreigners[:2]...)
+	err = a.RemoveMenuItems(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.CategoryidMenuItems().Count(ctx, tx)
+	count, err = a.MenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1271,40 +1271,40 @@ func testCategoryToManyRemoveOpCategoryidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Categoryid) {
+	if !queries.IsValuerNil(b.CategoryID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Categoryid) {
+	if !queries.IsValuerNil(c.CategoryID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.CategoryidCategory != nil {
+	if b.R.Category != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.CategoryidCategory != nil {
+	if c.R.Category != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.CategoryidCategory != &a {
+	if d.R.Category != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.CategoryidCategory != &a {
+	if e.R.Category != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.CategoryidMenuItems) != 2 {
+	if len(a.R.MenuItems) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CategoryidMenuItems[1] != &d {
+	if a.R.MenuItems[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.CategoryidMenuItems[0] != &e {
+	if a.R.MenuItems[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testCategoryToManyAddOpCategoryidSaleCategories(t *testing.T) {
+func testCategoryToManyAddOpSaleCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1341,7 +1341,7 @@ func testCategoryToManyAddOpCategoryidSaleCategories(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCategoryidSaleCategories(ctx, tx, i != 0, x...)
+		err = a.AddSaleCategories(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1349,28 +1349,28 @@ func testCategoryToManyAddOpCategoryidSaleCategories(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Categoryid) {
-			t.Error("foreign key was wrong value", a.ID, first.Categoryid)
+		if !queries.Equal(a.ID, first.CategoryID) {
+			t.Error("foreign key was wrong value", a.ID, first.CategoryID)
 		}
-		if !queries.Equal(a.ID, second.Categoryid) {
-			t.Error("foreign key was wrong value", a.ID, second.Categoryid)
+		if !queries.Equal(a.ID, second.CategoryID) {
+			t.Error("foreign key was wrong value", a.ID, second.CategoryID)
 		}
 
-		if first.R.CategoryidCategory != &a {
+		if first.R.Category != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.CategoryidCategory != &a {
+		if second.R.Category != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.CategoryidSaleCategories[i*2] != first {
+		if a.R.SaleCategories[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.CategoryidSaleCategories[i*2+1] != second {
+		if a.R.SaleCategories[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.CategoryidSaleCategories().Count(ctx, tx)
+		count, err := a.SaleCategories().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1380,7 +1380,7 @@ func testCategoryToManyAddOpCategoryidSaleCategories(t *testing.T) {
 	}
 }
 
-func testCategoryToManySetOpCategoryidSaleCategories(t *testing.T) {
+func testCategoryToManySetOpSaleCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1411,25 +1411,12 @@ func testCategoryToManySetOpCategoryidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetCategoryidSaleCategories(ctx, tx, false, &b, &c)
+	err = a.SetSaleCategories(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CategoryidSaleCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCategoryidSaleCategories(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CategoryidSaleCategories().Count(ctx, tx)
+	count, err := a.SaleCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1437,41 +1424,54 @@ func testCategoryToManySetOpCategoryidSaleCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Categoryid) {
+	err = a.SetSaleCategories(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleCategories().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.CategoryID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Categoryid) {
+	if !queries.IsValuerNil(c.CategoryID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Categoryid) {
-		t.Error("foreign key was wrong value", a.ID, d.Categoryid)
+	if !queries.Equal(a.ID, d.CategoryID) {
+		t.Error("foreign key was wrong value", a.ID, d.CategoryID)
 	}
-	if !queries.Equal(a.ID, e.Categoryid) {
-		t.Error("foreign key was wrong value", a.ID, e.Categoryid)
-	}
-
-	if b.R.CategoryidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.CategoryidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.CategoryidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.CategoryidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.CategoryID) {
+		t.Error("foreign key was wrong value", a.ID, e.CategoryID)
 	}
 
-	if a.R.CategoryidSaleCategories[0] != &d {
+	if b.R.Category != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Category != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Category != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Category != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleCategories[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.CategoryidSaleCategories[1] != &e {
+	if a.R.SaleCategories[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testCategoryToManyRemoveOpCategoryidSaleCategories(t *testing.T) {
+func testCategoryToManyRemoveOpSaleCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1496,12 +1496,12 @@ func testCategoryToManyRemoveOpCategoryidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddCategoryidSaleCategories(ctx, tx, true, foreigners...)
+	err = a.AddSaleCategories(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CategoryidSaleCategories().Count(ctx, tx)
+	count, err := a.SaleCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1509,12 +1509,12 @@ func testCategoryToManyRemoveOpCategoryidSaleCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveCategoryidSaleCategories(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleCategories(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.CategoryidSaleCategories().Count(ctx, tx)
+	count, err = a.SaleCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1522,40 +1522,40 @@ func testCategoryToManyRemoveOpCategoryidSaleCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Categoryid) {
+	if !queries.IsValuerNil(b.CategoryID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Categoryid) {
+	if !queries.IsValuerNil(c.CategoryID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.CategoryidCategory != nil {
+	if b.R.Category != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.CategoryidCategory != nil {
+	if c.R.Category != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.CategoryidCategory != &a {
+	if d.R.Category != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.CategoryidCategory != &a {
+	if e.R.Category != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.CategoryidSaleCategories) != 2 {
+	if len(a.R.SaleCategories) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CategoryidSaleCategories[1] != &d {
+	if a.R.SaleCategories[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.CategoryidSaleCategories[0] != &e {
+	if a.R.SaleCategories[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testCategoryToManyAddOpCategoryidVoucherCategories(t *testing.T) {
+func testCategoryToManyAddOpVoucherCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1592,7 +1592,7 @@ func testCategoryToManyAddOpCategoryidVoucherCategories(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCategoryidVoucherCategories(ctx, tx, i != 0, x...)
+		err = a.AddVoucherCategories(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1600,28 +1600,28 @@ func testCategoryToManyAddOpCategoryidVoucherCategories(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Categoryid) {
-			t.Error("foreign key was wrong value", a.ID, first.Categoryid)
+		if !queries.Equal(a.ID, first.CategoryID) {
+			t.Error("foreign key was wrong value", a.ID, first.CategoryID)
 		}
-		if !queries.Equal(a.ID, second.Categoryid) {
-			t.Error("foreign key was wrong value", a.ID, second.Categoryid)
+		if !queries.Equal(a.ID, second.CategoryID) {
+			t.Error("foreign key was wrong value", a.ID, second.CategoryID)
 		}
 
-		if first.R.CategoryidCategory != &a {
+		if first.R.Category != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.CategoryidCategory != &a {
+		if second.R.Category != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.CategoryidVoucherCategories[i*2] != first {
+		if a.R.VoucherCategories[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.CategoryidVoucherCategories[i*2+1] != second {
+		if a.R.VoucherCategories[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.CategoryidVoucherCategories().Count(ctx, tx)
+		count, err := a.VoucherCategories().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1631,7 +1631,7 @@ func testCategoryToManyAddOpCategoryidVoucherCategories(t *testing.T) {
 	}
 }
 
-func testCategoryToManySetOpCategoryidVoucherCategories(t *testing.T) {
+func testCategoryToManySetOpVoucherCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1662,25 +1662,12 @@ func testCategoryToManySetOpCategoryidVoucherCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetCategoryidVoucherCategories(ctx, tx, false, &b, &c)
+	err = a.SetVoucherCategories(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CategoryidVoucherCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCategoryidVoucherCategories(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CategoryidVoucherCategories().Count(ctx, tx)
+	count, err := a.VoucherCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1688,41 +1675,54 @@ func testCategoryToManySetOpCategoryidVoucherCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Categoryid) {
+	err = a.SetVoucherCategories(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.VoucherCategories().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.CategoryID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Categoryid) {
+	if !queries.IsValuerNil(c.CategoryID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Categoryid) {
-		t.Error("foreign key was wrong value", a.ID, d.Categoryid)
+	if !queries.Equal(a.ID, d.CategoryID) {
+		t.Error("foreign key was wrong value", a.ID, d.CategoryID)
 	}
-	if !queries.Equal(a.ID, e.Categoryid) {
-		t.Error("foreign key was wrong value", a.ID, e.Categoryid)
-	}
-
-	if b.R.CategoryidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.CategoryidCategory != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.CategoryidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.CategoryidCategory != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.CategoryID) {
+		t.Error("foreign key was wrong value", a.ID, e.CategoryID)
 	}
 
-	if a.R.CategoryidVoucherCategories[0] != &d {
+	if b.R.Category != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Category != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Category != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Category != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.VoucherCategories[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.CategoryidVoucherCategories[1] != &e {
+	if a.R.VoucherCategories[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testCategoryToManyRemoveOpCategoryidVoucherCategories(t *testing.T) {
+func testCategoryToManyRemoveOpVoucherCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1747,12 +1747,12 @@ func testCategoryToManyRemoveOpCategoryidVoucherCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddCategoryidVoucherCategories(ctx, tx, true, foreigners...)
+	err = a.AddVoucherCategories(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CategoryidVoucherCategories().Count(ctx, tx)
+	count, err := a.VoucherCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1760,12 +1760,12 @@ func testCategoryToManyRemoveOpCategoryidVoucherCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveCategoryidVoucherCategories(ctx, tx, foreigners[:2]...)
+	err = a.RemoveVoucherCategories(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.CategoryidVoucherCategories().Count(ctx, tx)
+	count, err = a.VoucherCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1773,40 +1773,40 @@ func testCategoryToManyRemoveOpCategoryidVoucherCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Categoryid) {
+	if !queries.IsValuerNil(b.CategoryID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Categoryid) {
+	if !queries.IsValuerNil(c.CategoryID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.CategoryidCategory != nil {
+	if b.R.Category != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.CategoryidCategory != nil {
+	if c.R.Category != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.CategoryidCategory != &a {
+	if d.R.Category != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.CategoryidCategory != &a {
+	if e.R.Category != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.CategoryidVoucherCategories) != 2 {
+	if len(a.R.VoucherCategories) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CategoryidVoucherCategories[1] != &d {
+	if a.R.VoucherCategories[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.CategoryidVoucherCategories[0] != &e {
+	if a.R.VoucherCategories[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testCategoryToOneCategoryUsingParentidCategory(t *testing.T) {
+func testCategoryToOneCategoryUsingParent(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1826,12 +1826,12 @@ func testCategoryToOneCategoryUsingParentidCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Parentid, foreign.ID)
+	queries.Assign(&local.ParentID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ParentidCategory().One(ctx, tx)
+	check, err := local.Parent().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1847,18 +1847,18 @@ func testCategoryToOneCategoryUsingParentidCategory(t *testing.T) {
 	})
 
 	slice := CategorySlice{&local}
-	if err = local.L.LoadParentidCategory(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
+	if err = local.L.LoadParent(ctx, tx, false, (*[]*Category)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ParentidCategory == nil {
+	if local.R.Parent == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ParentidCategory = nil
-	if err = local.L.LoadParentidCategory(ctx, tx, true, &local, nil); err != nil {
+	local.R.Parent = nil
+	if err = local.L.LoadParent(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ParentidCategory == nil {
+	if local.R.Parent == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1867,7 +1867,7 @@ func testCategoryToOneCategoryUsingParentidCategory(t *testing.T) {
 	}
 }
 
-func testCategoryToOneSetOpCategoryUsingParentidCategory(t *testing.T) {
+func testCategoryToOneSetOpCategoryUsingParent(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1896,36 +1896,36 @@ func testCategoryToOneSetOpCategoryUsingParentidCategory(t *testing.T) {
 	}
 
 	for i, x := range []*Category{&b, &c} {
-		err = a.SetParentidCategory(ctx, tx, i != 0, x)
+		err = a.SetParent(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ParentidCategory != x {
+		if a.R.Parent != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ParentidCategories[0] != &a {
+		if x.R.ParentCategories[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Parentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Parentid)
+		if !queries.Equal(a.ParentID, x.ID) {
+			t.Error("foreign key was wrong value", a.ParentID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Parentid))
-		reflect.Indirect(reflect.ValueOf(&a.Parentid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ParentID))
+		reflect.Indirect(reflect.ValueOf(&a.ParentID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Parentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Parentid, x.ID)
+		if !queries.Equal(a.ParentID, x.ID) {
+			t.Error("foreign key was wrong value", a.ParentID, x.ID)
 		}
 	}
 }
 
-func testCategoryToOneRemoveOpCategoryUsingParentidCategory(t *testing.T) {
+func testCategoryToOneRemoveOpCategoryUsingParent(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1947,15 +1947,15 @@ func testCategoryToOneRemoveOpCategoryUsingParentidCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetParentidCategory(ctx, tx, true, &b); err != nil {
+	if err = a.SetParent(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveParentidCategory(ctx, tx, &b); err != nil {
+	if err = a.RemoveParent(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ParentidCategory().Count(ctx, tx)
+	count, err := a.Parent().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1963,15 +1963,15 @@ func testCategoryToOneRemoveOpCategoryUsingParentidCategory(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ParentidCategory != nil {
+	if a.R.Parent != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Parentid) {
+	if !queries.IsValuerNil(a.ParentID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ParentidCategories) != 0 {
+	if len(b.R.ParentCategories) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -2050,7 +2050,7 @@ func testCategoriesSelect(t *testing.T) {
 }
 
 var (
-	categoryDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Description`: `jsonb`, `Parentid`: `character varying`, `Level`: `smallint`, `Backgroundimage`: `character varying`, `Backgroundimagealt`: `character varying`, `Images`: `character varying`, `Seotitle`: `character varying`, `Seodescription`: `character varying`, `Nametranslation`: `jsonb`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	categoryDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Description`: `jsonb`, `ParentID`: `character varying`, `Level`: `smallint`, `BackgroundImage`: `character varying`, `BackgroundImageAlt`: `character varying`, `Images`: `character varying`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`, `NameTranslation`: `jsonb`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_               = bytes.MinRead
 )
 

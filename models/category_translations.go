@@ -25,12 +25,12 @@ import (
 // CategoryTranslation is an object representing the database table.
 type CategoryTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode   null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Categoryid     null.String `boil:"categoryid" json:"categoryid,omitempty" toml:"categoryid" yaml:"categoryid,omitempty"`
+	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	CategoryID     null.String `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
 	Name           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Description    null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Seotitle       null.String `boil:"seotitle" json:"seotitle,omitempty" toml:"seotitle" yaml:"seotitle,omitempty"`
-	Seodescription null.String `boil:"seodescription" json:"seodescription,omitempty" toml:"seodescription" yaml:"seodescription,omitempty"`
+	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *categoryTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L categoryTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,58 +38,58 @@ type CategoryTranslation struct {
 
 var CategoryTranslationColumns = struct {
 	ID             string
-	Languagecode   string
-	Categoryid     string
+	LanguageCode   string
+	CategoryID     string
 	Name           string
 	Description    string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "id",
-	Languagecode:   "languagecode",
-	Categoryid:     "categoryid",
+	LanguageCode:   "language_code",
+	CategoryID:     "category_id",
 	Name:           "name",
 	Description:    "description",
-	Seotitle:       "seotitle",
-	Seodescription: "seodescription",
+	SeoTitle:       "seo_title",
+	SeoDescription: "seo_description",
 }
 
 var CategoryTranslationTableColumns = struct {
 	ID             string
-	Languagecode   string
-	Categoryid     string
+	LanguageCode   string
+	CategoryID     string
 	Name           string
 	Description    string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "category_translations.id",
-	Languagecode:   "category_translations.languagecode",
-	Categoryid:     "category_translations.categoryid",
+	LanguageCode:   "category_translations.language_code",
+	CategoryID:     "category_translations.category_id",
 	Name:           "category_translations.name",
 	Description:    "category_translations.description",
-	Seotitle:       "category_translations.seotitle",
-	Seodescription: "category_translations.seodescription",
+	SeoTitle:       "category_translations.seo_title",
+	SeoDescription: "category_translations.seo_description",
 }
 
 // Generated where
 
 var CategoryTranslationWhere = struct {
 	ID             whereHelperstring
-	Languagecode   whereHelpernull_String
-	Categoryid     whereHelpernull_String
+	LanguageCode   whereHelpernull_String
+	CategoryID     whereHelpernull_String
 	Name           whereHelpernull_String
 	Description    whereHelpernull_String
-	Seotitle       whereHelpernull_String
-	Seodescription whereHelpernull_String
+	SeoTitle       whereHelpernull_String
+	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"category_translations\".\"id\""},
-	Languagecode:   whereHelpernull_String{field: "\"category_translations\".\"languagecode\""},
-	Categoryid:     whereHelpernull_String{field: "\"category_translations\".\"categoryid\""},
+	LanguageCode:   whereHelpernull_String{field: "\"category_translations\".\"language_code\""},
+	CategoryID:     whereHelpernull_String{field: "\"category_translations\".\"category_id\""},
 	Name:           whereHelpernull_String{field: "\"category_translations\".\"name\""},
 	Description:    whereHelpernull_String{field: "\"category_translations\".\"description\""},
-	Seotitle:       whereHelpernull_String{field: "\"category_translations\".\"seotitle\""},
-	Seodescription: whereHelpernull_String{field: "\"category_translations\".\"seodescription\""},
+	SeoTitle:       whereHelpernull_String{field: "\"category_translations\".\"seo_title\""},
+	SeoDescription: whereHelpernull_String{field: "\"category_translations\".\"seo_description\""},
 }
 
 // CategoryTranslationRels is where relationship names are stored.
@@ -109,9 +109,9 @@ func (*categoryTranslationR) NewStruct() *categoryTranslationR {
 type categoryTranslationL struct{}
 
 var (
-	categoryTranslationAllColumns            = []string{"id", "languagecode", "categoryid", "name", "description", "seotitle", "seodescription"}
+	categoryTranslationAllColumns            = []string{"id", "language_code", "category_id", "name", "description", "seo_title", "seo_description"}
 	categoryTranslationColumnsWithoutDefault = []string{"id"}
-	categoryTranslationColumnsWithDefault    = []string{"languagecode", "categoryid", "name", "description", "seotitle", "seodescription"}
+	categoryTranslationColumnsWithDefault    = []string{"language_code", "category_id", "name", "description", "seo_title", "seo_description"}
 	categoryTranslationPrimaryKeyColumns     = []string{"id"}
 	categoryTranslationGeneratedColumns      = []string{}
 )

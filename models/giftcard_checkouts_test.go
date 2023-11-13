@@ -494,7 +494,7 @@ func testGiftcardCheckoutsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testGiftcardCheckoutToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
+func testGiftcardCheckoutToOneCheckoutUsingCheckout(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testGiftcardCheckoutToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Checkoutid, foreign.Token)
+	queries.Assign(&local.CheckoutID, foreign.Token)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CheckoutidCheckout().One(ctx, tx)
+	check, err := local.Checkout().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testGiftcardCheckoutToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
 	})
 
 	slice := GiftcardCheckoutSlice{&local}
-	if err = local.L.LoadCheckoutidCheckout(ctx, tx, false, (*[]*GiftcardCheckout)(&slice), nil); err != nil {
+	if err = local.L.LoadCheckout(ctx, tx, false, (*[]*GiftcardCheckout)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CheckoutidCheckout == nil {
+	if local.R.Checkout == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CheckoutidCheckout = nil
-	if err = local.L.LoadCheckoutidCheckout(ctx, tx, true, &local, nil); err != nil {
+	local.R.Checkout = nil
+	if err = local.L.LoadCheckout(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CheckoutidCheckout == nil {
+	if local.R.Checkout == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testGiftcardCheckoutToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
 	}
 }
 
-func testGiftcardCheckoutToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
+func testGiftcardCheckoutToOneGiftcardUsingGiftcard(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testGiftcardCheckoutToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Giftcardid, foreign.ID)
+	queries.Assign(&local.GiftcardID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.GiftcardidGiftcard().One(ctx, tx)
+	check, err := local.Giftcard().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testGiftcardCheckoutToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 	})
 
 	slice := GiftcardCheckoutSlice{&local}
-	if err = local.L.LoadGiftcardidGiftcard(ctx, tx, false, (*[]*GiftcardCheckout)(&slice), nil); err != nil {
+	if err = local.L.LoadGiftcard(ctx, tx, false, (*[]*GiftcardCheckout)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.GiftcardidGiftcard == nil {
+	if local.R.Giftcard == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.GiftcardidGiftcard = nil
-	if err = local.L.LoadGiftcardidGiftcard(ctx, tx, true, &local, nil); err != nil {
+	local.R.Giftcard = nil
+	if err = local.L.LoadGiftcard(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.GiftcardidGiftcard == nil {
+	if local.R.Giftcard == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testGiftcardCheckoutToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 	}
 }
 
-func testGiftcardCheckoutToOneSetOpCheckoutUsingCheckoutidCheckout(t *testing.T) {
+func testGiftcardCheckoutToOneSetOpCheckoutUsingCheckout(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testGiftcardCheckoutToOneSetOpCheckoutUsingCheckoutidCheckout(t *testing.T)
 	}
 
 	for i, x := range []*Checkout{&b, &c} {
-		err = a.SetCheckoutidCheckout(ctx, tx, i != 0, x)
+		err = a.SetCheckout(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CheckoutidCheckout != x {
+		if a.R.Checkout != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CheckoutidGiftcardCheckouts[0] != &a {
+		if x.R.GiftcardCheckouts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Checkoutid, x.Token) {
-			t.Error("foreign key was wrong value", a.Checkoutid)
+		if !queries.Equal(a.CheckoutID, x.Token) {
+			t.Error("foreign key was wrong value", a.CheckoutID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Checkoutid))
-		reflect.Indirect(reflect.ValueOf(&a.Checkoutid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CheckoutID))
+		reflect.Indirect(reflect.ValueOf(&a.CheckoutID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Checkoutid, x.Token) {
-			t.Error("foreign key was wrong value", a.Checkoutid, x.Token)
+		if !queries.Equal(a.CheckoutID, x.Token) {
+			t.Error("foreign key was wrong value", a.CheckoutID, x.Token)
 		}
 	}
 }
 
-func testGiftcardCheckoutToOneRemoveOpCheckoutUsingCheckoutidCheckout(t *testing.T) {
+func testGiftcardCheckoutToOneRemoveOpCheckoutUsingCheckout(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testGiftcardCheckoutToOneRemoveOpCheckoutUsingCheckoutidCheckout(t *testing
 		t.Fatal(err)
 	}
 
-	if err = a.SetCheckoutidCheckout(ctx, tx, true, &b); err != nil {
+	if err = a.SetCheckout(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCheckoutidCheckout(ctx, tx, &b); err != nil {
+	if err = a.RemoveCheckout(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CheckoutidCheckout().Count(ctx, tx)
+	count, err := a.Checkout().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testGiftcardCheckoutToOneRemoveOpCheckoutUsingCheckoutidCheckout(t *testing
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CheckoutidCheckout != nil {
+	if a.R.Checkout != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Checkoutid) {
+	if !queries.IsValuerNil(a.CheckoutID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CheckoutidGiftcardCheckouts) != 0 {
+	if len(b.R.GiftcardCheckouts) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testGiftcardCheckoutToOneSetOpGiftcardUsingGiftcardidGiftcard(t *testing.T) {
+func testGiftcardCheckoutToOneSetOpGiftcardUsingGiftcard(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testGiftcardCheckoutToOneSetOpGiftcardUsingGiftcardidGiftcard(t *testing.T)
 	}
 
 	for i, x := range []*Giftcard{&b, &c} {
-		err = a.SetGiftcardidGiftcard(ctx, tx, i != 0, x)
+		err = a.SetGiftcard(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.GiftcardidGiftcard != x {
+		if a.R.Giftcard != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.GiftcardidGiftcardCheckouts[0] != &a {
+		if x.R.GiftcardCheckouts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Giftcardid, x.ID) {
-			t.Error("foreign key was wrong value", a.Giftcardid)
+		if !queries.Equal(a.GiftcardID, x.ID) {
+			t.Error("foreign key was wrong value", a.GiftcardID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Giftcardid))
-		reflect.Indirect(reflect.ValueOf(&a.Giftcardid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.GiftcardID))
+		reflect.Indirect(reflect.ValueOf(&a.GiftcardID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Giftcardid, x.ID) {
-			t.Error("foreign key was wrong value", a.Giftcardid, x.ID)
+		if !queries.Equal(a.GiftcardID, x.ID) {
+			t.Error("foreign key was wrong value", a.GiftcardID, x.ID)
 		}
 	}
 }
 
-func testGiftcardCheckoutToOneRemoveOpGiftcardUsingGiftcardidGiftcard(t *testing.T) {
+func testGiftcardCheckoutToOneRemoveOpGiftcardUsingGiftcard(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testGiftcardCheckoutToOneRemoveOpGiftcardUsingGiftcardidGiftcard(t *testing
 		t.Fatal(err)
 	}
 
-	if err = a.SetGiftcardidGiftcard(ctx, tx, true, &b); err != nil {
+	if err = a.SetGiftcard(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveGiftcardidGiftcard(ctx, tx, &b); err != nil {
+	if err = a.RemoveGiftcard(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.GiftcardidGiftcard().Count(ctx, tx)
+	count, err := a.Giftcard().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testGiftcardCheckoutToOneRemoveOpGiftcardUsingGiftcardidGiftcard(t *testing
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.GiftcardidGiftcard != nil {
+	if a.R.Giftcard != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Giftcardid) {
+	if !queries.IsValuerNil(a.GiftcardID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.GiftcardidGiftcardCheckouts) != 0 {
+	if len(b.R.GiftcardCheckouts) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testGiftcardCheckoutsSelect(t *testing.T) {
 }
 
 var (
-	giftcardCheckoutDBTypes = map[string]string{`ID`: `character varying`, `Giftcardid`: `character varying`, `Checkoutid`: `character varying`}
+	giftcardCheckoutDBTypes = map[string]string{`ID`: `character varying`, `GiftcardID`: `character varying`, `CheckoutID`: `character varying`}
 	_                       = bytes.MinRead
 )
 

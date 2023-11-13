@@ -194,7 +194,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 
 	slog.Info("Populating categories for the first time...")
 
-	err = sqlStore.GetMaster().Raw("DELETE FROM " + model.CategoryTableName).Error
+	_, err = sqlStore.GetMaster().Exec("DELETE FROM " + model.CategoryTableName)
 	if err != nil {
 		slog.Error("failed to delete categories from db")
 		return err

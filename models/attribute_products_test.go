@@ -494,7 +494,7 @@ func testAttributeProductsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testAttributeProductToManyAssignmentidAssignedProductAttributes(t *testing.T) {
+func testAttributeProductToManyAssignmentAssignedProductAttributes(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,9 @@ func testAttributeProductToManyAssignmentidAssignedProductAttributes(t *testing.
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Assignmentid, a.ID)
-	queries.Assign(&c.Assignmentid, a.ID)
+	b.AssignmentID = a.ID
+	c.AssignmentID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +529,17 @@ func testAttributeProductToManyAssignmentidAssignedProductAttributes(t *testing.
 		t.Fatal(err)
 	}
 
-	check, err := a.AssignmentidAssignedProductAttributes().All(ctx, tx)
+	check, err := a.AssignmentAssignedProductAttributes().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Assignmentid, b.Assignmentid) {
+		if v.AssignmentID == b.AssignmentID {
 			bFound = true
 		}
-		if queries.Equal(v.Assignmentid, c.Assignmentid) {
+		if v.AssignmentID == c.AssignmentID {
 			cFound = true
 		}
 	}
@@ -551,18 +552,18 @@ func testAttributeProductToManyAssignmentidAssignedProductAttributes(t *testing.
 	}
 
 	slice := AttributeProductSlice{&a}
-	if err = a.L.LoadAssignmentidAssignedProductAttributes(ctx, tx, false, (*[]*AttributeProduct)(&slice), nil); err != nil {
+	if err = a.L.LoadAssignmentAssignedProductAttributes(ctx, tx, false, (*[]*AttributeProduct)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AssignmentidAssignedProductAttributes); got != 2 {
+	if got := len(a.R.AssignmentAssignedProductAttributes); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AssignmentidAssignedProductAttributes = nil
-	if err = a.L.LoadAssignmentidAssignedProductAttributes(ctx, tx, true, &a, nil); err != nil {
+	a.R.AssignmentAssignedProductAttributes = nil
+	if err = a.L.LoadAssignmentAssignedProductAttributes(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AssignmentidAssignedProductAttributes); got != 2 {
+	if got := len(a.R.AssignmentAssignedProductAttributes); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +572,7 @@ func testAttributeProductToManyAssignmentidAssignedProductAttributes(t *testing.
 	}
 }
 
-func testAttributeProductToManyAddOpAssignmentidAssignedProductAttributes(t *testing.T) {
+func testAttributeProductToManyAddOpAssignmentAssignedProductAttributes(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -608,7 +609,7 @@ func testAttributeProductToManyAddOpAssignmentidAssignedProductAttributes(t *tes
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAssignmentidAssignedProductAttributes(ctx, tx, i != 0, x...)
+		err = a.AddAssignmentAssignedProductAttributes(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -616,28 +617,28 @@ func testAttributeProductToManyAddOpAssignmentidAssignedProductAttributes(t *tes
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Assignmentid) {
-			t.Error("foreign key was wrong value", a.ID, first.Assignmentid)
+		if a.ID != first.AssignmentID {
+			t.Error("foreign key was wrong value", a.ID, first.AssignmentID)
 		}
-		if !queries.Equal(a.ID, second.Assignmentid) {
-			t.Error("foreign key was wrong value", a.ID, second.Assignmentid)
+		if a.ID != second.AssignmentID {
+			t.Error("foreign key was wrong value", a.ID, second.AssignmentID)
 		}
 
-		if first.R.AssignmentidAttributeProduct != &a {
+		if first.R.Assignment != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AssignmentidAttributeProduct != &a {
+		if second.R.Assignment != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AssignmentidAssignedProductAttributes[i*2] != first {
+		if a.R.AssignmentAssignedProductAttributes[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AssignmentidAssignedProductAttributes[i*2+1] != second {
+		if a.R.AssignmentAssignedProductAttributes[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AssignmentidAssignedProductAttributes().Count(ctx, tx)
+		count, err := a.AssignmentAssignedProductAttributes().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -646,183 +647,7 @@ func testAttributeProductToManyAddOpAssignmentidAssignedProductAttributes(t *tes
 		}
 	}
 }
-
-func testAttributeProductToManySetOpAssignmentidAssignedProductAttributes(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeProduct
-	var b, c, d, e AssignedProductAttribute
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeProductDBTypes, false, strmangle.SetComplement(attributeProductPrimaryKeyColumns, attributeProductColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedProductAttribute{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedProductAttributeDBTypes, false, strmangle.SetComplement(assignedProductAttributePrimaryKeyColumns, assignedProductAttributeColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetAssignmentidAssignedProductAttributes(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.AssignmentidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAssignmentidAssignedProductAttributes(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AssignmentidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Assignmentid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Assignmentid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.Assignmentid) {
-		t.Error("foreign key was wrong value", a.ID, d.Assignmentid)
-	}
-	if !queries.Equal(a.ID, e.Assignmentid) {
-		t.Error("foreign key was wrong value", a.ID, e.Assignmentid)
-	}
-
-	if b.R.AssignmentidAttributeProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AssignmentidAttributeProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AssignmentidAttributeProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AssignmentidAttributeProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.AssignmentidAssignedProductAttributes[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.AssignmentidAssignedProductAttributes[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testAttributeProductToManyRemoveOpAssignmentidAssignedProductAttributes(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeProduct
-	var b, c, d, e AssignedProductAttribute
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeProductDBTypes, false, strmangle.SetComplement(attributeProductPrimaryKeyColumns, attributeProductColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedProductAttribute{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedProductAttributeDBTypes, false, strmangle.SetComplement(assignedProductAttributePrimaryKeyColumns, assignedProductAttributeColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddAssignmentidAssignedProductAttributes(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.AssignmentidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveAssignmentidAssignedProductAttributes(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AssignmentidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Assignmentid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Assignmentid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.AssignmentidAttributeProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AssignmentidAttributeProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AssignmentidAttributeProduct != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.AssignmentidAttributeProduct != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.AssignmentidAssignedProductAttributes) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AssignmentidAssignedProductAttributes[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.AssignmentidAssignedProductAttributes[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
-func testAttributeProductToOneAttributeUsingAttributeidAttribute(t *testing.T) {
+func testAttributeProductToOneAttributeUsingAttribute(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -842,12 +667,12 @@ func testAttributeProductToOneAttributeUsingAttributeidAttribute(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Attributeid, foreign.ID)
+	queries.Assign(&local.AttributeID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.AttributeidAttribute().One(ctx, tx)
+	check, err := local.Attribute().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -863,18 +688,18 @@ func testAttributeProductToOneAttributeUsingAttributeidAttribute(t *testing.T) {
 	})
 
 	slice := AttributeProductSlice{&local}
-	if err = local.L.LoadAttributeidAttribute(ctx, tx, false, (*[]*AttributeProduct)(&slice), nil); err != nil {
+	if err = local.L.LoadAttribute(ctx, tx, false, (*[]*AttributeProduct)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AttributeidAttribute == nil {
+	if local.R.Attribute == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.AttributeidAttribute = nil
-	if err = local.L.LoadAttributeidAttribute(ctx, tx, true, &local, nil); err != nil {
+	local.R.Attribute = nil
+	if err = local.L.LoadAttribute(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AttributeidAttribute == nil {
+	if local.R.Attribute == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -883,7 +708,7 @@ func testAttributeProductToOneAttributeUsingAttributeidAttribute(t *testing.T) {
 	}
 }
 
-func testAttributeProductToOneProductTypeUsingProducttypeidProductType(t *testing.T) {
+func testAttributeProductToOneProductTypeUsingProductType(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -903,12 +728,12 @@ func testAttributeProductToOneProductTypeUsingProducttypeidProductType(t *testin
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Producttypeid, foreign.ID)
+	queries.Assign(&local.ProductTypeID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ProducttypeidProductType().One(ctx, tx)
+	check, err := local.ProductType().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -924,18 +749,18 @@ func testAttributeProductToOneProductTypeUsingProducttypeidProductType(t *testin
 	})
 
 	slice := AttributeProductSlice{&local}
-	if err = local.L.LoadProducttypeidProductType(ctx, tx, false, (*[]*AttributeProduct)(&slice), nil); err != nil {
+	if err = local.L.LoadProductType(ctx, tx, false, (*[]*AttributeProduct)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProducttypeidProductType == nil {
+	if local.R.ProductType == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ProducttypeidProductType = nil
-	if err = local.L.LoadProducttypeidProductType(ctx, tx, true, &local, nil); err != nil {
+	local.R.ProductType = nil
+	if err = local.L.LoadProductType(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProducttypeidProductType == nil {
+	if local.R.ProductType == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -944,7 +769,7 @@ func testAttributeProductToOneProductTypeUsingProducttypeidProductType(t *testin
 	}
 }
 
-func testAttributeProductToOneSetOpAttributeUsingAttributeidAttribute(t *testing.T) {
+func testAttributeProductToOneSetOpAttributeUsingAttribute(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -973,36 +798,36 @@ func testAttributeProductToOneSetOpAttributeUsingAttributeidAttribute(t *testing
 	}
 
 	for i, x := range []*Attribute{&b, &c} {
-		err = a.SetAttributeidAttribute(ctx, tx, i != 0, x)
+		err = a.SetAttribute(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.AttributeidAttribute != x {
+		if a.R.Attribute != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.AttributeidAttributeProducts[0] != &a {
+		if x.R.AttributeProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Attributeid, x.ID) {
-			t.Error("foreign key was wrong value", a.Attributeid)
+		if !queries.Equal(a.AttributeID, x.ID) {
+			t.Error("foreign key was wrong value", a.AttributeID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Attributeid))
-		reflect.Indirect(reflect.ValueOf(&a.Attributeid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.AttributeID))
+		reflect.Indirect(reflect.ValueOf(&a.AttributeID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Attributeid, x.ID) {
-			t.Error("foreign key was wrong value", a.Attributeid, x.ID)
+		if !queries.Equal(a.AttributeID, x.ID) {
+			t.Error("foreign key was wrong value", a.AttributeID, x.ID)
 		}
 	}
 }
 
-func testAttributeProductToOneRemoveOpAttributeUsingAttributeidAttribute(t *testing.T) {
+func testAttributeProductToOneRemoveOpAttributeUsingAttribute(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1024,15 +849,15 @@ func testAttributeProductToOneRemoveOpAttributeUsingAttributeidAttribute(t *test
 		t.Fatal(err)
 	}
 
-	if err = a.SetAttributeidAttribute(ctx, tx, true, &b); err != nil {
+	if err = a.SetAttribute(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveAttributeidAttribute(ctx, tx, &b); err != nil {
+	if err = a.RemoveAttribute(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.AttributeidAttribute().Count(ctx, tx)
+	count, err := a.Attribute().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1040,20 +865,20 @@ func testAttributeProductToOneRemoveOpAttributeUsingAttributeidAttribute(t *test
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.AttributeidAttribute != nil {
+	if a.R.Attribute != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Attributeid) {
+	if !queries.IsValuerNil(a.AttributeID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.AttributeidAttributeProducts) != 0 {
+	if len(b.R.AttributeProducts) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testAttributeProductToOneSetOpProductTypeUsingProducttypeidProductType(t *testing.T) {
+func testAttributeProductToOneSetOpProductTypeUsingProductType(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1082,36 +907,36 @@ func testAttributeProductToOneSetOpProductTypeUsingProducttypeidProductType(t *t
 	}
 
 	for i, x := range []*ProductType{&b, &c} {
-		err = a.SetProducttypeidProductType(ctx, tx, i != 0, x)
+		err = a.SetProductType(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ProducttypeidProductType != x {
+		if a.R.ProductType != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ProducttypeidAttributeProducts[0] != &a {
+		if x.R.AttributeProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Producttypeid, x.ID) {
-			t.Error("foreign key was wrong value", a.Producttypeid)
+		if !queries.Equal(a.ProductTypeID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductTypeID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Producttypeid))
-		reflect.Indirect(reflect.ValueOf(&a.Producttypeid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ProductTypeID))
+		reflect.Indirect(reflect.ValueOf(&a.ProductTypeID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Producttypeid, x.ID) {
-			t.Error("foreign key was wrong value", a.Producttypeid, x.ID)
+		if !queries.Equal(a.ProductTypeID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductTypeID, x.ID)
 		}
 	}
 }
 
-func testAttributeProductToOneRemoveOpProductTypeUsingProducttypeidProductType(t *testing.T) {
+func testAttributeProductToOneRemoveOpProductTypeUsingProductType(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1133,15 +958,15 @@ func testAttributeProductToOneRemoveOpProductTypeUsingProducttypeidProductType(t
 		t.Fatal(err)
 	}
 
-	if err = a.SetProducttypeidProductType(ctx, tx, true, &b); err != nil {
+	if err = a.SetProductType(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveProducttypeidProductType(ctx, tx, &b); err != nil {
+	if err = a.RemoveProductType(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ProducttypeidProductType().Count(ctx, tx)
+	count, err := a.ProductType().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1149,15 +974,15 @@ func testAttributeProductToOneRemoveOpProductTypeUsingProducttypeidProductType(t
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ProducttypeidProductType != nil {
+	if a.R.ProductType != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Producttypeid) {
+	if !queries.IsValuerNil(a.ProductTypeID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ProducttypeidAttributeProducts) != 0 {
+	if len(b.R.AttributeProducts) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1236,7 +1061,7 @@ func testAttributeProductsSelect(t *testing.T) {
 }
 
 var (
-	attributeProductDBTypes = map[string]string{`ID`: `character varying`, `Attributeid`: `character varying`, `Producttypeid`: `character varying`, `Sortorder`: `integer`}
+	attributeProductDBTypes = map[string]string{`ID`: `character varying`, `AttributeID`: `character varying`, `ProductTypeID`: `character varying`, `SortOrder`: `integer`}
 	_                       = bytes.MinRead
 )
 

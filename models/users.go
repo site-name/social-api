@@ -27,33 +27,33 @@ type User struct {
 	ID                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Email                    null.String `boil:"email" json:"email,omitempty" toml:"email" yaml:"email,omitempty"`
 	Username                 null.String `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
-	Firstname                null.String `boil:"firstname" json:"firstname,omitempty" toml:"firstname" yaml:"firstname,omitempty"`
-	Lastname                 null.String `boil:"lastname" json:"lastname,omitempty" toml:"lastname" yaml:"lastname,omitempty"`
-	Defaultshippingaddressid null.String `boil:"defaultshippingaddressid" json:"defaultshippingaddressid,omitempty" toml:"defaultshippingaddressid" yaml:"defaultshippingaddressid,omitempty"`
-	Defaultbillingaddressid  null.String `boil:"defaultbillingaddressid" json:"defaultbillingaddressid,omitempty" toml:"defaultbillingaddressid" yaml:"defaultbillingaddressid,omitempty"`
+	FirstName                null.String `boil:"first_name" json:"first_name,omitempty" toml:"first_name" yaml:"first_name,omitempty"`
+	LastName                 null.String `boil:"last_name" json:"last_name,omitempty" toml:"last_name" yaml:"last_name,omitempty"`
+	DefaultShippingAddressID null.String `boil:"default_shipping_address_id" json:"default_shipping_address_id,omitempty" toml:"default_shipping_address_id" yaml:"default_shipping_address_id,omitempty"`
+	DefaultBillingAddressID  null.String `boil:"default_billing_address_id" json:"default_billing_address_id,omitempty" toml:"default_billing_address_id" yaml:"default_billing_address_id,omitempty"`
 	Password                 null.String `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
-	Authdata                 null.String `boil:"authdata" json:"authdata,omitempty" toml:"authdata" yaml:"authdata,omitempty"`
-	Authservice              null.String `boil:"authservice" json:"authservice,omitempty" toml:"authservice" yaml:"authservice,omitempty"`
-	Emailverified            null.Bool   `boil:"emailverified" json:"emailverified,omitempty" toml:"emailverified" yaml:"emailverified,omitempty"`
+	AuthData                 null.String `boil:"auth_data" json:"auth_data,omitempty" toml:"auth_data" yaml:"auth_data,omitempty"`
+	AuthService              null.String `boil:"auth_service" json:"auth_service,omitempty" toml:"auth_service" yaml:"auth_service,omitempty"`
+	EmailVerified            null.Bool   `boil:"email_verified" json:"email_verified,omitempty" toml:"email_verified" yaml:"email_verified,omitempty"`
 	Nickname                 null.String `boil:"nickname" json:"nickname,omitempty" toml:"nickname" yaml:"nickname,omitempty"`
 	Roles                    null.String `boil:"roles" json:"roles,omitempty" toml:"roles" yaml:"roles,omitempty"`
 	Props                    null.JSON   `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
-	Notifyprops              null.JSON   `boil:"notifyprops" json:"notifyprops,omitempty" toml:"notifyprops" yaml:"notifyprops,omitempty"`
-	Lastpasswordupdate       null.Int64  `boil:"lastpasswordupdate" json:"lastpasswordupdate,omitempty" toml:"lastpasswordupdate" yaml:"lastpasswordupdate,omitempty"`
-	Lastpictureupdate        null.Int64  `boil:"lastpictureupdate" json:"lastpictureupdate,omitempty" toml:"lastpictureupdate" yaml:"lastpictureupdate,omitempty"`
-	Failedattempts           null.Int    `boil:"failedattempts" json:"failedattempts,omitempty" toml:"failedattempts" yaml:"failedattempts,omitempty"`
+	NotifyProps              null.JSON   `boil:"notify_props" json:"notify_props,omitempty" toml:"notify_props" yaml:"notify_props,omitempty"`
+	LastPasswordUpdate       null.Int64  `boil:"last_password_update" json:"last_password_update,omitempty" toml:"last_password_update" yaml:"last_password_update,omitempty"`
+	LastPictureUpdate        null.Int64  `boil:"last_picture_update" json:"last_picture_update,omitempty" toml:"last_picture_update" yaml:"last_picture_update,omitempty"`
+	FailedAttempts           null.Int    `boil:"failed_attempts" json:"failed_attempts,omitempty" toml:"failed_attempts" yaml:"failed_attempts,omitempty"`
 	Locale                   null.String `boil:"locale" json:"locale,omitempty" toml:"locale" yaml:"locale,omitempty"`
 	Timezone                 null.JSON   `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
-	Mfaactive                null.Bool   `boil:"mfaactive" json:"mfaactive,omitempty" toml:"mfaactive" yaml:"mfaactive,omitempty"`
-	Mfasecret                null.String `boil:"mfasecret" json:"mfasecret,omitempty" toml:"mfasecret" yaml:"mfasecret,omitempty"`
-	Createat                 null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat                 null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
-	Deleteat                 null.Int64  `boil:"deleteat" json:"deleteat,omitempty" toml:"deleteat" yaml:"deleteat,omitempty"`
-	Isactive                 null.Bool   `boil:"isactive" json:"isactive,omitempty" toml:"isactive" yaml:"isactive,omitempty"`
+	MfaActive                null.Bool   `boil:"mfa_active" json:"mfa_active,omitempty" toml:"mfa_active" yaml:"mfa_active,omitempty"`
+	MfaSecret                null.String `boil:"mfa_secret" json:"mfa_secret,omitempty" toml:"mfa_secret" yaml:"mfa_secret,omitempty"`
+	CreateAt                 null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt                 null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	DeleteAt                 null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
+	IsActive                 null.Bool   `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
 	Note                     null.String `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
-	Jwttokenkey              null.String `boil:"jwttokenkey" json:"jwttokenkey,omitempty" toml:"jwttokenkey" yaml:"jwttokenkey,omitempty"`
+	JWTTokenKey              null.String `boil:"jwt_token_key" json:"jwt_token_key,omitempty" toml:"jwt_token_key" yaml:"jwt_token_key,omitempty"`
 	Metadata                 null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata          null.JSON   `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata          null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,128 +63,128 @@ var UserColumns = struct {
 	ID                       string
 	Email                    string
 	Username                 string
-	Firstname                string
-	Lastname                 string
-	Defaultshippingaddressid string
-	Defaultbillingaddressid  string
+	FirstName                string
+	LastName                 string
+	DefaultShippingAddressID string
+	DefaultBillingAddressID  string
 	Password                 string
-	Authdata                 string
-	Authservice              string
-	Emailverified            string
+	AuthData                 string
+	AuthService              string
+	EmailVerified            string
 	Nickname                 string
 	Roles                    string
 	Props                    string
-	Notifyprops              string
-	Lastpasswordupdate       string
-	Lastpictureupdate        string
-	Failedattempts           string
+	NotifyProps              string
+	LastPasswordUpdate       string
+	LastPictureUpdate        string
+	FailedAttempts           string
 	Locale                   string
 	Timezone                 string
-	Mfaactive                string
-	Mfasecret                string
-	Createat                 string
-	Updateat                 string
-	Deleteat                 string
-	Isactive                 string
+	MfaActive                string
+	MfaSecret                string
+	CreateAt                 string
+	UpdateAt                 string
+	DeleteAt                 string
+	IsActive                 string
 	Note                     string
-	Jwttokenkey              string
+	JWTTokenKey              string
 	Metadata                 string
-	Privatemetadata          string
+	PrivateMetadata          string
 }{
 	ID:                       "id",
 	Email:                    "email",
 	Username:                 "username",
-	Firstname:                "firstname",
-	Lastname:                 "lastname",
-	Defaultshippingaddressid: "defaultshippingaddressid",
-	Defaultbillingaddressid:  "defaultbillingaddressid",
+	FirstName:                "first_name",
+	LastName:                 "last_name",
+	DefaultShippingAddressID: "default_shipping_address_id",
+	DefaultBillingAddressID:  "default_billing_address_id",
 	Password:                 "password",
-	Authdata:                 "authdata",
-	Authservice:              "authservice",
-	Emailverified:            "emailverified",
+	AuthData:                 "auth_data",
+	AuthService:              "auth_service",
+	EmailVerified:            "email_verified",
 	Nickname:                 "nickname",
 	Roles:                    "roles",
 	Props:                    "props",
-	Notifyprops:              "notifyprops",
-	Lastpasswordupdate:       "lastpasswordupdate",
-	Lastpictureupdate:        "lastpictureupdate",
-	Failedattempts:           "failedattempts",
+	NotifyProps:              "notify_props",
+	LastPasswordUpdate:       "last_password_update",
+	LastPictureUpdate:        "last_picture_update",
+	FailedAttempts:           "failed_attempts",
 	Locale:                   "locale",
 	Timezone:                 "timezone",
-	Mfaactive:                "mfaactive",
-	Mfasecret:                "mfasecret",
-	Createat:                 "createat",
-	Updateat:                 "updateat",
-	Deleteat:                 "deleteat",
-	Isactive:                 "isactive",
+	MfaActive:                "mfa_active",
+	MfaSecret:                "mfa_secret",
+	CreateAt:                 "create_at",
+	UpdateAt:                 "update_at",
+	DeleteAt:                 "delete_at",
+	IsActive:                 "is_active",
 	Note:                     "note",
-	Jwttokenkey:              "jwttokenkey",
+	JWTTokenKey:              "jwt_token_key",
 	Metadata:                 "metadata",
-	Privatemetadata:          "privatemetadata",
+	PrivateMetadata:          "private_metadata",
 }
 
 var UserTableColumns = struct {
 	ID                       string
 	Email                    string
 	Username                 string
-	Firstname                string
-	Lastname                 string
-	Defaultshippingaddressid string
-	Defaultbillingaddressid  string
+	FirstName                string
+	LastName                 string
+	DefaultShippingAddressID string
+	DefaultBillingAddressID  string
 	Password                 string
-	Authdata                 string
-	Authservice              string
-	Emailverified            string
+	AuthData                 string
+	AuthService              string
+	EmailVerified            string
 	Nickname                 string
 	Roles                    string
 	Props                    string
-	Notifyprops              string
-	Lastpasswordupdate       string
-	Lastpictureupdate        string
-	Failedattempts           string
+	NotifyProps              string
+	LastPasswordUpdate       string
+	LastPictureUpdate        string
+	FailedAttempts           string
 	Locale                   string
 	Timezone                 string
-	Mfaactive                string
-	Mfasecret                string
-	Createat                 string
-	Updateat                 string
-	Deleteat                 string
-	Isactive                 string
+	MfaActive                string
+	MfaSecret                string
+	CreateAt                 string
+	UpdateAt                 string
+	DeleteAt                 string
+	IsActive                 string
 	Note                     string
-	Jwttokenkey              string
+	JWTTokenKey              string
 	Metadata                 string
-	Privatemetadata          string
+	PrivateMetadata          string
 }{
 	ID:                       "users.id",
 	Email:                    "users.email",
 	Username:                 "users.username",
-	Firstname:                "users.firstname",
-	Lastname:                 "users.lastname",
-	Defaultshippingaddressid: "users.defaultshippingaddressid",
-	Defaultbillingaddressid:  "users.defaultbillingaddressid",
+	FirstName:                "users.first_name",
+	LastName:                 "users.last_name",
+	DefaultShippingAddressID: "users.default_shipping_address_id",
+	DefaultBillingAddressID:  "users.default_billing_address_id",
 	Password:                 "users.password",
-	Authdata:                 "users.authdata",
-	Authservice:              "users.authservice",
-	Emailverified:            "users.emailverified",
+	AuthData:                 "users.auth_data",
+	AuthService:              "users.auth_service",
+	EmailVerified:            "users.email_verified",
 	Nickname:                 "users.nickname",
 	Roles:                    "users.roles",
 	Props:                    "users.props",
-	Notifyprops:              "users.notifyprops",
-	Lastpasswordupdate:       "users.lastpasswordupdate",
-	Lastpictureupdate:        "users.lastpictureupdate",
-	Failedattempts:           "users.failedattempts",
+	NotifyProps:              "users.notify_props",
+	LastPasswordUpdate:       "users.last_password_update",
+	LastPictureUpdate:        "users.last_picture_update",
+	FailedAttempts:           "users.failed_attempts",
 	Locale:                   "users.locale",
 	Timezone:                 "users.timezone",
-	Mfaactive:                "users.mfaactive",
-	Mfasecret:                "users.mfasecret",
-	Createat:                 "users.createat",
-	Updateat:                 "users.updateat",
-	Deleteat:                 "users.deleteat",
-	Isactive:                 "users.isactive",
+	MfaActive:                "users.mfa_active",
+	MfaSecret:                "users.mfa_secret",
+	CreateAt:                 "users.create_at",
+	UpdateAt:                 "users.update_at",
+	DeleteAt:                 "users.delete_at",
+	IsActive:                 "users.is_active",
 	Note:                     "users.note",
-	Jwttokenkey:              "users.jwttokenkey",
+	JWTTokenKey:              "users.jwt_token_key",
 	Metadata:                 "users.metadata",
-	Privatemetadata:          "users.privatemetadata",
+	PrivateMetadata:          "users.private_metadata",
 }
 
 // Generated where
@@ -193,118 +193,118 @@ var UserWhere = struct {
 	ID                       whereHelperstring
 	Email                    whereHelpernull_String
 	Username                 whereHelpernull_String
-	Firstname                whereHelpernull_String
-	Lastname                 whereHelpernull_String
-	Defaultshippingaddressid whereHelpernull_String
-	Defaultbillingaddressid  whereHelpernull_String
+	FirstName                whereHelpernull_String
+	LastName                 whereHelpernull_String
+	DefaultShippingAddressID whereHelpernull_String
+	DefaultBillingAddressID  whereHelpernull_String
 	Password                 whereHelpernull_String
-	Authdata                 whereHelpernull_String
-	Authservice              whereHelpernull_String
-	Emailverified            whereHelpernull_Bool
+	AuthData                 whereHelpernull_String
+	AuthService              whereHelpernull_String
+	EmailVerified            whereHelpernull_Bool
 	Nickname                 whereHelpernull_String
 	Roles                    whereHelpernull_String
 	Props                    whereHelpernull_JSON
-	Notifyprops              whereHelpernull_JSON
-	Lastpasswordupdate       whereHelpernull_Int64
-	Lastpictureupdate        whereHelpernull_Int64
-	Failedattempts           whereHelpernull_Int
+	NotifyProps              whereHelpernull_JSON
+	LastPasswordUpdate       whereHelpernull_Int64
+	LastPictureUpdate        whereHelpernull_Int64
+	FailedAttempts           whereHelpernull_Int
 	Locale                   whereHelpernull_String
 	Timezone                 whereHelpernull_JSON
-	Mfaactive                whereHelpernull_Bool
-	Mfasecret                whereHelpernull_String
-	Createat                 whereHelpernull_Int64
-	Updateat                 whereHelpernull_Int64
-	Deleteat                 whereHelpernull_Int64
-	Isactive                 whereHelpernull_Bool
+	MfaActive                whereHelpernull_Bool
+	MfaSecret                whereHelpernull_String
+	CreateAt                 whereHelpernull_Int64
+	UpdateAt                 whereHelpernull_Int64
+	DeleteAt                 whereHelpernull_Int64
+	IsActive                 whereHelpernull_Bool
 	Note                     whereHelpernull_String
-	Jwttokenkey              whereHelpernull_String
+	JWTTokenKey              whereHelpernull_String
 	Metadata                 whereHelpernull_JSON
-	Privatemetadata          whereHelpernull_JSON
+	PrivateMetadata          whereHelpernull_JSON
 }{
 	ID:                       whereHelperstring{field: "\"users\".\"id\""},
 	Email:                    whereHelpernull_String{field: "\"users\".\"email\""},
 	Username:                 whereHelpernull_String{field: "\"users\".\"username\""},
-	Firstname:                whereHelpernull_String{field: "\"users\".\"firstname\""},
-	Lastname:                 whereHelpernull_String{field: "\"users\".\"lastname\""},
-	Defaultshippingaddressid: whereHelpernull_String{field: "\"users\".\"defaultshippingaddressid\""},
-	Defaultbillingaddressid:  whereHelpernull_String{field: "\"users\".\"defaultbillingaddressid\""},
+	FirstName:                whereHelpernull_String{field: "\"users\".\"first_name\""},
+	LastName:                 whereHelpernull_String{field: "\"users\".\"last_name\""},
+	DefaultShippingAddressID: whereHelpernull_String{field: "\"users\".\"default_shipping_address_id\""},
+	DefaultBillingAddressID:  whereHelpernull_String{field: "\"users\".\"default_billing_address_id\""},
 	Password:                 whereHelpernull_String{field: "\"users\".\"password\""},
-	Authdata:                 whereHelpernull_String{field: "\"users\".\"authdata\""},
-	Authservice:              whereHelpernull_String{field: "\"users\".\"authservice\""},
-	Emailverified:            whereHelpernull_Bool{field: "\"users\".\"emailverified\""},
+	AuthData:                 whereHelpernull_String{field: "\"users\".\"auth_data\""},
+	AuthService:              whereHelpernull_String{field: "\"users\".\"auth_service\""},
+	EmailVerified:            whereHelpernull_Bool{field: "\"users\".\"email_verified\""},
 	Nickname:                 whereHelpernull_String{field: "\"users\".\"nickname\""},
 	Roles:                    whereHelpernull_String{field: "\"users\".\"roles\""},
 	Props:                    whereHelpernull_JSON{field: "\"users\".\"props\""},
-	Notifyprops:              whereHelpernull_JSON{field: "\"users\".\"notifyprops\""},
-	Lastpasswordupdate:       whereHelpernull_Int64{field: "\"users\".\"lastpasswordupdate\""},
-	Lastpictureupdate:        whereHelpernull_Int64{field: "\"users\".\"lastpictureupdate\""},
-	Failedattempts:           whereHelpernull_Int{field: "\"users\".\"failedattempts\""},
+	NotifyProps:              whereHelpernull_JSON{field: "\"users\".\"notify_props\""},
+	LastPasswordUpdate:       whereHelpernull_Int64{field: "\"users\".\"last_password_update\""},
+	LastPictureUpdate:        whereHelpernull_Int64{field: "\"users\".\"last_picture_update\""},
+	FailedAttempts:           whereHelpernull_Int{field: "\"users\".\"failed_attempts\""},
 	Locale:                   whereHelpernull_String{field: "\"users\".\"locale\""},
 	Timezone:                 whereHelpernull_JSON{field: "\"users\".\"timezone\""},
-	Mfaactive:                whereHelpernull_Bool{field: "\"users\".\"mfaactive\""},
-	Mfasecret:                whereHelpernull_String{field: "\"users\".\"mfasecret\""},
-	Createat:                 whereHelpernull_Int64{field: "\"users\".\"createat\""},
-	Updateat:                 whereHelpernull_Int64{field: "\"users\".\"updateat\""},
-	Deleteat:                 whereHelpernull_Int64{field: "\"users\".\"deleteat\""},
-	Isactive:                 whereHelpernull_Bool{field: "\"users\".\"isactive\""},
+	MfaActive:                whereHelpernull_Bool{field: "\"users\".\"mfa_active\""},
+	MfaSecret:                whereHelpernull_String{field: "\"users\".\"mfa_secret\""},
+	CreateAt:                 whereHelpernull_Int64{field: "\"users\".\"create_at\""},
+	UpdateAt:                 whereHelpernull_Int64{field: "\"users\".\"update_at\""},
+	DeleteAt:                 whereHelpernull_Int64{field: "\"users\".\"delete_at\""},
+	IsActive:                 whereHelpernull_Bool{field: "\"users\".\"is_active\""},
 	Note:                     whereHelpernull_String{field: "\"users\".\"note\""},
-	Jwttokenkey:              whereHelpernull_String{field: "\"users\".\"jwttokenkey\""},
+	JWTTokenKey:              whereHelpernull_String{field: "\"users\".\"jwt_token_key\""},
 	Metadata:                 whereHelpernull_JSON{field: "\"users\".\"metadata\""},
-	Privatemetadata:          whereHelpernull_JSON{field: "\"users\".\"privatemetadata\""},
+	PrivateMetadata:          whereHelpernull_JSON{field: "\"users\".\"private_metadata\""},
 }
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-	DefaultshippingaddressidAddress   string
-	UseridWishlist                    string
-	UseridCheckouts                   string
-	UseridCustomerEvents              string
-	UseridCustomerNotes               string
-	UseridExportEvents                string
-	UseridExportFiles                 string
-	UsedbyidGiftcards                 string
-	CreatedbyidGiftcards              string
-	UseridInvoiceEvents               string
-	UseridOrderEvents                 string
-	UseridOrders                      string
-	StaffidShopStaffs                 string
-	UseridStaffNotificationRecipients string
-	UseridUserAddresses               string
+	DefaultShippingAddress      string
+	Wishlist                    string
+	Checkouts                   string
+	CustomerEvents              string
+	CustomerNotes               string
+	ExportEvents                string
+	ExportFiles                 string
+	UsedByGiftcards             string
+	CreatedByGiftcards          string
+	InvoiceEvents               string
+	OrderEvents                 string
+	Orders                      string
+	StaffShopStaffs             string
+	StaffNotificationRecipients string
+	UserAddresses               string
 }{
-	DefaultshippingaddressidAddress:   "DefaultshippingaddressidAddress",
-	UseridWishlist:                    "UseridWishlist",
-	UseridCheckouts:                   "UseridCheckouts",
-	UseridCustomerEvents:              "UseridCustomerEvents",
-	UseridCustomerNotes:               "UseridCustomerNotes",
-	UseridExportEvents:                "UseridExportEvents",
-	UseridExportFiles:                 "UseridExportFiles",
-	UsedbyidGiftcards:                 "UsedbyidGiftcards",
-	CreatedbyidGiftcards:              "CreatedbyidGiftcards",
-	UseridInvoiceEvents:               "UseridInvoiceEvents",
-	UseridOrderEvents:                 "UseridOrderEvents",
-	UseridOrders:                      "UseridOrders",
-	StaffidShopStaffs:                 "StaffidShopStaffs",
-	UseridStaffNotificationRecipients: "UseridStaffNotificationRecipients",
-	UseridUserAddresses:               "UseridUserAddresses",
+	DefaultShippingAddress:      "DefaultShippingAddress",
+	Wishlist:                    "Wishlist",
+	Checkouts:                   "Checkouts",
+	CustomerEvents:              "CustomerEvents",
+	CustomerNotes:               "CustomerNotes",
+	ExportEvents:                "ExportEvents",
+	ExportFiles:                 "ExportFiles",
+	UsedByGiftcards:             "UsedByGiftcards",
+	CreatedByGiftcards:          "CreatedByGiftcards",
+	InvoiceEvents:               "InvoiceEvents",
+	OrderEvents:                 "OrderEvents",
+	Orders:                      "Orders",
+	StaffShopStaffs:             "StaffShopStaffs",
+	StaffNotificationRecipients: "StaffNotificationRecipients",
+	UserAddresses:               "UserAddresses",
 }
 
 // userR is where relationships are stored.
 type userR struct {
-	DefaultshippingaddressidAddress   *Address                        `boil:"DefaultshippingaddressidAddress" json:"DefaultshippingaddressidAddress" toml:"DefaultshippingaddressidAddress" yaml:"DefaultshippingaddressidAddress"`
-	UseridWishlist                    *Wishlist                       `boil:"UseridWishlist" json:"UseridWishlist" toml:"UseridWishlist" yaml:"UseridWishlist"`
-	UseridCheckouts                   CheckoutSlice                   `boil:"UseridCheckouts" json:"UseridCheckouts" toml:"UseridCheckouts" yaml:"UseridCheckouts"`
-	UseridCustomerEvents              CustomerEventSlice              `boil:"UseridCustomerEvents" json:"UseridCustomerEvents" toml:"UseridCustomerEvents" yaml:"UseridCustomerEvents"`
-	UseridCustomerNotes               CustomerNoteSlice               `boil:"UseridCustomerNotes" json:"UseridCustomerNotes" toml:"UseridCustomerNotes" yaml:"UseridCustomerNotes"`
-	UseridExportEvents                ExportEventSlice                `boil:"UseridExportEvents" json:"UseridExportEvents" toml:"UseridExportEvents" yaml:"UseridExportEvents"`
-	UseridExportFiles                 ExportFileSlice                 `boil:"UseridExportFiles" json:"UseridExportFiles" toml:"UseridExportFiles" yaml:"UseridExportFiles"`
-	UsedbyidGiftcards                 GiftcardSlice                   `boil:"UsedbyidGiftcards" json:"UsedbyidGiftcards" toml:"UsedbyidGiftcards" yaml:"UsedbyidGiftcards"`
-	CreatedbyidGiftcards              GiftcardSlice                   `boil:"CreatedbyidGiftcards" json:"CreatedbyidGiftcards" toml:"CreatedbyidGiftcards" yaml:"CreatedbyidGiftcards"`
-	UseridInvoiceEvents               InvoiceEventSlice               `boil:"UseridInvoiceEvents" json:"UseridInvoiceEvents" toml:"UseridInvoiceEvents" yaml:"UseridInvoiceEvents"`
-	UseridOrderEvents                 OrderEventSlice                 `boil:"UseridOrderEvents" json:"UseridOrderEvents" toml:"UseridOrderEvents" yaml:"UseridOrderEvents"`
-	UseridOrders                      OrderSlice                      `boil:"UseridOrders" json:"UseridOrders" toml:"UseridOrders" yaml:"UseridOrders"`
-	StaffidShopStaffs                 ShopStaffSlice                  `boil:"StaffidShopStaffs" json:"StaffidShopStaffs" toml:"StaffidShopStaffs" yaml:"StaffidShopStaffs"`
-	UseridStaffNotificationRecipients StaffNotificationRecipientSlice `boil:"UseridStaffNotificationRecipients" json:"UseridStaffNotificationRecipients" toml:"UseridStaffNotificationRecipients" yaml:"UseridStaffNotificationRecipients"`
-	UseridUserAddresses               UserAddressSlice                `boil:"UseridUserAddresses" json:"UseridUserAddresses" toml:"UseridUserAddresses" yaml:"UseridUserAddresses"`
+	DefaultShippingAddress      *Address                        `boil:"DefaultShippingAddress" json:"DefaultShippingAddress" toml:"DefaultShippingAddress" yaml:"DefaultShippingAddress"`
+	Wishlist                    *Wishlist                       `boil:"Wishlist" json:"Wishlist" toml:"Wishlist" yaml:"Wishlist"`
+	Checkouts                   CheckoutSlice                   `boil:"Checkouts" json:"Checkouts" toml:"Checkouts" yaml:"Checkouts"`
+	CustomerEvents              CustomerEventSlice              `boil:"CustomerEvents" json:"CustomerEvents" toml:"CustomerEvents" yaml:"CustomerEvents"`
+	CustomerNotes               CustomerNoteSlice               `boil:"CustomerNotes" json:"CustomerNotes" toml:"CustomerNotes" yaml:"CustomerNotes"`
+	ExportEvents                ExportEventSlice                `boil:"ExportEvents" json:"ExportEvents" toml:"ExportEvents" yaml:"ExportEvents"`
+	ExportFiles                 ExportFileSlice                 `boil:"ExportFiles" json:"ExportFiles" toml:"ExportFiles" yaml:"ExportFiles"`
+	UsedByGiftcards             GiftcardSlice                   `boil:"UsedByGiftcards" json:"UsedByGiftcards" toml:"UsedByGiftcards" yaml:"UsedByGiftcards"`
+	CreatedByGiftcards          GiftcardSlice                   `boil:"CreatedByGiftcards" json:"CreatedByGiftcards" toml:"CreatedByGiftcards" yaml:"CreatedByGiftcards"`
+	InvoiceEvents               InvoiceEventSlice               `boil:"InvoiceEvents" json:"InvoiceEvents" toml:"InvoiceEvents" yaml:"InvoiceEvents"`
+	OrderEvents                 OrderEventSlice                 `boil:"OrderEvents" json:"OrderEvents" toml:"OrderEvents" yaml:"OrderEvents"`
+	Orders                      OrderSlice                      `boil:"Orders" json:"Orders" toml:"Orders" yaml:"Orders"`
+	StaffShopStaffs             ShopStaffSlice                  `boil:"StaffShopStaffs" json:"StaffShopStaffs" toml:"StaffShopStaffs" yaml:"StaffShopStaffs"`
+	StaffNotificationRecipients StaffNotificationRecipientSlice `boil:"StaffNotificationRecipients" json:"StaffNotificationRecipients" toml:"StaffNotificationRecipients" yaml:"StaffNotificationRecipients"`
+	UserAddresses               UserAddressSlice                `boil:"UserAddresses" json:"UserAddresses" toml:"UserAddresses" yaml:"UserAddresses"`
 }
 
 // NewStruct creates a new relationship struct
@@ -312,118 +312,118 @@ func (*userR) NewStruct() *userR {
 	return &userR{}
 }
 
-func (r *userR) GetDefaultshippingaddressidAddress() *Address {
+func (r *userR) GetDefaultShippingAddress() *Address {
 	if r == nil {
 		return nil
 	}
-	return r.DefaultshippingaddressidAddress
+	return r.DefaultShippingAddress
 }
 
-func (r *userR) GetUseridWishlist() *Wishlist {
+func (r *userR) GetWishlist() *Wishlist {
 	if r == nil {
 		return nil
 	}
-	return r.UseridWishlist
+	return r.Wishlist
 }
 
-func (r *userR) GetUseridCheckouts() CheckoutSlice {
+func (r *userR) GetCheckouts() CheckoutSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridCheckouts
+	return r.Checkouts
 }
 
-func (r *userR) GetUseridCustomerEvents() CustomerEventSlice {
+func (r *userR) GetCustomerEvents() CustomerEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridCustomerEvents
+	return r.CustomerEvents
 }
 
-func (r *userR) GetUseridCustomerNotes() CustomerNoteSlice {
+func (r *userR) GetCustomerNotes() CustomerNoteSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridCustomerNotes
+	return r.CustomerNotes
 }
 
-func (r *userR) GetUseridExportEvents() ExportEventSlice {
+func (r *userR) GetExportEvents() ExportEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridExportEvents
+	return r.ExportEvents
 }
 
-func (r *userR) GetUseridExportFiles() ExportFileSlice {
+func (r *userR) GetExportFiles() ExportFileSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridExportFiles
+	return r.ExportFiles
 }
 
-func (r *userR) GetUsedbyidGiftcards() GiftcardSlice {
+func (r *userR) GetUsedByGiftcards() GiftcardSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UsedbyidGiftcards
+	return r.UsedByGiftcards
 }
 
-func (r *userR) GetCreatedbyidGiftcards() GiftcardSlice {
+func (r *userR) GetCreatedByGiftcards() GiftcardSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CreatedbyidGiftcards
+	return r.CreatedByGiftcards
 }
 
-func (r *userR) GetUseridInvoiceEvents() InvoiceEventSlice {
+func (r *userR) GetInvoiceEvents() InvoiceEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridInvoiceEvents
+	return r.InvoiceEvents
 }
 
-func (r *userR) GetUseridOrderEvents() OrderEventSlice {
+func (r *userR) GetOrderEvents() OrderEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridOrderEvents
+	return r.OrderEvents
 }
 
-func (r *userR) GetUseridOrders() OrderSlice {
+func (r *userR) GetOrders() OrderSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridOrders
+	return r.Orders
 }
 
-func (r *userR) GetStaffidShopStaffs() ShopStaffSlice {
+func (r *userR) GetStaffShopStaffs() ShopStaffSlice {
 	if r == nil {
 		return nil
 	}
-	return r.StaffidShopStaffs
+	return r.StaffShopStaffs
 }
 
-func (r *userR) GetUseridStaffNotificationRecipients() StaffNotificationRecipientSlice {
+func (r *userR) GetStaffNotificationRecipients() StaffNotificationRecipientSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridStaffNotificationRecipients
+	return r.StaffNotificationRecipients
 }
 
-func (r *userR) GetUseridUserAddresses() UserAddressSlice {
+func (r *userR) GetUserAddresses() UserAddressSlice {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUserAddresses
+	return r.UserAddresses
 }
 
 // userL is where Load methods for each relationship are stored.
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "username", "firstname", "lastname", "defaultshippingaddressid", "defaultbillingaddressid", "password", "authdata", "authservice", "emailverified", "nickname", "roles", "props", "notifyprops", "lastpasswordupdate", "lastpictureupdate", "failedattempts", "locale", "timezone", "mfaactive", "mfasecret", "createat", "updateat", "deleteat", "isactive", "note", "jwttokenkey", "metadata", "privatemetadata"}
+	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "create_at", "update_at", "delete_at", "is_active", "note", "jwt_token_key", "metadata", "private_metadata"}
 	userColumnsWithoutDefault = []string{"id"}
-	userColumnsWithDefault    = []string{"email", "username", "firstname", "lastname", "defaultshippingaddressid", "defaultbillingaddressid", "password", "authdata", "authservice", "emailverified", "nickname", "roles", "props", "notifyprops", "lastpasswordupdate", "lastpictureupdate", "failedattempts", "locale", "timezone", "mfaactive", "mfasecret", "createat", "updateat", "deleteat", "isactive", "note", "jwttokenkey", "metadata", "privatemetadata"}
+	userColumnsWithDefault    = []string{"email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "create_at", "update_at", "delete_at", "is_active", "note", "jwt_token_key", "metadata", "private_metadata"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -706,10 +706,10 @@ func (q userQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// DefaultshippingaddressidAddress pointed to by the foreign key.
-func (o *User) DefaultshippingaddressidAddress(mods ...qm.QueryMod) addressQuery {
+// DefaultShippingAddress pointed to by the foreign key.
+func (o *User) DefaultShippingAddress(mods ...qm.QueryMod) addressQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Defaultshippingaddressid),
+		qm.Where("\"id\" = ?", o.DefaultShippingAddressID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -717,10 +717,10 @@ func (o *User) DefaultshippingaddressidAddress(mods ...qm.QueryMod) addressQuery
 	return Addresses(queryMods...)
 }
 
-// UseridWishlist pointed to by the foreign key.
-func (o *User) UseridWishlist(mods ...qm.QueryMod) wishlistQuery {
+// Wishlist pointed to by the foreign key.
+func (o *User) Wishlist(mods ...qm.QueryMod) wishlistQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"userid\" = ?", o.ID),
+		qm.Where("\"user_id\" = ?", o.ID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -728,191 +728,191 @@ func (o *User) UseridWishlist(mods ...qm.QueryMod) wishlistQuery {
 	return Wishlists(queryMods...)
 }
 
-// UseridCheckouts retrieves all the checkout's Checkouts with an executor via userid column.
-func (o *User) UseridCheckouts(mods ...qm.QueryMod) checkoutQuery {
+// Checkouts retrieves all the checkout's Checkouts with an executor.
+func (o *User) Checkouts(mods ...qm.QueryMod) checkoutQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"checkouts\".\"userid\"=?", o.ID),
+		qm.Where("\"checkouts\".\"user_id\"=?", o.ID),
 	)
 
 	return Checkouts(queryMods...)
 }
 
-// UseridCustomerEvents retrieves all the customer_event's CustomerEvents with an executor via userid column.
-func (o *User) UseridCustomerEvents(mods ...qm.QueryMod) customerEventQuery {
+// CustomerEvents retrieves all the customer_event's CustomerEvents with an executor.
+func (o *User) CustomerEvents(mods ...qm.QueryMod) customerEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"customer_events\".\"userid\"=?", o.ID),
+		qm.Where("\"customer_events\".\"user_id\"=?", o.ID),
 	)
 
 	return CustomerEvents(queryMods...)
 }
 
-// UseridCustomerNotes retrieves all the customer_note's CustomerNotes with an executor via userid column.
-func (o *User) UseridCustomerNotes(mods ...qm.QueryMod) customerNoteQuery {
+// CustomerNotes retrieves all the customer_note's CustomerNotes with an executor.
+func (o *User) CustomerNotes(mods ...qm.QueryMod) customerNoteQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"customer_notes\".\"userid\"=?", o.ID),
+		qm.Where("\"customer_notes\".\"user_id\"=?", o.ID),
 	)
 
 	return CustomerNotes(queryMods...)
 }
 
-// UseridExportEvents retrieves all the export_event's ExportEvents with an executor via userid column.
-func (o *User) UseridExportEvents(mods ...qm.QueryMod) exportEventQuery {
+// ExportEvents retrieves all the export_event's ExportEvents with an executor.
+func (o *User) ExportEvents(mods ...qm.QueryMod) exportEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"export_events\".\"userid\"=?", o.ID),
+		qm.Where("\"export_events\".\"user_id\"=?", o.ID),
 	)
 
 	return ExportEvents(queryMods...)
 }
 
-// UseridExportFiles retrieves all the export_file's ExportFiles with an executor via userid column.
-func (o *User) UseridExportFiles(mods ...qm.QueryMod) exportFileQuery {
+// ExportFiles retrieves all the export_file's ExportFiles with an executor.
+func (o *User) ExportFiles(mods ...qm.QueryMod) exportFileQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"export_files\".\"userid\"=?", o.ID),
+		qm.Where("\"export_files\".\"user_id\"=?", o.ID),
 	)
 
 	return ExportFiles(queryMods...)
 }
 
-// UsedbyidGiftcards retrieves all the giftcard's Giftcards with an executor via usedbyid column.
-func (o *User) UsedbyidGiftcards(mods ...qm.QueryMod) giftcardQuery {
+// UsedByGiftcards retrieves all the giftcard's Giftcards with an executor via used_by_id column.
+func (o *User) UsedByGiftcards(mods ...qm.QueryMod) giftcardQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"giftcards\".\"usedbyid\"=?", o.ID),
+		qm.Where("\"giftcards\".\"used_by_id\"=?", o.ID),
 	)
 
 	return Giftcards(queryMods...)
 }
 
-// CreatedbyidGiftcards retrieves all the giftcard's Giftcards with an executor via createdbyid column.
-func (o *User) CreatedbyidGiftcards(mods ...qm.QueryMod) giftcardQuery {
+// CreatedByGiftcards retrieves all the giftcard's Giftcards with an executor via created_by_id column.
+func (o *User) CreatedByGiftcards(mods ...qm.QueryMod) giftcardQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"giftcards\".\"createdbyid\"=?", o.ID),
+		qm.Where("\"giftcards\".\"created_by_id\"=?", o.ID),
 	)
 
 	return Giftcards(queryMods...)
 }
 
-// UseridInvoiceEvents retrieves all the invoice_event's InvoiceEvents with an executor via userid column.
-func (o *User) UseridInvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
+// InvoiceEvents retrieves all the invoice_event's InvoiceEvents with an executor.
+func (o *User) InvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"invoice_events\".\"userid\"=?", o.ID),
+		qm.Where("\"invoice_events\".\"user_id\"=?", o.ID),
 	)
 
 	return InvoiceEvents(queryMods...)
 }
 
-// UseridOrderEvents retrieves all the order_event's OrderEvents with an executor via userid column.
-func (o *User) UseridOrderEvents(mods ...qm.QueryMod) orderEventQuery {
+// OrderEvents retrieves all the order_event's OrderEvents with an executor.
+func (o *User) OrderEvents(mods ...qm.QueryMod) orderEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"order_events\".\"userid\"=?", o.ID),
+		qm.Where("\"order_events\".\"user_id\"=?", o.ID),
 	)
 
 	return OrderEvents(queryMods...)
 }
 
-// UseridOrders retrieves all the order's Orders with an executor via userid column.
-func (o *User) UseridOrders(mods ...qm.QueryMod) orderQuery {
+// Orders retrieves all the order's Orders with an executor.
+func (o *User) Orders(mods ...qm.QueryMod) orderQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"orders\".\"userid\"=?", o.ID),
+		qm.Where("\"orders\".\"user_id\"=?", o.ID),
 	)
 
 	return Orders(queryMods...)
 }
 
-// StaffidShopStaffs retrieves all the shop_staff's ShopStaffs with an executor via staffid column.
-func (o *User) StaffidShopStaffs(mods ...qm.QueryMod) shopStaffQuery {
+// StaffShopStaffs retrieves all the shop_staff's ShopStaffs with an executor via staff_id column.
+func (o *User) StaffShopStaffs(mods ...qm.QueryMod) shopStaffQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"shop_staffs\".\"staffid\"=?", o.ID),
+		qm.Where("\"shop_staffs\".\"staff_id\"=?", o.ID),
 	)
 
 	return ShopStaffs(queryMods...)
 }
 
-// UseridStaffNotificationRecipients retrieves all the staff_notification_recipient's StaffNotificationRecipients with an executor via userid column.
-func (o *User) UseridStaffNotificationRecipients(mods ...qm.QueryMod) staffNotificationRecipientQuery {
+// StaffNotificationRecipients retrieves all the staff_notification_recipient's StaffNotificationRecipients with an executor.
+func (o *User) StaffNotificationRecipients(mods ...qm.QueryMod) staffNotificationRecipientQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"staff_notification_recipients\".\"userid\"=?", o.ID),
+		qm.Where("\"staff_notification_recipients\".\"user_id\"=?", o.ID),
 	)
 
 	return StaffNotificationRecipients(queryMods...)
 }
 
-// UseridUserAddresses retrieves all the user_address's UserAddresses with an executor via userid column.
-func (o *User) UseridUserAddresses(mods ...qm.QueryMod) userAddressQuery {
+// UserAddresses retrieves all the user_address's UserAddresses with an executor.
+func (o *User) UserAddresses(mods ...qm.QueryMod) userAddressQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"user_addresses\".\"userid\"=?", o.ID),
+		qm.Where("\"user_addresses\".\"user_id\"=?", o.ID),
 	)
 
 	return UserAddresses(queryMods...)
 }
 
-// LoadDefaultshippingaddressidAddress allows an eager lookup of values, cached into the
+// LoadDefaultShippingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userL) LoadDefaultshippingaddressidAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadDefaultShippingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -943,8 +943,8 @@ func (userL) LoadDefaultshippingaddressidAddress(ctx context.Context, e boil.Con
 		if object.R == nil {
 			object.R = &userR{}
 		}
-		if !queries.IsNil(object.Defaultshippingaddressid) {
-			args = append(args, object.Defaultshippingaddressid)
+		if !queries.IsNil(object.DefaultShippingAddressID) {
+			args = append(args, object.DefaultShippingAddressID)
 		}
 
 	} else {
@@ -955,13 +955,13 @@ func (userL) LoadDefaultshippingaddressidAddress(ctx context.Context, e boil.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Defaultshippingaddressid) {
+				if queries.Equal(a, obj.DefaultShippingAddressID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Defaultshippingaddressid) {
-				args = append(args, obj.Defaultshippingaddressid)
+			if !queries.IsNil(obj.DefaultShippingAddressID) {
+				args = append(args, obj.DefaultShippingAddressID)
 			}
 
 		}
@@ -1010,22 +1010,22 @@ func (userL) LoadDefaultshippingaddressidAddress(ctx context.Context, e boil.Con
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.DefaultshippingaddressidAddress = foreign
+		object.R.DefaultShippingAddress = foreign
 		if foreign.R == nil {
 			foreign.R = &addressR{}
 		}
-		foreign.R.DefaultshippingaddressidUsers = append(foreign.R.DefaultshippingaddressidUsers, object)
+		foreign.R.DefaultShippingAddressUsers = append(foreign.R.DefaultShippingAddressUsers, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Defaultshippingaddressid, foreign.ID) {
-				local.R.DefaultshippingaddressidAddress = foreign
+			if queries.Equal(local.DefaultShippingAddressID, foreign.ID) {
+				local.R.DefaultShippingAddress = foreign
 				if foreign.R == nil {
 					foreign.R = &addressR{}
 				}
-				foreign.R.DefaultshippingaddressidUsers = append(foreign.R.DefaultshippingaddressidUsers, local)
+				foreign.R.DefaultShippingAddressUsers = append(foreign.R.DefaultShippingAddressUsers, local)
 				break
 			}
 		}
@@ -1034,9 +1034,9 @@ func (userL) LoadDefaultshippingaddressidAddress(ctx context.Context, e boil.Con
 	return nil
 }
 
-// LoadUseridWishlist allows an eager lookup of values, cached into the
+// LoadWishlist allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func (userL) LoadUseridWishlist(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadWishlist(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1091,7 +1091,7 @@ func (userL) LoadUseridWishlist(ctx context.Context, e boil.ContextExecutor, sin
 
 	query := NewQuery(
 		qm.From(`wishlists`),
-		qm.WhereIn(`wishlists.userid in ?`, args...),
+		qm.WhereIn(`wishlists.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1128,21 +1128,21 @@ func (userL) LoadUseridWishlist(ctx context.Context, e boil.ContextExecutor, sin
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridWishlist = foreign
+		object.R.Wishlist = foreign
 		if foreign.R == nil {
 			foreign.R = &wishlistR{}
 		}
-		foreign.R.UseridUser = object
+		foreign.R.User = object
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridWishlist = foreign
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.Wishlist = foreign
 				if foreign.R == nil {
 					foreign.R = &wishlistR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -1151,9 +1151,9 @@ func (userL) LoadUseridWishlist(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// LoadUseridCheckouts allows an eager lookup of values, cached into the
+// LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1208,7 +1208,7 @@ func (userL) LoadUseridCheckouts(ctx context.Context, e boil.ContextExecutor, si
 
 	query := NewQuery(
 		qm.From(`checkouts`),
-		qm.WhereIn(`checkouts.userid in ?`, args...),
+		qm.WhereIn(`checkouts.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1239,24 +1239,24 @@ func (userL) LoadUseridCheckouts(ctx context.Context, e boil.ContextExecutor, si
 		}
 	}
 	if singular {
-		object.R.UseridCheckouts = resultSlice
+		object.R.Checkouts = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &checkoutR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridCheckouts = append(local.R.UseridCheckouts, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.Checkouts = append(local.R.Checkouts, foreign)
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -1265,9 +1265,9 @@ func (userL) LoadUseridCheckouts(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// LoadUseridCustomerEvents allows an eager lookup of values, cached into the
+// LoadCustomerEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridCustomerEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1322,7 +1322,7 @@ func (userL) LoadUseridCustomerEvents(ctx context.Context, e boil.ContextExecuto
 
 	query := NewQuery(
 		qm.From(`customer_events`),
-		qm.WhereIn(`customer_events.userid in ?`, args...),
+		qm.WhereIn(`customer_events.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1353,24 +1353,24 @@ func (userL) LoadUseridCustomerEvents(ctx context.Context, e boil.ContextExecuto
 		}
 	}
 	if singular {
-		object.R.UseridCustomerEvents = resultSlice
+		object.R.CustomerEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &customerEventR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridCustomerEvents = append(local.R.UseridCustomerEvents, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.CustomerEvents = append(local.R.CustomerEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &customerEventR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -1379,9 +1379,9 @@ func (userL) LoadUseridCustomerEvents(ctx context.Context, e boil.ContextExecuto
 	return nil
 }
 
-// LoadUseridCustomerNotes allows an eager lookup of values, cached into the
+// LoadCustomerNotes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridCustomerNotes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerNotes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1436,7 +1436,7 @@ func (userL) LoadUseridCustomerNotes(ctx context.Context, e boil.ContextExecutor
 
 	query := NewQuery(
 		qm.From(`customer_notes`),
-		qm.WhereIn(`customer_notes.userid in ?`, args...),
+		qm.WhereIn(`customer_notes.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1467,24 +1467,24 @@ func (userL) LoadUseridCustomerNotes(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.UseridCustomerNotes = resultSlice
+		object.R.CustomerNotes = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &customerNoteR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridCustomerNotes = append(local.R.UseridCustomerNotes, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.CustomerNotes = append(local.R.CustomerNotes, foreign)
 				if foreign.R == nil {
 					foreign.R = &customerNoteR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -1493,9 +1493,9 @@ func (userL) LoadUseridCustomerNotes(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// LoadUseridExportEvents allows an eager lookup of values, cached into the
+// LoadExportEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridExportEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1550,7 +1550,7 @@ func (userL) LoadUseridExportEvents(ctx context.Context, e boil.ContextExecutor,
 
 	query := NewQuery(
 		qm.From(`export_events`),
-		qm.WhereIn(`export_events.userid in ?`, args...),
+		qm.WhereIn(`export_events.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1581,24 +1581,24 @@ func (userL) LoadUseridExportEvents(ctx context.Context, e boil.ContextExecutor,
 		}
 	}
 	if singular {
-		object.R.UseridExportEvents = resultSlice
+		object.R.ExportEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &exportEventR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridExportEvents = append(local.R.UseridExportEvents, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.ExportEvents = append(local.R.ExportEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &exportEventR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -1607,9 +1607,9 @@ func (userL) LoadUseridExportEvents(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// LoadUseridExportFiles allows an eager lookup of values, cached into the
+// LoadExportFiles allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridExportFiles(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadExportFiles(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1664,7 +1664,7 @@ func (userL) LoadUseridExportFiles(ctx context.Context, e boil.ContextExecutor, 
 
 	query := NewQuery(
 		qm.From(`export_files`),
-		qm.WhereIn(`export_files.userid in ?`, args...),
+		qm.WhereIn(`export_files.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1695,24 +1695,24 @@ func (userL) LoadUseridExportFiles(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.UseridExportFiles = resultSlice
+		object.R.ExportFiles = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &exportFileR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridExportFiles = append(local.R.UseridExportFiles, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.ExportFiles = append(local.R.ExportFiles, foreign)
 				if foreign.R == nil {
 					foreign.R = &exportFileR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -1721,9 +1721,9 @@ func (userL) LoadUseridExportFiles(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadUsedbyidGiftcards allows an eager lookup of values, cached into the
+// LoadUsedByGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUsedbyidGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUsedByGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1778,7 +1778,7 @@ func (userL) LoadUsedbyidGiftcards(ctx context.Context, e boil.ContextExecutor, 
 
 	query := NewQuery(
 		qm.From(`giftcards`),
-		qm.WhereIn(`giftcards.usedbyid in ?`, args...),
+		qm.WhereIn(`giftcards.used_by_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1809,24 +1809,24 @@ func (userL) LoadUsedbyidGiftcards(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.UsedbyidGiftcards = resultSlice
+		object.R.UsedByGiftcards = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &giftcardR{}
 			}
-			foreign.R.UsedbyidUser = object
+			foreign.R.UsedBy = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Usedbyid) {
-				local.R.UsedbyidGiftcards = append(local.R.UsedbyidGiftcards, foreign)
+			if queries.Equal(local.ID, foreign.UsedByID) {
+				local.R.UsedByGiftcards = append(local.R.UsedByGiftcards, foreign)
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
 				}
-				foreign.R.UsedbyidUser = local
+				foreign.R.UsedBy = local
 				break
 			}
 		}
@@ -1835,9 +1835,9 @@ func (userL) LoadUsedbyidGiftcards(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadCreatedbyidGiftcards allows an eager lookup of values, cached into the
+// LoadCreatedByGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCreatedbyidGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCreatedByGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1892,7 +1892,7 @@ func (userL) LoadCreatedbyidGiftcards(ctx context.Context, e boil.ContextExecuto
 
 	query := NewQuery(
 		qm.From(`giftcards`),
-		qm.WhereIn(`giftcards.createdbyid in ?`, args...),
+		qm.WhereIn(`giftcards.created_by_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1923,24 +1923,24 @@ func (userL) LoadCreatedbyidGiftcards(ctx context.Context, e boil.ContextExecuto
 		}
 	}
 	if singular {
-		object.R.CreatedbyidGiftcards = resultSlice
+		object.R.CreatedByGiftcards = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &giftcardR{}
 			}
-			foreign.R.CreatedbyidUser = object
+			foreign.R.CreatedBy = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Createdbyid) {
-				local.R.CreatedbyidGiftcards = append(local.R.CreatedbyidGiftcards, foreign)
+			if queries.Equal(local.ID, foreign.CreatedByID) {
+				local.R.CreatedByGiftcards = append(local.R.CreatedByGiftcards, foreign)
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
 				}
-				foreign.R.CreatedbyidUser = local
+				foreign.R.CreatedBy = local
 				break
 			}
 		}
@@ -1949,9 +1949,9 @@ func (userL) LoadCreatedbyidGiftcards(ctx context.Context, e boil.ContextExecuto
 	return nil
 }
 
-// LoadUseridInvoiceEvents allows an eager lookup of values, cached into the
+// LoadInvoiceEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2006,7 +2006,7 @@ func (userL) LoadUseridInvoiceEvents(ctx context.Context, e boil.ContextExecutor
 
 	query := NewQuery(
 		qm.From(`invoice_events`),
-		qm.WhereIn(`invoice_events.userid in ?`, args...),
+		qm.WhereIn(`invoice_events.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2037,24 +2037,24 @@ func (userL) LoadUseridInvoiceEvents(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.UseridInvoiceEvents = resultSlice
+		object.R.InvoiceEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &invoiceEventR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridInvoiceEvents = append(local.R.UseridInvoiceEvents, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.InvoiceEvents = append(local.R.InvoiceEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &invoiceEventR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -2063,9 +2063,9 @@ func (userL) LoadUseridInvoiceEvents(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// LoadUseridOrderEvents allows an eager lookup of values, cached into the
+// LoadOrderEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridOrderEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2120,7 +2120,7 @@ func (userL) LoadUseridOrderEvents(ctx context.Context, e boil.ContextExecutor, 
 
 	query := NewQuery(
 		qm.From(`order_events`),
-		qm.WhereIn(`order_events.userid in ?`, args...),
+		qm.WhereIn(`order_events.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2151,24 +2151,24 @@ func (userL) LoadUseridOrderEvents(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.UseridOrderEvents = resultSlice
+		object.R.OrderEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderEventR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridOrderEvents = append(local.R.UseridOrderEvents, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.OrderEvents = append(local.R.OrderEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderEventR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -2177,9 +2177,9 @@ func (userL) LoadUseridOrderEvents(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadUseridOrders allows an eager lookup of values, cached into the
+// LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2234,7 +2234,7 @@ func (userL) LoadUseridOrders(ctx context.Context, e boil.ContextExecutor, singu
 
 	query := NewQuery(
 		qm.From(`orders`),
-		qm.WhereIn(`orders.userid in ?`, args...),
+		qm.WhereIn(`orders.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2265,24 +2265,24 @@ func (userL) LoadUseridOrders(ctx context.Context, e boil.ContextExecutor, singu
 		}
 	}
 	if singular {
-		object.R.UseridOrders = resultSlice
+		object.R.Orders = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridOrders = append(local.R.UseridOrders, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.Orders = append(local.R.Orders, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -2291,9 +2291,9 @@ func (userL) LoadUseridOrders(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
-// LoadStaffidShopStaffs allows an eager lookup of values, cached into the
+// LoadStaffShopStaffs allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadStaffidShopStaffs(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadStaffShopStaffs(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2348,7 +2348,7 @@ func (userL) LoadStaffidShopStaffs(ctx context.Context, e boil.ContextExecutor, 
 
 	query := NewQuery(
 		qm.From(`shop_staffs`),
-		qm.WhereIn(`shop_staffs.staffid in ?`, args...),
+		qm.WhereIn(`shop_staffs.staff_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2379,24 +2379,24 @@ func (userL) LoadStaffidShopStaffs(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.StaffidShopStaffs = resultSlice
+		object.R.StaffShopStaffs = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &shopStaffR{}
 			}
-			foreign.R.StaffidUser = object
+			foreign.R.Staff = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Staffid) {
-				local.R.StaffidShopStaffs = append(local.R.StaffidShopStaffs, foreign)
+			if queries.Equal(local.ID, foreign.StaffID) {
+				local.R.StaffShopStaffs = append(local.R.StaffShopStaffs, foreign)
 				if foreign.R == nil {
 					foreign.R = &shopStaffR{}
 				}
-				foreign.R.StaffidUser = local
+				foreign.R.Staff = local
 				break
 			}
 		}
@@ -2405,9 +2405,9 @@ func (userL) LoadStaffidShopStaffs(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadUseridStaffNotificationRecipients allows an eager lookup of values, cached into the
+// LoadStaffNotificationRecipients allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridStaffNotificationRecipients(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadStaffNotificationRecipients(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2462,7 +2462,7 @@ func (userL) LoadUseridStaffNotificationRecipients(ctx context.Context, e boil.C
 
 	query := NewQuery(
 		qm.From(`staff_notification_recipients`),
-		qm.WhereIn(`staff_notification_recipients.userid in ?`, args...),
+		qm.WhereIn(`staff_notification_recipients.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2493,24 +2493,24 @@ func (userL) LoadUseridStaffNotificationRecipients(ctx context.Context, e boil.C
 		}
 	}
 	if singular {
-		object.R.UseridStaffNotificationRecipients = resultSlice
+		object.R.StaffNotificationRecipients = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &staffNotificationRecipientR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridStaffNotificationRecipients = append(local.R.UseridStaffNotificationRecipients, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.StaffNotificationRecipients = append(local.R.StaffNotificationRecipients, foreign)
 				if foreign.R == nil {
 					foreign.R = &staffNotificationRecipientR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -2519,9 +2519,9 @@ func (userL) LoadUseridStaffNotificationRecipients(ctx context.Context, e boil.C
 	return nil
 }
 
-// LoadUseridUserAddresses allows an eager lookup of values, cached into the
+// LoadUserAddresses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUseridUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2576,7 +2576,7 @@ func (userL) LoadUseridUserAddresses(ctx context.Context, e boil.ContextExecutor
 
 	query := NewQuery(
 		qm.From(`user_addresses`),
-		qm.WhereIn(`user_addresses.userid in ?`, args...),
+		qm.WhereIn(`user_addresses.user_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2607,24 +2607,24 @@ func (userL) LoadUseridUserAddresses(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.UseridUserAddresses = resultSlice
+		object.R.UserAddresses = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &userAddressR{}
 			}
-			foreign.R.UseridUser = object
+			foreign.R.User = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Userid) {
-				local.R.UseridUserAddresses = append(local.R.UseridUserAddresses, foreign)
+			if queries.Equal(local.ID, foreign.UserID) {
+				local.R.UserAddresses = append(local.R.UserAddresses, foreign)
 				if foreign.R == nil {
 					foreign.R = &userAddressR{}
 				}
-				foreign.R.UseridUser = local
+				foreign.R.User = local
 				break
 			}
 		}
@@ -2633,10 +2633,10 @@ func (userL) LoadUseridUserAddresses(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// SetDefaultshippingaddressidAddress of the user to the related item.
-// Sets o.R.DefaultshippingaddressidAddress to related.
-// Adds o to related.R.DefaultshippingaddressidUsers.
-func (o *User) SetDefaultshippingaddressidAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+// SetDefaultShippingAddress of the user to the related item.
+// Sets o.R.DefaultShippingAddress to related.
+// Adds o to related.R.DefaultShippingAddressUsers.
+func (o *User) SetDefaultShippingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -2646,7 +2646,7 @@ func (o *User) SetDefaultshippingaddressidAddress(ctx context.Context, exec boil
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"users\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"defaultshippingaddressid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"default_shipping_address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -2660,67 +2660,67 @@ func (o *User) SetDefaultshippingaddressidAddress(ctx context.Context, exec boil
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Defaultshippingaddressid, related.ID)
+	queries.Assign(&o.DefaultShippingAddressID, related.ID)
 	if o.R == nil {
 		o.R = &userR{
-			DefaultshippingaddressidAddress: related,
+			DefaultShippingAddress: related,
 		}
 	} else {
-		o.R.DefaultshippingaddressidAddress = related
+		o.R.DefaultShippingAddress = related
 	}
 
 	if related.R == nil {
 		related.R = &addressR{
-			DefaultshippingaddressidUsers: UserSlice{o},
+			DefaultShippingAddressUsers: UserSlice{o},
 		}
 	} else {
-		related.R.DefaultshippingaddressidUsers = append(related.R.DefaultshippingaddressidUsers, o)
+		related.R.DefaultShippingAddressUsers = append(related.R.DefaultShippingAddressUsers, o)
 	}
 
 	return nil
 }
 
-// RemoveDefaultshippingaddressidAddress relationship.
-// Sets o.R.DefaultshippingaddressidAddress to nil.
+// RemoveDefaultShippingAddress relationship.
+// Sets o.R.DefaultShippingAddress to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *User) RemoveDefaultshippingaddressidAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *User) RemoveDefaultShippingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
 	var err error
 
-	queries.SetScanner(&o.Defaultshippingaddressid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("defaultshippingaddressid")); err != nil {
+	queries.SetScanner(&o.DefaultShippingAddressID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("default_shipping_address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.DefaultshippingaddressidAddress = nil
+		o.R.DefaultShippingAddress = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.DefaultshippingaddressidUsers {
-		if queries.Equal(o.Defaultshippingaddressid, ri.Defaultshippingaddressid) {
+	for i, ri := range related.R.DefaultShippingAddressUsers {
+		if queries.Equal(o.DefaultShippingAddressID, ri.DefaultShippingAddressID) {
 			continue
 		}
 
-		ln := len(related.R.DefaultshippingaddressidUsers)
+		ln := len(related.R.DefaultShippingAddressUsers)
 		if ln > 1 && i < ln-1 {
-			related.R.DefaultshippingaddressidUsers[i] = related.R.DefaultshippingaddressidUsers[ln-1]
+			related.R.DefaultShippingAddressUsers[i] = related.R.DefaultShippingAddressUsers[ln-1]
 		}
-		related.R.DefaultshippingaddressidUsers = related.R.DefaultshippingaddressidUsers[:ln-1]
+		related.R.DefaultShippingAddressUsers = related.R.DefaultShippingAddressUsers[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetUseridWishlist of the user to the related item.
-// Sets o.R.UseridWishlist to related.
-// Adds o to related.R.UseridUser.
-func (o *User) SetUseridWishlist(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Wishlist) error {
+// SetWishlist of the user to the related item.
+// Sets o.R.Wishlist to related.
+// Adds o to related.R.User.
+func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Wishlist) error {
 	var err error
 
 	if insert {
-		queries.Assign(&related.Userid, o.ID)
+		queries.Assign(&related.UserID, o.ID)
 
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
@@ -2728,7 +2728,7 @@ func (o *User) SetUseridWishlist(ctx context.Context, exec boil.ContextExecutor,
 	} else {
 		updateQuery := fmt.Sprintf(
 			"UPDATE \"wishlists\" SET %s WHERE %s",
-			strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+			strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 			strmangle.WhereClause("\"", "\"", 2, wishlistPrimaryKeyColumns),
 		)
 		values := []interface{}{o.ID, related.ID}
@@ -2742,67 +2742,67 @@ func (o *User) SetUseridWishlist(ctx context.Context, exec boil.ContextExecutor,
 			return errors.Wrap(err, "failed to update foreign table")
 		}
 
-		queries.Assign(&related.Userid, o.ID)
+		queries.Assign(&related.UserID, o.ID)
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridWishlist: related,
+			Wishlist: related,
 		}
 	} else {
-		o.R.UseridWishlist = related
+		o.R.Wishlist = related
 	}
 
 	if related.R == nil {
 		related.R = &wishlistR{
-			UseridUser: o,
+			User: o,
 		}
 	} else {
-		related.R.UseridUser = o
+		related.R.User = o
 	}
 	return nil
 }
 
-// RemoveUseridWishlist relationship.
-// Sets o.R.UseridWishlist to nil.
+// RemoveWishlist relationship.
+// Sets o.R.Wishlist to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *User) RemoveUseridWishlist(ctx context.Context, exec boil.ContextExecutor, related *Wishlist) error {
+func (o *User) RemoveWishlist(ctx context.Context, exec boil.ContextExecutor, related *Wishlist) error {
 	var err error
 
-	queries.SetScanner(&related.Userid, nil)
-	if _, err = related.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&related.UserID, nil)
+	if _, err = related.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridWishlist = nil
+		o.R.Wishlist = nil
 	}
 
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	related.R.UseridUser = nil
+	related.R.User = nil
 
 	return nil
 }
 
-// AddUseridCheckouts adds the given related objects to the existing relationships
+// AddCheckouts adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridCheckouts.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+// Appends related to o.R.Checkouts.
+// Sets related.R.User appropriately.
+func (o *User) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"checkouts\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.Token}
@@ -2816,38 +2816,38 @@ func (o *User) AddUseridCheckouts(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridCheckouts: related,
+			Checkouts: related,
 		}
 	} else {
-		o.R.UseridCheckouts = append(o.R.UseridCheckouts, related...)
+		o.R.Checkouts = append(o.R.Checkouts, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &checkoutR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridCheckouts removes all previously related items of the
+// SetCheckouts removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridCheckouts accordingly.
-// Replaces o.R.UseridCheckouts with related.
-// Sets related.R.UseridUser's UseridCheckouts accordingly.
-func (o *User) SetUseridCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
-	query := "update \"checkouts\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's Checkouts accordingly.
+// Replaces o.R.Checkouts with related.
+// Sets related.R.User's Checkouts accordingly.
+func (o *User) SetCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+	query := "update \"checkouts\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -2860,35 +2860,35 @@ func (o *User) SetUseridCheckouts(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridCheckouts {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.Checkouts {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridCheckouts = nil
+		o.R.Checkouts = nil
 	}
 
-	return o.AddUseridCheckouts(ctx, exec, insert, related...)
+	return o.AddCheckouts(ctx, exec, insert, related...)
 }
 
-// RemoveUseridCheckouts relationships from objects passed in.
-// Removes related items from R.UseridCheckouts (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
+// RemoveCheckouts relationships from objects passed in.
+// Removes related items from R.Checkouts (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -2897,16 +2897,16 @@ func (o *User) RemoveUseridCheckouts(ctx context.Context, exec boil.ContextExecu
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridCheckouts {
+		for i, ri := range o.R.Checkouts {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridCheckouts)
+			ln := len(o.R.Checkouts)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridCheckouts[i] = o.R.UseridCheckouts[ln-1]
+				o.R.Checkouts[i] = o.R.Checkouts[ln-1]
 			}
-			o.R.UseridCheckouts = o.R.UseridCheckouts[:ln-1]
+			o.R.Checkouts = o.R.Checkouts[:ln-1]
 			break
 		}
 	}
@@ -2914,22 +2914,22 @@ func (o *User) RemoveUseridCheckouts(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// AddUseridCustomerEvents adds the given related objects to the existing relationships
+// AddCustomerEvents adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridCustomerEvents.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
+// Appends related to o.R.CustomerEvents.
+// Sets related.R.User appropriately.
+func (o *User) AddCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"customer_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -2943,38 +2943,38 @@ func (o *User) AddUseridCustomerEvents(ctx context.Context, exec boil.ContextExe
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridCustomerEvents: related,
+			CustomerEvents: related,
 		}
 	} else {
-		o.R.UseridCustomerEvents = append(o.R.UseridCustomerEvents, related...)
+		o.R.CustomerEvents = append(o.R.CustomerEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &customerEventR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridCustomerEvents removes all previously related items of the
+// SetCustomerEvents removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridCustomerEvents accordingly.
-// Replaces o.R.UseridCustomerEvents with related.
-// Sets related.R.UseridUser's UseridCustomerEvents accordingly.
-func (o *User) SetUseridCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
-	query := "update \"customer_events\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's CustomerEvents accordingly.
+// Replaces o.R.CustomerEvents with related.
+// Sets related.R.User's CustomerEvents accordingly.
+func (o *User) SetCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
+	query := "update \"customer_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -2987,35 +2987,35 @@ func (o *User) SetUseridCustomerEvents(ctx context.Context, exec boil.ContextExe
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridCustomerEvents {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.CustomerEvents {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridCustomerEvents = nil
+		o.R.CustomerEvents = nil
 	}
 
-	return o.AddUseridCustomerEvents(ctx, exec, insert, related...)
+	return o.AddCustomerEvents(ctx, exec, insert, related...)
 }
 
-// RemoveUseridCustomerEvents relationships from objects passed in.
-// Removes related items from R.UseridCustomerEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridCustomerEvents(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerEvent) error {
+// RemoveCustomerEvents relationships from objects passed in.
+// Removes related items from R.CustomerEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveCustomerEvents(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3024,16 +3024,16 @@ func (o *User) RemoveUseridCustomerEvents(ctx context.Context, exec boil.Context
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridCustomerEvents {
+		for i, ri := range o.R.CustomerEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridCustomerEvents)
+			ln := len(o.R.CustomerEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridCustomerEvents[i] = o.R.UseridCustomerEvents[ln-1]
+				o.R.CustomerEvents[i] = o.R.CustomerEvents[ln-1]
 			}
-			o.R.UseridCustomerEvents = o.R.UseridCustomerEvents[:ln-1]
+			o.R.CustomerEvents = o.R.CustomerEvents[:ln-1]
 			break
 		}
 	}
@@ -3041,22 +3041,22 @@ func (o *User) RemoveUseridCustomerEvents(ctx context.Context, exec boil.Context
 	return nil
 }
 
-// AddUseridCustomerNotes adds the given related objects to the existing relationships
+// AddCustomerNotes adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridCustomerNotes.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
+// Appends related to o.R.CustomerNotes.
+// Sets related.R.User appropriately.
+func (o *User) AddCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"customer_notes\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3070,38 +3070,38 @@ func (o *User) AddUseridCustomerNotes(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridCustomerNotes: related,
+			CustomerNotes: related,
 		}
 	} else {
-		o.R.UseridCustomerNotes = append(o.R.UseridCustomerNotes, related...)
+		o.R.CustomerNotes = append(o.R.CustomerNotes, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &customerNoteR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridCustomerNotes removes all previously related items of the
+// SetCustomerNotes removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridCustomerNotes accordingly.
-// Replaces o.R.UseridCustomerNotes with related.
-// Sets related.R.UseridUser's UseridCustomerNotes accordingly.
-func (o *User) SetUseridCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
-	query := "update \"customer_notes\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's CustomerNotes accordingly.
+// Replaces o.R.CustomerNotes with related.
+// Sets related.R.User's CustomerNotes accordingly.
+func (o *User) SetCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
+	query := "update \"customer_notes\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3114,35 +3114,35 @@ func (o *User) SetUseridCustomerNotes(ctx context.Context, exec boil.ContextExec
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridCustomerNotes {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.CustomerNotes {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridCustomerNotes = nil
+		o.R.CustomerNotes = nil
 	}
 
-	return o.AddUseridCustomerNotes(ctx, exec, insert, related...)
+	return o.AddCustomerNotes(ctx, exec, insert, related...)
 }
 
-// RemoveUseridCustomerNotes relationships from objects passed in.
-// Removes related items from R.UseridCustomerNotes (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridCustomerNotes(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerNote) error {
+// RemoveCustomerNotes relationships from objects passed in.
+// Removes related items from R.CustomerNotes (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveCustomerNotes(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerNote) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3151,16 +3151,16 @@ func (o *User) RemoveUseridCustomerNotes(ctx context.Context, exec boil.ContextE
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridCustomerNotes {
+		for i, ri := range o.R.CustomerNotes {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridCustomerNotes)
+			ln := len(o.R.CustomerNotes)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridCustomerNotes[i] = o.R.UseridCustomerNotes[ln-1]
+				o.R.CustomerNotes[i] = o.R.CustomerNotes[ln-1]
 			}
-			o.R.UseridCustomerNotes = o.R.UseridCustomerNotes[:ln-1]
+			o.R.CustomerNotes = o.R.CustomerNotes[:ln-1]
 			break
 		}
 	}
@@ -3168,22 +3168,22 @@ func (o *User) RemoveUseridCustomerNotes(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// AddUseridExportEvents adds the given related objects to the existing relationships
+// AddExportEvents adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridExportEvents.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
+// Appends related to o.R.ExportEvents.
+// Sets related.R.User appropriately.
+func (o *User) AddExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"export_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, exportEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3197,38 +3197,38 @@ func (o *User) AddUseridExportEvents(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridExportEvents: related,
+			ExportEvents: related,
 		}
 	} else {
-		o.R.UseridExportEvents = append(o.R.UseridExportEvents, related...)
+		o.R.ExportEvents = append(o.R.ExportEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &exportEventR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridExportEvents removes all previously related items of the
+// SetExportEvents removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridExportEvents accordingly.
-// Replaces o.R.UseridExportEvents with related.
-// Sets related.R.UseridUser's UseridExportEvents accordingly.
-func (o *User) SetUseridExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
-	query := "update \"export_events\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's ExportEvents accordingly.
+// Replaces o.R.ExportEvents with related.
+// Sets related.R.User's ExportEvents accordingly.
+func (o *User) SetExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
+	query := "update \"export_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3241,35 +3241,35 @@ func (o *User) SetUseridExportEvents(ctx context.Context, exec boil.ContextExecu
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridExportEvents {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.ExportEvents {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridExportEvents = nil
+		o.R.ExportEvents = nil
 	}
 
-	return o.AddUseridExportEvents(ctx, exec, insert, related...)
+	return o.AddExportEvents(ctx, exec, insert, related...)
 }
 
-// RemoveUseridExportEvents relationships from objects passed in.
-// Removes related items from R.UseridExportEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridExportEvents(ctx context.Context, exec boil.ContextExecutor, related ...*ExportEvent) error {
+// RemoveExportEvents relationships from objects passed in.
+// Removes related items from R.ExportEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveExportEvents(ctx context.Context, exec boil.ContextExecutor, related ...*ExportEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3278,16 +3278,16 @@ func (o *User) RemoveUseridExportEvents(ctx context.Context, exec boil.ContextEx
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridExportEvents {
+		for i, ri := range o.R.ExportEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridExportEvents)
+			ln := len(o.R.ExportEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridExportEvents[i] = o.R.UseridExportEvents[ln-1]
+				o.R.ExportEvents[i] = o.R.ExportEvents[ln-1]
 			}
-			o.R.UseridExportEvents = o.R.UseridExportEvents[:ln-1]
+			o.R.ExportEvents = o.R.ExportEvents[:ln-1]
 			break
 		}
 	}
@@ -3295,22 +3295,22 @@ func (o *User) RemoveUseridExportEvents(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// AddUseridExportFiles adds the given related objects to the existing relationships
+// AddExportFiles adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridExportFiles.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridExportFiles(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportFile) error {
+// Appends related to o.R.ExportFiles.
+// Sets related.R.User appropriately.
+func (o *User) AddExportFiles(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportFile) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"export_files\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, exportFilePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3324,38 +3324,38 @@ func (o *User) AddUseridExportFiles(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridExportFiles: related,
+			ExportFiles: related,
 		}
 	} else {
-		o.R.UseridExportFiles = append(o.R.UseridExportFiles, related...)
+		o.R.ExportFiles = append(o.R.ExportFiles, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &exportFileR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridExportFiles removes all previously related items of the
+// SetExportFiles removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridExportFiles accordingly.
-// Replaces o.R.UseridExportFiles with related.
-// Sets related.R.UseridUser's UseridExportFiles accordingly.
-func (o *User) SetUseridExportFiles(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportFile) error {
-	query := "update \"export_files\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's ExportFiles accordingly.
+// Replaces o.R.ExportFiles with related.
+// Sets related.R.User's ExportFiles accordingly.
+func (o *User) SetExportFiles(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportFile) error {
+	query := "update \"export_files\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3368,35 +3368,35 @@ func (o *User) SetUseridExportFiles(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridExportFiles {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.ExportFiles {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridExportFiles = nil
+		o.R.ExportFiles = nil
 	}
 
-	return o.AddUseridExportFiles(ctx, exec, insert, related...)
+	return o.AddExportFiles(ctx, exec, insert, related...)
 }
 
-// RemoveUseridExportFiles relationships from objects passed in.
-// Removes related items from R.UseridExportFiles (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridExportFiles(ctx context.Context, exec boil.ContextExecutor, related ...*ExportFile) error {
+// RemoveExportFiles relationships from objects passed in.
+// Removes related items from R.ExportFiles (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveExportFiles(ctx context.Context, exec boil.ContextExecutor, related ...*ExportFile) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3405,16 +3405,16 @@ func (o *User) RemoveUseridExportFiles(ctx context.Context, exec boil.ContextExe
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridExportFiles {
+		for i, ri := range o.R.ExportFiles {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridExportFiles)
+			ln := len(o.R.ExportFiles)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridExportFiles[i] = o.R.UseridExportFiles[ln-1]
+				o.R.ExportFiles[i] = o.R.ExportFiles[ln-1]
 			}
-			o.R.UseridExportFiles = o.R.UseridExportFiles[:ln-1]
+			o.R.ExportFiles = o.R.ExportFiles[:ln-1]
 			break
 		}
 	}
@@ -3422,22 +3422,22 @@ func (o *User) RemoveUseridExportFiles(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddUsedbyidGiftcards adds the given related objects to the existing relationships
+// AddUsedByGiftcards adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UsedbyidGiftcards.
-// Sets related.R.UsedbyidUser appropriately.
-func (o *User) AddUsedbyidGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+// Appends related to o.R.UsedByGiftcards.
+// Sets related.R.UsedBy appropriately.
+func (o *User) AddUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Usedbyid, o.ID)
+			queries.Assign(&rel.UsedByID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"giftcards\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"usedbyid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"used_by_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3451,38 +3451,38 @@ func (o *User) AddUsedbyidGiftcards(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Usedbyid, o.ID)
+			queries.Assign(&rel.UsedByID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UsedbyidGiftcards: related,
+			UsedByGiftcards: related,
 		}
 	} else {
-		o.R.UsedbyidGiftcards = append(o.R.UsedbyidGiftcards, related...)
+		o.R.UsedByGiftcards = append(o.R.UsedByGiftcards, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &giftcardR{
-				UsedbyidUser: o,
+				UsedBy: o,
 			}
 		} else {
-			rel.R.UsedbyidUser = o
+			rel.R.UsedBy = o
 		}
 	}
 	return nil
 }
 
-// SetUsedbyidGiftcards removes all previously related items of the
+// SetUsedByGiftcards removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UsedbyidUser's UsedbyidGiftcards accordingly.
-// Replaces o.R.UsedbyidGiftcards with related.
-// Sets related.R.UsedbyidUser's UsedbyidGiftcards accordingly.
-func (o *User) SetUsedbyidGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
-	query := "update \"giftcards\" set \"usedbyid\" = null where \"usedbyid\" = $1"
+// Sets o.R.UsedBy's UsedByGiftcards accordingly.
+// Replaces o.R.UsedByGiftcards with related.
+// Sets related.R.UsedBy's UsedByGiftcards accordingly.
+func (o *User) SetUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+	query := "update \"giftcards\" set \"used_by_id\" = null where \"used_by_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3495,35 +3495,35 @@ func (o *User) SetUsedbyidGiftcards(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UsedbyidGiftcards {
-			queries.SetScanner(&rel.Usedbyid, nil)
+		for _, rel := range o.R.UsedByGiftcards {
+			queries.SetScanner(&rel.UsedByID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UsedbyidUser = nil
+			rel.R.UsedBy = nil
 		}
-		o.R.UsedbyidGiftcards = nil
+		o.R.UsedByGiftcards = nil
 	}
 
-	return o.AddUsedbyidGiftcards(ctx, exec, insert, related...)
+	return o.AddUsedByGiftcards(ctx, exec, insert, related...)
 }
 
-// RemoveUsedbyidGiftcards relationships from objects passed in.
-// Removes related items from R.UsedbyidGiftcards (uses pointer comparison, removal does not keep order)
-// Sets related.R.UsedbyidUser.
-func (o *User) RemoveUsedbyidGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*Giftcard) error {
+// RemoveUsedByGiftcards relationships from objects passed in.
+// Removes related items from R.UsedByGiftcards (uses pointer comparison, removal does not keep order)
+// Sets related.R.UsedBy.
+func (o *User) RemoveUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*Giftcard) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Usedbyid, nil)
+		queries.SetScanner(&rel.UsedByID, nil)
 		if rel.R != nil {
-			rel.R.UsedbyidUser = nil
+			rel.R.UsedBy = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("usedbyid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("used_by_id")); err != nil {
 			return err
 		}
 	}
@@ -3532,16 +3532,16 @@ func (o *User) RemoveUsedbyidGiftcards(ctx context.Context, exec boil.ContextExe
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UsedbyidGiftcards {
+		for i, ri := range o.R.UsedByGiftcards {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UsedbyidGiftcards)
+			ln := len(o.R.UsedByGiftcards)
 			if ln > 1 && i < ln-1 {
-				o.R.UsedbyidGiftcards[i] = o.R.UsedbyidGiftcards[ln-1]
+				o.R.UsedByGiftcards[i] = o.R.UsedByGiftcards[ln-1]
 			}
-			o.R.UsedbyidGiftcards = o.R.UsedbyidGiftcards[:ln-1]
+			o.R.UsedByGiftcards = o.R.UsedByGiftcards[:ln-1]
 			break
 		}
 	}
@@ -3549,22 +3549,22 @@ func (o *User) RemoveUsedbyidGiftcards(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddCreatedbyidGiftcards adds the given related objects to the existing relationships
+// AddCreatedByGiftcards adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.CreatedbyidGiftcards.
-// Sets related.R.CreatedbyidUser appropriately.
-func (o *User) AddCreatedbyidGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+// Appends related to o.R.CreatedByGiftcards.
+// Sets related.R.CreatedBy appropriately.
+func (o *User) AddCreatedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Createdbyid, o.ID)
+			queries.Assign(&rel.CreatedByID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"giftcards\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"createdbyid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"created_by_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3578,38 +3578,38 @@ func (o *User) AddCreatedbyidGiftcards(ctx context.Context, exec boil.ContextExe
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Createdbyid, o.ID)
+			queries.Assign(&rel.CreatedByID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			CreatedbyidGiftcards: related,
+			CreatedByGiftcards: related,
 		}
 	} else {
-		o.R.CreatedbyidGiftcards = append(o.R.CreatedbyidGiftcards, related...)
+		o.R.CreatedByGiftcards = append(o.R.CreatedByGiftcards, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &giftcardR{
-				CreatedbyidUser: o,
+				CreatedBy: o,
 			}
 		} else {
-			rel.R.CreatedbyidUser = o
+			rel.R.CreatedBy = o
 		}
 	}
 	return nil
 }
 
-// SetCreatedbyidGiftcards removes all previously related items of the
+// SetCreatedByGiftcards removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CreatedbyidUser's CreatedbyidGiftcards accordingly.
-// Replaces o.R.CreatedbyidGiftcards with related.
-// Sets related.R.CreatedbyidUser's CreatedbyidGiftcards accordingly.
-func (o *User) SetCreatedbyidGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
-	query := "update \"giftcards\" set \"createdbyid\" = null where \"createdbyid\" = $1"
+// Sets o.R.CreatedBy's CreatedByGiftcards accordingly.
+// Replaces o.R.CreatedByGiftcards with related.
+// Sets related.R.CreatedBy's CreatedByGiftcards accordingly.
+func (o *User) SetCreatedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+	query := "update \"giftcards\" set \"created_by_id\" = null where \"created_by_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3622,35 +3622,35 @@ func (o *User) SetCreatedbyidGiftcards(ctx context.Context, exec boil.ContextExe
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CreatedbyidGiftcards {
-			queries.SetScanner(&rel.Createdbyid, nil)
+		for _, rel := range o.R.CreatedByGiftcards {
+			queries.SetScanner(&rel.CreatedByID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CreatedbyidUser = nil
+			rel.R.CreatedBy = nil
 		}
-		o.R.CreatedbyidGiftcards = nil
+		o.R.CreatedByGiftcards = nil
 	}
 
-	return o.AddCreatedbyidGiftcards(ctx, exec, insert, related...)
+	return o.AddCreatedByGiftcards(ctx, exec, insert, related...)
 }
 
-// RemoveCreatedbyidGiftcards relationships from objects passed in.
-// Removes related items from R.CreatedbyidGiftcards (uses pointer comparison, removal does not keep order)
-// Sets related.R.CreatedbyidUser.
-func (o *User) RemoveCreatedbyidGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*Giftcard) error {
+// RemoveCreatedByGiftcards relationships from objects passed in.
+// Removes related items from R.CreatedByGiftcards (uses pointer comparison, removal does not keep order)
+// Sets related.R.CreatedBy.
+func (o *User) RemoveCreatedByGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*Giftcard) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Createdbyid, nil)
+		queries.SetScanner(&rel.CreatedByID, nil)
 		if rel.R != nil {
-			rel.R.CreatedbyidUser = nil
+			rel.R.CreatedBy = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("createdbyid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by_id")); err != nil {
 			return err
 		}
 	}
@@ -3659,16 +3659,16 @@ func (o *User) RemoveCreatedbyidGiftcards(ctx context.Context, exec boil.Context
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CreatedbyidGiftcards {
+		for i, ri := range o.R.CreatedByGiftcards {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CreatedbyidGiftcards)
+			ln := len(o.R.CreatedByGiftcards)
 			if ln > 1 && i < ln-1 {
-				o.R.CreatedbyidGiftcards[i] = o.R.CreatedbyidGiftcards[ln-1]
+				o.R.CreatedByGiftcards[i] = o.R.CreatedByGiftcards[ln-1]
 			}
-			o.R.CreatedbyidGiftcards = o.R.CreatedbyidGiftcards[:ln-1]
+			o.R.CreatedByGiftcards = o.R.CreatedByGiftcards[:ln-1]
 			break
 		}
 	}
@@ -3676,22 +3676,22 @@ func (o *User) RemoveCreatedbyidGiftcards(ctx context.Context, exec boil.Context
 	return nil
 }
 
-// AddUseridInvoiceEvents adds the given related objects to the existing relationships
+// AddInvoiceEvents adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridInvoiceEvents.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+// Appends related to o.R.InvoiceEvents.
+// Sets related.R.User appropriately.
+func (o *User) AddInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"invoice_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3705,38 +3705,38 @@ func (o *User) AddUseridInvoiceEvents(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridInvoiceEvents: related,
+			InvoiceEvents: related,
 		}
 	} else {
-		o.R.UseridInvoiceEvents = append(o.R.UseridInvoiceEvents, related...)
+		o.R.InvoiceEvents = append(o.R.InvoiceEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &invoiceEventR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridInvoiceEvents removes all previously related items of the
+// SetInvoiceEvents removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridInvoiceEvents accordingly.
-// Replaces o.R.UseridInvoiceEvents with related.
-// Sets related.R.UseridUser's UseridInvoiceEvents accordingly.
-func (o *User) SetUseridInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
-	query := "update \"invoice_events\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's InvoiceEvents accordingly.
+// Replaces o.R.InvoiceEvents with related.
+// Sets related.R.User's InvoiceEvents accordingly.
+func (o *User) SetInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+	query := "update \"invoice_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3749,35 +3749,35 @@ func (o *User) SetUseridInvoiceEvents(ctx context.Context, exec boil.ContextExec
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridInvoiceEvents {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.InvoiceEvents {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridInvoiceEvents = nil
+		o.R.InvoiceEvents = nil
 	}
 
-	return o.AddUseridInvoiceEvents(ctx, exec, insert, related...)
+	return o.AddInvoiceEvents(ctx, exec, insert, related...)
 }
 
-// RemoveUseridInvoiceEvents relationships from objects passed in.
-// Removes related items from R.UseridInvoiceEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
+// RemoveInvoiceEvents relationships from objects passed in.
+// Removes related items from R.InvoiceEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3786,16 +3786,16 @@ func (o *User) RemoveUseridInvoiceEvents(ctx context.Context, exec boil.ContextE
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridInvoiceEvents {
+		for i, ri := range o.R.InvoiceEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridInvoiceEvents)
+			ln := len(o.R.InvoiceEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridInvoiceEvents[i] = o.R.UseridInvoiceEvents[ln-1]
+				o.R.InvoiceEvents[i] = o.R.InvoiceEvents[ln-1]
 			}
-			o.R.UseridInvoiceEvents = o.R.UseridInvoiceEvents[:ln-1]
+			o.R.InvoiceEvents = o.R.InvoiceEvents[:ln-1]
 			break
 		}
 	}
@@ -3803,22 +3803,22 @@ func (o *User) RemoveUseridInvoiceEvents(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// AddUseridOrderEvents adds the given related objects to the existing relationships
+// AddOrderEvents adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridOrderEvents.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
+// Appends related to o.R.OrderEvents.
+// Sets related.R.User appropriately.
+func (o *User) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"order_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3832,38 +3832,38 @@ func (o *User) AddUseridOrderEvents(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridOrderEvents: related,
+			OrderEvents: related,
 		}
 	} else {
-		o.R.UseridOrderEvents = append(o.R.UseridOrderEvents, related...)
+		o.R.OrderEvents = append(o.R.OrderEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderEventR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridOrderEvents removes all previously related items of the
+// SetOrderEvents removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridOrderEvents accordingly.
-// Replaces o.R.UseridOrderEvents with related.
-// Sets related.R.UseridUser's UseridOrderEvents accordingly.
-func (o *User) SetUseridOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
-	query := "update \"order_events\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's OrderEvents accordingly.
+// Replaces o.R.OrderEvents with related.
+// Sets related.R.User's OrderEvents accordingly.
+func (o *User) SetOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
+	query := "update \"order_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3876,35 +3876,35 @@ func (o *User) SetUseridOrderEvents(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridOrderEvents {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.OrderEvents {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridOrderEvents = nil
+		o.R.OrderEvents = nil
 	}
 
-	return o.AddUseridOrderEvents(ctx, exec, insert, related...)
+	return o.AddOrderEvents(ctx, exec, insert, related...)
 }
 
-// RemoveUseridOrderEvents relationships from objects passed in.
-// Removes related items from R.UseridOrderEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridOrderEvents(ctx context.Context, exec boil.ContextExecutor, related ...*OrderEvent) error {
+// RemoveOrderEvents relationships from objects passed in.
+// Removes related items from R.OrderEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveOrderEvents(ctx context.Context, exec boil.ContextExecutor, related ...*OrderEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3913,16 +3913,16 @@ func (o *User) RemoveUseridOrderEvents(ctx context.Context, exec boil.ContextExe
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridOrderEvents {
+		for i, ri := range o.R.OrderEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridOrderEvents)
+			ln := len(o.R.OrderEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridOrderEvents[i] = o.R.UseridOrderEvents[ln-1]
+				o.R.OrderEvents[i] = o.R.OrderEvents[ln-1]
 			}
-			o.R.UseridOrderEvents = o.R.UseridOrderEvents[:ln-1]
+			o.R.OrderEvents = o.R.OrderEvents[:ln-1]
 			break
 		}
 	}
@@ -3930,22 +3930,22 @@ func (o *User) RemoveUseridOrderEvents(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddUseridOrders adds the given related objects to the existing relationships
+// AddOrders adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridOrders.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+// Appends related to o.R.Orders.
+// Sets related.R.User appropriately.
+func (o *User) AddOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"orders\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3959,38 +3959,38 @@ func (o *User) AddUseridOrders(ctx context.Context, exec boil.ContextExecutor, i
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridOrders: related,
+			Orders: related,
 		}
 	} else {
-		o.R.UseridOrders = append(o.R.UseridOrders, related...)
+		o.R.Orders = append(o.R.Orders, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridOrders removes all previously related items of the
+// SetOrders removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridOrders accordingly.
-// Replaces o.R.UseridOrders with related.
-// Sets related.R.UseridUser's UseridOrders accordingly.
-func (o *User) SetUseridOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
-	query := "update \"orders\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's Orders accordingly.
+// Replaces o.R.Orders with related.
+// Sets related.R.User's Orders accordingly.
+func (o *User) SetOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+	query := "update \"orders\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4003,35 +4003,35 @@ func (o *User) SetUseridOrders(ctx context.Context, exec boil.ContextExecutor, i
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridOrders {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.Orders {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridOrders = nil
+		o.R.Orders = nil
 	}
 
-	return o.AddUseridOrders(ctx, exec, insert, related...)
+	return o.AddOrders(ctx, exec, insert, related...)
 }
 
-// RemoveUseridOrders relationships from objects passed in.
-// Removes related items from R.UseridOrders (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
+// RemoveOrders relationships from objects passed in.
+// Removes related items from R.Orders (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4040,16 +4040,16 @@ func (o *User) RemoveUseridOrders(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridOrders {
+		for i, ri := range o.R.Orders {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridOrders)
+			ln := len(o.R.Orders)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridOrders[i] = o.R.UseridOrders[ln-1]
+				o.R.Orders[i] = o.R.Orders[ln-1]
 			}
-			o.R.UseridOrders = o.R.UseridOrders[:ln-1]
+			o.R.Orders = o.R.Orders[:ln-1]
 			break
 		}
 	}
@@ -4057,22 +4057,22 @@ func (o *User) RemoveUseridOrders(ctx context.Context, exec boil.ContextExecutor
 	return nil
 }
 
-// AddStaffidShopStaffs adds the given related objects to the existing relationships
+// AddStaffShopStaffs adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.StaffidShopStaffs.
-// Sets related.R.StaffidUser appropriately.
-func (o *User) AddStaffidShopStaffs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShopStaff) error {
+// Appends related to o.R.StaffShopStaffs.
+// Sets related.R.Staff appropriately.
+func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShopStaff) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Staffid, o.ID)
+			queries.Assign(&rel.StaffID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"shop_staffs\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"staffid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"staff_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shopStaffPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4086,38 +4086,38 @@ func (o *User) AddStaffidShopStaffs(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Staffid, o.ID)
+			queries.Assign(&rel.StaffID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			StaffidShopStaffs: related,
+			StaffShopStaffs: related,
 		}
 	} else {
-		o.R.StaffidShopStaffs = append(o.R.StaffidShopStaffs, related...)
+		o.R.StaffShopStaffs = append(o.R.StaffShopStaffs, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &shopStaffR{
-				StaffidUser: o,
+				Staff: o,
 			}
 		} else {
-			rel.R.StaffidUser = o
+			rel.R.Staff = o
 		}
 	}
 	return nil
 }
 
-// SetStaffidShopStaffs removes all previously related items of the
+// SetStaffShopStaffs removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.StaffidUser's StaffidShopStaffs accordingly.
-// Replaces o.R.StaffidShopStaffs with related.
-// Sets related.R.StaffidUser's StaffidShopStaffs accordingly.
-func (o *User) SetStaffidShopStaffs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShopStaff) error {
-	query := "update \"shop_staffs\" set \"staffid\" = null where \"staffid\" = $1"
+// Sets o.R.Staff's StaffShopStaffs accordingly.
+// Replaces o.R.StaffShopStaffs with related.
+// Sets related.R.Staff's StaffShopStaffs accordingly.
+func (o *User) SetStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShopStaff) error {
+	query := "update \"shop_staffs\" set \"staff_id\" = null where \"staff_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4130,35 +4130,35 @@ func (o *User) SetStaffidShopStaffs(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.StaffidShopStaffs {
-			queries.SetScanner(&rel.Staffid, nil)
+		for _, rel := range o.R.StaffShopStaffs {
+			queries.SetScanner(&rel.StaffID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.StaffidUser = nil
+			rel.R.Staff = nil
 		}
-		o.R.StaffidShopStaffs = nil
+		o.R.StaffShopStaffs = nil
 	}
 
-	return o.AddStaffidShopStaffs(ctx, exec, insert, related...)
+	return o.AddStaffShopStaffs(ctx, exec, insert, related...)
 }
 
-// RemoveStaffidShopStaffs relationships from objects passed in.
-// Removes related items from R.StaffidShopStaffs (uses pointer comparison, removal does not keep order)
-// Sets related.R.StaffidUser.
-func (o *User) RemoveStaffidShopStaffs(ctx context.Context, exec boil.ContextExecutor, related ...*ShopStaff) error {
+// RemoveStaffShopStaffs relationships from objects passed in.
+// Removes related items from R.StaffShopStaffs (uses pointer comparison, removal does not keep order)
+// Sets related.R.Staff.
+func (o *User) RemoveStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor, related ...*ShopStaff) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Staffid, nil)
+		queries.SetScanner(&rel.StaffID, nil)
 		if rel.R != nil {
-			rel.R.StaffidUser = nil
+			rel.R.Staff = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("staffid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("staff_id")); err != nil {
 			return err
 		}
 	}
@@ -4167,16 +4167,16 @@ func (o *User) RemoveStaffidShopStaffs(ctx context.Context, exec boil.ContextExe
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.StaffidShopStaffs {
+		for i, ri := range o.R.StaffShopStaffs {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.StaffidShopStaffs)
+			ln := len(o.R.StaffShopStaffs)
 			if ln > 1 && i < ln-1 {
-				o.R.StaffidShopStaffs[i] = o.R.StaffidShopStaffs[ln-1]
+				o.R.StaffShopStaffs[i] = o.R.StaffShopStaffs[ln-1]
 			}
-			o.R.StaffidShopStaffs = o.R.StaffidShopStaffs[:ln-1]
+			o.R.StaffShopStaffs = o.R.StaffShopStaffs[:ln-1]
 			break
 		}
 	}
@@ -4184,22 +4184,22 @@ func (o *User) RemoveStaffidShopStaffs(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddUseridStaffNotificationRecipients adds the given related objects to the existing relationships
+// AddStaffNotificationRecipients adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridStaffNotificationRecipients.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaffNotificationRecipient) error {
+// Appends related to o.R.StaffNotificationRecipients.
+// Sets related.R.User appropriately.
+func (o *User) AddStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaffNotificationRecipient) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"staff_notification_recipients\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, staffNotificationRecipientPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4213,38 +4213,38 @@ func (o *User) AddUseridStaffNotificationRecipients(ctx context.Context, exec bo
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridStaffNotificationRecipients: related,
+			StaffNotificationRecipients: related,
 		}
 	} else {
-		o.R.UseridStaffNotificationRecipients = append(o.R.UseridStaffNotificationRecipients, related...)
+		o.R.StaffNotificationRecipients = append(o.R.StaffNotificationRecipients, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &staffNotificationRecipientR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridStaffNotificationRecipients removes all previously related items of the
+// SetStaffNotificationRecipients removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridStaffNotificationRecipients accordingly.
-// Replaces o.R.UseridStaffNotificationRecipients with related.
-// Sets related.R.UseridUser's UseridStaffNotificationRecipients accordingly.
-func (o *User) SetUseridStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaffNotificationRecipient) error {
-	query := "update \"staff_notification_recipients\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's StaffNotificationRecipients accordingly.
+// Replaces o.R.StaffNotificationRecipients with related.
+// Sets related.R.User's StaffNotificationRecipients accordingly.
+func (o *User) SetStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaffNotificationRecipient) error {
+	query := "update \"staff_notification_recipients\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4257,35 +4257,35 @@ func (o *User) SetUseridStaffNotificationRecipients(ctx context.Context, exec bo
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridStaffNotificationRecipients {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.StaffNotificationRecipients {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridStaffNotificationRecipients = nil
+		o.R.StaffNotificationRecipients = nil
 	}
 
-	return o.AddUseridStaffNotificationRecipients(ctx, exec, insert, related...)
+	return o.AddStaffNotificationRecipients(ctx, exec, insert, related...)
 }
 
-// RemoveUseridStaffNotificationRecipients relationships from objects passed in.
-// Removes related items from R.UseridStaffNotificationRecipients (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, related ...*StaffNotificationRecipient) error {
+// RemoveStaffNotificationRecipients relationships from objects passed in.
+// Removes related items from R.StaffNotificationRecipients (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, related ...*StaffNotificationRecipient) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4294,16 +4294,16 @@ func (o *User) RemoveUseridStaffNotificationRecipients(ctx context.Context, exec
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridStaffNotificationRecipients {
+		for i, ri := range o.R.StaffNotificationRecipients {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridStaffNotificationRecipients)
+			ln := len(o.R.StaffNotificationRecipients)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridStaffNotificationRecipients[i] = o.R.UseridStaffNotificationRecipients[ln-1]
+				o.R.StaffNotificationRecipients[i] = o.R.StaffNotificationRecipients[ln-1]
 			}
-			o.R.UseridStaffNotificationRecipients = o.R.UseridStaffNotificationRecipients[:ln-1]
+			o.R.StaffNotificationRecipients = o.R.StaffNotificationRecipients[:ln-1]
 			break
 		}
 	}
@@ -4311,22 +4311,22 @@ func (o *User) RemoveUseridStaffNotificationRecipients(ctx context.Context, exec
 	return nil
 }
 
-// AddUseridUserAddresses adds the given related objects to the existing relationships
+// AddUserAddresses adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
-// Appends related to o.R.UseridUserAddresses.
-// Sets related.R.UseridUser appropriately.
-func (o *User) AddUseridUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
+// Appends related to o.R.UserAddresses.
+// Sets related.R.User appropriately.
+func (o *User) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"user_addresses\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 				strmangle.WhereClause("\"", "\"", 2, userAddressPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4340,38 +4340,38 @@ func (o *User) AddUseridUserAddresses(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Userid, o.ID)
+			queries.Assign(&rel.UserID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &userR{
-			UseridUserAddresses: related,
+			UserAddresses: related,
 		}
 	} else {
-		o.R.UseridUserAddresses = append(o.R.UseridUserAddresses, related...)
+		o.R.UserAddresses = append(o.R.UserAddresses, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &userAddressR{
-				UseridUser: o,
+				User: o,
 			}
 		} else {
-			rel.R.UseridUser = o
+			rel.R.User = o
 		}
 	}
 	return nil
 }
 
-// SetUseridUserAddresses removes all previously related items of the
+// SetUserAddresses removes all previously related items of the
 // user replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.UseridUser's UseridUserAddresses accordingly.
-// Replaces o.R.UseridUserAddresses with related.
-// Sets related.R.UseridUser's UseridUserAddresses accordingly.
-func (o *User) SetUseridUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
-	query := "update \"user_addresses\" set \"userid\" = null where \"userid\" = $1"
+// Sets o.R.User's UserAddresses accordingly.
+// Replaces o.R.UserAddresses with related.
+// Sets related.R.User's UserAddresses accordingly.
+func (o *User) SetUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
+	query := "update \"user_addresses\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4384,35 +4384,35 @@ func (o *User) SetUseridUserAddresses(ctx context.Context, exec boil.ContextExec
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.UseridUserAddresses {
-			queries.SetScanner(&rel.Userid, nil)
+		for _, rel := range o.R.UserAddresses {
+			queries.SetScanner(&rel.UserID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		o.R.UseridUserAddresses = nil
+		o.R.UserAddresses = nil
 	}
 
-	return o.AddUseridUserAddresses(ctx, exec, insert, related...)
+	return o.AddUserAddresses(ctx, exec, insert, related...)
 }
 
-// RemoveUseridUserAddresses relationships from objects passed in.
-// Removes related items from R.UseridUserAddresses (uses pointer comparison, removal does not keep order)
-// Sets related.R.UseridUser.
-func (o *User) RemoveUseridUserAddresses(ctx context.Context, exec boil.ContextExecutor, related ...*UserAddress) error {
+// RemoveUserAddresses relationships from objects passed in.
+// Removes related items from R.UserAddresses (uses pointer comparison, removal does not keep order)
+// Sets related.R.User.
+func (o *User) RemoveUserAddresses(ctx context.Context, exec boil.ContextExecutor, related ...*UserAddress) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Userid, nil)
+		queries.SetScanner(&rel.UserID, nil)
 		if rel.R != nil {
-			rel.R.UseridUser = nil
+			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4421,16 +4421,16 @@ func (o *User) RemoveUseridUserAddresses(ctx context.Context, exec boil.ContextE
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.UseridUserAddresses {
+		for i, ri := range o.R.UserAddresses {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.UseridUserAddresses)
+			ln := len(o.R.UserAddresses)
 			if ln > 1 && i < ln-1 {
-				o.R.UseridUserAddresses[i] = o.R.UseridUserAddresses[ln-1]
+				o.R.UserAddresses[i] = o.R.UserAddresses[ln-1]
 			}
-			o.R.UseridUserAddresses = o.R.UseridUserAddresses[:ln-1]
+			o.R.UserAddresses = o.R.UserAddresses[:ln-1]
 			break
 		}
 	}

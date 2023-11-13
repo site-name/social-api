@@ -25,11 +25,11 @@ import (
 // InvoiceEvent is an object representing the database table.
 type InvoiceEvent struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat   null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Invoiceid  null.String `boil:"invoiceid" json:"invoiceid,omitempty" toml:"invoiceid" yaml:"invoiceid,omitempty"`
-	Orderid    null.String `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
-	Userid     null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
+	InvoiceID  null.String `boil:"invoice_id" json:"invoice_id,omitempty" toml:"invoice_id" yaml:"invoice_id,omitempty"`
+	OrderID    null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	Parameters null.String `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 
 	R *invoiceEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,37 +38,37 @@ type InvoiceEvent struct {
 
 var InvoiceEventColumns = struct {
 	ID         string
-	Createat   string
+	CreateAt   string
 	Type       string
-	Invoiceid  string
-	Orderid    string
-	Userid     string
+	InvoiceID  string
+	OrderID    string
+	UserID     string
 	Parameters string
 }{
 	ID:         "id",
-	Createat:   "createat",
+	CreateAt:   "create_at",
 	Type:       "type",
-	Invoiceid:  "invoiceid",
-	Orderid:    "orderid",
-	Userid:     "userid",
+	InvoiceID:  "invoice_id",
+	OrderID:    "order_id",
+	UserID:     "user_id",
 	Parameters: "parameters",
 }
 
 var InvoiceEventTableColumns = struct {
 	ID         string
-	Createat   string
+	CreateAt   string
 	Type       string
-	Invoiceid  string
-	Orderid    string
-	Userid     string
+	InvoiceID  string
+	OrderID    string
+	UserID     string
 	Parameters string
 }{
 	ID:         "invoice_events.id",
-	Createat:   "invoice_events.createat",
+	CreateAt:   "invoice_events.create_at",
 	Type:       "invoice_events.type",
-	Invoiceid:  "invoice_events.invoiceid",
-	Orderid:    "invoice_events.orderid",
-	Userid:     "invoice_events.userid",
+	InvoiceID:  "invoice_events.invoice_id",
+	OrderID:    "invoice_events.order_id",
+	UserID:     "invoice_events.user_id",
 	Parameters: "invoice_events.parameters",
 }
 
@@ -76,38 +76,38 @@ var InvoiceEventTableColumns = struct {
 
 var InvoiceEventWhere = struct {
 	ID         whereHelperstring
-	Createat   whereHelpernull_Int64
+	CreateAt   whereHelpernull_Int64
 	Type       whereHelpernull_String
-	Invoiceid  whereHelpernull_String
-	Orderid    whereHelpernull_String
-	Userid     whereHelpernull_String
+	InvoiceID  whereHelpernull_String
+	OrderID    whereHelpernull_String
+	UserID     whereHelpernull_String
 	Parameters whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"invoice_events\".\"id\""},
-	Createat:   whereHelpernull_Int64{field: "\"invoice_events\".\"createat\""},
+	CreateAt:   whereHelpernull_Int64{field: "\"invoice_events\".\"create_at\""},
 	Type:       whereHelpernull_String{field: "\"invoice_events\".\"type\""},
-	Invoiceid:  whereHelpernull_String{field: "\"invoice_events\".\"invoiceid\""},
-	Orderid:    whereHelpernull_String{field: "\"invoice_events\".\"orderid\""},
-	Userid:     whereHelpernull_String{field: "\"invoice_events\".\"userid\""},
+	InvoiceID:  whereHelpernull_String{field: "\"invoice_events\".\"invoice_id\""},
+	OrderID:    whereHelpernull_String{field: "\"invoice_events\".\"order_id\""},
+	UserID:     whereHelpernull_String{field: "\"invoice_events\".\"user_id\""},
 	Parameters: whereHelpernull_String{field: "\"invoice_events\".\"parameters\""},
 }
 
 // InvoiceEventRels is where relationship names are stored.
 var InvoiceEventRels = struct {
-	InvoiceidInvoice string
-	OrderidOrder     string
-	UseridUser       string
+	Invoice string
+	Order   string
+	User    string
 }{
-	InvoiceidInvoice: "InvoiceidInvoice",
-	OrderidOrder:     "OrderidOrder",
-	UseridUser:       "UseridUser",
+	Invoice: "Invoice",
+	Order:   "Order",
+	User:    "User",
 }
 
 // invoiceEventR is where relationships are stored.
 type invoiceEventR struct {
-	InvoiceidInvoice *Invoice `boil:"InvoiceidInvoice" json:"InvoiceidInvoice" toml:"InvoiceidInvoice" yaml:"InvoiceidInvoice"`
-	OrderidOrder     *Order   `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
-	UseridUser       *User    `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
+	Invoice *Invoice `boil:"Invoice" json:"Invoice" toml:"Invoice" yaml:"Invoice"`
+	Order   *Order   `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	User    *User    `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
@@ -115,34 +115,34 @@ func (*invoiceEventR) NewStruct() *invoiceEventR {
 	return &invoiceEventR{}
 }
 
-func (r *invoiceEventR) GetInvoiceidInvoice() *Invoice {
+func (r *invoiceEventR) GetInvoice() *Invoice {
 	if r == nil {
 		return nil
 	}
-	return r.InvoiceidInvoice
+	return r.Invoice
 }
 
-func (r *invoiceEventR) GetOrderidOrder() *Order {
+func (r *invoiceEventR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
-func (r *invoiceEventR) GetUseridUser() *User {
+func (r *invoiceEventR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
 // invoiceEventL is where Load methods for each relationship are stored.
 type invoiceEventL struct{}
 
 var (
-	invoiceEventAllColumns            = []string{"id", "createat", "type", "invoiceid", "orderid", "userid", "parameters"}
+	invoiceEventAllColumns            = []string{"id", "create_at", "type", "invoice_id", "order_id", "user_id", "parameters"}
 	invoiceEventColumnsWithoutDefault = []string{"id"}
-	invoiceEventColumnsWithDefault    = []string{"createat", "type", "invoiceid", "orderid", "userid", "parameters"}
+	invoiceEventColumnsWithDefault    = []string{"create_at", "type", "invoice_id", "order_id", "user_id", "parameters"}
 	invoiceEventPrimaryKeyColumns     = []string{"id"}
 	invoiceEventGeneratedColumns      = []string{}
 )
@@ -425,10 +425,10 @@ func (q invoiceEventQuery) Exists(ctx context.Context, exec boil.ContextExecutor
 	return count > 0, nil
 }
 
-// InvoiceidInvoice pointed to by the foreign key.
-func (o *InvoiceEvent) InvoiceidInvoice(mods ...qm.QueryMod) invoiceQuery {
+// Invoice pointed to by the foreign key.
+func (o *InvoiceEvent) Invoice(mods ...qm.QueryMod) invoiceQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Invoiceid),
+		qm.Where("\"id\" = ?", o.InvoiceID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -436,10 +436,10 @@ func (o *InvoiceEvent) InvoiceidInvoice(mods ...qm.QueryMod) invoiceQuery {
 	return Invoices(queryMods...)
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *InvoiceEvent) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *InvoiceEvent) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -447,10 +447,10 @@ func (o *InvoiceEvent) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *InvoiceEvent) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *InvoiceEvent) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -458,9 +458,9 @@ func (o *InvoiceEvent) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// LoadInvoiceidInvoice allows an eager lookup of values, cached into the
+// LoadInvoice allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceEventL) LoadInvoiceidInvoice(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
+func (invoiceEventL) LoadInvoice(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
 	var slice []*InvoiceEvent
 	var object *InvoiceEvent
 
@@ -491,8 +491,8 @@ func (invoiceEventL) LoadInvoiceidInvoice(ctx context.Context, e boil.ContextExe
 		if object.R == nil {
 			object.R = &invoiceEventR{}
 		}
-		if !queries.IsNil(object.Invoiceid) {
-			args = append(args, object.Invoiceid)
+		if !queries.IsNil(object.InvoiceID) {
+			args = append(args, object.InvoiceID)
 		}
 
 	} else {
@@ -503,13 +503,13 @@ func (invoiceEventL) LoadInvoiceidInvoice(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Invoiceid) {
+				if queries.Equal(a, obj.InvoiceID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Invoiceid) {
-				args = append(args, obj.Invoiceid)
+			if !queries.IsNil(obj.InvoiceID) {
+				args = append(args, obj.InvoiceID)
 			}
 
 		}
@@ -558,22 +558,22 @@ func (invoiceEventL) LoadInvoiceidInvoice(ctx context.Context, e boil.ContextExe
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.InvoiceidInvoice = foreign
+		object.R.Invoice = foreign
 		if foreign.R == nil {
 			foreign.R = &invoiceR{}
 		}
-		foreign.R.InvoiceidInvoiceEvents = append(foreign.R.InvoiceidInvoiceEvents, object)
+		foreign.R.InvoiceEvents = append(foreign.R.InvoiceEvents, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Invoiceid, foreign.ID) {
-				local.R.InvoiceidInvoice = foreign
+			if queries.Equal(local.InvoiceID, foreign.ID) {
+				local.R.Invoice = foreign
 				if foreign.R == nil {
 					foreign.R = &invoiceR{}
 				}
-				foreign.R.InvoiceidInvoiceEvents = append(foreign.R.InvoiceidInvoiceEvents, local)
+				foreign.R.InvoiceEvents = append(foreign.R.InvoiceEvents, local)
 				break
 			}
 		}
@@ -582,9 +582,9 @@ func (invoiceEventL) LoadInvoiceidInvoice(ctx context.Context, e boil.ContextExe
 	return nil
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
+func (invoiceEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
 	var slice []*InvoiceEvent
 	var object *InvoiceEvent
 
@@ -615,8 +615,8 @@ func (invoiceEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &invoiceEventR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -627,13 +627,13 @@ func (invoiceEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -682,22 +682,22 @@ func (invoiceEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecuto
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidInvoiceEvents = append(foreign.R.OrderidInvoiceEvents, object)
+		foreign.R.InvoiceEvents = append(foreign.R.InvoiceEvents, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidInvoiceEvents = append(foreign.R.OrderidInvoiceEvents, local)
+				foreign.R.InvoiceEvents = append(foreign.R.InvoiceEvents, local)
 				break
 			}
 		}
@@ -706,9 +706,9 @@ func (invoiceEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecuto
 	return nil
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
+func (invoiceEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
 	var slice []*InvoiceEvent
 	var object *InvoiceEvent
 
@@ -739,8 +739,8 @@ func (invoiceEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &invoiceEventR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -751,13 +751,13 @@ func (invoiceEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -806,22 +806,22 @@ func (invoiceEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridInvoiceEvents = append(foreign.R.UseridInvoiceEvents, object)
+		foreign.R.InvoiceEvents = append(foreign.R.InvoiceEvents, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridInvoiceEvents = append(foreign.R.UseridInvoiceEvents, local)
+				foreign.R.InvoiceEvents = append(foreign.R.InvoiceEvents, local)
 				break
 			}
 		}
@@ -830,10 +830,10 @@ func (invoiceEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// SetInvoiceidInvoice of the invoiceEvent to the related item.
-// Sets o.R.InvoiceidInvoice to related.
-// Adds o to related.R.InvoiceidInvoiceEvents.
-func (o *InvoiceEvent) SetInvoiceidInvoice(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Invoice) error {
+// SetInvoice of the invoiceEvent to the related item.
+// Sets o.R.Invoice to related.
+// Adds o to related.R.InvoiceEvents.
+func (o *InvoiceEvent) SetInvoice(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Invoice) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -843,7 +843,7 @@ func (o *InvoiceEvent) SetInvoiceidInvoice(ctx context.Context, exec boil.Contex
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"invoice_events\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"invoiceid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"invoice_id"}),
 		strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -857,63 +857,63 @@ func (o *InvoiceEvent) SetInvoiceidInvoice(ctx context.Context, exec boil.Contex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Invoiceid, related.ID)
+	queries.Assign(&o.InvoiceID, related.ID)
 	if o.R == nil {
 		o.R = &invoiceEventR{
-			InvoiceidInvoice: related,
+			Invoice: related,
 		}
 	} else {
-		o.R.InvoiceidInvoice = related
+		o.R.Invoice = related
 	}
 
 	if related.R == nil {
 		related.R = &invoiceR{
-			InvoiceidInvoiceEvents: InvoiceEventSlice{o},
+			InvoiceEvents: InvoiceEventSlice{o},
 		}
 	} else {
-		related.R.InvoiceidInvoiceEvents = append(related.R.InvoiceidInvoiceEvents, o)
+		related.R.InvoiceEvents = append(related.R.InvoiceEvents, o)
 	}
 
 	return nil
 }
 
-// RemoveInvoiceidInvoice relationship.
-// Sets o.R.InvoiceidInvoice to nil.
+// RemoveInvoice relationship.
+// Sets o.R.Invoice to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *InvoiceEvent) RemoveInvoiceidInvoice(ctx context.Context, exec boil.ContextExecutor, related *Invoice) error {
+func (o *InvoiceEvent) RemoveInvoice(ctx context.Context, exec boil.ContextExecutor, related *Invoice) error {
 	var err error
 
-	queries.SetScanner(&o.Invoiceid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("invoiceid")); err != nil {
+	queries.SetScanner(&o.InvoiceID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("invoice_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.InvoiceidInvoice = nil
+		o.R.Invoice = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.InvoiceidInvoiceEvents {
-		if queries.Equal(o.Invoiceid, ri.Invoiceid) {
+	for i, ri := range related.R.InvoiceEvents {
+		if queries.Equal(o.InvoiceID, ri.InvoiceID) {
 			continue
 		}
 
-		ln := len(related.R.InvoiceidInvoiceEvents)
+		ln := len(related.R.InvoiceEvents)
 		if ln > 1 && i < ln-1 {
-			related.R.InvoiceidInvoiceEvents[i] = related.R.InvoiceidInvoiceEvents[ln-1]
+			related.R.InvoiceEvents[i] = related.R.InvoiceEvents[ln-1]
 		}
-		related.R.InvoiceidInvoiceEvents = related.R.InvoiceidInvoiceEvents[:ln-1]
+		related.R.InvoiceEvents = related.R.InvoiceEvents[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetOrderidOrder of the invoiceEvent to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidInvoiceEvents.
-func (o *InvoiceEvent) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the invoiceEvent to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.InvoiceEvents.
+func (o *InvoiceEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -923,7 +923,7 @@ func (o *InvoiceEvent) SetOrderidOrder(ctx context.Context, exec boil.ContextExe
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"invoice_events\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -937,63 +937,63 @@ func (o *InvoiceEvent) SetOrderidOrder(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &invoiceEventR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidInvoiceEvents: InvoiceEventSlice{o},
+			InvoiceEvents: InvoiceEventSlice{o},
 		}
 	} else {
-		related.R.OrderidInvoiceEvents = append(related.R.OrderidInvoiceEvents, o)
+		related.R.InvoiceEvents = append(related.R.InvoiceEvents, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *InvoiceEvent) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *InvoiceEvent) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidInvoiceEvents {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.InvoiceEvents {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidInvoiceEvents)
+		ln := len(related.R.InvoiceEvents)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidInvoiceEvents[i] = related.R.OrderidInvoiceEvents[ln-1]
+			related.R.InvoiceEvents[i] = related.R.InvoiceEvents[ln-1]
 		}
-		related.R.OrderidInvoiceEvents = related.R.OrderidInvoiceEvents[:ln-1]
+		related.R.InvoiceEvents = related.R.InvoiceEvents[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetUseridUser of the invoiceEvent to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridInvoiceEvents.
-func (o *InvoiceEvent) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the invoiceEvent to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.InvoiceEvents.
+func (o *InvoiceEvent) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1003,7 +1003,7 @@ func (o *InvoiceEvent) SetUseridUser(ctx context.Context, exec boil.ContextExecu
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"invoice_events\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1017,54 +1017,54 @@ func (o *InvoiceEvent) SetUseridUser(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &invoiceEventR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridInvoiceEvents: InvoiceEventSlice{o},
+			InvoiceEvents: InvoiceEventSlice{o},
 		}
 	} else {
-		related.R.UseridInvoiceEvents = append(related.R.UseridInvoiceEvents, o)
+		related.R.InvoiceEvents = append(related.R.InvoiceEvents, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *InvoiceEvent) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *InvoiceEvent) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridInvoiceEvents {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.InvoiceEvents {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridInvoiceEvents)
+		ln := len(related.R.InvoiceEvents)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridInvoiceEvents[i] = related.R.UseridInvoiceEvents[ln-1]
+			related.R.InvoiceEvents[i] = related.R.InvoiceEvents[ln-1]
 		}
-		related.R.UseridInvoiceEvents = related.R.UseridInvoiceEvents[:ln-1]
+		related.R.InvoiceEvents = related.R.InvoiceEvents[:ln-1]
 		break
 	}
 	return nil

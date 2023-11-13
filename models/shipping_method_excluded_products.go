@@ -25,8 +25,8 @@ import (
 // ShippingMethodExcludedProduct is an object representing the database table.
 type ShippingMethodExcludedProduct struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Shippingmethodid null.String `boil:"shippingmethodid" json:"shippingmethodid,omitempty" toml:"shippingmethodid" yaml:"shippingmethodid,omitempty"`
-	Productid        null.String `boil:"productid" json:"productid,omitempty" toml:"productid" yaml:"productid,omitempty"`
+	ShippingMethodID null.String `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	ProductID        null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
 
 	R *shippingMethodExcludedProductR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodExcludedProductL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,49 +34,49 @@ type ShippingMethodExcludedProduct struct {
 
 var ShippingMethodExcludedProductColumns = struct {
 	ID               string
-	Shippingmethodid string
-	Productid        string
+	ShippingMethodID string
+	ProductID        string
 }{
 	ID:               "id",
-	Shippingmethodid: "shippingmethodid",
-	Productid:        "productid",
+	ShippingMethodID: "shipping_method_id",
+	ProductID:        "product_id",
 }
 
 var ShippingMethodExcludedProductTableColumns = struct {
 	ID               string
-	Shippingmethodid string
-	Productid        string
+	ShippingMethodID string
+	ProductID        string
 }{
 	ID:               "shipping_method_excluded_products.id",
-	Shippingmethodid: "shipping_method_excluded_products.shippingmethodid",
-	Productid:        "shipping_method_excluded_products.productid",
+	ShippingMethodID: "shipping_method_excluded_products.shipping_method_id",
+	ProductID:        "shipping_method_excluded_products.product_id",
 }
 
 // Generated where
 
 var ShippingMethodExcludedProductWhere = struct {
 	ID               whereHelperstring
-	Shippingmethodid whereHelpernull_String
-	Productid        whereHelpernull_String
+	ShippingMethodID whereHelpernull_String
+	ProductID        whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"shipping_method_excluded_products\".\"id\""},
-	Shippingmethodid: whereHelpernull_String{field: "\"shipping_method_excluded_products\".\"shippingmethodid\""},
-	Productid:        whereHelpernull_String{field: "\"shipping_method_excluded_products\".\"productid\""},
+	ShippingMethodID: whereHelpernull_String{field: "\"shipping_method_excluded_products\".\"shipping_method_id\""},
+	ProductID:        whereHelpernull_String{field: "\"shipping_method_excluded_products\".\"product_id\""},
 }
 
 // ShippingMethodExcludedProductRels is where relationship names are stored.
 var ShippingMethodExcludedProductRels = struct {
-	ProductidProduct               string
-	ShippingmethodidShippingMethod string
+	Product        string
+	ShippingMethod string
 }{
-	ProductidProduct:               "ProductidProduct",
-	ShippingmethodidShippingMethod: "ShippingmethodidShippingMethod",
+	Product:        "Product",
+	ShippingMethod: "ShippingMethod",
 }
 
 // shippingMethodExcludedProductR is where relationships are stored.
 type shippingMethodExcludedProductR struct {
-	ProductidProduct               *Product        `boil:"ProductidProduct" json:"ProductidProduct" toml:"ProductidProduct" yaml:"ProductidProduct"`
-	ShippingmethodidShippingMethod *ShippingMethod `boil:"ShippingmethodidShippingMethod" json:"ShippingmethodidShippingMethod" toml:"ShippingmethodidShippingMethod" yaml:"ShippingmethodidShippingMethod"`
+	Product        *Product        `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
+	ShippingMethod *ShippingMethod `boil:"ShippingMethod" json:"ShippingMethod" toml:"ShippingMethod" yaml:"ShippingMethod"`
 }
 
 // NewStruct creates a new relationship struct
@@ -84,27 +84,27 @@ func (*shippingMethodExcludedProductR) NewStruct() *shippingMethodExcludedProduc
 	return &shippingMethodExcludedProductR{}
 }
 
-func (r *shippingMethodExcludedProductR) GetProductidProduct() *Product {
+func (r *shippingMethodExcludedProductR) GetProduct() *Product {
 	if r == nil {
 		return nil
 	}
-	return r.ProductidProduct
+	return r.Product
 }
 
-func (r *shippingMethodExcludedProductR) GetShippingmethodidShippingMethod() *ShippingMethod {
+func (r *shippingMethodExcludedProductR) GetShippingMethod() *ShippingMethod {
 	if r == nil {
 		return nil
 	}
-	return r.ShippingmethodidShippingMethod
+	return r.ShippingMethod
 }
 
 // shippingMethodExcludedProductL is where Load methods for each relationship are stored.
 type shippingMethodExcludedProductL struct{}
 
 var (
-	shippingMethodExcludedProductAllColumns            = []string{"id", "shippingmethodid", "productid"}
+	shippingMethodExcludedProductAllColumns            = []string{"id", "shipping_method_id", "product_id"}
 	shippingMethodExcludedProductColumnsWithoutDefault = []string{"id"}
-	shippingMethodExcludedProductColumnsWithDefault    = []string{"shippingmethodid", "productid"}
+	shippingMethodExcludedProductColumnsWithDefault    = []string{"shipping_method_id", "product_id"}
 	shippingMethodExcludedProductPrimaryKeyColumns     = []string{"id"}
 	shippingMethodExcludedProductGeneratedColumns      = []string{}
 )
@@ -387,10 +387,10 @@ func (q shippingMethodExcludedProductQuery) Exists(ctx context.Context, exec boi
 	return count > 0, nil
 }
 
-// ProductidProduct pointed to by the foreign key.
-func (o *ShippingMethodExcludedProduct) ProductidProduct(mods ...qm.QueryMod) productQuery {
+// Product pointed to by the foreign key.
+func (o *ShippingMethodExcludedProduct) Product(mods ...qm.QueryMod) productQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productid),
+		qm.Where("\"id\" = ?", o.ProductID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -398,10 +398,10 @@ func (o *ShippingMethodExcludedProduct) ProductidProduct(mods ...qm.QueryMod) pr
 	return Products(queryMods...)
 }
 
-// ShippingmethodidShippingMethod pointed to by the foreign key.
-func (o *ShippingMethodExcludedProduct) ShippingmethodidShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
+// ShippingMethod pointed to by the foreign key.
+func (o *ShippingMethodExcludedProduct) ShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Shippingmethodid),
+		qm.Where("\"id\" = ?", o.ShippingMethodID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *ShippingMethodExcludedProduct) ShippingmethodidShippingMethod(mods ...q
 	return ShippingMethods(queryMods...)
 }
 
-// LoadProductidProduct allows an eager lookup of values, cached into the
+// LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodExcludedProductL) LoadProductidProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
+func (shippingMethodExcludedProductL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodExcludedProduct
 	var object *ShippingMethodExcludedProduct
 
@@ -442,8 +442,8 @@ func (shippingMethodExcludedProductL) LoadProductidProduct(ctx context.Context, 
 		if object.R == nil {
 			object.R = &shippingMethodExcludedProductR{}
 		}
-		if !queries.IsNil(object.Productid) {
-			args = append(args, object.Productid)
+		if !queries.IsNil(object.ProductID) {
+			args = append(args, object.ProductID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (shippingMethodExcludedProductL) LoadProductidProduct(ctx context.Context, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productid) {
+				if queries.Equal(a, obj.ProductID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productid) {
-				args = append(args, obj.Productid)
+			if !queries.IsNil(obj.ProductID) {
+				args = append(args, obj.ProductID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (shippingMethodExcludedProductL) LoadProductidProduct(ctx context.Context, 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductidProduct = foreign
+		object.R.Product = foreign
 		if foreign.R == nil {
 			foreign.R = &productR{}
 		}
-		foreign.R.ProductidShippingMethodExcludedProducts = append(foreign.R.ProductidShippingMethodExcludedProducts, object)
+		foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productid, foreign.ID) {
-				local.R.ProductidProduct = foreign
+			if queries.Equal(local.ProductID, foreign.ID) {
+				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
 				}
-				foreign.R.ProductidShippingMethodExcludedProducts = append(foreign.R.ProductidShippingMethodExcludedProducts, local)
+				foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, local)
 				break
 			}
 		}
@@ -533,9 +533,9 @@ func (shippingMethodExcludedProductL) LoadProductidProduct(ctx context.Context, 
 	return nil
 }
 
-// LoadShippingmethodidShippingMethod allows an eager lookup of values, cached into the
+// LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodExcludedProductL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
+func (shippingMethodExcludedProductL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodExcludedProduct interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodExcludedProduct
 	var object *ShippingMethodExcludedProduct
 
@@ -566,8 +566,8 @@ func (shippingMethodExcludedProductL) LoadShippingmethodidShippingMethod(ctx con
 		if object.R == nil {
 			object.R = &shippingMethodExcludedProductR{}
 		}
-		if !queries.IsNil(object.Shippingmethodid) {
-			args = append(args, object.Shippingmethodid)
+		if !queries.IsNil(object.ShippingMethodID) {
+			args = append(args, object.ShippingMethodID)
 		}
 
 	} else {
@@ -578,13 +578,13 @@ func (shippingMethodExcludedProductL) LoadShippingmethodidShippingMethod(ctx con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Shippingmethodid) {
+				if queries.Equal(a, obj.ShippingMethodID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Shippingmethodid) {
-				args = append(args, obj.Shippingmethodid)
+			if !queries.IsNil(obj.ShippingMethodID) {
+				args = append(args, obj.ShippingMethodID)
 			}
 
 		}
@@ -633,22 +633,22 @@ func (shippingMethodExcludedProductL) LoadShippingmethodidShippingMethod(ctx con
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ShippingmethodidShippingMethod = foreign
+		object.R.ShippingMethod = foreign
 		if foreign.R == nil {
 			foreign.R = &shippingMethodR{}
 		}
-		foreign.R.ShippingmethodidShippingMethodExcludedProducts = append(foreign.R.ShippingmethodidShippingMethodExcludedProducts, object)
+		foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Shippingmethodid, foreign.ID) {
-				local.R.ShippingmethodidShippingMethod = foreign
+			if queries.Equal(local.ShippingMethodID, foreign.ID) {
+				local.R.ShippingMethod = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
 				}
-				foreign.R.ShippingmethodidShippingMethodExcludedProducts = append(foreign.R.ShippingmethodidShippingMethodExcludedProducts, local)
+				foreign.R.ShippingMethodExcludedProducts = append(foreign.R.ShippingMethodExcludedProducts, local)
 				break
 			}
 		}
@@ -657,10 +657,10 @@ func (shippingMethodExcludedProductL) LoadShippingmethodidShippingMethod(ctx con
 	return nil
 }
 
-// SetProductidProduct of the shippingMethodExcludedProduct to the related item.
-// Sets o.R.ProductidProduct to related.
-// Adds o to related.R.ProductidShippingMethodExcludedProducts.
-func (o *ShippingMethodExcludedProduct) SetProductidProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
+// SetProduct of the shippingMethodExcludedProduct to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ShippingMethodExcludedProducts.
+func (o *ShippingMethodExcludedProduct) SetProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -670,7 +670,7 @@ func (o *ShippingMethodExcludedProduct) SetProductidProduct(ctx context.Context,
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"shipping_method_excluded_products\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -684,63 +684,63 @@ func (o *ShippingMethodExcludedProduct) SetProductidProduct(ctx context.Context,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productid, related.ID)
+	queries.Assign(&o.ProductID, related.ID)
 	if o.R == nil {
 		o.R = &shippingMethodExcludedProductR{
-			ProductidProduct: related,
+			Product: related,
 		}
 	} else {
-		o.R.ProductidProduct = related
+		o.R.Product = related
 	}
 
 	if related.R == nil {
 		related.R = &productR{
-			ProductidShippingMethodExcludedProducts: ShippingMethodExcludedProductSlice{o},
+			ShippingMethodExcludedProducts: ShippingMethodExcludedProductSlice{o},
 		}
 	} else {
-		related.R.ProductidShippingMethodExcludedProducts = append(related.R.ProductidShippingMethodExcludedProducts, o)
+		related.R.ShippingMethodExcludedProducts = append(related.R.ShippingMethodExcludedProducts, o)
 	}
 
 	return nil
 }
 
-// RemoveProductidProduct relationship.
-// Sets o.R.ProductidProduct to nil.
+// RemoveProduct relationship.
+// Sets o.R.Product to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodExcludedProduct) RemoveProductidProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
+func (o *ShippingMethodExcludedProduct) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
 	var err error
 
-	queries.SetScanner(&o.Productid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productid")); err != nil {
+	queries.SetScanner(&o.ProductID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductidProduct = nil
+		o.R.Product = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductidShippingMethodExcludedProducts {
-		if queries.Equal(o.Productid, ri.Productid) {
+	for i, ri := range related.R.ShippingMethodExcludedProducts {
+		if queries.Equal(o.ProductID, ri.ProductID) {
 			continue
 		}
 
-		ln := len(related.R.ProductidShippingMethodExcludedProducts)
+		ln := len(related.R.ShippingMethodExcludedProducts)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductidShippingMethodExcludedProducts[i] = related.R.ProductidShippingMethodExcludedProducts[ln-1]
+			related.R.ShippingMethodExcludedProducts[i] = related.R.ShippingMethodExcludedProducts[ln-1]
 		}
-		related.R.ProductidShippingMethodExcludedProducts = related.R.ProductidShippingMethodExcludedProducts[:ln-1]
+		related.R.ShippingMethodExcludedProducts = related.R.ShippingMethodExcludedProducts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetShippingmethodidShippingMethod of the shippingMethodExcludedProduct to the related item.
-// Sets o.R.ShippingmethodidShippingMethod to related.
-// Adds o to related.R.ShippingmethodidShippingMethodExcludedProducts.
-func (o *ShippingMethodExcludedProduct) SetShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
+// SetShippingMethod of the shippingMethodExcludedProduct to the related item.
+// Sets o.R.ShippingMethod to related.
+// Adds o to related.R.ShippingMethodExcludedProducts.
+func (o *ShippingMethodExcludedProduct) SetShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -750,7 +750,7 @@ func (o *ShippingMethodExcludedProduct) SetShippingmethodidShippingMethod(ctx co
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"shipping_method_excluded_products\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"shippingmethodid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodExcludedProductPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -764,54 +764,54 @@ func (o *ShippingMethodExcludedProduct) SetShippingmethodidShippingMethod(ctx co
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Shippingmethodid, related.ID)
+	queries.Assign(&o.ShippingMethodID, related.ID)
 	if o.R == nil {
 		o.R = &shippingMethodExcludedProductR{
-			ShippingmethodidShippingMethod: related,
+			ShippingMethod: related,
 		}
 	} else {
-		o.R.ShippingmethodidShippingMethod = related
+		o.R.ShippingMethod = related
 	}
 
 	if related.R == nil {
 		related.R = &shippingMethodR{
-			ShippingmethodidShippingMethodExcludedProducts: ShippingMethodExcludedProductSlice{o},
+			ShippingMethodExcludedProducts: ShippingMethodExcludedProductSlice{o},
 		}
 	} else {
-		related.R.ShippingmethodidShippingMethodExcludedProducts = append(related.R.ShippingmethodidShippingMethodExcludedProducts, o)
+		related.R.ShippingMethodExcludedProducts = append(related.R.ShippingMethodExcludedProducts, o)
 	}
 
 	return nil
 }
 
-// RemoveShippingmethodidShippingMethod relationship.
-// Sets o.R.ShippingmethodidShippingMethod to nil.
+// RemoveShippingMethod relationship.
+// Sets o.R.ShippingMethod to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodExcludedProduct) RemoveShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
+func (o *ShippingMethodExcludedProduct) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
 	var err error
 
-	queries.SetScanner(&o.Shippingmethodid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shippingmethodid")); err != nil {
+	queries.SetScanner(&o.ShippingMethodID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ShippingmethodidShippingMethod = nil
+		o.R.ShippingMethod = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ShippingmethodidShippingMethodExcludedProducts {
-		if queries.Equal(o.Shippingmethodid, ri.Shippingmethodid) {
+	for i, ri := range related.R.ShippingMethodExcludedProducts {
+		if queries.Equal(o.ShippingMethodID, ri.ShippingMethodID) {
 			continue
 		}
 
-		ln := len(related.R.ShippingmethodidShippingMethodExcludedProducts)
+		ln := len(related.R.ShippingMethodExcludedProducts)
 		if ln > 1 && i < ln-1 {
-			related.R.ShippingmethodidShippingMethodExcludedProducts[i] = related.R.ShippingmethodidShippingMethodExcludedProducts[ln-1]
+			related.R.ShippingMethodExcludedProducts[i] = related.R.ShippingMethodExcludedProducts[ln-1]
 		}
-		related.R.ShippingmethodidShippingMethodExcludedProducts = related.R.ShippingmethodidShippingMethodExcludedProducts[:ln-1]
+		related.R.ShippingMethodExcludedProducts = related.R.ShippingMethodExcludedProducts[:ln-1]
 		break
 	}
 	return nil

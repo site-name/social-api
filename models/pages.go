@@ -27,15 +27,15 @@ type Page struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Title           null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	Slug            null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Pagetypeid      null.String `boil:"pagetypeid" json:"pagetypeid,omitempty" toml:"pagetypeid" yaml:"pagetypeid,omitempty"`
+	PageTypeID      null.String `boil:"page_type_id" json:"page_type_id,omitempty" toml:"page_type_id" yaml:"page_type_id,omitempty"`
 	Content         null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	Createat        null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata null.JSON   `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
-	Publicationdate null.Time   `boil:"publicationdate" json:"publicationdate,omitempty" toml:"publicationdate" yaml:"publicationdate,omitempty"`
-	Ispublished     null.Bool   `boil:"ispublished" json:"ispublished,omitempty" toml:"ispublished" yaml:"ispublished,omitempty"`
-	Seotitle        null.String `boil:"seotitle" json:"seotitle,omitempty" toml:"seotitle" yaml:"seotitle,omitempty"`
-	Seodescription  null.String `boil:"seodescription" json:"seodescription,omitempty" toml:"seodescription" yaml:"seodescription,omitempty"`
+	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	PublicationDate null.Time   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
+	IsPublished     null.Bool   `boil:"is_published" json:"is_published,omitempty" toml:"is_published" yaml:"is_published,omitempty"`
+	SeoTitle        null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription  null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *pageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,56 +45,56 @@ var PageColumns = struct {
 	ID              string
 	Title           string
 	Slug            string
-	Pagetypeid      string
+	PageTypeID      string
 	Content         string
-	Createat        string
+	CreateAt        string
 	Metadata        string
-	Privatemetadata string
-	Publicationdate string
-	Ispublished     string
-	Seotitle        string
-	Seodescription  string
+	PrivateMetadata string
+	PublicationDate string
+	IsPublished     string
+	SeoTitle        string
+	SeoDescription  string
 }{
 	ID:              "id",
 	Title:           "title",
 	Slug:            "slug",
-	Pagetypeid:      "pagetypeid",
+	PageTypeID:      "page_type_id",
 	Content:         "content",
-	Createat:        "createat",
+	CreateAt:        "create_at",
 	Metadata:        "metadata",
-	Privatemetadata: "privatemetadata",
-	Publicationdate: "publicationdate",
-	Ispublished:     "ispublished",
-	Seotitle:        "seotitle",
-	Seodescription:  "seodescription",
+	PrivateMetadata: "private_metadata",
+	PublicationDate: "publication_date",
+	IsPublished:     "is_published",
+	SeoTitle:        "seo_title",
+	SeoDescription:  "seo_description",
 }
 
 var PageTableColumns = struct {
 	ID              string
 	Title           string
 	Slug            string
-	Pagetypeid      string
+	PageTypeID      string
 	Content         string
-	Createat        string
+	CreateAt        string
 	Metadata        string
-	Privatemetadata string
-	Publicationdate string
-	Ispublished     string
-	Seotitle        string
-	Seodescription  string
+	PrivateMetadata string
+	PublicationDate string
+	IsPublished     string
+	SeoTitle        string
+	SeoDescription  string
 }{
 	ID:              "pages.id",
 	Title:           "pages.title",
 	Slug:            "pages.slug",
-	Pagetypeid:      "pages.pagetypeid",
+	PageTypeID:      "pages.page_type_id",
 	Content:         "pages.content",
-	Createat:        "pages.createat",
+	CreateAt:        "pages.create_at",
 	Metadata:        "pages.metadata",
-	Privatemetadata: "pages.privatemetadata",
-	Publicationdate: "pages.publicationdate",
-	Ispublished:     "pages.ispublished",
-	Seotitle:        "pages.seotitle",
-	Seodescription:  "pages.seodescription",
+	PrivateMetadata: "pages.private_metadata",
+	PublicationDate: "pages.publication_date",
+	IsPublished:     "pages.is_published",
+	SeoTitle:        "pages.seo_title",
+	SeoDescription:  "pages.seo_description",
 }
 
 // Generated where
@@ -103,49 +103,49 @@ var PageWhere = struct {
 	ID              whereHelperstring
 	Title           whereHelpernull_String
 	Slug            whereHelpernull_String
-	Pagetypeid      whereHelpernull_String
+	PageTypeID      whereHelpernull_String
 	Content         whereHelpernull_String
-	Createat        whereHelpernull_Int64
+	CreateAt        whereHelpernull_Int64
 	Metadata        whereHelpernull_JSON
-	Privatemetadata whereHelpernull_JSON
-	Publicationdate whereHelpernull_Time
-	Ispublished     whereHelpernull_Bool
-	Seotitle        whereHelpernull_String
-	Seodescription  whereHelpernull_String
+	PrivateMetadata whereHelpernull_JSON
+	PublicationDate whereHelpernull_Time
+	IsPublished     whereHelpernull_Bool
+	SeoTitle        whereHelpernull_String
+	SeoDescription  whereHelpernull_String
 }{
 	ID:              whereHelperstring{field: "\"pages\".\"id\""},
 	Title:           whereHelpernull_String{field: "\"pages\".\"title\""},
 	Slug:            whereHelpernull_String{field: "\"pages\".\"slug\""},
-	Pagetypeid:      whereHelpernull_String{field: "\"pages\".\"pagetypeid\""},
+	PageTypeID:      whereHelpernull_String{field: "\"pages\".\"page_type_id\""},
 	Content:         whereHelpernull_String{field: "\"pages\".\"content\""},
-	Createat:        whereHelpernull_Int64{field: "\"pages\".\"createat\""},
+	CreateAt:        whereHelpernull_Int64{field: "\"pages\".\"create_at\""},
 	Metadata:        whereHelpernull_JSON{field: "\"pages\".\"metadata\""},
-	Privatemetadata: whereHelpernull_JSON{field: "\"pages\".\"privatemetadata\""},
-	Publicationdate: whereHelpernull_Time{field: "\"pages\".\"publicationdate\""},
-	Ispublished:     whereHelpernull_Bool{field: "\"pages\".\"ispublished\""},
-	Seotitle:        whereHelpernull_String{field: "\"pages\".\"seotitle\""},
-	Seodescription:  whereHelpernull_String{field: "\"pages\".\"seodescription\""},
+	PrivateMetadata: whereHelpernull_JSON{field: "\"pages\".\"private_metadata\""},
+	PublicationDate: whereHelpernull_Time{field: "\"pages\".\"publication_date\""},
+	IsPublished:     whereHelpernull_Bool{field: "\"pages\".\"is_published\""},
+	SeoTitle:        whereHelpernull_String{field: "\"pages\".\"seo_title\""},
+	SeoDescription:  whereHelpernull_String{field: "\"pages\".\"seo_description\""},
 }
 
 // PageRels is where relationship names are stored.
 var PageRels = struct {
-	PagetypeidPageType           string
-	PageidAssignedPageAttributes string
-	PageidMenuItems              string
-	PageidPageTranslations       string
+	PageType               string
+	AssignedPageAttributes string
+	MenuItems              string
+	PageTranslations       string
 }{
-	PagetypeidPageType:           "PagetypeidPageType",
-	PageidAssignedPageAttributes: "PageidAssignedPageAttributes",
-	PageidMenuItems:              "PageidMenuItems",
-	PageidPageTranslations:       "PageidPageTranslations",
+	PageType:               "PageType",
+	AssignedPageAttributes: "AssignedPageAttributes",
+	MenuItems:              "MenuItems",
+	PageTranslations:       "PageTranslations",
 }
 
 // pageR is where relationships are stored.
 type pageR struct {
-	PagetypeidPageType           *PageType                  `boil:"PagetypeidPageType" json:"PagetypeidPageType" toml:"PagetypeidPageType" yaml:"PagetypeidPageType"`
-	PageidAssignedPageAttributes AssignedPageAttributeSlice `boil:"PageidAssignedPageAttributes" json:"PageidAssignedPageAttributes" toml:"PageidAssignedPageAttributes" yaml:"PageidAssignedPageAttributes"`
-	PageidMenuItems              MenuItemSlice              `boil:"PageidMenuItems" json:"PageidMenuItems" toml:"PageidMenuItems" yaml:"PageidMenuItems"`
-	PageidPageTranslations       PageTranslationSlice       `boil:"PageidPageTranslations" json:"PageidPageTranslations" toml:"PageidPageTranslations" yaml:"PageidPageTranslations"`
+	PageType               *PageType                  `boil:"PageType" json:"PageType" toml:"PageType" yaml:"PageType"`
+	AssignedPageAttributes AssignedPageAttributeSlice `boil:"AssignedPageAttributes" json:"AssignedPageAttributes" toml:"AssignedPageAttributes" yaml:"AssignedPageAttributes"`
+	MenuItems              MenuItemSlice              `boil:"MenuItems" json:"MenuItems" toml:"MenuItems" yaml:"MenuItems"`
+	PageTranslations       PageTranslationSlice       `boil:"PageTranslations" json:"PageTranslations" toml:"PageTranslations" yaml:"PageTranslations"`
 }
 
 // NewStruct creates a new relationship struct
@@ -153,41 +153,41 @@ func (*pageR) NewStruct() *pageR {
 	return &pageR{}
 }
 
-func (r *pageR) GetPagetypeidPageType() *PageType {
+func (r *pageR) GetPageType() *PageType {
 	if r == nil {
 		return nil
 	}
-	return r.PagetypeidPageType
+	return r.PageType
 }
 
-func (r *pageR) GetPageidAssignedPageAttributes() AssignedPageAttributeSlice {
+func (r *pageR) GetAssignedPageAttributes() AssignedPageAttributeSlice {
 	if r == nil {
 		return nil
 	}
-	return r.PageidAssignedPageAttributes
+	return r.AssignedPageAttributes
 }
 
-func (r *pageR) GetPageidMenuItems() MenuItemSlice {
+func (r *pageR) GetMenuItems() MenuItemSlice {
 	if r == nil {
 		return nil
 	}
-	return r.PageidMenuItems
+	return r.MenuItems
 }
 
-func (r *pageR) GetPageidPageTranslations() PageTranslationSlice {
+func (r *pageR) GetPageTranslations() PageTranslationSlice {
 	if r == nil {
 		return nil
 	}
-	return r.PageidPageTranslations
+	return r.PageTranslations
 }
 
 // pageL is where Load methods for each relationship are stored.
 type pageL struct{}
 
 var (
-	pageAllColumns            = []string{"id", "title", "slug", "pagetypeid", "content", "createat", "metadata", "privatemetadata", "publicationdate", "ispublished", "seotitle", "seodescription"}
+	pageAllColumns            = []string{"id", "title", "slug", "page_type_id", "content", "create_at", "metadata", "private_metadata", "publication_date", "is_published", "seo_title", "seo_description"}
 	pageColumnsWithoutDefault = []string{"id"}
-	pageColumnsWithDefault    = []string{"title", "slug", "pagetypeid", "content", "createat", "metadata", "privatemetadata", "publicationdate", "ispublished", "seotitle", "seodescription"}
+	pageColumnsWithDefault    = []string{"title", "slug", "page_type_id", "content", "create_at", "metadata", "private_metadata", "publication_date", "is_published", "seo_title", "seo_description"}
 	pagePrimaryKeyColumns     = []string{"id"}
 	pageGeneratedColumns      = []string{}
 )
@@ -470,10 +470,10 @@ func (q pageQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// PagetypeidPageType pointed to by the foreign key.
-func (o *Page) PagetypeidPageType(mods ...qm.QueryMod) pageTypeQuery {
+// PageType pointed to by the foreign key.
+func (o *Page) PageType(mods ...qm.QueryMod) pageTypeQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Pagetypeid),
+		qm.Where("\"id\" = ?", o.PageTypeID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -481,51 +481,51 @@ func (o *Page) PagetypeidPageType(mods ...qm.QueryMod) pageTypeQuery {
 	return PageTypes(queryMods...)
 }
 
-// PageidAssignedPageAttributes retrieves all the assigned_page_attribute's AssignedPageAttributes with an executor via pageid column.
-func (o *Page) PageidAssignedPageAttributes(mods ...qm.QueryMod) assignedPageAttributeQuery {
+// AssignedPageAttributes retrieves all the assigned_page_attribute's AssignedPageAttributes with an executor.
+func (o *Page) AssignedPageAttributes(mods ...qm.QueryMod) assignedPageAttributeQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"assigned_page_attributes\".\"pageid\"=?", o.ID),
+		qm.Where("\"assigned_page_attributes\".\"page_id\"=?", o.ID),
 	)
 
 	return AssignedPageAttributes(queryMods...)
 }
 
-// PageidMenuItems retrieves all the menu_item's MenuItems with an executor via pageid column.
-func (o *Page) PageidMenuItems(mods ...qm.QueryMod) menuItemQuery {
+// MenuItems retrieves all the menu_item's MenuItems with an executor.
+func (o *Page) MenuItems(mods ...qm.QueryMod) menuItemQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"menu_items\".\"pageid\"=?", o.ID),
+		qm.Where("\"menu_items\".\"page_id\"=?", o.ID),
 	)
 
 	return MenuItems(queryMods...)
 }
 
-// PageidPageTranslations retrieves all the page_translation's PageTranslations with an executor via pageid column.
-func (o *Page) PageidPageTranslations(mods ...qm.QueryMod) pageTranslationQuery {
+// PageTranslations retrieves all the page_translation's PageTranslations with an executor.
+func (o *Page) PageTranslations(mods ...qm.QueryMod) pageTranslationQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"page_translations\".\"pageid\"=?", o.ID),
+		qm.Where("\"page_translations\".\"page_id\"=?", o.ID),
 	)
 
 	return PageTranslations(queryMods...)
 }
 
-// LoadPagetypeidPageType allows an eager lookup of values, cached into the
+// LoadPageType allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (pageL) LoadPagetypeidPageType(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -556,8 +556,8 @@ func (pageL) LoadPagetypeidPageType(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &pageR{}
 		}
-		if !queries.IsNil(object.Pagetypeid) {
-			args = append(args, object.Pagetypeid)
+		if !queries.IsNil(object.PageTypeID) {
+			args = append(args, object.PageTypeID)
 		}
 
 	} else {
@@ -568,13 +568,13 @@ func (pageL) LoadPagetypeidPageType(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Pagetypeid) {
+				if queries.Equal(a, obj.PageTypeID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Pagetypeid) {
-				args = append(args, obj.Pagetypeid)
+			if !queries.IsNil(obj.PageTypeID) {
+				args = append(args, obj.PageTypeID)
 			}
 
 		}
@@ -623,22 +623,22 @@ func (pageL) LoadPagetypeidPageType(ctx context.Context, e boil.ContextExecutor,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.PagetypeidPageType = foreign
+		object.R.PageType = foreign
 		if foreign.R == nil {
 			foreign.R = &pageTypeR{}
 		}
-		foreign.R.PagetypeidPages = append(foreign.R.PagetypeidPages, object)
+		foreign.R.Pages = append(foreign.R.Pages, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Pagetypeid, foreign.ID) {
-				local.R.PagetypeidPageType = foreign
+			if queries.Equal(local.PageTypeID, foreign.ID) {
+				local.R.PageType = foreign
 				if foreign.R == nil {
 					foreign.R = &pageTypeR{}
 				}
-				foreign.R.PagetypeidPages = append(foreign.R.PagetypeidPages, local)
+				foreign.R.Pages = append(foreign.R.Pages, local)
 				break
 			}
 		}
@@ -647,9 +647,9 @@ func (pageL) LoadPagetypeidPageType(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// LoadPageidAssignedPageAttributes allows an eager lookup of values, cached into the
+// LoadAssignedPageAttributes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageL) LoadPageidAssignedPageAttributes(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadAssignedPageAttributes(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -689,7 +689,7 @@ func (pageL) LoadPageidAssignedPageAttributes(ctx context.Context, e boil.Contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -704,7 +704,7 @@ func (pageL) LoadPageidAssignedPageAttributes(ctx context.Context, e boil.Contex
 
 	query := NewQuery(
 		qm.From(`assigned_page_attributes`),
-		qm.WhereIn(`assigned_page_attributes.pageid in ?`, args...),
+		qm.WhereIn(`assigned_page_attributes.page_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -735,24 +735,24 @@ func (pageL) LoadPageidAssignedPageAttributes(ctx context.Context, e boil.Contex
 		}
 	}
 	if singular {
-		object.R.PageidAssignedPageAttributes = resultSlice
+		object.R.AssignedPageAttributes = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &assignedPageAttributeR{}
 			}
-			foreign.R.PageidPage = object
+			foreign.R.Page = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Pageid) {
-				local.R.PageidAssignedPageAttributes = append(local.R.PageidAssignedPageAttributes, foreign)
+			if local.ID == foreign.PageID {
+				local.R.AssignedPageAttributes = append(local.R.AssignedPageAttributes, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedPageAttributeR{}
 				}
-				foreign.R.PageidPage = local
+				foreign.R.Page = local
 				break
 			}
 		}
@@ -761,9 +761,9 @@ func (pageL) LoadPageidAssignedPageAttributes(ctx context.Context, e boil.Contex
 	return nil
 }
 
-// LoadPageidMenuItems allows an eager lookup of values, cached into the
+// LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageL) LoadPageidMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -818,7 +818,7 @@ func (pageL) LoadPageidMenuItems(ctx context.Context, e boil.ContextExecutor, si
 
 	query := NewQuery(
 		qm.From(`menu_items`),
-		qm.WhereIn(`menu_items.pageid in ?`, args...),
+		qm.WhereIn(`menu_items.page_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -849,24 +849,24 @@ func (pageL) LoadPageidMenuItems(ctx context.Context, e boil.ContextExecutor, si
 		}
 	}
 	if singular {
-		object.R.PageidMenuItems = resultSlice
+		object.R.MenuItems = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &menuItemR{}
 			}
-			foreign.R.PageidPage = object
+			foreign.R.Page = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Pageid) {
-				local.R.PageidMenuItems = append(local.R.PageidMenuItems, foreign)
+			if queries.Equal(local.ID, foreign.PageID) {
+				local.R.MenuItems = append(local.R.MenuItems, foreign)
 				if foreign.R == nil {
 					foreign.R = &menuItemR{}
 				}
-				foreign.R.PageidPage = local
+				foreign.R.Page = local
 				break
 			}
 		}
@@ -875,9 +875,9 @@ func (pageL) LoadPageidMenuItems(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// LoadPageidPageTranslations allows an eager lookup of values, cached into the
+// LoadPageTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageL) LoadPageidPageTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
+func (pageL) LoadPageTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybePage interface{}, mods queries.Applicator) error {
 	var slice []*Page
 	var object *Page
 
@@ -932,7 +932,7 @@ func (pageL) LoadPageidPageTranslations(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`page_translations`),
-		qm.WhereIn(`page_translations.pageid in ?`, args...),
+		qm.WhereIn(`page_translations.page_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -963,24 +963,24 @@ func (pageL) LoadPageidPageTranslations(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.PageidPageTranslations = resultSlice
+		object.R.PageTranslations = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &pageTranslationR{}
 			}
-			foreign.R.PageidPage = object
+			foreign.R.Page = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Pageid) {
-				local.R.PageidPageTranslations = append(local.R.PageidPageTranslations, foreign)
+			if queries.Equal(local.ID, foreign.PageID) {
+				local.R.PageTranslations = append(local.R.PageTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &pageTranslationR{}
 				}
-				foreign.R.PageidPage = local
+				foreign.R.Page = local
 				break
 			}
 		}
@@ -989,10 +989,10 @@ func (pageL) LoadPageidPageTranslations(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// SetPagetypeidPageType of the page to the related item.
-// Sets o.R.PagetypeidPageType to related.
-// Adds o to related.R.PagetypeidPages.
-func (o *Page) SetPagetypeidPageType(ctx context.Context, exec boil.ContextExecutor, insert bool, related *PageType) error {
+// SetPageType of the page to the related item.
+// Sets o.R.PageType to related.
+// Adds o to related.R.Pages.
+func (o *Page) SetPageType(ctx context.Context, exec boil.ContextExecutor, insert bool, related *PageType) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1002,7 +1002,7 @@ func (o *Page) SetPagetypeidPageType(ctx context.Context, exec boil.ContextExecu
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"pages\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"pagetypeid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"page_type_id"}),
 		strmangle.WhereClause("\"", "\"", 2, pagePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1016,75 +1016,75 @@ func (o *Page) SetPagetypeidPageType(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Pagetypeid, related.ID)
+	queries.Assign(&o.PageTypeID, related.ID)
 	if o.R == nil {
 		o.R = &pageR{
-			PagetypeidPageType: related,
+			PageType: related,
 		}
 	} else {
-		o.R.PagetypeidPageType = related
+		o.R.PageType = related
 	}
 
 	if related.R == nil {
 		related.R = &pageTypeR{
-			PagetypeidPages: PageSlice{o},
+			Pages: PageSlice{o},
 		}
 	} else {
-		related.R.PagetypeidPages = append(related.R.PagetypeidPages, o)
+		related.R.Pages = append(related.R.Pages, o)
 	}
 
 	return nil
 }
 
-// RemovePagetypeidPageType relationship.
-// Sets o.R.PagetypeidPageType to nil.
+// RemovePageType relationship.
+// Sets o.R.PageType to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Page) RemovePagetypeidPageType(ctx context.Context, exec boil.ContextExecutor, related *PageType) error {
+func (o *Page) RemovePageType(ctx context.Context, exec boil.ContextExecutor, related *PageType) error {
 	var err error
 
-	queries.SetScanner(&o.Pagetypeid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("pagetypeid")); err != nil {
+	queries.SetScanner(&o.PageTypeID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("page_type_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.PagetypeidPageType = nil
+		o.R.PageType = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.PagetypeidPages {
-		if queries.Equal(o.Pagetypeid, ri.Pagetypeid) {
+	for i, ri := range related.R.Pages {
+		if queries.Equal(o.PageTypeID, ri.PageTypeID) {
 			continue
 		}
 
-		ln := len(related.R.PagetypeidPages)
+		ln := len(related.R.Pages)
 		if ln > 1 && i < ln-1 {
-			related.R.PagetypeidPages[i] = related.R.PagetypeidPages[ln-1]
+			related.R.Pages[i] = related.R.Pages[ln-1]
 		}
-		related.R.PagetypeidPages = related.R.PagetypeidPages[:ln-1]
+		related.R.Pages = related.R.Pages[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddPageidAssignedPageAttributes adds the given related objects to the existing relationships
+// AddAssignedPageAttributes adds the given related objects to the existing relationships
 // of the page, optionally inserting them as new records.
-// Appends related to o.R.PageidAssignedPageAttributes.
-// Sets related.R.PageidPage appropriately.
-func (o *Page) AddPageidAssignedPageAttributes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttribute) error {
+// Appends related to o.R.AssignedPageAttributes.
+// Sets related.R.Page appropriately.
+func (o *Page) AddAssignedPageAttributes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttribute) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Pageid, o.ID)
+			rel.PageID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"assigned_page_attributes\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"pageid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedPageAttributePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1098,120 +1098,46 @@ func (o *Page) AddPageidAssignedPageAttributes(ctx context.Context, exec boil.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Pageid, o.ID)
+			rel.PageID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &pageR{
-			PageidAssignedPageAttributes: related,
+			AssignedPageAttributes: related,
 		}
 	} else {
-		o.R.PageidAssignedPageAttributes = append(o.R.PageidAssignedPageAttributes, related...)
+		o.R.AssignedPageAttributes = append(o.R.AssignedPageAttributes, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedPageAttributeR{
-				PageidPage: o,
+				Page: o,
 			}
 		} else {
-			rel.R.PageidPage = o
+			rel.R.Page = o
 		}
 	}
 	return nil
 }
 
-// SetPageidAssignedPageAttributes removes all previously related items of the
-// page replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.PageidPage's PageidAssignedPageAttributes accordingly.
-// Replaces o.R.PageidAssignedPageAttributes with related.
-// Sets related.R.PageidPage's PageidAssignedPageAttributes accordingly.
-func (o *Page) SetPageidAssignedPageAttributes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttribute) error {
-	query := "update \"assigned_page_attributes\" set \"pageid\" = null where \"pageid\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.PageidAssignedPageAttributes {
-			queries.SetScanner(&rel.Pageid, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.PageidPage = nil
-		}
-		o.R.PageidAssignedPageAttributes = nil
-	}
-
-	return o.AddPageidAssignedPageAttributes(ctx, exec, insert, related...)
-}
-
-// RemovePageidAssignedPageAttributes relationships from objects passed in.
-// Removes related items from R.PageidAssignedPageAttributes (uses pointer comparison, removal does not keep order)
-// Sets related.R.PageidPage.
-func (o *Page) RemovePageidAssignedPageAttributes(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedPageAttribute) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.Pageid, nil)
-		if rel.R != nil {
-			rel.R.PageidPage = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("pageid")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.PageidAssignedPageAttributes {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.PageidAssignedPageAttributes)
-			if ln > 1 && i < ln-1 {
-				o.R.PageidAssignedPageAttributes[i] = o.R.PageidAssignedPageAttributes[ln-1]
-			}
-			o.R.PageidAssignedPageAttributes = o.R.PageidAssignedPageAttributes[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-// AddPageidMenuItems adds the given related objects to the existing relationships
+// AddMenuItems adds the given related objects to the existing relationships
 // of the page, optionally inserting them as new records.
-// Appends related to o.R.PageidMenuItems.
-// Sets related.R.PageidPage appropriately.
-func (o *Page) AddPageidMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+// Appends related to o.R.MenuItems.
+// Sets related.R.Page appropriately.
+func (o *Page) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Pageid, o.ID)
+			queries.Assign(&rel.PageID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"menu_items\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"pageid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1225,38 +1151,38 @@ func (o *Page) AddPageidMenuItems(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Pageid, o.ID)
+			queries.Assign(&rel.PageID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &pageR{
-			PageidMenuItems: related,
+			MenuItems: related,
 		}
 	} else {
-		o.R.PageidMenuItems = append(o.R.PageidMenuItems, related...)
+		o.R.MenuItems = append(o.R.MenuItems, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &menuItemR{
-				PageidPage: o,
+				Page: o,
 			}
 		} else {
-			rel.R.PageidPage = o
+			rel.R.Page = o
 		}
 	}
 	return nil
 }
 
-// SetPageidMenuItems removes all previously related items of the
+// SetMenuItems removes all previously related items of the
 // page replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.PageidPage's PageidMenuItems accordingly.
-// Replaces o.R.PageidMenuItems with related.
-// Sets related.R.PageidPage's PageidMenuItems accordingly.
-func (o *Page) SetPageidMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
-	query := "update \"menu_items\" set \"pageid\" = null where \"pageid\" = $1"
+// Sets o.R.Page's MenuItems accordingly.
+// Replaces o.R.MenuItems with related.
+// Sets related.R.Page's MenuItems accordingly.
+func (o *Page) SetMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+	query := "update \"menu_items\" set \"page_id\" = null where \"page_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1269,35 +1195,35 @@ func (o *Page) SetPageidMenuItems(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.PageidMenuItems {
-			queries.SetScanner(&rel.Pageid, nil)
+		for _, rel := range o.R.MenuItems {
+			queries.SetScanner(&rel.PageID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.PageidPage = nil
+			rel.R.Page = nil
 		}
-		o.R.PageidMenuItems = nil
+		o.R.MenuItems = nil
 	}
 
-	return o.AddPageidMenuItems(ctx, exec, insert, related...)
+	return o.AddMenuItems(ctx, exec, insert, related...)
 }
 
-// RemovePageidMenuItems relationships from objects passed in.
-// Removes related items from R.PageidMenuItems (uses pointer comparison, removal does not keep order)
-// Sets related.R.PageidPage.
-func (o *Page) RemovePageidMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
+// RemoveMenuItems relationships from objects passed in.
+// Removes related items from R.MenuItems (uses pointer comparison, removal does not keep order)
+// Sets related.R.Page.
+func (o *Page) RemoveMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Pageid, nil)
+		queries.SetScanner(&rel.PageID, nil)
 		if rel.R != nil {
-			rel.R.PageidPage = nil
+			rel.R.Page = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("pageid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("page_id")); err != nil {
 			return err
 		}
 	}
@@ -1306,16 +1232,16 @@ func (o *Page) RemovePageidMenuItems(ctx context.Context, exec boil.ContextExecu
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.PageidMenuItems {
+		for i, ri := range o.R.MenuItems {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.PageidMenuItems)
+			ln := len(o.R.MenuItems)
 			if ln > 1 && i < ln-1 {
-				o.R.PageidMenuItems[i] = o.R.PageidMenuItems[ln-1]
+				o.R.MenuItems[i] = o.R.MenuItems[ln-1]
 			}
-			o.R.PageidMenuItems = o.R.PageidMenuItems[:ln-1]
+			o.R.MenuItems = o.R.MenuItems[:ln-1]
 			break
 		}
 	}
@@ -1323,22 +1249,22 @@ func (o *Page) RemovePageidMenuItems(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// AddPageidPageTranslations adds the given related objects to the existing relationships
+// AddPageTranslations adds the given related objects to the existing relationships
 // of the page, optionally inserting them as new records.
-// Appends related to o.R.PageidPageTranslations.
-// Sets related.R.PageidPage appropriately.
-func (o *Page) AddPageidPageTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PageTranslation) error {
+// Appends related to o.R.PageTranslations.
+// Sets related.R.Page appropriately.
+func (o *Page) AddPageTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PageTranslation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Pageid, o.ID)
+			queries.Assign(&rel.PageID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"page_translations\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"pageid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 				strmangle.WhereClause("\"", "\"", 2, pageTranslationPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1352,38 +1278,38 @@ func (o *Page) AddPageidPageTranslations(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Pageid, o.ID)
+			queries.Assign(&rel.PageID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &pageR{
-			PageidPageTranslations: related,
+			PageTranslations: related,
 		}
 	} else {
-		o.R.PageidPageTranslations = append(o.R.PageidPageTranslations, related...)
+		o.R.PageTranslations = append(o.R.PageTranslations, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &pageTranslationR{
-				PageidPage: o,
+				Page: o,
 			}
 		} else {
-			rel.R.PageidPage = o
+			rel.R.Page = o
 		}
 	}
 	return nil
 }
 
-// SetPageidPageTranslations removes all previously related items of the
+// SetPageTranslations removes all previously related items of the
 // page replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.PageidPage's PageidPageTranslations accordingly.
-// Replaces o.R.PageidPageTranslations with related.
-// Sets related.R.PageidPage's PageidPageTranslations accordingly.
-func (o *Page) SetPageidPageTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PageTranslation) error {
-	query := "update \"page_translations\" set \"pageid\" = null where \"pageid\" = $1"
+// Sets o.R.Page's PageTranslations accordingly.
+// Replaces o.R.PageTranslations with related.
+// Sets related.R.Page's PageTranslations accordingly.
+func (o *Page) SetPageTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PageTranslation) error {
+	query := "update \"page_translations\" set \"page_id\" = null where \"page_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1396,35 +1322,35 @@ func (o *Page) SetPageidPageTranslations(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.PageidPageTranslations {
-			queries.SetScanner(&rel.Pageid, nil)
+		for _, rel := range o.R.PageTranslations {
+			queries.SetScanner(&rel.PageID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.PageidPage = nil
+			rel.R.Page = nil
 		}
-		o.R.PageidPageTranslations = nil
+		o.R.PageTranslations = nil
 	}
 
-	return o.AddPageidPageTranslations(ctx, exec, insert, related...)
+	return o.AddPageTranslations(ctx, exec, insert, related...)
 }
 
-// RemovePageidPageTranslations relationships from objects passed in.
-// Removes related items from R.PageidPageTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.PageidPage.
-func (o *Page) RemovePageidPageTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*PageTranslation) error {
+// RemovePageTranslations relationships from objects passed in.
+// Removes related items from R.PageTranslations (uses pointer comparison, removal does not keep order)
+// Sets related.R.Page.
+func (o *Page) RemovePageTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*PageTranslation) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Pageid, nil)
+		queries.SetScanner(&rel.PageID, nil)
 		if rel.R != nil {
-			rel.R.PageidPage = nil
+			rel.R.Page = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("pageid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("page_id")); err != nil {
 			return err
 		}
 	}
@@ -1433,16 +1359,16 @@ func (o *Page) RemovePageidPageTranslations(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.PageidPageTranslations {
+		for i, ri := range o.R.PageTranslations {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.PageidPageTranslations)
+			ln := len(o.R.PageTranslations)
 			if ln > 1 && i < ln-1 {
-				o.R.PageidPageTranslations[i] = o.R.PageidPageTranslations[ln-1]
+				o.R.PageTranslations[i] = o.R.PageTranslations[ln-1]
 			}
-			o.R.PageidPageTranslations = o.R.PageidPageTranslations[:ln-1]
+			o.R.PageTranslations = o.R.PageTranslations[:ln-1]
 			break
 		}
 	}

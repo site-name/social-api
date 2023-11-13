@@ -494,7 +494,7 @@ func testWarehousesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testWarehouseToManyCollectionpointidCheckouts(t *testing.T) {
+func testWarehouseToManyCollectionPointCheckouts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testWarehouseToManyCollectionpointidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Collectionpointid, a.ID)
-	queries.Assign(&c.Collectionpointid, a.ID)
+	queries.Assign(&b.CollectionPointID, a.ID)
+	queries.Assign(&c.CollectionPointID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testWarehouseToManyCollectionpointidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.CollectionpointidCheckouts().All(ctx, tx)
+	check, err := a.CollectionPointCheckouts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Collectionpointid, b.Collectionpointid) {
+		if queries.Equal(v.CollectionPointID, b.CollectionPointID) {
 			bFound = true
 		}
-		if queries.Equal(v.Collectionpointid, c.Collectionpointid) {
+		if queries.Equal(v.CollectionPointID, c.CollectionPointID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testWarehouseToManyCollectionpointidCheckouts(t *testing.T) {
 	}
 
 	slice := WarehouseSlice{&a}
-	if err = a.L.LoadCollectionpointidCheckouts(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
+	if err = a.L.LoadCollectionPointCheckouts(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CollectionpointidCheckouts); got != 2 {
+	if got := len(a.R.CollectionPointCheckouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.CollectionpointidCheckouts = nil
-	if err = a.L.LoadCollectionpointidCheckouts(ctx, tx, true, &a, nil); err != nil {
+	a.R.CollectionPointCheckouts = nil
+	if err = a.L.LoadCollectionPointCheckouts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CollectionpointidCheckouts); got != 2 {
+	if got := len(a.R.CollectionPointCheckouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testWarehouseToManyCollectionpointidCheckouts(t *testing.T) {
 	}
 }
 
-func testWarehouseToManyCollectionpointidOrders(t *testing.T) {
+func testWarehouseToManyCollectionPointOrders(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testWarehouseToManyCollectionpointidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Collectionpointid, a.ID)
-	queries.Assign(&c.Collectionpointid, a.ID)
+	queries.Assign(&b.CollectionPointID, a.ID)
+	queries.Assign(&c.CollectionPointID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testWarehouseToManyCollectionpointidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.CollectionpointidOrders().All(ctx, tx)
+	check, err := a.CollectionPointOrders().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Collectionpointid, b.Collectionpointid) {
+		if queries.Equal(v.CollectionPointID, b.CollectionPointID) {
 			bFound = true
 		}
-		if queries.Equal(v.Collectionpointid, c.Collectionpointid) {
+		if queries.Equal(v.CollectionPointID, c.CollectionPointID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testWarehouseToManyCollectionpointidOrders(t *testing.T) {
 	}
 
 	slice := WarehouseSlice{&a}
-	if err = a.L.LoadCollectionpointidOrders(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
+	if err = a.L.LoadCollectionPointOrders(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CollectionpointidOrders); got != 2 {
+	if got := len(a.R.CollectionPointOrders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.CollectionpointidOrders = nil
-	if err = a.L.LoadCollectionpointidOrders(ctx, tx, true, &a, nil); err != nil {
+	a.R.CollectionPointOrders = nil
+	if err = a.L.LoadCollectionPointOrders(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CollectionpointidOrders); got != 2 {
+	if got := len(a.R.CollectionPointOrders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testWarehouseToManyCollectionpointidOrders(t *testing.T) {
 	}
 }
 
-func testWarehouseToManyWarehouseidStocks(t *testing.T) {
+func testWarehouseToManyStocks(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testWarehouseToManyWarehouseidStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Warehouseid, a.ID)
-	queries.Assign(&c.Warehouseid, a.ID)
+	queries.Assign(&b.WarehouseID, a.ID)
+	queries.Assign(&c.WarehouseID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testWarehouseToManyWarehouseidStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.WarehouseidStocks().All(ctx, tx)
+	check, err := a.Stocks().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Warehouseid, b.Warehouseid) {
+		if queries.Equal(v.WarehouseID, b.WarehouseID) {
 			bFound = true
 		}
-		if queries.Equal(v.Warehouseid, c.Warehouseid) {
+		if queries.Equal(v.WarehouseID, c.WarehouseID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testWarehouseToManyWarehouseidStocks(t *testing.T) {
 	}
 
 	slice := WarehouseSlice{&a}
-	if err = a.L.LoadWarehouseidStocks(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
+	if err = a.L.LoadStocks(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.WarehouseidStocks); got != 2 {
+	if got := len(a.R.Stocks); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.WarehouseidStocks = nil
-	if err = a.L.LoadWarehouseidStocks(ctx, tx, true, &a, nil); err != nil {
+	a.R.Stocks = nil
+	if err = a.L.LoadStocks(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.WarehouseidStocks); got != 2 {
+	if got := len(a.R.Stocks); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testWarehouseToManyWarehouseidStocks(t *testing.T) {
 	}
 }
 
-func testWarehouseToManyWarehouseidWarehouseShippingZones(t *testing.T) {
+func testWarehouseToManyWarehouseShippingZones(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -750,8 +750,8 @@ func testWarehouseToManyWarehouseidWarehouseShippingZones(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Warehouseid, a.ID)
-	queries.Assign(&c.Warehouseid, a.ID)
+	queries.Assign(&b.WarehouseID, a.ID)
+	queries.Assign(&c.WarehouseID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -759,17 +759,17 @@ func testWarehouseToManyWarehouseidWarehouseShippingZones(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.WarehouseidWarehouseShippingZones().All(ctx, tx)
+	check, err := a.WarehouseShippingZones().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Warehouseid, b.Warehouseid) {
+		if queries.Equal(v.WarehouseID, b.WarehouseID) {
 			bFound = true
 		}
-		if queries.Equal(v.Warehouseid, c.Warehouseid) {
+		if queries.Equal(v.WarehouseID, c.WarehouseID) {
 			cFound = true
 		}
 	}
@@ -782,18 +782,18 @@ func testWarehouseToManyWarehouseidWarehouseShippingZones(t *testing.T) {
 	}
 
 	slice := WarehouseSlice{&a}
-	if err = a.L.LoadWarehouseidWarehouseShippingZones(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
+	if err = a.L.LoadWarehouseShippingZones(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.WarehouseidWarehouseShippingZones); got != 2 {
+	if got := len(a.R.WarehouseShippingZones); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.WarehouseidWarehouseShippingZones = nil
-	if err = a.L.LoadWarehouseidWarehouseShippingZones(ctx, tx, true, &a, nil); err != nil {
+	a.R.WarehouseShippingZones = nil
+	if err = a.L.LoadWarehouseShippingZones(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.WarehouseidWarehouseShippingZones); got != 2 {
+	if got := len(a.R.WarehouseShippingZones); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -802,7 +802,7 @@ func testWarehouseToManyWarehouseidWarehouseShippingZones(t *testing.T) {
 	}
 }
 
-func testWarehouseToManyAddOpCollectionpointidCheckouts(t *testing.T) {
+func testWarehouseToManyAddOpCollectionPointCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -839,7 +839,7 @@ func testWarehouseToManyAddOpCollectionpointidCheckouts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCollectionpointidCheckouts(ctx, tx, i != 0, x...)
+		err = a.AddCollectionPointCheckouts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -847,28 +847,28 @@ func testWarehouseToManyAddOpCollectionpointidCheckouts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Collectionpointid) {
-			t.Error("foreign key was wrong value", a.ID, first.Collectionpointid)
+		if !queries.Equal(a.ID, first.CollectionPointID) {
+			t.Error("foreign key was wrong value", a.ID, first.CollectionPointID)
 		}
-		if !queries.Equal(a.ID, second.Collectionpointid) {
-			t.Error("foreign key was wrong value", a.ID, second.Collectionpointid)
+		if !queries.Equal(a.ID, second.CollectionPointID) {
+			t.Error("foreign key was wrong value", a.ID, second.CollectionPointID)
 		}
 
-		if first.R.CollectionpointidWarehouse != &a {
+		if first.R.CollectionPoint != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.CollectionpointidWarehouse != &a {
+		if second.R.CollectionPoint != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.CollectionpointidCheckouts[i*2] != first {
+		if a.R.CollectionPointCheckouts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.CollectionpointidCheckouts[i*2+1] != second {
+		if a.R.CollectionPointCheckouts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.CollectionpointidCheckouts().Count(ctx, tx)
+		count, err := a.CollectionPointCheckouts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -878,7 +878,7 @@ func testWarehouseToManyAddOpCollectionpointidCheckouts(t *testing.T) {
 	}
 }
 
-func testWarehouseToManySetOpCollectionpointidCheckouts(t *testing.T) {
+func testWarehouseToManySetOpCollectionPointCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -909,25 +909,12 @@ func testWarehouseToManySetOpCollectionpointidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetCollectionpointidCheckouts(ctx, tx, false, &b, &c)
+	err = a.SetCollectionPointCheckouts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CollectionpointidCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCollectionpointidCheckouts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CollectionpointidCheckouts().Count(ctx, tx)
+	count, err := a.CollectionPointCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -935,41 +922,54 @@ func testWarehouseToManySetOpCollectionpointidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Collectionpointid) {
+	err = a.SetCollectionPointCheckouts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.CollectionPointCheckouts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.CollectionPointID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Collectionpointid) {
+	if !queries.IsValuerNil(c.CollectionPointID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Collectionpointid) {
-		t.Error("foreign key was wrong value", a.ID, d.Collectionpointid)
+	if !queries.Equal(a.ID, d.CollectionPointID) {
+		t.Error("foreign key was wrong value", a.ID, d.CollectionPointID)
 	}
-	if !queries.Equal(a.ID, e.Collectionpointid) {
-		t.Error("foreign key was wrong value", a.ID, e.Collectionpointid)
-	}
-
-	if b.R.CollectionpointidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.CollectionpointidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.CollectionpointidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.CollectionpointidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.CollectionPointID) {
+		t.Error("foreign key was wrong value", a.ID, e.CollectionPointID)
 	}
 
-	if a.R.CollectionpointidCheckouts[0] != &d {
+	if b.R.CollectionPoint != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.CollectionPoint != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.CollectionPoint != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.CollectionPoint != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.CollectionPointCheckouts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.CollectionpointidCheckouts[1] != &e {
+	if a.R.CollectionPointCheckouts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testWarehouseToManyRemoveOpCollectionpointidCheckouts(t *testing.T) {
+func testWarehouseToManyRemoveOpCollectionPointCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -994,12 +994,12 @@ func testWarehouseToManyRemoveOpCollectionpointidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddCollectionpointidCheckouts(ctx, tx, true, foreigners...)
+	err = a.AddCollectionPointCheckouts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CollectionpointidCheckouts().Count(ctx, tx)
+	count, err := a.CollectionPointCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1007,12 +1007,12 @@ func testWarehouseToManyRemoveOpCollectionpointidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveCollectionpointidCheckouts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCollectionPointCheckouts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.CollectionpointidCheckouts().Count(ctx, tx)
+	count, err = a.CollectionPointCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1020,40 +1020,40 @@ func testWarehouseToManyRemoveOpCollectionpointidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Collectionpointid) {
+	if !queries.IsValuerNil(b.CollectionPointID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Collectionpointid) {
+	if !queries.IsValuerNil(c.CollectionPointID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.CollectionpointidWarehouse != nil {
+	if b.R.CollectionPoint != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.CollectionpointidWarehouse != nil {
+	if c.R.CollectionPoint != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.CollectionpointidWarehouse != &a {
+	if d.R.CollectionPoint != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.CollectionpointidWarehouse != &a {
+	if e.R.CollectionPoint != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.CollectionpointidCheckouts) != 2 {
+	if len(a.R.CollectionPointCheckouts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CollectionpointidCheckouts[1] != &d {
+	if a.R.CollectionPointCheckouts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.CollectionpointidCheckouts[0] != &e {
+	if a.R.CollectionPointCheckouts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testWarehouseToManyAddOpCollectionpointidOrders(t *testing.T) {
+func testWarehouseToManyAddOpCollectionPointOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1090,7 +1090,7 @@ func testWarehouseToManyAddOpCollectionpointidOrders(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCollectionpointidOrders(ctx, tx, i != 0, x...)
+		err = a.AddCollectionPointOrders(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1098,28 +1098,28 @@ func testWarehouseToManyAddOpCollectionpointidOrders(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Collectionpointid) {
-			t.Error("foreign key was wrong value", a.ID, first.Collectionpointid)
+		if !queries.Equal(a.ID, first.CollectionPointID) {
+			t.Error("foreign key was wrong value", a.ID, first.CollectionPointID)
 		}
-		if !queries.Equal(a.ID, second.Collectionpointid) {
-			t.Error("foreign key was wrong value", a.ID, second.Collectionpointid)
+		if !queries.Equal(a.ID, second.CollectionPointID) {
+			t.Error("foreign key was wrong value", a.ID, second.CollectionPointID)
 		}
 
-		if first.R.CollectionpointidWarehouse != &a {
+		if first.R.CollectionPoint != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.CollectionpointidWarehouse != &a {
+		if second.R.CollectionPoint != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.CollectionpointidOrders[i*2] != first {
+		if a.R.CollectionPointOrders[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.CollectionpointidOrders[i*2+1] != second {
+		if a.R.CollectionPointOrders[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.CollectionpointidOrders().Count(ctx, tx)
+		count, err := a.CollectionPointOrders().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1129,7 +1129,7 @@ func testWarehouseToManyAddOpCollectionpointidOrders(t *testing.T) {
 	}
 }
 
-func testWarehouseToManySetOpCollectionpointidOrders(t *testing.T) {
+func testWarehouseToManySetOpCollectionPointOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1160,25 +1160,12 @@ func testWarehouseToManySetOpCollectionpointidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetCollectionpointidOrders(ctx, tx, false, &b, &c)
+	err = a.SetCollectionPointOrders(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CollectionpointidOrders().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCollectionpointidOrders(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CollectionpointidOrders().Count(ctx, tx)
+	count, err := a.CollectionPointOrders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1186,41 +1173,54 @@ func testWarehouseToManySetOpCollectionpointidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Collectionpointid) {
+	err = a.SetCollectionPointOrders(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.CollectionPointOrders().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.CollectionPointID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Collectionpointid) {
+	if !queries.IsValuerNil(c.CollectionPointID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Collectionpointid) {
-		t.Error("foreign key was wrong value", a.ID, d.Collectionpointid)
+	if !queries.Equal(a.ID, d.CollectionPointID) {
+		t.Error("foreign key was wrong value", a.ID, d.CollectionPointID)
 	}
-	if !queries.Equal(a.ID, e.Collectionpointid) {
-		t.Error("foreign key was wrong value", a.ID, e.Collectionpointid)
-	}
-
-	if b.R.CollectionpointidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.CollectionpointidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.CollectionpointidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.CollectionpointidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.CollectionPointID) {
+		t.Error("foreign key was wrong value", a.ID, e.CollectionPointID)
 	}
 
-	if a.R.CollectionpointidOrders[0] != &d {
+	if b.R.CollectionPoint != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.CollectionPoint != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.CollectionPoint != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.CollectionPoint != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.CollectionPointOrders[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.CollectionpointidOrders[1] != &e {
+	if a.R.CollectionPointOrders[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testWarehouseToManyRemoveOpCollectionpointidOrders(t *testing.T) {
+func testWarehouseToManyRemoveOpCollectionPointOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1245,12 +1245,12 @@ func testWarehouseToManyRemoveOpCollectionpointidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddCollectionpointidOrders(ctx, tx, true, foreigners...)
+	err = a.AddCollectionPointOrders(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CollectionpointidOrders().Count(ctx, tx)
+	count, err := a.CollectionPointOrders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1258,12 +1258,12 @@ func testWarehouseToManyRemoveOpCollectionpointidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveCollectionpointidOrders(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCollectionPointOrders(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.CollectionpointidOrders().Count(ctx, tx)
+	count, err = a.CollectionPointOrders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1271,40 +1271,40 @@ func testWarehouseToManyRemoveOpCollectionpointidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Collectionpointid) {
+	if !queries.IsValuerNil(b.CollectionPointID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Collectionpointid) {
+	if !queries.IsValuerNil(c.CollectionPointID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.CollectionpointidWarehouse != nil {
+	if b.R.CollectionPoint != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.CollectionpointidWarehouse != nil {
+	if c.R.CollectionPoint != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.CollectionpointidWarehouse != &a {
+	if d.R.CollectionPoint != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.CollectionpointidWarehouse != &a {
+	if e.R.CollectionPoint != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.CollectionpointidOrders) != 2 {
+	if len(a.R.CollectionPointOrders) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CollectionpointidOrders[1] != &d {
+	if a.R.CollectionPointOrders[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.CollectionpointidOrders[0] != &e {
+	if a.R.CollectionPointOrders[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testWarehouseToManyAddOpWarehouseidStocks(t *testing.T) {
+func testWarehouseToManyAddOpStocks(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1341,7 +1341,7 @@ func testWarehouseToManyAddOpWarehouseidStocks(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddWarehouseidStocks(ctx, tx, i != 0, x...)
+		err = a.AddStocks(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1349,28 +1349,28 @@ func testWarehouseToManyAddOpWarehouseidStocks(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Warehouseid) {
-			t.Error("foreign key was wrong value", a.ID, first.Warehouseid)
+		if !queries.Equal(a.ID, first.WarehouseID) {
+			t.Error("foreign key was wrong value", a.ID, first.WarehouseID)
 		}
-		if !queries.Equal(a.ID, second.Warehouseid) {
-			t.Error("foreign key was wrong value", a.ID, second.Warehouseid)
+		if !queries.Equal(a.ID, second.WarehouseID) {
+			t.Error("foreign key was wrong value", a.ID, second.WarehouseID)
 		}
 
-		if first.R.WarehouseidWarehouse != &a {
+		if first.R.Warehouse != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.WarehouseidWarehouse != &a {
+		if second.R.Warehouse != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.WarehouseidStocks[i*2] != first {
+		if a.R.Stocks[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.WarehouseidStocks[i*2+1] != second {
+		if a.R.Stocks[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.WarehouseidStocks().Count(ctx, tx)
+		count, err := a.Stocks().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1380,7 +1380,7 @@ func testWarehouseToManyAddOpWarehouseidStocks(t *testing.T) {
 	}
 }
 
-func testWarehouseToManySetOpWarehouseidStocks(t *testing.T) {
+func testWarehouseToManySetOpStocks(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1411,25 +1411,12 @@ func testWarehouseToManySetOpWarehouseidStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetWarehouseidStocks(ctx, tx, false, &b, &c)
+	err = a.SetStocks(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.WarehouseidStocks().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetWarehouseidStocks(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WarehouseidStocks().Count(ctx, tx)
+	count, err := a.Stocks().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1437,41 +1424,54 @@ func testWarehouseToManySetOpWarehouseidStocks(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Warehouseid) {
+	err = a.SetStocks(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Stocks().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.WarehouseID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Warehouseid) {
+	if !queries.IsValuerNil(c.WarehouseID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Warehouseid) {
-		t.Error("foreign key was wrong value", a.ID, d.Warehouseid)
+	if !queries.Equal(a.ID, d.WarehouseID) {
+		t.Error("foreign key was wrong value", a.ID, d.WarehouseID)
 	}
-	if !queries.Equal(a.ID, e.Warehouseid) {
-		t.Error("foreign key was wrong value", a.ID, e.Warehouseid)
-	}
-
-	if b.R.WarehouseidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.WarehouseidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.WarehouseidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.WarehouseidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.WarehouseID) {
+		t.Error("foreign key was wrong value", a.ID, e.WarehouseID)
 	}
 
-	if a.R.WarehouseidStocks[0] != &d {
+	if b.R.Warehouse != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Warehouse != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Warehouse != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Warehouse != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Stocks[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.WarehouseidStocks[1] != &e {
+	if a.R.Stocks[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testWarehouseToManyRemoveOpWarehouseidStocks(t *testing.T) {
+func testWarehouseToManyRemoveOpStocks(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1496,12 +1496,12 @@ func testWarehouseToManyRemoveOpWarehouseidStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddWarehouseidStocks(ctx, tx, true, foreigners...)
+	err = a.AddStocks(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.WarehouseidStocks().Count(ctx, tx)
+	count, err := a.Stocks().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1509,12 +1509,12 @@ func testWarehouseToManyRemoveOpWarehouseidStocks(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveWarehouseidStocks(ctx, tx, foreigners[:2]...)
+	err = a.RemoveStocks(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.WarehouseidStocks().Count(ctx, tx)
+	count, err = a.Stocks().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1522,40 +1522,40 @@ func testWarehouseToManyRemoveOpWarehouseidStocks(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Warehouseid) {
+	if !queries.IsValuerNil(b.WarehouseID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Warehouseid) {
+	if !queries.IsValuerNil(c.WarehouseID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.WarehouseidWarehouse != nil {
+	if b.R.Warehouse != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.WarehouseidWarehouse != nil {
+	if c.R.Warehouse != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.WarehouseidWarehouse != &a {
+	if d.R.Warehouse != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.WarehouseidWarehouse != &a {
+	if e.R.Warehouse != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.WarehouseidStocks) != 2 {
+	if len(a.R.Stocks) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.WarehouseidStocks[1] != &d {
+	if a.R.Stocks[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.WarehouseidStocks[0] != &e {
+	if a.R.Stocks[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testWarehouseToManyAddOpWarehouseidWarehouseShippingZones(t *testing.T) {
+func testWarehouseToManyAddOpWarehouseShippingZones(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1592,7 +1592,7 @@ func testWarehouseToManyAddOpWarehouseidWarehouseShippingZones(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddWarehouseidWarehouseShippingZones(ctx, tx, i != 0, x...)
+		err = a.AddWarehouseShippingZones(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1600,28 +1600,28 @@ func testWarehouseToManyAddOpWarehouseidWarehouseShippingZones(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Warehouseid) {
-			t.Error("foreign key was wrong value", a.ID, first.Warehouseid)
+		if !queries.Equal(a.ID, first.WarehouseID) {
+			t.Error("foreign key was wrong value", a.ID, first.WarehouseID)
 		}
-		if !queries.Equal(a.ID, second.Warehouseid) {
-			t.Error("foreign key was wrong value", a.ID, second.Warehouseid)
+		if !queries.Equal(a.ID, second.WarehouseID) {
+			t.Error("foreign key was wrong value", a.ID, second.WarehouseID)
 		}
 
-		if first.R.WarehouseidWarehouse != &a {
+		if first.R.Warehouse != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.WarehouseidWarehouse != &a {
+		if second.R.Warehouse != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.WarehouseidWarehouseShippingZones[i*2] != first {
+		if a.R.WarehouseShippingZones[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.WarehouseidWarehouseShippingZones[i*2+1] != second {
+		if a.R.WarehouseShippingZones[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.WarehouseidWarehouseShippingZones().Count(ctx, tx)
+		count, err := a.WarehouseShippingZones().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1631,7 +1631,7 @@ func testWarehouseToManyAddOpWarehouseidWarehouseShippingZones(t *testing.T) {
 	}
 }
 
-func testWarehouseToManySetOpWarehouseidWarehouseShippingZones(t *testing.T) {
+func testWarehouseToManySetOpWarehouseShippingZones(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1662,25 +1662,12 @@ func testWarehouseToManySetOpWarehouseidWarehouseShippingZones(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetWarehouseidWarehouseShippingZones(ctx, tx, false, &b, &c)
+	err = a.SetWarehouseShippingZones(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.WarehouseidWarehouseShippingZones().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetWarehouseidWarehouseShippingZones(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WarehouseidWarehouseShippingZones().Count(ctx, tx)
+	count, err := a.WarehouseShippingZones().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1688,41 +1675,54 @@ func testWarehouseToManySetOpWarehouseidWarehouseShippingZones(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Warehouseid) {
+	err = a.SetWarehouseShippingZones(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.WarehouseShippingZones().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.WarehouseID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Warehouseid) {
+	if !queries.IsValuerNil(c.WarehouseID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Warehouseid) {
-		t.Error("foreign key was wrong value", a.ID, d.Warehouseid)
+	if !queries.Equal(a.ID, d.WarehouseID) {
+		t.Error("foreign key was wrong value", a.ID, d.WarehouseID)
 	}
-	if !queries.Equal(a.ID, e.Warehouseid) {
-		t.Error("foreign key was wrong value", a.ID, e.Warehouseid)
-	}
-
-	if b.R.WarehouseidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.WarehouseidWarehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.WarehouseidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.WarehouseidWarehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.WarehouseID) {
+		t.Error("foreign key was wrong value", a.ID, e.WarehouseID)
 	}
 
-	if a.R.WarehouseidWarehouseShippingZones[0] != &d {
+	if b.R.Warehouse != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Warehouse != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Warehouse != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Warehouse != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.WarehouseShippingZones[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.WarehouseidWarehouseShippingZones[1] != &e {
+	if a.R.WarehouseShippingZones[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testWarehouseToManyRemoveOpWarehouseidWarehouseShippingZones(t *testing.T) {
+func testWarehouseToManyRemoveOpWarehouseShippingZones(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1747,12 +1747,12 @@ func testWarehouseToManyRemoveOpWarehouseidWarehouseShippingZones(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	err = a.AddWarehouseidWarehouseShippingZones(ctx, tx, true, foreigners...)
+	err = a.AddWarehouseShippingZones(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.WarehouseidWarehouseShippingZones().Count(ctx, tx)
+	count, err := a.WarehouseShippingZones().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1760,12 +1760,12 @@ func testWarehouseToManyRemoveOpWarehouseidWarehouseShippingZones(t *testing.T) 
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveWarehouseidWarehouseShippingZones(ctx, tx, foreigners[:2]...)
+	err = a.RemoveWarehouseShippingZones(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.WarehouseidWarehouseShippingZones().Count(ctx, tx)
+	count, err = a.WarehouseShippingZones().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1773,40 +1773,40 @@ func testWarehouseToManyRemoveOpWarehouseidWarehouseShippingZones(t *testing.T) 
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Warehouseid) {
+	if !queries.IsValuerNil(b.WarehouseID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Warehouseid) {
+	if !queries.IsValuerNil(c.WarehouseID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.WarehouseidWarehouse != nil {
+	if b.R.Warehouse != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.WarehouseidWarehouse != nil {
+	if c.R.Warehouse != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.WarehouseidWarehouse != &a {
+	if d.R.Warehouse != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.WarehouseidWarehouse != &a {
+	if e.R.Warehouse != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.WarehouseidWarehouseShippingZones) != 2 {
+	if len(a.R.WarehouseShippingZones) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.WarehouseidWarehouseShippingZones[1] != &d {
+	if a.R.WarehouseShippingZones[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.WarehouseidWarehouseShippingZones[0] != &e {
+	if a.R.WarehouseShippingZones[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testWarehouseToOneAddressUsingAddressidAddress(t *testing.T) {
+func testWarehouseToOneAddressUsingAddress(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1826,12 +1826,12 @@ func testWarehouseToOneAddressUsingAddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Addressid, foreign.ID)
+	queries.Assign(&local.AddressID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.AddressidAddress().One(ctx, tx)
+	check, err := local.Address().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1847,18 +1847,18 @@ func testWarehouseToOneAddressUsingAddressidAddress(t *testing.T) {
 	})
 
 	slice := WarehouseSlice{&local}
-	if err = local.L.LoadAddressidAddress(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
+	if err = local.L.LoadAddress(ctx, tx, false, (*[]*Warehouse)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AddressidAddress == nil {
+	if local.R.Address == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.AddressidAddress = nil
-	if err = local.L.LoadAddressidAddress(ctx, tx, true, &local, nil); err != nil {
+	local.R.Address = nil
+	if err = local.L.LoadAddress(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AddressidAddress == nil {
+	if local.R.Address == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1867,7 +1867,7 @@ func testWarehouseToOneAddressUsingAddressidAddress(t *testing.T) {
 	}
 }
 
-func testWarehouseToOneSetOpAddressUsingAddressidAddress(t *testing.T) {
+func testWarehouseToOneSetOpAddressUsingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1896,36 +1896,36 @@ func testWarehouseToOneSetOpAddressUsingAddressidAddress(t *testing.T) {
 	}
 
 	for i, x := range []*Address{&b, &c} {
-		err = a.SetAddressidAddress(ctx, tx, i != 0, x)
+		err = a.SetAddress(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.AddressidAddress != x {
+		if a.R.Address != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.AddressidWarehouses[0] != &a {
+		if x.R.Warehouses[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Addressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Addressid)
+		if !queries.Equal(a.AddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.AddressID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Addressid))
-		reflect.Indirect(reflect.ValueOf(&a.Addressid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.AddressID))
+		reflect.Indirect(reflect.ValueOf(&a.AddressID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Addressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Addressid, x.ID)
+		if !queries.Equal(a.AddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.AddressID, x.ID)
 		}
 	}
 }
 
-func testWarehouseToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
+func testWarehouseToOneRemoveOpAddressUsingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1947,15 +1947,15 @@ func testWarehouseToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetAddressidAddress(ctx, tx, true, &b); err != nil {
+	if err = a.SetAddress(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveAddressidAddress(ctx, tx, &b); err != nil {
+	if err = a.RemoveAddress(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.AddressidAddress().Count(ctx, tx)
+	count, err := a.Address().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1963,15 +1963,15 @@ func testWarehouseToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.AddressidAddress != nil {
+	if a.R.Address != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Addressid) {
+	if !queries.IsValuerNil(a.AddressID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.AddressidWarehouses) != 0 {
+	if len(b.R.Warehouses) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -2050,7 +2050,7 @@ func testWarehousesSelect(t *testing.T) {
 }
 
 var (
-	warehouseDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Addressid`: `character varying`, `Email`: `character varying`, `Clickandcollectoption`: `character varying`, `Isprivate`: `boolean`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	warehouseDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `AddressID`: `character varying`, `Email`: `character varying`, `ClickAndCollectOption`: `character varying`, `IsPrivate`: `boolean`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_                = bytes.MinRead
 )
 

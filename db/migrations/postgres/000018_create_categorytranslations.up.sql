@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS category_translations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  languagecode character varying(5),
-  categoryid character varying(36),
-  name character varying(250),
-  description text,
-  seotitle character varying(70),
-  seodescription character varying(300)
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_code character varying(5) NOT NULL,
+  category_id uuid NOT NULL,
+  name character varying(250) NOT NULL,
+  description text NOT NULL,
+  seo_title character varying(70),
+  seo_description character varying(300)
 );
 
 CREATE INDEX idx_category_translations_name ON category_translations USING btree (name);

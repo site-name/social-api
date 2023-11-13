@@ -1,17 +1,17 @@
 CREATE TABLE IF NOT EXISTS product_variants (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(255),
-  productid character varying(36),
+  product_id uuid,
   sku character varying(255),
   weight real,
-  weightunit text,
-  trackinventory boolean,
-  ispreorder boolean,
-  preorderenddate bigint,
-  preorderglobalthreshold integer,
-  sortorder integer,
+  weight_unit text,
+  track_inventory boolean,
+  is_preorder boolean,
+  preorder_end_date bigint,
+  preorder_global_threshold integer,
+  sort_order integer,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY product_variants

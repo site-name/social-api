@@ -25,8 +25,8 @@ import (
 // MenuItemTranslation is an object representing the database table.
 type MenuItemTranslation struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Menuitemid   null.String `boil:"menuitemid" json:"menuitemid,omitempty" toml:"menuitemid" yaml:"menuitemid,omitempty"`
+	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	MenuItemID   null.String `boil:"menu_item_id" json:"menu_item_id,omitempty" toml:"menu_item_id" yaml:"menu_item_id,omitempty"`
 	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 
 	R *menuItemTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,25 +35,25 @@ type MenuItemTranslation struct {
 
 var MenuItemTranslationColumns = struct {
 	ID           string
-	Languagecode string
-	Menuitemid   string
+	LanguageCode string
+	MenuItemID   string
 	Name         string
 }{
 	ID:           "id",
-	Languagecode: "languagecode",
-	Menuitemid:   "menuitemid",
+	LanguageCode: "language_code",
+	MenuItemID:   "menu_item_id",
 	Name:         "name",
 }
 
 var MenuItemTranslationTableColumns = struct {
 	ID           string
-	Languagecode string
-	Menuitemid   string
+	LanguageCode string
+	MenuItemID   string
 	Name         string
 }{
 	ID:           "menu_item_translations.id",
-	Languagecode: "menu_item_translations.languagecode",
-	Menuitemid:   "menu_item_translations.menuitemid",
+	LanguageCode: "menu_item_translations.language_code",
+	MenuItemID:   "menu_item_translations.menu_item_id",
 	Name:         "menu_item_translations.name",
 }
 
@@ -61,26 +61,26 @@ var MenuItemTranslationTableColumns = struct {
 
 var MenuItemTranslationWhere = struct {
 	ID           whereHelperstring
-	Languagecode whereHelpernull_String
-	Menuitemid   whereHelpernull_String
+	LanguageCode whereHelpernull_String
+	MenuItemID   whereHelpernull_String
 	Name         whereHelpernull_String
 }{
 	ID:           whereHelperstring{field: "\"menu_item_translations\".\"id\""},
-	Languagecode: whereHelpernull_String{field: "\"menu_item_translations\".\"languagecode\""},
-	Menuitemid:   whereHelpernull_String{field: "\"menu_item_translations\".\"menuitemid\""},
+	LanguageCode: whereHelpernull_String{field: "\"menu_item_translations\".\"language_code\""},
+	MenuItemID:   whereHelpernull_String{field: "\"menu_item_translations\".\"menu_item_id\""},
 	Name:         whereHelpernull_String{field: "\"menu_item_translations\".\"name\""},
 }
 
 // MenuItemTranslationRels is where relationship names are stored.
 var MenuItemTranslationRels = struct {
-	MenuitemidMenuItem string
+	MenuItem string
 }{
-	MenuitemidMenuItem: "MenuitemidMenuItem",
+	MenuItem: "MenuItem",
 }
 
 // menuItemTranslationR is where relationships are stored.
 type menuItemTranslationR struct {
-	MenuitemidMenuItem *MenuItem `boil:"MenuitemidMenuItem" json:"MenuitemidMenuItem" toml:"MenuitemidMenuItem" yaml:"MenuitemidMenuItem"`
+	MenuItem *MenuItem `boil:"MenuItem" json:"MenuItem" toml:"MenuItem" yaml:"MenuItem"`
 }
 
 // NewStruct creates a new relationship struct
@@ -88,20 +88,20 @@ func (*menuItemTranslationR) NewStruct() *menuItemTranslationR {
 	return &menuItemTranslationR{}
 }
 
-func (r *menuItemTranslationR) GetMenuitemidMenuItem() *MenuItem {
+func (r *menuItemTranslationR) GetMenuItem() *MenuItem {
 	if r == nil {
 		return nil
 	}
-	return r.MenuitemidMenuItem
+	return r.MenuItem
 }
 
 // menuItemTranslationL is where Load methods for each relationship are stored.
 type menuItemTranslationL struct{}
 
 var (
-	menuItemTranslationAllColumns            = []string{"id", "languagecode", "menuitemid", "name"}
+	menuItemTranslationAllColumns            = []string{"id", "language_code", "menu_item_id", "name"}
 	menuItemTranslationColumnsWithoutDefault = []string{"id"}
-	menuItemTranslationColumnsWithDefault    = []string{"languagecode", "menuitemid", "name"}
+	menuItemTranslationColumnsWithDefault    = []string{"language_code", "menu_item_id", "name"}
 	menuItemTranslationPrimaryKeyColumns     = []string{"id"}
 	menuItemTranslationGeneratedColumns      = []string{}
 )
@@ -384,10 +384,10 @@ func (q menuItemTranslationQuery) Exists(ctx context.Context, exec boil.ContextE
 	return count > 0, nil
 }
 
-// MenuitemidMenuItem pointed to by the foreign key.
-func (o *MenuItemTranslation) MenuitemidMenuItem(mods ...qm.QueryMod) menuItemQuery {
+// MenuItem pointed to by the foreign key.
+func (o *MenuItemTranslation) MenuItem(mods ...qm.QueryMod) menuItemQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Menuitemid),
+		qm.Where("\"id\" = ?", o.MenuItemID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -395,9 +395,9 @@ func (o *MenuItemTranslation) MenuitemidMenuItem(mods ...qm.QueryMod) menuItemQu
 	return MenuItems(queryMods...)
 }
 
-// LoadMenuitemidMenuItem allows an eager lookup of values, cached into the
+// LoadMenuItem allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (menuItemTranslationL) LoadMenuitemidMenuItem(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenuItemTranslation interface{}, mods queries.Applicator) error {
+func (menuItemTranslationL) LoadMenuItem(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenuItemTranslation interface{}, mods queries.Applicator) error {
 	var slice []*MenuItemTranslation
 	var object *MenuItemTranslation
 
@@ -428,8 +428,8 @@ func (menuItemTranslationL) LoadMenuitemidMenuItem(ctx context.Context, e boil.C
 		if object.R == nil {
 			object.R = &menuItemTranslationR{}
 		}
-		if !queries.IsNil(object.Menuitemid) {
-			args = append(args, object.Menuitemid)
+		if !queries.IsNil(object.MenuItemID) {
+			args = append(args, object.MenuItemID)
 		}
 
 	} else {
@@ -440,13 +440,13 @@ func (menuItemTranslationL) LoadMenuitemidMenuItem(ctx context.Context, e boil.C
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Menuitemid) {
+				if queries.Equal(a, obj.MenuItemID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Menuitemid) {
-				args = append(args, obj.Menuitemid)
+			if !queries.IsNil(obj.MenuItemID) {
+				args = append(args, obj.MenuItemID)
 			}
 
 		}
@@ -495,22 +495,22 @@ func (menuItemTranslationL) LoadMenuitemidMenuItem(ctx context.Context, e boil.C
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.MenuitemidMenuItem = foreign
+		object.R.MenuItem = foreign
 		if foreign.R == nil {
 			foreign.R = &menuItemR{}
 		}
-		foreign.R.MenuitemidMenuItemTranslations = append(foreign.R.MenuitemidMenuItemTranslations, object)
+		foreign.R.MenuItemTranslations = append(foreign.R.MenuItemTranslations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Menuitemid, foreign.ID) {
-				local.R.MenuitemidMenuItem = foreign
+			if queries.Equal(local.MenuItemID, foreign.ID) {
+				local.R.MenuItem = foreign
 				if foreign.R == nil {
 					foreign.R = &menuItemR{}
 				}
-				foreign.R.MenuitemidMenuItemTranslations = append(foreign.R.MenuitemidMenuItemTranslations, local)
+				foreign.R.MenuItemTranslations = append(foreign.R.MenuItemTranslations, local)
 				break
 			}
 		}
@@ -519,10 +519,10 @@ func (menuItemTranslationL) LoadMenuitemidMenuItem(ctx context.Context, e boil.C
 	return nil
 }
 
-// SetMenuitemidMenuItem of the menuItemTranslation to the related item.
-// Sets o.R.MenuitemidMenuItem to related.
-// Adds o to related.R.MenuitemidMenuItemTranslations.
-func (o *MenuItemTranslation) SetMenuitemidMenuItem(ctx context.Context, exec boil.ContextExecutor, insert bool, related *MenuItem) error {
+// SetMenuItem of the menuItemTranslation to the related item.
+// Sets o.R.MenuItem to related.
+// Adds o to related.R.MenuItemTranslations.
+func (o *MenuItemTranslation) SetMenuItem(ctx context.Context, exec boil.ContextExecutor, insert bool, related *MenuItem) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -532,7 +532,7 @@ func (o *MenuItemTranslation) SetMenuitemidMenuItem(ctx context.Context, exec bo
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"menu_item_translations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"menuitemid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"menu_item_id"}),
 		strmangle.WhereClause("\"", "\"", 2, menuItemTranslationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -546,54 +546,54 @@ func (o *MenuItemTranslation) SetMenuitemidMenuItem(ctx context.Context, exec bo
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Menuitemid, related.ID)
+	queries.Assign(&o.MenuItemID, related.ID)
 	if o.R == nil {
 		o.R = &menuItemTranslationR{
-			MenuitemidMenuItem: related,
+			MenuItem: related,
 		}
 	} else {
-		o.R.MenuitemidMenuItem = related
+		o.R.MenuItem = related
 	}
 
 	if related.R == nil {
 		related.R = &menuItemR{
-			MenuitemidMenuItemTranslations: MenuItemTranslationSlice{o},
+			MenuItemTranslations: MenuItemTranslationSlice{o},
 		}
 	} else {
-		related.R.MenuitemidMenuItemTranslations = append(related.R.MenuitemidMenuItemTranslations, o)
+		related.R.MenuItemTranslations = append(related.R.MenuItemTranslations, o)
 	}
 
 	return nil
 }
 
-// RemoveMenuitemidMenuItem relationship.
-// Sets o.R.MenuitemidMenuItem to nil.
+// RemoveMenuItem relationship.
+// Sets o.R.MenuItem to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *MenuItemTranslation) RemoveMenuitemidMenuItem(ctx context.Context, exec boil.ContextExecutor, related *MenuItem) error {
+func (o *MenuItemTranslation) RemoveMenuItem(ctx context.Context, exec boil.ContextExecutor, related *MenuItem) error {
 	var err error
 
-	queries.SetScanner(&o.Menuitemid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("menuitemid")); err != nil {
+	queries.SetScanner(&o.MenuItemID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("menu_item_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.MenuitemidMenuItem = nil
+		o.R.MenuItem = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.MenuitemidMenuItemTranslations {
-		if queries.Equal(o.Menuitemid, ri.Menuitemid) {
+	for i, ri := range related.R.MenuItemTranslations {
+		if queries.Equal(o.MenuItemID, ri.MenuItemID) {
 			continue
 		}
 
-		ln := len(related.R.MenuitemidMenuItemTranslations)
+		ln := len(related.R.MenuItemTranslations)
 		if ln > 1 && i < ln-1 {
-			related.R.MenuitemidMenuItemTranslations[i] = related.R.MenuitemidMenuItemTranslations[ln-1]
+			related.R.MenuItemTranslations[i] = related.R.MenuItemTranslations[ln-1]
 		}
-		related.R.MenuitemidMenuItemTranslations = related.R.MenuitemidMenuItemTranslations[:ln-1]
+		related.R.MenuItemTranslations = related.R.MenuItemTranslations[:ln-1]
 		break
 	}
 	return nil

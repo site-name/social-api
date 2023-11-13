@@ -494,7 +494,7 @@ func testShippingMethodChannelListingsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testShippingMethodChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
+func testShippingMethodChannelListingToOneChannelUsingChannel(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testShippingMethodChannelListingToOneChannelUsingChannelidChannel(t *testin
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Channelid, foreign.ID)
+	queries.Assign(&local.ChannelID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ChannelidChannel().One(ctx, tx)
+	check, err := local.Channel().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testShippingMethodChannelListingToOneChannelUsingChannelidChannel(t *testin
 	})
 
 	slice := ShippingMethodChannelListingSlice{&local}
-	if err = local.L.LoadChannelidChannel(ctx, tx, false, (*[]*ShippingMethodChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadChannel(ctx, tx, false, (*[]*ShippingMethodChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ChannelidChannel = nil
-	if err = local.L.LoadChannelidChannel(ctx, tx, true, &local, nil); err != nil {
+	local.R.Channel = nil
+	if err = local.L.LoadChannel(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testShippingMethodChannelListingToOneChannelUsingChannelidChannel(t *testin
 	}
 }
 
-func testShippingMethodChannelListingToOneShippingMethodUsingShippingmethodidShippingMethod(t *testing.T) {
+func testShippingMethodChannelListingToOneShippingMethodUsingShippingMethod(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testShippingMethodChannelListingToOneShippingMethodUsingShippingmethodidShi
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Shippingmethodid, foreign.ID)
+	queries.Assign(&local.ShippingMethodID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ShippingmethodidShippingMethod().One(ctx, tx)
+	check, err := local.ShippingMethod().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testShippingMethodChannelListingToOneShippingMethodUsingShippingmethodidShi
 	})
 
 	slice := ShippingMethodChannelListingSlice{&local}
-	if err = local.L.LoadShippingmethodidShippingMethod(ctx, tx, false, (*[]*ShippingMethodChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadShippingMethod(ctx, tx, false, (*[]*ShippingMethodChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ShippingmethodidShippingMethod == nil {
+	if local.R.ShippingMethod == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ShippingmethodidShippingMethod = nil
-	if err = local.L.LoadShippingmethodidShippingMethod(ctx, tx, true, &local, nil); err != nil {
+	local.R.ShippingMethod = nil
+	if err = local.L.LoadShippingMethod(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ShippingmethodidShippingMethod == nil {
+	if local.R.ShippingMethod == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testShippingMethodChannelListingToOneShippingMethodUsingShippingmethodidShi
 	}
 }
 
-func testShippingMethodChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
+func testShippingMethodChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testShippingMethodChannelListingToOneSetOpChannelUsingChannelidChannel(t *t
 	}
 
 	for i, x := range []*Channel{&b, &c} {
-		err = a.SetChannelidChannel(ctx, tx, i != 0, x)
+		err = a.SetChannel(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ChannelidChannel != x {
+		if a.R.Channel != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ChannelidShippingMethodChannelListings[0] != &a {
+		if x.R.ShippingMethodChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Channelid, x.ID) {
-			t.Error("foreign key was wrong value", a.Channelid)
+		if !queries.Equal(a.ChannelID, x.ID) {
+			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Channelid))
-		reflect.Indirect(reflect.ValueOf(&a.Channelid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ChannelID))
+		reflect.Indirect(reflect.ValueOf(&a.ChannelID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Channelid, x.ID) {
-			t.Error("foreign key was wrong value", a.Channelid, x.ID)
+		if !queries.Equal(a.ChannelID, x.ID) {
+			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
 
-func testShippingMethodChannelListingToOneRemoveOpChannelUsingChannelidChannel(t *testing.T) {
+func testShippingMethodChannelListingToOneRemoveOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testShippingMethodChannelListingToOneRemoveOpChannelUsingChannelidChannel(t
 		t.Fatal(err)
 	}
 
-	if err = a.SetChannelidChannel(ctx, tx, true, &b); err != nil {
+	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveChannelidChannel(ctx, tx, &b); err != nil {
+	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ChannelidChannel().Count(ctx, tx)
+	count, err := a.Channel().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testShippingMethodChannelListingToOneRemoveOpChannelUsingChannelidChannel(t
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ChannelidChannel != nil {
+	if a.R.Channel != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Channelid) {
+	if !queries.IsValuerNil(a.ChannelID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ChannelidShippingMethodChannelListings) != 0 {
+	if len(b.R.ShippingMethodChannelListings) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testShippingMethodChannelListingToOneSetOpShippingMethodUsingShippingmethodidShippingMethod(t *testing.T) {
+func testShippingMethodChannelListingToOneSetOpShippingMethodUsingShippingMethod(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testShippingMethodChannelListingToOneSetOpShippingMethodUsingShippingmethod
 	}
 
 	for i, x := range []*ShippingMethod{&b, &c} {
-		err = a.SetShippingmethodidShippingMethod(ctx, tx, i != 0, x)
+		err = a.SetShippingMethod(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ShippingmethodidShippingMethod != x {
+		if a.R.ShippingMethod != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ShippingmethodidShippingMethodChannelListings[0] != &a {
+		if x.R.ShippingMethodChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Shippingmethodid, x.ID) {
-			t.Error("foreign key was wrong value", a.Shippingmethodid)
+		if !queries.Equal(a.ShippingMethodID, x.ID) {
+			t.Error("foreign key was wrong value", a.ShippingMethodID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Shippingmethodid))
-		reflect.Indirect(reflect.ValueOf(&a.Shippingmethodid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ShippingMethodID))
+		reflect.Indirect(reflect.ValueOf(&a.ShippingMethodID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Shippingmethodid, x.ID) {
-			t.Error("foreign key was wrong value", a.Shippingmethodid, x.ID)
+		if !queries.Equal(a.ShippingMethodID, x.ID) {
+			t.Error("foreign key was wrong value", a.ShippingMethodID, x.ID)
 		}
 	}
 }
 
-func testShippingMethodChannelListingToOneRemoveOpShippingMethodUsingShippingmethodidShippingMethod(t *testing.T) {
+func testShippingMethodChannelListingToOneRemoveOpShippingMethodUsingShippingMethod(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testShippingMethodChannelListingToOneRemoveOpShippingMethodUsingShippingmet
 		t.Fatal(err)
 	}
 
-	if err = a.SetShippingmethodidShippingMethod(ctx, tx, true, &b); err != nil {
+	if err = a.SetShippingMethod(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveShippingmethodidShippingMethod(ctx, tx, &b); err != nil {
+	if err = a.RemoveShippingMethod(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ShippingmethodidShippingMethod().Count(ctx, tx)
+	count, err := a.ShippingMethod().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testShippingMethodChannelListingToOneRemoveOpShippingMethodUsingShippingmet
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ShippingmethodidShippingMethod != nil {
+	if a.R.ShippingMethod != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Shippingmethodid) {
+	if !queries.IsValuerNil(a.ShippingMethodID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ShippingmethodidShippingMethodChannelListings) != 0 {
+	if len(b.R.ShippingMethodChannelListings) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testShippingMethodChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	shippingMethodChannelListingDBTypes = map[string]string{`ID`: `character varying`, `Shippingmethodid`: `character varying`, `Channelid`: `character varying`, `Minimumorderpriceamount`: `double precision`, `Currency`: `character varying`, `Maximumorderpriceamount`: `double precision`, `Priceamount`: `double precision`, `Createat`: `bigint`}
+	shippingMethodChannelListingDBTypes = map[string]string{`ID`: `character varying`, `ShippingMethodID`: `character varying`, `ChannelID`: `character varying`, `MinimumOrderPriceAmount`: `double precision`, `Currency`: `character varying`, `MaximumOrderPriceAmount`: `double precision`, `PriceAmount`: `double precision`, `CreateAt`: `bigint`}
 	_                                   = bytes.MinRead
 )
 

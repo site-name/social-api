@@ -27,13 +27,13 @@ type Collection struct {
 	ID                 string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name               null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Slug               null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Backgroundimage    null.String `boil:"backgroundimage" json:"backgroundimage,omitempty" toml:"backgroundimage" yaml:"backgroundimage,omitempty"`
-	Backgroundimagealt null.String `boil:"backgroundimagealt" json:"backgroundimagealt,omitempty" toml:"backgroundimagealt" yaml:"backgroundimagealt,omitempty"`
+	BackgroundImage    null.String `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
+	BackgroundImageAlt null.String `boil:"background_image_alt" json:"background_image_alt,omitempty" toml:"background_image_alt" yaml:"background_image_alt,omitempty"`
 	Description        null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Metadata           null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata    null.JSON   `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
-	Seotitle           null.String `boil:"seotitle" json:"seotitle,omitempty" toml:"seotitle" yaml:"seotitle,omitempty"`
-	Seodescription     null.String `boil:"seodescription" json:"seodescription,omitempty" toml:"seodescription" yaml:"seodescription,omitempty"`
+	PrivateMetadata    null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	SeoTitle           null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription     null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *collectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L collectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,48 +43,48 @@ var CollectionColumns = struct {
 	ID                 string
 	Name               string
 	Slug               string
-	Backgroundimage    string
-	Backgroundimagealt string
+	BackgroundImage    string
+	BackgroundImageAlt string
 	Description        string
 	Metadata           string
-	Privatemetadata    string
-	Seotitle           string
-	Seodescription     string
+	PrivateMetadata    string
+	SeoTitle           string
+	SeoDescription     string
 }{
 	ID:                 "id",
 	Name:               "name",
 	Slug:               "slug",
-	Backgroundimage:    "backgroundimage",
-	Backgroundimagealt: "backgroundimagealt",
+	BackgroundImage:    "background_image",
+	BackgroundImageAlt: "background_image_alt",
 	Description:        "description",
 	Metadata:           "metadata",
-	Privatemetadata:    "privatemetadata",
-	Seotitle:           "seotitle",
-	Seodescription:     "seodescription",
+	PrivateMetadata:    "private_metadata",
+	SeoTitle:           "seo_title",
+	SeoDescription:     "seo_description",
 }
 
 var CollectionTableColumns = struct {
 	ID                 string
 	Name               string
 	Slug               string
-	Backgroundimage    string
-	Backgroundimagealt string
+	BackgroundImage    string
+	BackgroundImageAlt string
 	Description        string
 	Metadata           string
-	Privatemetadata    string
-	Seotitle           string
-	Seodescription     string
+	PrivateMetadata    string
+	SeoTitle           string
+	SeoDescription     string
 }{
 	ID:                 "collections.id",
 	Name:               "collections.name",
 	Slug:               "collections.slug",
-	Backgroundimage:    "collections.backgroundimage",
-	Backgroundimagealt: "collections.backgroundimagealt",
+	BackgroundImage:    "collections.background_image",
+	BackgroundImageAlt: "collections.background_image_alt",
 	Description:        "collections.description",
 	Metadata:           "collections.metadata",
-	Privatemetadata:    "collections.privatemetadata",
-	Seotitle:           "collections.seotitle",
-	Seodescription:     "collections.seodescription",
+	PrivateMetadata:    "collections.private_metadata",
+	SeoTitle:           "collections.seo_title",
+	SeoDescription:     "collections.seo_description",
 }
 
 // Generated where
@@ -93,51 +93,51 @@ var CollectionWhere = struct {
 	ID                 whereHelperstring
 	Name               whereHelpernull_String
 	Slug               whereHelpernull_String
-	Backgroundimage    whereHelpernull_String
-	Backgroundimagealt whereHelpernull_String
+	BackgroundImage    whereHelpernull_String
+	BackgroundImageAlt whereHelpernull_String
 	Description        whereHelpernull_String
 	Metadata           whereHelpernull_JSON
-	Privatemetadata    whereHelpernull_JSON
-	Seotitle           whereHelpernull_String
-	Seodescription     whereHelpernull_String
+	PrivateMetadata    whereHelpernull_JSON
+	SeoTitle           whereHelpernull_String
+	SeoDescription     whereHelpernull_String
 }{
 	ID:                 whereHelperstring{field: "\"collections\".\"id\""},
 	Name:               whereHelpernull_String{field: "\"collections\".\"name\""},
 	Slug:               whereHelpernull_String{field: "\"collections\".\"slug\""},
-	Backgroundimage:    whereHelpernull_String{field: "\"collections\".\"backgroundimage\""},
-	Backgroundimagealt: whereHelpernull_String{field: "\"collections\".\"backgroundimagealt\""},
+	BackgroundImage:    whereHelpernull_String{field: "\"collections\".\"background_image\""},
+	BackgroundImageAlt: whereHelpernull_String{field: "\"collections\".\"background_image_alt\""},
 	Description:        whereHelpernull_String{field: "\"collections\".\"description\""},
 	Metadata:           whereHelpernull_JSON{field: "\"collections\".\"metadata\""},
-	Privatemetadata:    whereHelpernull_JSON{field: "\"collections\".\"privatemetadata\""},
-	Seotitle:           whereHelpernull_String{field: "\"collections\".\"seotitle\""},
-	Seodescription:     whereHelpernull_String{field: "\"collections\".\"seodescription\""},
+	PrivateMetadata:    whereHelpernull_JSON{field: "\"collections\".\"private_metadata\""},
+	SeoTitle:           whereHelpernull_String{field: "\"collections\".\"seo_title\""},
+	SeoDescription:     whereHelpernull_String{field: "\"collections\".\"seo_description\""},
 }
 
 // CollectionRels is where relationship names are stored.
 var CollectionRels = struct {
-	CollectionidCollectionChannelListings string
-	CollectionidCollectionTranslations    string
-	CollectionidMenuItems                 string
-	CollectionidProductCollections        string
-	CollectionidSaleCollections           string
-	CollectionidVoucherCollections        string
+	CollectionChannelListings string
+	CollectionTranslations    string
+	MenuItems                 string
+	ProductCollections        string
+	SaleCollections           string
+	VoucherCollections        string
 }{
-	CollectionidCollectionChannelListings: "CollectionidCollectionChannelListings",
-	CollectionidCollectionTranslations:    "CollectionidCollectionTranslations",
-	CollectionidMenuItems:                 "CollectionidMenuItems",
-	CollectionidProductCollections:        "CollectionidProductCollections",
-	CollectionidSaleCollections:           "CollectionidSaleCollections",
-	CollectionidVoucherCollections:        "CollectionidVoucherCollections",
+	CollectionChannelListings: "CollectionChannelListings",
+	CollectionTranslations:    "CollectionTranslations",
+	MenuItems:                 "MenuItems",
+	ProductCollections:        "ProductCollections",
+	SaleCollections:           "SaleCollections",
+	VoucherCollections:        "VoucherCollections",
 }
 
 // collectionR is where relationships are stored.
 type collectionR struct {
-	CollectionidCollectionChannelListings CollectionChannelListingSlice `boil:"CollectionidCollectionChannelListings" json:"CollectionidCollectionChannelListings" toml:"CollectionidCollectionChannelListings" yaml:"CollectionidCollectionChannelListings"`
-	CollectionidCollectionTranslations    CollectionTranslationSlice    `boil:"CollectionidCollectionTranslations" json:"CollectionidCollectionTranslations" toml:"CollectionidCollectionTranslations" yaml:"CollectionidCollectionTranslations"`
-	CollectionidMenuItems                 MenuItemSlice                 `boil:"CollectionidMenuItems" json:"CollectionidMenuItems" toml:"CollectionidMenuItems" yaml:"CollectionidMenuItems"`
-	CollectionidProductCollections        ProductCollectionSlice        `boil:"CollectionidProductCollections" json:"CollectionidProductCollections" toml:"CollectionidProductCollections" yaml:"CollectionidProductCollections"`
-	CollectionidSaleCollections           SaleCollectionSlice           `boil:"CollectionidSaleCollections" json:"CollectionidSaleCollections" toml:"CollectionidSaleCollections" yaml:"CollectionidSaleCollections"`
-	CollectionidVoucherCollections        VoucherCollectionSlice        `boil:"CollectionidVoucherCollections" json:"CollectionidVoucherCollections" toml:"CollectionidVoucherCollections" yaml:"CollectionidVoucherCollections"`
+	CollectionChannelListings CollectionChannelListingSlice `boil:"CollectionChannelListings" json:"CollectionChannelListings" toml:"CollectionChannelListings" yaml:"CollectionChannelListings"`
+	CollectionTranslations    CollectionTranslationSlice    `boil:"CollectionTranslations" json:"CollectionTranslations" toml:"CollectionTranslations" yaml:"CollectionTranslations"`
+	MenuItems                 MenuItemSlice                 `boil:"MenuItems" json:"MenuItems" toml:"MenuItems" yaml:"MenuItems"`
+	ProductCollections        ProductCollectionSlice        `boil:"ProductCollections" json:"ProductCollections" toml:"ProductCollections" yaml:"ProductCollections"`
+	SaleCollections           SaleCollectionSlice           `boil:"SaleCollections" json:"SaleCollections" toml:"SaleCollections" yaml:"SaleCollections"`
+	VoucherCollections        VoucherCollectionSlice        `boil:"VoucherCollections" json:"VoucherCollections" toml:"VoucherCollections" yaml:"VoucherCollections"`
 }
 
 // NewStruct creates a new relationship struct
@@ -145,55 +145,55 @@ func (*collectionR) NewStruct() *collectionR {
 	return &collectionR{}
 }
 
-func (r *collectionR) GetCollectionidCollectionChannelListings() CollectionChannelListingSlice {
+func (r *collectionR) GetCollectionChannelListings() CollectionChannelListingSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidCollectionChannelListings
+	return r.CollectionChannelListings
 }
 
-func (r *collectionR) GetCollectionidCollectionTranslations() CollectionTranslationSlice {
+func (r *collectionR) GetCollectionTranslations() CollectionTranslationSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidCollectionTranslations
+	return r.CollectionTranslations
 }
 
-func (r *collectionR) GetCollectionidMenuItems() MenuItemSlice {
+func (r *collectionR) GetMenuItems() MenuItemSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidMenuItems
+	return r.MenuItems
 }
 
-func (r *collectionR) GetCollectionidProductCollections() ProductCollectionSlice {
+func (r *collectionR) GetProductCollections() ProductCollectionSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidProductCollections
+	return r.ProductCollections
 }
 
-func (r *collectionR) GetCollectionidSaleCollections() SaleCollectionSlice {
+func (r *collectionR) GetSaleCollections() SaleCollectionSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidSaleCollections
+	return r.SaleCollections
 }
 
-func (r *collectionR) GetCollectionidVoucherCollections() VoucherCollectionSlice {
+func (r *collectionR) GetVoucherCollections() VoucherCollectionSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidVoucherCollections
+	return r.VoucherCollections
 }
 
 // collectionL is where Load methods for each relationship are stored.
 type collectionL struct{}
 
 var (
-	collectionAllColumns            = []string{"id", "name", "slug", "backgroundimage", "backgroundimagealt", "description", "metadata", "privatemetadata", "seotitle", "seodescription"}
+	collectionAllColumns            = []string{"id", "name", "slug", "background_image", "background_image_alt", "description", "metadata", "private_metadata", "seo_title", "seo_description"}
 	collectionColumnsWithoutDefault = []string{"id"}
-	collectionColumnsWithDefault    = []string{"name", "slug", "backgroundimage", "backgroundimagealt", "description", "metadata", "privatemetadata", "seotitle", "seodescription"}
+	collectionColumnsWithDefault    = []string{"name", "slug", "background_image", "background_image_alt", "description", "metadata", "private_metadata", "seo_title", "seo_description"}
 	collectionPrimaryKeyColumns     = []string{"id"}
 	collectionGeneratedColumns      = []string{}
 )
@@ -476,93 +476,93 @@ func (q collectionQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	return count > 0, nil
 }
 
-// CollectionidCollectionChannelListings retrieves all the collection_channel_listing's CollectionChannelListings with an executor via collectionid column.
-func (o *Collection) CollectionidCollectionChannelListings(mods ...qm.QueryMod) collectionChannelListingQuery {
+// CollectionChannelListings retrieves all the collection_channel_listing's CollectionChannelListings with an executor.
+func (o *Collection) CollectionChannelListings(mods ...qm.QueryMod) collectionChannelListingQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"collection_channel_listings\".\"collectionid\"=?", o.ID),
+		qm.Where("\"collection_channel_listings\".\"collection_id\"=?", o.ID),
 	)
 
 	return CollectionChannelListings(queryMods...)
 }
 
-// CollectionidCollectionTranslations retrieves all the collection_translation's CollectionTranslations with an executor via collectionid column.
-func (o *Collection) CollectionidCollectionTranslations(mods ...qm.QueryMod) collectionTranslationQuery {
+// CollectionTranslations retrieves all the collection_translation's CollectionTranslations with an executor.
+func (o *Collection) CollectionTranslations(mods ...qm.QueryMod) collectionTranslationQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"collection_translations\".\"collectionid\"=?", o.ID),
+		qm.Where("\"collection_translations\".\"collection_id\"=?", o.ID),
 	)
 
 	return CollectionTranslations(queryMods...)
 }
 
-// CollectionidMenuItems retrieves all the menu_item's MenuItems with an executor via collectionid column.
-func (o *Collection) CollectionidMenuItems(mods ...qm.QueryMod) menuItemQuery {
+// MenuItems retrieves all the menu_item's MenuItems with an executor.
+func (o *Collection) MenuItems(mods ...qm.QueryMod) menuItemQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"menu_items\".\"collectionid\"=?", o.ID),
+		qm.Where("\"menu_items\".\"collection_id\"=?", o.ID),
 	)
 
 	return MenuItems(queryMods...)
 }
 
-// CollectionidProductCollections retrieves all the product_collection's ProductCollections with an executor via collectionid column.
-func (o *Collection) CollectionidProductCollections(mods ...qm.QueryMod) productCollectionQuery {
+// ProductCollections retrieves all the product_collection's ProductCollections with an executor.
+func (o *Collection) ProductCollections(mods ...qm.QueryMod) productCollectionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"product_collections\".\"collectionid\"=?", o.ID),
+		qm.Where("\"product_collections\".\"collection_id\"=?", o.ID),
 	)
 
 	return ProductCollections(queryMods...)
 }
 
-// CollectionidSaleCollections retrieves all the sale_collection's SaleCollections with an executor via collectionid column.
-func (o *Collection) CollectionidSaleCollections(mods ...qm.QueryMod) saleCollectionQuery {
+// SaleCollections retrieves all the sale_collection's SaleCollections with an executor.
+func (o *Collection) SaleCollections(mods ...qm.QueryMod) saleCollectionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"sale_collections\".\"collectionid\"=?", o.ID),
+		qm.Where("\"sale_collections\".\"collection_id\"=?", o.ID),
 	)
 
 	return SaleCollections(queryMods...)
 }
 
-// CollectionidVoucherCollections retrieves all the voucher_collection's VoucherCollections with an executor via collectionid column.
-func (o *Collection) CollectionidVoucherCollections(mods ...qm.QueryMod) voucherCollectionQuery {
+// VoucherCollections retrieves all the voucher_collection's VoucherCollections with an executor.
+func (o *Collection) VoucherCollections(mods ...qm.QueryMod) voucherCollectionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"voucher_collections\".\"collectionid\"=?", o.ID),
+		qm.Where("\"voucher_collections\".\"collection_id\"=?", o.ID),
 	)
 
 	return VoucherCollections(queryMods...)
 }
 
-// LoadCollectionidCollectionChannelListings allows an eager lookup of values, cached into the
+// LoadCollectionChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionidCollectionChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadCollectionChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -617,7 +617,7 @@ func (collectionL) LoadCollectionidCollectionChannelListings(ctx context.Context
 
 	query := NewQuery(
 		qm.From(`collection_channel_listings`),
-		qm.WhereIn(`collection_channel_listings.collectionid in ?`, args...),
+		qm.WhereIn(`collection_channel_listings.collection_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -648,24 +648,24 @@ func (collectionL) LoadCollectionidCollectionChannelListings(ctx context.Context
 		}
 	}
 	if singular {
-		object.R.CollectionidCollectionChannelListings = resultSlice
+		object.R.CollectionChannelListings = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &collectionChannelListingR{}
 			}
-			foreign.R.CollectionidCollection = object
+			foreign.R.Collection = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Collectionid) {
-				local.R.CollectionidCollectionChannelListings = append(local.R.CollectionidCollectionChannelListings, foreign)
+			if queries.Equal(local.ID, foreign.CollectionID) {
+				local.R.CollectionChannelListings = append(local.R.CollectionChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &collectionChannelListingR{}
 				}
-				foreign.R.CollectionidCollection = local
+				foreign.R.Collection = local
 				break
 			}
 		}
@@ -674,9 +674,9 @@ func (collectionL) LoadCollectionidCollectionChannelListings(ctx context.Context
 	return nil
 }
 
-// LoadCollectionidCollectionTranslations allows an eager lookup of values, cached into the
+// LoadCollectionTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionidCollectionTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadCollectionTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -731,7 +731,7 @@ func (collectionL) LoadCollectionidCollectionTranslations(ctx context.Context, e
 
 	query := NewQuery(
 		qm.From(`collection_translations`),
-		qm.WhereIn(`collection_translations.collectionid in ?`, args...),
+		qm.WhereIn(`collection_translations.collection_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -762,24 +762,24 @@ func (collectionL) LoadCollectionidCollectionTranslations(ctx context.Context, e
 		}
 	}
 	if singular {
-		object.R.CollectionidCollectionTranslations = resultSlice
+		object.R.CollectionTranslations = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &collectionTranslationR{}
 			}
-			foreign.R.CollectionidCollection = object
+			foreign.R.Collection = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Collectionid) {
-				local.R.CollectionidCollectionTranslations = append(local.R.CollectionidCollectionTranslations, foreign)
+			if queries.Equal(local.ID, foreign.CollectionID) {
+				local.R.CollectionTranslations = append(local.R.CollectionTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &collectionTranslationR{}
 				}
-				foreign.R.CollectionidCollection = local
+				foreign.R.Collection = local
 				break
 			}
 		}
@@ -788,9 +788,9 @@ func (collectionL) LoadCollectionidCollectionTranslations(ctx context.Context, e
 	return nil
 }
 
-// LoadCollectionidMenuItems allows an eager lookup of values, cached into the
+// LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionidMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -845,7 +845,7 @@ func (collectionL) LoadCollectionidMenuItems(ctx context.Context, e boil.Context
 
 	query := NewQuery(
 		qm.From(`menu_items`),
-		qm.WhereIn(`menu_items.collectionid in ?`, args...),
+		qm.WhereIn(`menu_items.collection_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -876,24 +876,24 @@ func (collectionL) LoadCollectionidMenuItems(ctx context.Context, e boil.Context
 		}
 	}
 	if singular {
-		object.R.CollectionidMenuItems = resultSlice
+		object.R.MenuItems = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &menuItemR{}
 			}
-			foreign.R.CollectionidCollection = object
+			foreign.R.Collection = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Collectionid) {
-				local.R.CollectionidMenuItems = append(local.R.CollectionidMenuItems, foreign)
+			if queries.Equal(local.ID, foreign.CollectionID) {
+				local.R.MenuItems = append(local.R.MenuItems, foreign)
 				if foreign.R == nil {
 					foreign.R = &menuItemR{}
 				}
-				foreign.R.CollectionidCollection = local
+				foreign.R.Collection = local
 				break
 			}
 		}
@@ -902,9 +902,9 @@ func (collectionL) LoadCollectionidMenuItems(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadCollectionidProductCollections allows an eager lookup of values, cached into the
+// LoadProductCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionidProductCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadProductCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -959,7 +959,7 @@ func (collectionL) LoadCollectionidProductCollections(ctx context.Context, e boi
 
 	query := NewQuery(
 		qm.From(`product_collections`),
-		qm.WhereIn(`product_collections.collectionid in ?`, args...),
+		qm.WhereIn(`product_collections.collection_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -990,24 +990,24 @@ func (collectionL) LoadCollectionidProductCollections(ctx context.Context, e boi
 		}
 	}
 	if singular {
-		object.R.CollectionidProductCollections = resultSlice
+		object.R.ProductCollections = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &productCollectionR{}
 			}
-			foreign.R.CollectionidCollection = object
+			foreign.R.Collection = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Collectionid) {
-				local.R.CollectionidProductCollections = append(local.R.CollectionidProductCollections, foreign)
+			if queries.Equal(local.ID, foreign.CollectionID) {
+				local.R.ProductCollections = append(local.R.ProductCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &productCollectionR{}
 				}
-				foreign.R.CollectionidCollection = local
+				foreign.R.Collection = local
 				break
 			}
 		}
@@ -1016,9 +1016,9 @@ func (collectionL) LoadCollectionidProductCollections(ctx context.Context, e boi
 	return nil
 }
 
-// LoadCollectionidSaleCollections allows an eager lookup of values, cached into the
+// LoadSaleCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionidSaleCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadSaleCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -1073,7 +1073,7 @@ func (collectionL) LoadCollectionidSaleCollections(ctx context.Context, e boil.C
 
 	query := NewQuery(
 		qm.From(`sale_collections`),
-		qm.WhereIn(`sale_collections.collectionid in ?`, args...),
+		qm.WhereIn(`sale_collections.collection_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1104,24 +1104,24 @@ func (collectionL) LoadCollectionidSaleCollections(ctx context.Context, e boil.C
 		}
 	}
 	if singular {
-		object.R.CollectionidSaleCollections = resultSlice
+		object.R.SaleCollections = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &saleCollectionR{}
 			}
-			foreign.R.CollectionidCollection = object
+			foreign.R.Collection = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Collectionid) {
-				local.R.CollectionidSaleCollections = append(local.R.CollectionidSaleCollections, foreign)
+			if queries.Equal(local.ID, foreign.CollectionID) {
+				local.R.SaleCollections = append(local.R.SaleCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleCollectionR{}
 				}
-				foreign.R.CollectionidCollection = local
+				foreign.R.Collection = local
 				break
 			}
 		}
@@ -1130,9 +1130,9 @@ func (collectionL) LoadCollectionidSaleCollections(ctx context.Context, e boil.C
 	return nil
 }
 
-// LoadCollectionidVoucherCollections allows an eager lookup of values, cached into the
+// LoadVoucherCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionidVoucherCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadVoucherCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -1187,7 +1187,7 @@ func (collectionL) LoadCollectionidVoucherCollections(ctx context.Context, e boi
 
 	query := NewQuery(
 		qm.From(`voucher_collections`),
-		qm.WhereIn(`voucher_collections.collectionid in ?`, args...),
+		qm.WhereIn(`voucher_collections.collection_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1218,24 +1218,24 @@ func (collectionL) LoadCollectionidVoucherCollections(ctx context.Context, e boi
 		}
 	}
 	if singular {
-		object.R.CollectionidVoucherCollections = resultSlice
+		object.R.VoucherCollections = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &voucherCollectionR{}
 			}
-			foreign.R.CollectionidCollection = object
+			foreign.R.Collection = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Collectionid) {
-				local.R.CollectionidVoucherCollections = append(local.R.CollectionidVoucherCollections, foreign)
+			if queries.Equal(local.ID, foreign.CollectionID) {
+				local.R.VoucherCollections = append(local.R.VoucherCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherCollectionR{}
 				}
-				foreign.R.CollectionidCollection = local
+				foreign.R.Collection = local
 				break
 			}
 		}
@@ -1244,22 +1244,22 @@ func (collectionL) LoadCollectionidVoucherCollections(ctx context.Context, e boi
 	return nil
 }
 
-// AddCollectionidCollectionChannelListings adds the given related objects to the existing relationships
+// AddCollectionChannelListings adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
-// Appends related to o.R.CollectionidCollectionChannelListings.
-// Sets related.R.CollectionidCollection appropriately.
-func (o *Collection) AddCollectionidCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
+// Appends related to o.R.CollectionChannelListings.
+// Sets related.R.Collection appropriately.
+func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"collection_channel_listings\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1273,38 +1273,38 @@ func (o *Collection) AddCollectionidCollectionChannelListings(ctx context.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &collectionR{
-			CollectionidCollectionChannelListings: related,
+			CollectionChannelListings: related,
 		}
 	} else {
-		o.R.CollectionidCollectionChannelListings = append(o.R.CollectionidCollectionChannelListings, related...)
+		o.R.CollectionChannelListings = append(o.R.CollectionChannelListings, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &collectionChannelListingR{
-				CollectionidCollection: o,
+				Collection: o,
 			}
 		} else {
-			rel.R.CollectionidCollection = o
+			rel.R.Collection = o
 		}
 	}
 	return nil
 }
 
-// SetCollectionidCollectionChannelListings removes all previously related items of the
+// SetCollectionChannelListings removes all previously related items of the
 // collection replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CollectionidCollection's CollectionidCollectionChannelListings accordingly.
-// Replaces o.R.CollectionidCollectionChannelListings with related.
-// Sets related.R.CollectionidCollection's CollectionidCollectionChannelListings accordingly.
-func (o *Collection) SetCollectionidCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
-	query := "update \"collection_channel_listings\" set \"collectionid\" = null where \"collectionid\" = $1"
+// Sets o.R.Collection's CollectionChannelListings accordingly.
+// Replaces o.R.CollectionChannelListings with related.
+// Sets related.R.Collection's CollectionChannelListings accordingly.
+func (o *Collection) SetCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
+	query := "update \"collection_channel_listings\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1317,35 +1317,35 @@ func (o *Collection) SetCollectionidCollectionChannelListings(ctx context.Contex
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CollectionidCollectionChannelListings {
-			queries.SetScanner(&rel.Collectionid, nil)
+		for _, rel := range o.R.CollectionChannelListings {
+			queries.SetScanner(&rel.CollectionID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		o.R.CollectionidCollectionChannelListings = nil
+		o.R.CollectionChannelListings = nil
 	}
 
-	return o.AddCollectionidCollectionChannelListings(ctx, exec, insert, related...)
+	return o.AddCollectionChannelListings(ctx, exec, insert, related...)
 }
 
-// RemoveCollectionidCollectionChannelListings relationships from objects passed in.
-// Removes related items from R.CollectionidCollectionChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.CollectionidCollection.
-func (o *Collection) RemoveCollectionidCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionChannelListing) error {
+// RemoveCollectionChannelListings relationships from objects passed in.
+// Removes related items from R.CollectionChannelListings (uses pointer comparison, removal does not keep order)
+// Sets related.R.Collection.
+func (o *Collection) RemoveCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionChannelListing) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Collectionid, nil)
+		queries.SetScanner(&rel.CollectionID, nil)
 		if rel.R != nil {
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1354,16 +1354,16 @@ func (o *Collection) RemoveCollectionidCollectionChannelListings(ctx context.Con
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CollectionidCollectionChannelListings {
+		for i, ri := range o.R.CollectionChannelListings {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CollectionidCollectionChannelListings)
+			ln := len(o.R.CollectionChannelListings)
 			if ln > 1 && i < ln-1 {
-				o.R.CollectionidCollectionChannelListings[i] = o.R.CollectionidCollectionChannelListings[ln-1]
+				o.R.CollectionChannelListings[i] = o.R.CollectionChannelListings[ln-1]
 			}
-			o.R.CollectionidCollectionChannelListings = o.R.CollectionidCollectionChannelListings[:ln-1]
+			o.R.CollectionChannelListings = o.R.CollectionChannelListings[:ln-1]
 			break
 		}
 	}
@@ -1371,22 +1371,22 @@ func (o *Collection) RemoveCollectionidCollectionChannelListings(ctx context.Con
 	return nil
 }
 
-// AddCollectionidCollectionTranslations adds the given related objects to the existing relationships
+// AddCollectionTranslations adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
-// Appends related to o.R.CollectionidCollectionTranslations.
-// Sets related.R.CollectionidCollection appropriately.
-func (o *Collection) AddCollectionidCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionTranslation) error {
+// Appends related to o.R.CollectionTranslations.
+// Sets related.R.Collection appropriately.
+func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionTranslation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"collection_translations\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, collectionTranslationPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1400,38 +1400,38 @@ func (o *Collection) AddCollectionidCollectionTranslations(ctx context.Context, 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &collectionR{
-			CollectionidCollectionTranslations: related,
+			CollectionTranslations: related,
 		}
 	} else {
-		o.R.CollectionidCollectionTranslations = append(o.R.CollectionidCollectionTranslations, related...)
+		o.R.CollectionTranslations = append(o.R.CollectionTranslations, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &collectionTranslationR{
-				CollectionidCollection: o,
+				Collection: o,
 			}
 		} else {
-			rel.R.CollectionidCollection = o
+			rel.R.Collection = o
 		}
 	}
 	return nil
 }
 
-// SetCollectionidCollectionTranslations removes all previously related items of the
+// SetCollectionTranslations removes all previously related items of the
 // collection replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CollectionidCollection's CollectionidCollectionTranslations accordingly.
-// Replaces o.R.CollectionidCollectionTranslations with related.
-// Sets related.R.CollectionidCollection's CollectionidCollectionTranslations accordingly.
-func (o *Collection) SetCollectionidCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionTranslation) error {
-	query := "update \"collection_translations\" set \"collectionid\" = null where \"collectionid\" = $1"
+// Sets o.R.Collection's CollectionTranslations accordingly.
+// Replaces o.R.CollectionTranslations with related.
+// Sets related.R.Collection's CollectionTranslations accordingly.
+func (o *Collection) SetCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionTranslation) error {
+	query := "update \"collection_translations\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1444,35 +1444,35 @@ func (o *Collection) SetCollectionidCollectionTranslations(ctx context.Context, 
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CollectionidCollectionTranslations {
-			queries.SetScanner(&rel.Collectionid, nil)
+		for _, rel := range o.R.CollectionTranslations {
+			queries.SetScanner(&rel.CollectionID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		o.R.CollectionidCollectionTranslations = nil
+		o.R.CollectionTranslations = nil
 	}
 
-	return o.AddCollectionidCollectionTranslations(ctx, exec, insert, related...)
+	return o.AddCollectionTranslations(ctx, exec, insert, related...)
 }
 
-// RemoveCollectionidCollectionTranslations relationships from objects passed in.
-// Removes related items from R.CollectionidCollectionTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.CollectionidCollection.
-func (o *Collection) RemoveCollectionidCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionTranslation) error {
+// RemoveCollectionTranslations relationships from objects passed in.
+// Removes related items from R.CollectionTranslations (uses pointer comparison, removal does not keep order)
+// Sets related.R.Collection.
+func (o *Collection) RemoveCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionTranslation) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Collectionid, nil)
+		queries.SetScanner(&rel.CollectionID, nil)
 		if rel.R != nil {
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1481,16 +1481,16 @@ func (o *Collection) RemoveCollectionidCollectionTranslations(ctx context.Contex
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CollectionidCollectionTranslations {
+		for i, ri := range o.R.CollectionTranslations {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CollectionidCollectionTranslations)
+			ln := len(o.R.CollectionTranslations)
 			if ln > 1 && i < ln-1 {
-				o.R.CollectionidCollectionTranslations[i] = o.R.CollectionidCollectionTranslations[ln-1]
+				o.R.CollectionTranslations[i] = o.R.CollectionTranslations[ln-1]
 			}
-			o.R.CollectionidCollectionTranslations = o.R.CollectionidCollectionTranslations[:ln-1]
+			o.R.CollectionTranslations = o.R.CollectionTranslations[:ln-1]
 			break
 		}
 	}
@@ -1498,22 +1498,22 @@ func (o *Collection) RemoveCollectionidCollectionTranslations(ctx context.Contex
 	return nil
 }
 
-// AddCollectionidMenuItems adds the given related objects to the existing relationships
+// AddMenuItems adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
-// Appends related to o.R.CollectionidMenuItems.
-// Sets related.R.CollectionidCollection appropriately.
-func (o *Collection) AddCollectionidMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+// Appends related to o.R.MenuItems.
+// Sets related.R.Collection appropriately.
+func (o *Collection) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"menu_items\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, menuItemPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1527,38 +1527,38 @@ func (o *Collection) AddCollectionidMenuItems(ctx context.Context, exec boil.Con
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &collectionR{
-			CollectionidMenuItems: related,
+			MenuItems: related,
 		}
 	} else {
-		o.R.CollectionidMenuItems = append(o.R.CollectionidMenuItems, related...)
+		o.R.MenuItems = append(o.R.MenuItems, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &menuItemR{
-				CollectionidCollection: o,
+				Collection: o,
 			}
 		} else {
-			rel.R.CollectionidCollection = o
+			rel.R.Collection = o
 		}
 	}
 	return nil
 }
 
-// SetCollectionidMenuItems removes all previously related items of the
+// SetMenuItems removes all previously related items of the
 // collection replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CollectionidCollection's CollectionidMenuItems accordingly.
-// Replaces o.R.CollectionidMenuItems with related.
-// Sets related.R.CollectionidCollection's CollectionidMenuItems accordingly.
-func (o *Collection) SetCollectionidMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
-	query := "update \"menu_items\" set \"collectionid\" = null where \"collectionid\" = $1"
+// Sets o.R.Collection's MenuItems accordingly.
+// Replaces o.R.MenuItems with related.
+// Sets related.R.Collection's MenuItems accordingly.
+func (o *Collection) SetMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+	query := "update \"menu_items\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1571,35 +1571,35 @@ func (o *Collection) SetCollectionidMenuItems(ctx context.Context, exec boil.Con
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CollectionidMenuItems {
-			queries.SetScanner(&rel.Collectionid, nil)
+		for _, rel := range o.R.MenuItems {
+			queries.SetScanner(&rel.CollectionID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		o.R.CollectionidMenuItems = nil
+		o.R.MenuItems = nil
 	}
 
-	return o.AddCollectionidMenuItems(ctx, exec, insert, related...)
+	return o.AddMenuItems(ctx, exec, insert, related...)
 }
 
-// RemoveCollectionidMenuItems relationships from objects passed in.
-// Removes related items from R.CollectionidMenuItems (uses pointer comparison, removal does not keep order)
-// Sets related.R.CollectionidCollection.
-func (o *Collection) RemoveCollectionidMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
+// RemoveMenuItems relationships from objects passed in.
+// Removes related items from R.MenuItems (uses pointer comparison, removal does not keep order)
+// Sets related.R.Collection.
+func (o *Collection) RemoveMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Collectionid, nil)
+		queries.SetScanner(&rel.CollectionID, nil)
 		if rel.R != nil {
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1608,16 +1608,16 @@ func (o *Collection) RemoveCollectionidMenuItems(ctx context.Context, exec boil.
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CollectionidMenuItems {
+		for i, ri := range o.R.MenuItems {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CollectionidMenuItems)
+			ln := len(o.R.MenuItems)
 			if ln > 1 && i < ln-1 {
-				o.R.CollectionidMenuItems[i] = o.R.CollectionidMenuItems[ln-1]
+				o.R.MenuItems[i] = o.R.MenuItems[ln-1]
 			}
-			o.R.CollectionidMenuItems = o.R.CollectionidMenuItems[:ln-1]
+			o.R.MenuItems = o.R.MenuItems[:ln-1]
 			break
 		}
 	}
@@ -1625,22 +1625,22 @@ func (o *Collection) RemoveCollectionidMenuItems(ctx context.Context, exec boil.
 	return nil
 }
 
-// AddCollectionidProductCollections adds the given related objects to the existing relationships
+// AddProductCollections adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
-// Appends related to o.R.CollectionidProductCollections.
-// Sets related.R.CollectionidCollection appropriately.
-func (o *Collection) AddCollectionidProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
+// Appends related to o.R.ProductCollections.
+// Sets related.R.Collection appropriately.
+func (o *Collection) AddProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"product_collections\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, productCollectionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1654,38 +1654,38 @@ func (o *Collection) AddCollectionidProductCollections(ctx context.Context, exec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &collectionR{
-			CollectionidProductCollections: related,
+			ProductCollections: related,
 		}
 	} else {
-		o.R.CollectionidProductCollections = append(o.R.CollectionidProductCollections, related...)
+		o.R.ProductCollections = append(o.R.ProductCollections, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &productCollectionR{
-				CollectionidCollection: o,
+				Collection: o,
 			}
 		} else {
-			rel.R.CollectionidCollection = o
+			rel.R.Collection = o
 		}
 	}
 	return nil
 }
 
-// SetCollectionidProductCollections removes all previously related items of the
+// SetProductCollections removes all previously related items of the
 // collection replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CollectionidCollection's CollectionidProductCollections accordingly.
-// Replaces o.R.CollectionidProductCollections with related.
-// Sets related.R.CollectionidCollection's CollectionidProductCollections accordingly.
-func (o *Collection) SetCollectionidProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
-	query := "update \"product_collections\" set \"collectionid\" = null where \"collectionid\" = $1"
+// Sets o.R.Collection's ProductCollections accordingly.
+// Replaces o.R.ProductCollections with related.
+// Sets related.R.Collection's ProductCollections accordingly.
+func (o *Collection) SetProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
+	query := "update \"product_collections\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1698,35 +1698,35 @@ func (o *Collection) SetCollectionidProductCollections(ctx context.Context, exec
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CollectionidProductCollections {
-			queries.SetScanner(&rel.Collectionid, nil)
+		for _, rel := range o.R.ProductCollections {
+			queries.SetScanner(&rel.CollectionID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		o.R.CollectionidProductCollections = nil
+		o.R.ProductCollections = nil
 	}
 
-	return o.AddCollectionidProductCollections(ctx, exec, insert, related...)
+	return o.AddProductCollections(ctx, exec, insert, related...)
 }
 
-// RemoveCollectionidProductCollections relationships from objects passed in.
-// Removes related items from R.CollectionidProductCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.CollectionidCollection.
-func (o *Collection) RemoveCollectionidProductCollections(ctx context.Context, exec boil.ContextExecutor, related ...*ProductCollection) error {
+// RemoveProductCollections relationships from objects passed in.
+// Removes related items from R.ProductCollections (uses pointer comparison, removal does not keep order)
+// Sets related.R.Collection.
+func (o *Collection) RemoveProductCollections(ctx context.Context, exec boil.ContextExecutor, related ...*ProductCollection) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Collectionid, nil)
+		queries.SetScanner(&rel.CollectionID, nil)
 		if rel.R != nil {
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1735,16 +1735,16 @@ func (o *Collection) RemoveCollectionidProductCollections(ctx context.Context, e
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CollectionidProductCollections {
+		for i, ri := range o.R.ProductCollections {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CollectionidProductCollections)
+			ln := len(o.R.ProductCollections)
 			if ln > 1 && i < ln-1 {
-				o.R.CollectionidProductCollections[i] = o.R.CollectionidProductCollections[ln-1]
+				o.R.ProductCollections[i] = o.R.ProductCollections[ln-1]
 			}
-			o.R.CollectionidProductCollections = o.R.CollectionidProductCollections[:ln-1]
+			o.R.ProductCollections = o.R.ProductCollections[:ln-1]
 			break
 		}
 	}
@@ -1752,22 +1752,22 @@ func (o *Collection) RemoveCollectionidProductCollections(ctx context.Context, e
 	return nil
 }
 
-// AddCollectionidSaleCollections adds the given related objects to the existing relationships
+// AddSaleCollections adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
-// Appends related to o.R.CollectionidSaleCollections.
-// Sets related.R.CollectionidCollection appropriately.
-func (o *Collection) AddCollectionidSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
+// Appends related to o.R.SaleCollections.
+// Sets related.R.Collection appropriately.
+func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"sale_collections\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCollectionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1781,38 +1781,38 @@ func (o *Collection) AddCollectionidSaleCollections(ctx context.Context, exec bo
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &collectionR{
-			CollectionidSaleCollections: related,
+			SaleCollections: related,
 		}
 	} else {
-		o.R.CollectionidSaleCollections = append(o.R.CollectionidSaleCollections, related...)
+		o.R.SaleCollections = append(o.R.SaleCollections, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &saleCollectionR{
-				CollectionidCollection: o,
+				Collection: o,
 			}
 		} else {
-			rel.R.CollectionidCollection = o
+			rel.R.Collection = o
 		}
 	}
 	return nil
 }
 
-// SetCollectionidSaleCollections removes all previously related items of the
+// SetSaleCollections removes all previously related items of the
 // collection replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CollectionidCollection's CollectionidSaleCollections accordingly.
-// Replaces o.R.CollectionidSaleCollections with related.
-// Sets related.R.CollectionidCollection's CollectionidSaleCollections accordingly.
-func (o *Collection) SetCollectionidSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
-	query := "update \"sale_collections\" set \"collectionid\" = null where \"collectionid\" = $1"
+// Sets o.R.Collection's SaleCollections accordingly.
+// Replaces o.R.SaleCollections with related.
+// Sets related.R.Collection's SaleCollections accordingly.
+func (o *Collection) SetSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
+	query := "update \"sale_collections\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1825,35 +1825,35 @@ func (o *Collection) SetCollectionidSaleCollections(ctx context.Context, exec bo
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CollectionidSaleCollections {
-			queries.SetScanner(&rel.Collectionid, nil)
+		for _, rel := range o.R.SaleCollections {
+			queries.SetScanner(&rel.CollectionID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		o.R.CollectionidSaleCollections = nil
+		o.R.SaleCollections = nil
 	}
 
-	return o.AddCollectionidSaleCollections(ctx, exec, insert, related...)
+	return o.AddSaleCollections(ctx, exec, insert, related...)
 }
 
-// RemoveCollectionidSaleCollections relationships from objects passed in.
-// Removes related items from R.CollectionidSaleCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.CollectionidCollection.
-func (o *Collection) RemoveCollectionidSaleCollections(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCollection) error {
+// RemoveSaleCollections relationships from objects passed in.
+// Removes related items from R.SaleCollections (uses pointer comparison, removal does not keep order)
+// Sets related.R.Collection.
+func (o *Collection) RemoveSaleCollections(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCollection) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Collectionid, nil)
+		queries.SetScanner(&rel.CollectionID, nil)
 		if rel.R != nil {
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1862,16 +1862,16 @@ func (o *Collection) RemoveCollectionidSaleCollections(ctx context.Context, exec
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CollectionidSaleCollections {
+		for i, ri := range o.R.SaleCollections {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CollectionidSaleCollections)
+			ln := len(o.R.SaleCollections)
 			if ln > 1 && i < ln-1 {
-				o.R.CollectionidSaleCollections[i] = o.R.CollectionidSaleCollections[ln-1]
+				o.R.SaleCollections[i] = o.R.SaleCollections[ln-1]
 			}
-			o.R.CollectionidSaleCollections = o.R.CollectionidSaleCollections[:ln-1]
+			o.R.SaleCollections = o.R.SaleCollections[:ln-1]
 			break
 		}
 	}
@@ -1879,22 +1879,22 @@ func (o *Collection) RemoveCollectionidSaleCollections(ctx context.Context, exec
 	return nil
 }
 
-// AddCollectionidVoucherCollections adds the given related objects to the existing relationships
+// AddVoucherCollections adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
-// Appends related to o.R.CollectionidVoucherCollections.
-// Sets related.R.CollectionidCollection appropriately.
-func (o *Collection) AddCollectionidVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
+// Appends related to o.R.VoucherCollections.
+// Sets related.R.Collection appropriately.
+func (o *Collection) AddVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"voucher_collections\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 				strmangle.WhereClause("\"", "\"", 2, voucherCollectionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1908,38 +1908,38 @@ func (o *Collection) AddCollectionidVoucherCollections(ctx context.Context, exec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Collectionid, o.ID)
+			queries.Assign(&rel.CollectionID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &collectionR{
-			CollectionidVoucherCollections: related,
+			VoucherCollections: related,
 		}
 	} else {
-		o.R.CollectionidVoucherCollections = append(o.R.CollectionidVoucherCollections, related...)
+		o.R.VoucherCollections = append(o.R.VoucherCollections, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &voucherCollectionR{
-				CollectionidCollection: o,
+				Collection: o,
 			}
 		} else {
-			rel.R.CollectionidCollection = o
+			rel.R.Collection = o
 		}
 	}
 	return nil
 }
 
-// SetCollectionidVoucherCollections removes all previously related items of the
+// SetVoucherCollections removes all previously related items of the
 // collection replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CollectionidCollection's CollectionidVoucherCollections accordingly.
-// Replaces o.R.CollectionidVoucherCollections with related.
-// Sets related.R.CollectionidCollection's CollectionidVoucherCollections accordingly.
-func (o *Collection) SetCollectionidVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
-	query := "update \"voucher_collections\" set \"collectionid\" = null where \"collectionid\" = $1"
+// Sets o.R.Collection's VoucherCollections accordingly.
+// Replaces o.R.VoucherCollections with related.
+// Sets related.R.Collection's VoucherCollections accordingly.
+func (o *Collection) SetVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
+	query := "update \"voucher_collections\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1952,35 +1952,35 @@ func (o *Collection) SetCollectionidVoucherCollections(ctx context.Context, exec
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CollectionidVoucherCollections {
-			queries.SetScanner(&rel.Collectionid, nil)
+		for _, rel := range o.R.VoucherCollections {
+			queries.SetScanner(&rel.CollectionID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		o.R.CollectionidVoucherCollections = nil
+		o.R.VoucherCollections = nil
 	}
 
-	return o.AddCollectionidVoucherCollections(ctx, exec, insert, related...)
+	return o.AddVoucherCollections(ctx, exec, insert, related...)
 }
 
-// RemoveCollectionidVoucherCollections relationships from objects passed in.
-// Removes related items from R.CollectionidVoucherCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.CollectionidCollection.
-func (o *Collection) RemoveCollectionidVoucherCollections(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCollection) error {
+// RemoveVoucherCollections relationships from objects passed in.
+// Removes related items from R.VoucherCollections (uses pointer comparison, removal does not keep order)
+// Sets related.R.Collection.
+func (o *Collection) RemoveVoucherCollections(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCollection) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Collectionid, nil)
+		queries.SetScanner(&rel.CollectionID, nil)
 		if rel.R != nil {
-			rel.R.CollectionidCollection = nil
+			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1989,16 +1989,16 @@ func (o *Collection) RemoveCollectionidVoucherCollections(ctx context.Context, e
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CollectionidVoucherCollections {
+		for i, ri := range o.R.VoucherCollections {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CollectionidVoucherCollections)
+			ln := len(o.R.VoucherCollections)
 			if ln > 1 && i < ln-1 {
-				o.R.CollectionidVoucherCollections[i] = o.R.CollectionidVoucherCollections[ln-1]
+				o.R.VoucherCollections[i] = o.R.VoucherCollections[ln-1]
 			}
-			o.R.CollectionidVoucherCollections = o.R.CollectionidVoucherCollections[:ln-1]
+			o.R.VoucherCollections = o.R.VoucherCollections[:ln-1]
 			break
 		}
 	}

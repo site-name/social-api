@@ -1,17 +1,15 @@
 CREATE TABLE IF NOT EXISTS product_channel_listings (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  productid character varying(36),
-  channelid character varying(36),
-  visibleinlistings boolean,
-  availableforpurchase timestamp with time zone,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id uuid,
+  channel_id uuid,
+  visible_in_listings boolean,
+  available_for_purchase timestamp with time zone,
   currency character varying(3),
-  discountedpriceamount double precision,
-  createat bigint,
-  publicationdate timestamp with time zone,
-  ispublished boolean
+  discounted_price_amount double precision,
+  created_at bigint,
+  publication_date timestamp with time zone,
+  is_published boolean
 );
 
 ALTER TABLE ONLY product_channel_listings
-    ADD CONSTRAINT product_channel_listings_productid_channelid_key UNIQUE (productid, channelid);
-
-CREATE INDEX idx_product_channel_listings_puplication_date ON product_channel_listings USING btree (publicationdate);
+    ADD CONSTRAINT product_channel_listings_product_id_channel_id_key UNIQUE (product_id, channel_id);

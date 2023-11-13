@@ -568,7 +568,7 @@ func testTermsOfServicesSelect(t *testing.T) {
 }
 
 var (
-	termsOfServiceDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Userid`: `character varying`, `Text`: `character varying`}
+	termsOfServiceDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `UserID`: `character varying`, `Text`: `character varying`}
 	_                     = bytes.MinRead
 )
 

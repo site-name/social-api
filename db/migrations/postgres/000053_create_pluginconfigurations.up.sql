@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS plugin_configurations (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   identifier character varying(128),
   name character varying(128),
-  channelid character varying(36),
+  channel_id uuid,
   description character varying(1000),
   active boolean,
   configuration text
 );
 
 ALTER TABLE ONLY plugin_configurations
-    ADD CONSTRAINT plugin_configurations_identifier_channelid_key UNIQUE (identifier, channelid);
+    ADD CONSTRAINT plugin_configurations_identifier_channel_id_key UNIQUE (identifier, channel_id);
 
 CREATE INDEX idx_plugin_configurations_identifier ON plugin_configurations USING btree (identifier);
 

@@ -494,7 +494,7 @@ func testCollectionChannelListingsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testCollectionChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
+func testCollectionChannelListingToOneChannelUsingChannel(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testCollectionChannelListingToOneChannelUsingChannelidChannel(t *testing.T)
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Channelid, foreign.ID)
+	queries.Assign(&local.ChannelID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ChannelidChannel().One(ctx, tx)
+	check, err := local.Channel().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testCollectionChannelListingToOneChannelUsingChannelidChannel(t *testing.T)
 	})
 
 	slice := CollectionChannelListingSlice{&local}
-	if err = local.L.LoadChannelidChannel(ctx, tx, false, (*[]*CollectionChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadChannel(ctx, tx, false, (*[]*CollectionChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ChannelidChannel = nil
-	if err = local.L.LoadChannelidChannel(ctx, tx, true, &local, nil); err != nil {
+	local.R.Channel = nil
+	if err = local.L.LoadChannel(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testCollectionChannelListingToOneChannelUsingChannelidChannel(t *testing.T)
 	}
 }
 
-func testCollectionChannelListingToOneCollectionUsingCollectionidCollection(t *testing.T) {
+func testCollectionChannelListingToOneCollectionUsingCollection(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testCollectionChannelListingToOneCollectionUsingCollectionidCollection(t *t
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Collectionid, foreign.ID)
+	queries.Assign(&local.CollectionID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CollectionidCollection().One(ctx, tx)
+	check, err := local.Collection().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testCollectionChannelListingToOneCollectionUsingCollectionidCollection(t *t
 	})
 
 	slice := CollectionChannelListingSlice{&local}
-	if err = local.L.LoadCollectionidCollection(ctx, tx, false, (*[]*CollectionChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadCollection(ctx, tx, false, (*[]*CollectionChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CollectionidCollection = nil
-	if err = local.L.LoadCollectionidCollection(ctx, tx, true, &local, nil); err != nil {
+	local.R.Collection = nil
+	if err = local.L.LoadCollection(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testCollectionChannelListingToOneCollectionUsingCollectionidCollection(t *t
 	}
 }
 
-func testCollectionChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
+func testCollectionChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testCollectionChannelListingToOneSetOpChannelUsingChannelidChannel(t *testi
 	}
 
 	for i, x := range []*Channel{&b, &c} {
-		err = a.SetChannelidChannel(ctx, tx, i != 0, x)
+		err = a.SetChannel(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ChannelidChannel != x {
+		if a.R.Channel != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ChannelidCollectionChannelListings[0] != &a {
+		if x.R.CollectionChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Channelid, x.ID) {
-			t.Error("foreign key was wrong value", a.Channelid)
+		if !queries.Equal(a.ChannelID, x.ID) {
+			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Channelid))
-		reflect.Indirect(reflect.ValueOf(&a.Channelid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ChannelID))
+		reflect.Indirect(reflect.ValueOf(&a.ChannelID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Channelid, x.ID) {
-			t.Error("foreign key was wrong value", a.Channelid, x.ID)
+		if !queries.Equal(a.ChannelID, x.ID) {
+			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
 
-func testCollectionChannelListingToOneRemoveOpChannelUsingChannelidChannel(t *testing.T) {
+func testCollectionChannelListingToOneRemoveOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testCollectionChannelListingToOneRemoveOpChannelUsingChannelidChannel(t *te
 		t.Fatal(err)
 	}
 
-	if err = a.SetChannelidChannel(ctx, tx, true, &b); err != nil {
+	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveChannelidChannel(ctx, tx, &b); err != nil {
+	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ChannelidChannel().Count(ctx, tx)
+	count, err := a.Channel().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testCollectionChannelListingToOneRemoveOpChannelUsingChannelidChannel(t *te
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ChannelidChannel != nil {
+	if a.R.Channel != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Channelid) {
+	if !queries.IsValuerNil(a.ChannelID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ChannelidCollectionChannelListings) != 0 {
+	if len(b.R.CollectionChannelListings) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testCollectionChannelListingToOneSetOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testCollectionChannelListingToOneSetOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testCollectionChannelListingToOneSetOpCollectionUsingCollectionidCollection
 	}
 
 	for i, x := range []*Collection{&b, &c} {
-		err = a.SetCollectionidCollection(ctx, tx, i != 0, x)
+		err = a.SetCollection(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CollectionidCollection != x {
+		if a.R.Collection != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CollectionidCollectionChannelListings[0] != &a {
+		if x.R.CollectionChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Collectionid))
-		reflect.Indirect(reflect.ValueOf(&a.Collectionid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CollectionID))
+		reflect.Indirect(reflect.ValueOf(&a.CollectionID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid, x.ID)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID, x.ID)
 		}
 	}
 }
 
-func testCollectionChannelListingToOneRemoveOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testCollectionChannelListingToOneRemoveOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testCollectionChannelListingToOneRemoveOpCollectionUsingCollectionidCollect
 		t.Fatal(err)
 	}
 
-	if err = a.SetCollectionidCollection(ctx, tx, true, &b); err != nil {
+	if err = a.SetCollection(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCollectionidCollection(ctx, tx, &b); err != nil {
+	if err = a.RemoveCollection(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CollectionidCollection().Count(ctx, tx)
+	count, err := a.Collection().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testCollectionChannelListingToOneRemoveOpCollectionUsingCollectionidCollect
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CollectionidCollection != nil {
+	if a.R.Collection != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Collectionid) {
+	if !queries.IsValuerNil(a.CollectionID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CollectionidCollectionChannelListings) != 0 {
+	if len(b.R.CollectionChannelListings) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testCollectionChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	collectionChannelListingDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Collectionid`: `character varying`, `Channelid`: `character varying`, `Publicationdate`: `timestamp with time zone`, `Ispublished`: `boolean`}
+	collectionChannelListingDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `CollectionID`: `character varying`, `ChannelID`: `character varying`, `PublicationDate`: `timestamp with time zone`, `IsPublished`: `boolean`}
 	_                               = bytes.MinRead
 )
 

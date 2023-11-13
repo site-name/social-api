@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS channels (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  name character varying(250),
-  isactive boolean,
-  slug character varying(255),
-  currency text,
-  defaultcountry character varying(5)
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  name character varying(250) NOT NULL,
+  is_active boolean NOT NULL,
+  slug character varying(255) NOT NULL,
+  currency text NOT NULL,
+  default_country character varying(5) NOT NULL
 );
 
 ALTER TABLE ONLY channels
@@ -14,7 +14,7 @@ CREATE INDEX IF NOT EXISTS idx_channels_currency ON channels USING btree (curren
 
 CREATE INDEX IF NOT EXISTS idx_channels_name ON channels USING btree (name);
 
-CREATE INDEX IF NOT EXISTS idx_channels_isactive ON channels USING btree (isactive);
+CREATE INDEX IF NOT EXISTS idx_channels_is_active ON channels USING btree (is_active);
 
 CREATE INDEX IF NOT EXISTS idx_channels_name_lower_textpattern ON channels USING btree (lower((name)::text) text_pattern_ops);
 

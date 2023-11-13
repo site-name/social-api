@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS channelshops;
+DROP TABLE IF EXISTS channel_shops;

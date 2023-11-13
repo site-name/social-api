@@ -25,13 +25,13 @@ import (
 // ProductVariantChannelListing is an object representing the database table.
 type ProductVariantChannelListing struct {
 	ID                        string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Variantid                 string       `boil:"variantid" json:"variantid" toml:"variantid" yaml:"variantid"`
-	Channelid                 string       `boil:"channelid" json:"channelid" toml:"channelid" yaml:"channelid"`
+	VariantID                 string       `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
+	ChannelID                 string       `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
 	Currency                  null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	Priceamount               null.Float64 `boil:"priceamount" json:"priceamount,omitempty" toml:"priceamount" yaml:"priceamount,omitempty"`
-	Costpriceamount           null.Float64 `boil:"costpriceamount" json:"costpriceamount,omitempty" toml:"costpriceamount" yaml:"costpriceamount,omitempty"`
-	Preorderquantitythreshold null.Int     `boil:"preorderquantitythreshold" json:"preorderquantitythreshold,omitempty" toml:"preorderquantitythreshold" yaml:"preorderquantitythreshold,omitempty"`
-	Createat                  null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	PriceAmount               null.Float64 `boil:"price_amount" json:"price_amount,omitempty" toml:"price_amount" yaml:"price_amount,omitempty"`
+	CostPriceAmount           null.Float64 `boil:"cost_price_amount" json:"cost_price_amount,omitempty" toml:"cost_price_amount" yaml:"cost_price_amount,omitempty"`
+	PreorderQuantityThreshold null.Int     `boil:"preorder_quantity_threshold" json:"preorder_quantity_threshold,omitempty" toml:"preorder_quantity_threshold" yaml:"preorder_quantity_threshold,omitempty"`
+	CreateAt                  null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 
 	R *productVariantChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productVariantChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,79 +39,79 @@ type ProductVariantChannelListing struct {
 
 var ProductVariantChannelListingColumns = struct {
 	ID                        string
-	Variantid                 string
-	Channelid                 string
+	VariantID                 string
+	ChannelID                 string
 	Currency                  string
-	Priceamount               string
-	Costpriceamount           string
-	Preorderquantitythreshold string
-	Createat                  string
+	PriceAmount               string
+	CostPriceAmount           string
+	PreorderQuantityThreshold string
+	CreateAt                  string
 }{
 	ID:                        "id",
-	Variantid:                 "variantid",
-	Channelid:                 "channelid",
+	VariantID:                 "variant_id",
+	ChannelID:                 "channel_id",
 	Currency:                  "currency",
-	Priceamount:               "priceamount",
-	Costpriceamount:           "costpriceamount",
-	Preorderquantitythreshold: "preorderquantitythreshold",
-	Createat:                  "createat",
+	PriceAmount:               "price_amount",
+	CostPriceAmount:           "cost_price_amount",
+	PreorderQuantityThreshold: "preorder_quantity_threshold",
+	CreateAt:                  "create_at",
 }
 
 var ProductVariantChannelListingTableColumns = struct {
 	ID                        string
-	Variantid                 string
-	Channelid                 string
+	VariantID                 string
+	ChannelID                 string
 	Currency                  string
-	Priceamount               string
-	Costpriceamount           string
-	Preorderquantitythreshold string
-	Createat                  string
+	PriceAmount               string
+	CostPriceAmount           string
+	PreorderQuantityThreshold string
+	CreateAt                  string
 }{
 	ID:                        "product_variant_channel_listings.id",
-	Variantid:                 "product_variant_channel_listings.variantid",
-	Channelid:                 "product_variant_channel_listings.channelid",
+	VariantID:                 "product_variant_channel_listings.variant_id",
+	ChannelID:                 "product_variant_channel_listings.channel_id",
 	Currency:                  "product_variant_channel_listings.currency",
-	Priceamount:               "product_variant_channel_listings.priceamount",
-	Costpriceamount:           "product_variant_channel_listings.costpriceamount",
-	Preorderquantitythreshold: "product_variant_channel_listings.preorderquantitythreshold",
-	Createat:                  "product_variant_channel_listings.createat",
+	PriceAmount:               "product_variant_channel_listings.price_amount",
+	CostPriceAmount:           "product_variant_channel_listings.cost_price_amount",
+	PreorderQuantityThreshold: "product_variant_channel_listings.preorder_quantity_threshold",
+	CreateAt:                  "product_variant_channel_listings.create_at",
 }
 
 // Generated where
 
 var ProductVariantChannelListingWhere = struct {
 	ID                        whereHelperstring
-	Variantid                 whereHelperstring
-	Channelid                 whereHelperstring
+	VariantID                 whereHelperstring
+	ChannelID                 whereHelperstring
 	Currency                  whereHelpernull_String
-	Priceamount               whereHelpernull_Float64
-	Costpriceamount           whereHelpernull_Float64
-	Preorderquantitythreshold whereHelpernull_Int
-	Createat                  whereHelpernull_Int64
+	PriceAmount               whereHelpernull_Float64
+	CostPriceAmount           whereHelpernull_Float64
+	PreorderQuantityThreshold whereHelpernull_Int
+	CreateAt                  whereHelpernull_Int64
 }{
 	ID:                        whereHelperstring{field: "\"product_variant_channel_listings\".\"id\""},
-	Variantid:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"variantid\""},
-	Channelid:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"channelid\""},
+	VariantID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"variant_id\""},
+	ChannelID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"channel_id\""},
 	Currency:                  whereHelpernull_String{field: "\"product_variant_channel_listings\".\"currency\""},
-	Priceamount:               whereHelpernull_Float64{field: "\"product_variant_channel_listings\".\"priceamount\""},
-	Costpriceamount:           whereHelpernull_Float64{field: "\"product_variant_channel_listings\".\"costpriceamount\""},
-	Preorderquantitythreshold: whereHelpernull_Int{field: "\"product_variant_channel_listings\".\"preorderquantitythreshold\""},
-	Createat:                  whereHelpernull_Int64{field: "\"product_variant_channel_listings\".\"createat\""},
+	PriceAmount:               whereHelpernull_Float64{field: "\"product_variant_channel_listings\".\"price_amount\""},
+	CostPriceAmount:           whereHelpernull_Float64{field: "\"product_variant_channel_listings\".\"cost_price_amount\""},
+	PreorderQuantityThreshold: whereHelpernull_Int{field: "\"product_variant_channel_listings\".\"preorder_quantity_threshold\""},
+	CreateAt:                  whereHelpernull_Int64{field: "\"product_variant_channel_listings\".\"create_at\""},
 }
 
 // ProductVariantChannelListingRels is where relationship names are stored.
 var ProductVariantChannelListingRels = struct {
-	ChannelidChannel        string
-	VariantidProductVariant string
+	Channel string
+	Variant string
 }{
-	ChannelidChannel:        "ChannelidChannel",
-	VariantidProductVariant: "VariantidProductVariant",
+	Channel: "Channel",
+	Variant: "Variant",
 }
 
 // productVariantChannelListingR is where relationships are stored.
 type productVariantChannelListingR struct {
-	ChannelidChannel        *Channel        `boil:"ChannelidChannel" json:"ChannelidChannel" toml:"ChannelidChannel" yaml:"ChannelidChannel"`
-	VariantidProductVariant *ProductVariant `boil:"VariantidProductVariant" json:"VariantidProductVariant" toml:"VariantidProductVariant" yaml:"VariantidProductVariant"`
+	Channel *Channel        `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Variant *ProductVariant `boil:"Variant" json:"Variant" toml:"Variant" yaml:"Variant"`
 }
 
 // NewStruct creates a new relationship struct
@@ -119,27 +119,27 @@ func (*productVariantChannelListingR) NewStruct() *productVariantChannelListingR
 	return &productVariantChannelListingR{}
 }
 
-func (r *productVariantChannelListingR) GetChannelidChannel() *Channel {
+func (r *productVariantChannelListingR) GetChannel() *Channel {
 	if r == nil {
 		return nil
 	}
-	return r.ChannelidChannel
+	return r.Channel
 }
 
-func (r *productVariantChannelListingR) GetVariantidProductVariant() *ProductVariant {
+func (r *productVariantChannelListingR) GetVariant() *ProductVariant {
 	if r == nil {
 		return nil
 	}
-	return r.VariantidProductVariant
+	return r.Variant
 }
 
 // productVariantChannelListingL is where Load methods for each relationship are stored.
 type productVariantChannelListingL struct{}
 
 var (
-	productVariantChannelListingAllColumns            = []string{"id", "variantid", "channelid", "currency", "priceamount", "costpriceamount", "preorderquantitythreshold", "createat"}
-	productVariantChannelListingColumnsWithoutDefault = []string{"id", "variantid", "channelid"}
-	productVariantChannelListingColumnsWithDefault    = []string{"currency", "priceamount", "costpriceamount", "preorderquantitythreshold", "createat"}
+	productVariantChannelListingAllColumns            = []string{"id", "variant_id", "channel_id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "create_at"}
+	productVariantChannelListingColumnsWithoutDefault = []string{"id", "variant_id", "channel_id"}
+	productVariantChannelListingColumnsWithDefault    = []string{"currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "create_at"}
 	productVariantChannelListingPrimaryKeyColumns     = []string{"id"}
 	productVariantChannelListingGeneratedColumns      = []string{}
 )
@@ -422,10 +422,10 @@ func (q productVariantChannelListingQuery) Exists(ctx context.Context, exec boil
 	return count > 0, nil
 }
 
-// ChannelidChannel pointed to by the foreign key.
-func (o *ProductVariantChannelListing) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
+// Channel pointed to by the foreign key.
+func (o *ProductVariantChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Channelid),
+		qm.Where("\"id\" = ?", o.ChannelID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -433,10 +433,10 @@ func (o *ProductVariantChannelListing) ChannelidChannel(mods ...qm.QueryMod) cha
 	return Channels(queryMods...)
 }
 
-// VariantidProductVariant pointed to by the foreign key.
-func (o *ProductVariantChannelListing) VariantidProductVariant(mods ...qm.QueryMod) productVariantQuery {
+// Variant pointed to by the foreign key.
+func (o *ProductVariantChannelListing) Variant(mods ...qm.QueryMod) productVariantQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Variantid),
+		qm.Where("\"id\" = ?", o.VariantID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -444,9 +444,9 @@ func (o *ProductVariantChannelListing) VariantidProductVariant(mods ...qm.QueryM
 	return ProductVariants(queryMods...)
 }
 
-// LoadChannelidChannel allows an eager lookup of values, cached into the
+// LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductVariantChannelListing interface{}, mods queries.Applicator) error {
+func (productVariantChannelListingL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductVariantChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ProductVariantChannelListing
 	var object *ProductVariantChannelListing
 
@@ -477,7 +477,7 @@ func (productVariantChannelListingL) LoadChannelidChannel(ctx context.Context, e
 		if object.R == nil {
 			object.R = &productVariantChannelListingR{}
 		}
-		args = append(args, object.Channelid)
+		args = append(args, object.ChannelID)
 
 	} else {
 	Outer:
@@ -487,12 +487,12 @@ func (productVariantChannelListingL) LoadChannelidChannel(ctx context.Context, e
 			}
 
 			for _, a := range args {
-				if a == obj.Channelid {
+				if a == obj.ChannelID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.Channelid)
+			args = append(args, obj.ChannelID)
 
 		}
 	}
@@ -540,22 +540,22 @@ func (productVariantChannelListingL) LoadChannelidChannel(ctx context.Context, e
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ChannelidChannel = foreign
+		object.R.Channel = foreign
 		if foreign.R == nil {
 			foreign.R = &channelR{}
 		}
-		foreign.R.ChannelidProductVariantChannelListings = append(foreign.R.ChannelidProductVariantChannelListings, object)
+		foreign.R.ProductVariantChannelListings = append(foreign.R.ProductVariantChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.Channelid == foreign.ID {
-				local.R.ChannelidChannel = foreign
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
 				}
-				foreign.R.ChannelidProductVariantChannelListings = append(foreign.R.ChannelidProductVariantChannelListings, local)
+				foreign.R.ProductVariantChannelListings = append(foreign.R.ProductVariantChannelListings, local)
 				break
 			}
 		}
@@ -564,9 +564,9 @@ func (productVariantChannelListingL) LoadChannelidChannel(ctx context.Context, e
 	return nil
 }
 
-// LoadVariantidProductVariant allows an eager lookup of values, cached into the
+// LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantChannelListingL) LoadVariantidProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductVariantChannelListing interface{}, mods queries.Applicator) error {
+func (productVariantChannelListingL) LoadVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductVariantChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ProductVariantChannelListing
 	var object *ProductVariantChannelListing
 
@@ -597,7 +597,7 @@ func (productVariantChannelListingL) LoadVariantidProductVariant(ctx context.Con
 		if object.R == nil {
 			object.R = &productVariantChannelListingR{}
 		}
-		args = append(args, object.Variantid)
+		args = append(args, object.VariantID)
 
 	} else {
 	Outer:
@@ -607,12 +607,12 @@ func (productVariantChannelListingL) LoadVariantidProductVariant(ctx context.Con
 			}
 
 			for _, a := range args {
-				if a == obj.Variantid {
+				if a == obj.VariantID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.Variantid)
+			args = append(args, obj.VariantID)
 
 		}
 	}
@@ -660,22 +660,22 @@ func (productVariantChannelListingL) LoadVariantidProductVariant(ctx context.Con
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.VariantidProductVariant = foreign
+		object.R.Variant = foreign
 		if foreign.R == nil {
 			foreign.R = &productVariantR{}
 		}
-		foreign.R.VariantidProductVariantChannelListings = append(foreign.R.VariantidProductVariantChannelListings, object)
+		foreign.R.VariantProductVariantChannelListings = append(foreign.R.VariantProductVariantChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.Variantid == foreign.ID {
-				local.R.VariantidProductVariant = foreign
+			if local.VariantID == foreign.ID {
+				local.R.Variant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
 				}
-				foreign.R.VariantidProductVariantChannelListings = append(foreign.R.VariantidProductVariantChannelListings, local)
+				foreign.R.VariantProductVariantChannelListings = append(foreign.R.VariantProductVariantChannelListings, local)
 				break
 			}
 		}
@@ -684,10 +684,10 @@ func (productVariantChannelListingL) LoadVariantidProductVariant(ctx context.Con
 	return nil
 }
 
-// SetChannelidChannel of the productVariantChannelListing to the related item.
-// Sets o.R.ChannelidChannel to related.
-// Adds o to related.R.ChannelidProductVariantChannelListings.
-func (o *ProductVariantChannelListing) SetChannelidChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+// SetChannel of the productVariantChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.ProductVariantChannelListings.
+func (o *ProductVariantChannelListing) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -697,7 +697,7 @@ func (o *ProductVariantChannelListing) SetChannelidChannel(ctx context.Context, 
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"product_variant_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"channelid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -711,30 +711,30 @@ func (o *ProductVariantChannelListing) SetChannelidChannel(ctx context.Context, 
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.Channelid = related.ID
+	o.ChannelID = related.ID
 	if o.R == nil {
 		o.R = &productVariantChannelListingR{
-			ChannelidChannel: related,
+			Channel: related,
 		}
 	} else {
-		o.R.ChannelidChannel = related
+		o.R.Channel = related
 	}
 
 	if related.R == nil {
 		related.R = &channelR{
-			ChannelidProductVariantChannelListings: ProductVariantChannelListingSlice{o},
+			ProductVariantChannelListings: ProductVariantChannelListingSlice{o},
 		}
 	} else {
-		related.R.ChannelidProductVariantChannelListings = append(related.R.ChannelidProductVariantChannelListings, o)
+		related.R.ProductVariantChannelListings = append(related.R.ProductVariantChannelListings, o)
 	}
 
 	return nil
 }
 
-// SetVariantidProductVariant of the productVariantChannelListing to the related item.
-// Sets o.R.VariantidProductVariant to related.
-// Adds o to related.R.VariantidProductVariantChannelListings.
-func (o *ProductVariantChannelListing) SetVariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+// SetVariant of the productVariantChannelListing to the related item.
+// Sets o.R.Variant to related.
+// Adds o to related.R.VariantProductVariantChannelListings.
+func (o *ProductVariantChannelListing) SetVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -744,7 +744,7 @@ func (o *ProductVariantChannelListing) SetVariantidProductVariant(ctx context.Co
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"product_variant_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"variantid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -758,21 +758,21 @@ func (o *ProductVariantChannelListing) SetVariantidProductVariant(ctx context.Co
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.Variantid = related.ID
+	o.VariantID = related.ID
 	if o.R == nil {
 		o.R = &productVariantChannelListingR{
-			VariantidProductVariant: related,
+			Variant: related,
 		}
 	} else {
-		o.R.VariantidProductVariant = related
+		o.R.Variant = related
 	}
 
 	if related.R == nil {
 		related.R = &productVariantR{
-			VariantidProductVariantChannelListings: ProductVariantChannelListingSlice{o},
+			VariantProductVariantChannelListings: ProductVariantChannelListingSlice{o},
 		}
 	} else {
-		related.R.VariantidProductVariantChannelListings = append(related.R.VariantidProductVariantChannelListings, o)
+		related.R.VariantProductVariantChannelListings = append(related.R.VariantProductVariantChannelListings, o)
 	}
 
 	return nil

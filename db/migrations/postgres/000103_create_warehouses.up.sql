@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS warehouses (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(250),
   slug character varying(255),
-  addressid character varying(36),
+  address_id uuid,
   email character varying(128),
-  clickandcollectoption character varying(30),
-  isprivate boolean,
+  click_and_collect_option character varying(30),
+  is_private boolean,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY warehouses
@@ -15,4 +15,4 @@ ALTER TABLE ONLY warehouses
 
 CREATE INDEX idx_warehouses_email ON warehouses USING btree (email);
 
-CREATE INDEX idx_warehouses_email_lower_textpattern ON warehouses USING btree (lower((email)::text) text_pattern_ops);
+CREATE INDEX idx_warehouses_email_lower_text_pattern ON warehouses USING btree (lower((email)::text) text_pattern_ops);

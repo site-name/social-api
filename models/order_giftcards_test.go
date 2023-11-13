@@ -494,7 +494,7 @@ func testOrderGiftcardsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testOrderGiftcardToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
+func testOrderGiftcardToOneGiftcardUsingGiftcard(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testOrderGiftcardToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Giftcardid, foreign.ID)
+	queries.Assign(&local.GiftcardID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.GiftcardidGiftcard().One(ctx, tx)
+	check, err := local.Giftcard().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testOrderGiftcardToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 	})
 
 	slice := OrderGiftcardSlice{&local}
-	if err = local.L.LoadGiftcardidGiftcard(ctx, tx, false, (*[]*OrderGiftcard)(&slice), nil); err != nil {
+	if err = local.L.LoadGiftcard(ctx, tx, false, (*[]*OrderGiftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.GiftcardidGiftcard == nil {
+	if local.R.Giftcard == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.GiftcardidGiftcard = nil
-	if err = local.L.LoadGiftcardidGiftcard(ctx, tx, true, &local, nil); err != nil {
+	local.R.Giftcard = nil
+	if err = local.L.LoadGiftcard(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.GiftcardidGiftcard == nil {
+	if local.R.Giftcard == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testOrderGiftcardToOneGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 	}
 }
 
-func testOrderGiftcardToOneOrderUsingOrderidOrder(t *testing.T) {
+func testOrderGiftcardToOneOrderUsingOrder(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testOrderGiftcardToOneOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Orderid, foreign.ID)
+	queries.Assign(&local.OrderID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.OrderidOrder().One(ctx, tx)
+	check, err := local.Order().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testOrderGiftcardToOneOrderUsingOrderidOrder(t *testing.T) {
 	})
 
 	slice := OrderGiftcardSlice{&local}
-	if err = local.L.LoadOrderidOrder(ctx, tx, false, (*[]*OrderGiftcard)(&slice), nil); err != nil {
+	if err = local.L.LoadOrder(ctx, tx, false, (*[]*OrderGiftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.OrderidOrder = nil
-	if err = local.L.LoadOrderidOrder(ctx, tx, true, &local, nil); err != nil {
+	local.R.Order = nil
+	if err = local.L.LoadOrder(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testOrderGiftcardToOneOrderUsingOrderidOrder(t *testing.T) {
 	}
 }
 
-func testOrderGiftcardToOneSetOpGiftcardUsingGiftcardidGiftcard(t *testing.T) {
+func testOrderGiftcardToOneSetOpGiftcardUsingGiftcard(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testOrderGiftcardToOneSetOpGiftcardUsingGiftcardidGiftcard(t *testing.T) {
 	}
 
 	for i, x := range []*Giftcard{&b, &c} {
-		err = a.SetGiftcardidGiftcard(ctx, tx, i != 0, x)
+		err = a.SetGiftcard(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.GiftcardidGiftcard != x {
+		if a.R.Giftcard != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.GiftcardidOrderGiftcards[0] != &a {
+		if x.R.OrderGiftcards[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Giftcardid, x.ID) {
-			t.Error("foreign key was wrong value", a.Giftcardid)
+		if !queries.Equal(a.GiftcardID, x.ID) {
+			t.Error("foreign key was wrong value", a.GiftcardID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Giftcardid))
-		reflect.Indirect(reflect.ValueOf(&a.Giftcardid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.GiftcardID))
+		reflect.Indirect(reflect.ValueOf(&a.GiftcardID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Giftcardid, x.ID) {
-			t.Error("foreign key was wrong value", a.Giftcardid, x.ID)
+		if !queries.Equal(a.GiftcardID, x.ID) {
+			t.Error("foreign key was wrong value", a.GiftcardID, x.ID)
 		}
 	}
 }
 
-func testOrderGiftcardToOneRemoveOpGiftcardUsingGiftcardidGiftcard(t *testing.T) {
+func testOrderGiftcardToOneRemoveOpGiftcardUsingGiftcard(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testOrderGiftcardToOneRemoveOpGiftcardUsingGiftcardidGiftcard(t *testing.T)
 		t.Fatal(err)
 	}
 
-	if err = a.SetGiftcardidGiftcard(ctx, tx, true, &b); err != nil {
+	if err = a.SetGiftcard(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveGiftcardidGiftcard(ctx, tx, &b); err != nil {
+	if err = a.RemoveGiftcard(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.GiftcardidGiftcard().Count(ctx, tx)
+	count, err := a.Giftcard().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testOrderGiftcardToOneRemoveOpGiftcardUsingGiftcardidGiftcard(t *testing.T)
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.GiftcardidGiftcard != nil {
+	if a.R.Giftcard != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Giftcardid) {
+	if !queries.IsValuerNil(a.GiftcardID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.GiftcardidOrderGiftcards) != 0 {
+	if len(b.R.OrderGiftcards) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testOrderGiftcardToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
+func testOrderGiftcardToOneSetOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testOrderGiftcardToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
 	}
 
 	for i, x := range []*Order{&b, &c} {
-		err = a.SetOrderidOrder(ctx, tx, i != 0, x)
+		err = a.SetOrder(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.OrderidOrder != x {
+		if a.R.Order != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.OrderidOrderGiftcards[0] != &a {
+		if x.R.OrderGiftcards[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Orderid))
-		reflect.Indirect(reflect.ValueOf(&a.Orderid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.OrderID))
+		reflect.Indirect(reflect.ValueOf(&a.OrderID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid, x.ID)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID, x.ID)
 		}
 	}
 }
 
-func testOrderGiftcardToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
+func testOrderGiftcardToOneRemoveOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testOrderGiftcardToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetOrderidOrder(ctx, tx, true, &b); err != nil {
+	if err = a.SetOrder(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveOrderidOrder(ctx, tx, &b); err != nil {
+	if err = a.RemoveOrder(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.OrderidOrder().Count(ctx, tx)
+	count, err := a.Order().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testOrderGiftcardToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.OrderidOrder != nil {
+	if a.R.Order != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Orderid) {
+	if !queries.IsValuerNil(a.OrderID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.OrderidOrderGiftcards) != 0 {
+	if len(b.R.OrderGiftcards) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testOrderGiftcardsSelect(t *testing.T) {
 }
 
 var (
-	orderGiftcardDBTypes = map[string]string{`ID`: `character varying`, `Giftcardid`: `character varying`, `Orderid`: `character varying`}
+	orderGiftcardDBTypes = map[string]string{`ID`: `character varying`, `GiftcardID`: `character varying`, `OrderID`: `character varying`}
 	_                    = bytes.MinRead
 )
 

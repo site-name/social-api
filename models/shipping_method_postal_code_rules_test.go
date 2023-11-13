@@ -494,7 +494,7 @@ func testShippingMethodPostalCodeRulesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingmethodidShippingMethod(t *testing.T) {
+func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingMethod(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingmethodidShi
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Shippingmethodid, foreign.ID)
+	queries.Assign(&local.ShippingMethodID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ShippingmethodidShippingMethod().One(ctx, tx)
+	check, err := local.ShippingMethod().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingmethodidShi
 	})
 
 	slice := ShippingMethodPostalCodeRuleSlice{&local}
-	if err = local.L.LoadShippingmethodidShippingMethod(ctx, tx, false, (*[]*ShippingMethodPostalCodeRule)(&slice), nil); err != nil {
+	if err = local.L.LoadShippingMethod(ctx, tx, false, (*[]*ShippingMethodPostalCodeRule)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ShippingmethodidShippingMethod == nil {
+	if local.R.ShippingMethod == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ShippingmethodidShippingMethod = nil
-	if err = local.L.LoadShippingmethodidShippingMethod(ctx, tx, true, &local, nil); err != nil {
+	local.R.ShippingMethod = nil
+	if err = local.L.LoadShippingMethod(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ShippingmethodidShippingMethod == nil {
+	if local.R.ShippingMethod == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingmethodidShi
 	}
 }
 
-func testShippingMethodPostalCodeRuleToOneSetOpShippingMethodUsingShippingmethodidShippingMethod(t *testing.T) {
+func testShippingMethodPostalCodeRuleToOneSetOpShippingMethodUsingShippingMethod(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testShippingMethodPostalCodeRuleToOneSetOpShippingMethodUsingShippingmethod
 	}
 
 	for i, x := range []*ShippingMethod{&b, &c} {
-		err = a.SetShippingmethodidShippingMethod(ctx, tx, i != 0, x)
+		err = a.SetShippingMethod(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ShippingmethodidShippingMethod != x {
+		if a.R.ShippingMethod != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ShippingmethodidShippingMethodPostalCodeRules[0] != &a {
+		if x.R.ShippingMethodPostalCodeRules[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Shippingmethodid, x.ID) {
-			t.Error("foreign key was wrong value", a.Shippingmethodid)
+		if !queries.Equal(a.ShippingMethodID, x.ID) {
+			t.Error("foreign key was wrong value", a.ShippingMethodID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Shippingmethodid))
-		reflect.Indirect(reflect.ValueOf(&a.Shippingmethodid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ShippingMethodID))
+		reflect.Indirect(reflect.ValueOf(&a.ShippingMethodID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Shippingmethodid, x.ID) {
-			t.Error("foreign key was wrong value", a.Shippingmethodid, x.ID)
+		if !queries.Equal(a.ShippingMethodID, x.ID) {
+			t.Error("foreign key was wrong value", a.ShippingMethodID, x.ID)
 		}
 	}
 }
 
-func testShippingMethodPostalCodeRuleToOneRemoveOpShippingMethodUsingShippingmethodidShippingMethod(t *testing.T) {
+func testShippingMethodPostalCodeRuleToOneRemoveOpShippingMethodUsingShippingMethod(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testShippingMethodPostalCodeRuleToOneRemoveOpShippingMethodUsingShippingmet
 		t.Fatal(err)
 	}
 
-	if err = a.SetShippingmethodidShippingMethod(ctx, tx, true, &b); err != nil {
+	if err = a.SetShippingMethod(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveShippingmethodidShippingMethod(ctx, tx, &b); err != nil {
+	if err = a.RemoveShippingMethod(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ShippingmethodidShippingMethod().Count(ctx, tx)
+	count, err := a.ShippingMethod().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testShippingMethodPostalCodeRuleToOneRemoveOpShippingMethodUsingShippingmet
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ShippingmethodidShippingMethod != nil {
+	if a.R.ShippingMethod != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Shippingmethodid) {
+	if !queries.IsValuerNil(a.ShippingMethodID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ShippingmethodidShippingMethodPostalCodeRules) != 0 {
+	if len(b.R.ShippingMethodPostalCodeRules) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testShippingMethodPostalCodeRulesSelect(t *testing.T) {
 }
 
 var (
-	shippingMethodPostalCodeRuleDBTypes = map[string]string{`ID`: `character varying`, `Shippingmethodid`: `character varying`, `Start`: `character varying`, `End`: `character varying`, `Inclusiontype`: `character varying`}
+	shippingMethodPostalCodeRuleDBTypes = map[string]string{`ID`: `character varying`, `ShippingMethodID`: `character varying`, `Start`: `character varying`, `End`: `character varying`, `InclusionType`: `character varying`}
 	_                                   = bytes.MinRead
 )
 

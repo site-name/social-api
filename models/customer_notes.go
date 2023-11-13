@@ -25,11 +25,11 @@ import (
 // CustomerNote is an object representing the database table.
 type CustomerNote struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Userid     null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
+	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	Date       null.Int64  `boil:"date" json:"date,omitempty" toml:"date" yaml:"date,omitempty"`
 	Content    null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	Ispublic   null.Bool   `boil:"ispublic" json:"ispublic,omitempty" toml:"ispublic" yaml:"ispublic,omitempty"`
-	Customerid null.String `boil:"customerid" json:"customerid,omitempty" toml:"customerid" yaml:"customerid,omitempty"`
+	IsPublic   null.Bool   `boil:"is_public" json:"is_public,omitempty" toml:"is_public" yaml:"is_public,omitempty"`
+	CustomerID null.String `boil:"customer_id" json:"customer_id,omitempty" toml:"customer_id" yaml:"customer_id,omitempty"`
 
 	R *customerNoteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customerNoteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,64 +37,64 @@ type CustomerNote struct {
 
 var CustomerNoteColumns = struct {
 	ID         string
-	Userid     string
+	UserID     string
 	Date       string
 	Content    string
-	Ispublic   string
-	Customerid string
+	IsPublic   string
+	CustomerID string
 }{
 	ID:         "id",
-	Userid:     "userid",
+	UserID:     "user_id",
 	Date:       "date",
 	Content:    "content",
-	Ispublic:   "ispublic",
-	Customerid: "customerid",
+	IsPublic:   "is_public",
+	CustomerID: "customer_id",
 }
 
 var CustomerNoteTableColumns = struct {
 	ID         string
-	Userid     string
+	UserID     string
 	Date       string
 	Content    string
-	Ispublic   string
-	Customerid string
+	IsPublic   string
+	CustomerID string
 }{
 	ID:         "customer_notes.id",
-	Userid:     "customer_notes.userid",
+	UserID:     "customer_notes.user_id",
 	Date:       "customer_notes.date",
 	Content:    "customer_notes.content",
-	Ispublic:   "customer_notes.ispublic",
-	Customerid: "customer_notes.customerid",
+	IsPublic:   "customer_notes.is_public",
+	CustomerID: "customer_notes.customer_id",
 }
 
 // Generated where
 
 var CustomerNoteWhere = struct {
 	ID         whereHelperstring
-	Userid     whereHelpernull_String
+	UserID     whereHelpernull_String
 	Date       whereHelpernull_Int64
 	Content    whereHelpernull_String
-	Ispublic   whereHelpernull_Bool
-	Customerid whereHelpernull_String
+	IsPublic   whereHelpernull_Bool
+	CustomerID whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"customer_notes\".\"id\""},
-	Userid:     whereHelpernull_String{field: "\"customer_notes\".\"userid\""},
+	UserID:     whereHelpernull_String{field: "\"customer_notes\".\"user_id\""},
 	Date:       whereHelpernull_Int64{field: "\"customer_notes\".\"date\""},
 	Content:    whereHelpernull_String{field: "\"customer_notes\".\"content\""},
-	Ispublic:   whereHelpernull_Bool{field: "\"customer_notes\".\"ispublic\""},
-	Customerid: whereHelpernull_String{field: "\"customer_notes\".\"customerid\""},
+	IsPublic:   whereHelpernull_Bool{field: "\"customer_notes\".\"is_public\""},
+	CustomerID: whereHelpernull_String{field: "\"customer_notes\".\"customer_id\""},
 }
 
 // CustomerNoteRels is where relationship names are stored.
 var CustomerNoteRels = struct {
-	UseridUser string
+	User string
 }{
-	UseridUser: "UseridUser",
+	User: "User",
 }
 
 // customerNoteR is where relationships are stored.
 type customerNoteR struct {
-	UseridUser *User `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
+	User *User `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
@@ -102,20 +102,20 @@ func (*customerNoteR) NewStruct() *customerNoteR {
 	return &customerNoteR{}
 }
 
-func (r *customerNoteR) GetUseridUser() *User {
+func (r *customerNoteR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
 // customerNoteL is where Load methods for each relationship are stored.
 type customerNoteL struct{}
 
 var (
-	customerNoteAllColumns            = []string{"id", "userid", "date", "content", "ispublic", "customerid"}
+	customerNoteAllColumns            = []string{"id", "user_id", "date", "content", "is_public", "customer_id"}
 	customerNoteColumnsWithoutDefault = []string{"id"}
-	customerNoteColumnsWithDefault    = []string{"userid", "date", "content", "ispublic", "customerid"}
+	customerNoteColumnsWithDefault    = []string{"user_id", "date", "content", "is_public", "customer_id"}
 	customerNotePrimaryKeyColumns     = []string{"id"}
 	customerNoteGeneratedColumns      = []string{}
 )
@@ -398,10 +398,10 @@ func (q customerNoteQuery) Exists(ctx context.Context, exec boil.ContextExecutor
 	return count > 0, nil
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *CustomerNote) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *CustomerNote) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *CustomerNote) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (customerNoteL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
+func (customerNoteL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
 	var slice []*CustomerNote
 	var object *CustomerNote
 
@@ -442,8 +442,8 @@ func (customerNoteL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &customerNoteR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (customerNoteL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (customerNoteL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridCustomerNotes = append(foreign.R.UseridCustomerNotes, object)
+		foreign.R.CustomerNotes = append(foreign.R.CustomerNotes, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridCustomerNotes = append(foreign.R.UseridCustomerNotes, local)
+				foreign.R.CustomerNotes = append(foreign.R.CustomerNotes, local)
 				break
 			}
 		}
@@ -533,10 +533,10 @@ func (customerNoteL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// SetUseridUser of the customerNote to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridCustomerNotes.
-func (o *CustomerNote) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the customerNote to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.CustomerNotes.
+func (o *CustomerNote) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -546,7 +546,7 @@ func (o *CustomerNote) SetUseridUser(ctx context.Context, exec boil.ContextExecu
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"customer_notes\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -560,54 +560,54 @@ func (o *CustomerNote) SetUseridUser(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &customerNoteR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridCustomerNotes: CustomerNoteSlice{o},
+			CustomerNotes: CustomerNoteSlice{o},
 		}
 	} else {
-		related.R.UseridCustomerNotes = append(related.R.UseridCustomerNotes, o)
+		related.R.CustomerNotes = append(related.R.CustomerNotes, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *CustomerNote) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *CustomerNote) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridCustomerNotes {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.CustomerNotes {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridCustomerNotes)
+		ln := len(related.R.CustomerNotes)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridCustomerNotes[i] = related.R.UseridCustomerNotes[ln-1]
+			related.R.CustomerNotes[i] = related.R.CustomerNotes[ln-1]
 		}
-		related.R.UseridCustomerNotes = related.R.UseridCustomerNotes[:ln-1]
+		related.R.CustomerNotes = related.R.CustomerNotes[:ln-1]
 		break
 	}
 	return nil

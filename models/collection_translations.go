@@ -25,12 +25,12 @@ import (
 // CollectionTranslation is an object representing the database table.
 type CollectionTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode   null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Collectionid   null.String `boil:"collectionid" json:"collectionid,omitempty" toml:"collectionid" yaml:"collectionid,omitempty"`
+	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	CollectionID   null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
 	Name           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Description    null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Seotitle       null.String `boil:"seotitle" json:"seotitle,omitempty" toml:"seotitle" yaml:"seotitle,omitempty"`
-	Seodescription null.String `boil:"seodescription" json:"seodescription,omitempty" toml:"seodescription" yaml:"seodescription,omitempty"`
+	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *collectionTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L collectionTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,70 +38,70 @@ type CollectionTranslation struct {
 
 var CollectionTranslationColumns = struct {
 	ID             string
-	Languagecode   string
-	Collectionid   string
+	LanguageCode   string
+	CollectionID   string
 	Name           string
 	Description    string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "id",
-	Languagecode:   "languagecode",
-	Collectionid:   "collectionid",
+	LanguageCode:   "language_code",
+	CollectionID:   "collection_id",
 	Name:           "name",
 	Description:    "description",
-	Seotitle:       "seotitle",
-	Seodescription: "seodescription",
+	SeoTitle:       "seo_title",
+	SeoDescription: "seo_description",
 }
 
 var CollectionTranslationTableColumns = struct {
 	ID             string
-	Languagecode   string
-	Collectionid   string
+	LanguageCode   string
+	CollectionID   string
 	Name           string
 	Description    string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "collection_translations.id",
-	Languagecode:   "collection_translations.languagecode",
-	Collectionid:   "collection_translations.collectionid",
+	LanguageCode:   "collection_translations.language_code",
+	CollectionID:   "collection_translations.collection_id",
 	Name:           "collection_translations.name",
 	Description:    "collection_translations.description",
-	Seotitle:       "collection_translations.seotitle",
-	Seodescription: "collection_translations.seodescription",
+	SeoTitle:       "collection_translations.seo_title",
+	SeoDescription: "collection_translations.seo_description",
 }
 
 // Generated where
 
 var CollectionTranslationWhere = struct {
 	ID             whereHelperstring
-	Languagecode   whereHelpernull_String
-	Collectionid   whereHelpernull_String
+	LanguageCode   whereHelpernull_String
+	CollectionID   whereHelpernull_String
 	Name           whereHelpernull_String
 	Description    whereHelpernull_String
-	Seotitle       whereHelpernull_String
-	Seodescription whereHelpernull_String
+	SeoTitle       whereHelpernull_String
+	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"collection_translations\".\"id\""},
-	Languagecode:   whereHelpernull_String{field: "\"collection_translations\".\"languagecode\""},
-	Collectionid:   whereHelpernull_String{field: "\"collection_translations\".\"collectionid\""},
+	LanguageCode:   whereHelpernull_String{field: "\"collection_translations\".\"language_code\""},
+	CollectionID:   whereHelpernull_String{field: "\"collection_translations\".\"collection_id\""},
 	Name:           whereHelpernull_String{field: "\"collection_translations\".\"name\""},
 	Description:    whereHelpernull_String{field: "\"collection_translations\".\"description\""},
-	Seotitle:       whereHelpernull_String{field: "\"collection_translations\".\"seotitle\""},
-	Seodescription: whereHelpernull_String{field: "\"collection_translations\".\"seodescription\""},
+	SeoTitle:       whereHelpernull_String{field: "\"collection_translations\".\"seo_title\""},
+	SeoDescription: whereHelpernull_String{field: "\"collection_translations\".\"seo_description\""},
 }
 
 // CollectionTranslationRels is where relationship names are stored.
 var CollectionTranslationRels = struct {
-	CollectionidCollection string
+	Collection string
 }{
-	CollectionidCollection: "CollectionidCollection",
+	Collection: "Collection",
 }
 
 // collectionTranslationR is where relationships are stored.
 type collectionTranslationR struct {
-	CollectionidCollection *Collection `boil:"CollectionidCollection" json:"CollectionidCollection" toml:"CollectionidCollection" yaml:"CollectionidCollection"`
+	Collection *Collection `boil:"Collection" json:"Collection" toml:"Collection" yaml:"Collection"`
 }
 
 // NewStruct creates a new relationship struct
@@ -109,20 +109,20 @@ func (*collectionTranslationR) NewStruct() *collectionTranslationR {
 	return &collectionTranslationR{}
 }
 
-func (r *collectionTranslationR) GetCollectionidCollection() *Collection {
+func (r *collectionTranslationR) GetCollection() *Collection {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidCollection
+	return r.Collection
 }
 
 // collectionTranslationL is where Load methods for each relationship are stored.
 type collectionTranslationL struct{}
 
 var (
-	collectionTranslationAllColumns            = []string{"id", "languagecode", "collectionid", "name", "description", "seotitle", "seodescription"}
+	collectionTranslationAllColumns            = []string{"id", "language_code", "collection_id", "name", "description", "seo_title", "seo_description"}
 	collectionTranslationColumnsWithoutDefault = []string{"id"}
-	collectionTranslationColumnsWithDefault    = []string{"languagecode", "collectionid", "name", "description", "seotitle", "seodescription"}
+	collectionTranslationColumnsWithDefault    = []string{"language_code", "collection_id", "name", "description", "seo_title", "seo_description"}
 	collectionTranslationPrimaryKeyColumns     = []string{"id"}
 	collectionTranslationGeneratedColumns      = []string{}
 )
@@ -405,10 +405,10 @@ func (q collectionTranslationQuery) Exists(ctx context.Context, exec boil.Contex
 	return count > 0, nil
 }
 
-// CollectionidCollection pointed to by the foreign key.
-func (o *CollectionTranslation) CollectionidCollection(mods ...qm.QueryMod) collectionQuery {
+// Collection pointed to by the foreign key.
+func (o *CollectionTranslation) Collection(mods ...qm.QueryMod) collectionQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Collectionid),
+		qm.Where("\"id\" = ?", o.CollectionID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +416,9 @@ func (o *CollectionTranslation) CollectionidCollection(mods ...qm.QueryMod) coll
 	return Collections(queryMods...)
 }
 
-// LoadCollectionidCollection allows an eager lookup of values, cached into the
+// LoadCollection allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (collectionTranslationL) LoadCollectionidCollection(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollectionTranslation interface{}, mods queries.Applicator) error {
+func (collectionTranslationL) LoadCollection(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollectionTranslation interface{}, mods queries.Applicator) error {
 	var slice []*CollectionTranslation
 	var object *CollectionTranslation
 
@@ -449,8 +449,8 @@ func (collectionTranslationL) LoadCollectionidCollection(ctx context.Context, e 
 		if object.R == nil {
 			object.R = &collectionTranslationR{}
 		}
-		if !queries.IsNil(object.Collectionid) {
-			args = append(args, object.Collectionid)
+		if !queries.IsNil(object.CollectionID) {
+			args = append(args, object.CollectionID)
 		}
 
 	} else {
@@ -461,13 +461,13 @@ func (collectionTranslationL) LoadCollectionidCollection(ctx context.Context, e 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Collectionid) {
+				if queries.Equal(a, obj.CollectionID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Collectionid) {
-				args = append(args, obj.Collectionid)
+			if !queries.IsNil(obj.CollectionID) {
+				args = append(args, obj.CollectionID)
 			}
 
 		}
@@ -516,22 +516,22 @@ func (collectionTranslationL) LoadCollectionidCollection(ctx context.Context, e 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.CollectionidCollection = foreign
+		object.R.Collection = foreign
 		if foreign.R == nil {
 			foreign.R = &collectionR{}
 		}
-		foreign.R.CollectionidCollectionTranslations = append(foreign.R.CollectionidCollectionTranslations, object)
+		foreign.R.CollectionTranslations = append(foreign.R.CollectionTranslations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Collectionid, foreign.ID) {
-				local.R.CollectionidCollection = foreign
+			if queries.Equal(local.CollectionID, foreign.ID) {
+				local.R.Collection = foreign
 				if foreign.R == nil {
 					foreign.R = &collectionR{}
 				}
-				foreign.R.CollectionidCollectionTranslations = append(foreign.R.CollectionidCollectionTranslations, local)
+				foreign.R.CollectionTranslations = append(foreign.R.CollectionTranslations, local)
 				break
 			}
 		}
@@ -540,10 +540,10 @@ func (collectionTranslationL) LoadCollectionidCollection(ctx context.Context, e 
 	return nil
 }
 
-// SetCollectionidCollection of the collectionTranslation to the related item.
-// Sets o.R.CollectionidCollection to related.
-// Adds o to related.R.CollectionidCollectionTranslations.
-func (o *CollectionTranslation) SetCollectionidCollection(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Collection) error {
+// SetCollection of the collectionTranslation to the related item.
+// Sets o.R.Collection to related.
+// Adds o to related.R.CollectionTranslations.
+func (o *CollectionTranslation) SetCollection(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Collection) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -553,7 +553,7 @@ func (o *CollectionTranslation) SetCollectionidCollection(ctx context.Context, e
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"collection_translations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 		strmangle.WhereClause("\"", "\"", 2, collectionTranslationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -567,54 +567,54 @@ func (o *CollectionTranslation) SetCollectionidCollection(ctx context.Context, e
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Collectionid, related.ID)
+	queries.Assign(&o.CollectionID, related.ID)
 	if o.R == nil {
 		o.R = &collectionTranslationR{
-			CollectionidCollection: related,
+			Collection: related,
 		}
 	} else {
-		o.R.CollectionidCollection = related
+		o.R.Collection = related
 	}
 
 	if related.R == nil {
 		related.R = &collectionR{
-			CollectionidCollectionTranslations: CollectionTranslationSlice{o},
+			CollectionTranslations: CollectionTranslationSlice{o},
 		}
 	} else {
-		related.R.CollectionidCollectionTranslations = append(related.R.CollectionidCollectionTranslations, o)
+		related.R.CollectionTranslations = append(related.R.CollectionTranslations, o)
 	}
 
 	return nil
 }
 
-// RemoveCollectionidCollection relationship.
-// Sets o.R.CollectionidCollection to nil.
+// RemoveCollection relationship.
+// Sets o.R.Collection to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *CollectionTranslation) RemoveCollectionidCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
+func (o *CollectionTranslation) RemoveCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
 	var err error
 
-	queries.SetScanner(&o.Collectionid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+	queries.SetScanner(&o.CollectionID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.CollectionidCollection = nil
+		o.R.Collection = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.CollectionidCollectionTranslations {
-		if queries.Equal(o.Collectionid, ri.Collectionid) {
+	for i, ri := range related.R.CollectionTranslations {
+		if queries.Equal(o.CollectionID, ri.CollectionID) {
 			continue
 		}
 
-		ln := len(related.R.CollectionidCollectionTranslations)
+		ln := len(related.R.CollectionTranslations)
 		if ln > 1 && i < ln-1 {
-			related.R.CollectionidCollectionTranslations[i] = related.R.CollectionidCollectionTranslations[ln-1]
+			related.R.CollectionTranslations[i] = related.R.CollectionTranslations[ln-1]
 		}
-		related.R.CollectionidCollectionTranslations = related.R.CollectionidCollectionTranslations[:ln-1]
+		related.R.CollectionTranslations = related.R.CollectionTranslations[:ln-1]
 		break
 	}
 	return nil

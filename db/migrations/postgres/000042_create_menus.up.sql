@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS menus (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(250),
   slug character varying(255),
-  createat bigint,
+  created_at bigint,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY menus

@@ -494,7 +494,7 @@ func testSalesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testSaleToManySaleidSaleCategories(t *testing.T) {
+func testSaleToManySaleCategories(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testSaleToManySaleidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Saleid, a.ID)
-	queries.Assign(&c.Saleid, a.ID)
+	queries.Assign(&b.SaleID, a.ID)
+	queries.Assign(&c.SaleID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testSaleToManySaleidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.SaleidSaleCategories().All(ctx, tx)
+	check, err := a.SaleCategories().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Saleid, b.Saleid) {
+		if queries.Equal(v.SaleID, b.SaleID) {
 			bFound = true
 		}
-		if queries.Equal(v.Saleid, c.Saleid) {
+		if queries.Equal(v.SaleID, c.SaleID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testSaleToManySaleidSaleCategories(t *testing.T) {
 	}
 
 	slice := SaleSlice{&a}
-	if err = a.L.LoadSaleidSaleCategories(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleCategories(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleCategories); got != 2 {
+	if got := len(a.R.SaleCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.SaleidSaleCategories = nil
-	if err = a.L.LoadSaleidSaleCategories(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleCategories = nil
+	if err = a.L.LoadSaleCategories(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleCategories); got != 2 {
+	if got := len(a.R.SaleCategories); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testSaleToManySaleidSaleCategories(t *testing.T) {
 	}
 }
 
-func testSaleToManySaleidSaleChannelListings(t *testing.T) {
+func testSaleToManySaleChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testSaleToManySaleidSaleChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Saleid, a.ID)
-	queries.Assign(&c.Saleid, a.ID)
+	queries.Assign(&b.SaleID, a.ID)
+	queries.Assign(&c.SaleID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testSaleToManySaleidSaleChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.SaleidSaleChannelListings().All(ctx, tx)
+	check, err := a.SaleChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Saleid, b.Saleid) {
+		if queries.Equal(v.SaleID, b.SaleID) {
 			bFound = true
 		}
-		if queries.Equal(v.Saleid, c.Saleid) {
+		if queries.Equal(v.SaleID, c.SaleID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testSaleToManySaleidSaleChannelListings(t *testing.T) {
 	}
 
 	slice := SaleSlice{&a}
-	if err = a.L.LoadSaleidSaleChannelListings(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleChannelListings(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleChannelListings); got != 2 {
+	if got := len(a.R.SaleChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.SaleidSaleChannelListings = nil
-	if err = a.L.LoadSaleidSaleChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleChannelListings = nil
+	if err = a.L.LoadSaleChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleChannelListings); got != 2 {
+	if got := len(a.R.SaleChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testSaleToManySaleidSaleChannelListings(t *testing.T) {
 	}
 }
 
-func testSaleToManySaleidSaleCollections(t *testing.T) {
+func testSaleToManySaleCollections(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testSaleToManySaleidSaleCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Saleid, a.ID)
-	queries.Assign(&c.Saleid, a.ID)
+	queries.Assign(&b.SaleID, a.ID)
+	queries.Assign(&c.SaleID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testSaleToManySaleidSaleCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.SaleidSaleCollections().All(ctx, tx)
+	check, err := a.SaleCollections().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Saleid, b.Saleid) {
+		if queries.Equal(v.SaleID, b.SaleID) {
 			bFound = true
 		}
-		if queries.Equal(v.Saleid, c.Saleid) {
+		if queries.Equal(v.SaleID, c.SaleID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testSaleToManySaleidSaleCollections(t *testing.T) {
 	}
 
 	slice := SaleSlice{&a}
-	if err = a.L.LoadSaleidSaleCollections(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleCollections(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleCollections); got != 2 {
+	if got := len(a.R.SaleCollections); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.SaleidSaleCollections = nil
-	if err = a.L.LoadSaleidSaleCollections(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleCollections = nil
+	if err = a.L.LoadSaleCollections(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleCollections); got != 2 {
+	if got := len(a.R.SaleCollections); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testSaleToManySaleidSaleCollections(t *testing.T) {
 	}
 }
 
-func testSaleToManySaleidSaleProducts(t *testing.T) {
+func testSaleToManySaleProducts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -750,8 +750,8 @@ func testSaleToManySaleidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Saleid, a.ID)
-	queries.Assign(&c.Saleid, a.ID)
+	queries.Assign(&b.SaleID, a.ID)
+	queries.Assign(&c.SaleID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -759,17 +759,17 @@ func testSaleToManySaleidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.SaleidSaleProducts().All(ctx, tx)
+	check, err := a.SaleProducts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Saleid, b.Saleid) {
+		if queries.Equal(v.SaleID, b.SaleID) {
 			bFound = true
 		}
-		if queries.Equal(v.Saleid, c.Saleid) {
+		if queries.Equal(v.SaleID, c.SaleID) {
 			cFound = true
 		}
 	}
@@ -782,18 +782,18 @@ func testSaleToManySaleidSaleProducts(t *testing.T) {
 	}
 
 	slice := SaleSlice{&a}
-	if err = a.L.LoadSaleidSaleProducts(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleProducts(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleProducts); got != 2 {
+	if got := len(a.R.SaleProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.SaleidSaleProducts = nil
-	if err = a.L.LoadSaleidSaleProducts(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleProducts = nil
+	if err = a.L.LoadSaleProducts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleProducts); got != 2 {
+	if got := len(a.R.SaleProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -802,7 +802,7 @@ func testSaleToManySaleidSaleProducts(t *testing.T) {
 	}
 }
 
-func testSaleToManySaleidSaleTranslations(t *testing.T) {
+func testSaleToManySaleTranslations(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -827,8 +827,8 @@ func testSaleToManySaleidSaleTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Saleid, a.ID)
-	queries.Assign(&c.Saleid, a.ID)
+	queries.Assign(&b.SaleID, a.ID)
+	queries.Assign(&c.SaleID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -836,17 +836,17 @@ func testSaleToManySaleidSaleTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.SaleidSaleTranslations().All(ctx, tx)
+	check, err := a.SaleTranslations().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Saleid, b.Saleid) {
+		if queries.Equal(v.SaleID, b.SaleID) {
 			bFound = true
 		}
-		if queries.Equal(v.Saleid, c.Saleid) {
+		if queries.Equal(v.SaleID, c.SaleID) {
 			cFound = true
 		}
 	}
@@ -859,18 +859,18 @@ func testSaleToManySaleidSaleTranslations(t *testing.T) {
 	}
 
 	slice := SaleSlice{&a}
-	if err = a.L.LoadSaleidSaleTranslations(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleTranslations(ctx, tx, false, (*[]*Sale)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleTranslations); got != 2 {
+	if got := len(a.R.SaleTranslations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.SaleidSaleTranslations = nil
-	if err = a.L.LoadSaleidSaleTranslations(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleTranslations = nil
+	if err = a.L.LoadSaleTranslations(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.SaleidSaleTranslations); got != 2 {
+	if got := len(a.R.SaleTranslations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -879,7 +879,7 @@ func testSaleToManySaleidSaleTranslations(t *testing.T) {
 	}
 }
 
-func testSaleToManyAddOpSaleidSaleCategories(t *testing.T) {
+func testSaleToManyAddOpSaleCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -916,7 +916,7 @@ func testSaleToManyAddOpSaleidSaleCategories(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddSaleidSaleCategories(ctx, tx, i != 0, x...)
+		err = a.AddSaleCategories(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -924,28 +924,28 @@ func testSaleToManyAddOpSaleidSaleCategories(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, first.Saleid)
+		if !queries.Equal(a.ID, first.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, first.SaleID)
 		}
-		if !queries.Equal(a.ID, second.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, second.Saleid)
+		if !queries.Equal(a.ID, second.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, second.SaleID)
 		}
 
-		if first.R.SaleidSale != &a {
+		if first.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.SaleidSale != &a {
+		if second.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.SaleidSaleCategories[i*2] != first {
+		if a.R.SaleCategories[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.SaleidSaleCategories[i*2+1] != second {
+		if a.R.SaleCategories[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.SaleidSaleCategories().Count(ctx, tx)
+		count, err := a.SaleCategories().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -955,7 +955,7 @@ func testSaleToManyAddOpSaleidSaleCategories(t *testing.T) {
 	}
 }
 
-func testSaleToManySetOpSaleidSaleCategories(t *testing.T) {
+func testSaleToManySetOpSaleCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -986,25 +986,12 @@ func testSaleToManySetOpSaleidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetSaleidSaleCategories(ctx, tx, false, &b, &c)
+	err = a.SetSaleCategories(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleidSaleCategories(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleidSaleCategories().Count(ctx, tx)
+	count, err := a.SaleCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1012,41 +999,54 @@ func testSaleToManySetOpSaleidSaleCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	err = a.SetSaleCategories(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleCategories().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, d.Saleid)
+	if !queries.Equal(a.ID, d.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, d.SaleID)
 	}
-	if !queries.Equal(a.ID, e.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, e.Saleid)
-	}
-
-	if b.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, e.SaleID)
 	}
 
-	if a.R.SaleidSaleCategories[0] != &d {
+	if b.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleCategories[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.SaleidSaleCategories[1] != &e {
+	if a.R.SaleCategories[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testSaleToManyRemoveOpSaleidSaleCategories(t *testing.T) {
+func testSaleToManyRemoveOpSaleCategories(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1071,12 +1071,12 @@ func testSaleToManyRemoveOpSaleidSaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddSaleidSaleCategories(ctx, tx, true, foreigners...)
+	err = a.AddSaleCategories(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleCategories().Count(ctx, tx)
+	count, err := a.SaleCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1084,12 +1084,12 @@ func testSaleToManyRemoveOpSaleidSaleCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveSaleidSaleCategories(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleCategories(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.SaleidSaleCategories().Count(ctx, tx)
+	count, err = a.SaleCategories().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1097,40 +1097,40 @@ func testSaleToManyRemoveOpSaleidSaleCategories(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.SaleidSale != nil {
+	if b.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.SaleidSale != nil {
+	if c.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.SaleidSale != &a {
+	if d.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.SaleidSale != &a {
+	if e.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.SaleidSaleCategories) != 2 {
+	if len(a.R.SaleCategories) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleidSaleCategories[1] != &d {
+	if a.R.SaleCategories[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.SaleidSaleCategories[0] != &e {
+	if a.R.SaleCategories[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testSaleToManyAddOpSaleidSaleChannelListings(t *testing.T) {
+func testSaleToManyAddOpSaleChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1167,7 +1167,7 @@ func testSaleToManyAddOpSaleidSaleChannelListings(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddSaleidSaleChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddSaleChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1175,28 +1175,28 @@ func testSaleToManyAddOpSaleidSaleChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, first.Saleid)
+		if !queries.Equal(a.ID, first.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, first.SaleID)
 		}
-		if !queries.Equal(a.ID, second.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, second.Saleid)
+		if !queries.Equal(a.ID, second.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, second.SaleID)
 		}
 
-		if first.R.SaleidSale != &a {
+		if first.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.SaleidSale != &a {
+		if second.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.SaleidSaleChannelListings[i*2] != first {
+		if a.R.SaleChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.SaleidSaleChannelListings[i*2+1] != second {
+		if a.R.SaleChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.SaleidSaleChannelListings().Count(ctx, tx)
+		count, err := a.SaleChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1206,7 +1206,7 @@ func testSaleToManyAddOpSaleidSaleChannelListings(t *testing.T) {
 	}
 }
 
-func testSaleToManySetOpSaleidSaleChannelListings(t *testing.T) {
+func testSaleToManySetOpSaleChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1237,25 +1237,12 @@ func testSaleToManySetOpSaleidSaleChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetSaleidSaleChannelListings(ctx, tx, false, &b, &c)
+	err = a.SetSaleChannelListings(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleidSaleChannelListings(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleidSaleChannelListings().Count(ctx, tx)
+	count, err := a.SaleChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1263,41 +1250,54 @@ func testSaleToManySetOpSaleidSaleChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	err = a.SetSaleChannelListings(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleChannelListings().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, d.Saleid)
+	if !queries.Equal(a.ID, d.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, d.SaleID)
 	}
-	if !queries.Equal(a.ID, e.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, e.Saleid)
-	}
-
-	if b.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, e.SaleID)
 	}
 
-	if a.R.SaleidSaleChannelListings[0] != &d {
+	if b.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleChannelListings[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.SaleidSaleChannelListings[1] != &e {
+	if a.R.SaleChannelListings[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testSaleToManyRemoveOpSaleidSaleChannelListings(t *testing.T) {
+func testSaleToManyRemoveOpSaleChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1322,12 +1322,12 @@ func testSaleToManyRemoveOpSaleidSaleChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddSaleidSaleChannelListings(ctx, tx, true, foreigners...)
+	err = a.AddSaleChannelListings(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleChannelListings().Count(ctx, tx)
+	count, err := a.SaleChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1335,12 +1335,12 @@ func testSaleToManyRemoveOpSaleidSaleChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveSaleidSaleChannelListings(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleChannelListings(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.SaleidSaleChannelListings().Count(ctx, tx)
+	count, err = a.SaleChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1348,40 +1348,40 @@ func testSaleToManyRemoveOpSaleidSaleChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.SaleidSale != nil {
+	if b.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.SaleidSale != nil {
+	if c.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.SaleidSale != &a {
+	if d.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.SaleidSale != &a {
+	if e.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.SaleidSaleChannelListings) != 2 {
+	if len(a.R.SaleChannelListings) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleidSaleChannelListings[1] != &d {
+	if a.R.SaleChannelListings[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.SaleidSaleChannelListings[0] != &e {
+	if a.R.SaleChannelListings[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testSaleToManyAddOpSaleidSaleCollections(t *testing.T) {
+func testSaleToManyAddOpSaleCollections(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1418,7 +1418,7 @@ func testSaleToManyAddOpSaleidSaleCollections(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddSaleidSaleCollections(ctx, tx, i != 0, x...)
+		err = a.AddSaleCollections(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1426,28 +1426,28 @@ func testSaleToManyAddOpSaleidSaleCollections(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, first.Saleid)
+		if !queries.Equal(a.ID, first.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, first.SaleID)
 		}
-		if !queries.Equal(a.ID, second.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, second.Saleid)
+		if !queries.Equal(a.ID, second.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, second.SaleID)
 		}
 
-		if first.R.SaleidSale != &a {
+		if first.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.SaleidSale != &a {
+		if second.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.SaleidSaleCollections[i*2] != first {
+		if a.R.SaleCollections[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.SaleidSaleCollections[i*2+1] != second {
+		if a.R.SaleCollections[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.SaleidSaleCollections().Count(ctx, tx)
+		count, err := a.SaleCollections().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1457,7 +1457,7 @@ func testSaleToManyAddOpSaleidSaleCollections(t *testing.T) {
 	}
 }
 
-func testSaleToManySetOpSaleidSaleCollections(t *testing.T) {
+func testSaleToManySetOpSaleCollections(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1488,25 +1488,12 @@ func testSaleToManySetOpSaleidSaleCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetSaleidSaleCollections(ctx, tx, false, &b, &c)
+	err = a.SetSaleCollections(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleidSaleCollections(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleidSaleCollections().Count(ctx, tx)
+	count, err := a.SaleCollections().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1514,41 +1501,54 @@ func testSaleToManySetOpSaleidSaleCollections(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	err = a.SetSaleCollections(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleCollections().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, d.Saleid)
+	if !queries.Equal(a.ID, d.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, d.SaleID)
 	}
-	if !queries.Equal(a.ID, e.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, e.Saleid)
-	}
-
-	if b.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, e.SaleID)
 	}
 
-	if a.R.SaleidSaleCollections[0] != &d {
+	if b.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleCollections[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.SaleidSaleCollections[1] != &e {
+	if a.R.SaleCollections[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testSaleToManyRemoveOpSaleidSaleCollections(t *testing.T) {
+func testSaleToManyRemoveOpSaleCollections(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1573,12 +1573,12 @@ func testSaleToManyRemoveOpSaleidSaleCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddSaleidSaleCollections(ctx, tx, true, foreigners...)
+	err = a.AddSaleCollections(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleCollections().Count(ctx, tx)
+	count, err := a.SaleCollections().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1586,12 +1586,12 @@ func testSaleToManyRemoveOpSaleidSaleCollections(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveSaleidSaleCollections(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleCollections(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.SaleidSaleCollections().Count(ctx, tx)
+	count, err = a.SaleCollections().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1599,40 +1599,40 @@ func testSaleToManyRemoveOpSaleidSaleCollections(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.SaleidSale != nil {
+	if b.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.SaleidSale != nil {
+	if c.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.SaleidSale != &a {
+	if d.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.SaleidSale != &a {
+	if e.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.SaleidSaleCollections) != 2 {
+	if len(a.R.SaleCollections) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleidSaleCollections[1] != &d {
+	if a.R.SaleCollections[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.SaleidSaleCollections[0] != &e {
+	if a.R.SaleCollections[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testSaleToManyAddOpSaleidSaleProducts(t *testing.T) {
+func testSaleToManyAddOpSaleProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1669,7 +1669,7 @@ func testSaleToManyAddOpSaleidSaleProducts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddSaleidSaleProducts(ctx, tx, i != 0, x...)
+		err = a.AddSaleProducts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1677,28 +1677,28 @@ func testSaleToManyAddOpSaleidSaleProducts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, first.Saleid)
+		if !queries.Equal(a.ID, first.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, first.SaleID)
 		}
-		if !queries.Equal(a.ID, second.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, second.Saleid)
+		if !queries.Equal(a.ID, second.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, second.SaleID)
 		}
 
-		if first.R.SaleidSale != &a {
+		if first.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.SaleidSale != &a {
+		if second.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.SaleidSaleProducts[i*2] != first {
+		if a.R.SaleProducts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.SaleidSaleProducts[i*2+1] != second {
+		if a.R.SaleProducts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.SaleidSaleProducts().Count(ctx, tx)
+		count, err := a.SaleProducts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1708,7 +1708,7 @@ func testSaleToManyAddOpSaleidSaleProducts(t *testing.T) {
 	}
 }
 
-func testSaleToManySetOpSaleidSaleProducts(t *testing.T) {
+func testSaleToManySetOpSaleProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1739,25 +1739,12 @@ func testSaleToManySetOpSaleidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetSaleidSaleProducts(ctx, tx, false, &b, &c)
+	err = a.SetSaleProducts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleProducts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleidSaleProducts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleidSaleProducts().Count(ctx, tx)
+	count, err := a.SaleProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1765,41 +1752,54 @@ func testSaleToManySetOpSaleidSaleProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	err = a.SetSaleProducts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleProducts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, d.Saleid)
+	if !queries.Equal(a.ID, d.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, d.SaleID)
 	}
-	if !queries.Equal(a.ID, e.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, e.Saleid)
-	}
-
-	if b.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, e.SaleID)
 	}
 
-	if a.R.SaleidSaleProducts[0] != &d {
+	if b.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleProducts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.SaleidSaleProducts[1] != &e {
+	if a.R.SaleProducts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testSaleToManyRemoveOpSaleidSaleProducts(t *testing.T) {
+func testSaleToManyRemoveOpSaleProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1824,12 +1824,12 @@ func testSaleToManyRemoveOpSaleidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddSaleidSaleProducts(ctx, tx, true, foreigners...)
+	err = a.AddSaleProducts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleProducts().Count(ctx, tx)
+	count, err := a.SaleProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1837,12 +1837,12 @@ func testSaleToManyRemoveOpSaleidSaleProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveSaleidSaleProducts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleProducts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.SaleidSaleProducts().Count(ctx, tx)
+	count, err = a.SaleProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1850,40 +1850,40 @@ func testSaleToManyRemoveOpSaleidSaleProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.SaleidSale != nil {
+	if b.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.SaleidSale != nil {
+	if c.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.SaleidSale != &a {
+	if d.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.SaleidSale != &a {
+	if e.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.SaleidSaleProducts) != 2 {
+	if len(a.R.SaleProducts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleidSaleProducts[1] != &d {
+	if a.R.SaleProducts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.SaleidSaleProducts[0] != &e {
+	if a.R.SaleProducts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testSaleToManyAddOpSaleidSaleTranslations(t *testing.T) {
+func testSaleToManyAddOpSaleTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1920,7 +1920,7 @@ func testSaleToManyAddOpSaleidSaleTranslations(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddSaleidSaleTranslations(ctx, tx, i != 0, x...)
+		err = a.AddSaleTranslations(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1928,28 +1928,28 @@ func testSaleToManyAddOpSaleidSaleTranslations(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, first.Saleid)
+		if !queries.Equal(a.ID, first.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, first.SaleID)
 		}
-		if !queries.Equal(a.ID, second.Saleid) {
-			t.Error("foreign key was wrong value", a.ID, second.Saleid)
+		if !queries.Equal(a.ID, second.SaleID) {
+			t.Error("foreign key was wrong value", a.ID, second.SaleID)
 		}
 
-		if first.R.SaleidSale != &a {
+		if first.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.SaleidSale != &a {
+		if second.R.Sale != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.SaleidSaleTranslations[i*2] != first {
+		if a.R.SaleTranslations[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.SaleidSaleTranslations[i*2+1] != second {
+		if a.R.SaleTranslations[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.SaleidSaleTranslations().Count(ctx, tx)
+		count, err := a.SaleTranslations().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1959,7 +1959,7 @@ func testSaleToManyAddOpSaleidSaleTranslations(t *testing.T) {
 	}
 }
 
-func testSaleToManySetOpSaleidSaleTranslations(t *testing.T) {
+func testSaleToManySetOpSaleTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1990,25 +1990,12 @@ func testSaleToManySetOpSaleidSaleTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetSaleidSaleTranslations(ctx, tx, false, &b, &c)
+	err = a.SetSaleTranslations(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleidSaleTranslations(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleidSaleTranslations().Count(ctx, tx)
+	count, err := a.SaleTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2016,41 +2003,54 @@ func testSaleToManySetOpSaleidSaleTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	err = a.SetSaleTranslations(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleTranslations().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, d.Saleid)
+	if !queries.Equal(a.ID, d.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, d.SaleID)
 	}
-	if !queries.Equal(a.ID, e.Saleid) {
-		t.Error("foreign key was wrong value", a.ID, e.Saleid)
-	}
-
-	if b.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.SaleidSale != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.SaleidSale != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.SaleID) {
+		t.Error("foreign key was wrong value", a.ID, e.SaleID)
 	}
 
-	if a.R.SaleidSaleTranslations[0] != &d {
+	if b.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Sale != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Sale != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleTranslations[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.SaleidSaleTranslations[1] != &e {
+	if a.R.SaleTranslations[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testSaleToManyRemoveOpSaleidSaleTranslations(t *testing.T) {
+func testSaleToManyRemoveOpSaleTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2075,12 +2075,12 @@ func testSaleToManyRemoveOpSaleidSaleTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddSaleidSaleTranslations(ctx, tx, true, foreigners...)
+	err = a.AddSaleTranslations(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.SaleidSaleTranslations().Count(ctx, tx)
+	count, err := a.SaleTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2088,12 +2088,12 @@ func testSaleToManyRemoveOpSaleidSaleTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveSaleidSaleTranslations(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleTranslations(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.SaleidSaleTranslations().Count(ctx, tx)
+	count, err = a.SaleTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2101,35 +2101,35 @@ func testSaleToManyRemoveOpSaleidSaleTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Saleid) {
+	if !queries.IsValuerNil(b.SaleID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Saleid) {
+	if !queries.IsValuerNil(c.SaleID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.SaleidSale != nil {
+	if b.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.SaleidSale != nil {
+	if c.R.Sale != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.SaleidSale != &a {
+	if d.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.SaleidSale != &a {
+	if e.R.Sale != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.SaleidSaleTranslations) != 2 {
+	if len(a.R.SaleTranslations) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleidSaleTranslations[1] != &d {
+	if a.R.SaleTranslations[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.SaleidSaleTranslations[0] != &e {
+	if a.R.SaleTranslations[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -2208,7 +2208,7 @@ func testSalesSelect(t *testing.T) {
 }
 
 var (
-	saleDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Type`: `character varying`, `Startdate`: `bigint`, `Enddate`: `bigint`, `Createat`: `bigint`, `Updateat`: `bigint`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	saleDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Type`: `character varying`, `StartDate`: `bigint`, `EndDate`: `bigint`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_           = bytes.MinRead
 )
 

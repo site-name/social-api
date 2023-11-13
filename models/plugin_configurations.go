@@ -27,7 +27,7 @@ type PluginConfiguration struct {
 	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Identifier    null.String `boil:"identifier" json:"identifier,omitempty" toml:"identifier" yaml:"identifier,omitempty"`
 	Name          null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Channelid     null.String `boil:"channelid" json:"channelid,omitempty" toml:"channelid" yaml:"channelid,omitempty"`
+	ChannelID     null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
 	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Active        null.Bool   `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
 	Configuration null.String `boil:"configuration" json:"configuration,omitempty" toml:"configuration" yaml:"configuration,omitempty"`
@@ -40,7 +40,7 @@ var PluginConfigurationColumns = struct {
 	ID            string
 	Identifier    string
 	Name          string
-	Channelid     string
+	ChannelID     string
 	Description   string
 	Active        string
 	Configuration string
@@ -48,7 +48,7 @@ var PluginConfigurationColumns = struct {
 	ID:            "id",
 	Identifier:    "identifier",
 	Name:          "name",
-	Channelid:     "channelid",
+	ChannelID:     "channel_id",
 	Description:   "description",
 	Active:        "active",
 	Configuration: "configuration",
@@ -58,7 +58,7 @@ var PluginConfigurationTableColumns = struct {
 	ID            string
 	Identifier    string
 	Name          string
-	Channelid     string
+	ChannelID     string
 	Description   string
 	Active        string
 	Configuration string
@@ -66,7 +66,7 @@ var PluginConfigurationTableColumns = struct {
 	ID:            "plugin_configurations.id",
 	Identifier:    "plugin_configurations.identifier",
 	Name:          "plugin_configurations.name",
-	Channelid:     "plugin_configurations.channelid",
+	ChannelID:     "plugin_configurations.channel_id",
 	Description:   "plugin_configurations.description",
 	Active:        "plugin_configurations.active",
 	Configuration: "plugin_configurations.configuration",
@@ -78,7 +78,7 @@ var PluginConfigurationWhere = struct {
 	ID            whereHelperstring
 	Identifier    whereHelpernull_String
 	Name          whereHelpernull_String
-	Channelid     whereHelpernull_String
+	ChannelID     whereHelpernull_String
 	Description   whereHelpernull_String
 	Active        whereHelpernull_Bool
 	Configuration whereHelpernull_String
@@ -86,7 +86,7 @@ var PluginConfigurationWhere = struct {
 	ID:            whereHelperstring{field: "\"plugin_configurations\".\"id\""},
 	Identifier:    whereHelpernull_String{field: "\"plugin_configurations\".\"identifier\""},
 	Name:          whereHelpernull_String{field: "\"plugin_configurations\".\"name\""},
-	Channelid:     whereHelpernull_String{field: "\"plugin_configurations\".\"channelid\""},
+	ChannelID:     whereHelpernull_String{field: "\"plugin_configurations\".\"channel_id\""},
 	Description:   whereHelpernull_String{field: "\"plugin_configurations\".\"description\""},
 	Active:        whereHelpernull_Bool{field: "\"plugin_configurations\".\"active\""},
 	Configuration: whereHelpernull_String{field: "\"plugin_configurations\".\"configuration\""},
@@ -109,9 +109,9 @@ func (*pluginConfigurationR) NewStruct() *pluginConfigurationR {
 type pluginConfigurationL struct{}
 
 var (
-	pluginConfigurationAllColumns            = []string{"id", "identifier", "name", "channelid", "description", "active", "configuration"}
+	pluginConfigurationAllColumns            = []string{"id", "identifier", "name", "channel_id", "description", "active", "configuration"}
 	pluginConfigurationColumnsWithoutDefault = []string{"id"}
-	pluginConfigurationColumnsWithDefault    = []string{"identifier", "name", "channelid", "description", "active", "configuration"}
+	pluginConfigurationColumnsWithDefault    = []string{"identifier", "name", "channel_id", "description", "active", "configuration"}
 	pluginConfigurationPrimaryKeyColumns     = []string{"id"}
 	pluginConfigurationGeneratedColumns      = []string{}
 )

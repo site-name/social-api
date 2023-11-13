@@ -2,28 +2,35 @@ package sqlstore
 
 import (
 	"context"
+	"database/sql"
 	dbsql "database/sql"
 	"fmt"
+	"io/fs"
 	"log"
-	"os"
+	"path"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
+
+	ps "github.com/mattermost/morph/drivers/postgres"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	jackcpgconn "github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/lib/pq"
+	"github.com/mattermost/morph"
+	mbindata "github.com/mattermost/morph/sources/embedded"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/db"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/models"
 	"github.com/sitename/sitename/modules/slog"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type migrationDirection string
@@ -55,9 +62,9 @@ type SqlStore struct {
 	rrCounter int64
 	srCounter int64
 
-	master         *gorm.DB
-	Replicas       []*gorm.DB
-	searchReplicas []*gorm.DB
+	master         *sqlDBWrapper
+	Replicas       []*sqlDBWrapper
+	searchReplicas []*sqlDBWrapper
 
 	// masterX         *sqlxDBWrapper
 	// replicaXs       []*sqlxDBWrapper
@@ -97,7 +104,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	}
 
 	// migrate tables
-	err = store.migrate(migrationsDirectionUp)
+	err = store.migrate(migrationsDirectionUp, false)
 	if err != nil {
 		slog.Fatal("Failed to apply database migrations.", slog.Err(err))
 	}
@@ -165,13 +172,10 @@ func (ss *SqlStore) initConnection() error {
 	if err != nil {
 		return err
 	}
-	ss.master, err = newGormDBWrapper(handle, ss.settings)
-	if err != nil {
-		return err
-	}
+	ss.master = newDbWrapper(handle, ss.settings)
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
-		ss.Replicas = make([]*gorm.DB, len(ss.settings.DataSourceReplicas))
+		ss.Replicas = make([]*sqlDBWrapper, len(ss.settings.DataSourceReplicas))
 
 		for i, replica := range ss.settings.DataSourceReplicas {
 			replicaName := fmt.Sprintf("replica-%v", i)
@@ -179,16 +183,12 @@ func (ss *SqlStore) initConnection() error {
 			if err != nil {
 				return errors.Wrapf(err, "failed to setup replica connection: %s", replicaName)
 			}
-			ss.Replicas[i], err = newGormDBWrapper(handle, ss.settings)
-			if err != nil {
-				return err
-			}
+			ss.Replicas[i] = newDbWrapper(handle, ss.settings)
 		}
 	}
 
 	if len(ss.settings.DataSourceSearchReplicas) > 0 {
-		// ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
-		ss.searchReplicas = make([]*gorm.DB, len(ss.settings.DataSourceSearchReplicas))
+		ss.searchReplicas = make([]*sqlDBWrapper, len(ss.settings.DataSourceSearchReplicas))
 
 		for i, replica := range ss.settings.DataSourceSearchReplicas {
 			replicaName := fmt.Sprintf("search-replica-%v", i)
@@ -196,11 +196,7 @@ func (ss *SqlStore) initConnection() error {
 			if err != nil {
 				return errors.Wrapf(err, "failed to setup search replica connection: %s", replicaName)
 			}
-			// ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
-			ss.searchReplicas[i], err = newGormDBWrapper(handle, ss.settings)
-			if err != nil {
-				return err
-			}
+			ss.searchReplicas[i] = newDbWrapper(handle, ss.settings)
 		}
 	}
 
@@ -227,7 +223,7 @@ func (ss *SqlStore) DriverName() string {
 
 func (ss *SqlStore) GetCurrentSchemaVersion() string {
 	var schemaVersion string
-	err := ss.GetMaster().Raw("SELECT Value FROM Systems WHERE Name='Version'").Scan(&schemaVersion).Error
+	err := ss.GetMaster().QueryRow("SELECT Value FROM Systems WHERE Name='Version'").Scan(&schemaVersion)
 	if err != nil {
 		slog.Error("failed to check current schema version", slog.Err(err))
 	}
@@ -248,18 +244,20 @@ func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
 
 	var version string
 
-	if err := ss.GetReplica().Raw(sqlVersionQuery).Scan(&version).Error; err != nil {
+	if err := ss.GetReplica().QueryRow(sqlVersionQuery).Scan(&version); err != nil {
 		return "", err
 	}
+
+	models.NewQuery()
 
 	return version, nil
 }
 
-func (ss *SqlStore) GetMaster() *gorm.DB {
+func (ss *SqlStore) GetMaster() *sqlDBWrapper {
 	return ss.master
 }
 
-func (ss *SqlStore) GetReplica() *gorm.DB {
+func (ss *SqlStore) GetReplica() *sqlDBWrapper {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
 		return ss.GetMaster()
 	}
@@ -278,12 +276,7 @@ func (ss *SqlStore) GetReplica() *gorm.DB {
 
 // returns number of connections to master database
 func (ss *SqlStore) TotalMasterDbConnections() int {
-	db, err := ss.master.DB()
-	if err != nil {
-		slog.Error("failed to retrieve underlying *sql.DB instance", slog.Err(err))
-		return 0
-	}
-	return db.Stats().OpenConnections
+	return ss.master.sqlDBInterface.(*sql.DB).Stats().OpenConnections
 }
 
 // ReplicaLagAbs queries all the replica databases to get the absolute replica lag value
@@ -330,13 +323,8 @@ func (ss *SqlStore) TotalReadDbConnections() int {
 	}
 
 	count := 0
-	for _, gormDB := range ss.Replicas {
-		db, err := gormDB.DB()
-		if err != nil {
-			slog.Error("failed to retrieve underlying replica *sql.DB instance", slog.Err(err))
-			continue
-		}
-		count = count + db.Stats().OpenConnections
+	for _, db := range ss.Replicas {
+		count += db.sqlDBInterface.(*sql.DB).Stats().OpenConnections
 	}
 
 	return count
@@ -349,13 +337,8 @@ func (ss *SqlStore) TotalSearchDbConnections() int {
 	}
 
 	count := 0
-	for _, gormDB := range ss.searchReplicas {
-		db, err := gormDB.DB()
-		if err != nil {
-			slog.Error("failed to retrieve underlying search replica *sql.DB instance", slog.Err(err))
-			continue
-		}
-		count = count + db.Stats().OpenConnections
+	for _, db := range ss.searchReplicas {
+		count += db.sqlDBInterface.(*sql.DB).Stats().OpenConnections
 	}
 
 	return count
@@ -377,7 +360,7 @@ func (ss *SqlStore) MarkSystemRanUnitTests() {
 // checks if table does exist in database
 func (ss *SqlStore) DoesTableExist(tableName string) bool {
 	var count int64
-	err := ss.GetMaster().Raw(`SELECT COUNT(relname) FROM pg_class WHERE relname=$1`, strings.ToLower(tableName)).Scan(&count).Error
+	err := ss.GetMaster().QueryRow(`SELECT COUNT(relname) FROM pg_class WHERE relname=$1`, strings.ToLower(tableName)).Scan(&count)
 	if err != nil {
 		slog.Fatal("Failed to check if table exists", slog.Err(err))
 	}
@@ -387,7 +370,7 @@ func (ss *SqlStore) DoesTableExist(tableName string) bool {
 
 func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 	var count int64
-	err := ss.GetMaster().Raw(
+	err := ss.GetMaster().QueryRow(
 		`SELECT COUNT(0)
 			FROM   pg_attribute
 			WHERE  attrelid = $1::regclass
@@ -395,7 +378,7 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 			AND    NOT attisdropped`,
 		strings.ToLower(tableName),
 		strings.ToLower(columnName),
-	).Scan(&count).Error
+	).Scan(&count)
 
 	if err != nil {
 		if err.Error() == "pq: relation \""+strings.ToLower(tableName)+"\" does not exist" {
@@ -424,8 +407,8 @@ func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool
 }
 
 // Get all databases connections
-func (ss *SqlStore) GetAllConns() []*gorm.DB {
-	all := make([]*gorm.DB, len(ss.Replicas)+1)
+func (ss *SqlStore) GetAllConns() []*sqlDBWrapper {
+	all := make([]*sqlDBWrapper, len(ss.Replicas)+1)
 	copy(all, ss.Replicas)
 	all[len(ss.Replicas)] = ss.master
 	return all
@@ -438,17 +421,15 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	originalDuration := time.Duration(*ss.settings.ConnMaxLifetimeMilliseconds) * time.Millisecond
 	// Set the max lifetimes for all connections.
 	for _, conn := range ss.GetAllConns() {
-		db, err := conn.DB()
-		if err == nil && db != nil {
-			db.SetConnMaxLifetime(d)
+		if db, ok := conn.sqlDBInterface.(*sql.DB); ok && db != nil {
+			db.SetConnMaxLifetime(originalDuration)
 		}
 	}
 	// Wait for that period with an additional 2 seconds of scheduling delay.
 	time.Sleep(d + 2*time.Second)
 	// Reset max lifetime back to original value.
 	for _, conn := range ss.GetAllConns() {
-		db, err := conn.DB()
-		if err == nil && db != nil {
+		if db, ok := conn.sqlDBInterface.(*sql.DB); ok && db != nil {
 			db.SetConnMaxLifetime(originalDuration)
 		}
 	}
@@ -460,8 +441,7 @@ func (ss *SqlStore) Close() {
 	connections = append(connections, ss.master)
 
 	for _, conn := range connections {
-		db, err := conn.DB()
-		if err == nil && db != nil {
+		if db, ok := conn.sqlDBInterface.(*sql.DB); ok && db != nil {
 			db.Close()
 		}
 	}
@@ -511,34 +491,59 @@ type m2mRelation struct {
 	joinTable model.Modeler
 }
 
-func (ss *SqlStore) migrate(direction migrationDirection) error {
-	// 1) migrating tables
-	models := lo.Map(model.SystemModels, func(m model.Modeler, _ int) any { return m })
-	if err := ss.master.AutoMigrate(models...); err != nil {
+func (ss *SqlStore) migrate(direction migrationDirection, drRun bool) error {
+	engine, err := ss.initMorph(drRun)
+	if err != nil {
 		return err
 	}
+	defer engine.Close()
 
-	// 2) setup intermediate tables
-	for _, m2mRel := range []m2mRelation{
-		{&model.AttributeVariant{}, "AssignedVariants", &model.AssignedVariantAttribute{}},
-		{&model.AssignedVariantAttribute{}, "Values", &model.AssignedVariantAttributeValue{}},
-		{&model.AttributePage{}, "AssignedPages", &model.AssignedPageAttribute{}},
-		{&model.AssignedPageAttribute{}, "Values", &model.AssignedPageAttributeValue{}},
-		{&model.AttributeProduct{}, "AssignedProducts", &model.AssignedProductAttribute{}},
-		{&model.AssignedProductAttribute{}, "Values", &model.AssignedProductAttributeValue{}},
+	switch direction {
+	case migrationsDirectionDown:
+		_, err = engine.ApplyDown(-1)
+		return err
+	default:
+		return engine.ApplyAll()
+	}
+}
 
-		{&model.Attribute{}, "ProductTypes", &model.AttributeProduct{}},
-		{&model.Attribute{}, "ProductVariantTypes", &model.AttributeVariant{}},
-		{&model.Attribute{}, "PageTypes", &model.AttributePage{}},
-		{&model.Collection{}, "Products", &model.CollectionProduct{}},
-	} {
-		slog.Debug("setting up intermediate table", slog.String("model", m2mRel.table.TableName()), slog.String("joinModel", m2mRel.joinTable.TableName()))
-		if err := ss.master.SetupJoinTable(m2mRel.table, m2mRel.field, m2mRel.joinTable); err != nil {
-			return err
-		}
+func (ss *SqlStore) initMorph(dryRun bool) (*morph.Morph, error) {
+	assets := db.Assets()
+
+	assetsList, err := assets.ReadDir(path.Join("migrations", ss.DriverName()))
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	assetNamesForDriver := lo.Map(assetsList, func(item fs.DirEntry, _ int) string { return item.Name() })
+	src, err := mbindata.WithInstance(&mbindata.AssetSource{
+		Names: assetNamesForDriver,
+		AssetFunc: func(name string) ([]byte, error) {
+			return assets.ReadFile(path.Join("migrations", ss.DriverName(), name))
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	driver, err := ps.WithInstance(ss.GetMaster().sqlDBInterface.(*sql.DB))
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []morph.EngineOption{
+		morph.WithLogger(log.New(&morphWriter{}, "", log.Lshortfile)),
+		morph.WithLock("sn-lock-key"),
+		morph.SetStatementTimeoutInSeconds(*ss.settings.MigrationsStatementTimeoutSeconds),
+		morph.SetDryRun(dryRun),
+	}
+
+	engine, err := morph.New(context.Background(), driver, src, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return engine, nil
 }
 
 // ensureMinimumDBVersion gets the DB version and ensures it is
@@ -567,7 +572,7 @@ func versionString(v int, driver string) string {
 
 func (ss *SqlStore) GetDBSchemaVersion() (int, error) {
 	var version int
-	if err := ss.GetMaster().Raw("SELECT Version FROM db_migrations ORDER BY Version DESC LIMIT 1").Scan(&version).Error; err != nil {
+	if err := ss.GetMaster().QueryRow("SELECT Version FROM db_migrations ORDER BY Version DESC LIMIT 1").Scan(&version); err != nil {
 		return 0, errors.Wrap(err, "unable to select from db_migrations")
 	}
 	return version, nil
@@ -575,30 +580,17 @@ func (ss *SqlStore) GetDBSchemaVersion() (int, error) {
 
 func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 	migrations := []model.AppliedMigration{}
-	if err := ss.GetMaster().Table("db_migrations").Order("Version DESC").Find(&migrations).Error; err != nil {
+	err := queries.Raw("SELECT * FROM db_migrations ORDER BY Version DESC").Bind(context.Background(), ss.GetMaster(), &migrations)
+	if err != nil {
 		return nil, errors.Wrap(err, "unable to select from db_migrations")
+
 	}
 
 	return migrations, nil
 }
 
-func newGormDBWrapper(handle *dbsql.DB, sqlSettings *model.SqlSettings) (*gorm.DB, error) {
-	var gormLog logger.Interface
-	if *sqlSettings.Trace {
-		gormLog = logger.New(
-			log.New(os.Stderr, "\r", log.LstdFlags),
-			logger.Config{
-				SlowThreshold:             time.Second,
-				LogLevel:                  logger.Info,
-				Colorful:                  true,
-				IgnoreRecordNotFoundError: true,
-			},
-		)
-	}
-
-	return gorm.Open(postgres.New(postgres.Config{Conn: handle}), &gorm.Config{
-		Logger: gormLog,
-	})
+func newDbWrapper(handle *dbsql.DB, sqlSettings *model.SqlSettings) *sqlDBWrapper {
+	return newSqlDbWrapper(handle, time.Duration(*sqlSettings.QueryTimeout), *sqlSettings.Trace)
 }
 
 func (s *SqlStore) FinalizeTransaction(tx *gorm.DB) {

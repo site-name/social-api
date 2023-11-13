@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS page_types (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(250),
   slug character varying(255),
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY page_types

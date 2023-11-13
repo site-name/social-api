@@ -1,11 +1,10 @@
 CREATE TABLE IF NOT EXISTS attribute_variants (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  attributeid character varying(36),
-  producttypeid character varying(36),
-  variantselection boolean,
-  sortorder integer
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  attribute_id uuid NOT NULL,
+  product_type_id uuid NOT NULL,
+  variant_selection boolean NOT NULL DEFAULT false,
+  sort_order integer
 );
 
 ALTER TABLE ONLY attribute_variants
-    ADD CONSTRAINT attribute_variants_attributeid_producttypeid_key UNIQUE (attributeid, producttypeid);
-
+    ADD CONSTRAINT attribute_variants_attribute_id_product_type_id_key UNIQUE (attribute_id, product_type_id);

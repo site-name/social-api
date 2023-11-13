@@ -1,18 +1,18 @@
 CREATE TABLE IF NOT EXISTS shipping_methods (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name character varying(100),
   type character varying(30),
-  shippingzoneid character varying(36),
-  minimumorderweight real,
-  maximumorderweight real,
-  weightunit character varying(5),
-  maximumdeliverydays integer,
-  minimumdeliverydays integer,
+  shipping_zone_id uuid,
+  minimum_order_weight real,
+  maximum_order_weight real,
+  weight_unit character varying(5),
+  maximum_delivery_days integer,
+  minimum_delivery_days integer,
   description text,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 CREATE INDEX idx_shipping_methods_name ON shipping_methods USING btree (name);
 
-CREATE INDEX idx_shipping_methods_name_lower_textpattern ON shipping_methods USING btree (lower((name)::text) text_pattern_ops);
+CREATE INDEX idx_shipping_methods_name_lower_text_pattern ON shipping_methods USING btree (lower((name)::text) text_pattern_ops);

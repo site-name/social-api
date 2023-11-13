@@ -1,13 +1,12 @@
 CREATE TABLE IF NOT EXISTS collection_translations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  languagecode character varying(5),
-  collectionid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_code character varying(5),
+  collection_id uuid,
   name character varying(250),
   description text,
-  seotitle character varying(70),
-  seodescription character varying(300)
+  seo_title character varying(70),
+  seo_description character varying(300)
 );
 
 ALTER TABLE ONLY collection_translations
-    ADD CONSTRAINT collection_translations_languagecode_collectionid_key UNIQUE (languagecode, collectionid);
-
+    ADD CONSTRAINT collection_translations_language_code_collection_id_key UNIQUE (language_code, collection_id);

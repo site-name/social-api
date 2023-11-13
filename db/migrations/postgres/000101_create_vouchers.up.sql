@@ -1,22 +1,22 @@
 CREATE TABLE IF NOT EXISTS vouchers (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   type character varying(20),
   name character varying(255),
   code character varying(16),
-  usagelimit integer,
+  usage_limit integer,
   used integer,
-  startdate bigint,
-  enddate bigint,
-  applyonceperorder boolean,
-  applyoncepercustomer boolean,
-  onlyforstaff boolean,
-  discountvaluetype character varying(10),
+  start_date bigint,
+  end_date bigint,
+  apply_once_per_order boolean,
+  apply_once_per_customer boolean,
+  only_for_staff boolean,
+  discount_value_type character varying(10),
   countries character varying(749),
-  mincheckoutitemsquantity integer,
-  createat bigint,
-  updateat bigint,
+  min_checkout_items_quantity integer,
+  created_at bigint,
+  updated_at bigint,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY vouchers

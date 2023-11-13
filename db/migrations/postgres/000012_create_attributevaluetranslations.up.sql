@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS attribute_value_translations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  languagecode character varying(5),
-  attributevalueid character varying(36),
-  name character varying(100),
-  richtext text
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_code character varying(5) NOT NULL,
+  attribute_value_id uuid NOT NULL,
+  name character varying(100) NOT NULL,
+  rich_text text
 );
 
 ALTER TABLE ONLY attribute_value_translations
-    ADD CONSTRAINT attribute_value_translations_languagecode_attributevalueid_key UNIQUE (languagecode, attributevalueid);
+    ADD CONSTRAINT attribute_value_translations_language_code_attribute_value_id_key UNIQUE (language_code, attribute_value_id);
 
 CREATE INDEX IF NOT EXISTS idx_attribute_value_translations_name ON attribute_value_translations USING btree (name);
 

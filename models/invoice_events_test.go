@@ -494,7 +494,7 @@ func testInvoiceEventsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testInvoiceEventToOneInvoiceUsingInvoiceidInvoice(t *testing.T) {
+func testInvoiceEventToOneInvoiceUsingInvoice(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testInvoiceEventToOneInvoiceUsingInvoiceidInvoice(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Invoiceid, foreign.ID)
+	queries.Assign(&local.InvoiceID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.InvoiceidInvoice().One(ctx, tx)
+	check, err := local.Invoice().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testInvoiceEventToOneInvoiceUsingInvoiceidInvoice(t *testing.T) {
 	})
 
 	slice := InvoiceEventSlice{&local}
-	if err = local.L.LoadInvoiceidInvoice(ctx, tx, false, (*[]*InvoiceEvent)(&slice), nil); err != nil {
+	if err = local.L.LoadInvoice(ctx, tx, false, (*[]*InvoiceEvent)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.InvoiceidInvoice == nil {
+	if local.R.Invoice == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.InvoiceidInvoice = nil
-	if err = local.L.LoadInvoiceidInvoice(ctx, tx, true, &local, nil); err != nil {
+	local.R.Invoice = nil
+	if err = local.L.LoadInvoice(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.InvoiceidInvoice == nil {
+	if local.R.Invoice == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testInvoiceEventToOneInvoiceUsingInvoiceidInvoice(t *testing.T) {
 	}
 }
 
-func testInvoiceEventToOneOrderUsingOrderidOrder(t *testing.T) {
+func testInvoiceEventToOneOrderUsingOrder(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testInvoiceEventToOneOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Orderid, foreign.ID)
+	queries.Assign(&local.OrderID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.OrderidOrder().One(ctx, tx)
+	check, err := local.Order().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testInvoiceEventToOneOrderUsingOrderidOrder(t *testing.T) {
 	})
 
 	slice := InvoiceEventSlice{&local}
-	if err = local.L.LoadOrderidOrder(ctx, tx, false, (*[]*InvoiceEvent)(&slice), nil); err != nil {
+	if err = local.L.LoadOrder(ctx, tx, false, (*[]*InvoiceEvent)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.OrderidOrder = nil
-	if err = local.L.LoadOrderidOrder(ctx, tx, true, &local, nil); err != nil {
+	local.R.Order = nil
+	if err = local.L.LoadOrder(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testInvoiceEventToOneOrderUsingOrderidOrder(t *testing.T) {
 	}
 }
 
-func testInvoiceEventToOneUserUsingUseridUser(t *testing.T) {
+func testInvoiceEventToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -636,12 +636,12 @@ func testInvoiceEventToOneUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Userid, foreign.ID)
+	queries.Assign(&local.UserID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UseridUser().One(ctx, tx)
+	check, err := local.User().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -657,18 +657,18 @@ func testInvoiceEventToOneUserUsingUseridUser(t *testing.T) {
 	})
 
 	slice := InvoiceEventSlice{&local}
-	if err = local.L.LoadUseridUser(ctx, tx, false, (*[]*InvoiceEvent)(&slice), nil); err != nil {
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*InvoiceEvent)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UseridUser = nil
-	if err = local.L.LoadUseridUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -677,7 +677,7 @@ func testInvoiceEventToOneUserUsingUseridUser(t *testing.T) {
 	}
 }
 
-func testInvoiceEventToOneSetOpInvoiceUsingInvoiceidInvoice(t *testing.T) {
+func testInvoiceEventToOneSetOpInvoiceUsingInvoice(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -706,36 +706,36 @@ func testInvoiceEventToOneSetOpInvoiceUsingInvoiceidInvoice(t *testing.T) {
 	}
 
 	for i, x := range []*Invoice{&b, &c} {
-		err = a.SetInvoiceidInvoice(ctx, tx, i != 0, x)
+		err = a.SetInvoice(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.InvoiceidInvoice != x {
+		if a.R.Invoice != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.InvoiceidInvoiceEvents[0] != &a {
+		if x.R.InvoiceEvents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Invoiceid, x.ID) {
-			t.Error("foreign key was wrong value", a.Invoiceid)
+		if !queries.Equal(a.InvoiceID, x.ID) {
+			t.Error("foreign key was wrong value", a.InvoiceID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Invoiceid))
-		reflect.Indirect(reflect.ValueOf(&a.Invoiceid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.InvoiceID))
+		reflect.Indirect(reflect.ValueOf(&a.InvoiceID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Invoiceid, x.ID) {
-			t.Error("foreign key was wrong value", a.Invoiceid, x.ID)
+		if !queries.Equal(a.InvoiceID, x.ID) {
+			t.Error("foreign key was wrong value", a.InvoiceID, x.ID)
 		}
 	}
 }
 
-func testInvoiceEventToOneRemoveOpInvoiceUsingInvoiceidInvoice(t *testing.T) {
+func testInvoiceEventToOneRemoveOpInvoiceUsingInvoice(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -757,15 +757,15 @@ func testInvoiceEventToOneRemoveOpInvoiceUsingInvoiceidInvoice(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetInvoiceidInvoice(ctx, tx, true, &b); err != nil {
+	if err = a.SetInvoice(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveInvoiceidInvoice(ctx, tx, &b); err != nil {
+	if err = a.RemoveInvoice(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.InvoiceidInvoice().Count(ctx, tx)
+	count, err := a.Invoice().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -773,20 +773,20 @@ func testInvoiceEventToOneRemoveOpInvoiceUsingInvoiceidInvoice(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.InvoiceidInvoice != nil {
+	if a.R.Invoice != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Invoiceid) {
+	if !queries.IsValuerNil(a.InvoiceID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.InvoiceidInvoiceEvents) != 0 {
+	if len(b.R.InvoiceEvents) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testInvoiceEventToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
+func testInvoiceEventToOneSetOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -815,36 +815,36 @@ func testInvoiceEventToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
 	}
 
 	for i, x := range []*Order{&b, &c} {
-		err = a.SetOrderidOrder(ctx, tx, i != 0, x)
+		err = a.SetOrder(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.OrderidOrder != x {
+		if a.R.Order != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.OrderidInvoiceEvents[0] != &a {
+		if x.R.InvoiceEvents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Orderid))
-		reflect.Indirect(reflect.ValueOf(&a.Orderid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.OrderID))
+		reflect.Indirect(reflect.ValueOf(&a.OrderID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid, x.ID)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID, x.ID)
 		}
 	}
 }
 
-func testInvoiceEventToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
+func testInvoiceEventToOneRemoveOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -866,15 +866,15 @@ func testInvoiceEventToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetOrderidOrder(ctx, tx, true, &b); err != nil {
+	if err = a.SetOrder(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveOrderidOrder(ctx, tx, &b); err != nil {
+	if err = a.RemoveOrder(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.OrderidOrder().Count(ctx, tx)
+	count, err := a.Order().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -882,20 +882,20 @@ func testInvoiceEventToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.OrderidOrder != nil {
+	if a.R.Order != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Orderid) {
+	if !queries.IsValuerNil(a.OrderID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.OrderidInvoiceEvents) != 0 {
+	if len(b.R.InvoiceEvents) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testInvoiceEventToOneSetOpUserUsingUseridUser(t *testing.T) {
+func testInvoiceEventToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -924,36 +924,36 @@ func testInvoiceEventToOneSetOpUserUsingUseridUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetUseridUser(ctx, tx, i != 0, x)
+		err = a.SetUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UseridUser != x {
+		if a.R.User != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.UseridInvoiceEvents[0] != &a {
+		if x.R.InvoiceEvents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Userid))
-		reflect.Indirect(reflect.ValueOf(&a.Userid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid, x.ID)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
 	}
 }
 
-func testInvoiceEventToOneRemoveOpUserUsingUseridUser(t *testing.T) {
+func testInvoiceEventToOneRemoveOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -975,15 +975,15 @@ func testInvoiceEventToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetUseridUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetUser(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUseridUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveUser(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UseridUser().Count(ctx, tx)
+	count, err := a.User().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -991,15 +991,15 @@ func testInvoiceEventToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UseridUser != nil {
+	if a.R.User != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Userid) {
+	if !queries.IsValuerNil(a.UserID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.UseridInvoiceEvents) != 0 {
+	if len(b.R.InvoiceEvents) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1078,7 +1078,7 @@ func testInvoiceEventsSelect(t *testing.T) {
 }
 
 var (
-	invoiceEventDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Type`: `character varying`, `Invoiceid`: `character varying`, `Orderid`: `character varying`, `Userid`: `character varying`, `Parameters`: `text`}
+	invoiceEventDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `Type`: `character varying`, `InvoiceID`: `character varying`, `OrderID`: `character varying`, `UserID`: `character varying`, `Parameters`: `text`}
 	_                   = bytes.MinRead
 )
 

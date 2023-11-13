@@ -494,7 +494,7 @@ func testWishlistsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testWishlistToManyWishlistidWishlistItems(t *testing.T) {
+func testWishlistToManyWishlistItems(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testWishlistToManyWishlistidWishlistItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Wishlistid, a.ID)
-	queries.Assign(&c.Wishlistid, a.ID)
+	queries.Assign(&b.WishlistID, a.ID)
+	queries.Assign(&c.WishlistID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testWishlistToManyWishlistidWishlistItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.WishlistidWishlistItems().All(ctx, tx)
+	check, err := a.WishlistItems().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Wishlistid, b.Wishlistid) {
+		if queries.Equal(v.WishlistID, b.WishlistID) {
 			bFound = true
 		}
-		if queries.Equal(v.Wishlistid, c.Wishlistid) {
+		if queries.Equal(v.WishlistID, c.WishlistID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testWishlistToManyWishlistidWishlistItems(t *testing.T) {
 	}
 
 	slice := WishlistSlice{&a}
-	if err = a.L.LoadWishlistidWishlistItems(ctx, tx, false, (*[]*Wishlist)(&slice), nil); err != nil {
+	if err = a.L.LoadWishlistItems(ctx, tx, false, (*[]*Wishlist)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.WishlistidWishlistItems); got != 2 {
+	if got := len(a.R.WishlistItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.WishlistidWishlistItems = nil
-	if err = a.L.LoadWishlistidWishlistItems(ctx, tx, true, &a, nil); err != nil {
+	a.R.WishlistItems = nil
+	if err = a.L.LoadWishlistItems(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.WishlistidWishlistItems); got != 2 {
+	if got := len(a.R.WishlistItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testWishlistToManyWishlistidWishlistItems(t *testing.T) {
 	}
 }
 
-func testWishlistToManyAddOpWishlistidWishlistItems(t *testing.T) {
+func testWishlistToManyAddOpWishlistItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -608,7 +608,7 @@ func testWishlistToManyAddOpWishlistidWishlistItems(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddWishlistidWishlistItems(ctx, tx, i != 0, x...)
+		err = a.AddWishlistItems(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -616,28 +616,28 @@ func testWishlistToManyAddOpWishlistidWishlistItems(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Wishlistid) {
-			t.Error("foreign key was wrong value", a.ID, first.Wishlistid)
+		if !queries.Equal(a.ID, first.WishlistID) {
+			t.Error("foreign key was wrong value", a.ID, first.WishlistID)
 		}
-		if !queries.Equal(a.ID, second.Wishlistid) {
-			t.Error("foreign key was wrong value", a.ID, second.Wishlistid)
+		if !queries.Equal(a.ID, second.WishlistID) {
+			t.Error("foreign key was wrong value", a.ID, second.WishlistID)
 		}
 
-		if first.R.WishlistidWishlist != &a {
+		if first.R.Wishlist != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.WishlistidWishlist != &a {
+		if second.R.Wishlist != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.WishlistidWishlistItems[i*2] != first {
+		if a.R.WishlistItems[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.WishlistidWishlistItems[i*2+1] != second {
+		if a.R.WishlistItems[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.WishlistidWishlistItems().Count(ctx, tx)
+		count, err := a.WishlistItems().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -647,7 +647,7 @@ func testWishlistToManyAddOpWishlistidWishlistItems(t *testing.T) {
 	}
 }
 
-func testWishlistToManySetOpWishlistidWishlistItems(t *testing.T) {
+func testWishlistToManySetOpWishlistItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -678,25 +678,12 @@ func testWishlistToManySetOpWishlistidWishlistItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetWishlistidWishlistItems(ctx, tx, false, &b, &c)
+	err = a.SetWishlistItems(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.WishlistidWishlistItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetWishlistidWishlistItems(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WishlistidWishlistItems().Count(ctx, tx)
+	count, err := a.WishlistItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -704,41 +691,54 @@ func testWishlistToManySetOpWishlistidWishlistItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Wishlistid) {
+	err = a.SetWishlistItems(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.WishlistItems().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.WishlistID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Wishlistid) {
+	if !queries.IsValuerNil(c.WishlistID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Wishlistid) {
-		t.Error("foreign key was wrong value", a.ID, d.Wishlistid)
+	if !queries.Equal(a.ID, d.WishlistID) {
+		t.Error("foreign key was wrong value", a.ID, d.WishlistID)
 	}
-	if !queries.Equal(a.ID, e.Wishlistid) {
-		t.Error("foreign key was wrong value", a.ID, e.Wishlistid)
-	}
-
-	if b.R.WishlistidWishlist != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.WishlistidWishlist != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.WishlistidWishlist != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.WishlistidWishlist != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.WishlistID) {
+		t.Error("foreign key was wrong value", a.ID, e.WishlistID)
 	}
 
-	if a.R.WishlistidWishlistItems[0] != &d {
+	if b.R.Wishlist != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Wishlist != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Wishlist != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Wishlist != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.WishlistItems[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.WishlistidWishlistItems[1] != &e {
+	if a.R.WishlistItems[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testWishlistToManyRemoveOpWishlistidWishlistItems(t *testing.T) {
+func testWishlistToManyRemoveOpWishlistItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -763,12 +763,12 @@ func testWishlistToManyRemoveOpWishlistidWishlistItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddWishlistidWishlistItems(ctx, tx, true, foreigners...)
+	err = a.AddWishlistItems(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.WishlistidWishlistItems().Count(ctx, tx)
+	count, err := a.WishlistItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -776,12 +776,12 @@ func testWishlistToManyRemoveOpWishlistidWishlistItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveWishlistidWishlistItems(ctx, tx, foreigners[:2]...)
+	err = a.RemoveWishlistItems(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.WishlistidWishlistItems().Count(ctx, tx)
+	count, err = a.WishlistItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -789,40 +789,40 @@ func testWishlistToManyRemoveOpWishlistidWishlistItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Wishlistid) {
+	if !queries.IsValuerNil(b.WishlistID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Wishlistid) {
+	if !queries.IsValuerNil(c.WishlistID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.WishlistidWishlist != nil {
+	if b.R.Wishlist != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.WishlistidWishlist != nil {
+	if c.R.Wishlist != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.WishlistidWishlist != &a {
+	if d.R.Wishlist != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.WishlistidWishlist != &a {
+	if e.R.Wishlist != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.WishlistidWishlistItems) != 2 {
+	if len(a.R.WishlistItems) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.WishlistidWishlistItems[1] != &d {
+	if a.R.WishlistItems[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.WishlistidWishlistItems[0] != &e {
+	if a.R.WishlistItems[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testWishlistToOneUserUsingUseridUser(t *testing.T) {
+func testWishlistToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -842,12 +842,12 @@ func testWishlistToOneUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Userid, foreign.ID)
+	queries.Assign(&local.UserID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UseridUser().One(ctx, tx)
+	check, err := local.User().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -863,18 +863,18 @@ func testWishlistToOneUserUsingUseridUser(t *testing.T) {
 	})
 
 	slice := WishlistSlice{&local}
-	if err = local.L.LoadUseridUser(ctx, tx, false, (*[]*Wishlist)(&slice), nil); err != nil {
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*Wishlist)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UseridUser = nil
-	if err = local.L.LoadUseridUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -883,7 +883,7 @@ func testWishlistToOneUserUsingUseridUser(t *testing.T) {
 	}
 }
 
-func testWishlistToOneSetOpUserUsingUseridUser(t *testing.T) {
+func testWishlistToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -912,36 +912,36 @@ func testWishlistToOneSetOpUserUsingUseridUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetUseridUser(ctx, tx, i != 0, x)
+		err = a.SetUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UseridUser != x {
+		if a.R.User != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.UseridWishlist != &a {
+		if x.R.Wishlist != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Userid))
-		reflect.Indirect(reflect.ValueOf(&a.Userid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid, x.ID)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
 	}
 }
 
-func testWishlistToOneRemoveOpUserUsingUseridUser(t *testing.T) {
+func testWishlistToOneRemoveOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -963,15 +963,15 @@ func testWishlistToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetUseridUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetUser(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUseridUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveUser(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UseridUser().Count(ctx, tx)
+	count, err := a.User().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -979,15 +979,15 @@ func testWishlistToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UseridUser != nil {
+	if a.R.User != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Userid) {
+	if !queries.IsValuerNil(a.UserID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if b.R.UseridWishlist != nil {
+	if b.R.Wishlist != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
 
@@ -1067,7 +1067,7 @@ func testWishlistsSelect(t *testing.T) {
 }
 
 var (
-	wishlistDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `Userid`: `character varying`, `Createat`: `bigint`}
+	wishlistDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `UserID`: `character varying`, `CreateAt`: `bigint`}
 	_               = bytes.MinRead
 )
 

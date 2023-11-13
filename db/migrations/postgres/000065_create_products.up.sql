@@ -1,22 +1,22 @@
 CREATE TABLE IF NOT EXISTS products (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  producttypeid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_type_id uuid,
   name character varying(250),
   slug character varying(255),
   description text,
-  descriptionplaintext text,
-  categoryid character varying(36),
-  createat bigint,
-  updateat bigint,
-  chargetaxes boolean,
+  description_plain_text text,
+  category_id uuid,
+  created_at bigint,
+  updated_at bigint,
+  charge_taxes boolean,
   weight real,
-  weightunit text,
-  defaultvariantid character varying(36),
+  weight_unit text,
+  default_variant_id uuid,
   rating real,
   metadata jsonb,
-  privatemetadata jsonb,
-  seotitle character varying(70),
-  seodescription character varying(300)
+  private_metadata jsonb,
+  seo_title character varying(70),
+  seo_description character varying(300)
 );
 
 ALTER TABLE ONLY products
@@ -31,6 +31,6 @@ CREATE INDEX idx_products_name ON products USING btree (name);
 
 CREATE INDEX idx_products_name_lower_textpattern ON products USING btree (lower((name)::text) text_pattern_ops);
 
-CREATE INDEX idx_products_private_metadata ON products USING btree (privatemetadata);
+CREATE INDEX idx_products_private_metadata ON products USING btree (private_metadata);
 
 CREATE INDEX idx_products_slug ON products USING btree (slug);

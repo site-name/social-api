@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS wishlists (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   token character varying(36),
-  userid character varying(36),
-  createat bigint
+  user_id uuid,
+  created_at bigint
 );
 
 ALTER TABLE ONLY wishlists
     ADD CONSTRAINT wishlists_token_key UNIQUE (token);
 
 ALTER TABLE ONLY wishlists
-    ADD CONSTRAINT wishlists_userid_key UNIQUE (userid);
+    ADD CONSTRAINT wishlists_user_id_key UNIQUE (user_id);

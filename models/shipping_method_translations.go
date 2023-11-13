@@ -25,8 +25,8 @@ import (
 // ShippingMethodTranslation is an object representing the database table.
 type ShippingMethodTranslation struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Shippingmethodid null.String `boil:"shippingmethodid" json:"shippingmethodid,omitempty" toml:"shippingmethodid" yaml:"shippingmethodid,omitempty"`
-	Languagecode     null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
+	ShippingMethodID null.String `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	LanguageCode     null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
 	Name             null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Description      null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 
@@ -36,28 +36,28 @@ type ShippingMethodTranslation struct {
 
 var ShippingMethodTranslationColumns = struct {
 	ID               string
-	Shippingmethodid string
-	Languagecode     string
+	ShippingMethodID string
+	LanguageCode     string
 	Name             string
 	Description      string
 }{
 	ID:               "id",
-	Shippingmethodid: "shippingmethodid",
-	Languagecode:     "languagecode",
+	ShippingMethodID: "shipping_method_id",
+	LanguageCode:     "language_code",
 	Name:             "name",
 	Description:      "description",
 }
 
 var ShippingMethodTranslationTableColumns = struct {
 	ID               string
-	Shippingmethodid string
-	Languagecode     string
+	ShippingMethodID string
+	LanguageCode     string
 	Name             string
 	Description      string
 }{
 	ID:               "shipping_method_translations.id",
-	Shippingmethodid: "shipping_method_translations.shippingmethodid",
-	Languagecode:     "shipping_method_translations.languagecode",
+	ShippingMethodID: "shipping_method_translations.shipping_method_id",
+	LanguageCode:     "shipping_method_translations.language_code",
 	Name:             "shipping_method_translations.name",
 	Description:      "shipping_method_translations.description",
 }
@@ -66,14 +66,14 @@ var ShippingMethodTranslationTableColumns = struct {
 
 var ShippingMethodTranslationWhere = struct {
 	ID               whereHelperstring
-	Shippingmethodid whereHelpernull_String
-	Languagecode     whereHelpernull_String
+	ShippingMethodID whereHelpernull_String
+	LanguageCode     whereHelpernull_String
 	Name             whereHelpernull_String
 	Description      whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"shipping_method_translations\".\"id\""},
-	Shippingmethodid: whereHelpernull_String{field: "\"shipping_method_translations\".\"shippingmethodid\""},
-	Languagecode:     whereHelpernull_String{field: "\"shipping_method_translations\".\"languagecode\""},
+	ShippingMethodID: whereHelpernull_String{field: "\"shipping_method_translations\".\"shipping_method_id\""},
+	LanguageCode:     whereHelpernull_String{field: "\"shipping_method_translations\".\"language_code\""},
 	Name:             whereHelpernull_String{field: "\"shipping_method_translations\".\"name\""},
 	Description:      whereHelpernull_String{field: "\"shipping_method_translations\".\"description\""},
 }
@@ -95,9 +95,9 @@ func (*shippingMethodTranslationR) NewStruct() *shippingMethodTranslationR {
 type shippingMethodTranslationL struct{}
 
 var (
-	shippingMethodTranslationAllColumns            = []string{"id", "shippingmethodid", "languagecode", "name", "description"}
+	shippingMethodTranslationAllColumns            = []string{"id", "shipping_method_id", "language_code", "name", "description"}
 	shippingMethodTranslationColumnsWithoutDefault = []string{"id"}
-	shippingMethodTranslationColumnsWithDefault    = []string{"shippingmethodid", "languagecode", "name", "description"}
+	shippingMethodTranslationColumnsWithDefault    = []string{"shipping_method_id", "language_code", "name", "description"}
 	shippingMethodTranslationPrimaryKeyColumns     = []string{"id"}
 	shippingMethodTranslationGeneratedColumns      = []string{}
 )

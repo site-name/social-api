@@ -25,11 +25,11 @@ import (
 // SaleChannelListing is an object representing the database table.
 type SaleChannelListing struct {
 	ID            string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Saleid        null.String  `boil:"saleid" json:"saleid,omitempty" toml:"saleid" yaml:"saleid,omitempty"`
-	Channelid     string       `boil:"channelid" json:"channelid" toml:"channelid" yaml:"channelid"`
-	Discountvalue null.Float64 `boil:"discountvalue" json:"discountvalue,omitempty" toml:"discountvalue" yaml:"discountvalue,omitempty"`
+	SaleID        null.String  `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
+	ChannelID     string       `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	DiscountValue null.Float64 `boil:"discount_value" json:"discount_value,omitempty" toml:"discount_value" yaml:"discount_value,omitempty"`
 	Currency      null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	Createat      null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt      null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 
 	R *saleChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,67 +37,67 @@ type SaleChannelListing struct {
 
 var SaleChannelListingColumns = struct {
 	ID            string
-	Saleid        string
-	Channelid     string
-	Discountvalue string
+	SaleID        string
+	ChannelID     string
+	DiscountValue string
 	Currency      string
-	Createat      string
+	CreateAt      string
 }{
 	ID:            "id",
-	Saleid:        "saleid",
-	Channelid:     "channelid",
-	Discountvalue: "discountvalue",
+	SaleID:        "sale_id",
+	ChannelID:     "channel_id",
+	DiscountValue: "discount_value",
 	Currency:      "currency",
-	Createat:      "createat",
+	CreateAt:      "create_at",
 }
 
 var SaleChannelListingTableColumns = struct {
 	ID            string
-	Saleid        string
-	Channelid     string
-	Discountvalue string
+	SaleID        string
+	ChannelID     string
+	DiscountValue string
 	Currency      string
-	Createat      string
+	CreateAt      string
 }{
 	ID:            "sale_channel_listings.id",
-	Saleid:        "sale_channel_listings.saleid",
-	Channelid:     "sale_channel_listings.channelid",
-	Discountvalue: "sale_channel_listings.discountvalue",
+	SaleID:        "sale_channel_listings.sale_id",
+	ChannelID:     "sale_channel_listings.channel_id",
+	DiscountValue: "sale_channel_listings.discount_value",
 	Currency:      "sale_channel_listings.currency",
-	Createat:      "sale_channel_listings.createat",
+	CreateAt:      "sale_channel_listings.create_at",
 }
 
 // Generated where
 
 var SaleChannelListingWhere = struct {
 	ID            whereHelperstring
-	Saleid        whereHelpernull_String
-	Channelid     whereHelperstring
-	Discountvalue whereHelpernull_Float64
+	SaleID        whereHelpernull_String
+	ChannelID     whereHelperstring
+	DiscountValue whereHelpernull_Float64
 	Currency      whereHelpernull_String
-	Createat      whereHelpernull_Int64
+	CreateAt      whereHelpernull_Int64
 }{
 	ID:            whereHelperstring{field: "\"sale_channel_listings\".\"id\""},
-	Saleid:        whereHelpernull_String{field: "\"sale_channel_listings\".\"saleid\""},
-	Channelid:     whereHelperstring{field: "\"sale_channel_listings\".\"channelid\""},
-	Discountvalue: whereHelpernull_Float64{field: "\"sale_channel_listings\".\"discountvalue\""},
+	SaleID:        whereHelpernull_String{field: "\"sale_channel_listings\".\"sale_id\""},
+	ChannelID:     whereHelperstring{field: "\"sale_channel_listings\".\"channel_id\""},
+	DiscountValue: whereHelpernull_Float64{field: "\"sale_channel_listings\".\"discount_value\""},
 	Currency:      whereHelpernull_String{field: "\"sale_channel_listings\".\"currency\""},
-	Createat:      whereHelpernull_Int64{field: "\"sale_channel_listings\".\"createat\""},
+	CreateAt:      whereHelpernull_Int64{field: "\"sale_channel_listings\".\"create_at\""},
 }
 
 // SaleChannelListingRels is where relationship names are stored.
 var SaleChannelListingRels = struct {
-	ChannelidChannel string
-	SaleidSale       string
+	Channel string
+	Sale    string
 }{
-	ChannelidChannel: "ChannelidChannel",
-	SaleidSale:       "SaleidSale",
+	Channel: "Channel",
+	Sale:    "Sale",
 }
 
 // saleChannelListingR is where relationships are stored.
 type saleChannelListingR struct {
-	ChannelidChannel *Channel `boil:"ChannelidChannel" json:"ChannelidChannel" toml:"ChannelidChannel" yaml:"ChannelidChannel"`
-	SaleidSale       *Sale    `boil:"SaleidSale" json:"SaleidSale" toml:"SaleidSale" yaml:"SaleidSale"`
+	Channel *Channel `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Sale    *Sale    `boil:"Sale" json:"Sale" toml:"Sale" yaml:"Sale"`
 }
 
 // NewStruct creates a new relationship struct
@@ -105,27 +105,27 @@ func (*saleChannelListingR) NewStruct() *saleChannelListingR {
 	return &saleChannelListingR{}
 }
 
-func (r *saleChannelListingR) GetChannelidChannel() *Channel {
+func (r *saleChannelListingR) GetChannel() *Channel {
 	if r == nil {
 		return nil
 	}
-	return r.ChannelidChannel
+	return r.Channel
 }
 
-func (r *saleChannelListingR) GetSaleidSale() *Sale {
+func (r *saleChannelListingR) GetSale() *Sale {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSale
+	return r.Sale
 }
 
 // saleChannelListingL is where Load methods for each relationship are stored.
 type saleChannelListingL struct{}
 
 var (
-	saleChannelListingAllColumns            = []string{"id", "saleid", "channelid", "discountvalue", "currency", "createat"}
-	saleChannelListingColumnsWithoutDefault = []string{"id", "channelid"}
-	saleChannelListingColumnsWithDefault    = []string{"saleid", "discountvalue", "currency", "createat"}
+	saleChannelListingAllColumns            = []string{"id", "sale_id", "channel_id", "discount_value", "currency", "create_at"}
+	saleChannelListingColumnsWithoutDefault = []string{"id", "channel_id"}
+	saleChannelListingColumnsWithDefault    = []string{"sale_id", "discount_value", "currency", "create_at"}
 	saleChannelListingPrimaryKeyColumns     = []string{"id"}
 	saleChannelListingGeneratedColumns      = []string{}
 )
@@ -408,10 +408,10 @@ func (q saleChannelListingQuery) Exists(ctx context.Context, exec boil.ContextEx
 	return count > 0, nil
 }
 
-// ChannelidChannel pointed to by the foreign key.
-func (o *SaleChannelListing) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
+// Channel pointed to by the foreign key.
+func (o *SaleChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Channelid),
+		qm.Where("\"id\" = ?", o.ChannelID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -419,10 +419,10 @@ func (o *SaleChannelListing) ChannelidChannel(mods ...qm.QueryMod) channelQuery 
 	return Channels(queryMods...)
 }
 
-// SaleidSale pointed to by the foreign key.
-func (o *SaleChannelListing) SaleidSale(mods ...qm.QueryMod) saleQuery {
+// Sale pointed to by the foreign key.
+func (o *SaleChannelListing) Sale(mods ...qm.QueryMod) saleQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Saleid),
+		qm.Where("\"id\" = ?", o.SaleID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -430,9 +430,9 @@ func (o *SaleChannelListing) SaleidSale(mods ...qm.QueryMod) saleQuery {
 	return Sales(queryMods...)
 }
 
-// LoadChannelidChannel allows an eager lookup of values, cached into the
+// LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleChannelListing interface{}, mods queries.Applicator) error {
+func (saleChannelListingL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*SaleChannelListing
 	var object *SaleChannelListing
 
@@ -463,7 +463,7 @@ func (saleChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &saleChannelListingR{}
 		}
-		args = append(args, object.Channelid)
+		args = append(args, object.ChannelID)
 
 	} else {
 	Outer:
@@ -473,12 +473,12 @@ func (saleChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if a == obj.Channelid {
+				if a == obj.ChannelID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.Channelid)
+			args = append(args, obj.ChannelID)
 
 		}
 	}
@@ -526,22 +526,22 @@ func (saleChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ChannelidChannel = foreign
+		object.R.Channel = foreign
 		if foreign.R == nil {
 			foreign.R = &channelR{}
 		}
-		foreign.R.ChannelidSaleChannelListings = append(foreign.R.ChannelidSaleChannelListings, object)
+		foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.Channelid == foreign.ID {
-				local.R.ChannelidChannel = foreign
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
 				}
-				foreign.R.ChannelidSaleChannelListings = append(foreign.R.ChannelidSaleChannelListings, local)
+				foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, local)
 				break
 			}
 		}
@@ -550,9 +550,9 @@ func (saleChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// LoadSaleidSale allows an eager lookup of values, cached into the
+// LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleChannelListingL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleChannelListing interface{}, mods queries.Applicator) error {
+func (saleChannelListingL) LoadSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*SaleChannelListing
 	var object *SaleChannelListing
 
@@ -583,8 +583,8 @@ func (saleChannelListingL) LoadSaleidSale(ctx context.Context, e boil.ContextExe
 		if object.R == nil {
 			object.R = &saleChannelListingR{}
 		}
-		if !queries.IsNil(object.Saleid) {
-			args = append(args, object.Saleid)
+		if !queries.IsNil(object.SaleID) {
+			args = append(args, object.SaleID)
 		}
 
 	} else {
@@ -595,13 +595,13 @@ func (saleChannelListingL) LoadSaleidSale(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Saleid) {
+				if queries.Equal(a, obj.SaleID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Saleid) {
-				args = append(args, obj.Saleid)
+			if !queries.IsNil(obj.SaleID) {
+				args = append(args, obj.SaleID)
 			}
 
 		}
@@ -650,22 +650,22 @@ func (saleChannelListingL) LoadSaleidSale(ctx context.Context, e boil.ContextExe
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.SaleidSale = foreign
+		object.R.Sale = foreign
 		if foreign.R == nil {
 			foreign.R = &saleR{}
 		}
-		foreign.R.SaleidSaleChannelListings = append(foreign.R.SaleidSaleChannelListings, object)
+		foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Saleid, foreign.ID) {
-				local.R.SaleidSale = foreign
+			if queries.Equal(local.SaleID, foreign.ID) {
+				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
 				}
-				foreign.R.SaleidSaleChannelListings = append(foreign.R.SaleidSaleChannelListings, local)
+				foreign.R.SaleChannelListings = append(foreign.R.SaleChannelListings, local)
 				break
 			}
 		}
@@ -674,10 +674,10 @@ func (saleChannelListingL) LoadSaleidSale(ctx context.Context, e boil.ContextExe
 	return nil
 }
 
-// SetChannelidChannel of the saleChannelListing to the related item.
-// Sets o.R.ChannelidChannel to related.
-// Adds o to related.R.ChannelidSaleChannelListings.
-func (o *SaleChannelListing) SetChannelidChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+// SetChannel of the saleChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.SaleChannelListings.
+func (o *SaleChannelListing) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -687,7 +687,7 @@ func (o *SaleChannelListing) SetChannelidChannel(ctx context.Context, exec boil.
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"sale_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"channelid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -701,30 +701,30 @@ func (o *SaleChannelListing) SetChannelidChannel(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.Channelid = related.ID
+	o.ChannelID = related.ID
 	if o.R == nil {
 		o.R = &saleChannelListingR{
-			ChannelidChannel: related,
+			Channel: related,
 		}
 	} else {
-		o.R.ChannelidChannel = related
+		o.R.Channel = related
 	}
 
 	if related.R == nil {
 		related.R = &channelR{
-			ChannelidSaleChannelListings: SaleChannelListingSlice{o},
+			SaleChannelListings: SaleChannelListingSlice{o},
 		}
 	} else {
-		related.R.ChannelidSaleChannelListings = append(related.R.ChannelidSaleChannelListings, o)
+		related.R.SaleChannelListings = append(related.R.SaleChannelListings, o)
 	}
 
 	return nil
 }
 
-// SetSaleidSale of the saleChannelListing to the related item.
-// Sets o.R.SaleidSale to related.
-// Adds o to related.R.SaleidSaleChannelListings.
-func (o *SaleChannelListing) SetSaleidSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
+// SetSale of the saleChannelListing to the related item.
+// Sets o.R.Sale to related.
+// Adds o to related.R.SaleChannelListings.
+func (o *SaleChannelListing) SetSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -734,7 +734,7 @@ func (o *SaleChannelListing) SetSaleidSale(ctx context.Context, exec boil.Contex
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"sale_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -748,54 +748,54 @@ func (o *SaleChannelListing) SetSaleidSale(ctx context.Context, exec boil.Contex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Saleid, related.ID)
+	queries.Assign(&o.SaleID, related.ID)
 	if o.R == nil {
 		o.R = &saleChannelListingR{
-			SaleidSale: related,
+			Sale: related,
 		}
 	} else {
-		o.R.SaleidSale = related
+		o.R.Sale = related
 	}
 
 	if related.R == nil {
 		related.R = &saleR{
-			SaleidSaleChannelListings: SaleChannelListingSlice{o},
+			SaleChannelListings: SaleChannelListingSlice{o},
 		}
 	} else {
-		related.R.SaleidSaleChannelListings = append(related.R.SaleidSaleChannelListings, o)
+		related.R.SaleChannelListings = append(related.R.SaleChannelListings, o)
 	}
 
 	return nil
 }
 
-// RemoveSaleidSale relationship.
-// Sets o.R.SaleidSale to nil.
+// RemoveSale relationship.
+// Sets o.R.Sale to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *SaleChannelListing) RemoveSaleidSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
+func (o *SaleChannelListing) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
 	var err error
 
-	queries.SetScanner(&o.Saleid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+	queries.SetScanner(&o.SaleID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.SaleidSale = nil
+		o.R.Sale = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.SaleidSaleChannelListings {
-		if queries.Equal(o.Saleid, ri.Saleid) {
+	for i, ri := range related.R.SaleChannelListings {
+		if queries.Equal(o.SaleID, ri.SaleID) {
 			continue
 		}
 
-		ln := len(related.R.SaleidSaleChannelListings)
+		ln := len(related.R.SaleChannelListings)
 		if ln > 1 && i < ln-1 {
-			related.R.SaleidSaleChannelListings[i] = related.R.SaleidSaleChannelListings[ln-1]
+			related.R.SaleChannelListings[i] = related.R.SaleChannelListings[ln-1]
 		}
-		related.R.SaleidSaleChannelListings = related.R.SaleidSaleChannelListings[:ln-1]
+		related.R.SaleChannelListings = related.R.SaleChannelListings[:ln-1]
 		break
 	}
 	return nil

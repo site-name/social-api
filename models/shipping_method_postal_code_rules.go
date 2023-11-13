@@ -25,10 +25,10 @@ import (
 // ShippingMethodPostalCodeRule is an object representing the database table.
 type ShippingMethodPostalCodeRule struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Shippingmethodid null.String `boil:"shippingmethodid" json:"shippingmethodid,omitempty" toml:"shippingmethodid" yaml:"shippingmethodid,omitempty"`
+	ShippingMethodID null.String `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
 	Start            null.String `boil:"start" json:"start,omitempty" toml:"start" yaml:"start,omitempty"`
 	End              null.String `boil:"end" json:"end,omitempty" toml:"end" yaml:"end,omitempty"`
-	Inclusiontype    null.String `boil:"inclusiontype" json:"inclusiontype,omitempty" toml:"inclusiontype" yaml:"inclusiontype,omitempty"`
+	InclusionType    null.String `boil:"inclusion_type" json:"inclusion_type,omitempty" toml:"inclusion_type" yaml:"inclusion_type,omitempty"`
 
 	R *shippingMethodPostalCodeRuleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodPostalCodeRuleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,58 +36,58 @@ type ShippingMethodPostalCodeRule struct {
 
 var ShippingMethodPostalCodeRuleColumns = struct {
 	ID               string
-	Shippingmethodid string
+	ShippingMethodID string
 	Start            string
 	End              string
-	Inclusiontype    string
+	InclusionType    string
 }{
 	ID:               "id",
-	Shippingmethodid: "shippingmethodid",
+	ShippingMethodID: "shipping_method_id",
 	Start:            "start",
 	End:              "end",
-	Inclusiontype:    "inclusiontype",
+	InclusionType:    "inclusion_type",
 }
 
 var ShippingMethodPostalCodeRuleTableColumns = struct {
 	ID               string
-	Shippingmethodid string
+	ShippingMethodID string
 	Start            string
 	End              string
-	Inclusiontype    string
+	InclusionType    string
 }{
 	ID:               "shipping_method_postal_code_rules.id",
-	Shippingmethodid: "shipping_method_postal_code_rules.shippingmethodid",
+	ShippingMethodID: "shipping_method_postal_code_rules.shipping_method_id",
 	Start:            "shipping_method_postal_code_rules.start",
 	End:              "shipping_method_postal_code_rules.end",
-	Inclusiontype:    "shipping_method_postal_code_rules.inclusiontype",
+	InclusionType:    "shipping_method_postal_code_rules.inclusion_type",
 }
 
 // Generated where
 
 var ShippingMethodPostalCodeRuleWhere = struct {
 	ID               whereHelperstring
-	Shippingmethodid whereHelpernull_String
+	ShippingMethodID whereHelpernull_String
 	Start            whereHelpernull_String
 	End              whereHelpernull_String
-	Inclusiontype    whereHelpernull_String
+	InclusionType    whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"shipping_method_postal_code_rules\".\"id\""},
-	Shippingmethodid: whereHelpernull_String{field: "\"shipping_method_postal_code_rules\".\"shippingmethodid\""},
+	ShippingMethodID: whereHelpernull_String{field: "\"shipping_method_postal_code_rules\".\"shipping_method_id\""},
 	Start:            whereHelpernull_String{field: "\"shipping_method_postal_code_rules\".\"start\""},
 	End:              whereHelpernull_String{field: "\"shipping_method_postal_code_rules\".\"end\""},
-	Inclusiontype:    whereHelpernull_String{field: "\"shipping_method_postal_code_rules\".\"inclusiontype\""},
+	InclusionType:    whereHelpernull_String{field: "\"shipping_method_postal_code_rules\".\"inclusion_type\""},
 }
 
 // ShippingMethodPostalCodeRuleRels is where relationship names are stored.
 var ShippingMethodPostalCodeRuleRels = struct {
-	ShippingmethodidShippingMethod string
+	ShippingMethod string
 }{
-	ShippingmethodidShippingMethod: "ShippingmethodidShippingMethod",
+	ShippingMethod: "ShippingMethod",
 }
 
 // shippingMethodPostalCodeRuleR is where relationships are stored.
 type shippingMethodPostalCodeRuleR struct {
-	ShippingmethodidShippingMethod *ShippingMethod `boil:"ShippingmethodidShippingMethod" json:"ShippingmethodidShippingMethod" toml:"ShippingmethodidShippingMethod" yaml:"ShippingmethodidShippingMethod"`
+	ShippingMethod *ShippingMethod `boil:"ShippingMethod" json:"ShippingMethod" toml:"ShippingMethod" yaml:"ShippingMethod"`
 }
 
 // NewStruct creates a new relationship struct
@@ -95,20 +95,20 @@ func (*shippingMethodPostalCodeRuleR) NewStruct() *shippingMethodPostalCodeRuleR
 	return &shippingMethodPostalCodeRuleR{}
 }
 
-func (r *shippingMethodPostalCodeRuleR) GetShippingmethodidShippingMethod() *ShippingMethod {
+func (r *shippingMethodPostalCodeRuleR) GetShippingMethod() *ShippingMethod {
 	if r == nil {
 		return nil
 	}
-	return r.ShippingmethodidShippingMethod
+	return r.ShippingMethod
 }
 
 // shippingMethodPostalCodeRuleL is where Load methods for each relationship are stored.
 type shippingMethodPostalCodeRuleL struct{}
 
 var (
-	shippingMethodPostalCodeRuleAllColumns            = []string{"id", "shippingmethodid", "start", "end", "inclusiontype"}
+	shippingMethodPostalCodeRuleAllColumns            = []string{"id", "shipping_method_id", "start", "end", "inclusion_type"}
 	shippingMethodPostalCodeRuleColumnsWithoutDefault = []string{"id"}
-	shippingMethodPostalCodeRuleColumnsWithDefault    = []string{"shippingmethodid", "start", "end", "inclusiontype"}
+	shippingMethodPostalCodeRuleColumnsWithDefault    = []string{"shipping_method_id", "start", "end", "inclusion_type"}
 	shippingMethodPostalCodeRulePrimaryKeyColumns     = []string{"id"}
 	shippingMethodPostalCodeRuleGeneratedColumns      = []string{}
 )
@@ -391,10 +391,10 @@ func (q shippingMethodPostalCodeRuleQuery) Exists(ctx context.Context, exec boil
 	return count > 0, nil
 }
 
-// ShippingmethodidShippingMethod pointed to by the foreign key.
-func (o *ShippingMethodPostalCodeRule) ShippingmethodidShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
+// ShippingMethod pointed to by the foreign key.
+func (o *ShippingMethodPostalCodeRule) ShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Shippingmethodid),
+		qm.Where("\"id\" = ?", o.ShippingMethodID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -402,9 +402,9 @@ func (o *ShippingMethodPostalCodeRule) ShippingmethodidShippingMethod(mods ...qm
 	return ShippingMethods(queryMods...)
 }
 
-// LoadShippingmethodidShippingMethod allows an eager lookup of values, cached into the
+// LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodPostalCodeRuleL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodPostalCodeRule interface{}, mods queries.Applicator) error {
+func (shippingMethodPostalCodeRuleL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodPostalCodeRule interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodPostalCodeRule
 	var object *ShippingMethodPostalCodeRule
 
@@ -435,8 +435,8 @@ func (shippingMethodPostalCodeRuleL) LoadShippingmethodidShippingMethod(ctx cont
 		if object.R == nil {
 			object.R = &shippingMethodPostalCodeRuleR{}
 		}
-		if !queries.IsNil(object.Shippingmethodid) {
-			args = append(args, object.Shippingmethodid)
+		if !queries.IsNil(object.ShippingMethodID) {
+			args = append(args, object.ShippingMethodID)
 		}
 
 	} else {
@@ -447,13 +447,13 @@ func (shippingMethodPostalCodeRuleL) LoadShippingmethodidShippingMethod(ctx cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Shippingmethodid) {
+				if queries.Equal(a, obj.ShippingMethodID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Shippingmethodid) {
-				args = append(args, obj.Shippingmethodid)
+			if !queries.IsNil(obj.ShippingMethodID) {
+				args = append(args, obj.ShippingMethodID)
 			}
 
 		}
@@ -502,22 +502,22 @@ func (shippingMethodPostalCodeRuleL) LoadShippingmethodidShippingMethod(ctx cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ShippingmethodidShippingMethod = foreign
+		object.R.ShippingMethod = foreign
 		if foreign.R == nil {
 			foreign.R = &shippingMethodR{}
 		}
-		foreign.R.ShippingmethodidShippingMethodPostalCodeRules = append(foreign.R.ShippingmethodidShippingMethodPostalCodeRules, object)
+		foreign.R.ShippingMethodPostalCodeRules = append(foreign.R.ShippingMethodPostalCodeRules, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Shippingmethodid, foreign.ID) {
-				local.R.ShippingmethodidShippingMethod = foreign
+			if queries.Equal(local.ShippingMethodID, foreign.ID) {
+				local.R.ShippingMethod = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
 				}
-				foreign.R.ShippingmethodidShippingMethodPostalCodeRules = append(foreign.R.ShippingmethodidShippingMethodPostalCodeRules, local)
+				foreign.R.ShippingMethodPostalCodeRules = append(foreign.R.ShippingMethodPostalCodeRules, local)
 				break
 			}
 		}
@@ -526,10 +526,10 @@ func (shippingMethodPostalCodeRuleL) LoadShippingmethodidShippingMethod(ctx cont
 	return nil
 }
 
-// SetShippingmethodidShippingMethod of the shippingMethodPostalCodeRule to the related item.
-// Sets o.R.ShippingmethodidShippingMethod to related.
-// Adds o to related.R.ShippingmethodidShippingMethodPostalCodeRules.
-func (o *ShippingMethodPostalCodeRule) SetShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
+// SetShippingMethod of the shippingMethodPostalCodeRule to the related item.
+// Sets o.R.ShippingMethod to related.
+// Adds o to related.R.ShippingMethodPostalCodeRules.
+func (o *ShippingMethodPostalCodeRule) SetShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -539,7 +539,7 @@ func (o *ShippingMethodPostalCodeRule) SetShippingmethodidShippingMethod(ctx con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"shipping_method_postal_code_rules\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"shippingmethodid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shippingMethodPostalCodeRulePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -553,54 +553,54 @@ func (o *ShippingMethodPostalCodeRule) SetShippingmethodidShippingMethod(ctx con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Shippingmethodid, related.ID)
+	queries.Assign(&o.ShippingMethodID, related.ID)
 	if o.R == nil {
 		o.R = &shippingMethodPostalCodeRuleR{
-			ShippingmethodidShippingMethod: related,
+			ShippingMethod: related,
 		}
 	} else {
-		o.R.ShippingmethodidShippingMethod = related
+		o.R.ShippingMethod = related
 	}
 
 	if related.R == nil {
 		related.R = &shippingMethodR{
-			ShippingmethodidShippingMethodPostalCodeRules: ShippingMethodPostalCodeRuleSlice{o},
+			ShippingMethodPostalCodeRules: ShippingMethodPostalCodeRuleSlice{o},
 		}
 	} else {
-		related.R.ShippingmethodidShippingMethodPostalCodeRules = append(related.R.ShippingmethodidShippingMethodPostalCodeRules, o)
+		related.R.ShippingMethodPostalCodeRules = append(related.R.ShippingMethodPostalCodeRules, o)
 	}
 
 	return nil
 }
 
-// RemoveShippingmethodidShippingMethod relationship.
-// Sets o.R.ShippingmethodidShippingMethod to nil.
+// RemoveShippingMethod relationship.
+// Sets o.R.ShippingMethod to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodPostalCodeRule) RemoveShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
+func (o *ShippingMethodPostalCodeRule) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
 	var err error
 
-	queries.SetScanner(&o.Shippingmethodid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shippingmethodid")); err != nil {
+	queries.SetScanner(&o.ShippingMethodID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ShippingmethodidShippingMethod = nil
+		o.R.ShippingMethod = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ShippingmethodidShippingMethodPostalCodeRules {
-		if queries.Equal(o.Shippingmethodid, ri.Shippingmethodid) {
+	for i, ri := range related.R.ShippingMethodPostalCodeRules {
+		if queries.Equal(o.ShippingMethodID, ri.ShippingMethodID) {
 			continue
 		}
 
-		ln := len(related.R.ShippingmethodidShippingMethodPostalCodeRules)
+		ln := len(related.R.ShippingMethodPostalCodeRules)
 		if ln > 1 && i < ln-1 {
-			related.R.ShippingmethodidShippingMethodPostalCodeRules[i] = related.R.ShippingmethodidShippingMethodPostalCodeRules[ln-1]
+			related.R.ShippingMethodPostalCodeRules[i] = related.R.ShippingMethodPostalCodeRules[ln-1]
 		}
-		related.R.ShippingmethodidShippingMethodPostalCodeRules = related.R.ShippingmethodidShippingMethodPostalCodeRules[:ln-1]
+		related.R.ShippingMethodPostalCodeRules = related.R.ShippingMethodPostalCodeRules[:ln-1]
 		break
 	}
 	return nil

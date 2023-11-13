@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS shop_translations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  languagecode character varying(5),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_code character varying(5),
   name character varying(110),
   description character varying(110),
-  createat bigint,
-  updateat bigint
+  created_at bigint,
+  updated_at bigint
 );

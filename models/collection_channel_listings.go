@@ -25,11 +25,11 @@ import (
 // CollectionChannelListing is an object representing the database table.
 type CollectionChannelListing struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat        null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Collectionid    null.String `boil:"collectionid" json:"collectionid,omitempty" toml:"collectionid" yaml:"collectionid,omitempty"`
-	Channelid       null.String `boil:"channelid" json:"channelid,omitempty" toml:"channelid" yaml:"channelid,omitempty"`
-	Publicationdate null.Time   `boil:"publicationdate" json:"publicationdate,omitempty" toml:"publicationdate" yaml:"publicationdate,omitempty"`
-	Ispublished     null.Bool   `boil:"ispublished" json:"ispublished,omitempty" toml:"ispublished" yaml:"ispublished,omitempty"`
+	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	CollectionID    null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
+	ChannelID       null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
+	PublicationDate null.Time   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
+	IsPublished     null.Bool   `boil:"is_published" json:"is_published,omitempty" toml:"is_published" yaml:"is_published,omitempty"`
 
 	R *collectionChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L collectionChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,67 +37,67 @@ type CollectionChannelListing struct {
 
 var CollectionChannelListingColumns = struct {
 	ID              string
-	Createat        string
-	Collectionid    string
-	Channelid       string
-	Publicationdate string
-	Ispublished     string
+	CreateAt        string
+	CollectionID    string
+	ChannelID       string
+	PublicationDate string
+	IsPublished     string
 }{
 	ID:              "id",
-	Createat:        "createat",
-	Collectionid:    "collectionid",
-	Channelid:       "channelid",
-	Publicationdate: "publicationdate",
-	Ispublished:     "ispublished",
+	CreateAt:        "create_at",
+	CollectionID:    "collection_id",
+	ChannelID:       "channel_id",
+	PublicationDate: "publication_date",
+	IsPublished:     "is_published",
 }
 
 var CollectionChannelListingTableColumns = struct {
 	ID              string
-	Createat        string
-	Collectionid    string
-	Channelid       string
-	Publicationdate string
-	Ispublished     string
+	CreateAt        string
+	CollectionID    string
+	ChannelID       string
+	PublicationDate string
+	IsPublished     string
 }{
 	ID:              "collection_channel_listings.id",
-	Createat:        "collection_channel_listings.createat",
-	Collectionid:    "collection_channel_listings.collectionid",
-	Channelid:       "collection_channel_listings.channelid",
-	Publicationdate: "collection_channel_listings.publicationdate",
-	Ispublished:     "collection_channel_listings.ispublished",
+	CreateAt:        "collection_channel_listings.create_at",
+	CollectionID:    "collection_channel_listings.collection_id",
+	ChannelID:       "collection_channel_listings.channel_id",
+	PublicationDate: "collection_channel_listings.publication_date",
+	IsPublished:     "collection_channel_listings.is_published",
 }
 
 // Generated where
 
 var CollectionChannelListingWhere = struct {
 	ID              whereHelperstring
-	Createat        whereHelpernull_Int64
-	Collectionid    whereHelpernull_String
-	Channelid       whereHelpernull_String
-	Publicationdate whereHelpernull_Time
-	Ispublished     whereHelpernull_Bool
+	CreateAt        whereHelpernull_Int64
+	CollectionID    whereHelpernull_String
+	ChannelID       whereHelpernull_String
+	PublicationDate whereHelpernull_Time
+	IsPublished     whereHelpernull_Bool
 }{
 	ID:              whereHelperstring{field: "\"collection_channel_listings\".\"id\""},
-	Createat:        whereHelpernull_Int64{field: "\"collection_channel_listings\".\"createat\""},
-	Collectionid:    whereHelpernull_String{field: "\"collection_channel_listings\".\"collectionid\""},
-	Channelid:       whereHelpernull_String{field: "\"collection_channel_listings\".\"channelid\""},
-	Publicationdate: whereHelpernull_Time{field: "\"collection_channel_listings\".\"publicationdate\""},
-	Ispublished:     whereHelpernull_Bool{field: "\"collection_channel_listings\".\"ispublished\""},
+	CreateAt:        whereHelpernull_Int64{field: "\"collection_channel_listings\".\"create_at\""},
+	CollectionID:    whereHelpernull_String{field: "\"collection_channel_listings\".\"collection_id\""},
+	ChannelID:       whereHelpernull_String{field: "\"collection_channel_listings\".\"channel_id\""},
+	PublicationDate: whereHelpernull_Time{field: "\"collection_channel_listings\".\"publication_date\""},
+	IsPublished:     whereHelpernull_Bool{field: "\"collection_channel_listings\".\"is_published\""},
 }
 
 // CollectionChannelListingRels is where relationship names are stored.
 var CollectionChannelListingRels = struct {
-	ChannelidChannel       string
-	CollectionidCollection string
+	Channel    string
+	Collection string
 }{
-	ChannelidChannel:       "ChannelidChannel",
-	CollectionidCollection: "CollectionidCollection",
+	Channel:    "Channel",
+	Collection: "Collection",
 }
 
 // collectionChannelListingR is where relationships are stored.
 type collectionChannelListingR struct {
-	ChannelidChannel       *Channel    `boil:"ChannelidChannel" json:"ChannelidChannel" toml:"ChannelidChannel" yaml:"ChannelidChannel"`
-	CollectionidCollection *Collection `boil:"CollectionidCollection" json:"CollectionidCollection" toml:"CollectionidCollection" yaml:"CollectionidCollection"`
+	Channel    *Channel    `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Collection *Collection `boil:"Collection" json:"Collection" toml:"Collection" yaml:"Collection"`
 }
 
 // NewStruct creates a new relationship struct
@@ -105,27 +105,27 @@ func (*collectionChannelListingR) NewStruct() *collectionChannelListingR {
 	return &collectionChannelListingR{}
 }
 
-func (r *collectionChannelListingR) GetChannelidChannel() *Channel {
+func (r *collectionChannelListingR) GetChannel() *Channel {
 	if r == nil {
 		return nil
 	}
-	return r.ChannelidChannel
+	return r.Channel
 }
 
-func (r *collectionChannelListingR) GetCollectionidCollection() *Collection {
+func (r *collectionChannelListingR) GetCollection() *Collection {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionidCollection
+	return r.Collection
 }
 
 // collectionChannelListingL is where Load methods for each relationship are stored.
 type collectionChannelListingL struct{}
 
 var (
-	collectionChannelListingAllColumns            = []string{"id", "createat", "collectionid", "channelid", "publicationdate", "ispublished"}
+	collectionChannelListingAllColumns            = []string{"id", "create_at", "collection_id", "channel_id", "publication_date", "is_published"}
 	collectionChannelListingColumnsWithoutDefault = []string{"id"}
-	collectionChannelListingColumnsWithDefault    = []string{"createat", "collectionid", "channelid", "publicationdate", "ispublished"}
+	collectionChannelListingColumnsWithDefault    = []string{"create_at", "collection_id", "channel_id", "publication_date", "is_published"}
 	collectionChannelListingPrimaryKeyColumns     = []string{"id"}
 	collectionChannelListingGeneratedColumns      = []string{}
 )
@@ -408,10 +408,10 @@ func (q collectionChannelListingQuery) Exists(ctx context.Context, exec boil.Con
 	return count > 0, nil
 }
 
-// ChannelidChannel pointed to by the foreign key.
-func (o *CollectionChannelListing) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
+// Channel pointed to by the foreign key.
+func (o *CollectionChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Channelid),
+		qm.Where("\"id\" = ?", o.ChannelID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -419,10 +419,10 @@ func (o *CollectionChannelListing) ChannelidChannel(mods ...qm.QueryMod) channel
 	return Channels(queryMods...)
 }
 
-// CollectionidCollection pointed to by the foreign key.
-func (o *CollectionChannelListing) CollectionidCollection(mods ...qm.QueryMod) collectionQuery {
+// Collection pointed to by the foreign key.
+func (o *CollectionChannelListing) Collection(mods ...qm.QueryMod) collectionQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Collectionid),
+		qm.Where("\"id\" = ?", o.CollectionID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -430,9 +430,9 @@ func (o *CollectionChannelListing) CollectionidCollection(mods ...qm.QueryMod) c
 	return Collections(queryMods...)
 }
 
-// LoadChannelidChannel allows an eager lookup of values, cached into the
+// LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (collectionChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
+func (collectionChannelListingL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*CollectionChannelListing
 	var object *CollectionChannelListing
 
@@ -463,8 +463,8 @@ func (collectionChannelListingL) LoadChannelidChannel(ctx context.Context, e boi
 		if object.R == nil {
 			object.R = &collectionChannelListingR{}
 		}
-		if !queries.IsNil(object.Channelid) {
-			args = append(args, object.Channelid)
+		if !queries.IsNil(object.ChannelID) {
+			args = append(args, object.ChannelID)
 		}
 
 	} else {
@@ -475,13 +475,13 @@ func (collectionChannelListingL) LoadChannelidChannel(ctx context.Context, e boi
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Channelid) {
+				if queries.Equal(a, obj.ChannelID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Channelid) {
-				args = append(args, obj.Channelid)
+			if !queries.IsNil(obj.ChannelID) {
+				args = append(args, obj.ChannelID)
 			}
 
 		}
@@ -530,22 +530,22 @@ func (collectionChannelListingL) LoadChannelidChannel(ctx context.Context, e boi
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ChannelidChannel = foreign
+		object.R.Channel = foreign
 		if foreign.R == nil {
 			foreign.R = &channelR{}
 		}
-		foreign.R.ChannelidCollectionChannelListings = append(foreign.R.ChannelidCollectionChannelListings, object)
+		foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Channelid, foreign.ID) {
-				local.R.ChannelidChannel = foreign
+			if queries.Equal(local.ChannelID, foreign.ID) {
+				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
 				}
-				foreign.R.ChannelidCollectionChannelListings = append(foreign.R.ChannelidCollectionChannelListings, local)
+				foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, local)
 				break
 			}
 		}
@@ -554,9 +554,9 @@ func (collectionChannelListingL) LoadChannelidChannel(ctx context.Context, e boi
 	return nil
 }
 
-// LoadCollectionidCollection allows an eager lookup of values, cached into the
+// LoadCollection allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (collectionChannelListingL) LoadCollectionidCollection(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
+func (collectionChannelListingL) LoadCollection(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollectionChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*CollectionChannelListing
 	var object *CollectionChannelListing
 
@@ -587,8 +587,8 @@ func (collectionChannelListingL) LoadCollectionidCollection(ctx context.Context,
 		if object.R == nil {
 			object.R = &collectionChannelListingR{}
 		}
-		if !queries.IsNil(object.Collectionid) {
-			args = append(args, object.Collectionid)
+		if !queries.IsNil(object.CollectionID) {
+			args = append(args, object.CollectionID)
 		}
 
 	} else {
@@ -599,13 +599,13 @@ func (collectionChannelListingL) LoadCollectionidCollection(ctx context.Context,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Collectionid) {
+				if queries.Equal(a, obj.CollectionID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Collectionid) {
-				args = append(args, obj.Collectionid)
+			if !queries.IsNil(obj.CollectionID) {
+				args = append(args, obj.CollectionID)
 			}
 
 		}
@@ -654,22 +654,22 @@ func (collectionChannelListingL) LoadCollectionidCollection(ctx context.Context,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.CollectionidCollection = foreign
+		object.R.Collection = foreign
 		if foreign.R == nil {
 			foreign.R = &collectionR{}
 		}
-		foreign.R.CollectionidCollectionChannelListings = append(foreign.R.CollectionidCollectionChannelListings, object)
+		foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Collectionid, foreign.ID) {
-				local.R.CollectionidCollection = foreign
+			if queries.Equal(local.CollectionID, foreign.ID) {
+				local.R.Collection = foreign
 				if foreign.R == nil {
 					foreign.R = &collectionR{}
 				}
-				foreign.R.CollectionidCollectionChannelListings = append(foreign.R.CollectionidCollectionChannelListings, local)
+				foreign.R.CollectionChannelListings = append(foreign.R.CollectionChannelListings, local)
 				break
 			}
 		}
@@ -678,10 +678,10 @@ func (collectionChannelListingL) LoadCollectionidCollection(ctx context.Context,
 	return nil
 }
 
-// SetChannelidChannel of the collectionChannelListing to the related item.
-// Sets o.R.ChannelidChannel to related.
-// Adds o to related.R.ChannelidCollectionChannelListings.
-func (o *CollectionChannelListing) SetChannelidChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+// SetChannel of the collectionChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.CollectionChannelListings.
+func (o *CollectionChannelListing) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -691,7 +691,7 @@ func (o *CollectionChannelListing) SetChannelidChannel(ctx context.Context, exec
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"collection_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"channelid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -705,63 +705,63 @@ func (o *CollectionChannelListing) SetChannelidChannel(ctx context.Context, exec
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Channelid, related.ID)
+	queries.Assign(&o.ChannelID, related.ID)
 	if o.R == nil {
 		o.R = &collectionChannelListingR{
-			ChannelidChannel: related,
+			Channel: related,
 		}
 	} else {
-		o.R.ChannelidChannel = related
+		o.R.Channel = related
 	}
 
 	if related.R == nil {
 		related.R = &channelR{
-			ChannelidCollectionChannelListings: CollectionChannelListingSlice{o},
+			CollectionChannelListings: CollectionChannelListingSlice{o},
 		}
 	} else {
-		related.R.ChannelidCollectionChannelListings = append(related.R.ChannelidCollectionChannelListings, o)
+		related.R.CollectionChannelListings = append(related.R.CollectionChannelListings, o)
 	}
 
 	return nil
 }
 
-// RemoveChannelidChannel relationship.
-// Sets o.R.ChannelidChannel to nil.
+// RemoveChannel relationship.
+// Sets o.R.Channel to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *CollectionChannelListing) RemoveChannelidChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
+func (o *CollectionChannelListing) RemoveChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
 	var err error
 
-	queries.SetScanner(&o.Channelid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("channelid")); err != nil {
+	queries.SetScanner(&o.ChannelID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ChannelidChannel = nil
+		o.R.Channel = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ChannelidCollectionChannelListings {
-		if queries.Equal(o.Channelid, ri.Channelid) {
+	for i, ri := range related.R.CollectionChannelListings {
+		if queries.Equal(o.ChannelID, ri.ChannelID) {
 			continue
 		}
 
-		ln := len(related.R.ChannelidCollectionChannelListings)
+		ln := len(related.R.CollectionChannelListings)
 		if ln > 1 && i < ln-1 {
-			related.R.ChannelidCollectionChannelListings[i] = related.R.ChannelidCollectionChannelListings[ln-1]
+			related.R.CollectionChannelListings[i] = related.R.CollectionChannelListings[ln-1]
 		}
-		related.R.ChannelidCollectionChannelListings = related.R.ChannelidCollectionChannelListings[:ln-1]
+		related.R.CollectionChannelListings = related.R.CollectionChannelListings[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetCollectionidCollection of the collectionChannelListing to the related item.
-// Sets o.R.CollectionidCollection to related.
-// Adds o to related.R.CollectionidCollectionChannelListings.
-func (o *CollectionChannelListing) SetCollectionidCollection(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Collection) error {
+// SetCollection of the collectionChannelListing to the related item.
+// Sets o.R.Collection to related.
+// Adds o to related.R.CollectionChannelListings.
+func (o *CollectionChannelListing) SetCollection(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Collection) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -771,7 +771,7 @@ func (o *CollectionChannelListing) SetCollectionidCollection(ctx context.Context
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"collection_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"collectionid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_id"}),
 		strmangle.WhereClause("\"", "\"", 2, collectionChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -785,54 +785,54 @@ func (o *CollectionChannelListing) SetCollectionidCollection(ctx context.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Collectionid, related.ID)
+	queries.Assign(&o.CollectionID, related.ID)
 	if o.R == nil {
 		o.R = &collectionChannelListingR{
-			CollectionidCollection: related,
+			Collection: related,
 		}
 	} else {
-		o.R.CollectionidCollection = related
+		o.R.Collection = related
 	}
 
 	if related.R == nil {
 		related.R = &collectionR{
-			CollectionidCollectionChannelListings: CollectionChannelListingSlice{o},
+			CollectionChannelListings: CollectionChannelListingSlice{o},
 		}
 	} else {
-		related.R.CollectionidCollectionChannelListings = append(related.R.CollectionidCollectionChannelListings, o)
+		related.R.CollectionChannelListings = append(related.R.CollectionChannelListings, o)
 	}
 
 	return nil
 }
 
-// RemoveCollectionidCollection relationship.
-// Sets o.R.CollectionidCollection to nil.
+// RemoveCollection relationship.
+// Sets o.R.Collection to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *CollectionChannelListing) RemoveCollectionidCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
+func (o *CollectionChannelListing) RemoveCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
 	var err error
 
-	queries.SetScanner(&o.Collectionid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collectionid")); err != nil {
+	queries.SetScanner(&o.CollectionID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.CollectionidCollection = nil
+		o.R.Collection = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.CollectionidCollectionChannelListings {
-		if queries.Equal(o.Collectionid, ri.Collectionid) {
+	for i, ri := range related.R.CollectionChannelListings {
+		if queries.Equal(o.CollectionID, ri.CollectionID) {
 			continue
 		}
 
-		ln := len(related.R.CollectionidCollectionChannelListings)
+		ln := len(related.R.CollectionChannelListings)
 		if ln > 1 && i < ln-1 {
-			related.R.CollectionidCollectionChannelListings[i] = related.R.CollectionidCollectionChannelListings[ln-1]
+			related.R.CollectionChannelListings[i] = related.R.CollectionChannelListings[ln-1]
 		}
-		related.R.CollectionidCollectionChannelListings = related.R.CollectionidCollectionChannelListings[:ln-1]
+		related.R.CollectionChannelListings = related.R.CollectionChannelListings[:ln-1]
 		break
 	}
 	return nil

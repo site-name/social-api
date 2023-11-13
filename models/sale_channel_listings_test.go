@@ -494,7 +494,7 @@ func testSaleChannelListingsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testSaleChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
+func testSaleChannelListingToOneChannelUsingChannel(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testSaleChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	local.Channelid = foreign.ID
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ChannelidChannel().One(ctx, tx)
+	check, err := local.Channel().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testSaleChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
 	})
 
 	slice := SaleChannelListingSlice{&local}
-	if err = local.L.LoadChannelidChannel(ctx, tx, false, (*[]*SaleChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadChannel(ctx, tx, false, (*[]*SaleChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ChannelidChannel = nil
-	if err = local.L.LoadChannelidChannel(ctx, tx, true, &local, nil); err != nil {
+	local.R.Channel = nil
+	if err = local.L.LoadChannel(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testSaleChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
 	}
 }
 
-func testSaleChannelListingToOneSaleUsingSaleidSale(t *testing.T) {
+func testSaleChannelListingToOneSaleUsingSale(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testSaleChannelListingToOneSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Saleid, foreign.ID)
+	queries.Assign(&local.SaleID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.SaleidSale().One(ctx, tx)
+	check, err := local.Sale().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testSaleChannelListingToOneSaleUsingSaleidSale(t *testing.T) {
 	})
 
 	slice := SaleChannelListingSlice{&local}
-	if err = local.L.LoadSaleidSale(ctx, tx, false, (*[]*SaleChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadSale(ctx, tx, false, (*[]*SaleChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.SaleidSale = nil
-	if err = local.L.LoadSaleidSale(ctx, tx, true, &local, nil); err != nil {
+	local.R.Sale = nil
+	if err = local.L.LoadSale(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testSaleChannelListingToOneSaleUsingSaleidSale(t *testing.T) {
 	}
 }
 
-func testSaleChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
+func testSaleChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,35 +645,35 @@ func testSaleChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.T) 
 	}
 
 	for i, x := range []*Channel{&b, &c} {
-		err = a.SetChannelidChannel(ctx, tx, i != 0, x)
+		err = a.SetChannel(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ChannelidChannel != x {
+		if a.R.Channel != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ChannelidSaleChannelListings[0] != &a {
+		if x.R.SaleChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.Channelid != x.ID {
-			t.Error("foreign key was wrong value", a.Channelid)
+		if a.ChannelID != x.ID {
+			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Channelid))
-		reflect.Indirect(reflect.ValueOf(&a.Channelid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ChannelID))
+		reflect.Indirect(reflect.ValueOf(&a.ChannelID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.Channelid != x.ID {
-			t.Error("foreign key was wrong value", a.Channelid, x.ID)
+		if a.ChannelID != x.ID {
+			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-func testSaleChannelListingToOneSetOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleChannelListingToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -702,36 +702,36 @@ func testSaleChannelListingToOneSetOpSaleUsingSaleidSale(t *testing.T) {
 	}
 
 	for i, x := range []*Sale{&b, &c} {
-		err = a.SetSaleidSale(ctx, tx, i != 0, x)
+		err = a.SetSale(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.SaleidSale != x {
+		if a.R.Sale != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.SaleidSaleChannelListings[0] != &a {
+		if x.R.SaleChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Saleid))
-		reflect.Indirect(reflect.ValueOf(&a.Saleid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.SaleID))
+		reflect.Indirect(reflect.ValueOf(&a.SaleID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid, x.ID)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
 	}
 }
 
-func testSaleChannelListingToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleChannelListingToOneRemoveOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -753,15 +753,15 @@ func testSaleChannelListingToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetSaleidSale(ctx, tx, true, &b); err != nil {
+	if err = a.SetSale(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveSaleidSale(ctx, tx, &b); err != nil {
+	if err = a.RemoveSale(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.SaleidSale().Count(ctx, tx)
+	count, err := a.Sale().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -769,15 +769,15 @@ func testSaleChannelListingToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.SaleidSale != nil {
+	if a.R.Sale != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Saleid) {
+	if !queries.IsValuerNil(a.SaleID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.SaleidSaleChannelListings) != 0 {
+	if len(b.R.SaleChannelListings) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -856,7 +856,7 @@ func testSaleChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	saleChannelListingDBTypes = map[string]string{`ID`: `character varying`, `Saleid`: `character varying`, `Channelid`: `character varying`, `Discountvalue`: `double precision`, `Currency`: `text`, `Createat`: `bigint`}
+	saleChannelListingDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `ChannelID`: `character varying`, `DiscountValue`: `double precision`, `Currency`: `text`, `CreateAt`: `bigint`}
 	_                         = bytes.MinRead
 )
 

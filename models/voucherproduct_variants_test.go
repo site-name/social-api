@@ -568,7 +568,7 @@ func testVoucherproductVariantsSelect(t *testing.T) {
 }
 
 var (
-	voucherproductVariantDBTypes = map[string]string{`ID`: `character varying`, `Voucherid`: `character varying`, `Productvariantid`: `character varying`, `Createat`: `bigint`}
+	voucherproductVariantDBTypes = map[string]string{`ID`: `character varying`, `VoucherID`: `character varying`, `ProductVariantID`: `character varying`, `CreateAt`: `bigint`}
 	_                            = bytes.MinRead
 )
 

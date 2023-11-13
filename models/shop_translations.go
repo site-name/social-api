@@ -25,11 +25,11 @@ import (
 // ShopTranslation is an object representing the database table.
 type ShopTranslation struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
+	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
 	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Description  null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Createat     null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat     null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
+	CreateAt     null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt     null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
 
 	R *shopTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,52 +37,52 @@ type ShopTranslation struct {
 
 var ShopTranslationColumns = struct {
 	ID           string
-	Languagecode string
+	LanguageCode string
 	Name         string
 	Description  string
-	Createat     string
-	Updateat     string
+	CreateAt     string
+	UpdateAt     string
 }{
 	ID:           "id",
-	Languagecode: "languagecode",
+	LanguageCode: "language_code",
 	Name:         "name",
 	Description:  "description",
-	Createat:     "createat",
-	Updateat:     "updateat",
+	CreateAt:     "create_at",
+	UpdateAt:     "update_at",
 }
 
 var ShopTranslationTableColumns = struct {
 	ID           string
-	Languagecode string
+	LanguageCode string
 	Name         string
 	Description  string
-	Createat     string
-	Updateat     string
+	CreateAt     string
+	UpdateAt     string
 }{
 	ID:           "shop_translations.id",
-	Languagecode: "shop_translations.languagecode",
+	LanguageCode: "shop_translations.language_code",
 	Name:         "shop_translations.name",
 	Description:  "shop_translations.description",
-	Createat:     "shop_translations.createat",
-	Updateat:     "shop_translations.updateat",
+	CreateAt:     "shop_translations.create_at",
+	UpdateAt:     "shop_translations.update_at",
 }
 
 // Generated where
 
 var ShopTranslationWhere = struct {
 	ID           whereHelperstring
-	Languagecode whereHelpernull_String
+	LanguageCode whereHelpernull_String
 	Name         whereHelpernull_String
 	Description  whereHelpernull_String
-	Createat     whereHelpernull_Int64
-	Updateat     whereHelpernull_Int64
+	CreateAt     whereHelpernull_Int64
+	UpdateAt     whereHelpernull_Int64
 }{
 	ID:           whereHelperstring{field: "\"shop_translations\".\"id\""},
-	Languagecode: whereHelpernull_String{field: "\"shop_translations\".\"languagecode\""},
+	LanguageCode: whereHelpernull_String{field: "\"shop_translations\".\"language_code\""},
 	Name:         whereHelpernull_String{field: "\"shop_translations\".\"name\""},
 	Description:  whereHelpernull_String{field: "\"shop_translations\".\"description\""},
-	Createat:     whereHelpernull_Int64{field: "\"shop_translations\".\"createat\""},
-	Updateat:     whereHelpernull_Int64{field: "\"shop_translations\".\"updateat\""},
+	CreateAt:     whereHelpernull_Int64{field: "\"shop_translations\".\"create_at\""},
+	UpdateAt:     whereHelpernull_Int64{field: "\"shop_translations\".\"update_at\""},
 }
 
 // ShopTranslationRels is where relationship names are stored.
@@ -102,9 +102,9 @@ func (*shopTranslationR) NewStruct() *shopTranslationR {
 type shopTranslationL struct{}
 
 var (
-	shopTranslationAllColumns            = []string{"id", "languagecode", "name", "description", "createat", "updateat"}
+	shopTranslationAllColumns            = []string{"id", "language_code", "name", "description", "create_at", "update_at"}
 	shopTranslationColumnsWithoutDefault = []string{"id"}
-	shopTranslationColumnsWithDefault    = []string{"languagecode", "name", "description", "createat", "updateat"}
+	shopTranslationColumnsWithDefault    = []string{"language_code", "name", "description", "create_at", "update_at"}
 	shopTranslationPrimaryKeyColumns     = []string{"id"}
 	shopTranslationGeneratedColumns      = []string{}
 )

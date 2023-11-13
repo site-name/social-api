@@ -25,30 +25,30 @@ import (
 // Shop is an object representing the database table.
 type Shop struct {
 	ID                                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat                                 null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat                                 null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
+	CreateAt                                 null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt                                 null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
 	Name                                     null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Description                              null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Topmenuid                                null.String `boil:"topmenuid" json:"topmenuid,omitempty" toml:"topmenuid" yaml:"topmenuid,omitempty"`
-	Includetaxesinprice                      null.Bool   `boil:"includetaxesinprice" json:"includetaxesinprice,omitempty" toml:"includetaxesinprice" yaml:"includetaxesinprice,omitempty"`
-	Displaygrossprices                       null.Bool   `boil:"displaygrossprices" json:"displaygrossprices,omitempty" toml:"displaygrossprices" yaml:"displaygrossprices,omitempty"`
-	Chargetaxesonshipping                    null.Bool   `boil:"chargetaxesonshipping" json:"chargetaxesonshipping,omitempty" toml:"chargetaxesonshipping" yaml:"chargetaxesonshipping,omitempty"`
-	Trackinventorybydefault                  null.Bool   `boil:"trackinventorybydefault" json:"trackinventorybydefault,omitempty" toml:"trackinventorybydefault" yaml:"trackinventorybydefault,omitempty"`
-	Defaultweightunit                        null.String `boil:"defaultweightunit" json:"defaultweightunit,omitempty" toml:"defaultweightunit" yaml:"defaultweightunit,omitempty"`
-	Automaticfulfillmentdigitalproducts      null.Bool   `boil:"automaticfulfillmentdigitalproducts" json:"automaticfulfillmentdigitalproducts,omitempty" toml:"automaticfulfillmentdigitalproducts" yaml:"automaticfulfillmentdigitalproducts,omitempty"`
-	Defaultdigitalmaxdownloads               null.Int    `boil:"defaultdigitalmaxdownloads" json:"defaultdigitalmaxdownloads,omitempty" toml:"defaultdigitalmaxdownloads" yaml:"defaultdigitalmaxdownloads,omitempty"`
-	Defaultdigitalurlvaliddays               null.Int    `boil:"defaultdigitalurlvaliddays" json:"defaultdigitalurlvaliddays,omitempty" toml:"defaultdigitalurlvaliddays" yaml:"defaultdigitalurlvaliddays,omitempty"`
-	Addressid                                null.String `boil:"addressid" json:"addressid,omitempty" toml:"addressid" yaml:"addressid,omitempty"`
-	Defaultmailsendername                    null.String `boil:"defaultmailsendername" json:"defaultmailsendername,omitempty" toml:"defaultmailsendername" yaml:"defaultmailsendername,omitempty"`
-	Defaultmailsenderaddress                 null.String `boil:"defaultmailsenderaddress" json:"defaultmailsenderaddress,omitempty" toml:"defaultmailsenderaddress" yaml:"defaultmailsenderaddress,omitempty"`
-	Customersetpasswordurl                   null.String `boil:"customersetpasswordurl" json:"customersetpasswordurl,omitempty" toml:"customersetpasswordurl" yaml:"customersetpasswordurl,omitempty"`
-	Automaticallyconfirmallneworders         null.Bool   `boil:"automaticallyconfirmallneworders" json:"automaticallyconfirmallneworders,omitempty" toml:"automaticallyconfirmallneworders" yaml:"automaticallyconfirmallneworders,omitempty"`
-	Fulfillmentautoapprove                   null.Bool   `boil:"fulfillmentautoapprove" json:"fulfillmentautoapprove,omitempty" toml:"fulfillmentautoapprove" yaml:"fulfillmentautoapprove,omitempty"`
-	Fulfillmentallowunpaid                   null.Bool   `boil:"fulfillmentallowunpaid" json:"fulfillmentallowunpaid,omitempty" toml:"fulfillmentallowunpaid" yaml:"fulfillmentallowunpaid,omitempty"`
-	Giftcardexpirytype                       null.String `boil:"giftcardexpirytype" json:"giftcardexpirytype,omitempty" toml:"giftcardexpirytype" yaml:"giftcardexpirytype,omitempty"`
-	Giftcardexpiryperiodtype                 null.String `boil:"giftcardexpiryperiodtype" json:"giftcardexpiryperiodtype,omitempty" toml:"giftcardexpiryperiodtype" yaml:"giftcardexpiryperiodtype,omitempty"`
-	Giftcardexpiryperiod                     null.Int    `boil:"giftcardexpiryperiod" json:"giftcardexpiryperiod,omitempty" toml:"giftcardexpiryperiod" yaml:"giftcardexpiryperiod,omitempty"`
-	Automaticallyfulfillnonshippablegiftcard null.Bool   `boil:"automaticallyfulfillnonshippablegiftcard" json:"automaticallyfulfillnonshippablegiftcard,omitempty" toml:"automaticallyfulfillnonshippablegiftcard" yaml:"automaticallyfulfillnonshippablegiftcard,omitempty"`
+	TopMenuID                                null.String `boil:"top_menu_id" json:"top_menu_id,omitempty" toml:"top_menu_id" yaml:"top_menu_id,omitempty"`
+	IncludeTaxesInPrice                      null.Bool   `boil:"include_taxes_in_price" json:"include_taxes_in_price,omitempty" toml:"include_taxes_in_price" yaml:"include_taxes_in_price,omitempty"`
+	DisplayGrossPrices                       null.Bool   `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
+	ChargeTaxesOnShipping                    null.Bool   `boil:"charge_taxes_on_shipping" json:"charge_taxes_on_shipping,omitempty" toml:"charge_taxes_on_shipping" yaml:"charge_taxes_on_shipping,omitempty"`
+	TrackInventoryByDefault                  null.Bool   `boil:"track_inventory_by_default" json:"track_inventory_by_default,omitempty" toml:"track_inventory_by_default" yaml:"track_inventory_by_default,omitempty"`
+	DefaultWeightUnit                        null.String `boil:"default_weight_unit" json:"default_weight_unit,omitempty" toml:"default_weight_unit" yaml:"default_weight_unit,omitempty"`
+	AutomaticFulfillmentDigitalProducts      null.Bool   `boil:"automatic_fulfillment_digital_products" json:"automatic_fulfillment_digital_products,omitempty" toml:"automatic_fulfillment_digital_products" yaml:"automatic_fulfillment_digital_products,omitempty"`
+	DefaultDigitalMaxDownloads               null.Int    `boil:"default_digital_max_downloads" json:"default_digital_max_downloads,omitempty" toml:"default_digital_max_downloads" yaml:"default_digital_max_downloads,omitempty"`
+	DefaultDigitalURLValidDays               null.Int    `boil:"default_digital_url_valid_days" json:"default_digital_url_valid_days,omitempty" toml:"default_digital_url_valid_days" yaml:"default_digital_url_valid_days,omitempty"`
+	AddressID                                null.String `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
+	DefaultMailSenderName                    null.String `boil:"default_mail_sender_name" json:"default_mail_sender_name,omitempty" toml:"default_mail_sender_name" yaml:"default_mail_sender_name,omitempty"`
+	DefaultMailSenderAddress                 null.String `boil:"default_mail_sender_address" json:"default_mail_sender_address,omitempty" toml:"default_mail_sender_address" yaml:"default_mail_sender_address,omitempty"`
+	CustomerSetPasswordURL                   null.String `boil:"customer_set_password_url" json:"customer_set_password_url,omitempty" toml:"customer_set_password_url" yaml:"customer_set_password_url,omitempty"`
+	AutomaticallyConfirmAllNewOrders         null.Bool   `boil:"automatically_confirm_all_new_orders" json:"automatically_confirm_all_new_orders,omitempty" toml:"automatically_confirm_all_new_orders" yaml:"automatically_confirm_all_new_orders,omitempty"`
+	FulfillmentAutoApprove                   null.Bool   `boil:"fulfillment_auto_approve" json:"fulfillment_auto_approve,omitempty" toml:"fulfillment_auto_approve" yaml:"fulfillment_auto_approve,omitempty"`
+	FulfillmentAllowUnpaid                   null.Bool   `boil:"fulfillment_allow_unpaid" json:"fulfillment_allow_unpaid,omitempty" toml:"fulfillment_allow_unpaid" yaml:"fulfillment_allow_unpaid,omitempty"`
+	GiftCardExpiryType                       null.String `boil:"gift_card_expiry_type" json:"gift_card_expiry_type,omitempty" toml:"gift_card_expiry_type" yaml:"gift_card_expiry_type,omitempty"`
+	GiftCardExpiryPeriodType                 null.String `boil:"gift_card_expiry_period_type" json:"gift_card_expiry_period_type,omitempty" toml:"gift_card_expiry_period_type" yaml:"gift_card_expiry_period_type,omitempty"`
+	GiftCardExpiryPeriod                     null.Int    `boil:"gift_card_expiry_period" json:"gift_card_expiry_period,omitempty" toml:"gift_card_expiry_period" yaml:"gift_card_expiry_period,omitempty"`
+	AutomaticallyFulfillNonShippableGiftCard null.Bool   `boil:"automatically_fulfill_non_shippable_gift_card" json:"automatically_fulfill_non_shippable_gift_card,omitempty" toml:"automatically_fulfill_non_shippable_gift_card" yaml:"automatically_fulfill_non_shippable_gift_card,omitempty"`
 
 	R *shopR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,181 +56,181 @@ type Shop struct {
 
 var ShopColumns = struct {
 	ID                                       string
-	Createat                                 string
-	Updateat                                 string
+	CreateAt                                 string
+	UpdateAt                                 string
 	Name                                     string
 	Description                              string
-	Topmenuid                                string
-	Includetaxesinprice                      string
-	Displaygrossprices                       string
-	Chargetaxesonshipping                    string
-	Trackinventorybydefault                  string
-	Defaultweightunit                        string
-	Automaticfulfillmentdigitalproducts      string
-	Defaultdigitalmaxdownloads               string
-	Defaultdigitalurlvaliddays               string
-	Addressid                                string
-	Defaultmailsendername                    string
-	Defaultmailsenderaddress                 string
-	Customersetpasswordurl                   string
-	Automaticallyconfirmallneworders         string
-	Fulfillmentautoapprove                   string
-	Fulfillmentallowunpaid                   string
-	Giftcardexpirytype                       string
-	Giftcardexpiryperiodtype                 string
-	Giftcardexpiryperiod                     string
-	Automaticallyfulfillnonshippablegiftcard string
+	TopMenuID                                string
+	IncludeTaxesInPrice                      string
+	DisplayGrossPrices                       string
+	ChargeTaxesOnShipping                    string
+	TrackInventoryByDefault                  string
+	DefaultWeightUnit                        string
+	AutomaticFulfillmentDigitalProducts      string
+	DefaultDigitalMaxDownloads               string
+	DefaultDigitalURLValidDays               string
+	AddressID                                string
+	DefaultMailSenderName                    string
+	DefaultMailSenderAddress                 string
+	CustomerSetPasswordURL                   string
+	AutomaticallyConfirmAllNewOrders         string
+	FulfillmentAutoApprove                   string
+	FulfillmentAllowUnpaid                   string
+	GiftCardExpiryType                       string
+	GiftCardExpiryPeriodType                 string
+	GiftCardExpiryPeriod                     string
+	AutomaticallyFulfillNonShippableGiftCard string
 }{
 	ID:                                       "id",
-	Createat:                                 "createat",
-	Updateat:                                 "updateat",
+	CreateAt:                                 "create_at",
+	UpdateAt:                                 "update_at",
 	Name:                                     "name",
 	Description:                              "description",
-	Topmenuid:                                "topmenuid",
-	Includetaxesinprice:                      "includetaxesinprice",
-	Displaygrossprices:                       "displaygrossprices",
-	Chargetaxesonshipping:                    "chargetaxesonshipping",
-	Trackinventorybydefault:                  "trackinventorybydefault",
-	Defaultweightunit:                        "defaultweightunit",
-	Automaticfulfillmentdigitalproducts:      "automaticfulfillmentdigitalproducts",
-	Defaultdigitalmaxdownloads:               "defaultdigitalmaxdownloads",
-	Defaultdigitalurlvaliddays:               "defaultdigitalurlvaliddays",
-	Addressid:                                "addressid",
-	Defaultmailsendername:                    "defaultmailsendername",
-	Defaultmailsenderaddress:                 "defaultmailsenderaddress",
-	Customersetpasswordurl:                   "customersetpasswordurl",
-	Automaticallyconfirmallneworders:         "automaticallyconfirmallneworders",
-	Fulfillmentautoapprove:                   "fulfillmentautoapprove",
-	Fulfillmentallowunpaid:                   "fulfillmentallowunpaid",
-	Giftcardexpirytype:                       "giftcardexpirytype",
-	Giftcardexpiryperiodtype:                 "giftcardexpiryperiodtype",
-	Giftcardexpiryperiod:                     "giftcardexpiryperiod",
-	Automaticallyfulfillnonshippablegiftcard: "automaticallyfulfillnonshippablegiftcard",
+	TopMenuID:                                "top_menu_id",
+	IncludeTaxesInPrice:                      "include_taxes_in_price",
+	DisplayGrossPrices:                       "display_gross_prices",
+	ChargeTaxesOnShipping:                    "charge_taxes_on_shipping",
+	TrackInventoryByDefault:                  "track_inventory_by_default",
+	DefaultWeightUnit:                        "default_weight_unit",
+	AutomaticFulfillmentDigitalProducts:      "automatic_fulfillment_digital_products",
+	DefaultDigitalMaxDownloads:               "default_digital_max_downloads",
+	DefaultDigitalURLValidDays:               "default_digital_url_valid_days",
+	AddressID:                                "address_id",
+	DefaultMailSenderName:                    "default_mail_sender_name",
+	DefaultMailSenderAddress:                 "default_mail_sender_address",
+	CustomerSetPasswordURL:                   "customer_set_password_url",
+	AutomaticallyConfirmAllNewOrders:         "automatically_confirm_all_new_orders",
+	FulfillmentAutoApprove:                   "fulfillment_auto_approve",
+	FulfillmentAllowUnpaid:                   "fulfillment_allow_unpaid",
+	GiftCardExpiryType:                       "gift_card_expiry_type",
+	GiftCardExpiryPeriodType:                 "gift_card_expiry_period_type",
+	GiftCardExpiryPeriod:                     "gift_card_expiry_period",
+	AutomaticallyFulfillNonShippableGiftCard: "automatically_fulfill_non_shippable_gift_card",
 }
 
 var ShopTableColumns = struct {
 	ID                                       string
-	Createat                                 string
-	Updateat                                 string
+	CreateAt                                 string
+	UpdateAt                                 string
 	Name                                     string
 	Description                              string
-	Topmenuid                                string
-	Includetaxesinprice                      string
-	Displaygrossprices                       string
-	Chargetaxesonshipping                    string
-	Trackinventorybydefault                  string
-	Defaultweightunit                        string
-	Automaticfulfillmentdigitalproducts      string
-	Defaultdigitalmaxdownloads               string
-	Defaultdigitalurlvaliddays               string
-	Addressid                                string
-	Defaultmailsendername                    string
-	Defaultmailsenderaddress                 string
-	Customersetpasswordurl                   string
-	Automaticallyconfirmallneworders         string
-	Fulfillmentautoapprove                   string
-	Fulfillmentallowunpaid                   string
-	Giftcardexpirytype                       string
-	Giftcardexpiryperiodtype                 string
-	Giftcardexpiryperiod                     string
-	Automaticallyfulfillnonshippablegiftcard string
+	TopMenuID                                string
+	IncludeTaxesInPrice                      string
+	DisplayGrossPrices                       string
+	ChargeTaxesOnShipping                    string
+	TrackInventoryByDefault                  string
+	DefaultWeightUnit                        string
+	AutomaticFulfillmentDigitalProducts      string
+	DefaultDigitalMaxDownloads               string
+	DefaultDigitalURLValidDays               string
+	AddressID                                string
+	DefaultMailSenderName                    string
+	DefaultMailSenderAddress                 string
+	CustomerSetPasswordURL                   string
+	AutomaticallyConfirmAllNewOrders         string
+	FulfillmentAutoApprove                   string
+	FulfillmentAllowUnpaid                   string
+	GiftCardExpiryType                       string
+	GiftCardExpiryPeriodType                 string
+	GiftCardExpiryPeriod                     string
+	AutomaticallyFulfillNonShippableGiftCard string
 }{
 	ID:                                       "shops.id",
-	Createat:                                 "shops.createat",
-	Updateat:                                 "shops.updateat",
+	CreateAt:                                 "shops.create_at",
+	UpdateAt:                                 "shops.update_at",
 	Name:                                     "shops.name",
 	Description:                              "shops.description",
-	Topmenuid:                                "shops.topmenuid",
-	Includetaxesinprice:                      "shops.includetaxesinprice",
-	Displaygrossprices:                       "shops.displaygrossprices",
-	Chargetaxesonshipping:                    "shops.chargetaxesonshipping",
-	Trackinventorybydefault:                  "shops.trackinventorybydefault",
-	Defaultweightunit:                        "shops.defaultweightunit",
-	Automaticfulfillmentdigitalproducts:      "shops.automaticfulfillmentdigitalproducts",
-	Defaultdigitalmaxdownloads:               "shops.defaultdigitalmaxdownloads",
-	Defaultdigitalurlvaliddays:               "shops.defaultdigitalurlvaliddays",
-	Addressid:                                "shops.addressid",
-	Defaultmailsendername:                    "shops.defaultmailsendername",
-	Defaultmailsenderaddress:                 "shops.defaultmailsenderaddress",
-	Customersetpasswordurl:                   "shops.customersetpasswordurl",
-	Automaticallyconfirmallneworders:         "shops.automaticallyconfirmallneworders",
-	Fulfillmentautoapprove:                   "shops.fulfillmentautoapprove",
-	Fulfillmentallowunpaid:                   "shops.fulfillmentallowunpaid",
-	Giftcardexpirytype:                       "shops.giftcardexpirytype",
-	Giftcardexpiryperiodtype:                 "shops.giftcardexpiryperiodtype",
-	Giftcardexpiryperiod:                     "shops.giftcardexpiryperiod",
-	Automaticallyfulfillnonshippablegiftcard: "shops.automaticallyfulfillnonshippablegiftcard",
+	TopMenuID:                                "shops.top_menu_id",
+	IncludeTaxesInPrice:                      "shops.include_taxes_in_price",
+	DisplayGrossPrices:                       "shops.display_gross_prices",
+	ChargeTaxesOnShipping:                    "shops.charge_taxes_on_shipping",
+	TrackInventoryByDefault:                  "shops.track_inventory_by_default",
+	DefaultWeightUnit:                        "shops.default_weight_unit",
+	AutomaticFulfillmentDigitalProducts:      "shops.automatic_fulfillment_digital_products",
+	DefaultDigitalMaxDownloads:               "shops.default_digital_max_downloads",
+	DefaultDigitalURLValidDays:               "shops.default_digital_url_valid_days",
+	AddressID:                                "shops.address_id",
+	DefaultMailSenderName:                    "shops.default_mail_sender_name",
+	DefaultMailSenderAddress:                 "shops.default_mail_sender_address",
+	CustomerSetPasswordURL:                   "shops.customer_set_password_url",
+	AutomaticallyConfirmAllNewOrders:         "shops.automatically_confirm_all_new_orders",
+	FulfillmentAutoApprove:                   "shops.fulfillment_auto_approve",
+	FulfillmentAllowUnpaid:                   "shops.fulfillment_allow_unpaid",
+	GiftCardExpiryType:                       "shops.gift_card_expiry_type",
+	GiftCardExpiryPeriodType:                 "shops.gift_card_expiry_period_type",
+	GiftCardExpiryPeriod:                     "shops.gift_card_expiry_period",
+	AutomaticallyFulfillNonShippableGiftCard: "shops.automatically_fulfill_non_shippable_gift_card",
 }
 
 // Generated where
 
 var ShopWhere = struct {
 	ID                                       whereHelperstring
-	Createat                                 whereHelpernull_Int64
-	Updateat                                 whereHelpernull_Int64
+	CreateAt                                 whereHelpernull_Int64
+	UpdateAt                                 whereHelpernull_Int64
 	Name                                     whereHelpernull_String
 	Description                              whereHelpernull_String
-	Topmenuid                                whereHelpernull_String
-	Includetaxesinprice                      whereHelpernull_Bool
-	Displaygrossprices                       whereHelpernull_Bool
-	Chargetaxesonshipping                    whereHelpernull_Bool
-	Trackinventorybydefault                  whereHelpernull_Bool
-	Defaultweightunit                        whereHelpernull_String
-	Automaticfulfillmentdigitalproducts      whereHelpernull_Bool
-	Defaultdigitalmaxdownloads               whereHelpernull_Int
-	Defaultdigitalurlvaliddays               whereHelpernull_Int
-	Addressid                                whereHelpernull_String
-	Defaultmailsendername                    whereHelpernull_String
-	Defaultmailsenderaddress                 whereHelpernull_String
-	Customersetpasswordurl                   whereHelpernull_String
-	Automaticallyconfirmallneworders         whereHelpernull_Bool
-	Fulfillmentautoapprove                   whereHelpernull_Bool
-	Fulfillmentallowunpaid                   whereHelpernull_Bool
-	Giftcardexpirytype                       whereHelpernull_String
-	Giftcardexpiryperiodtype                 whereHelpernull_String
-	Giftcardexpiryperiod                     whereHelpernull_Int
-	Automaticallyfulfillnonshippablegiftcard whereHelpernull_Bool
+	TopMenuID                                whereHelpernull_String
+	IncludeTaxesInPrice                      whereHelpernull_Bool
+	DisplayGrossPrices                       whereHelpernull_Bool
+	ChargeTaxesOnShipping                    whereHelpernull_Bool
+	TrackInventoryByDefault                  whereHelpernull_Bool
+	DefaultWeightUnit                        whereHelpernull_String
+	AutomaticFulfillmentDigitalProducts      whereHelpernull_Bool
+	DefaultDigitalMaxDownloads               whereHelpernull_Int
+	DefaultDigitalURLValidDays               whereHelpernull_Int
+	AddressID                                whereHelpernull_String
+	DefaultMailSenderName                    whereHelpernull_String
+	DefaultMailSenderAddress                 whereHelpernull_String
+	CustomerSetPasswordURL                   whereHelpernull_String
+	AutomaticallyConfirmAllNewOrders         whereHelpernull_Bool
+	FulfillmentAutoApprove                   whereHelpernull_Bool
+	FulfillmentAllowUnpaid                   whereHelpernull_Bool
+	GiftCardExpiryType                       whereHelpernull_String
+	GiftCardExpiryPeriodType                 whereHelpernull_String
+	GiftCardExpiryPeriod                     whereHelpernull_Int
+	AutomaticallyFulfillNonShippableGiftCard whereHelpernull_Bool
 }{
 	ID:                                       whereHelperstring{field: "\"shops\".\"id\""},
-	Createat:                                 whereHelpernull_Int64{field: "\"shops\".\"createat\""},
-	Updateat:                                 whereHelpernull_Int64{field: "\"shops\".\"updateat\""},
+	CreateAt:                                 whereHelpernull_Int64{field: "\"shops\".\"create_at\""},
+	UpdateAt:                                 whereHelpernull_Int64{field: "\"shops\".\"update_at\""},
 	Name:                                     whereHelpernull_String{field: "\"shops\".\"name\""},
 	Description:                              whereHelpernull_String{field: "\"shops\".\"description\""},
-	Topmenuid:                                whereHelpernull_String{field: "\"shops\".\"topmenuid\""},
-	Includetaxesinprice:                      whereHelpernull_Bool{field: "\"shops\".\"includetaxesinprice\""},
-	Displaygrossprices:                       whereHelpernull_Bool{field: "\"shops\".\"displaygrossprices\""},
-	Chargetaxesonshipping:                    whereHelpernull_Bool{field: "\"shops\".\"chargetaxesonshipping\""},
-	Trackinventorybydefault:                  whereHelpernull_Bool{field: "\"shops\".\"trackinventorybydefault\""},
-	Defaultweightunit:                        whereHelpernull_String{field: "\"shops\".\"defaultweightunit\""},
-	Automaticfulfillmentdigitalproducts:      whereHelpernull_Bool{field: "\"shops\".\"automaticfulfillmentdigitalproducts\""},
-	Defaultdigitalmaxdownloads:               whereHelpernull_Int{field: "\"shops\".\"defaultdigitalmaxdownloads\""},
-	Defaultdigitalurlvaliddays:               whereHelpernull_Int{field: "\"shops\".\"defaultdigitalurlvaliddays\""},
-	Addressid:                                whereHelpernull_String{field: "\"shops\".\"addressid\""},
-	Defaultmailsendername:                    whereHelpernull_String{field: "\"shops\".\"defaultmailsendername\""},
-	Defaultmailsenderaddress:                 whereHelpernull_String{field: "\"shops\".\"defaultmailsenderaddress\""},
-	Customersetpasswordurl:                   whereHelpernull_String{field: "\"shops\".\"customersetpasswordurl\""},
-	Automaticallyconfirmallneworders:         whereHelpernull_Bool{field: "\"shops\".\"automaticallyconfirmallneworders\""},
-	Fulfillmentautoapprove:                   whereHelpernull_Bool{field: "\"shops\".\"fulfillmentautoapprove\""},
-	Fulfillmentallowunpaid:                   whereHelpernull_Bool{field: "\"shops\".\"fulfillmentallowunpaid\""},
-	Giftcardexpirytype:                       whereHelpernull_String{field: "\"shops\".\"giftcardexpirytype\""},
-	Giftcardexpiryperiodtype:                 whereHelpernull_String{field: "\"shops\".\"giftcardexpiryperiodtype\""},
-	Giftcardexpiryperiod:                     whereHelpernull_Int{field: "\"shops\".\"giftcardexpiryperiod\""},
-	Automaticallyfulfillnonshippablegiftcard: whereHelpernull_Bool{field: "\"shops\".\"automaticallyfulfillnonshippablegiftcard\""},
+	TopMenuID:                                whereHelpernull_String{field: "\"shops\".\"top_menu_id\""},
+	IncludeTaxesInPrice:                      whereHelpernull_Bool{field: "\"shops\".\"include_taxes_in_price\""},
+	DisplayGrossPrices:                       whereHelpernull_Bool{field: "\"shops\".\"display_gross_prices\""},
+	ChargeTaxesOnShipping:                    whereHelpernull_Bool{field: "\"shops\".\"charge_taxes_on_shipping\""},
+	TrackInventoryByDefault:                  whereHelpernull_Bool{field: "\"shops\".\"track_inventory_by_default\""},
+	DefaultWeightUnit:                        whereHelpernull_String{field: "\"shops\".\"default_weight_unit\""},
+	AutomaticFulfillmentDigitalProducts:      whereHelpernull_Bool{field: "\"shops\".\"automatic_fulfillment_digital_products\""},
+	DefaultDigitalMaxDownloads:               whereHelpernull_Int{field: "\"shops\".\"default_digital_max_downloads\""},
+	DefaultDigitalURLValidDays:               whereHelpernull_Int{field: "\"shops\".\"default_digital_url_valid_days\""},
+	AddressID:                                whereHelpernull_String{field: "\"shops\".\"address_id\""},
+	DefaultMailSenderName:                    whereHelpernull_String{field: "\"shops\".\"default_mail_sender_name\""},
+	DefaultMailSenderAddress:                 whereHelpernull_String{field: "\"shops\".\"default_mail_sender_address\""},
+	CustomerSetPasswordURL:                   whereHelpernull_String{field: "\"shops\".\"customer_set_password_url\""},
+	AutomaticallyConfirmAllNewOrders:         whereHelpernull_Bool{field: "\"shops\".\"automatically_confirm_all_new_orders\""},
+	FulfillmentAutoApprove:                   whereHelpernull_Bool{field: "\"shops\".\"fulfillment_auto_approve\""},
+	FulfillmentAllowUnpaid:                   whereHelpernull_Bool{field: "\"shops\".\"fulfillment_allow_unpaid\""},
+	GiftCardExpiryType:                       whereHelpernull_String{field: "\"shops\".\"gift_card_expiry_type\""},
+	GiftCardExpiryPeriodType:                 whereHelpernull_String{field: "\"shops\".\"gift_card_expiry_period_type\""},
+	GiftCardExpiryPeriod:                     whereHelpernull_Int{field: "\"shops\".\"gift_card_expiry_period\""},
+	AutomaticallyFulfillNonShippableGiftCard: whereHelpernull_Bool{field: "\"shops\".\"automatically_fulfill_non_shippable_gift_card\""},
 }
 
 // ShopRels is where relationship names are stored.
 var ShopRels = struct {
-	AddressidAddress string
-	TopmenuidMenu    string
+	Address string
+	TopMenu string
 }{
-	AddressidAddress: "AddressidAddress",
-	TopmenuidMenu:    "TopmenuidMenu",
+	Address: "Address",
+	TopMenu: "TopMenu",
 }
 
 // shopR is where relationships are stored.
 type shopR struct {
-	AddressidAddress *Address `boil:"AddressidAddress" json:"AddressidAddress" toml:"AddressidAddress" yaml:"AddressidAddress"`
-	TopmenuidMenu    *Menu    `boil:"TopmenuidMenu" json:"TopmenuidMenu" toml:"TopmenuidMenu" yaml:"TopmenuidMenu"`
+	Address *Address `boil:"Address" json:"Address" toml:"Address" yaml:"Address"`
+	TopMenu *Menu    `boil:"TopMenu" json:"TopMenu" toml:"TopMenu" yaml:"TopMenu"`
 }
 
 // NewStruct creates a new relationship struct
@@ -238,27 +238,27 @@ func (*shopR) NewStruct() *shopR {
 	return &shopR{}
 }
 
-func (r *shopR) GetAddressidAddress() *Address {
+func (r *shopR) GetAddress() *Address {
 	if r == nil {
 		return nil
 	}
-	return r.AddressidAddress
+	return r.Address
 }
 
-func (r *shopR) GetTopmenuidMenu() *Menu {
+func (r *shopR) GetTopMenu() *Menu {
 	if r == nil {
 		return nil
 	}
-	return r.TopmenuidMenu
+	return r.TopMenu
 }
 
 // shopL is where Load methods for each relationship are stored.
 type shopL struct{}
 
 var (
-	shopAllColumns            = []string{"id", "createat", "updateat", "name", "description", "topmenuid", "includetaxesinprice", "displaygrossprices", "chargetaxesonshipping", "trackinventorybydefault", "defaultweightunit", "automaticfulfillmentdigitalproducts", "defaultdigitalmaxdownloads", "defaultdigitalurlvaliddays", "addressid", "defaultmailsendername", "defaultmailsenderaddress", "customersetpasswordurl", "automaticallyconfirmallneworders", "fulfillmentautoapprove", "fulfillmentallowunpaid", "giftcardexpirytype", "giftcardexpiryperiodtype", "giftcardexpiryperiod", "automaticallyfulfillnonshippablegiftcard"}
+	shopAllColumns            = []string{"id", "create_at", "update_at", "name", "description", "top_menu_id", "include_taxes_in_price", "display_gross_prices", "charge_taxes_on_shipping", "track_inventory_by_default", "default_weight_unit", "automatic_fulfillment_digital_products", "default_digital_max_downloads", "default_digital_url_valid_days", "address_id", "default_mail_sender_name", "default_mail_sender_address", "customer_set_password_url", "automatically_confirm_all_new_orders", "fulfillment_auto_approve", "fulfillment_allow_unpaid", "gift_card_expiry_type", "gift_card_expiry_period_type", "gift_card_expiry_period", "automatically_fulfill_non_shippable_gift_card"}
 	shopColumnsWithoutDefault = []string{"id"}
-	shopColumnsWithDefault    = []string{"createat", "updateat", "name", "description", "topmenuid", "includetaxesinprice", "displaygrossprices", "chargetaxesonshipping", "trackinventorybydefault", "defaultweightunit", "automaticfulfillmentdigitalproducts", "defaultdigitalmaxdownloads", "defaultdigitalurlvaliddays", "addressid", "defaultmailsendername", "defaultmailsenderaddress", "customersetpasswordurl", "automaticallyconfirmallneworders", "fulfillmentautoapprove", "fulfillmentallowunpaid", "giftcardexpirytype", "giftcardexpiryperiodtype", "giftcardexpiryperiod", "automaticallyfulfillnonshippablegiftcard"}
+	shopColumnsWithDefault    = []string{"create_at", "update_at", "name", "description", "top_menu_id", "include_taxes_in_price", "display_gross_prices", "charge_taxes_on_shipping", "track_inventory_by_default", "default_weight_unit", "automatic_fulfillment_digital_products", "default_digital_max_downloads", "default_digital_url_valid_days", "address_id", "default_mail_sender_name", "default_mail_sender_address", "customer_set_password_url", "automatically_confirm_all_new_orders", "fulfillment_auto_approve", "fulfillment_allow_unpaid", "gift_card_expiry_type", "gift_card_expiry_period_type", "gift_card_expiry_period", "automatically_fulfill_non_shippable_gift_card"}
 	shopPrimaryKeyColumns     = []string{"id"}
 	shopGeneratedColumns      = []string{}
 )
@@ -541,10 +541,10 @@ func (q shopQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// AddressidAddress pointed to by the foreign key.
-func (o *Shop) AddressidAddress(mods ...qm.QueryMod) addressQuery {
+// Address pointed to by the foreign key.
+func (o *Shop) Address(mods ...qm.QueryMod) addressQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Addressid),
+		qm.Where("\"id\" = ?", o.AddressID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -552,10 +552,10 @@ func (o *Shop) AddressidAddress(mods ...qm.QueryMod) addressQuery {
 	return Addresses(queryMods...)
 }
 
-// TopmenuidMenu pointed to by the foreign key.
-func (o *Shop) TopmenuidMenu(mods ...qm.QueryMod) menuQuery {
+// TopMenu pointed to by the foreign key.
+func (o *Shop) TopMenu(mods ...qm.QueryMod) menuQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Topmenuid),
+		qm.Where("\"id\" = ?", o.TopMenuID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -563,9 +563,9 @@ func (o *Shop) TopmenuidMenu(mods ...qm.QueryMod) menuQuery {
 	return Menus(queryMods...)
 }
 
-// LoadAddressidAddress allows an eager lookup of values, cached into the
+// LoadAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shopL) LoadAddressidAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShop interface{}, mods queries.Applicator) error {
+func (shopL) LoadAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShop interface{}, mods queries.Applicator) error {
 	var slice []*Shop
 	var object *Shop
 
@@ -596,8 +596,8 @@ func (shopL) LoadAddressidAddress(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &shopR{}
 		}
-		if !queries.IsNil(object.Addressid) {
-			args = append(args, object.Addressid)
+		if !queries.IsNil(object.AddressID) {
+			args = append(args, object.AddressID)
 		}
 
 	} else {
@@ -608,13 +608,13 @@ func (shopL) LoadAddressidAddress(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Addressid) {
+				if queries.Equal(a, obj.AddressID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Addressid) {
-				args = append(args, obj.Addressid)
+			if !queries.IsNil(obj.AddressID) {
+				args = append(args, obj.AddressID)
 			}
 
 		}
@@ -663,22 +663,22 @@ func (shopL) LoadAddressidAddress(ctx context.Context, e boil.ContextExecutor, s
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.AddressidAddress = foreign
+		object.R.Address = foreign
 		if foreign.R == nil {
 			foreign.R = &addressR{}
 		}
-		foreign.R.AddressidShops = append(foreign.R.AddressidShops, object)
+		foreign.R.Shops = append(foreign.R.Shops, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Addressid, foreign.ID) {
-				local.R.AddressidAddress = foreign
+			if queries.Equal(local.AddressID, foreign.ID) {
+				local.R.Address = foreign
 				if foreign.R == nil {
 					foreign.R = &addressR{}
 				}
-				foreign.R.AddressidShops = append(foreign.R.AddressidShops, local)
+				foreign.R.Shops = append(foreign.R.Shops, local)
 				break
 			}
 		}
@@ -687,9 +687,9 @@ func (shopL) LoadAddressidAddress(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadTopmenuidMenu allows an eager lookup of values, cached into the
+// LoadTopMenu allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shopL) LoadTopmenuidMenu(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShop interface{}, mods queries.Applicator) error {
+func (shopL) LoadTopMenu(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShop interface{}, mods queries.Applicator) error {
 	var slice []*Shop
 	var object *Shop
 
@@ -720,8 +720,8 @@ func (shopL) LoadTopmenuidMenu(ctx context.Context, e boil.ContextExecutor, sing
 		if object.R == nil {
 			object.R = &shopR{}
 		}
-		if !queries.IsNil(object.Topmenuid) {
-			args = append(args, object.Topmenuid)
+		if !queries.IsNil(object.TopMenuID) {
+			args = append(args, object.TopMenuID)
 		}
 
 	} else {
@@ -732,13 +732,13 @@ func (shopL) LoadTopmenuidMenu(ctx context.Context, e boil.ContextExecutor, sing
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Topmenuid) {
+				if queries.Equal(a, obj.TopMenuID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Topmenuid) {
-				args = append(args, obj.Topmenuid)
+			if !queries.IsNil(obj.TopMenuID) {
+				args = append(args, obj.TopMenuID)
 			}
 
 		}
@@ -787,22 +787,22 @@ func (shopL) LoadTopmenuidMenu(ctx context.Context, e boil.ContextExecutor, sing
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.TopmenuidMenu = foreign
+		object.R.TopMenu = foreign
 		if foreign.R == nil {
 			foreign.R = &menuR{}
 		}
-		foreign.R.TopmenuidShops = append(foreign.R.TopmenuidShops, object)
+		foreign.R.TopMenuShops = append(foreign.R.TopMenuShops, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Topmenuid, foreign.ID) {
-				local.R.TopmenuidMenu = foreign
+			if queries.Equal(local.TopMenuID, foreign.ID) {
+				local.R.TopMenu = foreign
 				if foreign.R == nil {
 					foreign.R = &menuR{}
 				}
-				foreign.R.TopmenuidShops = append(foreign.R.TopmenuidShops, local)
+				foreign.R.TopMenuShops = append(foreign.R.TopMenuShops, local)
 				break
 			}
 		}
@@ -811,10 +811,10 @@ func (shopL) LoadTopmenuidMenu(ctx context.Context, e boil.ContextExecutor, sing
 	return nil
 }
 
-// SetAddressidAddress of the shop to the related item.
-// Sets o.R.AddressidAddress to related.
-// Adds o to related.R.AddressidShops.
-func (o *Shop) SetAddressidAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+// SetAddress of the shop to the related item.
+// Sets o.R.Address to related.
+// Adds o to related.R.Shops.
+func (o *Shop) SetAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -824,7 +824,7 @@ func (o *Shop) SetAddressidAddress(ctx context.Context, exec boil.ContextExecuto
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"shops\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"addressid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -838,63 +838,63 @@ func (o *Shop) SetAddressidAddress(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Addressid, related.ID)
+	queries.Assign(&o.AddressID, related.ID)
 	if o.R == nil {
 		o.R = &shopR{
-			AddressidAddress: related,
+			Address: related,
 		}
 	} else {
-		o.R.AddressidAddress = related
+		o.R.Address = related
 	}
 
 	if related.R == nil {
 		related.R = &addressR{
-			AddressidShops: ShopSlice{o},
+			Shops: ShopSlice{o},
 		}
 	} else {
-		related.R.AddressidShops = append(related.R.AddressidShops, o)
+		related.R.Shops = append(related.R.Shops, o)
 	}
 
 	return nil
 }
 
-// RemoveAddressidAddress relationship.
-// Sets o.R.AddressidAddress to nil.
+// RemoveAddress relationship.
+// Sets o.R.Address to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Shop) RemoveAddressidAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *Shop) RemoveAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
 	var err error
 
-	queries.SetScanner(&o.Addressid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("addressid")); err != nil {
+	queries.SetScanner(&o.AddressID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.AddressidAddress = nil
+		o.R.Address = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.AddressidShops {
-		if queries.Equal(o.Addressid, ri.Addressid) {
+	for i, ri := range related.R.Shops {
+		if queries.Equal(o.AddressID, ri.AddressID) {
 			continue
 		}
 
-		ln := len(related.R.AddressidShops)
+		ln := len(related.R.Shops)
 		if ln > 1 && i < ln-1 {
-			related.R.AddressidShops[i] = related.R.AddressidShops[ln-1]
+			related.R.Shops[i] = related.R.Shops[ln-1]
 		}
-		related.R.AddressidShops = related.R.AddressidShops[:ln-1]
+		related.R.Shops = related.R.Shops[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetTopmenuidMenu of the shop to the related item.
-// Sets o.R.TopmenuidMenu to related.
-// Adds o to related.R.TopmenuidShops.
-func (o *Shop) SetTopmenuidMenu(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Menu) error {
+// SetTopMenu of the shop to the related item.
+// Sets o.R.TopMenu to related.
+// Adds o to related.R.TopMenuShops.
+func (o *Shop) SetTopMenu(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Menu) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -904,7 +904,7 @@ func (o *Shop) SetTopmenuidMenu(ctx context.Context, exec boil.ContextExecutor, 
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"shops\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"topmenuid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"top_menu_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -918,54 +918,54 @@ func (o *Shop) SetTopmenuidMenu(ctx context.Context, exec boil.ContextExecutor, 
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Topmenuid, related.ID)
+	queries.Assign(&o.TopMenuID, related.ID)
 	if o.R == nil {
 		o.R = &shopR{
-			TopmenuidMenu: related,
+			TopMenu: related,
 		}
 	} else {
-		o.R.TopmenuidMenu = related
+		o.R.TopMenu = related
 	}
 
 	if related.R == nil {
 		related.R = &menuR{
-			TopmenuidShops: ShopSlice{o},
+			TopMenuShops: ShopSlice{o},
 		}
 	} else {
-		related.R.TopmenuidShops = append(related.R.TopmenuidShops, o)
+		related.R.TopMenuShops = append(related.R.TopMenuShops, o)
 	}
 
 	return nil
 }
 
-// RemoveTopmenuidMenu relationship.
-// Sets o.R.TopmenuidMenu to nil.
+// RemoveTopMenu relationship.
+// Sets o.R.TopMenu to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Shop) RemoveTopmenuidMenu(ctx context.Context, exec boil.ContextExecutor, related *Menu) error {
+func (o *Shop) RemoveTopMenu(ctx context.Context, exec boil.ContextExecutor, related *Menu) error {
 	var err error
 
-	queries.SetScanner(&o.Topmenuid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("topmenuid")); err != nil {
+	queries.SetScanner(&o.TopMenuID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("top_menu_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.TopmenuidMenu = nil
+		o.R.TopMenu = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.TopmenuidShops {
-		if queries.Equal(o.Topmenuid, ri.Topmenuid) {
+	for i, ri := range related.R.TopMenuShops {
+		if queries.Equal(o.TopMenuID, ri.TopMenuID) {
 			continue
 		}
 
-		ln := len(related.R.TopmenuidShops)
+		ln := len(related.R.TopMenuShops)
 		if ln > 1 && i < ln-1 {
-			related.R.TopmenuidShops[i] = related.R.TopmenuidShops[ln-1]
+			related.R.TopMenuShops[i] = related.R.TopMenuShops[ln-1]
 		}
-		related.R.TopmenuidShops = related.R.TopmenuidShops[:ln-1]
+		related.R.TopMenuShops = related.R.TopMenuShops[:ln-1]
 		break
 	}
 	return nil

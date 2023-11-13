@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS voucher_channel_listings (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  createat bigint,
-  voucherid character varying(36) NOT NULL,
-  channelid character varying(36) NOT NULL,
-  discountvalue double precision,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at bigint,
+  voucher_id character varying(36) NOT NULL,
+  channel_id character varying(36) NOT NULL,
+  discount_value double precision,
   currency character varying(3),
-  minspenamount double precision
+  min_spend_amount double precision
 );
 
 ALTER TABLE ONLY voucher_channel_listings
-    ADD CONSTRAINT voucher_channel_listings_voucherid_channelid_key UNIQUE (voucherid, channelid);
+    ADD CONSTRAINT voucher_channel_listings_voucher_id_channel_id_key UNIQUE (voucher_id, channel_id);

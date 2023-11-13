@@ -494,7 +494,7 @@ func testPageTranslationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testPageTranslationToOnePageUsingPageidPage(t *testing.T) {
+func testPageTranslationToOnePageUsingPage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testPageTranslationToOnePageUsingPageidPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Pageid, foreign.ID)
+	queries.Assign(&local.PageID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.PageidPage().One(ctx, tx)
+	check, err := local.Page().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testPageTranslationToOnePageUsingPageidPage(t *testing.T) {
 	})
 
 	slice := PageTranslationSlice{&local}
-	if err = local.L.LoadPageidPage(ctx, tx, false, (*[]*PageTranslation)(&slice), nil); err != nil {
+	if err = local.L.LoadPage(ctx, tx, false, (*[]*PageTranslation)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.PageidPage == nil {
+	if local.R.Page == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.PageidPage = nil
-	if err = local.L.LoadPageidPage(ctx, tx, true, &local, nil); err != nil {
+	local.R.Page = nil
+	if err = local.L.LoadPage(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.PageidPage == nil {
+	if local.R.Page == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testPageTranslationToOnePageUsingPageidPage(t *testing.T) {
 	}
 }
 
-func testPageTranslationToOneSetOpPageUsingPageidPage(t *testing.T) {
+func testPageTranslationToOneSetOpPageUsingPage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testPageTranslationToOneSetOpPageUsingPageidPage(t *testing.T) {
 	}
 
 	for i, x := range []*Page{&b, &c} {
-		err = a.SetPageidPage(ctx, tx, i != 0, x)
+		err = a.SetPage(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.PageidPage != x {
+		if a.R.Page != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.PageidPageTranslations[0] != &a {
+		if x.R.PageTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Pageid, x.ID) {
-			t.Error("foreign key was wrong value", a.Pageid)
+		if !queries.Equal(a.PageID, x.ID) {
+			t.Error("foreign key was wrong value", a.PageID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Pageid))
-		reflect.Indirect(reflect.ValueOf(&a.Pageid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.PageID))
+		reflect.Indirect(reflect.ValueOf(&a.PageID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Pageid, x.ID) {
-			t.Error("foreign key was wrong value", a.Pageid, x.ID)
+		if !queries.Equal(a.PageID, x.ID) {
+			t.Error("foreign key was wrong value", a.PageID, x.ID)
 		}
 	}
 }
 
-func testPageTranslationToOneRemoveOpPageUsingPageidPage(t *testing.T) {
+func testPageTranslationToOneRemoveOpPageUsingPage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testPageTranslationToOneRemoveOpPageUsingPageidPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetPageidPage(ctx, tx, true, &b); err != nil {
+	if err = a.SetPage(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemovePageidPage(ctx, tx, &b); err != nil {
+	if err = a.RemovePage(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.PageidPage().Count(ctx, tx)
+	count, err := a.Page().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testPageTranslationToOneRemoveOpPageUsingPageidPage(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.PageidPage != nil {
+	if a.R.Page != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Pageid) {
+	if !queries.IsValuerNil(a.PageID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.PageidPageTranslations) != 0 {
+	if len(b.R.PageTranslations) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testPageTranslationsSelect(t *testing.T) {
 }
 
 var (
-	pageTranslationDBTypes = map[string]string{`ID`: `character varying`, `Languagecode`: `character varying`, `Pageid`: `character varying`, `Title`: `character varying`, `Content`: `text`, `Seotitle`: `character varying`, `Seodescription`: `character varying`}
+	pageTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `PageID`: `character varying`, `Title`: `character varying`, `Content`: `text`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
 	_                      = bytes.MinRead
 )
 

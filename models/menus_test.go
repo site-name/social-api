@@ -494,7 +494,7 @@ func testMenusInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testMenuToManyMenuidMenuItems(t *testing.T) {
+func testMenuToManyMenuItems(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testMenuToManyMenuidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Menuid, a.ID)
-	queries.Assign(&c.Menuid, a.ID)
+	queries.Assign(&b.MenuID, a.ID)
+	queries.Assign(&c.MenuID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testMenuToManyMenuidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.MenuidMenuItems().All(ctx, tx)
+	check, err := a.MenuItems().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Menuid, b.Menuid) {
+		if queries.Equal(v.MenuID, b.MenuID) {
 			bFound = true
 		}
-		if queries.Equal(v.Menuid, c.Menuid) {
+		if queries.Equal(v.MenuID, c.MenuID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testMenuToManyMenuidMenuItems(t *testing.T) {
 	}
 
 	slice := MenuSlice{&a}
-	if err = a.L.LoadMenuidMenuItems(ctx, tx, false, (*[]*Menu)(&slice), nil); err != nil {
+	if err = a.L.LoadMenuItems(ctx, tx, false, (*[]*Menu)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.MenuidMenuItems); got != 2 {
+	if got := len(a.R.MenuItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.MenuidMenuItems = nil
-	if err = a.L.LoadMenuidMenuItems(ctx, tx, true, &a, nil); err != nil {
+	a.R.MenuItems = nil
+	if err = a.L.LoadMenuItems(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.MenuidMenuItems); got != 2 {
+	if got := len(a.R.MenuItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testMenuToManyMenuidMenuItems(t *testing.T) {
 	}
 }
 
-func testMenuToManyTopmenuidShops(t *testing.T) {
+func testMenuToManyTopMenuShops(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testMenuToManyTopmenuidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Topmenuid, a.ID)
-	queries.Assign(&c.Topmenuid, a.ID)
+	queries.Assign(&b.TopMenuID, a.ID)
+	queries.Assign(&c.TopMenuID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testMenuToManyTopmenuidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.TopmenuidShops().All(ctx, tx)
+	check, err := a.TopMenuShops().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Topmenuid, b.Topmenuid) {
+		if queries.Equal(v.TopMenuID, b.TopMenuID) {
 			bFound = true
 		}
-		if queries.Equal(v.Topmenuid, c.Topmenuid) {
+		if queries.Equal(v.TopMenuID, c.TopMenuID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testMenuToManyTopmenuidShops(t *testing.T) {
 	}
 
 	slice := MenuSlice{&a}
-	if err = a.L.LoadTopmenuidShops(ctx, tx, false, (*[]*Menu)(&slice), nil); err != nil {
+	if err = a.L.LoadTopMenuShops(ctx, tx, false, (*[]*Menu)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.TopmenuidShops); got != 2 {
+	if got := len(a.R.TopMenuShops); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.TopmenuidShops = nil
-	if err = a.L.LoadTopmenuidShops(ctx, tx, true, &a, nil); err != nil {
+	a.R.TopMenuShops = nil
+	if err = a.L.LoadTopMenuShops(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.TopmenuidShops); got != 2 {
+	if got := len(a.R.TopMenuShops); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testMenuToManyTopmenuidShops(t *testing.T) {
 	}
 }
 
-func testMenuToManyAddOpMenuidMenuItems(t *testing.T) {
+func testMenuToManyAddOpMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -685,7 +685,7 @@ func testMenuToManyAddOpMenuidMenuItems(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddMenuidMenuItems(ctx, tx, i != 0, x...)
+		err = a.AddMenuItems(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -693,28 +693,28 @@ func testMenuToManyAddOpMenuidMenuItems(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Menuid) {
-			t.Error("foreign key was wrong value", a.ID, first.Menuid)
+		if !queries.Equal(a.ID, first.MenuID) {
+			t.Error("foreign key was wrong value", a.ID, first.MenuID)
 		}
-		if !queries.Equal(a.ID, second.Menuid) {
-			t.Error("foreign key was wrong value", a.ID, second.Menuid)
+		if !queries.Equal(a.ID, second.MenuID) {
+			t.Error("foreign key was wrong value", a.ID, second.MenuID)
 		}
 
-		if first.R.MenuidMenu != &a {
+		if first.R.Menu != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.MenuidMenu != &a {
+		if second.R.Menu != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.MenuidMenuItems[i*2] != first {
+		if a.R.MenuItems[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.MenuidMenuItems[i*2+1] != second {
+		if a.R.MenuItems[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.MenuidMenuItems().Count(ctx, tx)
+		count, err := a.MenuItems().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -724,7 +724,7 @@ func testMenuToManyAddOpMenuidMenuItems(t *testing.T) {
 	}
 }
 
-func testMenuToManySetOpMenuidMenuItems(t *testing.T) {
+func testMenuToManySetOpMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -755,25 +755,12 @@ func testMenuToManySetOpMenuidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetMenuidMenuItems(ctx, tx, false, &b, &c)
+	err = a.SetMenuItems(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.MenuidMenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetMenuidMenuItems(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.MenuidMenuItems().Count(ctx, tx)
+	count, err := a.MenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -781,41 +768,54 @@ func testMenuToManySetOpMenuidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Menuid) {
+	err = a.SetMenuItems(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.MenuItems().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.MenuID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Menuid) {
+	if !queries.IsValuerNil(c.MenuID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Menuid) {
-		t.Error("foreign key was wrong value", a.ID, d.Menuid)
+	if !queries.Equal(a.ID, d.MenuID) {
+		t.Error("foreign key was wrong value", a.ID, d.MenuID)
 	}
-	if !queries.Equal(a.ID, e.Menuid) {
-		t.Error("foreign key was wrong value", a.ID, e.Menuid)
-	}
-
-	if b.R.MenuidMenu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.MenuidMenu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.MenuidMenu != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.MenuidMenu != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.MenuID) {
+		t.Error("foreign key was wrong value", a.ID, e.MenuID)
 	}
 
-	if a.R.MenuidMenuItems[0] != &d {
+	if b.R.Menu != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Menu != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Menu != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Menu != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.MenuItems[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.MenuidMenuItems[1] != &e {
+	if a.R.MenuItems[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testMenuToManyRemoveOpMenuidMenuItems(t *testing.T) {
+func testMenuToManyRemoveOpMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -840,12 +840,12 @@ func testMenuToManyRemoveOpMenuidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddMenuidMenuItems(ctx, tx, true, foreigners...)
+	err = a.AddMenuItems(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.MenuidMenuItems().Count(ctx, tx)
+	count, err := a.MenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -853,12 +853,12 @@ func testMenuToManyRemoveOpMenuidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveMenuidMenuItems(ctx, tx, foreigners[:2]...)
+	err = a.RemoveMenuItems(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.MenuidMenuItems().Count(ctx, tx)
+	count, err = a.MenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -866,40 +866,40 @@ func testMenuToManyRemoveOpMenuidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Menuid) {
+	if !queries.IsValuerNil(b.MenuID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Menuid) {
+	if !queries.IsValuerNil(c.MenuID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.MenuidMenu != nil {
+	if b.R.Menu != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.MenuidMenu != nil {
+	if c.R.Menu != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.MenuidMenu != &a {
+	if d.R.Menu != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.MenuidMenu != &a {
+	if e.R.Menu != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.MenuidMenuItems) != 2 {
+	if len(a.R.MenuItems) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.MenuidMenuItems[1] != &d {
+	if a.R.MenuItems[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.MenuidMenuItems[0] != &e {
+	if a.R.MenuItems[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testMenuToManyAddOpTopmenuidShops(t *testing.T) {
+func testMenuToManyAddOpTopMenuShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -936,7 +936,7 @@ func testMenuToManyAddOpTopmenuidShops(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddTopmenuidShops(ctx, tx, i != 0, x...)
+		err = a.AddTopMenuShops(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -944,28 +944,28 @@ func testMenuToManyAddOpTopmenuidShops(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Topmenuid) {
-			t.Error("foreign key was wrong value", a.ID, first.Topmenuid)
+		if !queries.Equal(a.ID, first.TopMenuID) {
+			t.Error("foreign key was wrong value", a.ID, first.TopMenuID)
 		}
-		if !queries.Equal(a.ID, second.Topmenuid) {
-			t.Error("foreign key was wrong value", a.ID, second.Topmenuid)
+		if !queries.Equal(a.ID, second.TopMenuID) {
+			t.Error("foreign key was wrong value", a.ID, second.TopMenuID)
 		}
 
-		if first.R.TopmenuidMenu != &a {
+		if first.R.TopMenu != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.TopmenuidMenu != &a {
+		if second.R.TopMenu != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.TopmenuidShops[i*2] != first {
+		if a.R.TopMenuShops[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.TopmenuidShops[i*2+1] != second {
+		if a.R.TopMenuShops[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.TopmenuidShops().Count(ctx, tx)
+		count, err := a.TopMenuShops().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -975,7 +975,7 @@ func testMenuToManyAddOpTopmenuidShops(t *testing.T) {
 	}
 }
 
-func testMenuToManySetOpTopmenuidShops(t *testing.T) {
+func testMenuToManySetOpTopMenuShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1006,25 +1006,12 @@ func testMenuToManySetOpTopmenuidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetTopmenuidShops(ctx, tx, false, &b, &c)
+	err = a.SetTopMenuShops(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.TopmenuidShops().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetTopmenuidShops(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.TopmenuidShops().Count(ctx, tx)
+	count, err := a.TopMenuShops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1032,41 +1019,54 @@ func testMenuToManySetOpTopmenuidShops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Topmenuid) {
+	err = a.SetTopMenuShops(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.TopMenuShops().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.TopMenuID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Topmenuid) {
+	if !queries.IsValuerNil(c.TopMenuID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Topmenuid) {
-		t.Error("foreign key was wrong value", a.ID, d.Topmenuid)
+	if !queries.Equal(a.ID, d.TopMenuID) {
+		t.Error("foreign key was wrong value", a.ID, d.TopMenuID)
 	}
-	if !queries.Equal(a.ID, e.Topmenuid) {
-		t.Error("foreign key was wrong value", a.ID, e.Topmenuid)
-	}
-
-	if b.R.TopmenuidMenu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.TopmenuidMenu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.TopmenuidMenu != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.TopmenuidMenu != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.TopMenuID) {
+		t.Error("foreign key was wrong value", a.ID, e.TopMenuID)
 	}
 
-	if a.R.TopmenuidShops[0] != &d {
+	if b.R.TopMenu != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.TopMenu != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.TopMenu != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.TopMenu != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.TopMenuShops[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.TopmenuidShops[1] != &e {
+	if a.R.TopMenuShops[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testMenuToManyRemoveOpTopmenuidShops(t *testing.T) {
+func testMenuToManyRemoveOpTopMenuShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1091,12 +1091,12 @@ func testMenuToManyRemoveOpTopmenuidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddTopmenuidShops(ctx, tx, true, foreigners...)
+	err = a.AddTopMenuShops(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.TopmenuidShops().Count(ctx, tx)
+	count, err := a.TopMenuShops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1104,12 +1104,12 @@ func testMenuToManyRemoveOpTopmenuidShops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveTopmenuidShops(ctx, tx, foreigners[:2]...)
+	err = a.RemoveTopMenuShops(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.TopmenuidShops().Count(ctx, tx)
+	count, err = a.TopMenuShops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1117,35 +1117,35 @@ func testMenuToManyRemoveOpTopmenuidShops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Topmenuid) {
+	if !queries.IsValuerNil(b.TopMenuID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Topmenuid) {
+	if !queries.IsValuerNil(c.TopMenuID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.TopmenuidMenu != nil {
+	if b.R.TopMenu != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.TopmenuidMenu != nil {
+	if c.R.TopMenu != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.TopmenuidMenu != &a {
+	if d.R.TopMenu != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.TopmenuidMenu != &a {
+	if e.R.TopMenu != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.TopmenuidShops) != 2 {
+	if len(a.R.TopMenuShops) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.TopmenuidShops[1] != &d {
+	if a.R.TopMenuShops[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.TopmenuidShops[0] != &e {
+	if a.R.TopMenuShops[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -1224,7 +1224,7 @@ func testMenusSelect(t *testing.T) {
 }
 
 var (
-	menuDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Createat`: `bigint`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	menuDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `CreateAt`: `bigint`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_           = bytes.MinRead
 )
 

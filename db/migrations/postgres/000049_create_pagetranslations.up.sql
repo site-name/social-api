@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS page_translations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  languagecode character varying(5),
-  pageid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_code character varying(5),
+  page_id uuid,
   title character varying(250),
   content text,
-  seotitle character varying(70),
-  seodescription character varying(300)
+  seo_title character varying(70),
+  seo_description character varying(300)
 );
 
 ALTER TABLE ONLY page_translations
-    ADD CONSTRAINT page_translations_languagecode_pageid_key UNIQUE (languagecode, pageid);
+    ADD CONSTRAINT page_translations_language_code_page_id_key UNIQUE (language_code, page_id);

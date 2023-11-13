@@ -28,13 +28,13 @@ type AttributeValue struct {
 	Name        null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Value       null.String `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
 	Slug        null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Fileurl     null.String `boil:"fileurl" json:"fileurl,omitempty" toml:"fileurl" yaml:"fileurl,omitempty"`
-	Contenttype null.String `boil:"contenttype" json:"contenttype,omitempty" toml:"contenttype" yaml:"contenttype,omitempty"`
-	Attributeid null.String `boil:"attributeid" json:"attributeid,omitempty" toml:"attributeid" yaml:"attributeid,omitempty"`
-	Richtext    null.String `boil:"richtext" json:"richtext,omitempty" toml:"richtext" yaml:"richtext,omitempty"`
+	FileURL     null.String `boil:"file_url" json:"file_url,omitempty" toml:"file_url" yaml:"file_url,omitempty"`
+	ContentType null.String `boil:"content_type" json:"content_type,omitempty" toml:"content_type" yaml:"content_type,omitempty"`
+	AttributeID null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
+	RichText    null.String `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
 	Boolean     null.Bool   `boil:"boolean" json:"boolean,omitempty" toml:"boolean" yaml:"boolean,omitempty"`
 	Datetime    null.Time   `boil:"datetime" json:"datetime,omitempty" toml:"datetime" yaml:"datetime,omitempty"`
-	Sortorder   null.Int    `boil:"sortorder" json:"sortorder,omitempty" toml:"sortorder" yaml:"sortorder,omitempty"`
+	SortOrder   null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributeValueR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeValueL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,25 +45,25 @@ var AttributeValueColumns = struct {
 	Name        string
 	Value       string
 	Slug        string
-	Fileurl     string
-	Contenttype string
-	Attributeid string
-	Richtext    string
+	FileURL     string
+	ContentType string
+	AttributeID string
+	RichText    string
 	Boolean     string
 	Datetime    string
-	Sortorder   string
+	SortOrder   string
 }{
 	ID:          "id",
 	Name:        "name",
 	Value:       "value",
 	Slug:        "slug",
-	Fileurl:     "fileurl",
-	Contenttype: "contenttype",
-	Attributeid: "attributeid",
-	Richtext:    "richtext",
+	FileURL:     "file_url",
+	ContentType: "content_type",
+	AttributeID: "attribute_id",
+	RichText:    "rich_text",
 	Boolean:     "boolean",
 	Datetime:    "datetime",
-	Sortorder:   "sortorder",
+	SortOrder:   "sort_order",
 }
 
 var AttributeValueTableColumns = struct {
@@ -71,25 +71,25 @@ var AttributeValueTableColumns = struct {
 	Name        string
 	Value       string
 	Slug        string
-	Fileurl     string
-	Contenttype string
-	Attributeid string
-	Richtext    string
+	FileURL     string
+	ContentType string
+	AttributeID string
+	RichText    string
 	Boolean     string
 	Datetime    string
-	Sortorder   string
+	SortOrder   string
 }{
 	ID:          "attribute_values.id",
 	Name:        "attribute_values.name",
 	Value:       "attribute_values.value",
 	Slug:        "attribute_values.slug",
-	Fileurl:     "attribute_values.fileurl",
-	Contenttype: "attribute_values.contenttype",
-	Attributeid: "attribute_values.attributeid",
-	Richtext:    "attribute_values.richtext",
+	FileURL:     "attribute_values.file_url",
+	ContentType: "attribute_values.content_type",
+	AttributeID: "attribute_values.attribute_id",
+	RichText:    "attribute_values.rich_text",
 	Boolean:     "attribute_values.boolean",
 	Datetime:    "attribute_values.datetime",
-	Sortorder:   "attribute_values.sortorder",
+	SortOrder:   "attribute_values.sort_order",
 }
 
 // Generated where
@@ -147,46 +147,46 @@ var AttributeValueWhere = struct {
 	Name        whereHelpernull_String
 	Value       whereHelpernull_String
 	Slug        whereHelpernull_String
-	Fileurl     whereHelpernull_String
-	Contenttype whereHelpernull_String
-	Attributeid whereHelpernull_String
-	Richtext    whereHelpernull_String
+	FileURL     whereHelpernull_String
+	ContentType whereHelpernull_String
+	AttributeID whereHelpernull_String
+	RichText    whereHelpernull_String
 	Boolean     whereHelpernull_Bool
 	Datetime    whereHelpernull_Time
-	Sortorder   whereHelpernull_Int
+	SortOrder   whereHelpernull_Int
 }{
 	ID:          whereHelperstring{field: "\"attribute_values\".\"id\""},
 	Name:        whereHelpernull_String{field: "\"attribute_values\".\"name\""},
 	Value:       whereHelpernull_String{field: "\"attribute_values\".\"value\""},
 	Slug:        whereHelpernull_String{field: "\"attribute_values\".\"slug\""},
-	Fileurl:     whereHelpernull_String{field: "\"attribute_values\".\"fileurl\""},
-	Contenttype: whereHelpernull_String{field: "\"attribute_values\".\"contenttype\""},
-	Attributeid: whereHelpernull_String{field: "\"attribute_values\".\"attributeid\""},
-	Richtext:    whereHelpernull_String{field: "\"attribute_values\".\"richtext\""},
+	FileURL:     whereHelpernull_String{field: "\"attribute_values\".\"file_url\""},
+	ContentType: whereHelpernull_String{field: "\"attribute_values\".\"content_type\""},
+	AttributeID: whereHelpernull_String{field: "\"attribute_values\".\"attribute_id\""},
+	RichText:    whereHelpernull_String{field: "\"attribute_values\".\"rich_text\""},
 	Boolean:     whereHelpernull_Bool{field: "\"attribute_values\".\"boolean\""},
 	Datetime:    whereHelpernull_Time{field: "\"attribute_values\".\"datetime\""},
-	Sortorder:   whereHelpernull_Int{field: "\"attribute_values\".\"sortorder\""},
+	SortOrder:   whereHelpernull_Int{field: "\"attribute_values\".\"sort_order\""},
 }
 
 // AttributeValueRels is where relationship names are stored.
 var AttributeValueRels = struct {
-	AttributeidAttribute                  string
-	ValueidAssignedPageAttributeValues    string
-	ValueidAssignedProductAttributeValues string
-	ValueidAssignedVariantAttributeValues string
+	Attribute                           string
+	ValueAssignedPageAttributeValues    string
+	ValueAssignedProductAttributeValues string
+	ValueAssignedVariantAttributeValues string
 }{
-	AttributeidAttribute:                  "AttributeidAttribute",
-	ValueidAssignedPageAttributeValues:    "ValueidAssignedPageAttributeValues",
-	ValueidAssignedProductAttributeValues: "ValueidAssignedProductAttributeValues",
-	ValueidAssignedVariantAttributeValues: "ValueidAssignedVariantAttributeValues",
+	Attribute:                           "Attribute",
+	ValueAssignedPageAttributeValues:    "ValueAssignedPageAttributeValues",
+	ValueAssignedProductAttributeValues: "ValueAssignedProductAttributeValues",
+	ValueAssignedVariantAttributeValues: "ValueAssignedVariantAttributeValues",
 }
 
 // attributeValueR is where relationships are stored.
 type attributeValueR struct {
-	AttributeidAttribute                  *Attribute                         `boil:"AttributeidAttribute" json:"AttributeidAttribute" toml:"AttributeidAttribute" yaml:"AttributeidAttribute"`
-	ValueidAssignedPageAttributeValues    AssignedPageAttributeValueSlice    `boil:"ValueidAssignedPageAttributeValues" json:"ValueidAssignedPageAttributeValues" toml:"ValueidAssignedPageAttributeValues" yaml:"ValueidAssignedPageAttributeValues"`
-	ValueidAssignedProductAttributeValues AssignedProductAttributeValueSlice `boil:"ValueidAssignedProductAttributeValues" json:"ValueidAssignedProductAttributeValues" toml:"ValueidAssignedProductAttributeValues" yaml:"ValueidAssignedProductAttributeValues"`
-	ValueidAssignedVariantAttributeValues AssignedVariantAttributeValueSlice `boil:"ValueidAssignedVariantAttributeValues" json:"ValueidAssignedVariantAttributeValues" toml:"ValueidAssignedVariantAttributeValues" yaml:"ValueidAssignedVariantAttributeValues"`
+	Attribute                           *Attribute                         `boil:"Attribute" json:"Attribute" toml:"Attribute" yaml:"Attribute"`
+	ValueAssignedPageAttributeValues    AssignedPageAttributeValueSlice    `boil:"ValueAssignedPageAttributeValues" json:"ValueAssignedPageAttributeValues" toml:"ValueAssignedPageAttributeValues" yaml:"ValueAssignedPageAttributeValues"`
+	ValueAssignedProductAttributeValues AssignedProductAttributeValueSlice `boil:"ValueAssignedProductAttributeValues" json:"ValueAssignedProductAttributeValues" toml:"ValueAssignedProductAttributeValues" yaml:"ValueAssignedProductAttributeValues"`
+	ValueAssignedVariantAttributeValues AssignedVariantAttributeValueSlice `boil:"ValueAssignedVariantAttributeValues" json:"ValueAssignedVariantAttributeValues" toml:"ValueAssignedVariantAttributeValues" yaml:"ValueAssignedVariantAttributeValues"`
 }
 
 // NewStruct creates a new relationship struct
@@ -194,41 +194,41 @@ func (*attributeValueR) NewStruct() *attributeValueR {
 	return &attributeValueR{}
 }
 
-func (r *attributeValueR) GetAttributeidAttribute() *Attribute {
+func (r *attributeValueR) GetAttribute() *Attribute {
 	if r == nil {
 		return nil
 	}
-	return r.AttributeidAttribute
+	return r.Attribute
 }
 
-func (r *attributeValueR) GetValueidAssignedPageAttributeValues() AssignedPageAttributeValueSlice {
+func (r *attributeValueR) GetValueAssignedPageAttributeValues() AssignedPageAttributeValueSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ValueidAssignedPageAttributeValues
+	return r.ValueAssignedPageAttributeValues
 }
 
-func (r *attributeValueR) GetValueidAssignedProductAttributeValues() AssignedProductAttributeValueSlice {
+func (r *attributeValueR) GetValueAssignedProductAttributeValues() AssignedProductAttributeValueSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ValueidAssignedProductAttributeValues
+	return r.ValueAssignedProductAttributeValues
 }
 
-func (r *attributeValueR) GetValueidAssignedVariantAttributeValues() AssignedVariantAttributeValueSlice {
+func (r *attributeValueR) GetValueAssignedVariantAttributeValues() AssignedVariantAttributeValueSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ValueidAssignedVariantAttributeValues
+	return r.ValueAssignedVariantAttributeValues
 }
 
 // attributeValueL is where Load methods for each relationship are stored.
 type attributeValueL struct{}
 
 var (
-	attributeValueAllColumns            = []string{"id", "name", "value", "slug", "fileurl", "contenttype", "attributeid", "richtext", "boolean", "datetime", "sortorder"}
+	attributeValueAllColumns            = []string{"id", "name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "boolean", "datetime", "sort_order"}
 	attributeValueColumnsWithoutDefault = []string{"id"}
-	attributeValueColumnsWithDefault    = []string{"name", "value", "slug", "fileurl", "contenttype", "attributeid", "richtext", "boolean", "datetime", "sortorder"}
+	attributeValueColumnsWithDefault    = []string{"name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "boolean", "datetime", "sort_order"}
 	attributeValuePrimaryKeyColumns     = []string{"id"}
 	attributeValueGeneratedColumns      = []string{}
 )
@@ -511,10 +511,10 @@ func (q attributeValueQuery) Exists(ctx context.Context, exec boil.ContextExecut
 	return count > 0, nil
 }
 
-// AttributeidAttribute pointed to by the foreign key.
-func (o *AttributeValue) AttributeidAttribute(mods ...qm.QueryMod) attributeQuery {
+// Attribute pointed to by the foreign key.
+func (o *AttributeValue) Attribute(mods ...qm.QueryMod) attributeQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Attributeid),
+		qm.Where("\"id\" = ?", o.AttributeID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -522,51 +522,51 @@ func (o *AttributeValue) AttributeidAttribute(mods ...qm.QueryMod) attributeQuer
 	return Attributes(queryMods...)
 }
 
-// ValueidAssignedPageAttributeValues retrieves all the assigned_page_attribute_value's AssignedPageAttributeValues with an executor via valueid column.
-func (o *AttributeValue) ValueidAssignedPageAttributeValues(mods ...qm.QueryMod) assignedPageAttributeValueQuery {
+// ValueAssignedPageAttributeValues retrieves all the assigned_page_attribute_value's AssignedPageAttributeValues with an executor via value_id column.
+func (o *AttributeValue) ValueAssignedPageAttributeValues(mods ...qm.QueryMod) assignedPageAttributeValueQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"assigned_page_attribute_values\".\"valueid\"=?", o.ID),
+		qm.Where("\"assigned_page_attribute_values\".\"value_id\"=?", o.ID),
 	)
 
 	return AssignedPageAttributeValues(queryMods...)
 }
 
-// ValueidAssignedProductAttributeValues retrieves all the assigned_product_attribute_value's AssignedProductAttributeValues with an executor via valueid column.
-func (o *AttributeValue) ValueidAssignedProductAttributeValues(mods ...qm.QueryMod) assignedProductAttributeValueQuery {
+// ValueAssignedProductAttributeValues retrieves all the assigned_product_attribute_value's AssignedProductAttributeValues with an executor via value_id column.
+func (o *AttributeValue) ValueAssignedProductAttributeValues(mods ...qm.QueryMod) assignedProductAttributeValueQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"assigned_product_attribute_values\".\"valueid\"=?", o.ID),
+		qm.Where("\"assigned_product_attribute_values\".\"value_id\"=?", o.ID),
 	)
 
 	return AssignedProductAttributeValues(queryMods...)
 }
 
-// ValueidAssignedVariantAttributeValues retrieves all the assigned_variant_attribute_value's AssignedVariantAttributeValues with an executor via valueid column.
-func (o *AttributeValue) ValueidAssignedVariantAttributeValues(mods ...qm.QueryMod) assignedVariantAttributeValueQuery {
+// ValueAssignedVariantAttributeValues retrieves all the assigned_variant_attribute_value's AssignedVariantAttributeValues with an executor via value_id column.
+func (o *AttributeValue) ValueAssignedVariantAttributeValues(mods ...qm.QueryMod) assignedVariantAttributeValueQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"assigned_variant_attribute_values\".\"valueid\"=?", o.ID),
+		qm.Where("\"assigned_variant_attribute_values\".\"value_id\"=?", o.ID),
 	)
 
 	return AssignedVariantAttributeValues(queryMods...)
 }
 
-// LoadAttributeidAttribute allows an eager lookup of values, cached into the
+// LoadAttribute allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (attributeValueL) LoadAttributeidAttribute(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
+func (attributeValueL) LoadAttribute(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -597,8 +597,8 @@ func (attributeValueL) LoadAttributeidAttribute(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &attributeValueR{}
 		}
-		if !queries.IsNil(object.Attributeid) {
-			args = append(args, object.Attributeid)
+		if !queries.IsNil(object.AttributeID) {
+			args = append(args, object.AttributeID)
 		}
 
 	} else {
@@ -609,13 +609,13 @@ func (attributeValueL) LoadAttributeidAttribute(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Attributeid) {
+				if queries.Equal(a, obj.AttributeID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Attributeid) {
-				args = append(args, obj.Attributeid)
+			if !queries.IsNil(obj.AttributeID) {
+				args = append(args, obj.AttributeID)
 			}
 
 		}
@@ -664,22 +664,22 @@ func (attributeValueL) LoadAttributeidAttribute(ctx context.Context, e boil.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.AttributeidAttribute = foreign
+		object.R.Attribute = foreign
 		if foreign.R == nil {
 			foreign.R = &attributeR{}
 		}
-		foreign.R.AttributeidAttributeValues = append(foreign.R.AttributeidAttributeValues, object)
+		foreign.R.AttributeValues = append(foreign.R.AttributeValues, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Attributeid, foreign.ID) {
-				local.R.AttributeidAttribute = foreign
+			if queries.Equal(local.AttributeID, foreign.ID) {
+				local.R.Attribute = foreign
 				if foreign.R == nil {
 					foreign.R = &attributeR{}
 				}
-				foreign.R.AttributeidAttributeValues = append(foreign.R.AttributeidAttributeValues, local)
+				foreign.R.AttributeValues = append(foreign.R.AttributeValues, local)
 				break
 			}
 		}
@@ -688,9 +688,9 @@ func (attributeValueL) LoadAttributeidAttribute(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// LoadValueidAssignedPageAttributeValues allows an eager lookup of values, cached into the
+// LoadValueAssignedPageAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeValueL) LoadValueidAssignedPageAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
+func (attributeValueL) LoadValueAssignedPageAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -730,7 +730,7 @@ func (attributeValueL) LoadValueidAssignedPageAttributeValues(ctx context.Contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -745,7 +745,7 @@ func (attributeValueL) LoadValueidAssignedPageAttributeValues(ctx context.Contex
 
 	query := NewQuery(
 		qm.From(`assigned_page_attribute_values`),
-		qm.WhereIn(`assigned_page_attribute_values.valueid in ?`, args...),
+		qm.WhereIn(`assigned_page_attribute_values.value_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -776,24 +776,24 @@ func (attributeValueL) LoadValueidAssignedPageAttributeValues(ctx context.Contex
 		}
 	}
 	if singular {
-		object.R.ValueidAssignedPageAttributeValues = resultSlice
+		object.R.ValueAssignedPageAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &assignedPageAttributeValueR{}
 			}
-			foreign.R.ValueidAttributeValue = object
+			foreign.R.Value = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Valueid) {
-				local.R.ValueidAssignedPageAttributeValues = append(local.R.ValueidAssignedPageAttributeValues, foreign)
+			if local.ID == foreign.ValueID {
+				local.R.ValueAssignedPageAttributeValues = append(local.R.ValueAssignedPageAttributeValues, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedPageAttributeValueR{}
 				}
-				foreign.R.ValueidAttributeValue = local
+				foreign.R.Value = local
 				break
 			}
 		}
@@ -802,9 +802,9 @@ func (attributeValueL) LoadValueidAssignedPageAttributeValues(ctx context.Contex
 	return nil
 }
 
-// LoadValueidAssignedProductAttributeValues allows an eager lookup of values, cached into the
+// LoadValueAssignedProductAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeValueL) LoadValueidAssignedProductAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
+func (attributeValueL) LoadValueAssignedProductAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -844,7 +844,7 @@ func (attributeValueL) LoadValueidAssignedProductAttributeValues(ctx context.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -859,7 +859,7 @@ func (attributeValueL) LoadValueidAssignedProductAttributeValues(ctx context.Con
 
 	query := NewQuery(
 		qm.From(`assigned_product_attribute_values`),
-		qm.WhereIn(`assigned_product_attribute_values.valueid in ?`, args...),
+		qm.WhereIn(`assigned_product_attribute_values.value_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -890,24 +890,24 @@ func (attributeValueL) LoadValueidAssignedProductAttributeValues(ctx context.Con
 		}
 	}
 	if singular {
-		object.R.ValueidAssignedProductAttributeValues = resultSlice
+		object.R.ValueAssignedProductAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &assignedProductAttributeValueR{}
 			}
-			foreign.R.ValueidAttributeValue = object
+			foreign.R.Value = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Valueid) {
-				local.R.ValueidAssignedProductAttributeValues = append(local.R.ValueidAssignedProductAttributeValues, foreign)
+			if local.ID == foreign.ValueID {
+				local.R.ValueAssignedProductAttributeValues = append(local.R.ValueAssignedProductAttributeValues, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedProductAttributeValueR{}
 				}
-				foreign.R.ValueidAttributeValue = local
+				foreign.R.Value = local
 				break
 			}
 		}
@@ -916,9 +916,9 @@ func (attributeValueL) LoadValueidAssignedProductAttributeValues(ctx context.Con
 	return nil
 }
 
-// LoadValueidAssignedVariantAttributeValues allows an eager lookup of values, cached into the
+// LoadValueAssignedVariantAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (attributeValueL) LoadValueidAssignedVariantAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
+func (attributeValueL) LoadValueAssignedVariantAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AttributeValue
 	var object *AttributeValue
 
@@ -973,7 +973,7 @@ func (attributeValueL) LoadValueidAssignedVariantAttributeValues(ctx context.Con
 
 	query := NewQuery(
 		qm.From(`assigned_variant_attribute_values`),
-		qm.WhereIn(`assigned_variant_attribute_values.valueid in ?`, args...),
+		qm.WhereIn(`assigned_variant_attribute_values.value_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1004,24 +1004,24 @@ func (attributeValueL) LoadValueidAssignedVariantAttributeValues(ctx context.Con
 		}
 	}
 	if singular {
-		object.R.ValueidAssignedVariantAttributeValues = resultSlice
+		object.R.ValueAssignedVariantAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &assignedVariantAttributeValueR{}
 			}
-			foreign.R.ValueidAttributeValue = object
+			foreign.R.Value = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Valueid) {
-				local.R.ValueidAssignedVariantAttributeValues = append(local.R.ValueidAssignedVariantAttributeValues, foreign)
+			if queries.Equal(local.ID, foreign.ValueID) {
+				local.R.ValueAssignedVariantAttributeValues = append(local.R.ValueAssignedVariantAttributeValues, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedVariantAttributeValueR{}
 				}
-				foreign.R.ValueidAttributeValue = local
+				foreign.R.Value = local
 				break
 			}
 		}
@@ -1030,10 +1030,10 @@ func (attributeValueL) LoadValueidAssignedVariantAttributeValues(ctx context.Con
 	return nil
 }
 
-// SetAttributeidAttribute of the attributeValue to the related item.
-// Sets o.R.AttributeidAttribute to related.
-// Adds o to related.R.AttributeidAttributeValues.
-func (o *AttributeValue) SetAttributeidAttribute(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Attribute) error {
+// SetAttribute of the attributeValue to the related item.
+// Sets o.R.Attribute to related.
+// Adds o to related.R.AttributeValues.
+func (o *AttributeValue) SetAttribute(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Attribute) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1043,7 +1043,7 @@ func (o *AttributeValue) SetAttributeidAttribute(ctx context.Context, exec boil.
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"attribute_values\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"attributeid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"attribute_id"}),
 		strmangle.WhereClause("\"", "\"", 2, attributeValuePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1057,75 +1057,75 @@ func (o *AttributeValue) SetAttributeidAttribute(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Attributeid, related.ID)
+	queries.Assign(&o.AttributeID, related.ID)
 	if o.R == nil {
 		o.R = &attributeValueR{
-			AttributeidAttribute: related,
+			Attribute: related,
 		}
 	} else {
-		o.R.AttributeidAttribute = related
+		o.R.Attribute = related
 	}
 
 	if related.R == nil {
 		related.R = &attributeR{
-			AttributeidAttributeValues: AttributeValueSlice{o},
+			AttributeValues: AttributeValueSlice{o},
 		}
 	} else {
-		related.R.AttributeidAttributeValues = append(related.R.AttributeidAttributeValues, o)
+		related.R.AttributeValues = append(related.R.AttributeValues, o)
 	}
 
 	return nil
 }
 
-// RemoveAttributeidAttribute relationship.
-// Sets o.R.AttributeidAttribute to nil.
+// RemoveAttribute relationship.
+// Sets o.R.Attribute to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *AttributeValue) RemoveAttributeidAttribute(ctx context.Context, exec boil.ContextExecutor, related *Attribute) error {
+func (o *AttributeValue) RemoveAttribute(ctx context.Context, exec boil.ContextExecutor, related *Attribute) error {
 	var err error
 
-	queries.SetScanner(&o.Attributeid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("attributeid")); err != nil {
+	queries.SetScanner(&o.AttributeID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.AttributeidAttribute = nil
+		o.R.Attribute = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.AttributeidAttributeValues {
-		if queries.Equal(o.Attributeid, ri.Attributeid) {
+	for i, ri := range related.R.AttributeValues {
+		if queries.Equal(o.AttributeID, ri.AttributeID) {
 			continue
 		}
 
-		ln := len(related.R.AttributeidAttributeValues)
+		ln := len(related.R.AttributeValues)
 		if ln > 1 && i < ln-1 {
-			related.R.AttributeidAttributeValues[i] = related.R.AttributeidAttributeValues[ln-1]
+			related.R.AttributeValues[i] = related.R.AttributeValues[ln-1]
 		}
-		related.R.AttributeidAttributeValues = related.R.AttributeidAttributeValues[:ln-1]
+		related.R.AttributeValues = related.R.AttributeValues[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddValueidAssignedPageAttributeValues adds the given related objects to the existing relationships
+// AddValueAssignedPageAttributeValues adds the given related objects to the existing relationships
 // of the attribute_value, optionally inserting them as new records.
-// Appends related to o.R.ValueidAssignedPageAttributeValues.
-// Sets related.R.ValueidAttributeValue appropriately.
-func (o *AttributeValue) AddValueidAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttributeValue) error {
+// Appends related to o.R.ValueAssignedPageAttributeValues.
+// Sets related.R.Value appropriately.
+func (o *AttributeValue) AddValueAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttributeValue) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Valueid, o.ID)
+			rel.ValueID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"assigned_page_attribute_values\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"valueid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedPageAttributeValuePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1139,120 +1139,46 @@ func (o *AttributeValue) AddValueidAssignedPageAttributeValues(ctx context.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Valueid, o.ID)
+			rel.ValueID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &attributeValueR{
-			ValueidAssignedPageAttributeValues: related,
+			ValueAssignedPageAttributeValues: related,
 		}
 	} else {
-		o.R.ValueidAssignedPageAttributeValues = append(o.R.ValueidAssignedPageAttributeValues, related...)
+		o.R.ValueAssignedPageAttributeValues = append(o.R.ValueAssignedPageAttributeValues, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedPageAttributeValueR{
-				ValueidAttributeValue: o,
+				Value: o,
 			}
 		} else {
-			rel.R.ValueidAttributeValue = o
+			rel.R.Value = o
 		}
 	}
 	return nil
 }
 
-// SetValueidAssignedPageAttributeValues removes all previously related items of the
-// attribute_value replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ValueidAttributeValue's ValueidAssignedPageAttributeValues accordingly.
-// Replaces o.R.ValueidAssignedPageAttributeValues with related.
-// Sets related.R.ValueidAttributeValue's ValueidAssignedPageAttributeValues accordingly.
-func (o *AttributeValue) SetValueidAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttributeValue) error {
-	query := "update \"assigned_page_attribute_values\" set \"valueid\" = null where \"valueid\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ValueidAssignedPageAttributeValues {
-			queries.SetScanner(&rel.Valueid, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ValueidAttributeValue = nil
-		}
-		o.R.ValueidAssignedPageAttributeValues = nil
-	}
-
-	return o.AddValueidAssignedPageAttributeValues(ctx, exec, insert, related...)
-}
-
-// RemoveValueidAssignedPageAttributeValues relationships from objects passed in.
-// Removes related items from R.ValueidAssignedPageAttributeValues (uses pointer comparison, removal does not keep order)
-// Sets related.R.ValueidAttributeValue.
-func (o *AttributeValue) RemoveValueidAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedPageAttributeValue) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.Valueid, nil)
-		if rel.R != nil {
-			rel.R.ValueidAttributeValue = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("valueid")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ValueidAssignedPageAttributeValues {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ValueidAssignedPageAttributeValues)
-			if ln > 1 && i < ln-1 {
-				o.R.ValueidAssignedPageAttributeValues[i] = o.R.ValueidAssignedPageAttributeValues[ln-1]
-			}
-			o.R.ValueidAssignedPageAttributeValues = o.R.ValueidAssignedPageAttributeValues[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-// AddValueidAssignedProductAttributeValues adds the given related objects to the existing relationships
+// AddValueAssignedProductAttributeValues adds the given related objects to the existing relationships
 // of the attribute_value, optionally inserting them as new records.
-// Appends related to o.R.ValueidAssignedProductAttributeValues.
-// Sets related.R.ValueidAttributeValue appropriately.
-func (o *AttributeValue) AddValueidAssignedProductAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedProductAttributeValue) error {
+// Appends related to o.R.ValueAssignedProductAttributeValues.
+// Sets related.R.Value appropriately.
+func (o *AttributeValue) AddValueAssignedProductAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedProductAttributeValue) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Valueid, o.ID)
+			rel.ValueID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"assigned_product_attribute_values\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"valueid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1266,120 +1192,46 @@ func (o *AttributeValue) AddValueidAssignedProductAttributeValues(ctx context.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Valueid, o.ID)
+			rel.ValueID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &attributeValueR{
-			ValueidAssignedProductAttributeValues: related,
+			ValueAssignedProductAttributeValues: related,
 		}
 	} else {
-		o.R.ValueidAssignedProductAttributeValues = append(o.R.ValueidAssignedProductAttributeValues, related...)
+		o.R.ValueAssignedProductAttributeValues = append(o.R.ValueAssignedProductAttributeValues, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedProductAttributeValueR{
-				ValueidAttributeValue: o,
+				Value: o,
 			}
 		} else {
-			rel.R.ValueidAttributeValue = o
+			rel.R.Value = o
 		}
 	}
 	return nil
 }
 
-// SetValueidAssignedProductAttributeValues removes all previously related items of the
-// attribute_value replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ValueidAttributeValue's ValueidAssignedProductAttributeValues accordingly.
-// Replaces o.R.ValueidAssignedProductAttributeValues with related.
-// Sets related.R.ValueidAttributeValue's ValueidAssignedProductAttributeValues accordingly.
-func (o *AttributeValue) SetValueidAssignedProductAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedProductAttributeValue) error {
-	query := "update \"assigned_product_attribute_values\" set \"valueid\" = null where \"valueid\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ValueidAssignedProductAttributeValues {
-			queries.SetScanner(&rel.Valueid, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ValueidAttributeValue = nil
-		}
-		o.R.ValueidAssignedProductAttributeValues = nil
-	}
-
-	return o.AddValueidAssignedProductAttributeValues(ctx, exec, insert, related...)
-}
-
-// RemoveValueidAssignedProductAttributeValues relationships from objects passed in.
-// Removes related items from R.ValueidAssignedProductAttributeValues (uses pointer comparison, removal does not keep order)
-// Sets related.R.ValueidAttributeValue.
-func (o *AttributeValue) RemoveValueidAssignedProductAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedProductAttributeValue) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.Valueid, nil)
-		if rel.R != nil {
-			rel.R.ValueidAttributeValue = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("valueid")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ValueidAssignedProductAttributeValues {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ValueidAssignedProductAttributeValues)
-			if ln > 1 && i < ln-1 {
-				o.R.ValueidAssignedProductAttributeValues[i] = o.R.ValueidAssignedProductAttributeValues[ln-1]
-			}
-			o.R.ValueidAssignedProductAttributeValues = o.R.ValueidAssignedProductAttributeValues[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-// AddValueidAssignedVariantAttributeValues adds the given related objects to the existing relationships
+// AddValueAssignedVariantAttributeValues adds the given related objects to the existing relationships
 // of the attribute_value, optionally inserting them as new records.
-// Appends related to o.R.ValueidAssignedVariantAttributeValues.
-// Sets related.R.ValueidAttributeValue appropriately.
-func (o *AttributeValue) AddValueidAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedVariantAttributeValue) error {
+// Appends related to o.R.ValueAssignedVariantAttributeValues.
+// Sets related.R.Value appropriately.
+func (o *AttributeValue) AddValueAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedVariantAttributeValue) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Valueid, o.ID)
+			queries.Assign(&rel.ValueID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"assigned_variant_attribute_values\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"valueid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedVariantAttributeValuePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1393,38 +1245,38 @@ func (o *AttributeValue) AddValueidAssignedVariantAttributeValues(ctx context.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Valueid, o.ID)
+			queries.Assign(&rel.ValueID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &attributeValueR{
-			ValueidAssignedVariantAttributeValues: related,
+			ValueAssignedVariantAttributeValues: related,
 		}
 	} else {
-		o.R.ValueidAssignedVariantAttributeValues = append(o.R.ValueidAssignedVariantAttributeValues, related...)
+		o.R.ValueAssignedVariantAttributeValues = append(o.R.ValueAssignedVariantAttributeValues, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedVariantAttributeValueR{
-				ValueidAttributeValue: o,
+				Value: o,
 			}
 		} else {
-			rel.R.ValueidAttributeValue = o
+			rel.R.Value = o
 		}
 	}
 	return nil
 }
 
-// SetValueidAssignedVariantAttributeValues removes all previously related items of the
+// SetValueAssignedVariantAttributeValues removes all previously related items of the
 // attribute_value replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.ValueidAttributeValue's ValueidAssignedVariantAttributeValues accordingly.
-// Replaces o.R.ValueidAssignedVariantAttributeValues with related.
-// Sets related.R.ValueidAttributeValue's ValueidAssignedVariantAttributeValues accordingly.
-func (o *AttributeValue) SetValueidAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedVariantAttributeValue) error {
-	query := "update \"assigned_variant_attribute_values\" set \"valueid\" = null where \"valueid\" = $1"
+// Sets o.R.Value's ValueAssignedVariantAttributeValues accordingly.
+// Replaces o.R.ValueAssignedVariantAttributeValues with related.
+// Sets related.R.Value's ValueAssignedVariantAttributeValues accordingly.
+func (o *AttributeValue) SetValueAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedVariantAttributeValue) error {
+	query := "update \"assigned_variant_attribute_values\" set \"value_id\" = null where \"value_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1437,35 +1289,35 @@ func (o *AttributeValue) SetValueidAssignedVariantAttributeValues(ctx context.Co
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.ValueidAssignedVariantAttributeValues {
-			queries.SetScanner(&rel.Valueid, nil)
+		for _, rel := range o.R.ValueAssignedVariantAttributeValues {
+			queries.SetScanner(&rel.ValueID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.ValueidAttributeValue = nil
+			rel.R.Value = nil
 		}
-		o.R.ValueidAssignedVariantAttributeValues = nil
+		o.R.ValueAssignedVariantAttributeValues = nil
 	}
 
-	return o.AddValueidAssignedVariantAttributeValues(ctx, exec, insert, related...)
+	return o.AddValueAssignedVariantAttributeValues(ctx, exec, insert, related...)
 }
 
-// RemoveValueidAssignedVariantAttributeValues relationships from objects passed in.
-// Removes related items from R.ValueidAssignedVariantAttributeValues (uses pointer comparison, removal does not keep order)
-// Sets related.R.ValueidAttributeValue.
-func (o *AttributeValue) RemoveValueidAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedVariantAttributeValue) error {
+// RemoveValueAssignedVariantAttributeValues relationships from objects passed in.
+// Removes related items from R.ValueAssignedVariantAttributeValues (uses pointer comparison, removal does not keep order)
+// Sets related.R.Value.
+func (o *AttributeValue) RemoveValueAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedVariantAttributeValue) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Valueid, nil)
+		queries.SetScanner(&rel.ValueID, nil)
 		if rel.R != nil {
-			rel.R.ValueidAttributeValue = nil
+			rel.R.Value = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("valueid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("value_id")); err != nil {
 			return err
 		}
 	}
@@ -1474,16 +1326,16 @@ func (o *AttributeValue) RemoveValueidAssignedVariantAttributeValues(ctx context
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.ValueidAssignedVariantAttributeValues {
+		for i, ri := range o.R.ValueAssignedVariantAttributeValues {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.ValueidAssignedVariantAttributeValues)
+			ln := len(o.R.ValueAssignedVariantAttributeValues)
 			if ln > 1 && i < ln-1 {
-				o.R.ValueidAssignedVariantAttributeValues[i] = o.R.ValueidAssignedVariantAttributeValues[ln-1]
+				o.R.ValueAssignedVariantAttributeValues[i] = o.R.ValueAssignedVariantAttributeValues[ln-1]
 			}
-			o.R.ValueidAssignedVariantAttributeValues = o.R.ValueidAssignedVariantAttributeValues[:ln-1]
+			o.R.ValueAssignedVariantAttributeValues = o.R.ValueAssignedVariantAttributeValues[:ln-1]
 			break
 		}
 	}

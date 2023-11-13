@@ -25,8 +25,8 @@ import (
 // TermsOfService is an object representing the database table.
 type TermsOfService struct {
 	ID       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Userid   null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
+	CreateAt null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UserID   null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	Text     null.String `boil:"text" json:"text,omitempty" toml:"text" yaml:"text,omitempty"`
 
 	R *termsOfServiceR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,25 +35,25 @@ type TermsOfService struct {
 
 var TermsOfServiceColumns = struct {
 	ID       string
-	Createat string
-	Userid   string
+	CreateAt string
+	UserID   string
 	Text     string
 }{
 	ID:       "id",
-	Createat: "createat",
-	Userid:   "userid",
+	CreateAt: "create_at",
+	UserID:   "user_id",
 	Text:     "text",
 }
 
 var TermsOfServiceTableColumns = struct {
 	ID       string
-	Createat string
-	Userid   string
+	CreateAt string
+	UserID   string
 	Text     string
 }{
 	ID:       "terms_of_services.id",
-	Createat: "terms_of_services.createat",
-	Userid:   "terms_of_services.userid",
+	CreateAt: "terms_of_services.create_at",
+	UserID:   "terms_of_services.user_id",
 	Text:     "terms_of_services.text",
 }
 
@@ -61,13 +61,13 @@ var TermsOfServiceTableColumns = struct {
 
 var TermsOfServiceWhere = struct {
 	ID       whereHelperstring
-	Createat whereHelpernull_Int64
-	Userid   whereHelpernull_String
+	CreateAt whereHelpernull_Int64
+	UserID   whereHelpernull_String
 	Text     whereHelpernull_String
 }{
 	ID:       whereHelperstring{field: "\"terms_of_services\".\"id\""},
-	Createat: whereHelpernull_Int64{field: "\"terms_of_services\".\"createat\""},
-	Userid:   whereHelpernull_String{field: "\"terms_of_services\".\"userid\""},
+	CreateAt: whereHelpernull_Int64{field: "\"terms_of_services\".\"create_at\""},
+	UserID:   whereHelpernull_String{field: "\"terms_of_services\".\"user_id\""},
 	Text:     whereHelpernull_String{field: "\"terms_of_services\".\"text\""},
 }
 
@@ -88,9 +88,9 @@ func (*termsOfServiceR) NewStruct() *termsOfServiceR {
 type termsOfServiceL struct{}
 
 var (
-	termsOfServiceAllColumns            = []string{"id", "createat", "userid", "text"}
+	termsOfServiceAllColumns            = []string{"id", "create_at", "user_id", "text"}
 	termsOfServiceColumnsWithoutDefault = []string{"id"}
-	termsOfServiceColumnsWithDefault    = []string{"createat", "userid", "text"}
+	termsOfServiceColumnsWithDefault    = []string{"create_at", "user_id", "text"}
 	termsOfServicePrimaryKeyColumns     = []string{"id"}
 	termsOfServiceGeneratedColumns      = []string{}
 )

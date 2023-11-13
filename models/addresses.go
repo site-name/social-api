@@ -24,19 +24,19 @@ import (
 // Address is an object representing the database table.
 type Address struct {
 	ID             string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Firstname      string `boil:"firstname" json:"firstname" toml:"firstname" yaml:"firstname"`
-	Lastname       string `boil:"lastname" json:"lastname" toml:"lastname" yaml:"lastname"`
-	Companyname    string `boil:"companyname" json:"companyname" toml:"companyname" yaml:"companyname"`
-	Streetaddress1 string `boil:"streetaddress1" json:"streetaddress1" toml:"streetaddress1" yaml:"streetaddress1"`
-	Streetaddress2 string `boil:"streetaddress2" json:"streetaddress2" toml:"streetaddress2" yaml:"streetaddress2"`
+	FirstName      string `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
+	LastName       string `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
+	CompanyName    string `boil:"company_name" json:"company_name" toml:"company_name" yaml:"company_name"`
+	StreetAddress1 string `boil:"street_address1" json:"street_address1" toml:"street_address1" yaml:"street_address1"`
+	StreetAddress2 string `boil:"street_address2" json:"street_address2" toml:"street_address2" yaml:"street_address2"`
 	City           string `boil:"city" json:"city" toml:"city" yaml:"city"`
-	Cityarea       string `boil:"cityarea" json:"cityarea" toml:"cityarea" yaml:"cityarea"`
-	Postalcode     string `boil:"postalcode" json:"postalcode" toml:"postalcode" yaml:"postalcode"`
+	CityArea       string `boil:"city_area" json:"city_area" toml:"city_area" yaml:"city_area"`
+	PostalCode     string `boil:"postal_code" json:"postal_code" toml:"postal_code" yaml:"postal_code"`
 	Country        string `boil:"country" json:"country" toml:"country" yaml:"country"`
-	Countryarea    string `boil:"countryarea" json:"countryarea" toml:"countryarea" yaml:"countryarea"`
+	CountryArea    string `boil:"country_area" json:"country_area" toml:"country_area" yaml:"country_area"`
 	Phone          string `boil:"phone" json:"phone" toml:"phone" yaml:"phone"`
-	Createat       int64  `boil:"createat" json:"createat" toml:"createat" yaml:"createat"`
-	Updateat       int64  `boil:"updateat" json:"updateat" toml:"updateat" yaml:"updateat"`
+	CreatedAt      int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      int64  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *addressR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L addressL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,66 +44,66 @@ type Address struct {
 
 var AddressColumns = struct {
 	ID             string
-	Firstname      string
-	Lastname       string
-	Companyname    string
-	Streetaddress1 string
-	Streetaddress2 string
+	FirstName      string
+	LastName       string
+	CompanyName    string
+	StreetAddress1 string
+	StreetAddress2 string
 	City           string
-	Cityarea       string
-	Postalcode     string
+	CityArea       string
+	PostalCode     string
 	Country        string
-	Countryarea    string
+	CountryArea    string
 	Phone          string
-	Createat       string
-	Updateat       string
+	CreatedAt      string
+	UpdatedAt      string
 }{
 	ID:             "id",
-	Firstname:      "firstname",
-	Lastname:       "lastname",
-	Companyname:    "companyname",
-	Streetaddress1: "streetaddress1",
-	Streetaddress2: "streetaddress2",
+	FirstName:      "first_name",
+	LastName:       "last_name",
+	CompanyName:    "company_name",
+	StreetAddress1: "street_address1",
+	StreetAddress2: "street_address2",
 	City:           "city",
-	Cityarea:       "cityarea",
-	Postalcode:     "postalcode",
+	CityArea:       "city_area",
+	PostalCode:     "postal_code",
 	Country:        "country",
-	Countryarea:    "countryarea",
+	CountryArea:    "country_area",
 	Phone:          "phone",
-	Createat:       "createat",
-	Updateat:       "updateat",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
 }
 
 var AddressTableColumns = struct {
 	ID             string
-	Firstname      string
-	Lastname       string
-	Companyname    string
-	Streetaddress1 string
-	Streetaddress2 string
+	FirstName      string
+	LastName       string
+	CompanyName    string
+	StreetAddress1 string
+	StreetAddress2 string
 	City           string
-	Cityarea       string
-	Postalcode     string
+	CityArea       string
+	PostalCode     string
 	Country        string
-	Countryarea    string
+	CountryArea    string
 	Phone          string
-	Createat       string
-	Updateat       string
+	CreatedAt      string
+	UpdatedAt      string
 }{
 	ID:             "addresses.id",
-	Firstname:      "addresses.firstname",
-	Lastname:       "addresses.lastname",
-	Companyname:    "addresses.companyname",
-	Streetaddress1: "addresses.streetaddress1",
-	Streetaddress2: "addresses.streetaddress2",
+	FirstName:      "addresses.first_name",
+	LastName:       "addresses.last_name",
+	CompanyName:    "addresses.company_name",
+	StreetAddress1: "addresses.street_address1",
+	StreetAddress2: "addresses.street_address2",
 	City:           "addresses.city",
-	Cityarea:       "addresses.cityarea",
-	Postalcode:     "addresses.postalcode",
+	CityArea:       "addresses.city_area",
+	PostalCode:     "addresses.postal_code",
 	Country:        "addresses.country",
-	Countryarea:    "addresses.countryarea",
+	CountryArea:    "addresses.country_area",
 	Phone:          "addresses.phone",
-	Createat:       "addresses.createat",
-	Updateat:       "addresses.updateat",
+	CreatedAt:      "addresses.created_at",
+	UpdatedAt:      "addresses.updated_at",
 }
 
 // Generated where
@@ -160,61 +160,61 @@ func (w whereHelperint64) NIN(slice []int64) qm.QueryMod {
 
 var AddressWhere = struct {
 	ID             whereHelperstring
-	Firstname      whereHelperstring
-	Lastname       whereHelperstring
-	Companyname    whereHelperstring
-	Streetaddress1 whereHelperstring
-	Streetaddress2 whereHelperstring
+	FirstName      whereHelperstring
+	LastName       whereHelperstring
+	CompanyName    whereHelperstring
+	StreetAddress1 whereHelperstring
+	StreetAddress2 whereHelperstring
 	City           whereHelperstring
-	Cityarea       whereHelperstring
-	Postalcode     whereHelperstring
+	CityArea       whereHelperstring
+	PostalCode     whereHelperstring
 	Country        whereHelperstring
-	Countryarea    whereHelperstring
+	CountryArea    whereHelperstring
 	Phone          whereHelperstring
-	Createat       whereHelperint64
-	Updateat       whereHelperint64
+	CreatedAt      whereHelperint64
+	UpdatedAt      whereHelperint64
 }{
 	ID:             whereHelperstring{field: "\"addresses\".\"id\""},
-	Firstname:      whereHelperstring{field: "\"addresses\".\"firstname\""},
-	Lastname:       whereHelperstring{field: "\"addresses\".\"lastname\""},
-	Companyname:    whereHelperstring{field: "\"addresses\".\"companyname\""},
-	Streetaddress1: whereHelperstring{field: "\"addresses\".\"streetaddress1\""},
-	Streetaddress2: whereHelperstring{field: "\"addresses\".\"streetaddress2\""},
+	FirstName:      whereHelperstring{field: "\"addresses\".\"first_name\""},
+	LastName:       whereHelperstring{field: "\"addresses\".\"last_name\""},
+	CompanyName:    whereHelperstring{field: "\"addresses\".\"company_name\""},
+	StreetAddress1: whereHelperstring{field: "\"addresses\".\"street_address1\""},
+	StreetAddress2: whereHelperstring{field: "\"addresses\".\"street_address2\""},
 	City:           whereHelperstring{field: "\"addresses\".\"city\""},
-	Cityarea:       whereHelperstring{field: "\"addresses\".\"cityarea\""},
-	Postalcode:     whereHelperstring{field: "\"addresses\".\"postalcode\""},
+	CityArea:       whereHelperstring{field: "\"addresses\".\"city_area\""},
+	PostalCode:     whereHelperstring{field: "\"addresses\".\"postal_code\""},
 	Country:        whereHelperstring{field: "\"addresses\".\"country\""},
-	Countryarea:    whereHelperstring{field: "\"addresses\".\"countryarea\""},
+	CountryArea:    whereHelperstring{field: "\"addresses\".\"country_area\""},
 	Phone:          whereHelperstring{field: "\"addresses\".\"phone\""},
-	Createat:       whereHelperint64{field: "\"addresses\".\"createat\""},
-	Updateat:       whereHelperint64{field: "\"addresses\".\"updateat\""},
+	CreatedAt:      whereHelperint64{field: "\"addresses\".\"created_at\""},
+	UpdatedAt:      whereHelperint64{field: "\"addresses\".\"updated_at\""},
 }
 
 // AddressRels is where relationship names are stored.
 var AddressRels = struct {
-	BillingaddressidCheckouts     string
-	BillingaddressidOrders        string
-	AddressidShops                string
-	AddressidUserAddresses        string
-	DefaultshippingaddressidUsers string
-	AddressidWarehouses           string
+	BillingAddressCheckouts     string
+	BillingAddressOrders        string
+	Shops                       string
+	UserAddresses               string
+	DefaultShippingAddressUsers string
+	Warehouses                  string
 }{
-	BillingaddressidCheckouts:     "BillingaddressidCheckouts",
-	BillingaddressidOrders:        "BillingaddressidOrders",
-	AddressidShops:                "AddressidShops",
-	AddressidUserAddresses:        "AddressidUserAddresses",
-	DefaultshippingaddressidUsers: "DefaultshippingaddressidUsers",
-	AddressidWarehouses:           "AddressidWarehouses",
+	BillingAddressCheckouts:     "BillingAddressCheckouts",
+	BillingAddressOrders:        "BillingAddressOrders",
+	Shops:                       "Shops",
+	UserAddresses:               "UserAddresses",
+	DefaultShippingAddressUsers: "DefaultShippingAddressUsers",
+	Warehouses:                  "Warehouses",
 }
 
 // addressR is where relationships are stored.
 type addressR struct {
-	BillingaddressidCheckouts     CheckoutSlice    `boil:"BillingaddressidCheckouts" json:"BillingaddressidCheckouts" toml:"BillingaddressidCheckouts" yaml:"BillingaddressidCheckouts"`
-	BillingaddressidOrders        OrderSlice       `boil:"BillingaddressidOrders" json:"BillingaddressidOrders" toml:"BillingaddressidOrders" yaml:"BillingaddressidOrders"`
-	AddressidShops                ShopSlice        `boil:"AddressidShops" json:"AddressidShops" toml:"AddressidShops" yaml:"AddressidShops"`
-	AddressidUserAddresses        UserAddressSlice `boil:"AddressidUserAddresses" json:"AddressidUserAddresses" toml:"AddressidUserAddresses" yaml:"AddressidUserAddresses"`
-	DefaultshippingaddressidUsers UserSlice        `boil:"DefaultshippingaddressidUsers" json:"DefaultshippingaddressidUsers" toml:"DefaultshippingaddressidUsers" yaml:"DefaultshippingaddressidUsers"`
-	AddressidWarehouses           WarehouseSlice   `boil:"AddressidWarehouses" json:"AddressidWarehouses" toml:"AddressidWarehouses" yaml:"AddressidWarehouses"`
+	BillingAddressCheckouts     CheckoutSlice    `boil:"BillingAddressCheckouts" json:"BillingAddressCheckouts" toml:"BillingAddressCheckouts" yaml:"BillingAddressCheckouts"`
+	BillingAddressOrders        OrderSlice       `boil:"BillingAddressOrders" json:"BillingAddressOrders" toml:"BillingAddressOrders" yaml:"BillingAddressOrders"`
+	Shops                       ShopSlice        `boil:"Shops" json:"Shops" toml:"Shops" yaml:"Shops"`
+	UserAddresses               UserAddressSlice `boil:"UserAddresses" json:"UserAddresses" toml:"UserAddresses" yaml:"UserAddresses"`
+	DefaultShippingAddressUsers UserSlice        `boil:"DefaultShippingAddressUsers" json:"DefaultShippingAddressUsers" toml:"DefaultShippingAddressUsers" yaml:"DefaultShippingAddressUsers"`
+	Warehouses                  WarehouseSlice   `boil:"Warehouses" json:"Warehouses" toml:"Warehouses" yaml:"Warehouses"`
 }
 
 // NewStruct creates a new relationship struct
@@ -222,54 +222,54 @@ func (*addressR) NewStruct() *addressR {
 	return &addressR{}
 }
 
-func (r *addressR) GetBillingaddressidCheckouts() CheckoutSlice {
+func (r *addressR) GetBillingAddressCheckouts() CheckoutSlice {
 	if r == nil {
 		return nil
 	}
-	return r.BillingaddressidCheckouts
+	return r.BillingAddressCheckouts
 }
 
-func (r *addressR) GetBillingaddressidOrders() OrderSlice {
+func (r *addressR) GetBillingAddressOrders() OrderSlice {
 	if r == nil {
 		return nil
 	}
-	return r.BillingaddressidOrders
+	return r.BillingAddressOrders
 }
 
-func (r *addressR) GetAddressidShops() ShopSlice {
+func (r *addressR) GetShops() ShopSlice {
 	if r == nil {
 		return nil
 	}
-	return r.AddressidShops
+	return r.Shops
 }
 
-func (r *addressR) GetAddressidUserAddresses() UserAddressSlice {
+func (r *addressR) GetUserAddresses() UserAddressSlice {
 	if r == nil {
 		return nil
 	}
-	return r.AddressidUserAddresses
+	return r.UserAddresses
 }
 
-func (r *addressR) GetDefaultshippingaddressidUsers() UserSlice {
+func (r *addressR) GetDefaultShippingAddressUsers() UserSlice {
 	if r == nil {
 		return nil
 	}
-	return r.DefaultshippingaddressidUsers
+	return r.DefaultShippingAddressUsers
 }
 
-func (r *addressR) GetAddressidWarehouses() WarehouseSlice {
+func (r *addressR) GetWarehouses() WarehouseSlice {
 	if r == nil {
 		return nil
 	}
-	return r.AddressidWarehouses
+	return r.Warehouses
 }
 
 // addressL is where Load methods for each relationship are stored.
 type addressL struct{}
 
 var (
-	addressAllColumns            = []string{"id", "firstname", "lastname", "companyname", "streetaddress1", "streetaddress2", "city", "cityarea", "postalcode", "country", "countryarea", "phone", "createat", "updateat"}
-	addressColumnsWithoutDefault = []string{"id", "firstname", "lastname", "companyname", "streetaddress1", "streetaddress2", "city", "cityarea", "postalcode", "country", "countryarea", "phone", "createat", "updateat"}
+	addressAllColumns            = []string{"id", "first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "created_at", "updated_at"}
+	addressColumnsWithoutDefault = []string{"id", "first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "created_at", "updated_at"}
 	addressColumnsWithDefault    = []string{}
 	addressPrimaryKeyColumns     = []string{"id"}
 	addressGeneratedColumns      = []string{}
@@ -553,93 +553,93 @@ func (q addressQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// BillingaddressidCheckouts retrieves all the checkout's Checkouts with an executor via billingaddressid column.
-func (o *Address) BillingaddressidCheckouts(mods ...qm.QueryMod) checkoutQuery {
+// BillingAddressCheckouts retrieves all the checkout's Checkouts with an executor via billing_address_id column.
+func (o *Address) BillingAddressCheckouts(mods ...qm.QueryMod) checkoutQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"checkouts\".\"billingaddressid\"=?", o.ID),
+		qm.Where("\"checkouts\".\"billing_address_id\"=?", o.ID),
 	)
 
 	return Checkouts(queryMods...)
 }
 
-// BillingaddressidOrders retrieves all the order's Orders with an executor via billingaddressid column.
-func (o *Address) BillingaddressidOrders(mods ...qm.QueryMod) orderQuery {
+// BillingAddressOrders retrieves all the order's Orders with an executor via billing_address_id column.
+func (o *Address) BillingAddressOrders(mods ...qm.QueryMod) orderQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"orders\".\"billingaddressid\"=?", o.ID),
+		qm.Where("\"orders\".\"billing_address_id\"=?", o.ID),
 	)
 
 	return Orders(queryMods...)
 }
 
-// AddressidShops retrieves all the shop's Shops with an executor via addressid column.
-func (o *Address) AddressidShops(mods ...qm.QueryMod) shopQuery {
+// Shops retrieves all the shop's Shops with an executor.
+func (o *Address) Shops(mods ...qm.QueryMod) shopQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"shops\".\"addressid\"=?", o.ID),
+		qm.Where("\"shops\".\"address_id\"=?", o.ID),
 	)
 
 	return Shops(queryMods...)
 }
 
-// AddressidUserAddresses retrieves all the user_address's UserAddresses with an executor via addressid column.
-func (o *Address) AddressidUserAddresses(mods ...qm.QueryMod) userAddressQuery {
+// UserAddresses retrieves all the user_address's UserAddresses with an executor.
+func (o *Address) UserAddresses(mods ...qm.QueryMod) userAddressQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"user_addresses\".\"addressid\"=?", o.ID),
+		qm.Where("\"user_addresses\".\"address_id\"=?", o.ID),
 	)
 
 	return UserAddresses(queryMods...)
 }
 
-// DefaultshippingaddressidUsers retrieves all the user's Users with an executor via defaultshippingaddressid column.
-func (o *Address) DefaultshippingaddressidUsers(mods ...qm.QueryMod) userQuery {
+// DefaultShippingAddressUsers retrieves all the user's Users with an executor via default_shipping_address_id column.
+func (o *Address) DefaultShippingAddressUsers(mods ...qm.QueryMod) userQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"users\".\"defaultshippingaddressid\"=?", o.ID),
+		qm.Where("\"users\".\"default_shipping_address_id\"=?", o.ID),
 	)
 
 	return Users(queryMods...)
 }
 
-// AddressidWarehouses retrieves all the warehouse's Warehouses with an executor via addressid column.
-func (o *Address) AddressidWarehouses(mods ...qm.QueryMod) warehouseQuery {
+// Warehouses retrieves all the warehouse's Warehouses with an executor.
+func (o *Address) Warehouses(mods ...qm.QueryMod) warehouseQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"warehouses\".\"addressid\"=?", o.ID),
+		qm.Where("\"warehouses\".\"address_id\"=?", o.ID),
 	)
 
 	return Warehouses(queryMods...)
 }
 
-// LoadBillingaddressidCheckouts allows an eager lookup of values, cached into the
+// LoadBillingAddressCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadBillingaddressidCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadBillingAddressCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -694,7 +694,7 @@ func (addressL) LoadBillingaddressidCheckouts(ctx context.Context, e boil.Contex
 
 	query := NewQuery(
 		qm.From(`checkouts`),
-		qm.WhereIn(`checkouts.billingaddressid in ?`, args...),
+		qm.WhereIn(`checkouts.billing_address_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -725,24 +725,24 @@ func (addressL) LoadBillingaddressidCheckouts(ctx context.Context, e boil.Contex
 		}
 	}
 	if singular {
-		object.R.BillingaddressidCheckouts = resultSlice
+		object.R.BillingAddressCheckouts = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &checkoutR{}
 			}
-			foreign.R.BillingaddressidAddress = object
+			foreign.R.BillingAddress = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Billingaddressid) {
-				local.R.BillingaddressidCheckouts = append(local.R.BillingaddressidCheckouts, foreign)
+			if queries.Equal(local.ID, foreign.BillingAddressID) {
+				local.R.BillingAddressCheckouts = append(local.R.BillingAddressCheckouts, foreign)
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
 				}
-				foreign.R.BillingaddressidAddress = local
+				foreign.R.BillingAddress = local
 				break
 			}
 		}
@@ -751,9 +751,9 @@ func (addressL) LoadBillingaddressidCheckouts(ctx context.Context, e boil.Contex
 	return nil
 }
 
-// LoadBillingaddressidOrders allows an eager lookup of values, cached into the
+// LoadBillingAddressOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadBillingaddressidOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadBillingAddressOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -808,7 +808,7 @@ func (addressL) LoadBillingaddressidOrders(ctx context.Context, e boil.ContextEx
 
 	query := NewQuery(
 		qm.From(`orders`),
-		qm.WhereIn(`orders.billingaddressid in ?`, args...),
+		qm.WhereIn(`orders.billing_address_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -839,24 +839,24 @@ func (addressL) LoadBillingaddressidOrders(ctx context.Context, e boil.ContextEx
 		}
 	}
 	if singular {
-		object.R.BillingaddressidOrders = resultSlice
+		object.R.BillingAddressOrders = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderR{}
 			}
-			foreign.R.BillingaddressidAddress = object
+			foreign.R.BillingAddress = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Billingaddressid) {
-				local.R.BillingaddressidOrders = append(local.R.BillingaddressidOrders, foreign)
+			if queries.Equal(local.ID, foreign.BillingAddressID) {
+				local.R.BillingAddressOrders = append(local.R.BillingAddressOrders, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.BillingaddressidAddress = local
+				foreign.R.BillingAddress = local
 				break
 			}
 		}
@@ -865,9 +865,9 @@ func (addressL) LoadBillingaddressidOrders(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// LoadAddressidShops allows an eager lookup of values, cached into the
+// LoadShops allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadAddressidShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -922,7 +922,7 @@ func (addressL) LoadAddressidShops(ctx context.Context, e boil.ContextExecutor, 
 
 	query := NewQuery(
 		qm.From(`shops`),
-		qm.WhereIn(`shops.addressid in ?`, args...),
+		qm.WhereIn(`shops.address_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -953,24 +953,24 @@ func (addressL) LoadAddressidShops(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.AddressidShops = resultSlice
+		object.R.Shops = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &shopR{}
 			}
-			foreign.R.AddressidAddress = object
+			foreign.R.Address = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Addressid) {
-				local.R.AddressidShops = append(local.R.AddressidShops, foreign)
+			if queries.Equal(local.ID, foreign.AddressID) {
+				local.R.Shops = append(local.R.Shops, foreign)
 				if foreign.R == nil {
 					foreign.R = &shopR{}
 				}
-				foreign.R.AddressidAddress = local
+				foreign.R.Address = local
 				break
 			}
 		}
@@ -979,9 +979,9 @@ func (addressL) LoadAddressidShops(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadAddressidUserAddresses allows an eager lookup of values, cached into the
+// LoadUserAddresses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadAddressidUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1036,7 +1036,7 @@ func (addressL) LoadAddressidUserAddresses(ctx context.Context, e boil.ContextEx
 
 	query := NewQuery(
 		qm.From(`user_addresses`),
-		qm.WhereIn(`user_addresses.addressid in ?`, args...),
+		qm.WhereIn(`user_addresses.address_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1067,24 +1067,24 @@ func (addressL) LoadAddressidUserAddresses(ctx context.Context, e boil.ContextEx
 		}
 	}
 	if singular {
-		object.R.AddressidUserAddresses = resultSlice
+		object.R.UserAddresses = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &userAddressR{}
 			}
-			foreign.R.AddressidAddress = object
+			foreign.R.Address = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Addressid) {
-				local.R.AddressidUserAddresses = append(local.R.AddressidUserAddresses, foreign)
+			if queries.Equal(local.ID, foreign.AddressID) {
+				local.R.UserAddresses = append(local.R.UserAddresses, foreign)
 				if foreign.R == nil {
 					foreign.R = &userAddressR{}
 				}
-				foreign.R.AddressidAddress = local
+				foreign.R.Address = local
 				break
 			}
 		}
@@ -1093,9 +1093,9 @@ func (addressL) LoadAddressidUserAddresses(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// LoadDefaultshippingaddressidUsers allows an eager lookup of values, cached into the
+// LoadDefaultShippingAddressUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadDefaultshippingaddressidUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadDefaultShippingAddressUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1150,7 +1150,7 @@ func (addressL) LoadDefaultshippingaddressidUsers(ctx context.Context, e boil.Co
 
 	query := NewQuery(
 		qm.From(`users`),
-		qm.WhereIn(`users.defaultshippingaddressid in ?`, args...),
+		qm.WhereIn(`users.default_shipping_address_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1181,24 +1181,24 @@ func (addressL) LoadDefaultshippingaddressidUsers(ctx context.Context, e boil.Co
 		}
 	}
 	if singular {
-		object.R.DefaultshippingaddressidUsers = resultSlice
+		object.R.DefaultShippingAddressUsers = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &userR{}
 			}
-			foreign.R.DefaultshippingaddressidAddress = object
+			foreign.R.DefaultShippingAddress = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Defaultshippingaddressid) {
-				local.R.DefaultshippingaddressidUsers = append(local.R.DefaultshippingaddressidUsers, foreign)
+			if queries.Equal(local.ID, foreign.DefaultShippingAddressID) {
+				local.R.DefaultShippingAddressUsers = append(local.R.DefaultShippingAddressUsers, foreign)
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.DefaultshippingaddressidAddress = local
+				foreign.R.DefaultShippingAddress = local
 				break
 			}
 		}
@@ -1207,9 +1207,9 @@ func (addressL) LoadDefaultshippingaddressidUsers(ctx context.Context, e boil.Co
 	return nil
 }
 
-// LoadAddressidWarehouses allows an eager lookup of values, cached into the
+// LoadWarehouses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadAddressidWarehouses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadWarehouses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1264,7 +1264,7 @@ func (addressL) LoadAddressidWarehouses(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`warehouses`),
-		qm.WhereIn(`warehouses.addressid in ?`, args...),
+		qm.WhereIn(`warehouses.address_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1295,24 +1295,24 @@ func (addressL) LoadAddressidWarehouses(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.AddressidWarehouses = resultSlice
+		object.R.Warehouses = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &warehouseR{}
 			}
-			foreign.R.AddressidAddress = object
+			foreign.R.Address = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Addressid) {
-				local.R.AddressidWarehouses = append(local.R.AddressidWarehouses, foreign)
+			if queries.Equal(local.ID, foreign.AddressID) {
+				local.R.Warehouses = append(local.R.Warehouses, foreign)
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
 				}
-				foreign.R.AddressidAddress = local
+				foreign.R.Address = local
 				break
 			}
 		}
@@ -1321,22 +1321,22 @@ func (addressL) LoadAddressidWarehouses(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// AddBillingaddressidCheckouts adds the given related objects to the existing relationships
+// AddBillingAddressCheckouts adds the given related objects to the existing relationships
 // of the address, optionally inserting them as new records.
-// Appends related to o.R.BillingaddressidCheckouts.
-// Sets related.R.BillingaddressidAddress appropriately.
-func (o *Address) AddBillingaddressidCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+// Appends related to o.R.BillingAddressCheckouts.
+// Sets related.R.BillingAddress appropriately.
+func (o *Address) AddBillingAddressCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Billingaddressid, o.ID)
+			queries.Assign(&rel.BillingAddressID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"checkouts\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"billingaddressid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.Token}
@@ -1350,38 +1350,38 @@ func (o *Address) AddBillingaddressidCheckouts(ctx context.Context, exec boil.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Billingaddressid, o.ID)
+			queries.Assign(&rel.BillingAddressID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &addressR{
-			BillingaddressidCheckouts: related,
+			BillingAddressCheckouts: related,
 		}
 	} else {
-		o.R.BillingaddressidCheckouts = append(o.R.BillingaddressidCheckouts, related...)
+		o.R.BillingAddressCheckouts = append(o.R.BillingAddressCheckouts, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &checkoutR{
-				BillingaddressidAddress: o,
+				BillingAddress: o,
 			}
 		} else {
-			rel.R.BillingaddressidAddress = o
+			rel.R.BillingAddress = o
 		}
 	}
 	return nil
 }
 
-// SetBillingaddressidCheckouts removes all previously related items of the
+// SetBillingAddressCheckouts removes all previously related items of the
 // address replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.BillingaddressidAddress's BillingaddressidCheckouts accordingly.
-// Replaces o.R.BillingaddressidCheckouts with related.
-// Sets related.R.BillingaddressidAddress's BillingaddressidCheckouts accordingly.
-func (o *Address) SetBillingaddressidCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
-	query := "update \"checkouts\" set \"billingaddressid\" = null where \"billingaddressid\" = $1"
+// Sets o.R.BillingAddress's BillingAddressCheckouts accordingly.
+// Replaces o.R.BillingAddressCheckouts with related.
+// Sets related.R.BillingAddress's BillingAddressCheckouts accordingly.
+func (o *Address) SetBillingAddressCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+	query := "update \"checkouts\" set \"billing_address_id\" = null where \"billing_address_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1394,35 +1394,35 @@ func (o *Address) SetBillingaddressidCheckouts(ctx context.Context, exec boil.Co
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.BillingaddressidCheckouts {
-			queries.SetScanner(&rel.Billingaddressid, nil)
+		for _, rel := range o.R.BillingAddressCheckouts {
+			queries.SetScanner(&rel.BillingAddressID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.BillingaddressidAddress = nil
+			rel.R.BillingAddress = nil
 		}
-		o.R.BillingaddressidCheckouts = nil
+		o.R.BillingAddressCheckouts = nil
 	}
 
-	return o.AddBillingaddressidCheckouts(ctx, exec, insert, related...)
+	return o.AddBillingAddressCheckouts(ctx, exec, insert, related...)
 }
 
-// RemoveBillingaddressidCheckouts relationships from objects passed in.
-// Removes related items from R.BillingaddressidCheckouts (uses pointer comparison, removal does not keep order)
-// Sets related.R.BillingaddressidAddress.
-func (o *Address) RemoveBillingaddressidCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
+// RemoveBillingAddressCheckouts relationships from objects passed in.
+// Removes related items from R.BillingAddressCheckouts (uses pointer comparison, removal does not keep order)
+// Sets related.R.BillingAddress.
+func (o *Address) RemoveBillingAddressCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Billingaddressid, nil)
+		queries.SetScanner(&rel.BillingAddressID, nil)
 		if rel.R != nil {
-			rel.R.BillingaddressidAddress = nil
+			rel.R.BillingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("billingaddressid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1431,16 +1431,16 @@ func (o *Address) RemoveBillingaddressidCheckouts(ctx context.Context, exec boil
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.BillingaddressidCheckouts {
+		for i, ri := range o.R.BillingAddressCheckouts {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.BillingaddressidCheckouts)
+			ln := len(o.R.BillingAddressCheckouts)
 			if ln > 1 && i < ln-1 {
-				o.R.BillingaddressidCheckouts[i] = o.R.BillingaddressidCheckouts[ln-1]
+				o.R.BillingAddressCheckouts[i] = o.R.BillingAddressCheckouts[ln-1]
 			}
-			o.R.BillingaddressidCheckouts = o.R.BillingaddressidCheckouts[:ln-1]
+			o.R.BillingAddressCheckouts = o.R.BillingAddressCheckouts[:ln-1]
 			break
 		}
 	}
@@ -1448,22 +1448,22 @@ func (o *Address) RemoveBillingaddressidCheckouts(ctx context.Context, exec boil
 	return nil
 }
 
-// AddBillingaddressidOrders adds the given related objects to the existing relationships
+// AddBillingAddressOrders adds the given related objects to the existing relationships
 // of the address, optionally inserting them as new records.
-// Appends related to o.R.BillingaddressidOrders.
-// Sets related.R.BillingaddressidAddress appropriately.
-func (o *Address) AddBillingaddressidOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+// Appends related to o.R.BillingAddressOrders.
+// Sets related.R.BillingAddress appropriately.
+func (o *Address) AddBillingAddressOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Billingaddressid, o.ID)
+			queries.Assign(&rel.BillingAddressID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"orders\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"billingaddressid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1477,38 +1477,38 @@ func (o *Address) AddBillingaddressidOrders(ctx context.Context, exec boil.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Billingaddressid, o.ID)
+			queries.Assign(&rel.BillingAddressID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &addressR{
-			BillingaddressidOrders: related,
+			BillingAddressOrders: related,
 		}
 	} else {
-		o.R.BillingaddressidOrders = append(o.R.BillingaddressidOrders, related...)
+		o.R.BillingAddressOrders = append(o.R.BillingAddressOrders, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderR{
-				BillingaddressidAddress: o,
+				BillingAddress: o,
 			}
 		} else {
-			rel.R.BillingaddressidAddress = o
+			rel.R.BillingAddress = o
 		}
 	}
 	return nil
 }
 
-// SetBillingaddressidOrders removes all previously related items of the
+// SetBillingAddressOrders removes all previously related items of the
 // address replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.BillingaddressidAddress's BillingaddressidOrders accordingly.
-// Replaces o.R.BillingaddressidOrders with related.
-// Sets related.R.BillingaddressidAddress's BillingaddressidOrders accordingly.
-func (o *Address) SetBillingaddressidOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
-	query := "update \"orders\" set \"billingaddressid\" = null where \"billingaddressid\" = $1"
+// Sets o.R.BillingAddress's BillingAddressOrders accordingly.
+// Replaces o.R.BillingAddressOrders with related.
+// Sets related.R.BillingAddress's BillingAddressOrders accordingly.
+func (o *Address) SetBillingAddressOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+	query := "update \"orders\" set \"billing_address_id\" = null where \"billing_address_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1521,35 +1521,35 @@ func (o *Address) SetBillingaddressidOrders(ctx context.Context, exec boil.Conte
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.BillingaddressidOrders {
-			queries.SetScanner(&rel.Billingaddressid, nil)
+		for _, rel := range o.R.BillingAddressOrders {
+			queries.SetScanner(&rel.BillingAddressID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.BillingaddressidAddress = nil
+			rel.R.BillingAddress = nil
 		}
-		o.R.BillingaddressidOrders = nil
+		o.R.BillingAddressOrders = nil
 	}
 
-	return o.AddBillingaddressidOrders(ctx, exec, insert, related...)
+	return o.AddBillingAddressOrders(ctx, exec, insert, related...)
 }
 
-// RemoveBillingaddressidOrders relationships from objects passed in.
-// Removes related items from R.BillingaddressidOrders (uses pointer comparison, removal does not keep order)
-// Sets related.R.BillingaddressidAddress.
-func (o *Address) RemoveBillingaddressidOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
+// RemoveBillingAddressOrders relationships from objects passed in.
+// Removes related items from R.BillingAddressOrders (uses pointer comparison, removal does not keep order)
+// Sets related.R.BillingAddress.
+func (o *Address) RemoveBillingAddressOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Billingaddressid, nil)
+		queries.SetScanner(&rel.BillingAddressID, nil)
 		if rel.R != nil {
-			rel.R.BillingaddressidAddress = nil
+			rel.R.BillingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("billingaddressid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1558,16 +1558,16 @@ func (o *Address) RemoveBillingaddressidOrders(ctx context.Context, exec boil.Co
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.BillingaddressidOrders {
+		for i, ri := range o.R.BillingAddressOrders {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.BillingaddressidOrders)
+			ln := len(o.R.BillingAddressOrders)
 			if ln > 1 && i < ln-1 {
-				o.R.BillingaddressidOrders[i] = o.R.BillingaddressidOrders[ln-1]
+				o.R.BillingAddressOrders[i] = o.R.BillingAddressOrders[ln-1]
 			}
-			o.R.BillingaddressidOrders = o.R.BillingaddressidOrders[:ln-1]
+			o.R.BillingAddressOrders = o.R.BillingAddressOrders[:ln-1]
 			break
 		}
 	}
@@ -1575,22 +1575,22 @@ func (o *Address) RemoveBillingaddressidOrders(ctx context.Context, exec boil.Co
 	return nil
 }
 
-// AddAddressidShops adds the given related objects to the existing relationships
+// AddShops adds the given related objects to the existing relationships
 // of the address, optionally inserting them as new records.
-// Appends related to o.R.AddressidShops.
-// Sets related.R.AddressidAddress appropriately.
-func (o *Address) AddAddressidShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+// Appends related to o.R.Shops.
+// Sets related.R.Address appropriately.
+func (o *Address) AddShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Addressid, o.ID)
+			queries.Assign(&rel.AddressID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"shops\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"addressid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, shopPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1604,38 +1604,38 @@ func (o *Address) AddAddressidShops(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Addressid, o.ID)
+			queries.Assign(&rel.AddressID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &addressR{
-			AddressidShops: related,
+			Shops: related,
 		}
 	} else {
-		o.R.AddressidShops = append(o.R.AddressidShops, related...)
+		o.R.Shops = append(o.R.Shops, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &shopR{
-				AddressidAddress: o,
+				Address: o,
 			}
 		} else {
-			rel.R.AddressidAddress = o
+			rel.R.Address = o
 		}
 	}
 	return nil
 }
 
-// SetAddressidShops removes all previously related items of the
+// SetShops removes all previously related items of the
 // address replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.AddressidAddress's AddressidShops accordingly.
-// Replaces o.R.AddressidShops with related.
-// Sets related.R.AddressidAddress's AddressidShops accordingly.
-func (o *Address) SetAddressidShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
-	query := "update \"shops\" set \"addressid\" = null where \"addressid\" = $1"
+// Sets o.R.Address's Shops accordingly.
+// Replaces o.R.Shops with related.
+// Sets related.R.Address's Shops accordingly.
+func (o *Address) SetShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+	query := "update \"shops\" set \"address_id\" = null where \"address_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1648,35 +1648,35 @@ func (o *Address) SetAddressidShops(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.AddressidShops {
-			queries.SetScanner(&rel.Addressid, nil)
+		for _, rel := range o.R.Shops {
+			queries.SetScanner(&rel.AddressID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.AddressidAddress = nil
+			rel.R.Address = nil
 		}
-		o.R.AddressidShops = nil
+		o.R.Shops = nil
 	}
 
-	return o.AddAddressidShops(ctx, exec, insert, related...)
+	return o.AddShops(ctx, exec, insert, related...)
 }
 
-// RemoveAddressidShops relationships from objects passed in.
-// Removes related items from R.AddressidShops (uses pointer comparison, removal does not keep order)
-// Sets related.R.AddressidAddress.
-func (o *Address) RemoveAddressidShops(ctx context.Context, exec boil.ContextExecutor, related ...*Shop) error {
+// RemoveShops relationships from objects passed in.
+// Removes related items from R.Shops (uses pointer comparison, removal does not keep order)
+// Sets related.R.Address.
+func (o *Address) RemoveShops(ctx context.Context, exec boil.ContextExecutor, related ...*Shop) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Addressid, nil)
+		queries.SetScanner(&rel.AddressID, nil)
 		if rel.R != nil {
-			rel.R.AddressidAddress = nil
+			rel.R.Address = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("addressid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
 			return err
 		}
 	}
@@ -1685,16 +1685,16 @@ func (o *Address) RemoveAddressidShops(ctx context.Context, exec boil.ContextExe
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.AddressidShops {
+		for i, ri := range o.R.Shops {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.AddressidShops)
+			ln := len(o.R.Shops)
 			if ln > 1 && i < ln-1 {
-				o.R.AddressidShops[i] = o.R.AddressidShops[ln-1]
+				o.R.Shops[i] = o.R.Shops[ln-1]
 			}
-			o.R.AddressidShops = o.R.AddressidShops[:ln-1]
+			o.R.Shops = o.R.Shops[:ln-1]
 			break
 		}
 	}
@@ -1702,22 +1702,22 @@ func (o *Address) RemoveAddressidShops(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddAddressidUserAddresses adds the given related objects to the existing relationships
+// AddUserAddresses adds the given related objects to the existing relationships
 // of the address, optionally inserting them as new records.
-// Appends related to o.R.AddressidUserAddresses.
-// Sets related.R.AddressidAddress appropriately.
-func (o *Address) AddAddressidUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
+// Appends related to o.R.UserAddresses.
+// Sets related.R.Address appropriately.
+func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Addressid, o.ID)
+			queries.Assign(&rel.AddressID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"user_addresses\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"addressid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, userAddressPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1731,38 +1731,38 @@ func (o *Address) AddAddressidUserAddresses(ctx context.Context, exec boil.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Addressid, o.ID)
+			queries.Assign(&rel.AddressID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &addressR{
-			AddressidUserAddresses: related,
+			UserAddresses: related,
 		}
 	} else {
-		o.R.AddressidUserAddresses = append(o.R.AddressidUserAddresses, related...)
+		o.R.UserAddresses = append(o.R.UserAddresses, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &userAddressR{
-				AddressidAddress: o,
+				Address: o,
 			}
 		} else {
-			rel.R.AddressidAddress = o
+			rel.R.Address = o
 		}
 	}
 	return nil
 }
 
-// SetAddressidUserAddresses removes all previously related items of the
+// SetUserAddresses removes all previously related items of the
 // address replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.AddressidAddress's AddressidUserAddresses accordingly.
-// Replaces o.R.AddressidUserAddresses with related.
-// Sets related.R.AddressidAddress's AddressidUserAddresses accordingly.
-func (o *Address) SetAddressidUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
-	query := "update \"user_addresses\" set \"addressid\" = null where \"addressid\" = $1"
+// Sets o.R.Address's UserAddresses accordingly.
+// Replaces o.R.UserAddresses with related.
+// Sets related.R.Address's UserAddresses accordingly.
+func (o *Address) SetUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
+	query := "update \"user_addresses\" set \"address_id\" = null where \"address_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1775,35 +1775,35 @@ func (o *Address) SetAddressidUserAddresses(ctx context.Context, exec boil.Conte
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.AddressidUserAddresses {
-			queries.SetScanner(&rel.Addressid, nil)
+		for _, rel := range o.R.UserAddresses {
+			queries.SetScanner(&rel.AddressID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.AddressidAddress = nil
+			rel.R.Address = nil
 		}
-		o.R.AddressidUserAddresses = nil
+		o.R.UserAddresses = nil
 	}
 
-	return o.AddAddressidUserAddresses(ctx, exec, insert, related...)
+	return o.AddUserAddresses(ctx, exec, insert, related...)
 }
 
-// RemoveAddressidUserAddresses relationships from objects passed in.
-// Removes related items from R.AddressidUserAddresses (uses pointer comparison, removal does not keep order)
-// Sets related.R.AddressidAddress.
-func (o *Address) RemoveAddressidUserAddresses(ctx context.Context, exec boil.ContextExecutor, related ...*UserAddress) error {
+// RemoveUserAddresses relationships from objects passed in.
+// Removes related items from R.UserAddresses (uses pointer comparison, removal does not keep order)
+// Sets related.R.Address.
+func (o *Address) RemoveUserAddresses(ctx context.Context, exec boil.ContextExecutor, related ...*UserAddress) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Addressid, nil)
+		queries.SetScanner(&rel.AddressID, nil)
 		if rel.R != nil {
-			rel.R.AddressidAddress = nil
+			rel.R.Address = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("addressid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
 			return err
 		}
 	}
@@ -1812,16 +1812,16 @@ func (o *Address) RemoveAddressidUserAddresses(ctx context.Context, exec boil.Co
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.AddressidUserAddresses {
+		for i, ri := range o.R.UserAddresses {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.AddressidUserAddresses)
+			ln := len(o.R.UserAddresses)
 			if ln > 1 && i < ln-1 {
-				o.R.AddressidUserAddresses[i] = o.R.AddressidUserAddresses[ln-1]
+				o.R.UserAddresses[i] = o.R.UserAddresses[ln-1]
 			}
-			o.R.AddressidUserAddresses = o.R.AddressidUserAddresses[:ln-1]
+			o.R.UserAddresses = o.R.UserAddresses[:ln-1]
 			break
 		}
 	}
@@ -1829,22 +1829,22 @@ func (o *Address) RemoveAddressidUserAddresses(ctx context.Context, exec boil.Co
 	return nil
 }
 
-// AddDefaultshippingaddressidUsers adds the given related objects to the existing relationships
+// AddDefaultShippingAddressUsers adds the given related objects to the existing relationships
 // of the address, optionally inserting them as new records.
-// Appends related to o.R.DefaultshippingaddressidUsers.
-// Sets related.R.DefaultshippingaddressidAddress appropriately.
-func (o *Address) AddDefaultshippingaddressidUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+// Appends related to o.R.DefaultShippingAddressUsers.
+// Sets related.R.DefaultShippingAddress appropriately.
+func (o *Address) AddDefaultShippingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Defaultshippingaddressid, o.ID)
+			queries.Assign(&rel.DefaultShippingAddressID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"users\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"defaultshippingaddressid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"default_shipping_address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1858,38 +1858,38 @@ func (o *Address) AddDefaultshippingaddressidUsers(ctx context.Context, exec boi
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Defaultshippingaddressid, o.ID)
+			queries.Assign(&rel.DefaultShippingAddressID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &addressR{
-			DefaultshippingaddressidUsers: related,
+			DefaultShippingAddressUsers: related,
 		}
 	} else {
-		o.R.DefaultshippingaddressidUsers = append(o.R.DefaultshippingaddressidUsers, related...)
+		o.R.DefaultShippingAddressUsers = append(o.R.DefaultShippingAddressUsers, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &userR{
-				DefaultshippingaddressidAddress: o,
+				DefaultShippingAddress: o,
 			}
 		} else {
-			rel.R.DefaultshippingaddressidAddress = o
+			rel.R.DefaultShippingAddress = o
 		}
 	}
 	return nil
 }
 
-// SetDefaultshippingaddressidUsers removes all previously related items of the
+// SetDefaultShippingAddressUsers removes all previously related items of the
 // address replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.DefaultshippingaddressidAddress's DefaultshippingaddressidUsers accordingly.
-// Replaces o.R.DefaultshippingaddressidUsers with related.
-// Sets related.R.DefaultshippingaddressidAddress's DefaultshippingaddressidUsers accordingly.
-func (o *Address) SetDefaultshippingaddressidUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
-	query := "update \"users\" set \"defaultshippingaddressid\" = null where \"defaultshippingaddressid\" = $1"
+// Sets o.R.DefaultShippingAddress's DefaultShippingAddressUsers accordingly.
+// Replaces o.R.DefaultShippingAddressUsers with related.
+// Sets related.R.DefaultShippingAddress's DefaultShippingAddressUsers accordingly.
+func (o *Address) SetDefaultShippingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+	query := "update \"users\" set \"default_shipping_address_id\" = null where \"default_shipping_address_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1902,35 +1902,35 @@ func (o *Address) SetDefaultshippingaddressidUsers(ctx context.Context, exec boi
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.DefaultshippingaddressidUsers {
-			queries.SetScanner(&rel.Defaultshippingaddressid, nil)
+		for _, rel := range o.R.DefaultShippingAddressUsers {
+			queries.SetScanner(&rel.DefaultShippingAddressID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.DefaultshippingaddressidAddress = nil
+			rel.R.DefaultShippingAddress = nil
 		}
-		o.R.DefaultshippingaddressidUsers = nil
+		o.R.DefaultShippingAddressUsers = nil
 	}
 
-	return o.AddDefaultshippingaddressidUsers(ctx, exec, insert, related...)
+	return o.AddDefaultShippingAddressUsers(ctx, exec, insert, related...)
 }
 
-// RemoveDefaultshippingaddressidUsers relationships from objects passed in.
-// Removes related items from R.DefaultshippingaddressidUsers (uses pointer comparison, removal does not keep order)
-// Sets related.R.DefaultshippingaddressidAddress.
-func (o *Address) RemoveDefaultshippingaddressidUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
+// RemoveDefaultShippingAddressUsers relationships from objects passed in.
+// Removes related items from R.DefaultShippingAddressUsers (uses pointer comparison, removal does not keep order)
+// Sets related.R.DefaultShippingAddress.
+func (o *Address) RemoveDefaultShippingAddressUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Defaultshippingaddressid, nil)
+		queries.SetScanner(&rel.DefaultShippingAddressID, nil)
 		if rel.R != nil {
-			rel.R.DefaultshippingaddressidAddress = nil
+			rel.R.DefaultShippingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("defaultshippingaddressid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("default_shipping_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1939,16 +1939,16 @@ func (o *Address) RemoveDefaultshippingaddressidUsers(ctx context.Context, exec 
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.DefaultshippingaddressidUsers {
+		for i, ri := range o.R.DefaultShippingAddressUsers {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.DefaultshippingaddressidUsers)
+			ln := len(o.R.DefaultShippingAddressUsers)
 			if ln > 1 && i < ln-1 {
-				o.R.DefaultshippingaddressidUsers[i] = o.R.DefaultshippingaddressidUsers[ln-1]
+				o.R.DefaultShippingAddressUsers[i] = o.R.DefaultShippingAddressUsers[ln-1]
 			}
-			o.R.DefaultshippingaddressidUsers = o.R.DefaultshippingaddressidUsers[:ln-1]
+			o.R.DefaultShippingAddressUsers = o.R.DefaultShippingAddressUsers[:ln-1]
 			break
 		}
 	}
@@ -1956,22 +1956,22 @@ func (o *Address) RemoveDefaultshippingaddressidUsers(ctx context.Context, exec 
 	return nil
 }
 
-// AddAddressidWarehouses adds the given related objects to the existing relationships
+// AddWarehouses adds the given related objects to the existing relationships
 // of the address, optionally inserting them as new records.
-// Appends related to o.R.AddressidWarehouses.
-// Sets related.R.AddressidAddress appropriately.
-func (o *Address) AddAddressidWarehouses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Warehouse) error {
+// Appends related to o.R.Warehouses.
+// Sets related.R.Address appropriately.
+func (o *Address) AddWarehouses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Warehouse) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Addressid, o.ID)
+			queries.Assign(&rel.AddressID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"warehouses\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"addressid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 				strmangle.WhereClause("\"", "\"", 2, warehousePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1985,38 +1985,38 @@ func (o *Address) AddAddressidWarehouses(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Addressid, o.ID)
+			queries.Assign(&rel.AddressID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &addressR{
-			AddressidWarehouses: related,
+			Warehouses: related,
 		}
 	} else {
-		o.R.AddressidWarehouses = append(o.R.AddressidWarehouses, related...)
+		o.R.Warehouses = append(o.R.Warehouses, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &warehouseR{
-				AddressidAddress: o,
+				Address: o,
 			}
 		} else {
-			rel.R.AddressidAddress = o
+			rel.R.Address = o
 		}
 	}
 	return nil
 }
 
-// SetAddressidWarehouses removes all previously related items of the
+// SetWarehouses removes all previously related items of the
 // address replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.AddressidAddress's AddressidWarehouses accordingly.
-// Replaces o.R.AddressidWarehouses with related.
-// Sets related.R.AddressidAddress's AddressidWarehouses accordingly.
-func (o *Address) SetAddressidWarehouses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Warehouse) error {
-	query := "update \"warehouses\" set \"addressid\" = null where \"addressid\" = $1"
+// Sets o.R.Address's Warehouses accordingly.
+// Replaces o.R.Warehouses with related.
+// Sets related.R.Address's Warehouses accordingly.
+func (o *Address) SetWarehouses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Warehouse) error {
+	query := "update \"warehouses\" set \"address_id\" = null where \"address_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -2029,35 +2029,35 @@ func (o *Address) SetAddressidWarehouses(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.AddressidWarehouses {
-			queries.SetScanner(&rel.Addressid, nil)
+		for _, rel := range o.R.Warehouses {
+			queries.SetScanner(&rel.AddressID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.AddressidAddress = nil
+			rel.R.Address = nil
 		}
-		o.R.AddressidWarehouses = nil
+		o.R.Warehouses = nil
 	}
 
-	return o.AddAddressidWarehouses(ctx, exec, insert, related...)
+	return o.AddWarehouses(ctx, exec, insert, related...)
 }
 
-// RemoveAddressidWarehouses relationships from objects passed in.
-// Removes related items from R.AddressidWarehouses (uses pointer comparison, removal does not keep order)
-// Sets related.R.AddressidAddress.
-func (o *Address) RemoveAddressidWarehouses(ctx context.Context, exec boil.ContextExecutor, related ...*Warehouse) error {
+// RemoveWarehouses relationships from objects passed in.
+// Removes related items from R.Warehouses (uses pointer comparison, removal does not keep order)
+// Sets related.R.Address.
+func (o *Address) RemoveWarehouses(ctx context.Context, exec boil.ContextExecutor, related ...*Warehouse) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Addressid, nil)
+		queries.SetScanner(&rel.AddressID, nil)
 		if rel.R != nil {
-			rel.R.AddressidAddress = nil
+			rel.R.Address = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("addressid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
 			return err
 		}
 	}
@@ -2066,16 +2066,16 @@ func (o *Address) RemoveAddressidWarehouses(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.AddressidWarehouses {
+		for i, ri := range o.R.Warehouses {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.AddressidWarehouses)
+			ln := len(o.R.Warehouses)
 			if ln > 1 && i < ln-1 {
-				o.R.AddressidWarehouses[i] = o.R.AddressidWarehouses[ln-1]
+				o.R.Warehouses[i] = o.R.Warehouses[ln-1]
 			}
-			o.R.AddressidWarehouses = o.R.AddressidWarehouses[:ln-1]
+			o.R.Warehouses = o.R.Warehouses[:ln-1]
 			break
 		}
 	}
@@ -2132,6 +2132,16 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.CreatedAt).IsZero() {
+			queries.SetScanner(&o.CreatedAt, currTime)
+		}
+		if queries.MustTime(o.UpdatedAt).IsZero() {
+			queries.SetScanner(&o.UpdatedAt, currTime)
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -2207,6 +2217,12 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		queries.SetScanner(&o.UpdatedAt, currTime)
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -2336,6 +2352,14 @@ func (o AddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no addresses provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.CreatedAt).IsZero() {
+			queries.SetScanner(&o.CreatedAt, currTime)
+		}
+		queries.SetScanner(&o.UpdatedAt, currTime)
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

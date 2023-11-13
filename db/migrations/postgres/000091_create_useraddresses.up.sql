@@ -1,9 +1,8 @@
 CREATE TABLE IF NOT EXISTS user_addresses (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  userid character varying(36),
-  addressid character varying(36)
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid,
+  address_id character varying(36)
 );
 
 ALTER TABLE ONLY user_addresses
-    ADD CONSTRAINT user_addresses_userid_addressid_key UNIQUE (userid, addressid);
-
+    ADD CONSTRAINT user_addresses_user_id_address_id_key UNIQUE (user_id, address_id);

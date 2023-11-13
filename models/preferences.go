@@ -24,7 +24,7 @@ import (
 
 // Preference is an object representing the database table.
 type Preference struct {
-	Userid   string      `boil:"userid" json:"userid" toml:"userid" yaml:"userid"`
+	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Category string      `boil:"category" json:"category" toml:"category" yaml:"category"`
 	Name     string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Value    null.String `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
@@ -34,24 +34,24 @@ type Preference struct {
 }
 
 var PreferenceColumns = struct {
-	Userid   string
+	UserID   string
 	Category string
 	Name     string
 	Value    string
 }{
-	Userid:   "userid",
+	UserID:   "user_id",
 	Category: "category",
 	Name:     "name",
 	Value:    "value",
 }
 
 var PreferenceTableColumns = struct {
-	Userid   string
+	UserID   string
 	Category string
 	Name     string
 	Value    string
 }{
-	Userid:   "preferences.userid",
+	UserID:   "preferences.user_id",
 	Category: "preferences.category",
 	Name:     "preferences.name",
 	Value:    "preferences.value",
@@ -60,12 +60,12 @@ var PreferenceTableColumns = struct {
 // Generated where
 
 var PreferenceWhere = struct {
-	Userid   whereHelperstring
+	UserID   whereHelperstring
 	Category whereHelperstring
 	Name     whereHelperstring
 	Value    whereHelpernull_String
 }{
-	Userid:   whereHelperstring{field: "\"preferences\".\"userid\""},
+	UserID:   whereHelperstring{field: "\"preferences\".\"user_id\""},
 	Category: whereHelperstring{field: "\"preferences\".\"category\""},
 	Name:     whereHelperstring{field: "\"preferences\".\"name\""},
 	Value:    whereHelpernull_String{field: "\"preferences\".\"value\""},
@@ -88,10 +88,10 @@ func (*preferenceR) NewStruct() *preferenceR {
 type preferenceL struct{}
 
 var (
-	preferenceAllColumns            = []string{"userid", "category", "name", "value"}
-	preferenceColumnsWithoutDefault = []string{"userid", "category", "name"}
+	preferenceAllColumns            = []string{"user_id", "category", "name", "value"}
+	preferenceColumnsWithoutDefault = []string{"user_id", "category", "name"}
 	preferenceColumnsWithDefault    = []string{"value"}
-	preferencePrimaryKeyColumns     = []string{"userid"}
+	preferencePrimaryKeyColumns     = []string{"user_id"}
 	preferenceGeneratedColumns      = []string{}
 )
 
@@ -386,7 +386,7 @@ func Preferences(mods ...qm.QueryMod) preferenceQuery {
 
 // FindPreference retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPreference(ctx context.Context, exec boil.ContextExecutor, userid string, selectCols ...string) (*Preference, error) {
+func FindPreference(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Preference, error) {
 	preferenceObj := &Preference{}
 
 	sel := "*"
@@ -394,10 +394,10 @@ func FindPreference(ctx context.Context, exec boil.ContextExecutor, userid strin
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"preferences\" where \"userid\"=$1", sel,
+		"select %s from \"preferences\" where \"user_id\"=$1", sel,
 	)
 
-	q := queries.Raw(query, userid)
+	q := queries.Raw(query, userID)
 
 	err := q.Bind(ctx, exec, preferenceObj)
 	if err != nil {
@@ -749,7 +749,7 @@ func (o *Preference) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), preferencePrimaryKeyMapping)
-	sql := "DELETE FROM \"preferences\" WHERE \"userid\"=$1"
+	sql := "DELETE FROM \"preferences\" WHERE \"user_id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -846,7 +846,7 @@ func (o PreferenceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Preference) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindPreference(ctx, exec, o.Userid)
+	ret, err := FindPreference(ctx, exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -885,16 +885,16 @@ func (o *PreferenceSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 }
 
 // PreferenceExists checks if the Preference row exists.
-func PreferenceExists(ctx context.Context, exec boil.ContextExecutor, userid string) (bool, error) {
+func PreferenceExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"preferences\" where \"userid\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"preferences\" where \"user_id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, userid)
+		fmt.Fprintln(writer, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, userid)
+	row := exec.QueryRowContext(ctx, sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -906,5 +906,5 @@ func PreferenceExists(ctx context.Context, exec boil.ContextExecutor, userid str
 
 // Exists checks if the Preference row exists.
 func (o *Preference) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return PreferenceExists(ctx, exec, o.Userid)
+	return PreferenceExists(ctx, exec, o.UserID)
 }

@@ -134,6 +134,7 @@ type SqlStoreStores struct {
 	wishlistItem                  store.WishlistItemStore
 }
 
+// setup tables before performing database migration
 func (store *SqlStore) setupStores() {
 	store.stores = &SqlStoreStores{
 		address:                       account.NewSqlAddressStore(store),

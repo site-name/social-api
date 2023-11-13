@@ -25,8 +25,8 @@ import (
 // WarehouseShippingZone is an object representing the database table.
 type WarehouseShippingZone struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Warehouseid    null.String `boil:"warehouseid" json:"warehouseid,omitempty" toml:"warehouseid" yaml:"warehouseid,omitempty"`
-	Shippingzoneid null.String `boil:"shippingzoneid" json:"shippingzoneid,omitempty" toml:"shippingzoneid" yaml:"shippingzoneid,omitempty"`
+	WarehouseID    null.String `boil:"warehouse_id" json:"warehouse_id,omitempty" toml:"warehouse_id" yaml:"warehouse_id,omitempty"`
+	ShippingZoneID null.String `boil:"shipping_zone_id" json:"shipping_zone_id,omitempty" toml:"shipping_zone_id" yaml:"shipping_zone_id,omitempty"`
 
 	R *warehouseShippingZoneR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L warehouseShippingZoneL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,49 +34,49 @@ type WarehouseShippingZone struct {
 
 var WarehouseShippingZoneColumns = struct {
 	ID             string
-	Warehouseid    string
-	Shippingzoneid string
+	WarehouseID    string
+	ShippingZoneID string
 }{
 	ID:             "id",
-	Warehouseid:    "warehouseid",
-	Shippingzoneid: "shippingzoneid",
+	WarehouseID:    "warehouse_id",
+	ShippingZoneID: "shipping_zone_id",
 }
 
 var WarehouseShippingZoneTableColumns = struct {
 	ID             string
-	Warehouseid    string
-	Shippingzoneid string
+	WarehouseID    string
+	ShippingZoneID string
 }{
 	ID:             "warehouse_shipping_zones.id",
-	Warehouseid:    "warehouse_shipping_zones.warehouseid",
-	Shippingzoneid: "warehouse_shipping_zones.shippingzoneid",
+	WarehouseID:    "warehouse_shipping_zones.warehouse_id",
+	ShippingZoneID: "warehouse_shipping_zones.shipping_zone_id",
 }
 
 // Generated where
 
 var WarehouseShippingZoneWhere = struct {
 	ID             whereHelperstring
-	Warehouseid    whereHelpernull_String
-	Shippingzoneid whereHelpernull_String
+	WarehouseID    whereHelpernull_String
+	ShippingZoneID whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"warehouse_shipping_zones\".\"id\""},
-	Warehouseid:    whereHelpernull_String{field: "\"warehouse_shipping_zones\".\"warehouseid\""},
-	Shippingzoneid: whereHelpernull_String{field: "\"warehouse_shipping_zones\".\"shippingzoneid\""},
+	WarehouseID:    whereHelpernull_String{field: "\"warehouse_shipping_zones\".\"warehouse_id\""},
+	ShippingZoneID: whereHelpernull_String{field: "\"warehouse_shipping_zones\".\"shipping_zone_id\""},
 }
 
 // WarehouseShippingZoneRels is where relationship names are stored.
 var WarehouseShippingZoneRels = struct {
-	ShippingzoneidShippingZone string
-	WarehouseidWarehouse       string
+	ShippingZone string
+	Warehouse    string
 }{
-	ShippingzoneidShippingZone: "ShippingzoneidShippingZone",
-	WarehouseidWarehouse:       "WarehouseidWarehouse",
+	ShippingZone: "ShippingZone",
+	Warehouse:    "Warehouse",
 }
 
 // warehouseShippingZoneR is where relationships are stored.
 type warehouseShippingZoneR struct {
-	ShippingzoneidShippingZone *ShippingZone `boil:"ShippingzoneidShippingZone" json:"ShippingzoneidShippingZone" toml:"ShippingzoneidShippingZone" yaml:"ShippingzoneidShippingZone"`
-	WarehouseidWarehouse       *Warehouse    `boil:"WarehouseidWarehouse" json:"WarehouseidWarehouse" toml:"WarehouseidWarehouse" yaml:"WarehouseidWarehouse"`
+	ShippingZone *ShippingZone `boil:"ShippingZone" json:"ShippingZone" toml:"ShippingZone" yaml:"ShippingZone"`
+	Warehouse    *Warehouse    `boil:"Warehouse" json:"Warehouse" toml:"Warehouse" yaml:"Warehouse"`
 }
 
 // NewStruct creates a new relationship struct
@@ -84,27 +84,27 @@ func (*warehouseShippingZoneR) NewStruct() *warehouseShippingZoneR {
 	return &warehouseShippingZoneR{}
 }
 
-func (r *warehouseShippingZoneR) GetShippingzoneidShippingZone() *ShippingZone {
+func (r *warehouseShippingZoneR) GetShippingZone() *ShippingZone {
 	if r == nil {
 		return nil
 	}
-	return r.ShippingzoneidShippingZone
+	return r.ShippingZone
 }
 
-func (r *warehouseShippingZoneR) GetWarehouseidWarehouse() *Warehouse {
+func (r *warehouseShippingZoneR) GetWarehouse() *Warehouse {
 	if r == nil {
 		return nil
 	}
-	return r.WarehouseidWarehouse
+	return r.Warehouse
 }
 
 // warehouseShippingZoneL is where Load methods for each relationship are stored.
 type warehouseShippingZoneL struct{}
 
 var (
-	warehouseShippingZoneAllColumns            = []string{"id", "warehouseid", "shippingzoneid"}
+	warehouseShippingZoneAllColumns            = []string{"id", "warehouse_id", "shipping_zone_id"}
 	warehouseShippingZoneColumnsWithoutDefault = []string{"id"}
-	warehouseShippingZoneColumnsWithDefault    = []string{"warehouseid", "shippingzoneid"}
+	warehouseShippingZoneColumnsWithDefault    = []string{"warehouse_id", "shipping_zone_id"}
 	warehouseShippingZonePrimaryKeyColumns     = []string{"id"}
 	warehouseShippingZoneGeneratedColumns      = []string{}
 )
@@ -387,10 +387,10 @@ func (q warehouseShippingZoneQuery) Exists(ctx context.Context, exec boil.Contex
 	return count > 0, nil
 }
 
-// ShippingzoneidShippingZone pointed to by the foreign key.
-func (o *WarehouseShippingZone) ShippingzoneidShippingZone(mods ...qm.QueryMod) shippingZoneQuery {
+// ShippingZone pointed to by the foreign key.
+func (o *WarehouseShippingZone) ShippingZone(mods ...qm.QueryMod) shippingZoneQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Shippingzoneid),
+		qm.Where("\"id\" = ?", o.ShippingZoneID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -398,10 +398,10 @@ func (o *WarehouseShippingZone) ShippingzoneidShippingZone(mods ...qm.QueryMod) 
 	return ShippingZones(queryMods...)
 }
 
-// WarehouseidWarehouse pointed to by the foreign key.
-func (o *WarehouseShippingZone) WarehouseidWarehouse(mods ...qm.QueryMod) warehouseQuery {
+// Warehouse pointed to by the foreign key.
+func (o *WarehouseShippingZone) Warehouse(mods ...qm.QueryMod) warehouseQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Warehouseid),
+		qm.Where("\"id\" = ?", o.WarehouseID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *WarehouseShippingZone) WarehouseidWarehouse(mods ...qm.QueryMod) wareho
 	return Warehouses(queryMods...)
 }
 
-// LoadShippingzoneidShippingZone allows an eager lookup of values, cached into the
+// LoadShippingZone allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (warehouseShippingZoneL) LoadShippingzoneidShippingZone(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouseShippingZone interface{}, mods queries.Applicator) error {
+func (warehouseShippingZoneL) LoadShippingZone(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouseShippingZone interface{}, mods queries.Applicator) error {
 	var slice []*WarehouseShippingZone
 	var object *WarehouseShippingZone
 
@@ -442,8 +442,8 @@ func (warehouseShippingZoneL) LoadShippingzoneidShippingZone(ctx context.Context
 		if object.R == nil {
 			object.R = &warehouseShippingZoneR{}
 		}
-		if !queries.IsNil(object.Shippingzoneid) {
-			args = append(args, object.Shippingzoneid)
+		if !queries.IsNil(object.ShippingZoneID) {
+			args = append(args, object.ShippingZoneID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (warehouseShippingZoneL) LoadShippingzoneidShippingZone(ctx context.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Shippingzoneid) {
+				if queries.Equal(a, obj.ShippingZoneID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Shippingzoneid) {
-				args = append(args, obj.Shippingzoneid)
+			if !queries.IsNil(obj.ShippingZoneID) {
+				args = append(args, obj.ShippingZoneID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (warehouseShippingZoneL) LoadShippingzoneidShippingZone(ctx context.Context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ShippingzoneidShippingZone = foreign
+		object.R.ShippingZone = foreign
 		if foreign.R == nil {
 			foreign.R = &shippingZoneR{}
 		}
-		foreign.R.ShippingzoneidWarehouseShippingZones = append(foreign.R.ShippingzoneidWarehouseShippingZones, object)
+		foreign.R.WarehouseShippingZones = append(foreign.R.WarehouseShippingZones, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Shippingzoneid, foreign.ID) {
-				local.R.ShippingzoneidShippingZone = foreign
+			if queries.Equal(local.ShippingZoneID, foreign.ID) {
+				local.R.ShippingZone = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingZoneR{}
 				}
-				foreign.R.ShippingzoneidWarehouseShippingZones = append(foreign.R.ShippingzoneidWarehouseShippingZones, local)
+				foreign.R.WarehouseShippingZones = append(foreign.R.WarehouseShippingZones, local)
 				break
 			}
 		}
@@ -533,9 +533,9 @@ func (warehouseShippingZoneL) LoadShippingzoneidShippingZone(ctx context.Context
 	return nil
 }
 
-// LoadWarehouseidWarehouse allows an eager lookup of values, cached into the
+// LoadWarehouse allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (warehouseShippingZoneL) LoadWarehouseidWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouseShippingZone interface{}, mods queries.Applicator) error {
+func (warehouseShippingZoneL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouseShippingZone interface{}, mods queries.Applicator) error {
 	var slice []*WarehouseShippingZone
 	var object *WarehouseShippingZone
 
@@ -566,8 +566,8 @@ func (warehouseShippingZoneL) LoadWarehouseidWarehouse(ctx context.Context, e bo
 		if object.R == nil {
 			object.R = &warehouseShippingZoneR{}
 		}
-		if !queries.IsNil(object.Warehouseid) {
-			args = append(args, object.Warehouseid)
+		if !queries.IsNil(object.WarehouseID) {
+			args = append(args, object.WarehouseID)
 		}
 
 	} else {
@@ -578,13 +578,13 @@ func (warehouseShippingZoneL) LoadWarehouseidWarehouse(ctx context.Context, e bo
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Warehouseid) {
+				if queries.Equal(a, obj.WarehouseID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Warehouseid) {
-				args = append(args, obj.Warehouseid)
+			if !queries.IsNil(obj.WarehouseID) {
+				args = append(args, obj.WarehouseID)
 			}
 
 		}
@@ -633,22 +633,22 @@ func (warehouseShippingZoneL) LoadWarehouseidWarehouse(ctx context.Context, e bo
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.WarehouseidWarehouse = foreign
+		object.R.Warehouse = foreign
 		if foreign.R == nil {
 			foreign.R = &warehouseR{}
 		}
-		foreign.R.WarehouseidWarehouseShippingZones = append(foreign.R.WarehouseidWarehouseShippingZones, object)
+		foreign.R.WarehouseShippingZones = append(foreign.R.WarehouseShippingZones, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Warehouseid, foreign.ID) {
-				local.R.WarehouseidWarehouse = foreign
+			if queries.Equal(local.WarehouseID, foreign.ID) {
+				local.R.Warehouse = foreign
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
 				}
-				foreign.R.WarehouseidWarehouseShippingZones = append(foreign.R.WarehouseidWarehouseShippingZones, local)
+				foreign.R.WarehouseShippingZones = append(foreign.R.WarehouseShippingZones, local)
 				break
 			}
 		}
@@ -657,10 +657,10 @@ func (warehouseShippingZoneL) LoadWarehouseidWarehouse(ctx context.Context, e bo
 	return nil
 }
 
-// SetShippingzoneidShippingZone of the warehouseShippingZone to the related item.
-// Sets o.R.ShippingzoneidShippingZone to related.
-// Adds o to related.R.ShippingzoneidWarehouseShippingZones.
-func (o *WarehouseShippingZone) SetShippingzoneidShippingZone(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingZone) error {
+// SetShippingZone of the warehouseShippingZone to the related item.
+// Sets o.R.ShippingZone to related.
+// Adds o to related.R.WarehouseShippingZones.
+func (o *WarehouseShippingZone) SetShippingZone(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingZone) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -670,7 +670,7 @@ func (o *WarehouseShippingZone) SetShippingzoneidShippingZone(ctx context.Contex
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"warehouse_shipping_zones\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"shippingzoneid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_zone_id"}),
 		strmangle.WhereClause("\"", "\"", 2, warehouseShippingZonePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -684,63 +684,63 @@ func (o *WarehouseShippingZone) SetShippingzoneidShippingZone(ctx context.Contex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Shippingzoneid, related.ID)
+	queries.Assign(&o.ShippingZoneID, related.ID)
 	if o.R == nil {
 		o.R = &warehouseShippingZoneR{
-			ShippingzoneidShippingZone: related,
+			ShippingZone: related,
 		}
 	} else {
-		o.R.ShippingzoneidShippingZone = related
+		o.R.ShippingZone = related
 	}
 
 	if related.R == nil {
 		related.R = &shippingZoneR{
-			ShippingzoneidWarehouseShippingZones: WarehouseShippingZoneSlice{o},
+			WarehouseShippingZones: WarehouseShippingZoneSlice{o},
 		}
 	} else {
-		related.R.ShippingzoneidWarehouseShippingZones = append(related.R.ShippingzoneidWarehouseShippingZones, o)
+		related.R.WarehouseShippingZones = append(related.R.WarehouseShippingZones, o)
 	}
 
 	return nil
 }
 
-// RemoveShippingzoneidShippingZone relationship.
-// Sets o.R.ShippingzoneidShippingZone to nil.
+// RemoveShippingZone relationship.
+// Sets o.R.ShippingZone to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *WarehouseShippingZone) RemoveShippingzoneidShippingZone(ctx context.Context, exec boil.ContextExecutor, related *ShippingZone) error {
+func (o *WarehouseShippingZone) RemoveShippingZone(ctx context.Context, exec boil.ContextExecutor, related *ShippingZone) error {
 	var err error
 
-	queries.SetScanner(&o.Shippingzoneid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shippingzoneid")); err != nil {
+	queries.SetScanner(&o.ShippingZoneID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_zone_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ShippingzoneidShippingZone = nil
+		o.R.ShippingZone = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ShippingzoneidWarehouseShippingZones {
-		if queries.Equal(o.Shippingzoneid, ri.Shippingzoneid) {
+	for i, ri := range related.R.WarehouseShippingZones {
+		if queries.Equal(o.ShippingZoneID, ri.ShippingZoneID) {
 			continue
 		}
 
-		ln := len(related.R.ShippingzoneidWarehouseShippingZones)
+		ln := len(related.R.WarehouseShippingZones)
 		if ln > 1 && i < ln-1 {
-			related.R.ShippingzoneidWarehouseShippingZones[i] = related.R.ShippingzoneidWarehouseShippingZones[ln-1]
+			related.R.WarehouseShippingZones[i] = related.R.WarehouseShippingZones[ln-1]
 		}
-		related.R.ShippingzoneidWarehouseShippingZones = related.R.ShippingzoneidWarehouseShippingZones[:ln-1]
+		related.R.WarehouseShippingZones = related.R.WarehouseShippingZones[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetWarehouseidWarehouse of the warehouseShippingZone to the related item.
-// Sets o.R.WarehouseidWarehouse to related.
-// Adds o to related.R.WarehouseidWarehouseShippingZones.
-func (o *WarehouseShippingZone) SetWarehouseidWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
+// SetWarehouse of the warehouseShippingZone to the related item.
+// Sets o.R.Warehouse to related.
+// Adds o to related.R.WarehouseShippingZones.
+func (o *WarehouseShippingZone) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -750,7 +750,7 @@ func (o *WarehouseShippingZone) SetWarehouseidWarehouse(ctx context.Context, exe
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"warehouse_shipping_zones\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"warehouseid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"warehouse_id"}),
 		strmangle.WhereClause("\"", "\"", 2, warehouseShippingZonePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -764,54 +764,54 @@ func (o *WarehouseShippingZone) SetWarehouseidWarehouse(ctx context.Context, exe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Warehouseid, related.ID)
+	queries.Assign(&o.WarehouseID, related.ID)
 	if o.R == nil {
 		o.R = &warehouseShippingZoneR{
-			WarehouseidWarehouse: related,
+			Warehouse: related,
 		}
 	} else {
-		o.R.WarehouseidWarehouse = related
+		o.R.Warehouse = related
 	}
 
 	if related.R == nil {
 		related.R = &warehouseR{
-			WarehouseidWarehouseShippingZones: WarehouseShippingZoneSlice{o},
+			WarehouseShippingZones: WarehouseShippingZoneSlice{o},
 		}
 	} else {
-		related.R.WarehouseidWarehouseShippingZones = append(related.R.WarehouseidWarehouseShippingZones, o)
+		related.R.WarehouseShippingZones = append(related.R.WarehouseShippingZones, o)
 	}
 
 	return nil
 }
 
-// RemoveWarehouseidWarehouse relationship.
-// Sets o.R.WarehouseidWarehouse to nil.
+// RemoveWarehouse relationship.
+// Sets o.R.Warehouse to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *WarehouseShippingZone) RemoveWarehouseidWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
+func (o *WarehouseShippingZone) RemoveWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
 	var err error
 
-	queries.SetScanner(&o.Warehouseid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("warehouseid")); err != nil {
+	queries.SetScanner(&o.WarehouseID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("warehouse_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.WarehouseidWarehouse = nil
+		o.R.Warehouse = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.WarehouseidWarehouseShippingZones {
-		if queries.Equal(o.Warehouseid, ri.Warehouseid) {
+	for i, ri := range related.R.WarehouseShippingZones {
+		if queries.Equal(o.WarehouseID, ri.WarehouseID) {
 			continue
 		}
 
-		ln := len(related.R.WarehouseidWarehouseShippingZones)
+		ln := len(related.R.WarehouseShippingZones)
 		if ln > 1 && i < ln-1 {
-			related.R.WarehouseidWarehouseShippingZones[i] = related.R.WarehouseidWarehouseShippingZones[ln-1]
+			related.R.WarehouseShippingZones[i] = related.R.WarehouseShippingZones[ln-1]
 		}
-		related.R.WarehouseidWarehouseShippingZones = related.R.WarehouseidWarehouseShippingZones[:ln-1]
+		related.R.WarehouseShippingZones = related.R.WarehouseShippingZones[:ln-1]
 		break
 	}
 	return nil

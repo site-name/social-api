@@ -25,12 +25,12 @@ import (
 // ProductTranslation is an object representing the database table.
 type ProductTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode   null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Productid      null.String `boil:"productid" json:"productid,omitempty" toml:"productid" yaml:"productid,omitempty"`
+	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	ProductID      null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
 	Name           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Description    null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Seotitle       null.String `boil:"seotitle" json:"seotitle,omitempty" toml:"seotitle" yaml:"seotitle,omitempty"`
-	Seodescription null.String `boil:"seodescription" json:"seodescription,omitempty" toml:"seodescription" yaml:"seodescription,omitempty"`
+	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *productTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,70 +38,70 @@ type ProductTranslation struct {
 
 var ProductTranslationColumns = struct {
 	ID             string
-	Languagecode   string
-	Productid      string
+	LanguageCode   string
+	ProductID      string
 	Name           string
 	Description    string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "id",
-	Languagecode:   "languagecode",
-	Productid:      "productid",
+	LanguageCode:   "language_code",
+	ProductID:      "product_id",
 	Name:           "name",
 	Description:    "description",
-	Seotitle:       "seotitle",
-	Seodescription: "seodescription",
+	SeoTitle:       "seo_title",
+	SeoDescription: "seo_description",
 }
 
 var ProductTranslationTableColumns = struct {
 	ID             string
-	Languagecode   string
-	Productid      string
+	LanguageCode   string
+	ProductID      string
 	Name           string
 	Description    string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "product_translations.id",
-	Languagecode:   "product_translations.languagecode",
-	Productid:      "product_translations.productid",
+	LanguageCode:   "product_translations.language_code",
+	ProductID:      "product_translations.product_id",
 	Name:           "product_translations.name",
 	Description:    "product_translations.description",
-	Seotitle:       "product_translations.seotitle",
-	Seodescription: "product_translations.seodescription",
+	SeoTitle:       "product_translations.seo_title",
+	SeoDescription: "product_translations.seo_description",
 }
 
 // Generated where
 
 var ProductTranslationWhere = struct {
 	ID             whereHelperstring
-	Languagecode   whereHelpernull_String
-	Productid      whereHelpernull_String
+	LanguageCode   whereHelpernull_String
+	ProductID      whereHelpernull_String
 	Name           whereHelpernull_String
 	Description    whereHelpernull_String
-	Seotitle       whereHelpernull_String
-	Seodescription whereHelpernull_String
+	SeoTitle       whereHelpernull_String
+	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"product_translations\".\"id\""},
-	Languagecode:   whereHelpernull_String{field: "\"product_translations\".\"languagecode\""},
-	Productid:      whereHelpernull_String{field: "\"product_translations\".\"productid\""},
+	LanguageCode:   whereHelpernull_String{field: "\"product_translations\".\"language_code\""},
+	ProductID:      whereHelpernull_String{field: "\"product_translations\".\"product_id\""},
 	Name:           whereHelpernull_String{field: "\"product_translations\".\"name\""},
 	Description:    whereHelpernull_String{field: "\"product_translations\".\"description\""},
-	Seotitle:       whereHelpernull_String{field: "\"product_translations\".\"seotitle\""},
-	Seodescription: whereHelpernull_String{field: "\"product_translations\".\"seodescription\""},
+	SeoTitle:       whereHelpernull_String{field: "\"product_translations\".\"seo_title\""},
+	SeoDescription: whereHelpernull_String{field: "\"product_translations\".\"seo_description\""},
 }
 
 // ProductTranslationRels is where relationship names are stored.
 var ProductTranslationRels = struct {
-	ProductidProduct string
+	Product string
 }{
-	ProductidProduct: "ProductidProduct",
+	Product: "Product",
 }
 
 // productTranslationR is where relationships are stored.
 type productTranslationR struct {
-	ProductidProduct *Product `boil:"ProductidProduct" json:"ProductidProduct" toml:"ProductidProduct" yaml:"ProductidProduct"`
+	Product *Product `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
 }
 
 // NewStruct creates a new relationship struct
@@ -109,20 +109,20 @@ func (*productTranslationR) NewStruct() *productTranslationR {
 	return &productTranslationR{}
 }
 
-func (r *productTranslationR) GetProductidProduct() *Product {
+func (r *productTranslationR) GetProduct() *Product {
 	if r == nil {
 		return nil
 	}
-	return r.ProductidProduct
+	return r.Product
 }
 
 // productTranslationL is where Load methods for each relationship are stored.
 type productTranslationL struct{}
 
 var (
-	productTranslationAllColumns            = []string{"id", "languagecode", "productid", "name", "description", "seotitle", "seodescription"}
+	productTranslationAllColumns            = []string{"id", "language_code", "product_id", "name", "description", "seo_title", "seo_description"}
 	productTranslationColumnsWithoutDefault = []string{"id"}
-	productTranslationColumnsWithDefault    = []string{"languagecode", "productid", "name", "description", "seotitle", "seodescription"}
+	productTranslationColumnsWithDefault    = []string{"language_code", "product_id", "name", "description", "seo_title", "seo_description"}
 	productTranslationPrimaryKeyColumns     = []string{"id"}
 	productTranslationGeneratedColumns      = []string{}
 )
@@ -405,10 +405,10 @@ func (q productTranslationQuery) Exists(ctx context.Context, exec boil.ContextEx
 	return count > 0, nil
 }
 
-// ProductidProduct pointed to by the foreign key.
-func (o *ProductTranslation) ProductidProduct(mods ...qm.QueryMod) productQuery {
+// Product pointed to by the foreign key.
+func (o *ProductTranslation) Product(mods ...qm.QueryMod) productQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productid),
+		qm.Where("\"id\" = ?", o.ProductID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +416,9 @@ func (o *ProductTranslation) ProductidProduct(mods ...qm.QueryMod) productQuery 
 	return Products(queryMods...)
 }
 
-// LoadProductidProduct allows an eager lookup of values, cached into the
+// LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productTranslationL) LoadProductidProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductTranslation interface{}, mods queries.Applicator) error {
+func (productTranslationL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductTranslation interface{}, mods queries.Applicator) error {
 	var slice []*ProductTranslation
 	var object *ProductTranslation
 
@@ -449,8 +449,8 @@ func (productTranslationL) LoadProductidProduct(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &productTranslationR{}
 		}
-		if !queries.IsNil(object.Productid) {
-			args = append(args, object.Productid)
+		if !queries.IsNil(object.ProductID) {
+			args = append(args, object.ProductID)
 		}
 
 	} else {
@@ -461,13 +461,13 @@ func (productTranslationL) LoadProductidProduct(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productid) {
+				if queries.Equal(a, obj.ProductID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productid) {
-				args = append(args, obj.Productid)
+			if !queries.IsNil(obj.ProductID) {
+				args = append(args, obj.ProductID)
 			}
 
 		}
@@ -516,22 +516,22 @@ func (productTranslationL) LoadProductidProduct(ctx context.Context, e boil.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductidProduct = foreign
+		object.R.Product = foreign
 		if foreign.R == nil {
 			foreign.R = &productR{}
 		}
-		foreign.R.ProductidProductTranslations = append(foreign.R.ProductidProductTranslations, object)
+		foreign.R.ProductTranslations = append(foreign.R.ProductTranslations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productid, foreign.ID) {
-				local.R.ProductidProduct = foreign
+			if queries.Equal(local.ProductID, foreign.ID) {
+				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
 				}
-				foreign.R.ProductidProductTranslations = append(foreign.R.ProductidProductTranslations, local)
+				foreign.R.ProductTranslations = append(foreign.R.ProductTranslations, local)
 				break
 			}
 		}
@@ -540,10 +540,10 @@ func (productTranslationL) LoadProductidProduct(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// SetProductidProduct of the productTranslation to the related item.
-// Sets o.R.ProductidProduct to related.
-// Adds o to related.R.ProductidProductTranslations.
-func (o *ProductTranslation) SetProductidProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
+// SetProduct of the productTranslation to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ProductTranslations.
+func (o *ProductTranslation) SetProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -553,7 +553,7 @@ func (o *ProductTranslation) SetProductidProduct(ctx context.Context, exec boil.
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"product_translations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productTranslationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -567,54 +567,54 @@ func (o *ProductTranslation) SetProductidProduct(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productid, related.ID)
+	queries.Assign(&o.ProductID, related.ID)
 	if o.R == nil {
 		o.R = &productTranslationR{
-			ProductidProduct: related,
+			Product: related,
 		}
 	} else {
-		o.R.ProductidProduct = related
+		o.R.Product = related
 	}
 
 	if related.R == nil {
 		related.R = &productR{
-			ProductidProductTranslations: ProductTranslationSlice{o},
+			ProductTranslations: ProductTranslationSlice{o},
 		}
 	} else {
-		related.R.ProductidProductTranslations = append(related.R.ProductidProductTranslations, o)
+		related.R.ProductTranslations = append(related.R.ProductTranslations, o)
 	}
 
 	return nil
 }
 
-// RemoveProductidProduct relationship.
-// Sets o.R.ProductidProduct to nil.
+// RemoveProduct relationship.
+// Sets o.R.Product to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ProductTranslation) RemoveProductidProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
+func (o *ProductTranslation) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
 	var err error
 
-	queries.SetScanner(&o.Productid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productid")); err != nil {
+	queries.SetScanner(&o.ProductID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductidProduct = nil
+		o.R.Product = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductidProductTranslations {
-		if queries.Equal(o.Productid, ri.Productid) {
+	for i, ri := range related.R.ProductTranslations {
+		if queries.Equal(o.ProductID, ri.ProductID) {
 			continue
 		}
 
-		ln := len(related.R.ProductidProductTranslations)
+		ln := len(related.R.ProductTranslations)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductidProductTranslations[i] = related.R.ProductidProductTranslations[ln-1]
+			related.R.ProductTranslations[i] = related.R.ProductTranslations[ln-1]
 		}
-		related.R.ProductidProductTranslations = related.R.ProductidProductTranslations[:ln-1]
+		related.R.ProductTranslations = related.R.ProductTranslations[:ln-1]
 		break
 	}
 	return nil

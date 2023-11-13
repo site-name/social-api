@@ -494,7 +494,7 @@ func testStocksInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testStockToManyStockidAllocations(t *testing.T) {
+func testStockToManyAllocations(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,9 @@ func testStockToManyStockidAllocations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Stockid, a.ID)
-	queries.Assign(&c.Stockid, a.ID)
+	b.StockID = a.ID
+	c.StockID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +529,17 @@ func testStockToManyStockidAllocations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.StockidAllocations().All(ctx, tx)
+	check, err := a.Allocations().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Stockid, b.Stockid) {
+		if v.StockID == b.StockID {
 			bFound = true
 		}
-		if queries.Equal(v.Stockid, c.Stockid) {
+		if v.StockID == c.StockID {
 			cFound = true
 		}
 	}
@@ -551,18 +552,18 @@ func testStockToManyStockidAllocations(t *testing.T) {
 	}
 
 	slice := StockSlice{&a}
-	if err = a.L.LoadStockidAllocations(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
+	if err = a.L.LoadAllocations(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StockidAllocations); got != 2 {
+	if got := len(a.R.Allocations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.StockidAllocations = nil
-	if err = a.L.LoadStockidAllocations(ctx, tx, true, &a, nil); err != nil {
+	a.R.Allocations = nil
+	if err = a.L.LoadAllocations(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StockidAllocations); got != 2 {
+	if got := len(a.R.Allocations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +572,7 @@ func testStockToManyStockidAllocations(t *testing.T) {
 	}
 }
 
-func testStockToManyStockidFulfillmentLines(t *testing.T) {
+func testStockToManyFulfillmentLines(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +597,8 @@ func testStockToManyStockidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Stockid, a.ID)
-	queries.Assign(&c.Stockid, a.ID)
+	queries.Assign(&b.StockID, a.ID)
+	queries.Assign(&c.StockID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +606,17 @@ func testStockToManyStockidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.StockidFulfillmentLines().All(ctx, tx)
+	check, err := a.FulfillmentLines().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Stockid, b.Stockid) {
+		if queries.Equal(v.StockID, b.StockID) {
 			bFound = true
 		}
-		if queries.Equal(v.Stockid, c.Stockid) {
+		if queries.Equal(v.StockID, c.StockID) {
 			cFound = true
 		}
 	}
@@ -628,18 +629,18 @@ func testStockToManyStockidFulfillmentLines(t *testing.T) {
 	}
 
 	slice := StockSlice{&a}
-	if err = a.L.LoadStockidFulfillmentLines(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
+	if err = a.L.LoadFulfillmentLines(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StockidFulfillmentLines); got != 2 {
+	if got := len(a.R.FulfillmentLines); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.StockidFulfillmentLines = nil
-	if err = a.L.LoadStockidFulfillmentLines(ctx, tx, true, &a, nil); err != nil {
+	a.R.FulfillmentLines = nil
+	if err = a.L.LoadFulfillmentLines(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StockidFulfillmentLines); got != 2 {
+	if got := len(a.R.FulfillmentLines); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +649,7 @@ func testStockToManyStockidFulfillmentLines(t *testing.T) {
 	}
 }
 
-func testStockToManyAddOpStockidAllocations(t *testing.T) {
+func testStockToManyAddOpAllocations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -685,7 +686,7 @@ func testStockToManyAddOpStockidAllocations(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddStockidAllocations(ctx, tx, i != 0, x...)
+		err = a.AddAllocations(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -693,28 +694,28 @@ func testStockToManyAddOpStockidAllocations(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Stockid) {
-			t.Error("foreign key was wrong value", a.ID, first.Stockid)
+		if a.ID != first.StockID {
+			t.Error("foreign key was wrong value", a.ID, first.StockID)
 		}
-		if !queries.Equal(a.ID, second.Stockid) {
-			t.Error("foreign key was wrong value", a.ID, second.Stockid)
+		if a.ID != second.StockID {
+			t.Error("foreign key was wrong value", a.ID, second.StockID)
 		}
 
-		if first.R.StockidStock != &a {
+		if first.R.Stock != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.StockidStock != &a {
+		if second.R.Stock != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.StockidAllocations[i*2] != first {
+		if a.R.Allocations[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.StockidAllocations[i*2+1] != second {
+		if a.R.Allocations[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.StockidAllocations().Count(ctx, tx)
+		count, err := a.Allocations().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -723,183 +724,7 @@ func testStockToManyAddOpStockidAllocations(t *testing.T) {
 		}
 	}
 }
-
-func testStockToManySetOpStockidAllocations(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Stock
-	var b, c, d, e Allocation
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Allocation{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, allocationDBTypes, false, strmangle.SetComplement(allocationPrimaryKeyColumns, allocationColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetStockidAllocations(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.StockidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetStockidAllocations(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.StockidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Stockid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Stockid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.Stockid) {
-		t.Error("foreign key was wrong value", a.ID, d.Stockid)
-	}
-	if !queries.Equal(a.ID, e.Stockid) {
-		t.Error("foreign key was wrong value", a.ID, e.Stockid)
-	}
-
-	if b.R.StockidStock != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.StockidStock != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.StockidStock != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.StockidStock != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.StockidAllocations[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.StockidAllocations[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testStockToManyRemoveOpStockidAllocations(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Stock
-	var b, c, d, e Allocation
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Allocation{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, allocationDBTypes, false, strmangle.SetComplement(allocationPrimaryKeyColumns, allocationColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddStockidAllocations(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.StockidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveStockidAllocations(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.StockidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Stockid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Stockid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.StockidStock != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.StockidStock != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.StockidStock != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.StockidStock != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.StockidAllocations) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.StockidAllocations[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.StockidAllocations[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
-func testStockToManyAddOpStockidFulfillmentLines(t *testing.T) {
+func testStockToManyAddOpFulfillmentLines(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -936,7 +761,7 @@ func testStockToManyAddOpStockidFulfillmentLines(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddStockidFulfillmentLines(ctx, tx, i != 0, x...)
+		err = a.AddFulfillmentLines(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -944,28 +769,28 @@ func testStockToManyAddOpStockidFulfillmentLines(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Stockid) {
-			t.Error("foreign key was wrong value", a.ID, first.Stockid)
+		if !queries.Equal(a.ID, first.StockID) {
+			t.Error("foreign key was wrong value", a.ID, first.StockID)
 		}
-		if !queries.Equal(a.ID, second.Stockid) {
-			t.Error("foreign key was wrong value", a.ID, second.Stockid)
+		if !queries.Equal(a.ID, second.StockID) {
+			t.Error("foreign key was wrong value", a.ID, second.StockID)
 		}
 
-		if first.R.StockidStock != &a {
+		if first.R.Stock != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.StockidStock != &a {
+		if second.R.Stock != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.StockidFulfillmentLines[i*2] != first {
+		if a.R.FulfillmentLines[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.StockidFulfillmentLines[i*2+1] != second {
+		if a.R.FulfillmentLines[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.StockidFulfillmentLines().Count(ctx, tx)
+		count, err := a.FulfillmentLines().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -975,7 +800,7 @@ func testStockToManyAddOpStockidFulfillmentLines(t *testing.T) {
 	}
 }
 
-func testStockToManySetOpStockidFulfillmentLines(t *testing.T) {
+func testStockToManySetOpFulfillmentLines(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1006,25 +831,12 @@ func testStockToManySetOpStockidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetStockidFulfillmentLines(ctx, tx, false, &b, &c)
+	err = a.SetFulfillmentLines(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.StockidFulfillmentLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetStockidFulfillmentLines(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.StockidFulfillmentLines().Count(ctx, tx)
+	count, err := a.FulfillmentLines().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1032,41 +844,54 @@ func testStockToManySetOpStockidFulfillmentLines(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Stockid) {
+	err = a.SetFulfillmentLines(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.FulfillmentLines().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.StockID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Stockid) {
+	if !queries.IsValuerNil(c.StockID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Stockid) {
-		t.Error("foreign key was wrong value", a.ID, d.Stockid)
+	if !queries.Equal(a.ID, d.StockID) {
+		t.Error("foreign key was wrong value", a.ID, d.StockID)
 	}
-	if !queries.Equal(a.ID, e.Stockid) {
-		t.Error("foreign key was wrong value", a.ID, e.Stockid)
-	}
-
-	if b.R.StockidStock != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.StockidStock != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.StockidStock != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.StockidStock != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.StockID) {
+		t.Error("foreign key was wrong value", a.ID, e.StockID)
 	}
 
-	if a.R.StockidFulfillmentLines[0] != &d {
+	if b.R.Stock != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Stock != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Stock != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Stock != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.FulfillmentLines[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.StockidFulfillmentLines[1] != &e {
+	if a.R.FulfillmentLines[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testStockToManyRemoveOpStockidFulfillmentLines(t *testing.T) {
+func testStockToManyRemoveOpFulfillmentLines(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1091,12 +916,12 @@ func testStockToManyRemoveOpStockidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddStockidFulfillmentLines(ctx, tx, true, foreigners...)
+	err = a.AddFulfillmentLines(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.StockidFulfillmentLines().Count(ctx, tx)
+	count, err := a.FulfillmentLines().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1104,12 +929,12 @@ func testStockToManyRemoveOpStockidFulfillmentLines(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveStockidFulfillmentLines(ctx, tx, foreigners[:2]...)
+	err = a.RemoveFulfillmentLines(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.StockidFulfillmentLines().Count(ctx, tx)
+	count, err = a.FulfillmentLines().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1117,40 +942,40 @@ func testStockToManyRemoveOpStockidFulfillmentLines(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Stockid) {
+	if !queries.IsValuerNil(b.StockID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Stockid) {
+	if !queries.IsValuerNil(c.StockID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.StockidStock != nil {
+	if b.R.Stock != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.StockidStock != nil {
+	if c.R.Stock != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.StockidStock != &a {
+	if d.R.Stock != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.StockidStock != &a {
+	if e.R.Stock != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.StockidFulfillmentLines) != 2 {
+	if len(a.R.FulfillmentLines) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.StockidFulfillmentLines[1] != &d {
+	if a.R.FulfillmentLines[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.StockidFulfillmentLines[0] != &e {
+	if a.R.FulfillmentLines[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testStockToOneProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testStockToOneProductVariantUsingProductVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1170,12 +995,12 @@ func testStockToOneProductVariantUsingProductvariantidProductVariant(t *testing.
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Productvariantid, foreign.ID)
+	queries.Assign(&local.ProductVariantID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ProductvariantidProductVariant().One(ctx, tx)
+	check, err := local.ProductVariant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1191,18 +1016,18 @@ func testStockToOneProductVariantUsingProductvariantidProductVariant(t *testing.
 	})
 
 	slice := StockSlice{&local}
-	if err = local.L.LoadProductvariantidProductVariant(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
+	if err = local.L.LoadProductVariant(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductvariantidProductVariant == nil {
+	if local.R.ProductVariant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ProductvariantidProductVariant = nil
-	if err = local.L.LoadProductvariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.ProductVariant = nil
+	if err = local.L.LoadProductVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductvariantidProductVariant == nil {
+	if local.R.ProductVariant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1211,7 +1036,7 @@ func testStockToOneProductVariantUsingProductvariantidProductVariant(t *testing.
 	}
 }
 
-func testStockToOneWarehouseUsingWarehouseidWarehouse(t *testing.T) {
+func testStockToOneWarehouseUsingWarehouse(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1231,12 +1056,12 @@ func testStockToOneWarehouseUsingWarehouseidWarehouse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Warehouseid, foreign.ID)
+	queries.Assign(&local.WarehouseID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.WarehouseidWarehouse().One(ctx, tx)
+	check, err := local.Warehouse().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1252,18 +1077,18 @@ func testStockToOneWarehouseUsingWarehouseidWarehouse(t *testing.T) {
 	})
 
 	slice := StockSlice{&local}
-	if err = local.L.LoadWarehouseidWarehouse(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
+	if err = local.L.LoadWarehouse(ctx, tx, false, (*[]*Stock)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.WarehouseidWarehouse == nil {
+	if local.R.Warehouse == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.WarehouseidWarehouse = nil
-	if err = local.L.LoadWarehouseidWarehouse(ctx, tx, true, &local, nil); err != nil {
+	local.R.Warehouse = nil
+	if err = local.L.LoadWarehouse(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.WarehouseidWarehouse == nil {
+	if local.R.Warehouse == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1272,7 +1097,7 @@ func testStockToOneWarehouseUsingWarehouseidWarehouse(t *testing.T) {
 	}
 }
 
-func testStockToOneSetOpProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testStockToOneSetOpProductVariantUsingProductVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1301,36 +1126,36 @@ func testStockToOneSetOpProductVariantUsingProductvariantidProductVariant(t *tes
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetProductvariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetProductVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ProductvariantidProductVariant != x {
+		if a.R.ProductVariant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ProductvariantidStocks[0] != &a {
+		if x.R.Stocks[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Productvariantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productvariantid)
+		if !queries.Equal(a.ProductVariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductVariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Productvariantid))
-		reflect.Indirect(reflect.ValueOf(&a.Productvariantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ProductVariantID))
+		reflect.Indirect(reflect.ValueOf(&a.ProductVariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Productvariantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productvariantid, x.ID)
+		if !queries.Equal(a.ProductVariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductVariantID, x.ID)
 		}
 	}
 }
 
-func testStockToOneRemoveOpProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testStockToOneRemoveOpProductVariantUsingProductVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1352,15 +1177,15 @@ func testStockToOneRemoveOpProductVariantUsingProductvariantidProductVariant(t *
 		t.Fatal(err)
 	}
 
-	if err = a.SetProductvariantidProductVariant(ctx, tx, true, &b); err != nil {
+	if err = a.SetProductVariant(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveProductvariantidProductVariant(ctx, tx, &b); err != nil {
+	if err = a.RemoveProductVariant(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ProductvariantidProductVariant().Count(ctx, tx)
+	count, err := a.ProductVariant().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1368,20 +1193,20 @@ func testStockToOneRemoveOpProductVariantUsingProductvariantidProductVariant(t *
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ProductvariantidProductVariant != nil {
+	if a.R.ProductVariant != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Productvariantid) {
+	if !queries.IsValuerNil(a.ProductVariantID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ProductvariantidStocks) != 0 {
+	if len(b.R.Stocks) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testStockToOneSetOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
+func testStockToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1410,36 +1235,36 @@ func testStockToOneSetOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
 	}
 
 	for i, x := range []*Warehouse{&b, &c} {
-		err = a.SetWarehouseidWarehouse(ctx, tx, i != 0, x)
+		err = a.SetWarehouse(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.WarehouseidWarehouse != x {
+		if a.R.Warehouse != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.WarehouseidStocks[0] != &a {
+		if x.R.Stocks[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Warehouseid, x.ID) {
-			t.Error("foreign key was wrong value", a.Warehouseid)
+		if !queries.Equal(a.WarehouseID, x.ID) {
+			t.Error("foreign key was wrong value", a.WarehouseID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Warehouseid))
-		reflect.Indirect(reflect.ValueOf(&a.Warehouseid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.WarehouseID))
+		reflect.Indirect(reflect.ValueOf(&a.WarehouseID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Warehouseid, x.ID) {
-			t.Error("foreign key was wrong value", a.Warehouseid, x.ID)
+		if !queries.Equal(a.WarehouseID, x.ID) {
+			t.Error("foreign key was wrong value", a.WarehouseID, x.ID)
 		}
 	}
 }
 
-func testStockToOneRemoveOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
+func testStockToOneRemoveOpWarehouseUsingWarehouse(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1461,15 +1286,15 @@ func testStockToOneRemoveOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetWarehouseidWarehouse(ctx, tx, true, &b); err != nil {
+	if err = a.SetWarehouse(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveWarehouseidWarehouse(ctx, tx, &b); err != nil {
+	if err = a.RemoveWarehouse(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.WarehouseidWarehouse().Count(ctx, tx)
+	count, err := a.Warehouse().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1477,15 +1302,15 @@ func testStockToOneRemoveOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.WarehouseidWarehouse != nil {
+	if a.R.Warehouse != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Warehouseid) {
+	if !queries.IsValuerNil(a.WarehouseID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.WarehouseidStocks) != 0 {
+	if len(b.R.Stocks) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1564,7 +1389,7 @@ func testStocksSelect(t *testing.T) {
 }
 
 var (
-	stockDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Warehouseid`: `character varying`, `Productvariantid`: `character varying`, `Quantity`: `integer`}
+	stockDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `WarehouseID`: `character varying`, `ProductVariantID`: `character varying`, `Quantity`: `integer`}
 	_            = bytes.MinRead
 )
 

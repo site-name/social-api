@@ -494,7 +494,7 @@ func testOrderLinesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testOrderLineOneToOneDigitalContentURLUsingLineidDigitalContentURL(t *testing.T) {
+func testOrderLineOneToOneDigitalContentURLUsingLineDigitalContentURL(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,18 +514,18 @@ func testOrderLineOneToOneDigitalContentURLUsingLineidDigitalContentURL(t *testi
 		t.Fatal(err)
 	}
 
-	queries.Assign(&foreign.Lineid, local.ID)
+	queries.Assign(&foreign.LineID, local.ID)
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.LineidDigitalContentURL().One(ctx, tx)
+	check, err := local.LineDigitalContentURL().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.Lineid, foreign.Lineid) {
-		t.Errorf("want: %v, got %v", foreign.Lineid, check.Lineid)
+	if !queries.Equal(check.LineID, foreign.LineID) {
+		t.Errorf("want: %v, got %v", foreign.LineID, check.LineID)
 	}
 
 	ranAfterSelectHook := false
@@ -535,18 +535,18 @@ func testOrderLineOneToOneDigitalContentURLUsingLineidDigitalContentURL(t *testi
 	})
 
 	slice := OrderLineSlice{&local}
-	if err = local.L.LoadLineidDigitalContentURL(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
+	if err = local.L.LoadLineDigitalContentURL(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.LineidDigitalContentURL == nil {
+	if local.R.LineDigitalContentURL == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.LineidDigitalContentURL = nil
-	if err = local.L.LoadLineidDigitalContentURL(ctx, tx, true, &local, nil); err != nil {
+	local.R.LineDigitalContentURL = nil
+	if err = local.L.LoadLineDigitalContentURL(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.LineidDigitalContentURL == nil {
+	if local.R.LineDigitalContentURL == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testOrderLineOneToOneDigitalContentURLUsingLineidDigitalContentURL(t *testi
 	}
 }
 
-func testOrderLineOneToOneSetOpDigitalContentURLUsingLineidDigitalContentURL(t *testing.T) {
+func testOrderLineOneToOneSetOpDigitalContentURLUsingLineDigitalContentURL(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,31 +584,31 @@ func testOrderLineOneToOneSetOpDigitalContentURLUsingLineidDigitalContentURL(t *
 	}
 
 	for i, x := range []*DigitalContentURL{&b, &c} {
-		err = a.SetLineidDigitalContentURL(ctx, tx, i != 0, x)
+		err = a.SetLineDigitalContentURL(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.LineidDigitalContentURL != x {
+		if a.R.LineDigitalContentURL != x {
 			t.Error("relationship struct not set to correct value")
 		}
-		if x.R.LineidOrderLine != &a {
+		if x.R.Line != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 
-		if !queries.Equal(a.ID, x.Lineid) {
+		if !queries.Equal(a.ID, x.LineID) {
 			t.Error("foreign key was wrong value", a.ID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(x.Lineid))
-		reflect.Indirect(reflect.ValueOf(&x.Lineid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(x.LineID))
+		reflect.Indirect(reflect.ValueOf(&x.LineID)).Set(zero)
 
 		if err = x.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ID, x.Lineid) {
-			t.Error("foreign key was wrong value", a.ID, x.Lineid)
+		if !queries.Equal(a.ID, x.LineID) {
+			t.Error("foreign key was wrong value", a.ID, x.LineID)
 		}
 
 		if _, err = x.Delete(ctx, tx); err != nil {
@@ -617,7 +617,7 @@ func testOrderLineOneToOneSetOpDigitalContentURLUsingLineidDigitalContentURL(t *
 	}
 }
 
-func testOrderLineOneToOneRemoveOpDigitalContentURLUsingLineidDigitalContentURL(t *testing.T) {
+func testOrderLineOneToOneRemoveOpDigitalContentURLUsingLineDigitalContentURL(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -639,15 +639,15 @@ func testOrderLineOneToOneRemoveOpDigitalContentURLUsingLineidDigitalContentURL(
 		t.Fatal(err)
 	}
 
-	if err = a.SetLineidDigitalContentURL(ctx, tx, true, &b); err != nil {
+	if err = a.SetLineDigitalContentURL(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveLineidDigitalContentURL(ctx, tx, &b); err != nil {
+	if err = a.RemoveLineDigitalContentURL(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.LineidDigitalContentURL().Count(ctx, tx)
+	count, err := a.LineDigitalContentURL().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -655,20 +655,20 @@ func testOrderLineOneToOneRemoveOpDigitalContentURLUsingLineidDigitalContentURL(
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.LineidDigitalContentURL != nil {
+	if a.R.LineDigitalContentURL != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(b.Lineid) {
+	if !queries.IsValuerNil(b.LineID) {
 		t.Error("foreign key column should be nil")
 	}
 
-	if b.R.LineidOrderLine != nil {
+	if b.R.Line != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testOrderLineToManyOrderlineidAllocations(t *testing.T) {
+func testOrderLineToManyAllocations(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -693,8 +693,9 @@ func testOrderLineToManyOrderlineidAllocations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Orderlineid, a.ID)
-	queries.Assign(&c.Orderlineid, a.ID)
+	b.OrderLineID = a.ID
+	c.OrderLineID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -702,17 +703,17 @@ func testOrderLineToManyOrderlineidAllocations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.OrderlineidAllocations().All(ctx, tx)
+	check, err := a.Allocations().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Orderlineid, b.Orderlineid) {
+		if v.OrderLineID == b.OrderLineID {
 			bFound = true
 		}
-		if queries.Equal(v.Orderlineid, c.Orderlineid) {
+		if v.OrderLineID == c.OrderLineID {
 			cFound = true
 		}
 	}
@@ -725,18 +726,18 @@ func testOrderLineToManyOrderlineidAllocations(t *testing.T) {
 	}
 
 	slice := OrderLineSlice{&a}
-	if err = a.L.LoadOrderlineidAllocations(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
+	if err = a.L.LoadAllocations(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.OrderlineidAllocations); got != 2 {
+	if got := len(a.R.Allocations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.OrderlineidAllocations = nil
-	if err = a.L.LoadOrderlineidAllocations(ctx, tx, true, &a, nil); err != nil {
+	a.R.Allocations = nil
+	if err = a.L.LoadAllocations(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.OrderlineidAllocations); got != 2 {
+	if got := len(a.R.Allocations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -745,7 +746,7 @@ func testOrderLineToManyOrderlineidAllocations(t *testing.T) {
 	}
 }
 
-func testOrderLineToManyOrderlineidFulfillmentLines(t *testing.T) {
+func testOrderLineToManyFulfillmentLines(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -770,8 +771,8 @@ func testOrderLineToManyOrderlineidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Orderlineid, a.ID)
-	queries.Assign(&c.Orderlineid, a.ID)
+	queries.Assign(&b.OrderLineID, a.ID)
+	queries.Assign(&c.OrderLineID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -779,17 +780,17 @@ func testOrderLineToManyOrderlineidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.OrderlineidFulfillmentLines().All(ctx, tx)
+	check, err := a.FulfillmentLines().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Orderlineid, b.Orderlineid) {
+		if queries.Equal(v.OrderLineID, b.OrderLineID) {
 			bFound = true
 		}
-		if queries.Equal(v.Orderlineid, c.Orderlineid) {
+		if queries.Equal(v.OrderLineID, c.OrderLineID) {
 			cFound = true
 		}
 	}
@@ -802,18 +803,18 @@ func testOrderLineToManyOrderlineidFulfillmentLines(t *testing.T) {
 	}
 
 	slice := OrderLineSlice{&a}
-	if err = a.L.LoadOrderlineidFulfillmentLines(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
+	if err = a.L.LoadFulfillmentLines(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.OrderlineidFulfillmentLines); got != 2 {
+	if got := len(a.R.FulfillmentLines); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.OrderlineidFulfillmentLines = nil
-	if err = a.L.LoadOrderlineidFulfillmentLines(ctx, tx, true, &a, nil); err != nil {
+	a.R.FulfillmentLines = nil
+	if err = a.L.LoadFulfillmentLines(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.OrderlineidFulfillmentLines); got != 2 {
+	if got := len(a.R.FulfillmentLines); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -822,7 +823,7 @@ func testOrderLineToManyOrderlineidFulfillmentLines(t *testing.T) {
 	}
 }
 
-func testOrderLineToManyAddOpOrderlineidAllocations(t *testing.T) {
+func testOrderLineToManyAddOpAllocations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -859,7 +860,7 @@ func testOrderLineToManyAddOpOrderlineidAllocations(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddOrderlineidAllocations(ctx, tx, i != 0, x...)
+		err = a.AddAllocations(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -867,28 +868,28 @@ func testOrderLineToManyAddOpOrderlineidAllocations(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Orderlineid) {
-			t.Error("foreign key was wrong value", a.ID, first.Orderlineid)
+		if a.ID != first.OrderLineID {
+			t.Error("foreign key was wrong value", a.ID, first.OrderLineID)
 		}
-		if !queries.Equal(a.ID, second.Orderlineid) {
-			t.Error("foreign key was wrong value", a.ID, second.Orderlineid)
+		if a.ID != second.OrderLineID {
+			t.Error("foreign key was wrong value", a.ID, second.OrderLineID)
 		}
 
-		if first.R.OrderlineidOrderLine != &a {
+		if first.R.OrderLine != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.OrderlineidOrderLine != &a {
+		if second.R.OrderLine != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.OrderlineidAllocations[i*2] != first {
+		if a.R.Allocations[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.OrderlineidAllocations[i*2+1] != second {
+		if a.R.Allocations[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.OrderlineidAllocations().Count(ctx, tx)
+		count, err := a.Allocations().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -897,183 +898,7 @@ func testOrderLineToManyAddOpOrderlineidAllocations(t *testing.T) {
 		}
 	}
 }
-
-func testOrderLineToManySetOpOrderlineidAllocations(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a OrderLine
-	var b, c, d, e Allocation
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Allocation{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, allocationDBTypes, false, strmangle.SetComplement(allocationPrimaryKeyColumns, allocationColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetOrderlineidAllocations(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderlineidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetOrderlineidAllocations(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderlineidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Orderlineid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Orderlineid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.Orderlineid) {
-		t.Error("foreign key was wrong value", a.ID, d.Orderlineid)
-	}
-	if !queries.Equal(a.ID, e.Orderlineid) {
-		t.Error("foreign key was wrong value", a.ID, e.Orderlineid)
-	}
-
-	if b.R.OrderlineidOrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.OrderlineidOrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.OrderlineidOrderLine != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.OrderlineidOrderLine != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.OrderlineidAllocations[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.OrderlineidAllocations[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testOrderLineToManyRemoveOpOrderlineidAllocations(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a OrderLine
-	var b, c, d, e Allocation
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Allocation{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, allocationDBTypes, false, strmangle.SetComplement(allocationPrimaryKeyColumns, allocationColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddOrderlineidAllocations(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderlineidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveOrderlineidAllocations(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderlineidAllocations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Orderlineid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Orderlineid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.OrderlineidOrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.OrderlineidOrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.OrderlineidOrderLine != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.OrderlineidOrderLine != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.OrderlineidAllocations) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.OrderlineidAllocations[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.OrderlineidAllocations[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
-func testOrderLineToManyAddOpOrderlineidFulfillmentLines(t *testing.T) {
+func testOrderLineToManyAddOpFulfillmentLines(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1110,7 +935,7 @@ func testOrderLineToManyAddOpOrderlineidFulfillmentLines(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddOrderlineidFulfillmentLines(ctx, tx, i != 0, x...)
+		err = a.AddFulfillmentLines(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1118,28 +943,28 @@ func testOrderLineToManyAddOpOrderlineidFulfillmentLines(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Orderlineid) {
-			t.Error("foreign key was wrong value", a.ID, first.Orderlineid)
+		if !queries.Equal(a.ID, first.OrderLineID) {
+			t.Error("foreign key was wrong value", a.ID, first.OrderLineID)
 		}
-		if !queries.Equal(a.ID, second.Orderlineid) {
-			t.Error("foreign key was wrong value", a.ID, second.Orderlineid)
+		if !queries.Equal(a.ID, second.OrderLineID) {
+			t.Error("foreign key was wrong value", a.ID, second.OrderLineID)
 		}
 
-		if first.R.OrderlineidOrderLine != &a {
+		if first.R.OrderLine != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.OrderlineidOrderLine != &a {
+		if second.R.OrderLine != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.OrderlineidFulfillmentLines[i*2] != first {
+		if a.R.FulfillmentLines[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.OrderlineidFulfillmentLines[i*2+1] != second {
+		if a.R.FulfillmentLines[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.OrderlineidFulfillmentLines().Count(ctx, tx)
+		count, err := a.FulfillmentLines().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1149,7 +974,7 @@ func testOrderLineToManyAddOpOrderlineidFulfillmentLines(t *testing.T) {
 	}
 }
 
-func testOrderLineToManySetOpOrderlineidFulfillmentLines(t *testing.T) {
+func testOrderLineToManySetOpFulfillmentLines(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1180,25 +1005,12 @@ func testOrderLineToManySetOpOrderlineidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetOrderlineidFulfillmentLines(ctx, tx, false, &b, &c)
+	err = a.SetFulfillmentLines(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.OrderlineidFulfillmentLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetOrderlineidFulfillmentLines(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderlineidFulfillmentLines().Count(ctx, tx)
+	count, err := a.FulfillmentLines().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1206,41 +1018,54 @@ func testOrderLineToManySetOpOrderlineidFulfillmentLines(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Orderlineid) {
+	err = a.SetFulfillmentLines(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.FulfillmentLines().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.OrderLineID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Orderlineid) {
+	if !queries.IsValuerNil(c.OrderLineID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Orderlineid) {
-		t.Error("foreign key was wrong value", a.ID, d.Orderlineid)
+	if !queries.Equal(a.ID, d.OrderLineID) {
+		t.Error("foreign key was wrong value", a.ID, d.OrderLineID)
 	}
-	if !queries.Equal(a.ID, e.Orderlineid) {
-		t.Error("foreign key was wrong value", a.ID, e.Orderlineid)
-	}
-
-	if b.R.OrderlineidOrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.OrderlineidOrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.OrderlineidOrderLine != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.OrderlineidOrderLine != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.OrderLineID) {
+		t.Error("foreign key was wrong value", a.ID, e.OrderLineID)
 	}
 
-	if a.R.OrderlineidFulfillmentLines[0] != &d {
+	if b.R.OrderLine != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.OrderLine != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.OrderLine != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.OrderLine != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.FulfillmentLines[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.OrderlineidFulfillmentLines[1] != &e {
+	if a.R.FulfillmentLines[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testOrderLineToManyRemoveOpOrderlineidFulfillmentLines(t *testing.T) {
+func testOrderLineToManyRemoveOpFulfillmentLines(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1265,12 +1090,12 @@ func testOrderLineToManyRemoveOpOrderlineidFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddOrderlineidFulfillmentLines(ctx, tx, true, foreigners...)
+	err = a.AddFulfillmentLines(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.OrderlineidFulfillmentLines().Count(ctx, tx)
+	count, err := a.FulfillmentLines().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1278,12 +1103,12 @@ func testOrderLineToManyRemoveOpOrderlineidFulfillmentLines(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveOrderlineidFulfillmentLines(ctx, tx, foreigners[:2]...)
+	err = a.RemoveFulfillmentLines(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.OrderlineidFulfillmentLines().Count(ctx, tx)
+	count, err = a.FulfillmentLines().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1291,40 +1116,40 @@ func testOrderLineToManyRemoveOpOrderlineidFulfillmentLines(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Orderlineid) {
+	if !queries.IsValuerNil(b.OrderLineID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Orderlineid) {
+	if !queries.IsValuerNil(c.OrderLineID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.OrderlineidOrderLine != nil {
+	if b.R.OrderLine != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.OrderlineidOrderLine != nil {
+	if c.R.OrderLine != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.OrderlineidOrderLine != &a {
+	if d.R.OrderLine != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.OrderlineidOrderLine != &a {
+	if e.R.OrderLine != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.OrderlineidFulfillmentLines) != 2 {
+	if len(a.R.FulfillmentLines) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.OrderlineidFulfillmentLines[1] != &d {
+	if a.R.FulfillmentLines[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.OrderlineidFulfillmentLines[0] != &e {
+	if a.R.FulfillmentLines[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testOrderLineToOneOrderUsingOrderidOrder(t *testing.T) {
+func testOrderLineToOneOrderUsingOrder(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1344,12 +1169,12 @@ func testOrderLineToOneOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Orderid, foreign.ID)
+	queries.Assign(&local.OrderID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.OrderidOrder().One(ctx, tx)
+	check, err := local.Order().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1365,18 +1190,18 @@ func testOrderLineToOneOrderUsingOrderidOrder(t *testing.T) {
 	})
 
 	slice := OrderLineSlice{&local}
-	if err = local.L.LoadOrderidOrder(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
+	if err = local.L.LoadOrder(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.OrderidOrder = nil
-	if err = local.L.LoadOrderidOrder(ctx, tx, true, &local, nil); err != nil {
+	local.R.Order = nil
+	if err = local.L.LoadOrder(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1385,7 +1210,7 @@ func testOrderLineToOneOrderUsingOrderidOrder(t *testing.T) {
 	}
 }
 
-func testOrderLineToOneProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testOrderLineToOneProductVariantUsingVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1405,12 +1230,12 @@ func testOrderLineToOneProductVariantUsingVariantidProductVariant(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Variantid, foreign.ID)
+	queries.Assign(&local.VariantID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.VariantidProductVariant().One(ctx, tx)
+	check, err := local.Variant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1426,18 +1251,18 @@ func testOrderLineToOneProductVariantUsingVariantidProductVariant(t *testing.T) 
 	})
 
 	slice := OrderLineSlice{&local}
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
+	if err = local.L.LoadVariant(ctx, tx, false, (*[]*OrderLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.VariantidProductVariant = nil
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.Variant = nil
+	if err = local.L.LoadVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1446,7 +1271,7 @@ func testOrderLineToOneProductVariantUsingVariantidProductVariant(t *testing.T) 
 	}
 }
 
-func testOrderLineToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
+func testOrderLineToOneSetOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1475,36 +1300,36 @@ func testOrderLineToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
 	}
 
 	for i, x := range []*Order{&b, &c} {
-		err = a.SetOrderidOrder(ctx, tx, i != 0, x)
+		err = a.SetOrder(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.OrderidOrder != x {
+		if a.R.Order != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.OrderidOrderLines[0] != &a {
+		if x.R.OrderLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Orderid))
-		reflect.Indirect(reflect.ValueOf(&a.Orderid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.OrderID))
+		reflect.Indirect(reflect.ValueOf(&a.OrderID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid, x.ID)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID, x.ID)
 		}
 	}
 }
 
-func testOrderLineToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
+func testOrderLineToOneRemoveOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1526,15 +1351,15 @@ func testOrderLineToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetOrderidOrder(ctx, tx, true, &b); err != nil {
+	if err = a.SetOrder(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveOrderidOrder(ctx, tx, &b); err != nil {
+	if err = a.RemoveOrder(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.OrderidOrder().Count(ctx, tx)
+	count, err := a.Order().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1542,20 +1367,20 @@ func testOrderLineToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.OrderidOrder != nil {
+	if a.R.Order != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Orderid) {
+	if !queries.IsValuerNil(a.OrderID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.OrderidOrderLines) != 0 {
+	if len(b.R.OrderLines) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testOrderLineToOneSetOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testOrderLineToOneSetOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1584,36 +1409,36 @@ func testOrderLineToOneSetOpProductVariantUsingVariantidProductVariant(t *testin
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetVariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.VariantidProductVariant != x {
+		if a.R.Variant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.VariantidOrderLines[0] != &a {
+		if x.R.VariantOrderLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Variantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Variantid)
+		if !queries.Equal(a.VariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.VariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Variantid))
-		reflect.Indirect(reflect.ValueOf(&a.Variantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.VariantID))
+		reflect.Indirect(reflect.ValueOf(&a.VariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Variantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Variantid, x.ID)
+		if !queries.Equal(a.VariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.VariantID, x.ID)
 		}
 	}
 }
 
-func testOrderLineToOneRemoveOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testOrderLineToOneRemoveOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1635,15 +1460,15 @@ func testOrderLineToOneRemoveOpProductVariantUsingVariantidProductVariant(t *tes
 		t.Fatal(err)
 	}
 
-	if err = a.SetVariantidProductVariant(ctx, tx, true, &b); err != nil {
+	if err = a.SetVariant(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveVariantidProductVariant(ctx, tx, &b); err != nil {
+	if err = a.RemoveVariant(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.VariantidProductVariant().Count(ctx, tx)
+	count, err := a.Variant().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1651,15 +1476,15 @@ func testOrderLineToOneRemoveOpProductVariantUsingVariantidProductVariant(t *tes
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.VariantidProductVariant != nil {
+	if a.R.Variant != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Variantid) {
+	if !queries.IsValuerNil(a.VariantID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.VariantidOrderLines) != 0 {
+	if len(b.R.VariantOrderLines) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1738,7 +1563,7 @@ func testOrderLinesSelect(t *testing.T) {
 }
 
 var (
-	orderLineDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Orderid`: `character varying`, `Variantid`: `character varying`, `Productname`: `character varying`, `Variantname`: `character varying`, `Translatedproductname`: `character varying`, `Translatedvariantname`: `character varying`, `Productsku`: `character varying`, `Productvariantid`: `character varying`, `Isshippingrequired`: `boolean`, `Isgiftcard`: `boolean`, `Quantity`: `integer`, `Quantityfulfilled`: `integer`, `Currency`: `character varying`, `Unitdiscountamount`: `double precision`, `Unitdiscounttype`: `character varying`, `Unitdiscountreason`: `text`, `Unitpricenetamount`: `double precision`, `Unitdiscountvalue`: `double precision`, `Unitpricegrossamount`: `double precision`, `Totalpricenetamount`: `double precision`, `Totalpricegrossamount`: `double precision`, `Undiscountedunitpricegrossamount`: `double precision`, `Undiscountedunitpricenetamount`: `double precision`, `Undiscountedtotalpricegrossamount`: `double precision`, `Undiscountedtotalpricenetamount`: `double precision`, `Taxrate`: `double precision`, `Allocations`: `text`}
+	orderLineDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `OrderID`: `character varying`, `VariantID`: `character varying`, `ProductName`: `character varying`, `VariantName`: `character varying`, `TranslatedProductName`: `character varying`, `TranslatedVariantName`: `character varying`, `ProductSku`: `character varying`, `ProductVariantID`: `character varying`, `IsShippingRequired`: `boolean`, `IsGiftcard`: `boolean`, `Quantity`: `integer`, `QuantityFulfilled`: `integer`, `Currency`: `character varying`, `UnitDiscountAmount`: `double precision`, `UnitDiscountType`: `character varying`, `UnitDiscountReason`: `text`, `UnitPriceNetAmount`: `double precision`, `UnitDiscountValue`: `double precision`, `UnitPriceGrossAmount`: `double precision`, `TotalPriceNetAmount`: `double precision`, `TotalPriceGrossAmount`: `double precision`, `UndiscountedUnitPriceGrossAmount`: `double precision`, `UndiscountedUnitPriceNetAmount`: `double precision`, `UndiscountedTotalPriceGrossAmount`: `double precision`, `UndiscountedTotalPriceNetAmount`: `double precision`, `TaxRate`: `double precision`}
 	_                = bytes.MinRead
 )
 

@@ -25,9 +25,9 @@ import (
 // SaleTranslation is an object representing the database table.
 type SaleTranslation struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
+	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
 	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Saleid       null.String `boil:"saleid" json:"saleid,omitempty" toml:"saleid" yaml:"saleid,omitempty"`
+	SaleID       null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
 
 	R *saleTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,52 +35,52 @@ type SaleTranslation struct {
 
 var SaleTranslationColumns = struct {
 	ID           string
-	Languagecode string
+	LanguageCode string
 	Name         string
-	Saleid       string
+	SaleID       string
 }{
 	ID:           "id",
-	Languagecode: "languagecode",
+	LanguageCode: "language_code",
 	Name:         "name",
-	Saleid:       "saleid",
+	SaleID:       "sale_id",
 }
 
 var SaleTranslationTableColumns = struct {
 	ID           string
-	Languagecode string
+	LanguageCode string
 	Name         string
-	Saleid       string
+	SaleID       string
 }{
 	ID:           "sale_translations.id",
-	Languagecode: "sale_translations.languagecode",
+	LanguageCode: "sale_translations.language_code",
 	Name:         "sale_translations.name",
-	Saleid:       "sale_translations.saleid",
+	SaleID:       "sale_translations.sale_id",
 }
 
 // Generated where
 
 var SaleTranslationWhere = struct {
 	ID           whereHelperstring
-	Languagecode whereHelpernull_String
+	LanguageCode whereHelpernull_String
 	Name         whereHelpernull_String
-	Saleid       whereHelpernull_String
+	SaleID       whereHelpernull_String
 }{
 	ID:           whereHelperstring{field: "\"sale_translations\".\"id\""},
-	Languagecode: whereHelpernull_String{field: "\"sale_translations\".\"languagecode\""},
+	LanguageCode: whereHelpernull_String{field: "\"sale_translations\".\"language_code\""},
 	Name:         whereHelpernull_String{field: "\"sale_translations\".\"name\""},
-	Saleid:       whereHelpernull_String{field: "\"sale_translations\".\"saleid\""},
+	SaleID:       whereHelpernull_String{field: "\"sale_translations\".\"sale_id\""},
 }
 
 // SaleTranslationRels is where relationship names are stored.
 var SaleTranslationRels = struct {
-	SaleidSale string
+	Sale string
 }{
-	SaleidSale: "SaleidSale",
+	Sale: "Sale",
 }
 
 // saleTranslationR is where relationships are stored.
 type saleTranslationR struct {
-	SaleidSale *Sale `boil:"SaleidSale" json:"SaleidSale" toml:"SaleidSale" yaml:"SaleidSale"`
+	Sale *Sale `boil:"Sale" json:"Sale" toml:"Sale" yaml:"Sale"`
 }
 
 // NewStruct creates a new relationship struct
@@ -88,20 +88,20 @@ func (*saleTranslationR) NewStruct() *saleTranslationR {
 	return &saleTranslationR{}
 }
 
-func (r *saleTranslationR) GetSaleidSale() *Sale {
+func (r *saleTranslationR) GetSale() *Sale {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSale
+	return r.Sale
 }
 
 // saleTranslationL is where Load methods for each relationship are stored.
 type saleTranslationL struct{}
 
 var (
-	saleTranslationAllColumns            = []string{"id", "languagecode", "name", "saleid"}
+	saleTranslationAllColumns            = []string{"id", "language_code", "name", "sale_id"}
 	saleTranslationColumnsWithoutDefault = []string{"id"}
-	saleTranslationColumnsWithDefault    = []string{"languagecode", "name", "saleid"}
+	saleTranslationColumnsWithDefault    = []string{"language_code", "name", "sale_id"}
 	saleTranslationPrimaryKeyColumns     = []string{"id"}
 	saleTranslationGeneratedColumns      = []string{}
 )
@@ -384,10 +384,10 @@ func (q saleTranslationQuery) Exists(ctx context.Context, exec boil.ContextExecu
 	return count > 0, nil
 }
 
-// SaleidSale pointed to by the foreign key.
-func (o *SaleTranslation) SaleidSale(mods ...qm.QueryMod) saleQuery {
+// Sale pointed to by the foreign key.
+func (o *SaleTranslation) Sale(mods ...qm.QueryMod) saleQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Saleid),
+		qm.Where("\"id\" = ?", o.SaleID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -395,9 +395,9 @@ func (o *SaleTranslation) SaleidSale(mods ...qm.QueryMod) saleQuery {
 	return Sales(queryMods...)
 }
 
-// LoadSaleidSale allows an eager lookup of values, cached into the
+// LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleTranslationL) LoadSaleidSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleTranslation interface{}, mods queries.Applicator) error {
+func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleTranslation interface{}, mods queries.Applicator) error {
 	var slice []*SaleTranslation
 	var object *SaleTranslation
 
@@ -428,8 +428,8 @@ func (saleTranslationL) LoadSaleidSale(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &saleTranslationR{}
 		}
-		if !queries.IsNil(object.Saleid) {
-			args = append(args, object.Saleid)
+		if !queries.IsNil(object.SaleID) {
+			args = append(args, object.SaleID)
 		}
 
 	} else {
@@ -440,13 +440,13 @@ func (saleTranslationL) LoadSaleidSale(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Saleid) {
+				if queries.Equal(a, obj.SaleID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Saleid) {
-				args = append(args, obj.Saleid)
+			if !queries.IsNil(obj.SaleID) {
+				args = append(args, obj.SaleID)
 			}
 
 		}
@@ -495,22 +495,22 @@ func (saleTranslationL) LoadSaleidSale(ctx context.Context, e boil.ContextExecut
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.SaleidSale = foreign
+		object.R.Sale = foreign
 		if foreign.R == nil {
 			foreign.R = &saleR{}
 		}
-		foreign.R.SaleidSaleTranslations = append(foreign.R.SaleidSaleTranslations, object)
+		foreign.R.SaleTranslations = append(foreign.R.SaleTranslations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Saleid, foreign.ID) {
-				local.R.SaleidSale = foreign
+			if queries.Equal(local.SaleID, foreign.ID) {
+				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
 				}
-				foreign.R.SaleidSaleTranslations = append(foreign.R.SaleidSaleTranslations, local)
+				foreign.R.SaleTranslations = append(foreign.R.SaleTranslations, local)
 				break
 			}
 		}
@@ -519,10 +519,10 @@ func (saleTranslationL) LoadSaleidSale(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// SetSaleidSale of the saleTranslation to the related item.
-// Sets o.R.SaleidSale to related.
-// Adds o to related.R.SaleidSaleTranslations.
-func (o *SaleTranslation) SetSaleidSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
+// SetSale of the saleTranslation to the related item.
+// Sets o.R.Sale to related.
+// Adds o to related.R.SaleTranslations.
+func (o *SaleTranslation) SetSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -532,7 +532,7 @@ func (o *SaleTranslation) SetSaleidSale(ctx context.Context, exec boil.ContextEx
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"sale_translations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 		strmangle.WhereClause("\"", "\"", 2, saleTranslationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -546,54 +546,54 @@ func (o *SaleTranslation) SetSaleidSale(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Saleid, related.ID)
+	queries.Assign(&o.SaleID, related.ID)
 	if o.R == nil {
 		o.R = &saleTranslationR{
-			SaleidSale: related,
+			Sale: related,
 		}
 	} else {
-		o.R.SaleidSale = related
+		o.R.Sale = related
 	}
 
 	if related.R == nil {
 		related.R = &saleR{
-			SaleidSaleTranslations: SaleTranslationSlice{o},
+			SaleTranslations: SaleTranslationSlice{o},
 		}
 	} else {
-		related.R.SaleidSaleTranslations = append(related.R.SaleidSaleTranslations, o)
+		related.R.SaleTranslations = append(related.R.SaleTranslations, o)
 	}
 
 	return nil
 }
 
-// RemoveSaleidSale relationship.
-// Sets o.R.SaleidSale to nil.
+// RemoveSale relationship.
+// Sets o.R.Sale to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *SaleTranslation) RemoveSaleidSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
+func (o *SaleTranslation) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
 	var err error
 
-	queries.SetScanner(&o.Saleid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+	queries.SetScanner(&o.SaleID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.SaleidSale = nil
+		o.R.Sale = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.SaleidSaleTranslations {
-		if queries.Equal(o.Saleid, ri.Saleid) {
+	for i, ri := range related.R.SaleTranslations {
+		if queries.Equal(o.SaleID, ri.SaleID) {
 			continue
 		}
 
-		ln := len(related.R.SaleidSaleTranslations)
+		ln := len(related.R.SaleTranslations)
 		if ln > 1 && i < ln-1 {
-			related.R.SaleidSaleTranslations[i] = related.R.SaleidSaleTranslations[ln-1]
+			related.R.SaleTranslations[i] = related.R.SaleTranslations[ln-1]
 		}
-		related.R.SaleidSaleTranslations = related.R.SaleidSaleTranslations[:ln-1]
+		related.R.SaleTranslations = related.R.SaleTranslations[:ln-1]
 		break
 	}
 	return nil

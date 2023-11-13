@@ -494,7 +494,7 @@ func testDigitalContentsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testDigitalContentToManyContentidDigitalContentUrls(t *testing.T) {
+func testDigitalContentToManyContentDigitalContentUrls(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testDigitalContentToManyContentidDigitalContentUrls(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Contentid, a.ID)
-	queries.Assign(&c.Contentid, a.ID)
+	queries.Assign(&b.ContentID, a.ID)
+	queries.Assign(&c.ContentID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testDigitalContentToManyContentidDigitalContentUrls(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ContentidDigitalContentUrls().All(ctx, tx)
+	check, err := a.ContentDigitalContentUrls().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Contentid, b.Contentid) {
+		if queries.Equal(v.ContentID, b.ContentID) {
 			bFound = true
 		}
-		if queries.Equal(v.Contentid, c.Contentid) {
+		if queries.Equal(v.ContentID, c.ContentID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testDigitalContentToManyContentidDigitalContentUrls(t *testing.T) {
 	}
 
 	slice := DigitalContentSlice{&a}
-	if err = a.L.LoadContentidDigitalContentUrls(ctx, tx, false, (*[]*DigitalContent)(&slice), nil); err != nil {
+	if err = a.L.LoadContentDigitalContentUrls(ctx, tx, false, (*[]*DigitalContent)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ContentidDigitalContentUrls); got != 2 {
+	if got := len(a.R.ContentDigitalContentUrls); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ContentidDigitalContentUrls = nil
-	if err = a.L.LoadContentidDigitalContentUrls(ctx, tx, true, &a, nil); err != nil {
+	a.R.ContentDigitalContentUrls = nil
+	if err = a.L.LoadContentDigitalContentUrls(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ContentidDigitalContentUrls); got != 2 {
+	if got := len(a.R.ContentDigitalContentUrls); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testDigitalContentToManyContentidDigitalContentUrls(t *testing.T) {
 	}
 }
 
-func testDigitalContentToManyAddOpContentidDigitalContentUrls(t *testing.T) {
+func testDigitalContentToManyAddOpContentDigitalContentUrls(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -608,7 +608,7 @@ func testDigitalContentToManyAddOpContentidDigitalContentUrls(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddContentidDigitalContentUrls(ctx, tx, i != 0, x...)
+		err = a.AddContentDigitalContentUrls(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -616,28 +616,28 @@ func testDigitalContentToManyAddOpContentidDigitalContentUrls(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Contentid) {
-			t.Error("foreign key was wrong value", a.ID, first.Contentid)
+		if !queries.Equal(a.ID, first.ContentID) {
+			t.Error("foreign key was wrong value", a.ID, first.ContentID)
 		}
-		if !queries.Equal(a.ID, second.Contentid) {
-			t.Error("foreign key was wrong value", a.ID, second.Contentid)
+		if !queries.Equal(a.ID, second.ContentID) {
+			t.Error("foreign key was wrong value", a.ID, second.ContentID)
 		}
 
-		if first.R.ContentidDigitalContent != &a {
+		if first.R.Content != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ContentidDigitalContent != &a {
+		if second.R.Content != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ContentidDigitalContentUrls[i*2] != first {
+		if a.R.ContentDigitalContentUrls[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ContentidDigitalContentUrls[i*2+1] != second {
+		if a.R.ContentDigitalContentUrls[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ContentidDigitalContentUrls().Count(ctx, tx)
+		count, err := a.ContentDigitalContentUrls().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -647,7 +647,7 @@ func testDigitalContentToManyAddOpContentidDigitalContentUrls(t *testing.T) {
 	}
 }
 
-func testDigitalContentToManySetOpContentidDigitalContentUrls(t *testing.T) {
+func testDigitalContentToManySetOpContentDigitalContentUrls(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -678,25 +678,12 @@ func testDigitalContentToManySetOpContentidDigitalContentUrls(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetContentidDigitalContentUrls(ctx, tx, false, &b, &c)
+	err = a.SetContentDigitalContentUrls(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ContentidDigitalContentUrls().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetContentidDigitalContentUrls(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ContentidDigitalContentUrls().Count(ctx, tx)
+	count, err := a.ContentDigitalContentUrls().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -704,41 +691,54 @@ func testDigitalContentToManySetOpContentidDigitalContentUrls(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Contentid) {
+	err = a.SetContentDigitalContentUrls(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ContentDigitalContentUrls().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ContentID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Contentid) {
+	if !queries.IsValuerNil(c.ContentID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Contentid) {
-		t.Error("foreign key was wrong value", a.ID, d.Contentid)
+	if !queries.Equal(a.ID, d.ContentID) {
+		t.Error("foreign key was wrong value", a.ID, d.ContentID)
 	}
-	if !queries.Equal(a.ID, e.Contentid) {
-		t.Error("foreign key was wrong value", a.ID, e.Contentid)
-	}
-
-	if b.R.ContentidDigitalContent != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ContentidDigitalContent != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ContentidDigitalContent != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ContentidDigitalContent != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ContentID) {
+		t.Error("foreign key was wrong value", a.ID, e.ContentID)
 	}
 
-	if a.R.ContentidDigitalContentUrls[0] != &d {
+	if b.R.Content != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Content != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Content != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Content != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ContentDigitalContentUrls[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ContentidDigitalContentUrls[1] != &e {
+	if a.R.ContentDigitalContentUrls[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testDigitalContentToManyRemoveOpContentidDigitalContentUrls(t *testing.T) {
+func testDigitalContentToManyRemoveOpContentDigitalContentUrls(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -763,12 +763,12 @@ func testDigitalContentToManyRemoveOpContentidDigitalContentUrls(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddContentidDigitalContentUrls(ctx, tx, true, foreigners...)
+	err = a.AddContentDigitalContentUrls(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ContentidDigitalContentUrls().Count(ctx, tx)
+	count, err := a.ContentDigitalContentUrls().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -776,12 +776,12 @@ func testDigitalContentToManyRemoveOpContentidDigitalContentUrls(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveContentidDigitalContentUrls(ctx, tx, foreigners[:2]...)
+	err = a.RemoveContentDigitalContentUrls(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ContentidDigitalContentUrls().Count(ctx, tx)
+	count, err = a.ContentDigitalContentUrls().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -789,40 +789,40 @@ func testDigitalContentToManyRemoveOpContentidDigitalContentUrls(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Contentid) {
+	if !queries.IsValuerNil(b.ContentID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Contentid) {
+	if !queries.IsValuerNil(c.ContentID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ContentidDigitalContent != nil {
+	if b.R.Content != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ContentidDigitalContent != nil {
+	if c.R.Content != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ContentidDigitalContent != &a {
+	if d.R.Content != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ContentidDigitalContent != &a {
+	if e.R.Content != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ContentidDigitalContentUrls) != 2 {
+	if len(a.R.ContentDigitalContentUrls) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ContentidDigitalContentUrls[1] != &d {
+	if a.R.ContentDigitalContentUrls[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ContentidDigitalContentUrls[0] != &e {
+	if a.R.ContentDigitalContentUrls[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testDigitalContentToOneProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testDigitalContentToOneProductVariantUsingProductVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -842,12 +842,12 @@ func testDigitalContentToOneProductVariantUsingProductvariantidProductVariant(t 
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Productvariantid, foreign.ID)
+	queries.Assign(&local.ProductVariantID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ProductvariantidProductVariant().One(ctx, tx)
+	check, err := local.ProductVariant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -863,18 +863,18 @@ func testDigitalContentToOneProductVariantUsingProductvariantidProductVariant(t 
 	})
 
 	slice := DigitalContentSlice{&local}
-	if err = local.L.LoadProductvariantidProductVariant(ctx, tx, false, (*[]*DigitalContent)(&slice), nil); err != nil {
+	if err = local.L.LoadProductVariant(ctx, tx, false, (*[]*DigitalContent)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductvariantidProductVariant == nil {
+	if local.R.ProductVariant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ProductvariantidProductVariant = nil
-	if err = local.L.LoadProductvariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.ProductVariant = nil
+	if err = local.L.LoadProductVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductvariantidProductVariant == nil {
+	if local.R.ProductVariant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -883,7 +883,7 @@ func testDigitalContentToOneProductVariantUsingProductvariantidProductVariant(t 
 	}
 }
 
-func testDigitalContentToOneSetOpProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testDigitalContentToOneSetOpProductVariantUsingProductVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -912,36 +912,36 @@ func testDigitalContentToOneSetOpProductVariantUsingProductvariantidProductVaria
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetProductvariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetProductVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ProductvariantidProductVariant != x {
+		if a.R.ProductVariant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ProductvariantidDigitalContents[0] != &a {
+		if x.R.DigitalContents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Productvariantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productvariantid)
+		if !queries.Equal(a.ProductVariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductVariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Productvariantid))
-		reflect.Indirect(reflect.ValueOf(&a.Productvariantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ProductVariantID))
+		reflect.Indirect(reflect.ValueOf(&a.ProductVariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Productvariantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productvariantid, x.ID)
+		if !queries.Equal(a.ProductVariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductVariantID, x.ID)
 		}
 	}
 }
 
-func testDigitalContentToOneRemoveOpProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testDigitalContentToOneRemoveOpProductVariantUsingProductVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -963,15 +963,15 @@ func testDigitalContentToOneRemoveOpProductVariantUsingProductvariantidProductVa
 		t.Fatal(err)
 	}
 
-	if err = a.SetProductvariantidProductVariant(ctx, tx, true, &b); err != nil {
+	if err = a.SetProductVariant(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveProductvariantidProductVariant(ctx, tx, &b); err != nil {
+	if err = a.RemoveProductVariant(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ProductvariantidProductVariant().Count(ctx, tx)
+	count, err := a.ProductVariant().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -979,15 +979,15 @@ func testDigitalContentToOneRemoveOpProductVariantUsingProductvariantidProductVa
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ProductvariantidProductVariant != nil {
+	if a.R.ProductVariant != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Productvariantid) {
+	if !queries.IsValuerNil(a.ProductVariantID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ProductvariantidDigitalContents) != 0 {
+	if len(b.R.DigitalContents) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1066,7 +1066,7 @@ func testDigitalContentsSelect(t *testing.T) {
 }
 
 var (
-	digitalContentDBTypes = map[string]string{`ID`: `character varying`, `Usedefaultsettings`: `boolean`, `Automaticfulfillment`: `boolean`, `Contenttype`: `character varying`, `Productvariantid`: `character varying`, `Contentfile`: `character varying`, `Maxdownloads`: `integer`, `Urlvaliddays`: `integer`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	digitalContentDBTypes = map[string]string{`ID`: `character varying`, `UseDefaultSettings`: `boolean`, `AutomaticFulfillment`: `boolean`, `ContentType`: `character varying`, `ProductVariantID`: `character varying`, `ContentFile`: `character varying`, `MaxDownloads`: `integer`, `URLValidDays`: `integer`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_                     = bytes.MinRead
 )
 

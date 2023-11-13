@@ -494,7 +494,7 @@ func testAllocationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testAllocationToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
+func testAllocationToOneOrderLineUsingOrderLine(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -503,7 +503,7 @@ func testAllocationToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 	var foreign OrderLine
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, allocationDBTypes, true, allocationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, allocationDBTypes, false, allocationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Allocation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, orderLineDBTypes, false, orderLineColumnsWithDefault...); err != nil {
@@ -514,17 +514,17 @@ func testAllocationToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Orderlineid, foreign.ID)
+	local.OrderLineID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.OrderlineidOrderLine().One(ctx, tx)
+	check, err := local.OrderLine().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -535,18 +535,18 @@ func testAllocationToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 	})
 
 	slice := AllocationSlice{&local}
-	if err = local.L.LoadOrderlineidOrderLine(ctx, tx, false, (*[]*Allocation)(&slice), nil); err != nil {
+	if err = local.L.LoadOrderLine(ctx, tx, false, (*[]*Allocation)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderlineidOrderLine == nil {
+	if local.R.OrderLine == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.OrderlineidOrderLine = nil
-	if err = local.L.LoadOrderlineidOrderLine(ctx, tx, true, &local, nil); err != nil {
+	local.R.OrderLine = nil
+	if err = local.L.LoadOrderLine(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderlineidOrderLine == nil {
+	if local.R.OrderLine == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testAllocationToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 	}
 }
 
-func testAllocationToOneStockUsingStockidStock(t *testing.T) {
+func testAllocationToOneStockUsingStock(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -564,7 +564,7 @@ func testAllocationToOneStockUsingStockidStock(t *testing.T) {
 	var foreign Stock
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, allocationDBTypes, true, allocationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, allocationDBTypes, false, allocationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Allocation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, stockDBTypes, false, stockColumnsWithDefault...); err != nil {
@@ -575,17 +575,17 @@ func testAllocationToOneStockUsingStockidStock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Stockid, foreign.ID)
+	local.StockID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.StockidStock().One(ctx, tx)
+	check, err := local.Stock().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,18 +596,18 @@ func testAllocationToOneStockUsingStockidStock(t *testing.T) {
 	})
 
 	slice := AllocationSlice{&local}
-	if err = local.L.LoadStockidStock(ctx, tx, false, (*[]*Allocation)(&slice), nil); err != nil {
+	if err = local.L.LoadStock(ctx, tx, false, (*[]*Allocation)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.StockidStock == nil {
+	if local.R.Stock == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.StockidStock = nil
-	if err = local.L.LoadStockidStock(ctx, tx, true, &local, nil); err != nil {
+	local.R.Stock = nil
+	if err = local.L.LoadStock(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.StockidStock == nil {
+	if local.R.Stock == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testAllocationToOneStockUsingStockidStock(t *testing.T) {
 	}
 }
 
-func testAllocationToOneSetOpOrderLineUsingOrderlineidOrderLine(t *testing.T) {
+func testAllocationToOneSetOpOrderLineUsingOrderLine(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,87 +645,35 @@ func testAllocationToOneSetOpOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 	}
 
 	for i, x := range []*OrderLine{&b, &c} {
-		err = a.SetOrderlineidOrderLine(ctx, tx, i != 0, x)
+		err = a.SetOrderLine(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.OrderlineidOrderLine != x {
+		if a.R.OrderLine != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.OrderlineidAllocations[0] != &a {
+		if x.R.Allocations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Orderlineid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderlineid)
+		if a.OrderLineID != x.ID {
+			t.Error("foreign key was wrong value", a.OrderLineID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Orderlineid))
-		reflect.Indirect(reflect.ValueOf(&a.Orderlineid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.OrderLineID))
+		reflect.Indirect(reflect.ValueOf(&a.OrderLineID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Orderlineid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderlineid, x.ID)
+		if a.OrderLineID != x.ID {
+			t.Error("foreign key was wrong value", a.OrderLineID, x.ID)
 		}
 	}
 }
-
-func testAllocationToOneRemoveOpOrderLineUsingOrderlineidOrderLine(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Allocation
-	var b OrderLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, allocationDBTypes, false, strmangle.SetComplement(allocationPrimaryKeyColumns, allocationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetOrderlineidOrderLine(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveOrderlineidOrderLine(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.OrderlineidOrderLine().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.OrderlineidOrderLine != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.Orderlineid) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.OrderlineidAllocations) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
-func testAllocationToOneSetOpStockUsingStockidStock(t *testing.T) {
+func testAllocationToOneSetOpStockUsingStock(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,83 +702,32 @@ func testAllocationToOneSetOpStockUsingStockidStock(t *testing.T) {
 	}
 
 	for i, x := range []*Stock{&b, &c} {
-		err = a.SetStockidStock(ctx, tx, i != 0, x)
+		err = a.SetStock(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.StockidStock != x {
+		if a.R.Stock != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.StockidAllocations[0] != &a {
+		if x.R.Allocations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Stockid, x.ID) {
-			t.Error("foreign key was wrong value", a.Stockid)
+		if a.StockID != x.ID {
+			t.Error("foreign key was wrong value", a.StockID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Stockid))
-		reflect.Indirect(reflect.ValueOf(&a.Stockid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.StockID))
+		reflect.Indirect(reflect.ValueOf(&a.StockID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Stockid, x.ID) {
-			t.Error("foreign key was wrong value", a.Stockid, x.ID)
+		if a.StockID != x.ID {
+			t.Error("foreign key was wrong value", a.StockID, x.ID)
 		}
-	}
-}
-
-func testAllocationToOneRemoveOpStockUsingStockidStock(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Allocation
-	var b Stock
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, allocationDBTypes, false, strmangle.SetComplement(allocationPrimaryKeyColumns, allocationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetStockidStock(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveStockidStock(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.StockidStock().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.StockidStock != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.Stockid) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.StockidAllocations) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testAllocationsSelect(t *testing.T) {
 }
 
 var (
-	allocationDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Orderlineid`: `character varying`, `Stockid`: `character varying`, `Quantityallocated`: `integer`}
+	allocationDBTypes = map[string]string{`ID`: `character varying`, `CreatedAt`: `bigint`, `OrderLineID`: `character varying`, `StockID`: `character varying`, `QuantityAllocated`: `integer`}
 	_                 = bytes.MinRead
 )
 

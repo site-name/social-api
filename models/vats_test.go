@@ -568,7 +568,7 @@ func testVatsSelect(t *testing.T) {
 }
 
 var (
-	vatDBTypes = map[string]string{`ID`: `character varying`, `Countrycode`: `character varying`, `Data`: `jsonb`}
+	vatDBTypes = map[string]string{`ID`: `character varying`, `CountryCode`: `character varying`, `Data`: `jsonb`}
 	_          = bytes.MinRead
 )
 

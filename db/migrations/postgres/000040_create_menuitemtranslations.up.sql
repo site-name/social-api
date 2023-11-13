@@ -1,10 +1,9 @@
 CREATE TABLE IF NOT EXISTS menu_item_translations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  languagecode character varying(10),
-  menuitemid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_code character varying(10),
+  menu_item_id uuid,
   name character varying(128)
 );
 
 ALTER TABLE ONLY menu_item_translations
-    ADD CONSTRAINT menu_item_translations_languagecode_menuitemid_key UNIQUE (languagecode, menuitemid);
-
+    ADD CONSTRAINT menu_item_translations_language_code_menu_item_id_key UNIQUE (language_code, menu_item_id);

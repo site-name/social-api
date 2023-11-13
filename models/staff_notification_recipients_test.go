@@ -494,7 +494,7 @@ func testStaffNotificationRecipientsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testStaffNotificationRecipientToOneUserUsingUseridUser(t *testing.T) {
+func testStaffNotificationRecipientToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testStaffNotificationRecipientToOneUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Userid, foreign.ID)
+	queries.Assign(&local.UserID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UseridUser().One(ctx, tx)
+	check, err := local.User().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testStaffNotificationRecipientToOneUserUsingUseridUser(t *testing.T) {
 	})
 
 	slice := StaffNotificationRecipientSlice{&local}
-	if err = local.L.LoadUseridUser(ctx, tx, false, (*[]*StaffNotificationRecipient)(&slice), nil); err != nil {
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*StaffNotificationRecipient)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UseridUser = nil
-	if err = local.L.LoadUseridUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testStaffNotificationRecipientToOneUserUsingUseridUser(t *testing.T) {
 	}
 }
 
-func testStaffNotificationRecipientToOneSetOpUserUsingUseridUser(t *testing.T) {
+func testStaffNotificationRecipientToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testStaffNotificationRecipientToOneSetOpUserUsingUseridUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetUseridUser(ctx, tx, i != 0, x)
+		err = a.SetUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UseridUser != x {
+		if a.R.User != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.UseridStaffNotificationRecipients[0] != &a {
+		if x.R.StaffNotificationRecipients[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Userid))
-		reflect.Indirect(reflect.ValueOf(&a.Userid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid, x.ID)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
 	}
 }
 
-func testStaffNotificationRecipientToOneRemoveOpUserUsingUseridUser(t *testing.T) {
+func testStaffNotificationRecipientToOneRemoveOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testStaffNotificationRecipientToOneRemoveOpUserUsingUseridUser(t *testing.T
 		t.Fatal(err)
 	}
 
-	if err = a.SetUseridUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetUser(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUseridUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveUser(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UseridUser().Count(ctx, tx)
+	count, err := a.User().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testStaffNotificationRecipientToOneRemoveOpUserUsingUseridUser(t *testing.T
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UseridUser != nil {
+	if a.R.User != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Userid) {
+	if !queries.IsValuerNil(a.UserID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.UseridStaffNotificationRecipients) != 0 {
+	if len(b.R.StaffNotificationRecipients) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testStaffNotificationRecipientsSelect(t *testing.T) {
 }
 
 var (
-	staffNotificationRecipientDBTypes = map[string]string{`ID`: `character varying`, `Userid`: `character varying`, `Staffemail`: `character varying`, `Active`: `boolean`}
+	staffNotificationRecipientDBTypes = map[string]string{`ID`: `character varying`, `UserID`: `character varying`, `StaffEmail`: `character varying`, `Active`: `boolean`}
 	_                                 = bytes.MinRead
 )
 

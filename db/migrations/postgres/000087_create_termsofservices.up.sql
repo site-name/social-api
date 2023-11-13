@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS terms_of_services (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  createat bigint,
-  userid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at bigint,
+  user_id uuid,
   text character varying(65535)
 );

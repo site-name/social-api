@@ -494,7 +494,7 @@ func testGiftcardsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testGiftcardToManyGiftcardidGiftcardCheckouts(t *testing.T) {
+func testGiftcardToManyGiftcardCheckouts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testGiftcardToManyGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Giftcardid, a.ID)
-	queries.Assign(&c.Giftcardid, a.ID)
+	queries.Assign(&b.GiftcardID, a.ID)
+	queries.Assign(&c.GiftcardID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testGiftcardToManyGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.GiftcardidGiftcardCheckouts().All(ctx, tx)
+	check, err := a.GiftcardCheckouts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Giftcardid, b.Giftcardid) {
+		if queries.Equal(v.GiftcardID, b.GiftcardID) {
 			bFound = true
 		}
-		if queries.Equal(v.Giftcardid, c.Giftcardid) {
+		if queries.Equal(v.GiftcardID, c.GiftcardID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testGiftcardToManyGiftcardidGiftcardCheckouts(t *testing.T) {
 	}
 
 	slice := GiftcardSlice{&a}
-	if err = a.L.LoadGiftcardidGiftcardCheckouts(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
+	if err = a.L.LoadGiftcardCheckouts(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.GiftcardidGiftcardCheckouts); got != 2 {
+	if got := len(a.R.GiftcardCheckouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.GiftcardidGiftcardCheckouts = nil
-	if err = a.L.LoadGiftcardidGiftcardCheckouts(ctx, tx, true, &a, nil); err != nil {
+	a.R.GiftcardCheckouts = nil
+	if err = a.L.LoadGiftcardCheckouts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.GiftcardidGiftcardCheckouts); got != 2 {
+	if got := len(a.R.GiftcardCheckouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testGiftcardToManyGiftcardidGiftcardCheckouts(t *testing.T) {
 	}
 }
 
-func testGiftcardToManyGiftcardidGiftcardEvents(t *testing.T) {
+func testGiftcardToManyGiftcardEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testGiftcardToManyGiftcardidGiftcardEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Giftcardid, a.ID)
-	queries.Assign(&c.Giftcardid, a.ID)
+	queries.Assign(&b.GiftcardID, a.ID)
+	queries.Assign(&c.GiftcardID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testGiftcardToManyGiftcardidGiftcardEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.GiftcardidGiftcardEvents().All(ctx, tx)
+	check, err := a.GiftcardEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Giftcardid, b.Giftcardid) {
+		if queries.Equal(v.GiftcardID, b.GiftcardID) {
 			bFound = true
 		}
-		if queries.Equal(v.Giftcardid, c.Giftcardid) {
+		if queries.Equal(v.GiftcardID, c.GiftcardID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testGiftcardToManyGiftcardidGiftcardEvents(t *testing.T) {
 	}
 
 	slice := GiftcardSlice{&a}
-	if err = a.L.LoadGiftcardidGiftcardEvents(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
+	if err = a.L.LoadGiftcardEvents(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.GiftcardidGiftcardEvents); got != 2 {
+	if got := len(a.R.GiftcardEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.GiftcardidGiftcardEvents = nil
-	if err = a.L.LoadGiftcardidGiftcardEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.GiftcardEvents = nil
+	if err = a.L.LoadGiftcardEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.GiftcardidGiftcardEvents); got != 2 {
+	if got := len(a.R.GiftcardEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testGiftcardToManyGiftcardidGiftcardEvents(t *testing.T) {
 	}
 }
 
-func testGiftcardToManyGiftcardidOrderGiftcards(t *testing.T) {
+func testGiftcardToManyOrderGiftcards(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testGiftcardToManyGiftcardidOrderGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Giftcardid, a.ID)
-	queries.Assign(&c.Giftcardid, a.ID)
+	queries.Assign(&b.GiftcardID, a.ID)
+	queries.Assign(&c.GiftcardID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testGiftcardToManyGiftcardidOrderGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.GiftcardidOrderGiftcards().All(ctx, tx)
+	check, err := a.OrderGiftcards().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Giftcardid, b.Giftcardid) {
+		if queries.Equal(v.GiftcardID, b.GiftcardID) {
 			bFound = true
 		}
-		if queries.Equal(v.Giftcardid, c.Giftcardid) {
+		if queries.Equal(v.GiftcardID, c.GiftcardID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testGiftcardToManyGiftcardidOrderGiftcards(t *testing.T) {
 	}
 
 	slice := GiftcardSlice{&a}
-	if err = a.L.LoadGiftcardidOrderGiftcards(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
+	if err = a.L.LoadOrderGiftcards(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.GiftcardidOrderGiftcards); got != 2 {
+	if got := len(a.R.OrderGiftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.GiftcardidOrderGiftcards = nil
-	if err = a.L.LoadGiftcardidOrderGiftcards(ctx, tx, true, &a, nil); err != nil {
+	a.R.OrderGiftcards = nil
+	if err = a.L.LoadOrderGiftcards(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.GiftcardidOrderGiftcards); got != 2 {
+	if got := len(a.R.OrderGiftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testGiftcardToManyGiftcardidOrderGiftcards(t *testing.T) {
 	}
 }
 
-func testGiftcardToManyAddOpGiftcardidGiftcardCheckouts(t *testing.T) {
+func testGiftcardToManyAddOpGiftcardCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -762,7 +762,7 @@ func testGiftcardToManyAddOpGiftcardidGiftcardCheckouts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddGiftcardidGiftcardCheckouts(ctx, tx, i != 0, x...)
+		err = a.AddGiftcardCheckouts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -770,28 +770,28 @@ func testGiftcardToManyAddOpGiftcardidGiftcardCheckouts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Giftcardid) {
-			t.Error("foreign key was wrong value", a.ID, first.Giftcardid)
+		if !queries.Equal(a.ID, first.GiftcardID) {
+			t.Error("foreign key was wrong value", a.ID, first.GiftcardID)
 		}
-		if !queries.Equal(a.ID, second.Giftcardid) {
-			t.Error("foreign key was wrong value", a.ID, second.Giftcardid)
+		if !queries.Equal(a.ID, second.GiftcardID) {
+			t.Error("foreign key was wrong value", a.ID, second.GiftcardID)
 		}
 
-		if first.R.GiftcardidGiftcard != &a {
+		if first.R.Giftcard != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.GiftcardidGiftcard != &a {
+		if second.R.Giftcard != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.GiftcardidGiftcardCheckouts[i*2] != first {
+		if a.R.GiftcardCheckouts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.GiftcardidGiftcardCheckouts[i*2+1] != second {
+		if a.R.GiftcardCheckouts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.GiftcardidGiftcardCheckouts().Count(ctx, tx)
+		count, err := a.GiftcardCheckouts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -801,7 +801,7 @@ func testGiftcardToManyAddOpGiftcardidGiftcardCheckouts(t *testing.T) {
 	}
 }
 
-func testGiftcardToManySetOpGiftcardidGiftcardCheckouts(t *testing.T) {
+func testGiftcardToManySetOpGiftcardCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -832,25 +832,12 @@ func testGiftcardToManySetOpGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetGiftcardidGiftcardCheckouts(ctx, tx, false, &b, &c)
+	err = a.SetGiftcardCheckouts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.GiftcardidGiftcardCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetGiftcardidGiftcardCheckouts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.GiftcardidGiftcardCheckouts().Count(ctx, tx)
+	count, err := a.GiftcardCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -858,41 +845,54 @@ func testGiftcardToManySetOpGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Giftcardid) {
+	err = a.SetGiftcardCheckouts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.GiftcardCheckouts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.GiftcardID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Giftcardid) {
+	if !queries.IsValuerNil(c.GiftcardID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Giftcardid) {
-		t.Error("foreign key was wrong value", a.ID, d.Giftcardid)
+	if !queries.Equal(a.ID, d.GiftcardID) {
+		t.Error("foreign key was wrong value", a.ID, d.GiftcardID)
 	}
-	if !queries.Equal(a.ID, e.Giftcardid) {
-		t.Error("foreign key was wrong value", a.ID, e.Giftcardid)
-	}
-
-	if b.R.GiftcardidGiftcard != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.GiftcardidGiftcard != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.GiftcardidGiftcard != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.GiftcardidGiftcard != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.GiftcardID) {
+		t.Error("foreign key was wrong value", a.ID, e.GiftcardID)
 	}
 
-	if a.R.GiftcardidGiftcardCheckouts[0] != &d {
+	if b.R.Giftcard != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Giftcard != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Giftcard != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Giftcard != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.GiftcardCheckouts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.GiftcardidGiftcardCheckouts[1] != &e {
+	if a.R.GiftcardCheckouts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testGiftcardToManyRemoveOpGiftcardidGiftcardCheckouts(t *testing.T) {
+func testGiftcardToManyRemoveOpGiftcardCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -917,12 +917,12 @@ func testGiftcardToManyRemoveOpGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddGiftcardidGiftcardCheckouts(ctx, tx, true, foreigners...)
+	err = a.AddGiftcardCheckouts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.GiftcardidGiftcardCheckouts().Count(ctx, tx)
+	count, err := a.GiftcardCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -930,12 +930,12 @@ func testGiftcardToManyRemoveOpGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveGiftcardidGiftcardCheckouts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveGiftcardCheckouts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.GiftcardidGiftcardCheckouts().Count(ctx, tx)
+	count, err = a.GiftcardCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -943,40 +943,40 @@ func testGiftcardToManyRemoveOpGiftcardidGiftcardCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Giftcardid) {
+	if !queries.IsValuerNil(b.GiftcardID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Giftcardid) {
+	if !queries.IsValuerNil(c.GiftcardID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.GiftcardidGiftcard != nil {
+	if b.R.Giftcard != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.GiftcardidGiftcard != nil {
+	if c.R.Giftcard != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.GiftcardidGiftcard != &a {
+	if d.R.Giftcard != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.GiftcardidGiftcard != &a {
+	if e.R.Giftcard != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.GiftcardidGiftcardCheckouts) != 2 {
+	if len(a.R.GiftcardCheckouts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.GiftcardidGiftcardCheckouts[1] != &d {
+	if a.R.GiftcardCheckouts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.GiftcardidGiftcardCheckouts[0] != &e {
+	if a.R.GiftcardCheckouts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testGiftcardToManyAddOpGiftcardidGiftcardEvents(t *testing.T) {
+func testGiftcardToManyAddOpGiftcardEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1013,7 +1013,7 @@ func testGiftcardToManyAddOpGiftcardidGiftcardEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddGiftcardidGiftcardEvents(ctx, tx, i != 0, x...)
+		err = a.AddGiftcardEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1021,28 +1021,28 @@ func testGiftcardToManyAddOpGiftcardidGiftcardEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Giftcardid) {
-			t.Error("foreign key was wrong value", a.ID, first.Giftcardid)
+		if !queries.Equal(a.ID, first.GiftcardID) {
+			t.Error("foreign key was wrong value", a.ID, first.GiftcardID)
 		}
-		if !queries.Equal(a.ID, second.Giftcardid) {
-			t.Error("foreign key was wrong value", a.ID, second.Giftcardid)
+		if !queries.Equal(a.ID, second.GiftcardID) {
+			t.Error("foreign key was wrong value", a.ID, second.GiftcardID)
 		}
 
-		if first.R.GiftcardidGiftcard != &a {
+		if first.R.Giftcard != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.GiftcardidGiftcard != &a {
+		if second.R.Giftcard != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.GiftcardidGiftcardEvents[i*2] != first {
+		if a.R.GiftcardEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.GiftcardidGiftcardEvents[i*2+1] != second {
+		if a.R.GiftcardEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.GiftcardidGiftcardEvents().Count(ctx, tx)
+		count, err := a.GiftcardEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1052,7 +1052,7 @@ func testGiftcardToManyAddOpGiftcardidGiftcardEvents(t *testing.T) {
 	}
 }
 
-func testGiftcardToManySetOpGiftcardidGiftcardEvents(t *testing.T) {
+func testGiftcardToManySetOpGiftcardEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1083,25 +1083,12 @@ func testGiftcardToManySetOpGiftcardidGiftcardEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetGiftcardidGiftcardEvents(ctx, tx, false, &b, &c)
+	err = a.SetGiftcardEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.GiftcardidGiftcardEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetGiftcardidGiftcardEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.GiftcardidGiftcardEvents().Count(ctx, tx)
+	count, err := a.GiftcardEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1109,41 +1096,54 @@ func testGiftcardToManySetOpGiftcardidGiftcardEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Giftcardid) {
+	err = a.SetGiftcardEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.GiftcardEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.GiftcardID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Giftcardid) {
+	if !queries.IsValuerNil(c.GiftcardID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Giftcardid) {
-		t.Error("foreign key was wrong value", a.ID, d.Giftcardid)
+	if !queries.Equal(a.ID, d.GiftcardID) {
+		t.Error("foreign key was wrong value", a.ID, d.GiftcardID)
 	}
-	if !queries.Equal(a.ID, e.Giftcardid) {
-		t.Error("foreign key was wrong value", a.ID, e.Giftcardid)
-	}
-
-	if b.R.GiftcardidGiftcard != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.GiftcardidGiftcard != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.GiftcardidGiftcard != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.GiftcardidGiftcard != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.GiftcardID) {
+		t.Error("foreign key was wrong value", a.ID, e.GiftcardID)
 	}
 
-	if a.R.GiftcardidGiftcardEvents[0] != &d {
+	if b.R.Giftcard != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Giftcard != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Giftcard != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Giftcard != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.GiftcardEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.GiftcardidGiftcardEvents[1] != &e {
+	if a.R.GiftcardEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testGiftcardToManyRemoveOpGiftcardidGiftcardEvents(t *testing.T) {
+func testGiftcardToManyRemoveOpGiftcardEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1168,12 +1168,12 @@ func testGiftcardToManyRemoveOpGiftcardidGiftcardEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddGiftcardidGiftcardEvents(ctx, tx, true, foreigners...)
+	err = a.AddGiftcardEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.GiftcardidGiftcardEvents().Count(ctx, tx)
+	count, err := a.GiftcardEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1181,12 +1181,12 @@ func testGiftcardToManyRemoveOpGiftcardidGiftcardEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveGiftcardidGiftcardEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveGiftcardEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.GiftcardidGiftcardEvents().Count(ctx, tx)
+	count, err = a.GiftcardEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1194,40 +1194,40 @@ func testGiftcardToManyRemoveOpGiftcardidGiftcardEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Giftcardid) {
+	if !queries.IsValuerNil(b.GiftcardID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Giftcardid) {
+	if !queries.IsValuerNil(c.GiftcardID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.GiftcardidGiftcard != nil {
+	if b.R.Giftcard != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.GiftcardidGiftcard != nil {
+	if c.R.Giftcard != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.GiftcardidGiftcard != &a {
+	if d.R.Giftcard != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.GiftcardidGiftcard != &a {
+	if e.R.Giftcard != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.GiftcardidGiftcardEvents) != 2 {
+	if len(a.R.GiftcardEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.GiftcardidGiftcardEvents[1] != &d {
+	if a.R.GiftcardEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.GiftcardidGiftcardEvents[0] != &e {
+	if a.R.GiftcardEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testGiftcardToManyAddOpGiftcardidOrderGiftcards(t *testing.T) {
+func testGiftcardToManyAddOpOrderGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1264,7 +1264,7 @@ func testGiftcardToManyAddOpGiftcardidOrderGiftcards(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddGiftcardidOrderGiftcards(ctx, tx, i != 0, x...)
+		err = a.AddOrderGiftcards(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1272,28 +1272,28 @@ func testGiftcardToManyAddOpGiftcardidOrderGiftcards(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Giftcardid) {
-			t.Error("foreign key was wrong value", a.ID, first.Giftcardid)
+		if !queries.Equal(a.ID, first.GiftcardID) {
+			t.Error("foreign key was wrong value", a.ID, first.GiftcardID)
 		}
-		if !queries.Equal(a.ID, second.Giftcardid) {
-			t.Error("foreign key was wrong value", a.ID, second.Giftcardid)
+		if !queries.Equal(a.ID, second.GiftcardID) {
+			t.Error("foreign key was wrong value", a.ID, second.GiftcardID)
 		}
 
-		if first.R.GiftcardidGiftcard != &a {
+		if first.R.Giftcard != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.GiftcardidGiftcard != &a {
+		if second.R.Giftcard != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.GiftcardidOrderGiftcards[i*2] != first {
+		if a.R.OrderGiftcards[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.GiftcardidOrderGiftcards[i*2+1] != second {
+		if a.R.OrderGiftcards[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.GiftcardidOrderGiftcards().Count(ctx, tx)
+		count, err := a.OrderGiftcards().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1303,7 +1303,7 @@ func testGiftcardToManyAddOpGiftcardidOrderGiftcards(t *testing.T) {
 	}
 }
 
-func testGiftcardToManySetOpGiftcardidOrderGiftcards(t *testing.T) {
+func testGiftcardToManySetOpOrderGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1334,25 +1334,12 @@ func testGiftcardToManySetOpGiftcardidOrderGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetGiftcardidOrderGiftcards(ctx, tx, false, &b, &c)
+	err = a.SetOrderGiftcards(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.GiftcardidOrderGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetGiftcardidOrderGiftcards(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.GiftcardidOrderGiftcards().Count(ctx, tx)
+	count, err := a.OrderGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1360,41 +1347,54 @@ func testGiftcardToManySetOpGiftcardidOrderGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Giftcardid) {
+	err = a.SetOrderGiftcards(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.OrderGiftcards().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.GiftcardID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Giftcardid) {
+	if !queries.IsValuerNil(c.GiftcardID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Giftcardid) {
-		t.Error("foreign key was wrong value", a.ID, d.Giftcardid)
+	if !queries.Equal(a.ID, d.GiftcardID) {
+		t.Error("foreign key was wrong value", a.ID, d.GiftcardID)
 	}
-	if !queries.Equal(a.ID, e.Giftcardid) {
-		t.Error("foreign key was wrong value", a.ID, e.Giftcardid)
-	}
-
-	if b.R.GiftcardidGiftcard != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.GiftcardidGiftcard != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.GiftcardidGiftcard != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.GiftcardidGiftcard != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.GiftcardID) {
+		t.Error("foreign key was wrong value", a.ID, e.GiftcardID)
 	}
 
-	if a.R.GiftcardidOrderGiftcards[0] != &d {
+	if b.R.Giftcard != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Giftcard != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Giftcard != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Giftcard != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.OrderGiftcards[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.GiftcardidOrderGiftcards[1] != &e {
+	if a.R.OrderGiftcards[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testGiftcardToManyRemoveOpGiftcardidOrderGiftcards(t *testing.T) {
+func testGiftcardToManyRemoveOpOrderGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1419,12 +1419,12 @@ func testGiftcardToManyRemoveOpGiftcardidOrderGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddGiftcardidOrderGiftcards(ctx, tx, true, foreigners...)
+	err = a.AddOrderGiftcards(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.GiftcardidOrderGiftcards().Count(ctx, tx)
+	count, err := a.OrderGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1432,12 +1432,12 @@ func testGiftcardToManyRemoveOpGiftcardidOrderGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveGiftcardidOrderGiftcards(ctx, tx, foreigners[:2]...)
+	err = a.RemoveOrderGiftcards(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.GiftcardidOrderGiftcards().Count(ctx, tx)
+	count, err = a.OrderGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1445,40 +1445,40 @@ func testGiftcardToManyRemoveOpGiftcardidOrderGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Giftcardid) {
+	if !queries.IsValuerNil(b.GiftcardID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Giftcardid) {
+	if !queries.IsValuerNil(c.GiftcardID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.GiftcardidGiftcard != nil {
+	if b.R.Giftcard != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.GiftcardidGiftcard != nil {
+	if c.R.Giftcard != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.GiftcardidGiftcard != &a {
+	if d.R.Giftcard != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.GiftcardidGiftcard != &a {
+	if e.R.Giftcard != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.GiftcardidOrderGiftcards) != 2 {
+	if len(a.R.OrderGiftcards) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.GiftcardidOrderGiftcards[1] != &d {
+	if a.R.OrderGiftcards[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.GiftcardidOrderGiftcards[0] != &e {
+	if a.R.OrderGiftcards[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testGiftcardToOneProductUsingProductidProduct(t *testing.T) {
+func testGiftcardToOneProductUsingProduct(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1498,12 +1498,12 @@ func testGiftcardToOneProductUsingProductidProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Productid, foreign.ID)
+	queries.Assign(&local.ProductID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ProductidProduct().One(ctx, tx)
+	check, err := local.Product().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1519,18 +1519,18 @@ func testGiftcardToOneProductUsingProductidProduct(t *testing.T) {
 	})
 
 	slice := GiftcardSlice{&local}
-	if err = local.L.LoadProductidProduct(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
+	if err = local.L.LoadProduct(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductidProduct == nil {
+	if local.R.Product == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ProductidProduct = nil
-	if err = local.L.LoadProductidProduct(ctx, tx, true, &local, nil); err != nil {
+	local.R.Product = nil
+	if err = local.L.LoadProduct(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductidProduct == nil {
+	if local.R.Product == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1539,7 +1539,7 @@ func testGiftcardToOneProductUsingProductidProduct(t *testing.T) {
 	}
 }
 
-func testGiftcardToOneUserUsingUsedbyidUser(t *testing.T) {
+func testGiftcardToOneUserUsingUsedBy(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1559,12 +1559,12 @@ func testGiftcardToOneUserUsingUsedbyidUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Usedbyid, foreign.ID)
+	queries.Assign(&local.UsedByID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UsedbyidUser().One(ctx, tx)
+	check, err := local.UsedBy().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1580,18 +1580,18 @@ func testGiftcardToOneUserUsingUsedbyidUser(t *testing.T) {
 	})
 
 	slice := GiftcardSlice{&local}
-	if err = local.L.LoadUsedbyidUser(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
+	if err = local.L.LoadUsedBy(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UsedbyidUser == nil {
+	if local.R.UsedBy == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UsedbyidUser = nil
-	if err = local.L.LoadUsedbyidUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.UsedBy = nil
+	if err = local.L.LoadUsedBy(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UsedbyidUser == nil {
+	if local.R.UsedBy == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1600,7 +1600,7 @@ func testGiftcardToOneUserUsingUsedbyidUser(t *testing.T) {
 	}
 }
 
-func testGiftcardToOneUserUsingCreatedbyidUser(t *testing.T) {
+func testGiftcardToOneUserUsingCreatedBy(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1620,12 +1620,12 @@ func testGiftcardToOneUserUsingCreatedbyidUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Createdbyid, foreign.ID)
+	queries.Assign(&local.CreatedByID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CreatedbyidUser().One(ctx, tx)
+	check, err := local.CreatedBy().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1641,18 +1641,18 @@ func testGiftcardToOneUserUsingCreatedbyidUser(t *testing.T) {
 	})
 
 	slice := GiftcardSlice{&local}
-	if err = local.L.LoadCreatedbyidUser(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
+	if err = local.L.LoadCreatedBy(ctx, tx, false, (*[]*Giftcard)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CreatedbyidUser == nil {
+	if local.R.CreatedBy == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CreatedbyidUser = nil
-	if err = local.L.LoadCreatedbyidUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.CreatedBy = nil
+	if err = local.L.LoadCreatedBy(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CreatedbyidUser == nil {
+	if local.R.CreatedBy == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1661,7 +1661,7 @@ func testGiftcardToOneUserUsingCreatedbyidUser(t *testing.T) {
 	}
 }
 
-func testGiftcardToOneSetOpProductUsingProductidProduct(t *testing.T) {
+func testGiftcardToOneSetOpProductUsingProduct(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1690,36 +1690,36 @@ func testGiftcardToOneSetOpProductUsingProductidProduct(t *testing.T) {
 	}
 
 	for i, x := range []*Product{&b, &c} {
-		err = a.SetProductidProduct(ctx, tx, i != 0, x)
+		err = a.SetProduct(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ProductidProduct != x {
+		if a.R.Product != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ProductidGiftcards[0] != &a {
+		if x.R.Giftcards[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Productid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productid)
+		if !queries.Equal(a.ProductID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Productid))
-		reflect.Indirect(reflect.ValueOf(&a.Productid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ProductID))
+		reflect.Indirect(reflect.ValueOf(&a.ProductID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Productid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productid, x.ID)
+		if !queries.Equal(a.ProductID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductID, x.ID)
 		}
 	}
 }
 
-func testGiftcardToOneRemoveOpProductUsingProductidProduct(t *testing.T) {
+func testGiftcardToOneRemoveOpProductUsingProduct(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1741,15 +1741,15 @@ func testGiftcardToOneRemoveOpProductUsingProductidProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetProductidProduct(ctx, tx, true, &b); err != nil {
+	if err = a.SetProduct(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveProductidProduct(ctx, tx, &b); err != nil {
+	if err = a.RemoveProduct(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ProductidProduct().Count(ctx, tx)
+	count, err := a.Product().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1757,20 +1757,20 @@ func testGiftcardToOneRemoveOpProductUsingProductidProduct(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ProductidProduct != nil {
+	if a.R.Product != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Productid) {
+	if !queries.IsValuerNil(a.ProductID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ProductidGiftcards) != 0 {
+	if len(b.R.Giftcards) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testGiftcardToOneSetOpUserUsingUsedbyidUser(t *testing.T) {
+func testGiftcardToOneSetOpUserUsingUsedBy(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1799,36 +1799,36 @@ func testGiftcardToOneSetOpUserUsingUsedbyidUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetUsedbyidUser(ctx, tx, i != 0, x)
+		err = a.SetUsedBy(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UsedbyidUser != x {
+		if a.R.UsedBy != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.UsedbyidGiftcards[0] != &a {
+		if x.R.UsedByGiftcards[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Usedbyid, x.ID) {
-			t.Error("foreign key was wrong value", a.Usedbyid)
+		if !queries.Equal(a.UsedByID, x.ID) {
+			t.Error("foreign key was wrong value", a.UsedByID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Usedbyid))
-		reflect.Indirect(reflect.ValueOf(&a.Usedbyid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.UsedByID))
+		reflect.Indirect(reflect.ValueOf(&a.UsedByID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Usedbyid, x.ID) {
-			t.Error("foreign key was wrong value", a.Usedbyid, x.ID)
+		if !queries.Equal(a.UsedByID, x.ID) {
+			t.Error("foreign key was wrong value", a.UsedByID, x.ID)
 		}
 	}
 }
 
-func testGiftcardToOneRemoveOpUserUsingUsedbyidUser(t *testing.T) {
+func testGiftcardToOneRemoveOpUserUsingUsedBy(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1850,15 +1850,15 @@ func testGiftcardToOneRemoveOpUserUsingUsedbyidUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetUsedbyidUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetUsedBy(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUsedbyidUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveUsedBy(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UsedbyidUser().Count(ctx, tx)
+	count, err := a.UsedBy().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1866,20 +1866,20 @@ func testGiftcardToOneRemoveOpUserUsingUsedbyidUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UsedbyidUser != nil {
+	if a.R.UsedBy != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Usedbyid) {
+	if !queries.IsValuerNil(a.UsedByID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.UsedbyidGiftcards) != 0 {
+	if len(b.R.UsedByGiftcards) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testGiftcardToOneSetOpUserUsingCreatedbyidUser(t *testing.T) {
+func testGiftcardToOneSetOpUserUsingCreatedBy(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1908,36 +1908,36 @@ func testGiftcardToOneSetOpUserUsingCreatedbyidUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetCreatedbyidUser(ctx, tx, i != 0, x)
+		err = a.SetCreatedBy(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CreatedbyidUser != x {
+		if a.R.CreatedBy != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CreatedbyidGiftcards[0] != &a {
+		if x.R.CreatedByGiftcards[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Createdbyid, x.ID) {
-			t.Error("foreign key was wrong value", a.Createdbyid)
+		if !queries.Equal(a.CreatedByID, x.ID) {
+			t.Error("foreign key was wrong value", a.CreatedByID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Createdbyid))
-		reflect.Indirect(reflect.ValueOf(&a.Createdbyid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CreatedByID))
+		reflect.Indirect(reflect.ValueOf(&a.CreatedByID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Createdbyid, x.ID) {
-			t.Error("foreign key was wrong value", a.Createdbyid, x.ID)
+		if !queries.Equal(a.CreatedByID, x.ID) {
+			t.Error("foreign key was wrong value", a.CreatedByID, x.ID)
 		}
 	}
 }
 
-func testGiftcardToOneRemoveOpUserUsingCreatedbyidUser(t *testing.T) {
+func testGiftcardToOneRemoveOpUserUsingCreatedBy(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1959,15 +1959,15 @@ func testGiftcardToOneRemoveOpUserUsingCreatedbyidUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetCreatedbyidUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetCreatedBy(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCreatedbyidUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveCreatedBy(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CreatedbyidUser().Count(ctx, tx)
+	count, err := a.CreatedBy().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1975,15 +1975,15 @@ func testGiftcardToOneRemoveOpUserUsingCreatedbyidUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CreatedbyidUser != nil {
+	if a.R.CreatedBy != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Createdbyid) {
+	if !queries.IsValuerNil(a.CreatedByID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CreatedbyidGiftcards) != 0 {
+	if len(b.R.CreatedByGiftcards) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -2062,7 +2062,7 @@ func testGiftcardsSelect(t *testing.T) {
 }
 
 var (
-	giftcardDBTypes = map[string]string{`ID`: `character varying`, `Code`: `character varying`, `Createdbyid`: `character varying`, `Usedbyid`: `character varying`, `Createdbyemail`: `character varying`, `Usedbyemail`: `character varying`, `Createat`: `bigint`, `Startdate`: `timestamp with time zone`, `Expirydate`: `timestamp with time zone`, `Tag`: `character varying`, `Productid`: `character varying`, `Lastusedon`: `bigint`, `Isactive`: `boolean`, `Currency`: `character varying`, `Initialbalanceamount`: `double precision`, `Currentbalanceamount`: `double precision`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	giftcardDBTypes = map[string]string{`ID`: `character varying`, `Code`: `character varying`, `CreatedByID`: `character varying`, `UsedByID`: `character varying`, `CreatedByEmail`: `character varying`, `UsedByEmail`: `character varying`, `CreateAt`: `bigint`, `StartDate`: `timestamp with time zone`, `ExpiryDate`: `timestamp with time zone`, `Tag`: `character varying`, `ProductID`: `character varying`, `LastUsedOn`: `bigint`, `IsActive`: `boolean`, `Currency`: `character varying`, `InitialBalanceAmount`: `double precision`, `CurrentBalanceAmount`: `double precision`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_               = bytes.MinRead
 )
 

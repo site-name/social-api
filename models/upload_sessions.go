@@ -26,12 +26,12 @@ import (
 type UploadSession struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Createat   null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Userid     null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Filename   null.String `boil:"filename" json:"filename,omitempty" toml:"filename" yaml:"filename,omitempty"`
+	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	FileName   null.String `boil:"file_name" json:"file_name,omitempty" toml:"file_name" yaml:"file_name,omitempty"`
 	Path       null.String `boil:"path" json:"path,omitempty" toml:"path" yaml:"path,omitempty"`
-	Filesize   null.Int64  `boil:"filesize" json:"filesize,omitempty" toml:"filesize" yaml:"filesize,omitempty"`
-	Fileoffset null.Int64  `boil:"fileoffset" json:"fileoffset,omitempty" toml:"fileoffset" yaml:"fileoffset,omitempty"`
+	FileSize   null.Int64  `boil:"file_size" json:"file_size,omitempty" toml:"file_size" yaml:"file_size,omitempty"`
+	FileOffset null.Int64  `boil:"file_offset" json:"file_offset,omitempty" toml:"file_offset" yaml:"file_offset,omitempty"`
 
 	R *uploadSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L uploadSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,41 +40,41 @@ type UploadSession struct {
 var UploadSessionColumns = struct {
 	ID         string
 	Type       string
-	Createat   string
-	Userid     string
-	Filename   string
+	CreateAt   string
+	UserID     string
+	FileName   string
 	Path       string
-	Filesize   string
-	Fileoffset string
+	FileSize   string
+	FileOffset string
 }{
 	ID:         "id",
 	Type:       "type",
-	Createat:   "createat",
-	Userid:     "userid",
-	Filename:   "filename",
+	CreateAt:   "create_at",
+	UserID:     "user_id",
+	FileName:   "file_name",
 	Path:       "path",
-	Filesize:   "filesize",
-	Fileoffset: "fileoffset",
+	FileSize:   "file_size",
+	FileOffset: "file_offset",
 }
 
 var UploadSessionTableColumns = struct {
 	ID         string
 	Type       string
-	Createat   string
-	Userid     string
-	Filename   string
+	CreateAt   string
+	UserID     string
+	FileName   string
 	Path       string
-	Filesize   string
-	Fileoffset string
+	FileSize   string
+	FileOffset string
 }{
 	ID:         "upload_sessions.id",
 	Type:       "upload_sessions.type",
-	Createat:   "upload_sessions.createat",
-	Userid:     "upload_sessions.userid",
-	Filename:   "upload_sessions.filename",
+	CreateAt:   "upload_sessions.create_at",
+	UserID:     "upload_sessions.user_id",
+	FileName:   "upload_sessions.file_name",
 	Path:       "upload_sessions.path",
-	Filesize:   "upload_sessions.filesize",
-	Fileoffset: "upload_sessions.fileoffset",
+	FileSize:   "upload_sessions.file_size",
+	FileOffset: "upload_sessions.file_offset",
 }
 
 // Generated where
@@ -82,21 +82,21 @@ var UploadSessionTableColumns = struct {
 var UploadSessionWhere = struct {
 	ID         whereHelperstring
 	Type       whereHelpernull_String
-	Createat   whereHelpernull_Int64
-	Userid     whereHelpernull_String
-	Filename   whereHelpernull_String
+	CreateAt   whereHelpernull_Int64
+	UserID     whereHelpernull_String
+	FileName   whereHelpernull_String
 	Path       whereHelpernull_String
-	Filesize   whereHelpernull_Int64
-	Fileoffset whereHelpernull_Int64
+	FileSize   whereHelpernull_Int64
+	FileOffset whereHelpernull_Int64
 }{
 	ID:         whereHelperstring{field: "\"upload_sessions\".\"id\""},
 	Type:       whereHelpernull_String{field: "\"upload_sessions\".\"type\""},
-	Createat:   whereHelpernull_Int64{field: "\"upload_sessions\".\"createat\""},
-	Userid:     whereHelpernull_String{field: "\"upload_sessions\".\"userid\""},
-	Filename:   whereHelpernull_String{field: "\"upload_sessions\".\"filename\""},
+	CreateAt:   whereHelpernull_Int64{field: "\"upload_sessions\".\"create_at\""},
+	UserID:     whereHelpernull_String{field: "\"upload_sessions\".\"user_id\""},
+	FileName:   whereHelpernull_String{field: "\"upload_sessions\".\"file_name\""},
 	Path:       whereHelpernull_String{field: "\"upload_sessions\".\"path\""},
-	Filesize:   whereHelpernull_Int64{field: "\"upload_sessions\".\"filesize\""},
-	Fileoffset: whereHelpernull_Int64{field: "\"upload_sessions\".\"fileoffset\""},
+	FileSize:   whereHelpernull_Int64{field: "\"upload_sessions\".\"file_size\""},
+	FileOffset: whereHelpernull_Int64{field: "\"upload_sessions\".\"file_offset\""},
 }
 
 // UploadSessionRels is where relationship names are stored.
@@ -116,9 +116,9 @@ func (*uploadSessionR) NewStruct() *uploadSessionR {
 type uploadSessionL struct{}
 
 var (
-	uploadSessionAllColumns            = []string{"id", "type", "createat", "userid", "filename", "path", "filesize", "fileoffset"}
+	uploadSessionAllColumns            = []string{"id", "type", "create_at", "user_id", "file_name", "path", "file_size", "file_offset"}
 	uploadSessionColumnsWithoutDefault = []string{"id"}
-	uploadSessionColumnsWithDefault    = []string{"type", "createat", "userid", "filename", "path", "filesize", "fileoffset"}
+	uploadSessionColumnsWithDefault    = []string{"type", "create_at", "user_id", "file_name", "path", "file_size", "file_offset"}
 	uploadSessionPrimaryKeyColumns     = []string{"id"}
 	uploadSessionGeneratedColumns      = []string{}
 )

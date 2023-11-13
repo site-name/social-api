@@ -494,7 +494,7 @@ func testVoucherChannelListingsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testVoucherChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
+func testVoucherChannelListingToOneChannelUsingChannel(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testVoucherChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	local.Channelid = foreign.ID
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ChannelidChannel().One(ctx, tx)
+	check, err := local.Channel().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testVoucherChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
 	})
 
 	slice := VoucherChannelListingSlice{&local}
-	if err = local.L.LoadChannelidChannel(ctx, tx, false, (*[]*VoucherChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadChannel(ctx, tx, false, (*[]*VoucherChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ChannelidChannel = nil
-	if err = local.L.LoadChannelidChannel(ctx, tx, true, &local, nil); err != nil {
+	local.R.Channel = nil
+	if err = local.L.LoadChannel(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testVoucherChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
 	}
 }
 
-func testVoucherChannelListingToOneVoucherUsingVoucheridVoucher(t *testing.T) {
+func testVoucherChannelListingToOneVoucherUsingVoucher(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testVoucherChannelListingToOneVoucherUsingVoucheridVoucher(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	local.Voucherid = foreign.ID
+	local.VoucherID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.VoucheridVoucher().One(ctx, tx)
+	check, err := local.Voucher().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testVoucherChannelListingToOneVoucherUsingVoucheridVoucher(t *testing.T) {
 	})
 
 	slice := VoucherChannelListingSlice{&local}
-	if err = local.L.LoadVoucheridVoucher(ctx, tx, false, (*[]*VoucherChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadVoucher(ctx, tx, false, (*[]*VoucherChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VoucheridVoucher == nil {
+	if local.R.Voucher == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.VoucheridVoucher = nil
-	if err = local.L.LoadVoucheridVoucher(ctx, tx, true, &local, nil); err != nil {
+	local.R.Voucher = nil
+	if err = local.L.LoadVoucher(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VoucheridVoucher == nil {
+	if local.R.Voucher == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testVoucherChannelListingToOneVoucherUsingVoucheridVoucher(t *testing.T) {
 	}
 }
 
-func testVoucherChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
+func testVoucherChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,35 +645,35 @@ func testVoucherChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.
 	}
 
 	for i, x := range []*Channel{&b, &c} {
-		err = a.SetChannelidChannel(ctx, tx, i != 0, x)
+		err = a.SetChannel(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ChannelidChannel != x {
+		if a.R.Channel != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ChannelidVoucherChannelListings[0] != &a {
+		if x.R.VoucherChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.Channelid != x.ID {
-			t.Error("foreign key was wrong value", a.Channelid)
+		if a.ChannelID != x.ID {
+			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Channelid))
-		reflect.Indirect(reflect.ValueOf(&a.Channelid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ChannelID))
+		reflect.Indirect(reflect.ValueOf(&a.ChannelID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.Channelid != x.ID {
-			t.Error("foreign key was wrong value", a.Channelid, x.ID)
+		if a.ChannelID != x.ID {
+			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-func testVoucherChannelListingToOneSetOpVoucherUsingVoucheridVoucher(t *testing.T) {
+func testVoucherChannelListingToOneSetOpVoucherUsingVoucher(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -702,31 +702,31 @@ func testVoucherChannelListingToOneSetOpVoucherUsingVoucheridVoucher(t *testing.
 	}
 
 	for i, x := range []*Voucher{&b, &c} {
-		err = a.SetVoucheridVoucher(ctx, tx, i != 0, x)
+		err = a.SetVoucher(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.VoucheridVoucher != x {
+		if a.R.Voucher != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.VoucheridVoucherChannelListings[0] != &a {
+		if x.R.VoucherChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.Voucherid != x.ID {
-			t.Error("foreign key was wrong value", a.Voucherid)
+		if a.VoucherID != x.ID {
+			t.Error("foreign key was wrong value", a.VoucherID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Voucherid))
-		reflect.Indirect(reflect.ValueOf(&a.Voucherid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.VoucherID))
+		reflect.Indirect(reflect.ValueOf(&a.VoucherID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.Voucherid != x.ID {
-			t.Error("foreign key was wrong value", a.Voucherid, x.ID)
+		if a.VoucherID != x.ID {
+			t.Error("foreign key was wrong value", a.VoucherID, x.ID)
 		}
 	}
 }
@@ -805,7 +805,7 @@ func testVoucherChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	voucherChannelListingDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Voucherid`: `character varying`, `Channelid`: `character varying`, `Discountvalue`: `double precision`, `Currency`: `character varying`, `Minspenamount`: `double precision`}
+	voucherChannelListingDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `VoucherID`: `character varying`, `ChannelID`: `character varying`, `DiscountValue`: `double precision`, `Currency`: `character varying`, `MinSpendAmount`: `double precision`}
 	_                            = bytes.MinRead
 )
 

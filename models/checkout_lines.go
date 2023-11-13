@@ -25,9 +25,9 @@ import (
 // CheckoutLine is an object representing the database table.
 type CheckoutLine struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat   null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Checkoutid null.String `boil:"checkoutid" json:"checkoutid,omitempty" toml:"checkoutid" yaml:"checkoutid,omitempty"`
-	Variantid  null.String `boil:"variantid" json:"variantid,omitempty" toml:"variantid" yaml:"variantid,omitempty"`
+	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	CheckoutID null.String `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
+	VariantID  null.String `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
 	Quantity   null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
 
 	R *checkoutLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,29 +36,29 @@ type CheckoutLine struct {
 
 var CheckoutLineColumns = struct {
 	ID         string
-	Createat   string
-	Checkoutid string
-	Variantid  string
+	CreateAt   string
+	CheckoutID string
+	VariantID  string
 	Quantity   string
 }{
 	ID:         "id",
-	Createat:   "createat",
-	Checkoutid: "checkoutid",
-	Variantid:  "variantid",
+	CreateAt:   "create_at",
+	CheckoutID: "checkout_id",
+	VariantID:  "variant_id",
 	Quantity:   "quantity",
 }
 
 var CheckoutLineTableColumns = struct {
 	ID         string
-	Createat   string
-	Checkoutid string
-	Variantid  string
+	CreateAt   string
+	CheckoutID string
+	VariantID  string
 	Quantity   string
 }{
 	ID:         "checkout_lines.id",
-	Createat:   "checkout_lines.createat",
-	Checkoutid: "checkout_lines.checkoutid",
-	Variantid:  "checkout_lines.variantid",
+	CreateAt:   "checkout_lines.create_at",
+	CheckoutID: "checkout_lines.checkout_id",
+	VariantID:  "checkout_lines.variant_id",
 	Quantity:   "checkout_lines.quantity",
 }
 
@@ -66,31 +66,31 @@ var CheckoutLineTableColumns = struct {
 
 var CheckoutLineWhere = struct {
 	ID         whereHelperstring
-	Createat   whereHelpernull_Int64
-	Checkoutid whereHelpernull_String
-	Variantid  whereHelpernull_String
+	CreateAt   whereHelpernull_Int64
+	CheckoutID whereHelpernull_String
+	VariantID  whereHelpernull_String
 	Quantity   whereHelpernull_Int
 }{
 	ID:         whereHelperstring{field: "\"checkout_lines\".\"id\""},
-	Createat:   whereHelpernull_Int64{field: "\"checkout_lines\".\"createat\""},
-	Checkoutid: whereHelpernull_String{field: "\"checkout_lines\".\"checkoutid\""},
-	Variantid:  whereHelpernull_String{field: "\"checkout_lines\".\"variantid\""},
+	CreateAt:   whereHelpernull_Int64{field: "\"checkout_lines\".\"create_at\""},
+	CheckoutID: whereHelpernull_String{field: "\"checkout_lines\".\"checkout_id\""},
+	VariantID:  whereHelpernull_String{field: "\"checkout_lines\".\"variant_id\""},
 	Quantity:   whereHelpernull_Int{field: "\"checkout_lines\".\"quantity\""},
 }
 
 // CheckoutLineRels is where relationship names are stored.
 var CheckoutLineRels = struct {
-	CheckoutidCheckout      string
-	VariantidProductVariant string
+	Checkout string
+	Variant  string
 }{
-	CheckoutidCheckout:      "CheckoutidCheckout",
-	VariantidProductVariant: "VariantidProductVariant",
+	Checkout: "Checkout",
+	Variant:  "Variant",
 }
 
 // checkoutLineR is where relationships are stored.
 type checkoutLineR struct {
-	CheckoutidCheckout      *Checkout       `boil:"CheckoutidCheckout" json:"CheckoutidCheckout" toml:"CheckoutidCheckout" yaml:"CheckoutidCheckout"`
-	VariantidProductVariant *ProductVariant `boil:"VariantidProductVariant" json:"VariantidProductVariant" toml:"VariantidProductVariant" yaml:"VariantidProductVariant"`
+	Checkout *Checkout       `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
+	Variant  *ProductVariant `boil:"Variant" json:"Variant" toml:"Variant" yaml:"Variant"`
 }
 
 // NewStruct creates a new relationship struct
@@ -98,27 +98,27 @@ func (*checkoutLineR) NewStruct() *checkoutLineR {
 	return &checkoutLineR{}
 }
 
-func (r *checkoutLineR) GetCheckoutidCheckout() *Checkout {
+func (r *checkoutLineR) GetCheckout() *Checkout {
 	if r == nil {
 		return nil
 	}
-	return r.CheckoutidCheckout
+	return r.Checkout
 }
 
-func (r *checkoutLineR) GetVariantidProductVariant() *ProductVariant {
+func (r *checkoutLineR) GetVariant() *ProductVariant {
 	if r == nil {
 		return nil
 	}
-	return r.VariantidProductVariant
+	return r.Variant
 }
 
 // checkoutLineL is where Load methods for each relationship are stored.
 type checkoutLineL struct{}
 
 var (
-	checkoutLineAllColumns            = []string{"id", "createat", "checkoutid", "variantid", "quantity"}
+	checkoutLineAllColumns            = []string{"id", "create_at", "checkout_id", "variant_id", "quantity"}
 	checkoutLineColumnsWithoutDefault = []string{"id"}
-	checkoutLineColumnsWithDefault    = []string{"createat", "checkoutid", "variantid", "quantity"}
+	checkoutLineColumnsWithDefault    = []string{"create_at", "checkout_id", "variant_id", "quantity"}
 	checkoutLinePrimaryKeyColumns     = []string{"id"}
 	checkoutLineGeneratedColumns      = []string{}
 )
@@ -401,10 +401,10 @@ func (q checkoutLineQuery) Exists(ctx context.Context, exec boil.ContextExecutor
 	return count > 0, nil
 }
 
-// CheckoutidCheckout pointed to by the foreign key.
-func (o *CheckoutLine) CheckoutidCheckout(mods ...qm.QueryMod) checkoutQuery {
+// Checkout pointed to by the foreign key.
+func (o *CheckoutLine) Checkout(mods ...qm.QueryMod) checkoutQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"token\" = ?", o.Checkoutid),
+		qm.Where("\"token\" = ?", o.CheckoutID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -412,10 +412,10 @@ func (o *CheckoutLine) CheckoutidCheckout(mods ...qm.QueryMod) checkoutQuery {
 	return Checkouts(queryMods...)
 }
 
-// VariantidProductVariant pointed to by the foreign key.
-func (o *CheckoutLine) VariantidProductVariant(mods ...qm.QueryMod) productVariantQuery {
+// Variant pointed to by the foreign key.
+func (o *CheckoutLine) Variant(mods ...qm.QueryMod) productVariantQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Variantid),
+		qm.Where("\"id\" = ?", o.VariantID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -423,9 +423,9 @@ func (o *CheckoutLine) VariantidProductVariant(mods ...qm.QueryMod) productVaria
 	return ProductVariants(queryMods...)
 }
 
-// LoadCheckoutidCheckout allows an eager lookup of values, cached into the
+// LoadCheckout allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutLineL) LoadCheckoutidCheckout(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckoutLine interface{}, mods queries.Applicator) error {
+func (checkoutLineL) LoadCheckout(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckoutLine interface{}, mods queries.Applicator) error {
 	var slice []*CheckoutLine
 	var object *CheckoutLine
 
@@ -456,8 +456,8 @@ func (checkoutLineL) LoadCheckoutidCheckout(ctx context.Context, e boil.ContextE
 		if object.R == nil {
 			object.R = &checkoutLineR{}
 		}
-		if !queries.IsNil(object.Checkoutid) {
-			args = append(args, object.Checkoutid)
+		if !queries.IsNil(object.CheckoutID) {
+			args = append(args, object.CheckoutID)
 		}
 
 	} else {
@@ -468,13 +468,13 @@ func (checkoutLineL) LoadCheckoutidCheckout(ctx context.Context, e boil.ContextE
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Checkoutid) {
+				if queries.Equal(a, obj.CheckoutID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Checkoutid) {
-				args = append(args, obj.Checkoutid)
+			if !queries.IsNil(obj.CheckoutID) {
+				args = append(args, obj.CheckoutID)
 			}
 
 		}
@@ -523,22 +523,22 @@ func (checkoutLineL) LoadCheckoutidCheckout(ctx context.Context, e boil.ContextE
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.CheckoutidCheckout = foreign
+		object.R.Checkout = foreign
 		if foreign.R == nil {
 			foreign.R = &checkoutR{}
 		}
-		foreign.R.CheckoutidCheckoutLines = append(foreign.R.CheckoutidCheckoutLines, object)
+		foreign.R.CheckoutLines = append(foreign.R.CheckoutLines, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Checkoutid, foreign.Token) {
-				local.R.CheckoutidCheckout = foreign
+			if queries.Equal(local.CheckoutID, foreign.Token) {
+				local.R.Checkout = foreign
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
 				}
-				foreign.R.CheckoutidCheckoutLines = append(foreign.R.CheckoutidCheckoutLines, local)
+				foreign.R.CheckoutLines = append(foreign.R.CheckoutLines, local)
 				break
 			}
 		}
@@ -547,9 +547,9 @@ func (checkoutLineL) LoadCheckoutidCheckout(ctx context.Context, e boil.ContextE
 	return nil
 }
 
-// LoadVariantidProductVariant allows an eager lookup of values, cached into the
+// LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutLineL) LoadVariantidProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckoutLine interface{}, mods queries.Applicator) error {
+func (checkoutLineL) LoadVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckoutLine interface{}, mods queries.Applicator) error {
 	var slice []*CheckoutLine
 	var object *CheckoutLine
 
@@ -580,8 +580,8 @@ func (checkoutLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Con
 		if object.R == nil {
 			object.R = &checkoutLineR{}
 		}
-		if !queries.IsNil(object.Variantid) {
-			args = append(args, object.Variantid)
+		if !queries.IsNil(object.VariantID) {
+			args = append(args, object.VariantID)
 		}
 
 	} else {
@@ -592,13 +592,13 @@ func (checkoutLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Variantid) {
+				if queries.Equal(a, obj.VariantID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Variantid) {
-				args = append(args, obj.Variantid)
+			if !queries.IsNil(obj.VariantID) {
+				args = append(args, obj.VariantID)
 			}
 
 		}
@@ -647,22 +647,22 @@ func (checkoutLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Con
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.VariantidProductVariant = foreign
+		object.R.Variant = foreign
 		if foreign.R == nil {
 			foreign.R = &productVariantR{}
 		}
-		foreign.R.VariantidCheckoutLines = append(foreign.R.VariantidCheckoutLines, object)
+		foreign.R.VariantCheckoutLines = append(foreign.R.VariantCheckoutLines, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Variantid, foreign.ID) {
-				local.R.VariantidProductVariant = foreign
+			if queries.Equal(local.VariantID, foreign.ID) {
+				local.R.Variant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
 				}
-				foreign.R.VariantidCheckoutLines = append(foreign.R.VariantidCheckoutLines, local)
+				foreign.R.VariantCheckoutLines = append(foreign.R.VariantCheckoutLines, local)
 				break
 			}
 		}
@@ -671,10 +671,10 @@ func (checkoutLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Con
 	return nil
 }
 
-// SetCheckoutidCheckout of the checkoutLine to the related item.
-// Sets o.R.CheckoutidCheckout to related.
-// Adds o to related.R.CheckoutidCheckoutLines.
-func (o *CheckoutLine) SetCheckoutidCheckout(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Checkout) error {
+// SetCheckout of the checkoutLine to the related item.
+// Sets o.R.Checkout to related.
+// Adds o to related.R.CheckoutLines.
+func (o *CheckoutLine) SetCheckout(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Checkout) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -684,7 +684,7 @@ func (o *CheckoutLine) SetCheckoutidCheckout(ctx context.Context, exec boil.Cont
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkout_lines\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"checkoutid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
 	)
 	values := []interface{}{related.Token, o.ID}
@@ -698,63 +698,63 @@ func (o *CheckoutLine) SetCheckoutidCheckout(ctx context.Context, exec boil.Cont
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Checkoutid, related.Token)
+	queries.Assign(&o.CheckoutID, related.Token)
 	if o.R == nil {
 		o.R = &checkoutLineR{
-			CheckoutidCheckout: related,
+			Checkout: related,
 		}
 	} else {
-		o.R.CheckoutidCheckout = related
+		o.R.Checkout = related
 	}
 
 	if related.R == nil {
 		related.R = &checkoutR{
-			CheckoutidCheckoutLines: CheckoutLineSlice{o},
+			CheckoutLines: CheckoutLineSlice{o},
 		}
 	} else {
-		related.R.CheckoutidCheckoutLines = append(related.R.CheckoutidCheckoutLines, o)
+		related.R.CheckoutLines = append(related.R.CheckoutLines, o)
 	}
 
 	return nil
 }
 
-// RemoveCheckoutidCheckout relationship.
-// Sets o.R.CheckoutidCheckout to nil.
+// RemoveCheckout relationship.
+// Sets o.R.Checkout to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *CheckoutLine) RemoveCheckoutidCheckout(ctx context.Context, exec boil.ContextExecutor, related *Checkout) error {
+func (o *CheckoutLine) RemoveCheckout(ctx context.Context, exec boil.ContextExecutor, related *Checkout) error {
 	var err error
 
-	queries.SetScanner(&o.Checkoutid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("checkoutid")); err != nil {
+	queries.SetScanner(&o.CheckoutID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.CheckoutidCheckout = nil
+		o.R.Checkout = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.CheckoutidCheckoutLines {
-		if queries.Equal(o.Checkoutid, ri.Checkoutid) {
+	for i, ri := range related.R.CheckoutLines {
+		if queries.Equal(o.CheckoutID, ri.CheckoutID) {
 			continue
 		}
 
-		ln := len(related.R.CheckoutidCheckoutLines)
+		ln := len(related.R.CheckoutLines)
 		if ln > 1 && i < ln-1 {
-			related.R.CheckoutidCheckoutLines[i] = related.R.CheckoutidCheckoutLines[ln-1]
+			related.R.CheckoutLines[i] = related.R.CheckoutLines[ln-1]
 		}
-		related.R.CheckoutidCheckoutLines = related.R.CheckoutidCheckoutLines[:ln-1]
+		related.R.CheckoutLines = related.R.CheckoutLines[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetVariantidProductVariant of the checkoutLine to the related item.
-// Sets o.R.VariantidProductVariant to related.
-// Adds o to related.R.VariantidCheckoutLines.
-func (o *CheckoutLine) SetVariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+// SetVariant of the checkoutLine to the related item.
+// Sets o.R.Variant to related.
+// Adds o to related.R.VariantCheckoutLines.
+func (o *CheckoutLine) SetVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -764,7 +764,7 @@ func (o *CheckoutLine) SetVariantidProductVariant(ctx context.Context, exec boil
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkout_lines\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"variantid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -778,54 +778,54 @@ func (o *CheckoutLine) SetVariantidProductVariant(ctx context.Context, exec boil
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Variantid, related.ID)
+	queries.Assign(&o.VariantID, related.ID)
 	if o.R == nil {
 		o.R = &checkoutLineR{
-			VariantidProductVariant: related,
+			Variant: related,
 		}
 	} else {
-		o.R.VariantidProductVariant = related
+		o.R.Variant = related
 	}
 
 	if related.R == nil {
 		related.R = &productVariantR{
-			VariantidCheckoutLines: CheckoutLineSlice{o},
+			VariantCheckoutLines: CheckoutLineSlice{o},
 		}
 	} else {
-		related.R.VariantidCheckoutLines = append(related.R.VariantidCheckoutLines, o)
+		related.R.VariantCheckoutLines = append(related.R.VariantCheckoutLines, o)
 	}
 
 	return nil
 }
 
-// RemoveVariantidProductVariant relationship.
-// Sets o.R.VariantidProductVariant to nil.
+// RemoveVariant relationship.
+// Sets o.R.Variant to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *CheckoutLine) RemoveVariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
+func (o *CheckoutLine) RemoveVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
 	var err error
 
-	queries.SetScanner(&o.Variantid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("variantid")); err != nil {
+	queries.SetScanner(&o.VariantID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("variant_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.VariantidProductVariant = nil
+		o.R.Variant = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.VariantidCheckoutLines {
-		if queries.Equal(o.Variantid, ri.Variantid) {
+	for i, ri := range related.R.VariantCheckoutLines {
+		if queries.Equal(o.VariantID, ri.VariantID) {
 			continue
 		}
 
-		ln := len(related.R.VariantidCheckoutLines)
+		ln := len(related.R.VariantCheckoutLines)
 		if ln > 1 && i < ln-1 {
-			related.R.VariantidCheckoutLines[i] = related.R.VariantidCheckoutLines[ln-1]
+			related.R.VariantCheckoutLines[i] = related.R.VariantCheckoutLines[ln-1]
 		}
-		related.R.VariantidCheckoutLines = related.R.VariantidCheckoutLines[:ln-1]
+		related.R.VariantCheckoutLines = related.R.VariantCheckoutLines[:ln-1]
 		break
 	}
 	return nil

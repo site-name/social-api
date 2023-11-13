@@ -494,7 +494,7 @@ func testSaleCategoriesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testSaleCategoryToOneCategoryUsingCategoryidCategory(t *testing.T) {
+func testSaleCategoryToOneCategoryUsingCategory(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testSaleCategoryToOneCategoryUsingCategoryidCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Categoryid, foreign.ID)
+	queries.Assign(&local.CategoryID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CategoryidCategory().One(ctx, tx)
+	check, err := local.Category().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testSaleCategoryToOneCategoryUsingCategoryidCategory(t *testing.T) {
 	})
 
 	slice := SaleCategorySlice{&local}
-	if err = local.L.LoadCategoryidCategory(ctx, tx, false, (*[]*SaleCategory)(&slice), nil); err != nil {
+	if err = local.L.LoadCategory(ctx, tx, false, (*[]*SaleCategory)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CategoryidCategory == nil {
+	if local.R.Category == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CategoryidCategory = nil
-	if err = local.L.LoadCategoryidCategory(ctx, tx, true, &local, nil); err != nil {
+	local.R.Category = nil
+	if err = local.L.LoadCategory(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CategoryidCategory == nil {
+	if local.R.Category == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testSaleCategoryToOneCategoryUsingCategoryidCategory(t *testing.T) {
 	}
 }
 
-func testSaleCategoryToOneSaleUsingSaleidSale(t *testing.T) {
+func testSaleCategoryToOneSaleUsingSale(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testSaleCategoryToOneSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Saleid, foreign.ID)
+	queries.Assign(&local.SaleID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.SaleidSale().One(ctx, tx)
+	check, err := local.Sale().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testSaleCategoryToOneSaleUsingSaleidSale(t *testing.T) {
 	})
 
 	slice := SaleCategorySlice{&local}
-	if err = local.L.LoadSaleidSale(ctx, tx, false, (*[]*SaleCategory)(&slice), nil); err != nil {
+	if err = local.L.LoadSale(ctx, tx, false, (*[]*SaleCategory)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.SaleidSale = nil
-	if err = local.L.LoadSaleidSale(ctx, tx, true, &local, nil); err != nil {
+	local.R.Sale = nil
+	if err = local.L.LoadSale(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testSaleCategoryToOneSaleUsingSaleidSale(t *testing.T) {
 	}
 }
 
-func testSaleCategoryToOneSetOpCategoryUsingCategoryidCategory(t *testing.T) {
+func testSaleCategoryToOneSetOpCategoryUsingCategory(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testSaleCategoryToOneSetOpCategoryUsingCategoryidCategory(t *testing.T) {
 	}
 
 	for i, x := range []*Category{&b, &c} {
-		err = a.SetCategoryidCategory(ctx, tx, i != 0, x)
+		err = a.SetCategory(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CategoryidCategory != x {
+		if a.R.Category != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CategoryidSaleCategories[0] != &a {
+		if x.R.SaleCategories[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Categoryid, x.ID) {
-			t.Error("foreign key was wrong value", a.Categoryid)
+		if !queries.Equal(a.CategoryID, x.ID) {
+			t.Error("foreign key was wrong value", a.CategoryID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Categoryid))
-		reflect.Indirect(reflect.ValueOf(&a.Categoryid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CategoryID))
+		reflect.Indirect(reflect.ValueOf(&a.CategoryID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Categoryid, x.ID) {
-			t.Error("foreign key was wrong value", a.Categoryid, x.ID)
+		if !queries.Equal(a.CategoryID, x.ID) {
+			t.Error("foreign key was wrong value", a.CategoryID, x.ID)
 		}
 	}
 }
 
-func testSaleCategoryToOneRemoveOpCategoryUsingCategoryidCategory(t *testing.T) {
+func testSaleCategoryToOneRemoveOpCategoryUsingCategory(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testSaleCategoryToOneRemoveOpCategoryUsingCategoryidCategory(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	if err = a.SetCategoryidCategory(ctx, tx, true, &b); err != nil {
+	if err = a.SetCategory(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCategoryidCategory(ctx, tx, &b); err != nil {
+	if err = a.RemoveCategory(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CategoryidCategory().Count(ctx, tx)
+	count, err := a.Category().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testSaleCategoryToOneRemoveOpCategoryUsingCategoryidCategory(t *testing.T) 
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CategoryidCategory != nil {
+	if a.R.Category != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Categoryid) {
+	if !queries.IsValuerNil(a.CategoryID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CategoryidSaleCategories) != 0 {
+	if len(b.R.SaleCategories) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testSaleCategoryToOneSetOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleCategoryToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testSaleCategoryToOneSetOpSaleUsingSaleidSale(t *testing.T) {
 	}
 
 	for i, x := range []*Sale{&b, &c} {
-		err = a.SetSaleidSale(ctx, tx, i != 0, x)
+		err = a.SetSale(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.SaleidSale != x {
+		if a.R.Sale != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.SaleidSaleCategories[0] != &a {
+		if x.R.SaleCategories[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Saleid))
-		reflect.Indirect(reflect.ValueOf(&a.Saleid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.SaleID))
+		reflect.Indirect(reflect.ValueOf(&a.SaleID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid, x.ID)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
 	}
 }
 
-func testSaleCategoryToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleCategoryToOneRemoveOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testSaleCategoryToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetSaleidSale(ctx, tx, true, &b); err != nil {
+	if err = a.SetSale(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveSaleidSale(ctx, tx, &b); err != nil {
+	if err = a.RemoveSale(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.SaleidSale().Count(ctx, tx)
+	count, err := a.Sale().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testSaleCategoryToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.SaleidSale != nil {
+	if a.R.Sale != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Saleid) {
+	if !queries.IsValuerNil(a.SaleID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.SaleidSaleCategories) != 0 {
+	if len(b.R.SaleCategories) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testSaleCategoriesSelect(t *testing.T) {
 }
 
 var (
-	saleCategoryDBTypes = map[string]string{`ID`: `character varying`, `Saleid`: `character varying`, `Categoryid`: `character varying`, `Createat`: `bigint`}
+	saleCategoryDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `CategoryID`: `character varying`, `CreateAt`: `bigint`}
 	_                   = bytes.MinRead
 )
 

@@ -494,7 +494,7 @@ func testDigitalContentUrlsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testDigitalContentURLToOneDigitalContentUsingContentidDigitalContent(t *testing.T) {
+func testDigitalContentURLToOneDigitalContentUsingContent(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testDigitalContentURLToOneDigitalContentUsingContentidDigitalContent(t *tes
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Contentid, foreign.ID)
+	queries.Assign(&local.ContentID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ContentidDigitalContent().One(ctx, tx)
+	check, err := local.Content().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testDigitalContentURLToOneDigitalContentUsingContentidDigitalContent(t *tes
 	})
 
 	slice := DigitalContentURLSlice{&local}
-	if err = local.L.LoadContentidDigitalContent(ctx, tx, false, (*[]*DigitalContentURL)(&slice), nil); err != nil {
+	if err = local.L.LoadContent(ctx, tx, false, (*[]*DigitalContentURL)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ContentidDigitalContent == nil {
+	if local.R.Content == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ContentidDigitalContent = nil
-	if err = local.L.LoadContentidDigitalContent(ctx, tx, true, &local, nil); err != nil {
+	local.R.Content = nil
+	if err = local.L.LoadContent(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ContentidDigitalContent == nil {
+	if local.R.Content == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testDigitalContentURLToOneDigitalContentUsingContentidDigitalContent(t *tes
 	}
 }
 
-func testDigitalContentURLToOneOrderLineUsingLineidOrderLine(t *testing.T) {
+func testDigitalContentURLToOneOrderLineUsingLine(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testDigitalContentURLToOneOrderLineUsingLineidOrderLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Lineid, foreign.ID)
+	queries.Assign(&local.LineID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.LineidOrderLine().One(ctx, tx)
+	check, err := local.Line().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testDigitalContentURLToOneOrderLineUsingLineidOrderLine(t *testing.T) {
 	})
 
 	slice := DigitalContentURLSlice{&local}
-	if err = local.L.LoadLineidOrderLine(ctx, tx, false, (*[]*DigitalContentURL)(&slice), nil); err != nil {
+	if err = local.L.LoadLine(ctx, tx, false, (*[]*DigitalContentURL)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.LineidOrderLine == nil {
+	if local.R.Line == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.LineidOrderLine = nil
-	if err = local.L.LoadLineidOrderLine(ctx, tx, true, &local, nil); err != nil {
+	local.R.Line = nil
+	if err = local.L.LoadLine(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.LineidOrderLine == nil {
+	if local.R.Line == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testDigitalContentURLToOneOrderLineUsingLineidOrderLine(t *testing.T) {
 	}
 }
 
-func testDigitalContentURLToOneSetOpDigitalContentUsingContentidDigitalContent(t *testing.T) {
+func testDigitalContentURLToOneSetOpDigitalContentUsingContent(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testDigitalContentURLToOneSetOpDigitalContentUsingContentidDigitalContent(t
 	}
 
 	for i, x := range []*DigitalContent{&b, &c} {
-		err = a.SetContentidDigitalContent(ctx, tx, i != 0, x)
+		err = a.SetContent(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ContentidDigitalContent != x {
+		if a.R.Content != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ContentidDigitalContentUrls[0] != &a {
+		if x.R.ContentDigitalContentUrls[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Contentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Contentid)
+		if !queries.Equal(a.ContentID, x.ID) {
+			t.Error("foreign key was wrong value", a.ContentID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Contentid))
-		reflect.Indirect(reflect.ValueOf(&a.Contentid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ContentID))
+		reflect.Indirect(reflect.ValueOf(&a.ContentID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Contentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Contentid, x.ID)
+		if !queries.Equal(a.ContentID, x.ID) {
+			t.Error("foreign key was wrong value", a.ContentID, x.ID)
 		}
 	}
 }
 
-func testDigitalContentURLToOneRemoveOpDigitalContentUsingContentidDigitalContent(t *testing.T) {
+func testDigitalContentURLToOneRemoveOpDigitalContentUsingContent(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testDigitalContentURLToOneRemoveOpDigitalContentUsingContentidDigitalConten
 		t.Fatal(err)
 	}
 
-	if err = a.SetContentidDigitalContent(ctx, tx, true, &b); err != nil {
+	if err = a.SetContent(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveContentidDigitalContent(ctx, tx, &b); err != nil {
+	if err = a.RemoveContent(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ContentidDigitalContent().Count(ctx, tx)
+	count, err := a.Content().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testDigitalContentURLToOneRemoveOpDigitalContentUsingContentidDigitalConten
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ContentidDigitalContent != nil {
+	if a.R.Content != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Contentid) {
+	if !queries.IsValuerNil(a.ContentID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ContentidDigitalContentUrls) != 0 {
+	if len(b.R.ContentDigitalContentUrls) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testDigitalContentURLToOneSetOpOrderLineUsingLineidOrderLine(t *testing.T) {
+func testDigitalContentURLToOneSetOpOrderLineUsingLine(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testDigitalContentURLToOneSetOpOrderLineUsingLineidOrderLine(t *testing.T) 
 	}
 
 	for i, x := range []*OrderLine{&b, &c} {
-		err = a.SetLineidOrderLine(ctx, tx, i != 0, x)
+		err = a.SetLine(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.LineidOrderLine != x {
+		if a.R.Line != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.LineidDigitalContentURL != &a {
+		if x.R.LineDigitalContentURL != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Lineid, x.ID) {
-			t.Error("foreign key was wrong value", a.Lineid)
+		if !queries.Equal(a.LineID, x.ID) {
+			t.Error("foreign key was wrong value", a.LineID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Lineid))
-		reflect.Indirect(reflect.ValueOf(&a.Lineid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.LineID))
+		reflect.Indirect(reflect.ValueOf(&a.LineID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Lineid, x.ID) {
-			t.Error("foreign key was wrong value", a.Lineid, x.ID)
+		if !queries.Equal(a.LineID, x.ID) {
+			t.Error("foreign key was wrong value", a.LineID, x.ID)
 		}
 	}
 }
 
-func testDigitalContentURLToOneRemoveOpOrderLineUsingLineidOrderLine(t *testing.T) {
+func testDigitalContentURLToOneRemoveOpOrderLineUsingLine(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testDigitalContentURLToOneRemoveOpOrderLineUsingLineidOrderLine(t *testing.
 		t.Fatal(err)
 	}
 
-	if err = a.SetLineidOrderLine(ctx, tx, true, &b); err != nil {
+	if err = a.SetLine(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveLineidOrderLine(ctx, tx, &b); err != nil {
+	if err = a.RemoveLine(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.LineidOrderLine().Count(ctx, tx)
+	count, err := a.Line().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testDigitalContentURLToOneRemoveOpOrderLineUsingLineidOrderLine(t *testing.
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.LineidOrderLine != nil {
+	if a.R.Line != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Lineid) {
+	if !queries.IsValuerNil(a.LineID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if b.R.LineidDigitalContentURL != nil {
+	if b.R.LineDigitalContentURL != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
 
@@ -909,7 +909,7 @@ func testDigitalContentUrlsSelect(t *testing.T) {
 }
 
 var (
-	digitalContentURLDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `Contentid`: `character varying`, `Createat`: `bigint`, `Downloadnum`: `integer`, `Lineid`: `character varying`}
+	digitalContentURLDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `ContentID`: `character varying`, `CreateAt`: `bigint`, `DownloadNum`: `integer`, `LineID`: `character varying`}
 	_                        = bytes.MinRead
 )
 

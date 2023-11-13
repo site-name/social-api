@@ -109,8 +109,6 @@ const (
 
 	OPEN_EXCHANGE_RATE_API_KEY = "cb3c20ad2a624639806f043e4b5aafa4"
 
-	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://minh:anhyeuem98@localhost/sitename_test?sslmode=disable&connect_timeout=10"
-
 	FILE_SETTINGS_DEFAULT_DIRECTORY = "./data/"
 
 	IMPORT_SETTINGS_DEFAULT_DIRECTORY      = "./import"
@@ -235,6 +233,8 @@ const (
 	LOCAL_MODE_SOCKET_PATH = "/var/tmp/sitename_local.socket"
 
 	MAX_CHECKOUT_LINE_QUANTITY = 50
+
+	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://minh:anhyeuem98@localhost/sitename_test?sslmode=disable&connect_timeout=10"
 )
 
 func GetDefaultAppCustomURLSchemes() []string {

@@ -25,7 +25,7 @@ import (
 // OpenExchangeRate is an object representing the database table.
 type OpenExchangeRate struct {
 	ID         string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Tocurrency null.String  `boil:"tocurrency" json:"tocurrency,omitempty" toml:"tocurrency" yaml:"tocurrency,omitempty"`
+	ToCurrency null.String  `boil:"to_currency" json:"to_currency,omitempty" toml:"to_currency" yaml:"to_currency,omitempty"`
 	Rate       null.Float64 `boil:"rate" json:"rate,omitempty" toml:"rate" yaml:"rate,omitempty"`
 
 	R *openExchangeRateR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,21 +34,21 @@ type OpenExchangeRate struct {
 
 var OpenExchangeRateColumns = struct {
 	ID         string
-	Tocurrency string
+	ToCurrency string
 	Rate       string
 }{
 	ID:         "id",
-	Tocurrency: "tocurrency",
+	ToCurrency: "to_currency",
 	Rate:       "rate",
 }
 
 var OpenExchangeRateTableColumns = struct {
 	ID         string
-	Tocurrency string
+	ToCurrency string
 	Rate       string
 }{
 	ID:         "open_exchange_rates.id",
-	Tocurrency: "open_exchange_rates.tocurrency",
+	ToCurrency: "open_exchange_rates.to_currency",
 	Rate:       "open_exchange_rates.rate",
 }
 
@@ -56,11 +56,11 @@ var OpenExchangeRateTableColumns = struct {
 
 var OpenExchangeRateWhere = struct {
 	ID         whereHelperstring
-	Tocurrency whereHelpernull_String
+	ToCurrency whereHelpernull_String
 	Rate       whereHelpernull_Float64
 }{
 	ID:         whereHelperstring{field: "\"open_exchange_rates\".\"id\""},
-	Tocurrency: whereHelpernull_String{field: "\"open_exchange_rates\".\"tocurrency\""},
+	ToCurrency: whereHelpernull_String{field: "\"open_exchange_rates\".\"to_currency\""},
 	Rate:       whereHelpernull_Float64{field: "\"open_exchange_rates\".\"rate\""},
 }
 
@@ -81,9 +81,9 @@ func (*openExchangeRateR) NewStruct() *openExchangeRateR {
 type openExchangeRateL struct{}
 
 var (
-	openExchangeRateAllColumns            = []string{"id", "tocurrency", "rate"}
+	openExchangeRateAllColumns            = []string{"id", "to_currency", "rate"}
 	openExchangeRateColumnsWithoutDefault = []string{"id"}
-	openExchangeRateColumnsWithDefault    = []string{"tocurrency", "rate"}
+	openExchangeRateColumnsWithDefault    = []string{"to_currency", "rate"}
 	openExchangeRatePrimaryKeyColumns     = []string{"id"}
 	openExchangeRateGeneratedColumns      = []string{}
 )

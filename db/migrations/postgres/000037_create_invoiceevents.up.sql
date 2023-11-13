@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS invoice_events (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  createat bigint,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at bigint,
   type character varying(255),
-  invoiceid character varying(36),
-  orderid character varying(36),
-  userid character varying(36),
+  invoice_id uuid,
+  order_id uuid,
+  user_id uuid,
   parameters text
 );

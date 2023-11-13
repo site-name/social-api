@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS collection_channel_listings (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  createat bigint,
-  collectionid character varying(36),
-  channelid character varying(36),
-  publicationdate timestamp with time zone,
-  ispublished boolean
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at bigint NOT NULL,
+  collection_id uuid NOT NULL,
+  channel_id uuid,
+  publication_date timestamp with time zone,
+  is_published boolean
 );
 
 ALTER TABLE ONLY collection_channel_listings
-    ADD CONSTRAINT collection_channel_listings_collectionid_channelid_key UNIQUE (collectionid, channelid);
+    ADD CONSTRAINT collection_channel_listings_collection_id_channel_id_key UNIQUE (collection_id, channel_id);

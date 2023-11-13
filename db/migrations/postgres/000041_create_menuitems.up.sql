@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS menu_items (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  menuid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  menu_id uuid,
   name character varying(128),
-  parentid character varying(36),
+  parent_id uuid,
   url character varying(256),
-  categoryid character varying(36),
-  collectionid character varying(36),
-  pageid character varying(36),
+  category_id uuid,
+  collection_id uuid,
+  page_id uuid,
   metadata jsonb,
-  privatemetadata jsonb,
-  sortorder integer
+  private_metadata jsonb,
+  sort_order integer
 );

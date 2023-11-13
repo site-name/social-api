@@ -494,7 +494,7 @@ func testProductVariantChannelListingsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testProductVariantChannelListingToOneChannelUsingChannelidChannel(t *testing.T) {
+func testProductVariantChannelListingToOneChannelUsingChannel(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testProductVariantChannelListingToOneChannelUsingChannelidChannel(t *testin
 		t.Fatal(err)
 	}
 
-	local.Channelid = foreign.ID
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ChannelidChannel().One(ctx, tx)
+	check, err := local.Channel().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testProductVariantChannelListingToOneChannelUsingChannelidChannel(t *testin
 	})
 
 	slice := ProductVariantChannelListingSlice{&local}
-	if err = local.L.LoadChannelidChannel(ctx, tx, false, (*[]*ProductVariantChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadChannel(ctx, tx, false, (*[]*ProductVariantChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ChannelidChannel = nil
-	if err = local.L.LoadChannelidChannel(ctx, tx, true, &local, nil); err != nil {
+	local.R.Channel = nil
+	if err = local.L.LoadChannel(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testProductVariantChannelListingToOneChannelUsingChannelidChannel(t *testin
 	}
 }
 
-func testProductVariantChannelListingToOneProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testProductVariantChannelListingToOneProductVariantUsingVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testProductVariantChannelListingToOneProductVariantUsingVariantidProductVar
 		t.Fatal(err)
 	}
 
-	local.Variantid = foreign.ID
+	local.VariantID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.VariantidProductVariant().One(ctx, tx)
+	check, err := local.Variant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testProductVariantChannelListingToOneProductVariantUsingVariantidProductVar
 	})
 
 	slice := ProductVariantChannelListingSlice{&local}
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, false, (*[]*ProductVariantChannelListing)(&slice), nil); err != nil {
+	if err = local.L.LoadVariant(ctx, tx, false, (*[]*ProductVariantChannelListing)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.VariantidProductVariant = nil
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.Variant = nil
+	if err = local.L.LoadVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testProductVariantChannelListingToOneProductVariantUsingVariantidProductVar
 	}
 }
 
-func testProductVariantChannelListingToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
+func testProductVariantChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,35 +645,35 @@ func testProductVariantChannelListingToOneSetOpChannelUsingChannelidChannel(t *t
 	}
 
 	for i, x := range []*Channel{&b, &c} {
-		err = a.SetChannelidChannel(ctx, tx, i != 0, x)
+		err = a.SetChannel(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ChannelidChannel != x {
+		if a.R.Channel != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ChannelidProductVariantChannelListings[0] != &a {
+		if x.R.ProductVariantChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.Channelid != x.ID {
-			t.Error("foreign key was wrong value", a.Channelid)
+		if a.ChannelID != x.ID {
+			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Channelid))
-		reflect.Indirect(reflect.ValueOf(&a.Channelid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ChannelID))
+		reflect.Indirect(reflect.ValueOf(&a.ChannelID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.Channelid != x.ID {
-			t.Error("foreign key was wrong value", a.Channelid, x.ID)
+		if a.ChannelID != x.ID {
+			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-func testProductVariantChannelListingToOneSetOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testProductVariantChannelListingToOneSetOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -702,31 +702,31 @@ func testProductVariantChannelListingToOneSetOpProductVariantUsingVariantidProdu
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetVariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.VariantidProductVariant != x {
+		if a.R.Variant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.VariantidProductVariantChannelListings[0] != &a {
+		if x.R.VariantProductVariantChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.Variantid != x.ID {
-			t.Error("foreign key was wrong value", a.Variantid)
+		if a.VariantID != x.ID {
+			t.Error("foreign key was wrong value", a.VariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Variantid))
-		reflect.Indirect(reflect.ValueOf(&a.Variantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.VariantID))
+		reflect.Indirect(reflect.ValueOf(&a.VariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.Variantid != x.ID {
-			t.Error("foreign key was wrong value", a.Variantid, x.ID)
+		if a.VariantID != x.ID {
+			t.Error("foreign key was wrong value", a.VariantID, x.ID)
 		}
 	}
 }
@@ -805,7 +805,7 @@ func testProductVariantChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	productVariantChannelListingDBTypes = map[string]string{`ID`: `character varying`, `Variantid`: `character varying`, `Channelid`: `character varying`, `Currency`: `character varying`, `Priceamount`: `double precision`, `Costpriceamount`: `double precision`, `Preorderquantitythreshold`: `integer`, `Createat`: `bigint`}
+	productVariantChannelListingDBTypes = map[string]string{`ID`: `character varying`, `VariantID`: `character varying`, `ChannelID`: `character varying`, `Currency`: `character varying`, `PriceAmount`: `double precision`, `CostPriceAmount`: `double precision`, `PreorderQuantityThreshold`: `integer`, `CreateAt`: `bigint`}
 	_                                   = bytes.MinRead
 )
 

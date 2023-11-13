@@ -25,9 +25,9 @@ import (
 // Stock is an object representing the database table.
 type Stock struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat         null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Warehouseid      null.String `boil:"warehouseid" json:"warehouseid,omitempty" toml:"warehouseid" yaml:"warehouseid,omitempty"`
-	Productvariantid null.String `boil:"productvariantid" json:"productvariantid,omitempty" toml:"productvariantid" yaml:"productvariantid,omitempty"`
+	CreateAt         null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	WarehouseID      null.String `boil:"warehouse_id" json:"warehouse_id,omitempty" toml:"warehouse_id" yaml:"warehouse_id,omitempty"`
+	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
 	Quantity         null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
 
 	R *stockR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,29 +36,29 @@ type Stock struct {
 
 var StockColumns = struct {
 	ID               string
-	Createat         string
-	Warehouseid      string
-	Productvariantid string
+	CreateAt         string
+	WarehouseID      string
+	ProductVariantID string
 	Quantity         string
 }{
 	ID:               "id",
-	Createat:         "createat",
-	Warehouseid:      "warehouseid",
-	Productvariantid: "productvariantid",
+	CreateAt:         "create_at",
+	WarehouseID:      "warehouse_id",
+	ProductVariantID: "product_variant_id",
 	Quantity:         "quantity",
 }
 
 var StockTableColumns = struct {
 	ID               string
-	Createat         string
-	Warehouseid      string
-	Productvariantid string
+	CreateAt         string
+	WarehouseID      string
+	ProductVariantID string
 	Quantity         string
 }{
 	ID:               "stocks.id",
-	Createat:         "stocks.createat",
-	Warehouseid:      "stocks.warehouseid",
-	Productvariantid: "stocks.productvariantid",
+	CreateAt:         "stocks.create_at",
+	WarehouseID:      "stocks.warehouse_id",
+	ProductVariantID: "stocks.product_variant_id",
 	Quantity:         "stocks.quantity",
 }
 
@@ -66,37 +66,37 @@ var StockTableColumns = struct {
 
 var StockWhere = struct {
 	ID               whereHelperstring
-	Createat         whereHelpernull_Int64
-	Warehouseid      whereHelpernull_String
-	Productvariantid whereHelpernull_String
+	CreateAt         whereHelpernull_Int64
+	WarehouseID      whereHelpernull_String
+	ProductVariantID whereHelpernull_String
 	Quantity         whereHelpernull_Int
 }{
 	ID:               whereHelperstring{field: "\"stocks\".\"id\""},
-	Createat:         whereHelpernull_Int64{field: "\"stocks\".\"createat\""},
-	Warehouseid:      whereHelpernull_String{field: "\"stocks\".\"warehouseid\""},
-	Productvariantid: whereHelpernull_String{field: "\"stocks\".\"productvariantid\""},
+	CreateAt:         whereHelpernull_Int64{field: "\"stocks\".\"create_at\""},
+	WarehouseID:      whereHelpernull_String{field: "\"stocks\".\"warehouse_id\""},
+	ProductVariantID: whereHelpernull_String{field: "\"stocks\".\"product_variant_id\""},
 	Quantity:         whereHelpernull_Int{field: "\"stocks\".\"quantity\""},
 }
 
 // StockRels is where relationship names are stored.
 var StockRels = struct {
-	ProductvariantidProductVariant string
-	WarehouseidWarehouse           string
-	StockidAllocations             string
-	StockidFulfillmentLines        string
+	ProductVariant   string
+	Warehouse        string
+	Allocations      string
+	FulfillmentLines string
 }{
-	ProductvariantidProductVariant: "ProductvariantidProductVariant",
-	WarehouseidWarehouse:           "WarehouseidWarehouse",
-	StockidAllocations:             "StockidAllocations",
-	StockidFulfillmentLines:        "StockidFulfillmentLines",
+	ProductVariant:   "ProductVariant",
+	Warehouse:        "Warehouse",
+	Allocations:      "Allocations",
+	FulfillmentLines: "FulfillmentLines",
 }
 
 // stockR is where relationships are stored.
 type stockR struct {
-	ProductvariantidProductVariant *ProductVariant      `boil:"ProductvariantidProductVariant" json:"ProductvariantidProductVariant" toml:"ProductvariantidProductVariant" yaml:"ProductvariantidProductVariant"`
-	WarehouseidWarehouse           *Warehouse           `boil:"WarehouseidWarehouse" json:"WarehouseidWarehouse" toml:"WarehouseidWarehouse" yaml:"WarehouseidWarehouse"`
-	StockidAllocations             AllocationSlice      `boil:"StockidAllocations" json:"StockidAllocations" toml:"StockidAllocations" yaml:"StockidAllocations"`
-	StockidFulfillmentLines        FulfillmentLineSlice `boil:"StockidFulfillmentLines" json:"StockidFulfillmentLines" toml:"StockidFulfillmentLines" yaml:"StockidFulfillmentLines"`
+	ProductVariant   *ProductVariant      `boil:"ProductVariant" json:"ProductVariant" toml:"ProductVariant" yaml:"ProductVariant"`
+	Warehouse        *Warehouse           `boil:"Warehouse" json:"Warehouse" toml:"Warehouse" yaml:"Warehouse"`
+	Allocations      AllocationSlice      `boil:"Allocations" json:"Allocations" toml:"Allocations" yaml:"Allocations"`
+	FulfillmentLines FulfillmentLineSlice `boil:"FulfillmentLines" json:"FulfillmentLines" toml:"FulfillmentLines" yaml:"FulfillmentLines"`
 }
 
 // NewStruct creates a new relationship struct
@@ -104,41 +104,41 @@ func (*stockR) NewStruct() *stockR {
 	return &stockR{}
 }
 
-func (r *stockR) GetProductvariantidProductVariant() *ProductVariant {
+func (r *stockR) GetProductVariant() *ProductVariant {
 	if r == nil {
 		return nil
 	}
-	return r.ProductvariantidProductVariant
+	return r.ProductVariant
 }
 
-func (r *stockR) GetWarehouseidWarehouse() *Warehouse {
+func (r *stockR) GetWarehouse() *Warehouse {
 	if r == nil {
 		return nil
 	}
-	return r.WarehouseidWarehouse
+	return r.Warehouse
 }
 
-func (r *stockR) GetStockidAllocations() AllocationSlice {
+func (r *stockR) GetAllocations() AllocationSlice {
 	if r == nil {
 		return nil
 	}
-	return r.StockidAllocations
+	return r.Allocations
 }
 
-func (r *stockR) GetStockidFulfillmentLines() FulfillmentLineSlice {
+func (r *stockR) GetFulfillmentLines() FulfillmentLineSlice {
 	if r == nil {
 		return nil
 	}
-	return r.StockidFulfillmentLines
+	return r.FulfillmentLines
 }
 
 // stockL is where Load methods for each relationship are stored.
 type stockL struct{}
 
 var (
-	stockAllColumns            = []string{"id", "createat", "warehouseid", "productvariantid", "quantity"}
+	stockAllColumns            = []string{"id", "create_at", "warehouse_id", "product_variant_id", "quantity"}
 	stockColumnsWithoutDefault = []string{"id"}
-	stockColumnsWithDefault    = []string{"createat", "warehouseid", "productvariantid", "quantity"}
+	stockColumnsWithDefault    = []string{"create_at", "warehouse_id", "product_variant_id", "quantity"}
 	stockPrimaryKeyColumns     = []string{"id"}
 	stockGeneratedColumns      = []string{}
 )
@@ -421,10 +421,10 @@ func (q stockQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool
 	return count > 0, nil
 }
 
-// ProductvariantidProductVariant pointed to by the foreign key.
-func (o *Stock) ProductvariantidProductVariant(mods ...qm.QueryMod) productVariantQuery {
+// ProductVariant pointed to by the foreign key.
+func (o *Stock) ProductVariant(mods ...qm.QueryMod) productVariantQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productvariantid),
+		qm.Where("\"id\" = ?", o.ProductVariantID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -432,10 +432,10 @@ func (o *Stock) ProductvariantidProductVariant(mods ...qm.QueryMod) productVaria
 	return ProductVariants(queryMods...)
 }
 
-// WarehouseidWarehouse pointed to by the foreign key.
-func (o *Stock) WarehouseidWarehouse(mods ...qm.QueryMod) warehouseQuery {
+// Warehouse pointed to by the foreign key.
+func (o *Stock) Warehouse(mods ...qm.QueryMod) warehouseQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Warehouseid),
+		qm.Where("\"id\" = ?", o.WarehouseID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -443,37 +443,37 @@ func (o *Stock) WarehouseidWarehouse(mods ...qm.QueryMod) warehouseQuery {
 	return Warehouses(queryMods...)
 }
 
-// StockidAllocations retrieves all the allocation's Allocations with an executor via stockid column.
-func (o *Stock) StockidAllocations(mods ...qm.QueryMod) allocationQuery {
+// Allocations retrieves all the allocation's Allocations with an executor.
+func (o *Stock) Allocations(mods ...qm.QueryMod) allocationQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"allocations\".\"stockid\"=?", o.ID),
+		qm.Where("\"allocations\".\"stock_id\"=?", o.ID),
 	)
 
 	return Allocations(queryMods...)
 }
 
-// StockidFulfillmentLines retrieves all the fulfillment_line's FulfillmentLines with an executor via stockid column.
-func (o *Stock) StockidFulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
+// FulfillmentLines retrieves all the fulfillment_line's FulfillmentLines with an executor.
+func (o *Stock) FulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"fulfillment_lines\".\"stockid\"=?", o.ID),
+		qm.Where("\"fulfillment_lines\".\"stock_id\"=?", o.ID),
 	)
 
 	return FulfillmentLines(queryMods...)
 }
 
-// LoadProductvariantidProductVariant allows an eager lookup of values, cached into the
+// LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadProductvariantidProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -504,8 +504,8 @@ func (stockL) LoadProductvariantidProductVariant(ctx context.Context, e boil.Con
 		if object.R == nil {
 			object.R = &stockR{}
 		}
-		if !queries.IsNil(object.Productvariantid) {
-			args = append(args, object.Productvariantid)
+		if !queries.IsNil(object.ProductVariantID) {
+			args = append(args, object.ProductVariantID)
 		}
 
 	} else {
@@ -516,13 +516,13 @@ func (stockL) LoadProductvariantidProductVariant(ctx context.Context, e boil.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productvariantid) {
+				if queries.Equal(a, obj.ProductVariantID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productvariantid) {
-				args = append(args, obj.Productvariantid)
+			if !queries.IsNil(obj.ProductVariantID) {
+				args = append(args, obj.ProductVariantID)
 			}
 
 		}
@@ -571,22 +571,22 @@ func (stockL) LoadProductvariantidProductVariant(ctx context.Context, e boil.Con
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductvariantidProductVariant = foreign
+		object.R.ProductVariant = foreign
 		if foreign.R == nil {
 			foreign.R = &productVariantR{}
 		}
-		foreign.R.ProductvariantidStocks = append(foreign.R.ProductvariantidStocks, object)
+		foreign.R.Stocks = append(foreign.R.Stocks, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productvariantid, foreign.ID) {
-				local.R.ProductvariantidProductVariant = foreign
+			if queries.Equal(local.ProductVariantID, foreign.ID) {
+				local.R.ProductVariant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
 				}
-				foreign.R.ProductvariantidStocks = append(foreign.R.ProductvariantidStocks, local)
+				foreign.R.Stocks = append(foreign.R.Stocks, local)
 				break
 			}
 		}
@@ -595,9 +595,9 @@ func (stockL) LoadProductvariantidProductVariant(ctx context.Context, e boil.Con
 	return nil
 }
 
-// LoadWarehouseidWarehouse allows an eager lookup of values, cached into the
+// LoadWarehouse allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadWarehouseidWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -628,8 +628,8 @@ func (stockL) LoadWarehouseidWarehouse(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &stockR{}
 		}
-		if !queries.IsNil(object.Warehouseid) {
-			args = append(args, object.Warehouseid)
+		if !queries.IsNil(object.WarehouseID) {
+			args = append(args, object.WarehouseID)
 		}
 
 	} else {
@@ -640,13 +640,13 @@ func (stockL) LoadWarehouseidWarehouse(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Warehouseid) {
+				if queries.Equal(a, obj.WarehouseID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Warehouseid) {
-				args = append(args, obj.Warehouseid)
+			if !queries.IsNil(obj.WarehouseID) {
+				args = append(args, obj.WarehouseID)
 			}
 
 		}
@@ -695,22 +695,22 @@ func (stockL) LoadWarehouseidWarehouse(ctx context.Context, e boil.ContextExecut
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.WarehouseidWarehouse = foreign
+		object.R.Warehouse = foreign
 		if foreign.R == nil {
 			foreign.R = &warehouseR{}
 		}
-		foreign.R.WarehouseidStocks = append(foreign.R.WarehouseidStocks, object)
+		foreign.R.Stocks = append(foreign.R.Stocks, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Warehouseid, foreign.ID) {
-				local.R.WarehouseidWarehouse = foreign
+			if queries.Equal(local.WarehouseID, foreign.ID) {
+				local.R.Warehouse = foreign
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
 				}
-				foreign.R.WarehouseidStocks = append(foreign.R.WarehouseidStocks, local)
+				foreign.R.Stocks = append(foreign.R.Stocks, local)
 				break
 			}
 		}
@@ -719,9 +719,9 @@ func (stockL) LoadWarehouseidWarehouse(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// LoadStockidAllocations allows an eager lookup of values, cached into the
+// LoadAllocations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadStockidAllocations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -761,7 +761,7 @@ func (stockL) LoadStockidAllocations(ctx context.Context, e boil.ContextExecutor
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -776,7 +776,7 @@ func (stockL) LoadStockidAllocations(ctx context.Context, e boil.ContextExecutor
 
 	query := NewQuery(
 		qm.From(`allocations`),
-		qm.WhereIn(`allocations.stockid in ?`, args...),
+		qm.WhereIn(`allocations.stock_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -807,24 +807,24 @@ func (stockL) LoadStockidAllocations(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.StockidAllocations = resultSlice
+		object.R.Allocations = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &allocationR{}
 			}
-			foreign.R.StockidStock = object
+			foreign.R.Stock = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Stockid) {
-				local.R.StockidAllocations = append(local.R.StockidAllocations, foreign)
+			if local.ID == foreign.StockID {
+				local.R.Allocations = append(local.R.Allocations, foreign)
 				if foreign.R == nil {
 					foreign.R = &allocationR{}
 				}
-				foreign.R.StockidStock = local
+				foreign.R.Stock = local
 				break
 			}
 		}
@@ -833,9 +833,9 @@ func (stockL) LoadStockidAllocations(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// LoadStockidFulfillmentLines allows an eager lookup of values, cached into the
+// LoadFulfillmentLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadStockidFulfillmentLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -890,7 +890,7 @@ func (stockL) LoadStockidFulfillmentLines(ctx context.Context, e boil.ContextExe
 
 	query := NewQuery(
 		qm.From(`fulfillment_lines`),
-		qm.WhereIn(`fulfillment_lines.stockid in ?`, args...),
+		qm.WhereIn(`fulfillment_lines.stock_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -921,24 +921,24 @@ func (stockL) LoadStockidFulfillmentLines(ctx context.Context, e boil.ContextExe
 		}
 	}
 	if singular {
-		object.R.StockidFulfillmentLines = resultSlice
+		object.R.FulfillmentLines = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &fulfillmentLineR{}
 			}
-			foreign.R.StockidStock = object
+			foreign.R.Stock = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Stockid) {
-				local.R.StockidFulfillmentLines = append(local.R.StockidFulfillmentLines, foreign)
+			if queries.Equal(local.ID, foreign.StockID) {
+				local.R.FulfillmentLines = append(local.R.FulfillmentLines, foreign)
 				if foreign.R == nil {
 					foreign.R = &fulfillmentLineR{}
 				}
-				foreign.R.StockidStock = local
+				foreign.R.Stock = local
 				break
 			}
 		}
@@ -947,10 +947,10 @@ func (stockL) LoadStockidFulfillmentLines(ctx context.Context, e boil.ContextExe
 	return nil
 }
 
-// SetProductvariantidProductVariant of the stock to the related item.
-// Sets o.R.ProductvariantidProductVariant to related.
-// Adds o to related.R.ProductvariantidStocks.
-func (o *Stock) SetProductvariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+// SetProductVariant of the stock to the related item.
+// Sets o.R.ProductVariant to related.
+// Adds o to related.R.Stocks.
+func (o *Stock) SetProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -960,7 +960,7 @@ func (o *Stock) SetProductvariantidProductVariant(ctx context.Context, exec boil
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"stocks\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productvariantid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -974,63 +974,63 @@ func (o *Stock) SetProductvariantidProductVariant(ctx context.Context, exec boil
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productvariantid, related.ID)
+	queries.Assign(&o.ProductVariantID, related.ID)
 	if o.R == nil {
 		o.R = &stockR{
-			ProductvariantidProductVariant: related,
+			ProductVariant: related,
 		}
 	} else {
-		o.R.ProductvariantidProductVariant = related
+		o.R.ProductVariant = related
 	}
 
 	if related.R == nil {
 		related.R = &productVariantR{
-			ProductvariantidStocks: StockSlice{o},
+			Stocks: StockSlice{o},
 		}
 	} else {
-		related.R.ProductvariantidStocks = append(related.R.ProductvariantidStocks, o)
+		related.R.Stocks = append(related.R.Stocks, o)
 	}
 
 	return nil
 }
 
-// RemoveProductvariantidProductVariant relationship.
-// Sets o.R.ProductvariantidProductVariant to nil.
+// RemoveProductVariant relationship.
+// Sets o.R.ProductVariant to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Stock) RemoveProductvariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
+func (o *Stock) RemoveProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
 	var err error
 
-	queries.SetScanner(&o.Productvariantid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productvariantid")); err != nil {
+	queries.SetScanner(&o.ProductVariantID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_variant_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductvariantidProductVariant = nil
+		o.R.ProductVariant = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductvariantidStocks {
-		if queries.Equal(o.Productvariantid, ri.Productvariantid) {
+	for i, ri := range related.R.Stocks {
+		if queries.Equal(o.ProductVariantID, ri.ProductVariantID) {
 			continue
 		}
 
-		ln := len(related.R.ProductvariantidStocks)
+		ln := len(related.R.Stocks)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductvariantidStocks[i] = related.R.ProductvariantidStocks[ln-1]
+			related.R.Stocks[i] = related.R.Stocks[ln-1]
 		}
-		related.R.ProductvariantidStocks = related.R.ProductvariantidStocks[:ln-1]
+		related.R.Stocks = related.R.Stocks[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetWarehouseidWarehouse of the stock to the related item.
-// Sets o.R.WarehouseidWarehouse to related.
-// Adds o to related.R.WarehouseidStocks.
-func (o *Stock) SetWarehouseidWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
+// SetWarehouse of the stock to the related item.
+// Sets o.R.Warehouse to related.
+// Adds o to related.R.Stocks.
+func (o *Stock) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1040,7 +1040,7 @@ func (o *Stock) SetWarehouseidWarehouse(ctx context.Context, exec boil.ContextEx
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"stocks\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"warehouseid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"warehouse_id"}),
 		strmangle.WhereClause("\"", "\"", 2, stockPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1054,75 +1054,75 @@ func (o *Stock) SetWarehouseidWarehouse(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Warehouseid, related.ID)
+	queries.Assign(&o.WarehouseID, related.ID)
 	if o.R == nil {
 		o.R = &stockR{
-			WarehouseidWarehouse: related,
+			Warehouse: related,
 		}
 	} else {
-		o.R.WarehouseidWarehouse = related
+		o.R.Warehouse = related
 	}
 
 	if related.R == nil {
 		related.R = &warehouseR{
-			WarehouseidStocks: StockSlice{o},
+			Stocks: StockSlice{o},
 		}
 	} else {
-		related.R.WarehouseidStocks = append(related.R.WarehouseidStocks, o)
+		related.R.Stocks = append(related.R.Stocks, o)
 	}
 
 	return nil
 }
 
-// RemoveWarehouseidWarehouse relationship.
-// Sets o.R.WarehouseidWarehouse to nil.
+// RemoveWarehouse relationship.
+// Sets o.R.Warehouse to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Stock) RemoveWarehouseidWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
+func (o *Stock) RemoveWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
 	var err error
 
-	queries.SetScanner(&o.Warehouseid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("warehouseid")); err != nil {
+	queries.SetScanner(&o.WarehouseID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("warehouse_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.WarehouseidWarehouse = nil
+		o.R.Warehouse = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.WarehouseidStocks {
-		if queries.Equal(o.Warehouseid, ri.Warehouseid) {
+	for i, ri := range related.R.Stocks {
+		if queries.Equal(o.WarehouseID, ri.WarehouseID) {
 			continue
 		}
 
-		ln := len(related.R.WarehouseidStocks)
+		ln := len(related.R.Stocks)
 		if ln > 1 && i < ln-1 {
-			related.R.WarehouseidStocks[i] = related.R.WarehouseidStocks[ln-1]
+			related.R.Stocks[i] = related.R.Stocks[ln-1]
 		}
-		related.R.WarehouseidStocks = related.R.WarehouseidStocks[:ln-1]
+		related.R.Stocks = related.R.Stocks[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddStockidAllocations adds the given related objects to the existing relationships
+// AddAllocations adds the given related objects to the existing relationships
 // of the stock, optionally inserting them as new records.
-// Appends related to o.R.StockidAllocations.
-// Sets related.R.StockidStock appropriately.
-func (o *Stock) AddStockidAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
+// Appends related to o.R.Allocations.
+// Sets related.R.Stock appropriately.
+func (o *Stock) AddAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Stockid, o.ID)
+			rel.StockID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"allocations\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"stockid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 				strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1136,120 +1136,46 @@ func (o *Stock) AddStockidAllocations(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Stockid, o.ID)
+			rel.StockID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &stockR{
-			StockidAllocations: related,
+			Allocations: related,
 		}
 	} else {
-		o.R.StockidAllocations = append(o.R.StockidAllocations, related...)
+		o.R.Allocations = append(o.R.Allocations, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &allocationR{
-				StockidStock: o,
+				Stock: o,
 			}
 		} else {
-			rel.R.StockidStock = o
+			rel.R.Stock = o
 		}
 	}
 	return nil
 }
 
-// SetStockidAllocations removes all previously related items of the
-// stock replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.StockidStock's StockidAllocations accordingly.
-// Replaces o.R.StockidAllocations with related.
-// Sets related.R.StockidStock's StockidAllocations accordingly.
-func (o *Stock) SetStockidAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
-	query := "update \"allocations\" set \"stockid\" = null where \"stockid\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.StockidAllocations {
-			queries.SetScanner(&rel.Stockid, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.StockidStock = nil
-		}
-		o.R.StockidAllocations = nil
-	}
-
-	return o.AddStockidAllocations(ctx, exec, insert, related...)
-}
-
-// RemoveStockidAllocations relationships from objects passed in.
-// Removes related items from R.StockidAllocations (uses pointer comparison, removal does not keep order)
-// Sets related.R.StockidStock.
-func (o *Stock) RemoveStockidAllocations(ctx context.Context, exec boil.ContextExecutor, related ...*Allocation) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.Stockid, nil)
-		if rel.R != nil {
-			rel.R.StockidStock = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("stockid")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.StockidAllocations {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.StockidAllocations)
-			if ln > 1 && i < ln-1 {
-				o.R.StockidAllocations[i] = o.R.StockidAllocations[ln-1]
-			}
-			o.R.StockidAllocations = o.R.StockidAllocations[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-// AddStockidFulfillmentLines adds the given related objects to the existing relationships
+// AddFulfillmentLines adds the given related objects to the existing relationships
 // of the stock, optionally inserting them as new records.
-// Appends related to o.R.StockidFulfillmentLines.
-// Sets related.R.StockidStock appropriately.
-func (o *Stock) AddStockidFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
+// Appends related to o.R.FulfillmentLines.
+// Sets related.R.Stock appropriately.
+func (o *Stock) AddFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Stockid, o.ID)
+			queries.Assign(&rel.StockID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"fulfillment_lines\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"stockid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 				strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1263,38 +1189,38 @@ func (o *Stock) AddStockidFulfillmentLines(ctx context.Context, exec boil.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Stockid, o.ID)
+			queries.Assign(&rel.StockID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &stockR{
-			StockidFulfillmentLines: related,
+			FulfillmentLines: related,
 		}
 	} else {
-		o.R.StockidFulfillmentLines = append(o.R.StockidFulfillmentLines, related...)
+		o.R.FulfillmentLines = append(o.R.FulfillmentLines, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &fulfillmentLineR{
-				StockidStock: o,
+				Stock: o,
 			}
 		} else {
-			rel.R.StockidStock = o
+			rel.R.Stock = o
 		}
 	}
 	return nil
 }
 
-// SetStockidFulfillmentLines removes all previously related items of the
+// SetFulfillmentLines removes all previously related items of the
 // stock replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.StockidStock's StockidFulfillmentLines accordingly.
-// Replaces o.R.StockidFulfillmentLines with related.
-// Sets related.R.StockidStock's StockidFulfillmentLines accordingly.
-func (o *Stock) SetStockidFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
-	query := "update \"fulfillment_lines\" set \"stockid\" = null where \"stockid\" = $1"
+// Sets o.R.Stock's FulfillmentLines accordingly.
+// Replaces o.R.FulfillmentLines with related.
+// Sets related.R.Stock's FulfillmentLines accordingly.
+func (o *Stock) SetFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
+	query := "update \"fulfillment_lines\" set \"stock_id\" = null where \"stock_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1307,35 +1233,35 @@ func (o *Stock) SetStockidFulfillmentLines(ctx context.Context, exec boil.Contex
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.StockidFulfillmentLines {
-			queries.SetScanner(&rel.Stockid, nil)
+		for _, rel := range o.R.FulfillmentLines {
+			queries.SetScanner(&rel.StockID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.StockidStock = nil
+			rel.R.Stock = nil
 		}
-		o.R.StockidFulfillmentLines = nil
+		o.R.FulfillmentLines = nil
 	}
 
-	return o.AddStockidFulfillmentLines(ctx, exec, insert, related...)
+	return o.AddFulfillmentLines(ctx, exec, insert, related...)
 }
 
-// RemoveStockidFulfillmentLines relationships from objects passed in.
-// Removes related items from R.StockidFulfillmentLines (uses pointer comparison, removal does not keep order)
-// Sets related.R.StockidStock.
-func (o *Stock) RemoveStockidFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, related ...*FulfillmentLine) error {
+// RemoveFulfillmentLines relationships from objects passed in.
+// Removes related items from R.FulfillmentLines (uses pointer comparison, removal does not keep order)
+// Sets related.R.Stock.
+func (o *Stock) RemoveFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, related ...*FulfillmentLine) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Stockid, nil)
+		queries.SetScanner(&rel.StockID, nil)
 		if rel.R != nil {
-			rel.R.StockidStock = nil
+			rel.R.Stock = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("stockid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("stock_id")); err != nil {
 			return err
 		}
 	}
@@ -1344,16 +1270,16 @@ func (o *Stock) RemoveStockidFulfillmentLines(ctx context.Context, exec boil.Con
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.StockidFulfillmentLines {
+		for i, ri := range o.R.FulfillmentLines {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.StockidFulfillmentLines)
+			ln := len(o.R.FulfillmentLines)
 			if ln > 1 && i < ln-1 {
-				o.R.StockidFulfillmentLines[i] = o.R.StockidFulfillmentLines[ln-1]
+				o.R.FulfillmentLines[i] = o.R.FulfillmentLines[ln-1]
 			}
-			o.R.StockidFulfillmentLines = o.R.StockidFulfillmentLines[:ln-1]
+			o.R.FulfillmentLines = o.R.FulfillmentLines[:ln-1]
 			break
 		}
 	}

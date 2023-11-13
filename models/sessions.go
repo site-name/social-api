@@ -26,14 +26,14 @@ import (
 type Session struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Token          null.String `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	Createat       null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Expiresat      null.Int64  `boil:"expiresat" json:"expiresat,omitempty" toml:"expiresat" yaml:"expiresat,omitempty"`
-	Lastactivityat null.Int64  `boil:"lastactivityat" json:"lastactivityat,omitempty" toml:"lastactivityat" yaml:"lastactivityat,omitempty"`
-	Userid         null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Devideid       null.String `boil:"devideid" json:"devideid,omitempty" toml:"devideid" yaml:"devideid,omitempty"`
+	CreateAt       null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ExpiresAt      null.Int64  `boil:"expires_at" json:"expires_at,omitempty" toml:"expires_at" yaml:"expires_at,omitempty"`
+	LastActivityAt null.Int64  `boil:"last_activity_at" json:"last_activity_at,omitempty" toml:"last_activity_at" yaml:"last_activity_at,omitempty"`
+	UserID         null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	DeviceID       null.String `boil:"device_id" json:"device_id,omitempty" toml:"device_id" yaml:"device_id,omitempty"`
 	Roles          null.String `boil:"roles" json:"roles,omitempty" toml:"roles" yaml:"roles,omitempty"`
-	Isoauth        null.Bool   `boil:"isoauth" json:"isoauth,omitempty" toml:"isoauth" yaml:"isoauth,omitempty"`
-	Expirednotify  null.Bool   `boil:"expirednotify" json:"expirednotify,omitempty" toml:"expirednotify" yaml:"expirednotify,omitempty"`
+	IsOauth        null.Bool   `boil:"is_oauth" json:"is_oauth,omitempty" toml:"is_oauth" yaml:"is_oauth,omitempty"`
+	ExpiredNotify  null.Bool   `boil:"expired_notify" json:"expired_notify,omitempty" toml:"expired_notify" yaml:"expired_notify,omitempty"`
 	Props          null.JSON   `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
 	Local          null.Bool   `boil:"local" json:"local,omitempty" toml:"local" yaml:"local,omitempty"`
 
@@ -44,27 +44,27 @@ type Session struct {
 var SessionColumns = struct {
 	ID             string
 	Token          string
-	Createat       string
-	Expiresat      string
-	Lastactivityat string
-	Userid         string
-	Devideid       string
+	CreateAt       string
+	ExpiresAt      string
+	LastActivityAt string
+	UserID         string
+	DeviceID       string
 	Roles          string
-	Isoauth        string
-	Expirednotify  string
+	IsOauth        string
+	ExpiredNotify  string
 	Props          string
 	Local          string
 }{
 	ID:             "id",
 	Token:          "token",
-	Createat:       "createat",
-	Expiresat:      "expiresat",
-	Lastactivityat: "lastactivityat",
-	Userid:         "userid",
-	Devideid:       "devideid",
+	CreateAt:       "create_at",
+	ExpiresAt:      "expires_at",
+	LastActivityAt: "last_activity_at",
+	UserID:         "user_id",
+	DeviceID:       "device_id",
 	Roles:          "roles",
-	Isoauth:        "isoauth",
-	Expirednotify:  "expirednotify",
+	IsOauth:        "is_oauth",
+	ExpiredNotify:  "expired_notify",
 	Props:          "props",
 	Local:          "local",
 }
@@ -72,27 +72,27 @@ var SessionColumns = struct {
 var SessionTableColumns = struct {
 	ID             string
 	Token          string
-	Createat       string
-	Expiresat      string
-	Lastactivityat string
-	Userid         string
-	Devideid       string
+	CreateAt       string
+	ExpiresAt      string
+	LastActivityAt string
+	UserID         string
+	DeviceID       string
 	Roles          string
-	Isoauth        string
-	Expirednotify  string
+	IsOauth        string
+	ExpiredNotify  string
 	Props          string
 	Local          string
 }{
 	ID:             "sessions.id",
 	Token:          "sessions.token",
-	Createat:       "sessions.createat",
-	Expiresat:      "sessions.expiresat",
-	Lastactivityat: "sessions.lastactivityat",
-	Userid:         "sessions.userid",
-	Devideid:       "sessions.devideid",
+	CreateAt:       "sessions.create_at",
+	ExpiresAt:      "sessions.expires_at",
+	LastActivityAt: "sessions.last_activity_at",
+	UserID:         "sessions.user_id",
+	DeviceID:       "sessions.device_id",
 	Roles:          "sessions.roles",
-	Isoauth:        "sessions.isoauth",
-	Expirednotify:  "sessions.expirednotify",
+	IsOauth:        "sessions.is_oauth",
+	ExpiredNotify:  "sessions.expired_notify",
 	Props:          "sessions.props",
 	Local:          "sessions.local",
 }
@@ -102,27 +102,27 @@ var SessionTableColumns = struct {
 var SessionWhere = struct {
 	ID             whereHelperstring
 	Token          whereHelpernull_String
-	Createat       whereHelpernull_Int64
-	Expiresat      whereHelpernull_Int64
-	Lastactivityat whereHelpernull_Int64
-	Userid         whereHelpernull_String
-	Devideid       whereHelpernull_String
+	CreateAt       whereHelpernull_Int64
+	ExpiresAt      whereHelpernull_Int64
+	LastActivityAt whereHelpernull_Int64
+	UserID         whereHelpernull_String
+	DeviceID       whereHelpernull_String
 	Roles          whereHelpernull_String
-	Isoauth        whereHelpernull_Bool
-	Expirednotify  whereHelpernull_Bool
+	IsOauth        whereHelpernull_Bool
+	ExpiredNotify  whereHelpernull_Bool
 	Props          whereHelpernull_JSON
 	Local          whereHelpernull_Bool
 }{
 	ID:             whereHelperstring{field: "\"sessions\".\"id\""},
 	Token:          whereHelpernull_String{field: "\"sessions\".\"token\""},
-	Createat:       whereHelpernull_Int64{field: "\"sessions\".\"createat\""},
-	Expiresat:      whereHelpernull_Int64{field: "\"sessions\".\"expiresat\""},
-	Lastactivityat: whereHelpernull_Int64{field: "\"sessions\".\"lastactivityat\""},
-	Userid:         whereHelpernull_String{field: "\"sessions\".\"userid\""},
-	Devideid:       whereHelpernull_String{field: "\"sessions\".\"devideid\""},
+	CreateAt:       whereHelpernull_Int64{field: "\"sessions\".\"create_at\""},
+	ExpiresAt:      whereHelpernull_Int64{field: "\"sessions\".\"expires_at\""},
+	LastActivityAt: whereHelpernull_Int64{field: "\"sessions\".\"last_activity_at\""},
+	UserID:         whereHelpernull_String{field: "\"sessions\".\"user_id\""},
+	DeviceID:       whereHelpernull_String{field: "\"sessions\".\"device_id\""},
 	Roles:          whereHelpernull_String{field: "\"sessions\".\"roles\""},
-	Isoauth:        whereHelpernull_Bool{field: "\"sessions\".\"isoauth\""},
-	Expirednotify:  whereHelpernull_Bool{field: "\"sessions\".\"expirednotify\""},
+	IsOauth:        whereHelpernull_Bool{field: "\"sessions\".\"is_oauth\""},
+	ExpiredNotify:  whereHelpernull_Bool{field: "\"sessions\".\"expired_notify\""},
 	Props:          whereHelpernull_JSON{field: "\"sessions\".\"props\""},
 	Local:          whereHelpernull_Bool{field: "\"sessions\".\"local\""},
 }
@@ -144,9 +144,9 @@ func (*sessionR) NewStruct() *sessionR {
 type sessionL struct{}
 
 var (
-	sessionAllColumns            = []string{"id", "token", "createat", "expiresat", "lastactivityat", "userid", "devideid", "roles", "isoauth", "expirednotify", "props", "local"}
+	sessionAllColumns            = []string{"id", "token", "create_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "props", "local"}
 	sessionColumnsWithoutDefault = []string{"id"}
-	sessionColumnsWithDefault    = []string{"token", "createat", "expiresat", "lastactivityat", "userid", "devideid", "roles", "isoauth", "expirednotify", "props", "local"}
+	sessionColumnsWithDefault    = []string{"token", "create_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "props", "local"}
 	sessionPrimaryKeyColumns     = []string{"id"}
 	sessionGeneratedColumns      = []string{}
 )

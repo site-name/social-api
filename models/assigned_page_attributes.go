@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // AssignedPageAttribute is an object representing the database table.
 type AssignedPageAttribute struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Pageid       null.String `boil:"pageid" json:"pageid,omitempty" toml:"pageid" yaml:"pageid,omitempty"`
-	Assignmentid null.String `boil:"assignmentid" json:"assignmentid,omitempty" toml:"assignmentid" yaml:"assignmentid,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	PageID       string `boil:"page_id" json:"page_id" toml:"page_id" yaml:"page_id"`
+	AssignmentID string `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
 
 	R *assignedPageAttributeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignedPageAttributeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,52 +33,52 @@ type AssignedPageAttribute struct {
 
 var AssignedPageAttributeColumns = struct {
 	ID           string
-	Pageid       string
-	Assignmentid string
+	PageID       string
+	AssignmentID string
 }{
 	ID:           "id",
-	Pageid:       "pageid",
-	Assignmentid: "assignmentid",
+	PageID:       "page_id",
+	AssignmentID: "assignment_id",
 }
 
 var AssignedPageAttributeTableColumns = struct {
 	ID           string
-	Pageid       string
-	Assignmentid string
+	PageID       string
+	AssignmentID string
 }{
 	ID:           "assigned_page_attributes.id",
-	Pageid:       "assigned_page_attributes.pageid",
-	Assignmentid: "assigned_page_attributes.assignmentid",
+	PageID:       "assigned_page_attributes.page_id",
+	AssignmentID: "assigned_page_attributes.assignment_id",
 }
 
 // Generated where
 
 var AssignedPageAttributeWhere = struct {
 	ID           whereHelperstring
-	Pageid       whereHelpernull_String
-	Assignmentid whereHelpernull_String
+	PageID       whereHelperstring
+	AssignmentID whereHelperstring
 }{
 	ID:           whereHelperstring{field: "\"assigned_page_attributes\".\"id\""},
-	Pageid:       whereHelpernull_String{field: "\"assigned_page_attributes\".\"pageid\""},
-	Assignmentid: whereHelpernull_String{field: "\"assigned_page_attributes\".\"assignmentid\""},
+	PageID:       whereHelperstring{field: "\"assigned_page_attributes\".\"page_id\""},
+	AssignmentID: whereHelperstring{field: "\"assigned_page_attributes\".\"assignment_id\""},
 }
 
 // AssignedPageAttributeRels is where relationship names are stored.
 var AssignedPageAttributeRels = struct {
-	AssignmentidAttributePage               string
-	PageidPage                              string
-	AssignmentidAssignedPageAttributeValues string
+	Assignment                            string
+	Page                                  string
+	AssignmentAssignedPageAttributeValues string
 }{
-	AssignmentidAttributePage:               "AssignmentidAttributePage",
-	PageidPage:                              "PageidPage",
-	AssignmentidAssignedPageAttributeValues: "AssignmentidAssignedPageAttributeValues",
+	Assignment:                            "Assignment",
+	Page:                                  "Page",
+	AssignmentAssignedPageAttributeValues: "AssignmentAssignedPageAttributeValues",
 }
 
 // assignedPageAttributeR is where relationships are stored.
 type assignedPageAttributeR struct {
-	AssignmentidAttributePage               *AttributePage                  `boil:"AssignmentidAttributePage" json:"AssignmentidAttributePage" toml:"AssignmentidAttributePage" yaml:"AssignmentidAttributePage"`
-	PageidPage                              *Page                           `boil:"PageidPage" json:"PageidPage" toml:"PageidPage" yaml:"PageidPage"`
-	AssignmentidAssignedPageAttributeValues AssignedPageAttributeValueSlice `boil:"AssignmentidAssignedPageAttributeValues" json:"AssignmentidAssignedPageAttributeValues" toml:"AssignmentidAssignedPageAttributeValues" yaml:"AssignmentidAssignedPageAttributeValues"`
+	Assignment                            *AttributePage                  `boil:"Assignment" json:"Assignment" toml:"Assignment" yaml:"Assignment"`
+	Page                                  *Page                           `boil:"Page" json:"Page" toml:"Page" yaml:"Page"`
+	AssignmentAssignedPageAttributeValues AssignedPageAttributeValueSlice `boil:"AssignmentAssignedPageAttributeValues" json:"AssignmentAssignedPageAttributeValues" toml:"AssignmentAssignedPageAttributeValues" yaml:"AssignmentAssignedPageAttributeValues"`
 }
 
 // NewStruct creates a new relationship struct
@@ -87,34 +86,34 @@ func (*assignedPageAttributeR) NewStruct() *assignedPageAttributeR {
 	return &assignedPageAttributeR{}
 }
 
-func (r *assignedPageAttributeR) GetAssignmentidAttributePage() *AttributePage {
+func (r *assignedPageAttributeR) GetAssignment() *AttributePage {
 	if r == nil {
 		return nil
 	}
-	return r.AssignmentidAttributePage
+	return r.Assignment
 }
 
-func (r *assignedPageAttributeR) GetPageidPage() *Page {
+func (r *assignedPageAttributeR) GetPage() *Page {
 	if r == nil {
 		return nil
 	}
-	return r.PageidPage
+	return r.Page
 }
 
-func (r *assignedPageAttributeR) GetAssignmentidAssignedPageAttributeValues() AssignedPageAttributeValueSlice {
+func (r *assignedPageAttributeR) GetAssignmentAssignedPageAttributeValues() AssignedPageAttributeValueSlice {
 	if r == nil {
 		return nil
 	}
-	return r.AssignmentidAssignedPageAttributeValues
+	return r.AssignmentAssignedPageAttributeValues
 }
 
 // assignedPageAttributeL is where Load methods for each relationship are stored.
 type assignedPageAttributeL struct{}
 
 var (
-	assignedPageAttributeAllColumns            = []string{"id", "pageid", "assignmentid"}
-	assignedPageAttributeColumnsWithoutDefault = []string{"id"}
-	assignedPageAttributeColumnsWithDefault    = []string{"pageid", "assignmentid"}
+	assignedPageAttributeAllColumns            = []string{"id", "page_id", "assignment_id"}
+	assignedPageAttributeColumnsWithoutDefault = []string{"id", "page_id", "assignment_id"}
+	assignedPageAttributeColumnsWithDefault    = []string{}
 	assignedPageAttributePrimaryKeyColumns     = []string{"id"}
 	assignedPageAttributeGeneratedColumns      = []string{}
 )
@@ -397,10 +396,10 @@ func (q assignedPageAttributeQuery) Exists(ctx context.Context, exec boil.Contex
 	return count > 0, nil
 }
 
-// AssignmentidAttributePage pointed to by the foreign key.
-func (o *AssignedPageAttribute) AssignmentidAttributePage(mods ...qm.QueryMod) attributePageQuery {
+// Assignment pointed to by the foreign key.
+func (o *AssignedPageAttribute) Assignment(mods ...qm.QueryMod) attributePageQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Assignmentid),
+		qm.Where("\"id\" = ?", o.AssignmentID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -408,10 +407,10 @@ func (o *AssignedPageAttribute) AssignmentidAttributePage(mods ...qm.QueryMod) a
 	return AttributePages(queryMods...)
 }
 
-// PageidPage pointed to by the foreign key.
-func (o *AssignedPageAttribute) PageidPage(mods ...qm.QueryMod) pageQuery {
+// Page pointed to by the foreign key.
+func (o *AssignedPageAttribute) Page(mods ...qm.QueryMod) pageQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Pageid),
+		qm.Where("\"id\" = ?", o.PageID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -419,23 +418,23 @@ func (o *AssignedPageAttribute) PageidPage(mods ...qm.QueryMod) pageQuery {
 	return Pages(queryMods...)
 }
 
-// AssignmentidAssignedPageAttributeValues retrieves all the assigned_page_attribute_value's AssignedPageAttributeValues with an executor via assignmentid column.
-func (o *AssignedPageAttribute) AssignmentidAssignedPageAttributeValues(mods ...qm.QueryMod) assignedPageAttributeValueQuery {
+// AssignmentAssignedPageAttributeValues retrieves all the assigned_page_attribute_value's AssignedPageAttributeValues with an executor via assignment_id column.
+func (o *AssignedPageAttribute) AssignmentAssignedPageAttributeValues(mods ...qm.QueryMod) assignedPageAttributeValueQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"assigned_page_attribute_values\".\"assignmentid\"=?", o.ID),
+		qm.Where("\"assigned_page_attribute_values\".\"assignment_id\"=?", o.ID),
 	)
 
 	return AssignedPageAttributeValues(queryMods...)
 }
 
-// LoadAssignmentidAttributePage allows an eager lookup of values, cached into the
+// LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedPageAttributeL) LoadAssignmentidAttributePage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedPageAttribute interface{}, mods queries.Applicator) error {
+func (assignedPageAttributeL) LoadAssignment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedPageAttribute interface{}, mods queries.Applicator) error {
 	var slice []*AssignedPageAttribute
 	var object *AssignedPageAttribute
 
@@ -466,9 +465,7 @@ func (assignedPageAttributeL) LoadAssignmentidAttributePage(ctx context.Context,
 		if object.R == nil {
 			object.R = &assignedPageAttributeR{}
 		}
-		if !queries.IsNil(object.Assignmentid) {
-			args = append(args, object.Assignmentid)
-		}
+		args = append(args, object.AssignmentID)
 
 	} else {
 	Outer:
@@ -478,14 +475,12 @@ func (assignedPageAttributeL) LoadAssignmentidAttributePage(ctx context.Context,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Assignmentid) {
+				if a == obj.AssignmentID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Assignmentid) {
-				args = append(args, obj.Assignmentid)
-			}
+			args = append(args, obj.AssignmentID)
 
 		}
 	}
@@ -533,22 +528,22 @@ func (assignedPageAttributeL) LoadAssignmentidAttributePage(ctx context.Context,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.AssignmentidAttributePage = foreign
+		object.R.Assignment = foreign
 		if foreign.R == nil {
 			foreign.R = &attributePageR{}
 		}
-		foreign.R.AssignmentidAssignedPageAttributes = append(foreign.R.AssignmentidAssignedPageAttributes, object)
+		foreign.R.AssignmentAssignedPageAttributes = append(foreign.R.AssignmentAssignedPageAttributes, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Assignmentid, foreign.ID) {
-				local.R.AssignmentidAttributePage = foreign
+			if local.AssignmentID == foreign.ID {
+				local.R.Assignment = foreign
 				if foreign.R == nil {
 					foreign.R = &attributePageR{}
 				}
-				foreign.R.AssignmentidAssignedPageAttributes = append(foreign.R.AssignmentidAssignedPageAttributes, local)
+				foreign.R.AssignmentAssignedPageAttributes = append(foreign.R.AssignmentAssignedPageAttributes, local)
 				break
 			}
 		}
@@ -557,9 +552,9 @@ func (assignedPageAttributeL) LoadAssignmentidAttributePage(ctx context.Context,
 	return nil
 }
 
-// LoadPageidPage allows an eager lookup of values, cached into the
+// LoadPage allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedPageAttributeL) LoadPageidPage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedPageAttribute interface{}, mods queries.Applicator) error {
+func (assignedPageAttributeL) LoadPage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedPageAttribute interface{}, mods queries.Applicator) error {
 	var slice []*AssignedPageAttribute
 	var object *AssignedPageAttribute
 
@@ -590,9 +585,7 @@ func (assignedPageAttributeL) LoadPageidPage(ctx context.Context, e boil.Context
 		if object.R == nil {
 			object.R = &assignedPageAttributeR{}
 		}
-		if !queries.IsNil(object.Pageid) {
-			args = append(args, object.Pageid)
-		}
+		args = append(args, object.PageID)
 
 	} else {
 	Outer:
@@ -602,14 +595,12 @@ func (assignedPageAttributeL) LoadPageidPage(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Pageid) {
+				if a == obj.PageID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Pageid) {
-				args = append(args, obj.Pageid)
-			}
+			args = append(args, obj.PageID)
 
 		}
 	}
@@ -657,22 +648,22 @@ func (assignedPageAttributeL) LoadPageidPage(ctx context.Context, e boil.Context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.PageidPage = foreign
+		object.R.Page = foreign
 		if foreign.R == nil {
 			foreign.R = &pageR{}
 		}
-		foreign.R.PageidAssignedPageAttributes = append(foreign.R.PageidAssignedPageAttributes, object)
+		foreign.R.AssignedPageAttributes = append(foreign.R.AssignedPageAttributes, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Pageid, foreign.ID) {
-				local.R.PageidPage = foreign
+			if local.PageID == foreign.ID {
+				local.R.Page = foreign
 				if foreign.R == nil {
 					foreign.R = &pageR{}
 				}
-				foreign.R.PageidAssignedPageAttributes = append(foreign.R.PageidAssignedPageAttributes, local)
+				foreign.R.AssignedPageAttributes = append(foreign.R.AssignedPageAttributes, local)
 				break
 			}
 		}
@@ -681,9 +672,9 @@ func (assignedPageAttributeL) LoadPageidPage(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadAssignmentidAssignedPageAttributeValues allows an eager lookup of values, cached into the
+// LoadAssignmentAssignedPageAttributeValues allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (assignedPageAttributeL) LoadAssignmentidAssignedPageAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedPageAttribute interface{}, mods queries.Applicator) error {
+func (assignedPageAttributeL) LoadAssignmentAssignedPageAttributeValues(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedPageAttribute interface{}, mods queries.Applicator) error {
 	var slice []*AssignedPageAttribute
 	var object *AssignedPageAttribute
 
@@ -723,7 +714,7 @@ func (assignedPageAttributeL) LoadAssignmentidAssignedPageAttributeValues(ctx co
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -738,7 +729,7 @@ func (assignedPageAttributeL) LoadAssignmentidAssignedPageAttributeValues(ctx co
 
 	query := NewQuery(
 		qm.From(`assigned_page_attribute_values`),
-		qm.WhereIn(`assigned_page_attribute_values.assignmentid in ?`, args...),
+		qm.WhereIn(`assigned_page_attribute_values.assignment_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -769,24 +760,24 @@ func (assignedPageAttributeL) LoadAssignmentidAssignedPageAttributeValues(ctx co
 		}
 	}
 	if singular {
-		object.R.AssignmentidAssignedPageAttributeValues = resultSlice
+		object.R.AssignmentAssignedPageAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &assignedPageAttributeValueR{}
 			}
-			foreign.R.AssignmentidAssignedPageAttribute = object
+			foreign.R.Assignment = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Assignmentid) {
-				local.R.AssignmentidAssignedPageAttributeValues = append(local.R.AssignmentidAssignedPageAttributeValues, foreign)
+			if local.ID == foreign.AssignmentID {
+				local.R.AssignmentAssignedPageAttributeValues = append(local.R.AssignmentAssignedPageAttributeValues, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedPageAttributeValueR{}
 				}
-				foreign.R.AssignmentidAssignedPageAttribute = local
+				foreign.R.Assignment = local
 				break
 			}
 		}
@@ -795,10 +786,10 @@ func (assignedPageAttributeL) LoadAssignmentidAssignedPageAttributeValues(ctx co
 	return nil
 }
 
-// SetAssignmentidAttributePage of the assignedPageAttribute to the related item.
-// Sets o.R.AssignmentidAttributePage to related.
-// Adds o to related.R.AssignmentidAssignedPageAttributes.
-func (o *AssignedPageAttribute) SetAssignmentidAttributePage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributePage) error {
+// SetAssignment of the assignedPageAttribute to the related item.
+// Sets o.R.Assignment to related.
+// Adds o to related.R.AssignmentAssignedPageAttributes.
+func (o *AssignedPageAttribute) SetAssignment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributePage) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -808,7 +799,7 @@ func (o *AssignedPageAttribute) SetAssignmentidAttributePage(ctx context.Context
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"assigned_page_attributes\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"assignmentid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedPageAttributePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -822,63 +813,30 @@ func (o *AssignedPageAttribute) SetAssignmentidAttributePage(ctx context.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Assignmentid, related.ID)
+	o.AssignmentID = related.ID
 	if o.R == nil {
 		o.R = &assignedPageAttributeR{
-			AssignmentidAttributePage: related,
+			Assignment: related,
 		}
 	} else {
-		o.R.AssignmentidAttributePage = related
+		o.R.Assignment = related
 	}
 
 	if related.R == nil {
 		related.R = &attributePageR{
-			AssignmentidAssignedPageAttributes: AssignedPageAttributeSlice{o},
+			AssignmentAssignedPageAttributes: AssignedPageAttributeSlice{o},
 		}
 	} else {
-		related.R.AssignmentidAssignedPageAttributes = append(related.R.AssignmentidAssignedPageAttributes, o)
+		related.R.AssignmentAssignedPageAttributes = append(related.R.AssignmentAssignedPageAttributes, o)
 	}
 
 	return nil
 }
 
-// RemoveAssignmentidAttributePage relationship.
-// Sets o.R.AssignmentidAttributePage to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AssignedPageAttribute) RemoveAssignmentidAttributePage(ctx context.Context, exec boil.ContextExecutor, related *AttributePage) error {
-	var err error
-
-	queries.SetScanner(&o.Assignmentid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("assignmentid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.AssignmentidAttributePage = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AssignmentidAssignedPageAttributes {
-		if queries.Equal(o.Assignmentid, ri.Assignmentid) {
-			continue
-		}
-
-		ln := len(related.R.AssignmentidAssignedPageAttributes)
-		if ln > 1 && i < ln-1 {
-			related.R.AssignmentidAssignedPageAttributes[i] = related.R.AssignmentidAssignedPageAttributes[ln-1]
-		}
-		related.R.AssignmentidAssignedPageAttributes = related.R.AssignmentidAssignedPageAttributes[:ln-1]
-		break
-	}
-	return nil
-}
-
-// SetPageidPage of the assignedPageAttribute to the related item.
-// Sets o.R.PageidPage to related.
-// Adds o to related.R.PageidAssignedPageAttributes.
-func (o *AssignedPageAttribute) SetPageidPage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Page) error {
+// SetPage of the assignedPageAttribute to the related item.
+// Sets o.R.Page to related.
+// Adds o to related.R.AssignedPageAttributes.
+func (o *AssignedPageAttribute) SetPage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Page) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -888,7 +846,7 @@ func (o *AssignedPageAttribute) SetPageidPage(ctx context.Context, exec boil.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"assigned_page_attributes\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"pageid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedPageAttributePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -902,75 +860,42 @@ func (o *AssignedPageAttribute) SetPageidPage(ctx context.Context, exec boil.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Pageid, related.ID)
+	o.PageID = related.ID
 	if o.R == nil {
 		o.R = &assignedPageAttributeR{
-			PageidPage: related,
+			Page: related,
 		}
 	} else {
-		o.R.PageidPage = related
+		o.R.Page = related
 	}
 
 	if related.R == nil {
 		related.R = &pageR{
-			PageidAssignedPageAttributes: AssignedPageAttributeSlice{o},
+			AssignedPageAttributes: AssignedPageAttributeSlice{o},
 		}
 	} else {
-		related.R.PageidAssignedPageAttributes = append(related.R.PageidAssignedPageAttributes, o)
+		related.R.AssignedPageAttributes = append(related.R.AssignedPageAttributes, o)
 	}
 
 	return nil
 }
 
-// RemovePageidPage relationship.
-// Sets o.R.PageidPage to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AssignedPageAttribute) RemovePageidPage(ctx context.Context, exec boil.ContextExecutor, related *Page) error {
-	var err error
-
-	queries.SetScanner(&o.Pageid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("pageid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.PageidPage = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.PageidAssignedPageAttributes {
-		if queries.Equal(o.Pageid, ri.Pageid) {
-			continue
-		}
-
-		ln := len(related.R.PageidAssignedPageAttributes)
-		if ln > 1 && i < ln-1 {
-			related.R.PageidAssignedPageAttributes[i] = related.R.PageidAssignedPageAttributes[ln-1]
-		}
-		related.R.PageidAssignedPageAttributes = related.R.PageidAssignedPageAttributes[:ln-1]
-		break
-	}
-	return nil
-}
-
-// AddAssignmentidAssignedPageAttributeValues adds the given related objects to the existing relationships
+// AddAssignmentAssignedPageAttributeValues adds the given related objects to the existing relationships
 // of the assigned_page_attribute, optionally inserting them as new records.
-// Appends related to o.R.AssignmentidAssignedPageAttributeValues.
-// Sets related.R.AssignmentidAssignedPageAttribute appropriately.
-func (o *AssignedPageAttribute) AddAssignmentidAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttributeValue) error {
+// Appends related to o.R.AssignmentAssignedPageAttributeValues.
+// Sets related.R.Assignment appropriately.
+func (o *AssignedPageAttribute) AddAssignmentAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttributeValue) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Assignmentid, o.ID)
+			rel.AssignmentID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"assigned_page_attribute_values\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"assignmentid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignedPageAttributeValuePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -984,101 +909,27 @@ func (o *AssignedPageAttribute) AddAssignmentidAssignedPageAttributeValues(ctx c
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Assignmentid, o.ID)
+			rel.AssignmentID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &assignedPageAttributeR{
-			AssignmentidAssignedPageAttributeValues: related,
+			AssignmentAssignedPageAttributeValues: related,
 		}
 	} else {
-		o.R.AssignmentidAssignedPageAttributeValues = append(o.R.AssignmentidAssignedPageAttributeValues, related...)
+		o.R.AssignmentAssignedPageAttributeValues = append(o.R.AssignmentAssignedPageAttributeValues, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignedPageAttributeValueR{
-				AssignmentidAssignedPageAttribute: o,
+				Assignment: o,
 			}
 		} else {
-			rel.R.AssignmentidAssignedPageAttribute = o
+			rel.R.Assignment = o
 		}
 	}
-	return nil
-}
-
-// SetAssignmentidAssignedPageAttributeValues removes all previously related items of the
-// assigned_page_attribute replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.AssignmentidAssignedPageAttribute's AssignmentidAssignedPageAttributeValues accordingly.
-// Replaces o.R.AssignmentidAssignedPageAttributeValues with related.
-// Sets related.R.AssignmentidAssignedPageAttribute's AssignmentidAssignedPageAttributeValues accordingly.
-func (o *AssignedPageAttribute) SetAssignmentidAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedPageAttributeValue) error {
-	query := "update \"assigned_page_attribute_values\" set \"assignmentid\" = null where \"assignmentid\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AssignmentidAssignedPageAttributeValues {
-			queries.SetScanner(&rel.Assignmentid, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.AssignmentidAssignedPageAttribute = nil
-		}
-		o.R.AssignmentidAssignedPageAttributeValues = nil
-	}
-
-	return o.AddAssignmentidAssignedPageAttributeValues(ctx, exec, insert, related...)
-}
-
-// RemoveAssignmentidAssignedPageAttributeValues relationships from objects passed in.
-// Removes related items from R.AssignmentidAssignedPageAttributeValues (uses pointer comparison, removal does not keep order)
-// Sets related.R.AssignmentidAssignedPageAttribute.
-func (o *AssignedPageAttribute) RemoveAssignmentidAssignedPageAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedPageAttributeValue) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.Assignmentid, nil)
-		if rel.R != nil {
-			rel.R.AssignmentidAssignedPageAttribute = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("assignmentid")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AssignmentidAssignedPageAttributeValues {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AssignmentidAssignedPageAttributeValues)
-			if ln > 1 && i < ln-1 {
-				o.R.AssignmentidAssignedPageAttributeValues[i] = o.R.AssignmentidAssignedPageAttributeValues[ln-1]
-			}
-			o.R.AssignmentidAssignedPageAttributeValues = o.R.AssignmentidAssignedPageAttributeValues[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 

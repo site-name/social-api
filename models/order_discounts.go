@@ -25,14 +25,14 @@ import (
 // OrderDiscount is an object representing the database table.
 type OrderDiscount struct {
 	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Orderid        null.String  `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
+	OrderID        null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	Type           null.String  `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Valuetype      null.String  `boil:"valuetype" json:"valuetype,omitempty" toml:"valuetype" yaml:"valuetype,omitempty"`
+	ValueType      null.String  `boil:"value_type" json:"value_type,omitempty" toml:"value_type" yaml:"value_type,omitempty"`
 	Value          null.Float64 `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
-	Amountvalue    null.Float64 `boil:"amountvalue" json:"amountvalue,omitempty" toml:"amountvalue" yaml:"amountvalue,omitempty"`
+	AmountValue    null.Float64 `boil:"amount_value" json:"amount_value,omitempty" toml:"amount_value" yaml:"amount_value,omitempty"`
 	Currency       null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
 	Name           null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Translatedname null.String  `boil:"translatedname" json:"translatedname,omitempty" toml:"translatedname" yaml:"translatedname,omitempty"`
+	TranslatedName null.String  `boil:"translated_name" json:"translated_name,omitempty" toml:"translated_name" yaml:"translated_name,omitempty"`
 	Reason         null.String  `boil:"reason" json:"reason,omitempty" toml:"reason" yaml:"reason,omitempty"`
 
 	R *orderDiscountR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,49 +41,49 @@ type OrderDiscount struct {
 
 var OrderDiscountColumns = struct {
 	ID             string
-	Orderid        string
+	OrderID        string
 	Type           string
-	Valuetype      string
+	ValueType      string
 	Value          string
-	Amountvalue    string
+	AmountValue    string
 	Currency       string
 	Name           string
-	Translatedname string
+	TranslatedName string
 	Reason         string
 }{
 	ID:             "id",
-	Orderid:        "orderid",
+	OrderID:        "order_id",
 	Type:           "type",
-	Valuetype:      "valuetype",
+	ValueType:      "value_type",
 	Value:          "value",
-	Amountvalue:    "amountvalue",
+	AmountValue:    "amount_value",
 	Currency:       "currency",
 	Name:           "name",
-	Translatedname: "translatedname",
+	TranslatedName: "translated_name",
 	Reason:         "reason",
 }
 
 var OrderDiscountTableColumns = struct {
 	ID             string
-	Orderid        string
+	OrderID        string
 	Type           string
-	Valuetype      string
+	ValueType      string
 	Value          string
-	Amountvalue    string
+	AmountValue    string
 	Currency       string
 	Name           string
-	Translatedname string
+	TranslatedName string
 	Reason         string
 }{
 	ID:             "order_discounts.id",
-	Orderid:        "order_discounts.orderid",
+	OrderID:        "order_discounts.order_id",
 	Type:           "order_discounts.type",
-	Valuetype:      "order_discounts.valuetype",
+	ValueType:      "order_discounts.value_type",
 	Value:          "order_discounts.value",
-	Amountvalue:    "order_discounts.amountvalue",
+	AmountValue:    "order_discounts.amount_value",
 	Currency:       "order_discounts.currency",
 	Name:           "order_discounts.name",
-	Translatedname: "order_discounts.translatedname",
+	TranslatedName: "order_discounts.translated_name",
 	Reason:         "order_discounts.reason",
 }
 
@@ -91,38 +91,38 @@ var OrderDiscountTableColumns = struct {
 
 var OrderDiscountWhere = struct {
 	ID             whereHelperstring
-	Orderid        whereHelpernull_String
+	OrderID        whereHelpernull_String
 	Type           whereHelpernull_String
-	Valuetype      whereHelpernull_String
+	ValueType      whereHelpernull_String
 	Value          whereHelpernull_Float64
-	Amountvalue    whereHelpernull_Float64
+	AmountValue    whereHelpernull_Float64
 	Currency       whereHelpernull_String
 	Name           whereHelpernull_String
-	Translatedname whereHelpernull_String
+	TranslatedName whereHelpernull_String
 	Reason         whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"order_discounts\".\"id\""},
-	Orderid:        whereHelpernull_String{field: "\"order_discounts\".\"orderid\""},
+	OrderID:        whereHelpernull_String{field: "\"order_discounts\".\"order_id\""},
 	Type:           whereHelpernull_String{field: "\"order_discounts\".\"type\""},
-	Valuetype:      whereHelpernull_String{field: "\"order_discounts\".\"valuetype\""},
+	ValueType:      whereHelpernull_String{field: "\"order_discounts\".\"value_type\""},
 	Value:          whereHelpernull_Float64{field: "\"order_discounts\".\"value\""},
-	Amountvalue:    whereHelpernull_Float64{field: "\"order_discounts\".\"amountvalue\""},
+	AmountValue:    whereHelpernull_Float64{field: "\"order_discounts\".\"amount_value\""},
 	Currency:       whereHelpernull_String{field: "\"order_discounts\".\"currency\""},
 	Name:           whereHelpernull_String{field: "\"order_discounts\".\"name\""},
-	Translatedname: whereHelpernull_String{field: "\"order_discounts\".\"translatedname\""},
+	TranslatedName: whereHelpernull_String{field: "\"order_discounts\".\"translated_name\""},
 	Reason:         whereHelpernull_String{field: "\"order_discounts\".\"reason\""},
 }
 
 // OrderDiscountRels is where relationship names are stored.
 var OrderDiscountRels = struct {
-	OrderidOrder string
+	Order string
 }{
-	OrderidOrder: "OrderidOrder",
+	Order: "Order",
 }
 
 // orderDiscountR is where relationships are stored.
 type orderDiscountR struct {
-	OrderidOrder *Order `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
+	Order *Order `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
 }
 
 // NewStruct creates a new relationship struct
@@ -130,20 +130,20 @@ func (*orderDiscountR) NewStruct() *orderDiscountR {
 	return &orderDiscountR{}
 }
 
-func (r *orderDiscountR) GetOrderidOrder() *Order {
+func (r *orderDiscountR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
 // orderDiscountL is where Load methods for each relationship are stored.
 type orderDiscountL struct{}
 
 var (
-	orderDiscountAllColumns            = []string{"id", "orderid", "type", "valuetype", "value", "amountvalue", "currency", "name", "translatedname", "reason"}
+	orderDiscountAllColumns            = []string{"id", "order_id", "type", "value_type", "value", "amount_value", "currency", "name", "translated_name", "reason"}
 	orderDiscountColumnsWithoutDefault = []string{"id"}
-	orderDiscountColumnsWithDefault    = []string{"orderid", "type", "valuetype", "value", "amountvalue", "currency", "name", "translatedname", "reason"}
+	orderDiscountColumnsWithDefault    = []string{"order_id", "type", "value_type", "value", "amount_value", "currency", "name", "translated_name", "reason"}
 	orderDiscountPrimaryKeyColumns     = []string{"id"}
 	orderDiscountGeneratedColumns      = []string{}
 )
@@ -426,10 +426,10 @@ func (q orderDiscountQuery) Exists(ctx context.Context, exec boil.ContextExecuto
 	return count > 0, nil
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *OrderDiscount) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *OrderDiscount) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -437,9 +437,9 @@ func (o *OrderDiscount) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderDiscountL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderDiscount interface{}, mods queries.Applicator) error {
+func (orderDiscountL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderDiscount interface{}, mods queries.Applicator) error {
 	var slice []*OrderDiscount
 	var object *OrderDiscount
 
@@ -470,8 +470,8 @@ func (orderDiscountL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &orderDiscountR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -482,13 +482,13 @@ func (orderDiscountL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -537,22 +537,22 @@ func (orderDiscountL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidOrderDiscounts = append(foreign.R.OrderidOrderDiscounts, object)
+		foreign.R.OrderDiscounts = append(foreign.R.OrderDiscounts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidOrderDiscounts = append(foreign.R.OrderidOrderDiscounts, local)
+				foreign.R.OrderDiscounts = append(foreign.R.OrderDiscounts, local)
 				break
 			}
 		}
@@ -561,10 +561,10 @@ func (orderDiscountL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// SetOrderidOrder of the orderDiscount to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidOrderDiscounts.
-func (o *OrderDiscount) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the orderDiscount to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.OrderDiscounts.
+func (o *OrderDiscount) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -574,7 +574,7 @@ func (o *OrderDiscount) SetOrderidOrder(ctx context.Context, exec boil.ContextEx
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_discounts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderDiscountPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -588,54 +588,54 @@ func (o *OrderDiscount) SetOrderidOrder(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &orderDiscountR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidOrderDiscounts: OrderDiscountSlice{o},
+			OrderDiscounts: OrderDiscountSlice{o},
 		}
 	} else {
-		related.R.OrderidOrderDiscounts = append(related.R.OrderidOrderDiscounts, o)
+		related.R.OrderDiscounts = append(related.R.OrderDiscounts, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderDiscount) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *OrderDiscount) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidOrderDiscounts {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.OrderDiscounts {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidOrderDiscounts)
+		ln := len(related.R.OrderDiscounts)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidOrderDiscounts[i] = related.R.OrderidOrderDiscounts[ln-1]
+			related.R.OrderDiscounts[i] = related.R.OrderDiscounts[ln-1]
 		}
-		related.R.OrderidOrderDiscounts = related.R.OrderidOrderDiscounts[:ln-1]
+		related.R.OrderDiscounts = related.R.OrderDiscounts[:ln-1]
 		break
 	}
 	return nil

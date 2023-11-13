@@ -24,51 +24,51 @@ import (
 
 // Status is an object representing the database table.
 type Status struct {
-	Userid         string      `boil:"userid" json:"userid" toml:"userid" yaml:"userid"`
+	UserID         string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Status         null.String `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
 	Manual         null.Bool   `boil:"manual" json:"manual,omitempty" toml:"manual" yaml:"manual,omitempty"`
-	Lastactivityat null.Int64  `boil:"lastactivityat" json:"lastactivityat,omitempty" toml:"lastactivityat" yaml:"lastactivityat,omitempty"`
+	LastActivityAt null.Int64  `boil:"last_activity_at" json:"last_activity_at,omitempty" toml:"last_activity_at" yaml:"last_activity_at,omitempty"`
 
 	R *statusR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L statusL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var StatusColumns = struct {
-	Userid         string
+	UserID         string
 	Status         string
 	Manual         string
-	Lastactivityat string
+	LastActivityAt string
 }{
-	Userid:         "userid",
+	UserID:         "user_id",
 	Status:         "status",
 	Manual:         "manual",
-	Lastactivityat: "lastactivityat",
+	LastActivityAt: "last_activity_at",
 }
 
 var StatusTableColumns = struct {
-	Userid         string
+	UserID         string
 	Status         string
 	Manual         string
-	Lastactivityat string
+	LastActivityAt string
 }{
-	Userid:         "status.userid",
+	UserID:         "status.user_id",
 	Status:         "status.status",
 	Manual:         "status.manual",
-	Lastactivityat: "status.lastactivityat",
+	LastActivityAt: "status.last_activity_at",
 }
 
 // Generated where
 
 var StatusWhere = struct {
-	Userid         whereHelperstring
+	UserID         whereHelperstring
 	Status         whereHelpernull_String
 	Manual         whereHelpernull_Bool
-	Lastactivityat whereHelpernull_Int64
+	LastActivityAt whereHelpernull_Int64
 }{
-	Userid:         whereHelperstring{field: "\"status\".\"userid\""},
+	UserID:         whereHelperstring{field: "\"status\".\"user_id\""},
 	Status:         whereHelpernull_String{field: "\"status\".\"status\""},
 	Manual:         whereHelpernull_Bool{field: "\"status\".\"manual\""},
-	Lastactivityat: whereHelpernull_Int64{field: "\"status\".\"lastactivityat\""},
+	LastActivityAt: whereHelpernull_Int64{field: "\"status\".\"last_activity_at\""},
 }
 
 // StatusRels is where relationship names are stored.
@@ -88,10 +88,10 @@ func (*statusR) NewStruct() *statusR {
 type statusL struct{}
 
 var (
-	statusAllColumns            = []string{"userid", "status", "manual", "lastactivityat"}
-	statusColumnsWithoutDefault = []string{"userid"}
-	statusColumnsWithDefault    = []string{"status", "manual", "lastactivityat"}
-	statusPrimaryKeyColumns     = []string{"userid"}
+	statusAllColumns            = []string{"user_id", "status", "manual", "last_activity_at"}
+	statusColumnsWithoutDefault = []string{"user_id"}
+	statusColumnsWithDefault    = []string{"status", "manual", "last_activity_at"}
+	statusPrimaryKeyColumns     = []string{"user_id"}
 	statusGeneratedColumns      = []string{}
 )
 
@@ -386,7 +386,7 @@ func Statuses(mods ...qm.QueryMod) statusQuery {
 
 // FindStatus retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindStatus(ctx context.Context, exec boil.ContextExecutor, userid string, selectCols ...string) (*Status, error) {
+func FindStatus(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Status, error) {
 	statusObj := &Status{}
 
 	sel := "*"
@@ -394,10 +394,10 @@ func FindStatus(ctx context.Context, exec boil.ContextExecutor, userid string, s
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"status\" where \"userid\"=$1", sel,
+		"select %s from \"status\" where \"user_id\"=$1", sel,
 	)
 
-	q := queries.Raw(query, userid)
+	q := queries.Raw(query, userID)
 
 	err := q.Bind(ctx, exec, statusObj)
 	if err != nil {
@@ -749,7 +749,7 @@ func (o *Status) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), statusPrimaryKeyMapping)
-	sql := "DELETE FROM \"status\" WHERE \"userid\"=$1"
+	sql := "DELETE FROM \"status\" WHERE \"user_id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -846,7 +846,7 @@ func (o StatusSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Status) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindStatus(ctx, exec, o.Userid)
+	ret, err := FindStatus(ctx, exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -885,16 +885,16 @@ func (o *StatusSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // StatusExists checks if the Status row exists.
-func StatusExists(ctx context.Context, exec boil.ContextExecutor, userid string) (bool, error) {
+func StatusExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"status\" where \"userid\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"status\" where \"user_id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, userid)
+		fmt.Fprintln(writer, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, userid)
+	row := exec.QueryRowContext(ctx, sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -906,5 +906,5 @@ func StatusExists(ctx context.Context, exec boil.ContextExecutor, userid string)
 
 // Exists checks if the Status row exists.
 func (o *Status) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return StatusExists(ctx, exec, o.Userid)
+	return StatusExists(ctx, exec, o.UserID)
 }

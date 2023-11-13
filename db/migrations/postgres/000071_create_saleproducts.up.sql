@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS sale_products (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  saleid character varying(36),
-  productid character varying(36),
-  createat bigint
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  sale_id uuid,
+  product_id uuid,
+  created_at bigint
 );
 
 ALTER TABLE ONLY sale_products
-    ADD CONSTRAINT sale_products_saleid_productid_key UNIQUE (saleid, productid);
+    ADD CONSTRAINT sale_products_sale_id_product_id_key UNIQUE (sale_id, product_id);

@@ -494,7 +494,7 @@ func testCheckoutLinesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testCheckoutLineToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
+func testCheckoutLineToOneCheckoutUsingCheckout(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testCheckoutLineToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Checkoutid, foreign.Token)
+	queries.Assign(&local.CheckoutID, foreign.Token)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CheckoutidCheckout().One(ctx, tx)
+	check, err := local.Checkout().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testCheckoutLineToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
 	})
 
 	slice := CheckoutLineSlice{&local}
-	if err = local.L.LoadCheckoutidCheckout(ctx, tx, false, (*[]*CheckoutLine)(&slice), nil); err != nil {
+	if err = local.L.LoadCheckout(ctx, tx, false, (*[]*CheckoutLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CheckoutidCheckout == nil {
+	if local.R.Checkout == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CheckoutidCheckout = nil
-	if err = local.L.LoadCheckoutidCheckout(ctx, tx, true, &local, nil); err != nil {
+	local.R.Checkout = nil
+	if err = local.L.LoadCheckout(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CheckoutidCheckout == nil {
+	if local.R.Checkout == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testCheckoutLineToOneCheckoutUsingCheckoutidCheckout(t *testing.T) {
 	}
 }
 
-func testCheckoutLineToOneProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testCheckoutLineToOneProductVariantUsingVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testCheckoutLineToOneProductVariantUsingVariantidProductVariant(t *testing.
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Variantid, foreign.ID)
+	queries.Assign(&local.VariantID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.VariantidProductVariant().One(ctx, tx)
+	check, err := local.Variant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testCheckoutLineToOneProductVariantUsingVariantidProductVariant(t *testing.
 	})
 
 	slice := CheckoutLineSlice{&local}
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, false, (*[]*CheckoutLine)(&slice), nil); err != nil {
+	if err = local.L.LoadVariant(ctx, tx, false, (*[]*CheckoutLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.VariantidProductVariant = nil
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.Variant = nil
+	if err = local.L.LoadVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testCheckoutLineToOneProductVariantUsingVariantidProductVariant(t *testing.
 	}
 }
 
-func testCheckoutLineToOneSetOpCheckoutUsingCheckoutidCheckout(t *testing.T) {
+func testCheckoutLineToOneSetOpCheckoutUsingCheckout(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testCheckoutLineToOneSetOpCheckoutUsingCheckoutidCheckout(t *testing.T) {
 	}
 
 	for i, x := range []*Checkout{&b, &c} {
-		err = a.SetCheckoutidCheckout(ctx, tx, i != 0, x)
+		err = a.SetCheckout(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CheckoutidCheckout != x {
+		if a.R.Checkout != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CheckoutidCheckoutLines[0] != &a {
+		if x.R.CheckoutLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Checkoutid, x.Token) {
-			t.Error("foreign key was wrong value", a.Checkoutid)
+		if !queries.Equal(a.CheckoutID, x.Token) {
+			t.Error("foreign key was wrong value", a.CheckoutID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Checkoutid))
-		reflect.Indirect(reflect.ValueOf(&a.Checkoutid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CheckoutID))
+		reflect.Indirect(reflect.ValueOf(&a.CheckoutID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Checkoutid, x.Token) {
-			t.Error("foreign key was wrong value", a.Checkoutid, x.Token)
+		if !queries.Equal(a.CheckoutID, x.Token) {
+			t.Error("foreign key was wrong value", a.CheckoutID, x.Token)
 		}
 	}
 }
 
-func testCheckoutLineToOneRemoveOpCheckoutUsingCheckoutidCheckout(t *testing.T) {
+func testCheckoutLineToOneRemoveOpCheckoutUsingCheckout(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testCheckoutLineToOneRemoveOpCheckoutUsingCheckoutidCheckout(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	if err = a.SetCheckoutidCheckout(ctx, tx, true, &b); err != nil {
+	if err = a.SetCheckout(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCheckoutidCheckout(ctx, tx, &b); err != nil {
+	if err = a.RemoveCheckout(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CheckoutidCheckout().Count(ctx, tx)
+	count, err := a.Checkout().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testCheckoutLineToOneRemoveOpCheckoutUsingCheckoutidCheckout(t *testing.T) 
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CheckoutidCheckout != nil {
+	if a.R.Checkout != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Checkoutid) {
+	if !queries.IsValuerNil(a.CheckoutID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CheckoutidCheckoutLines) != 0 {
+	if len(b.R.CheckoutLines) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testCheckoutLineToOneSetOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testCheckoutLineToOneSetOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testCheckoutLineToOneSetOpProductVariantUsingVariantidProductVariant(t *tes
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetVariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.VariantidProductVariant != x {
+		if a.R.Variant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.VariantidCheckoutLines[0] != &a {
+		if x.R.VariantCheckoutLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Variantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Variantid)
+		if !queries.Equal(a.VariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.VariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Variantid))
-		reflect.Indirect(reflect.ValueOf(&a.Variantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.VariantID))
+		reflect.Indirect(reflect.ValueOf(&a.VariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Variantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Variantid, x.ID)
+		if !queries.Equal(a.VariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.VariantID, x.ID)
 		}
 	}
 }
 
-func testCheckoutLineToOneRemoveOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testCheckoutLineToOneRemoveOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testCheckoutLineToOneRemoveOpProductVariantUsingVariantidProductVariant(t *
 		t.Fatal(err)
 	}
 
-	if err = a.SetVariantidProductVariant(ctx, tx, true, &b); err != nil {
+	if err = a.SetVariant(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveVariantidProductVariant(ctx, tx, &b); err != nil {
+	if err = a.RemoveVariant(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.VariantidProductVariant().Count(ctx, tx)
+	count, err := a.Variant().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testCheckoutLineToOneRemoveOpProductVariantUsingVariantidProductVariant(t *
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.VariantidProductVariant != nil {
+	if a.R.Variant != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Variantid) {
+	if !queries.IsValuerNil(a.VariantID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.VariantidCheckoutLines) != 0 {
+	if len(b.R.VariantCheckoutLines) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testCheckoutLinesSelect(t *testing.T) {
 }
 
 var (
-	checkoutLineDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Checkoutid`: `character varying`, `Variantid`: `character varying`, `Quantity`: `integer`}
+	checkoutLineDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `CheckoutID`: `character varying`, `VariantID`: `character varying`, `Quantity`: `integer`}
 	_                   = bytes.MinRead
 )
 

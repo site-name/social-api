@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS wishlist_item_product_variants (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  wishlistitemid character varying(36),
-  productvariantid character varying(36)
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  wishlist_item_id uuid,
+  product_variant_id character varying(36)
 );
 
 ALTER TABLE ONLY wishlist_item_product_variants
-    ADD CONSTRAINT wishlist_item_product_variants_wishlistitemid_productvariantid_key UNIQUE (wishlistitemid, productvariantid);
+    ADD CONSTRAINT wishlist_item_product_variants_wishlist_item_id_product_variant_id_key UNIQUE (wishlist_item_id, product_variant_id);

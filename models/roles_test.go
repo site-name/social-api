@@ -568,7 +568,7 @@ func testRolesSelect(t *testing.T) {
 }
 
 var (
-	roleDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Displayname`: `character varying`, `Description`: `character varying`, `Createat`: `bigint`, `Updateat`: `bigint`, `Deleteat`: `bigint`, `Permissions`: `text`, `Schememanaged`: `boolean`, `Builtin`: `boolean`}
+	roleDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `DisplayName`: `character varying`, `Description`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `DeleteAt`: `bigint`, `Permissions`: `text`, `SchemeManaged`: `boolean`, `BuiltIn`: `boolean`}
 	_           = bytes.MinRead
 )
 

@@ -25,10 +25,10 @@ import (
 // AttributeValueTranslation is an object representing the database table.
 type AttributeValueTranslation struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode     null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Attributevalueid null.String `boil:"attributevalueid" json:"attributevalueid,omitempty" toml:"attributevalueid" yaml:"attributevalueid,omitempty"`
+	LanguageCode     null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	AttributeValueID null.String `boil:"attribute_value_id" json:"attribute_value_id,omitempty" toml:"attribute_value_id" yaml:"attribute_value_id,omitempty"`
 	Name             null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Richtext         null.String `boil:"richtext" json:"richtext,omitempty" toml:"richtext" yaml:"richtext,omitempty"`
+	RichText         null.String `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
 
 	R *attributeValueTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeValueTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,46 +36,46 @@ type AttributeValueTranslation struct {
 
 var AttributeValueTranslationColumns = struct {
 	ID               string
-	Languagecode     string
-	Attributevalueid string
+	LanguageCode     string
+	AttributeValueID string
 	Name             string
-	Richtext         string
+	RichText         string
 }{
 	ID:               "id",
-	Languagecode:     "languagecode",
-	Attributevalueid: "attributevalueid",
+	LanguageCode:     "language_code",
+	AttributeValueID: "attribute_value_id",
 	Name:             "name",
-	Richtext:         "richtext",
+	RichText:         "rich_text",
 }
 
 var AttributeValueTranslationTableColumns = struct {
 	ID               string
-	Languagecode     string
-	Attributevalueid string
+	LanguageCode     string
+	AttributeValueID string
 	Name             string
-	Richtext         string
+	RichText         string
 }{
 	ID:               "attribute_value_translations.id",
-	Languagecode:     "attribute_value_translations.languagecode",
-	Attributevalueid: "attribute_value_translations.attributevalueid",
+	LanguageCode:     "attribute_value_translations.language_code",
+	AttributeValueID: "attribute_value_translations.attribute_value_id",
 	Name:             "attribute_value_translations.name",
-	Richtext:         "attribute_value_translations.richtext",
+	RichText:         "attribute_value_translations.rich_text",
 }
 
 // Generated where
 
 var AttributeValueTranslationWhere = struct {
 	ID               whereHelperstring
-	Languagecode     whereHelpernull_String
-	Attributevalueid whereHelpernull_String
+	LanguageCode     whereHelpernull_String
+	AttributeValueID whereHelpernull_String
 	Name             whereHelpernull_String
-	Richtext         whereHelpernull_String
+	RichText         whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"attribute_value_translations\".\"id\""},
-	Languagecode:     whereHelpernull_String{field: "\"attribute_value_translations\".\"languagecode\""},
-	Attributevalueid: whereHelpernull_String{field: "\"attribute_value_translations\".\"attributevalueid\""},
+	LanguageCode:     whereHelpernull_String{field: "\"attribute_value_translations\".\"language_code\""},
+	AttributeValueID: whereHelpernull_String{field: "\"attribute_value_translations\".\"attribute_value_id\""},
 	Name:             whereHelpernull_String{field: "\"attribute_value_translations\".\"name\""},
-	Richtext:         whereHelpernull_String{field: "\"attribute_value_translations\".\"richtext\""},
+	RichText:         whereHelpernull_String{field: "\"attribute_value_translations\".\"rich_text\""},
 }
 
 // AttributeValueTranslationRels is where relationship names are stored.
@@ -95,9 +95,9 @@ func (*attributeValueTranslationR) NewStruct() *attributeValueTranslationR {
 type attributeValueTranslationL struct{}
 
 var (
-	attributeValueTranslationAllColumns            = []string{"id", "languagecode", "attributevalueid", "name", "richtext"}
+	attributeValueTranslationAllColumns            = []string{"id", "language_code", "attribute_value_id", "name", "rich_text"}
 	attributeValueTranslationColumnsWithoutDefault = []string{"id"}
-	attributeValueTranslationColumnsWithDefault    = []string{"languagecode", "attributevalueid", "name", "richtext"}
+	attributeValueTranslationColumnsWithDefault    = []string{"language_code", "attribute_value_id", "name", "rich_text"}
 	attributeValueTranslationPrimaryKeyColumns     = []string{"id"}
 	attributeValueTranslationGeneratedColumns      = []string{}
 )

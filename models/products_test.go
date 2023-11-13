@@ -494,7 +494,7 @@ func testProductsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidAssignedProductAttributes(t *testing.T) {
+func testProductToManyAssignedProductAttributes(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,9 @@ func testProductToManyProductidAssignedProductAttributes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	b.ProductID = a.ID
+	c.ProductID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +529,17 @@ func testProductToManyProductidAssignedProductAttributes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidAssignedProductAttributes().All(ctx, tx)
+	check, err := a.AssignedProductAttributes().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if v.ProductID == b.ProductID {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if v.ProductID == c.ProductID {
 			cFound = true
 		}
 	}
@@ -551,18 +552,18 @@ func testProductToManyProductidAssignedProductAttributes(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidAssignedProductAttributes(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadAssignedProductAttributes(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidAssignedProductAttributes); got != 2 {
+	if got := len(a.R.AssignedProductAttributes); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidAssignedProductAttributes = nil
-	if err = a.L.LoadProductidAssignedProductAttributes(ctx, tx, true, &a, nil); err != nil {
+	a.R.AssignedProductAttributes = nil
+	if err = a.L.LoadAssignedProductAttributes(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidAssignedProductAttributes); got != 2 {
+	if got := len(a.R.AssignedProductAttributes); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +572,7 @@ func testProductToManyProductidAssignedProductAttributes(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidGiftcards(t *testing.T) {
+func testProductToManyGiftcards(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +597,8 @@ func testProductToManyProductidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +606,17 @@ func testProductToManyProductidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidGiftcards().All(ctx, tx)
+	check, err := a.Giftcards().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -628,18 +629,18 @@ func testProductToManyProductidGiftcards(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidGiftcards(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadGiftcards(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidGiftcards); got != 2 {
+	if got := len(a.R.Giftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidGiftcards = nil
-	if err = a.L.LoadProductidGiftcards(ctx, tx, true, &a, nil); err != nil {
+	a.R.Giftcards = nil
+	if err = a.L.LoadGiftcards(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidGiftcards); got != 2 {
+	if got := len(a.R.Giftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +649,7 @@ func testProductToManyProductidGiftcards(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidProductChannelListings(t *testing.T) {
+func testProductToManyProductChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +674,8 @@ func testProductToManyProductidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +683,17 @@ func testProductToManyProductidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidProductChannelListings().All(ctx, tx)
+	check, err := a.ProductChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -705,18 +706,18 @@ func testProductToManyProductidProductChannelListings(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidProductChannelListings(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadProductChannelListings(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductChannelListings); got != 2 {
+	if got := len(a.R.ProductChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidProductChannelListings = nil
-	if err = a.L.LoadProductidProductChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductChannelListings = nil
+	if err = a.L.LoadProductChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductChannelListings); got != 2 {
+	if got := len(a.R.ProductChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +726,7 @@ func testProductToManyProductidProductChannelListings(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidProductCollections(t *testing.T) {
+func testProductToManyProductCollections(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -750,8 +751,8 @@ func testProductToManyProductidProductCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -759,17 +760,17 @@ func testProductToManyProductidProductCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidProductCollections().All(ctx, tx)
+	check, err := a.ProductCollections().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -782,18 +783,18 @@ func testProductToManyProductidProductCollections(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidProductCollections(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadProductCollections(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductCollections); got != 2 {
+	if got := len(a.R.ProductCollections); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidProductCollections = nil
-	if err = a.L.LoadProductidProductCollections(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductCollections = nil
+	if err = a.L.LoadProductCollections(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductCollections); got != 2 {
+	if got := len(a.R.ProductCollections); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -802,7 +803,7 @@ func testProductToManyProductidProductCollections(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidProductMedia(t *testing.T) {
+func testProductToManyProductMedia(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -827,8 +828,8 @@ func testProductToManyProductidProductMedia(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -836,17 +837,17 @@ func testProductToManyProductidProductMedia(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidProductMedia().All(ctx, tx)
+	check, err := a.ProductMedia().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -859,18 +860,18 @@ func testProductToManyProductidProductMedia(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidProductMedia(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadProductMedia(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductMedia); got != 2 {
+	if got := len(a.R.ProductMedia); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidProductMedia = nil
-	if err = a.L.LoadProductidProductMedia(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductMedia = nil
+	if err = a.L.LoadProductMedia(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductMedia); got != 2 {
+	if got := len(a.R.ProductMedia); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -879,7 +880,7 @@ func testProductToManyProductidProductMedia(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidProductTranslations(t *testing.T) {
+func testProductToManyProductTranslations(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -904,8 +905,8 @@ func testProductToManyProductidProductTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -913,17 +914,17 @@ func testProductToManyProductidProductTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidProductTranslations().All(ctx, tx)
+	check, err := a.ProductTranslations().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -936,18 +937,18 @@ func testProductToManyProductidProductTranslations(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidProductTranslations(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadProductTranslations(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductTranslations); got != 2 {
+	if got := len(a.R.ProductTranslations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidProductTranslations = nil
-	if err = a.L.LoadProductidProductTranslations(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductTranslations = nil
+	if err = a.L.LoadProductTranslations(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductTranslations); got != 2 {
+	if got := len(a.R.ProductTranslations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -956,7 +957,7 @@ func testProductToManyProductidProductTranslations(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidProductVariants(t *testing.T) {
+func testProductToManyProductVariants(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -981,8 +982,8 @@ func testProductToManyProductidProductVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -990,17 +991,17 @@ func testProductToManyProductidProductVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidProductVariants().All(ctx, tx)
+	check, err := a.ProductVariants().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -1013,18 +1014,18 @@ func testProductToManyProductidProductVariants(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidProductVariants(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadProductVariants(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductVariants); got != 2 {
+	if got := len(a.R.ProductVariants); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidProductVariants = nil
-	if err = a.L.LoadProductidProductVariants(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductVariants = nil
+	if err = a.L.LoadProductVariants(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidProductVariants); got != 2 {
+	if got := len(a.R.ProductVariants); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1033,7 +1034,7 @@ func testProductToManyProductidProductVariants(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidSaleProducts(t *testing.T) {
+func testProductToManySaleProducts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1058,8 +1059,8 @@ func testProductToManyProductidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1067,17 +1068,17 @@ func testProductToManyProductidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidSaleProducts().All(ctx, tx)
+	check, err := a.SaleProducts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -1090,18 +1091,18 @@ func testProductToManyProductidSaleProducts(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidSaleProducts(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleProducts(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidSaleProducts); got != 2 {
+	if got := len(a.R.SaleProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidSaleProducts = nil
-	if err = a.L.LoadProductidSaleProducts(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleProducts = nil
+	if err = a.L.LoadSaleProducts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidSaleProducts); got != 2 {
+	if got := len(a.R.SaleProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1110,7 +1111,7 @@ func testProductToManyProductidSaleProducts(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidShippingMethodExcludedProducts(t *testing.T) {
+func testProductToManyShippingMethodExcludedProducts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1135,8 +1136,8 @@ func testProductToManyProductidShippingMethodExcludedProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1144,17 +1145,17 @@ func testProductToManyProductidShippingMethodExcludedProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidShippingMethodExcludedProducts().All(ctx, tx)
+	check, err := a.ShippingMethodExcludedProducts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -1167,18 +1168,18 @@ func testProductToManyProductidShippingMethodExcludedProducts(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidShippingMethodExcludedProducts(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadShippingMethodExcludedProducts(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidShippingMethodExcludedProducts); got != 2 {
+	if got := len(a.R.ShippingMethodExcludedProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidShippingMethodExcludedProducts = nil
-	if err = a.L.LoadProductidShippingMethodExcludedProducts(ctx, tx, true, &a, nil); err != nil {
+	a.R.ShippingMethodExcludedProducts = nil
+	if err = a.L.LoadShippingMethodExcludedProducts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidShippingMethodExcludedProducts); got != 2 {
+	if got := len(a.R.ShippingMethodExcludedProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1187,7 +1188,7 @@ func testProductToManyProductidShippingMethodExcludedProducts(t *testing.T) {
 	}
 }
 
-func testProductToManyProductidVoucherProducts(t *testing.T) {
+func testProductToManyVoucherProducts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1212,8 +1213,8 @@ func testProductToManyProductidVoucherProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Productid, a.ID)
-	queries.Assign(&c.Productid, a.ID)
+	queries.Assign(&b.ProductID, a.ID)
+	queries.Assign(&c.ProductID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1221,17 +1222,17 @@ func testProductToManyProductidVoucherProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ProductidVoucherProducts().All(ctx, tx)
+	check, err := a.VoucherProducts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Productid, b.Productid) {
+		if queries.Equal(v.ProductID, b.ProductID) {
 			bFound = true
 		}
-		if queries.Equal(v.Productid, c.Productid) {
+		if queries.Equal(v.ProductID, c.ProductID) {
 			cFound = true
 		}
 	}
@@ -1244,18 +1245,18 @@ func testProductToManyProductidVoucherProducts(t *testing.T) {
 	}
 
 	slice := ProductSlice{&a}
-	if err = a.L.LoadProductidVoucherProducts(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
+	if err = a.L.LoadVoucherProducts(ctx, tx, false, (*[]*Product)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidVoucherProducts); got != 2 {
+	if got := len(a.R.VoucherProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ProductidVoucherProducts = nil
-	if err = a.L.LoadProductidVoucherProducts(ctx, tx, true, &a, nil); err != nil {
+	a.R.VoucherProducts = nil
+	if err = a.L.LoadVoucherProducts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ProductidVoucherProducts); got != 2 {
+	if got := len(a.R.VoucherProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1264,7 +1265,7 @@ func testProductToManyProductidVoucherProducts(t *testing.T) {
 	}
 }
 
-func testProductToManyAddOpProductidAssignedProductAttributes(t *testing.T) {
+func testProductToManyAddOpAssignedProductAttributes(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1301,7 +1302,7 @@ func testProductToManyAddOpProductidAssignedProductAttributes(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidAssignedProductAttributes(ctx, tx, i != 0, x...)
+		err = a.AddAssignedProductAttributes(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1309,28 +1310,28 @@ func testProductToManyAddOpProductidAssignedProductAttributes(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if a.ID != first.ProductID {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if a.ID != second.ProductID {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidAssignedProductAttributes[i*2] != first {
+		if a.R.AssignedProductAttributes[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidAssignedProductAttributes[i*2+1] != second {
+		if a.R.AssignedProductAttributes[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidAssignedProductAttributes().Count(ctx, tx)
+		count, err := a.AssignedProductAttributes().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1339,183 +1340,7 @@ func testProductToManyAddOpProductidAssignedProductAttributes(t *testing.T) {
 		}
 	}
 }
-
-func testProductToManySetOpProductidAssignedProductAttributes(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Product
-	var b, c, d, e AssignedProductAttribute
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productDBTypes, false, strmangle.SetComplement(productPrimaryKeyColumns, productColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedProductAttribute{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedProductAttributeDBTypes, false, strmangle.SetComplement(assignedProductAttributePrimaryKeyColumns, assignedProductAttributeColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetProductidAssignedProductAttributes(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ProductidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidAssignedProductAttributes(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Productid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Productid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
-	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.ProductidAssignedProductAttributes[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.ProductidAssignedProductAttributes[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testProductToManyRemoveOpProductidAssignedProductAttributes(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Product
-	var b, c, d, e AssignedProductAttribute
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productDBTypes, false, strmangle.SetComplement(productPrimaryKeyColumns, productColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedProductAttribute{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedProductAttributeDBTypes, false, strmangle.SetComplement(assignedProductAttributePrimaryKeyColumns, assignedProductAttributeColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddProductidAssignedProductAttributes(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ProductidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveProductidAssignedProductAttributes(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidAssignedProductAttributes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Productid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Productid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.ProductidAssignedProductAttributes) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidAssignedProductAttributes[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.ProductidAssignedProductAttributes[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
-func testProductToManyAddOpProductidGiftcards(t *testing.T) {
+func testProductToManyAddOpGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1552,7 +1377,7 @@ func testProductToManyAddOpProductidGiftcards(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidGiftcards(ctx, tx, i != 0, x...)
+		err = a.AddGiftcards(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1560,28 +1385,28 @@ func testProductToManyAddOpProductidGiftcards(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidGiftcards[i*2] != first {
+		if a.R.Giftcards[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidGiftcards[i*2+1] != second {
+		if a.R.Giftcards[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidGiftcards().Count(ctx, tx)
+		count, err := a.Giftcards().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1591,7 +1416,7 @@ func testProductToManyAddOpProductidGiftcards(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidGiftcards(t *testing.T) {
+func testProductToManySetOpGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1622,25 +1447,12 @@ func testProductToManySetOpProductidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidGiftcards(ctx, tx, false, &b, &c)
+	err = a.SetGiftcards(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidGiftcards(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidGiftcards().Count(ctx, tx)
+	count, err := a.Giftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1648,41 +1460,54 @@ func testProductToManySetOpProductidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetGiftcards(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Giftcards().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidGiftcards[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Giftcards[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidGiftcards[1] != &e {
+	if a.R.Giftcards[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidGiftcards(t *testing.T) {
+func testProductToManyRemoveOpGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1707,12 +1532,12 @@ func testProductToManyRemoveOpProductidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidGiftcards(ctx, tx, true, foreigners...)
+	err = a.AddGiftcards(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidGiftcards().Count(ctx, tx)
+	count, err := a.Giftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1720,12 +1545,12 @@ func testProductToManyRemoveOpProductidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidGiftcards(ctx, tx, foreigners[:2]...)
+	err = a.RemoveGiftcards(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidGiftcards().Count(ctx, tx)
+	count, err = a.Giftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1733,40 +1558,40 @@ func testProductToManyRemoveOpProductidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidGiftcards) != 2 {
+	if len(a.R.Giftcards) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidGiftcards[1] != &d {
+	if a.R.Giftcards[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidGiftcards[0] != &e {
+	if a.R.Giftcards[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidProductChannelListings(t *testing.T) {
+func testProductToManyAddOpProductChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1803,7 +1628,7 @@ func testProductToManyAddOpProductidProductChannelListings(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidProductChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddProductChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1811,28 +1636,28 @@ func testProductToManyAddOpProductidProductChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidProductChannelListings[i*2] != first {
+		if a.R.ProductChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidProductChannelListings[i*2+1] != second {
+		if a.R.ProductChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidProductChannelListings().Count(ctx, tx)
+		count, err := a.ProductChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1842,7 +1667,7 @@ func testProductToManyAddOpProductidProductChannelListings(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidProductChannelListings(t *testing.T) {
+func testProductToManySetOpProductChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1873,25 +1698,12 @@ func testProductToManySetOpProductidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidProductChannelListings(ctx, tx, false, &b, &c)
+	err = a.SetProductChannelListings(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidProductChannelListings(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidProductChannelListings().Count(ctx, tx)
+	count, err := a.ProductChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1899,41 +1711,54 @@ func testProductToManySetOpProductidProductChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetProductChannelListings(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ProductChannelListings().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidProductChannelListings[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ProductChannelListings[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidProductChannelListings[1] != &e {
+	if a.R.ProductChannelListings[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidProductChannelListings(t *testing.T) {
+func testProductToManyRemoveOpProductChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1958,12 +1783,12 @@ func testProductToManyRemoveOpProductidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidProductChannelListings(ctx, tx, true, foreigners...)
+	err = a.AddProductChannelListings(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductChannelListings().Count(ctx, tx)
+	count, err := a.ProductChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1971,12 +1796,12 @@ func testProductToManyRemoveOpProductidProductChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidProductChannelListings(ctx, tx, foreigners[:2]...)
+	err = a.RemoveProductChannelListings(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidProductChannelListings().Count(ctx, tx)
+	count, err = a.ProductChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1984,40 +1809,40 @@ func testProductToManyRemoveOpProductidProductChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidProductChannelListings) != 2 {
+	if len(a.R.ProductChannelListings) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidProductChannelListings[1] != &d {
+	if a.R.ProductChannelListings[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidProductChannelListings[0] != &e {
+	if a.R.ProductChannelListings[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidProductCollections(t *testing.T) {
+func testProductToManyAddOpProductCollections(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2054,7 +1879,7 @@ func testProductToManyAddOpProductidProductCollections(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidProductCollections(ctx, tx, i != 0, x...)
+		err = a.AddProductCollections(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2062,28 +1887,28 @@ func testProductToManyAddOpProductidProductCollections(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidProductCollections[i*2] != first {
+		if a.R.ProductCollections[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidProductCollections[i*2+1] != second {
+		if a.R.ProductCollections[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidProductCollections().Count(ctx, tx)
+		count, err := a.ProductCollections().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2093,7 +1918,7 @@ func testProductToManyAddOpProductidProductCollections(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidProductCollections(t *testing.T) {
+func testProductToManySetOpProductCollections(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2124,25 +1949,12 @@ func testProductToManySetOpProductidProductCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidProductCollections(ctx, tx, false, &b, &c)
+	err = a.SetProductCollections(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidProductCollections(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidProductCollections().Count(ctx, tx)
+	count, err := a.ProductCollections().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2150,41 +1962,54 @@ func testProductToManySetOpProductidProductCollections(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetProductCollections(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ProductCollections().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidProductCollections[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ProductCollections[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidProductCollections[1] != &e {
+	if a.R.ProductCollections[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidProductCollections(t *testing.T) {
+func testProductToManyRemoveOpProductCollections(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2209,12 +2034,12 @@ func testProductToManyRemoveOpProductidProductCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidProductCollections(ctx, tx, true, foreigners...)
+	err = a.AddProductCollections(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductCollections().Count(ctx, tx)
+	count, err := a.ProductCollections().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2222,12 +2047,12 @@ func testProductToManyRemoveOpProductidProductCollections(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidProductCollections(ctx, tx, foreigners[:2]...)
+	err = a.RemoveProductCollections(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidProductCollections().Count(ctx, tx)
+	count, err = a.ProductCollections().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2235,40 +2060,40 @@ func testProductToManyRemoveOpProductidProductCollections(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidProductCollections) != 2 {
+	if len(a.R.ProductCollections) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidProductCollections[1] != &d {
+	if a.R.ProductCollections[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidProductCollections[0] != &e {
+	if a.R.ProductCollections[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidProductMedia(t *testing.T) {
+func testProductToManyAddOpProductMedia(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2305,7 +2130,7 @@ func testProductToManyAddOpProductidProductMedia(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidProductMedia(ctx, tx, i != 0, x...)
+		err = a.AddProductMedia(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2313,28 +2138,28 @@ func testProductToManyAddOpProductidProductMedia(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidProductMedia[i*2] != first {
+		if a.R.ProductMedia[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidProductMedia[i*2+1] != second {
+		if a.R.ProductMedia[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidProductMedia().Count(ctx, tx)
+		count, err := a.ProductMedia().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2344,7 +2169,7 @@ func testProductToManyAddOpProductidProductMedia(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidProductMedia(t *testing.T) {
+func testProductToManySetOpProductMedia(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2375,25 +2200,12 @@ func testProductToManySetOpProductidProductMedia(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidProductMedia(ctx, tx, false, &b, &c)
+	err = a.SetProductMedia(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductMedia().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidProductMedia(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidProductMedia().Count(ctx, tx)
+	count, err := a.ProductMedia().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2401,41 +2213,54 @@ func testProductToManySetOpProductidProductMedia(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetProductMedia(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ProductMedia().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidProductMedia[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ProductMedia[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidProductMedia[1] != &e {
+	if a.R.ProductMedia[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidProductMedia(t *testing.T) {
+func testProductToManyRemoveOpProductMedia(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2460,12 +2285,12 @@ func testProductToManyRemoveOpProductidProductMedia(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidProductMedia(ctx, tx, true, foreigners...)
+	err = a.AddProductMedia(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductMedia().Count(ctx, tx)
+	count, err := a.ProductMedia().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2473,12 +2298,12 @@ func testProductToManyRemoveOpProductidProductMedia(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidProductMedia(ctx, tx, foreigners[:2]...)
+	err = a.RemoveProductMedia(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidProductMedia().Count(ctx, tx)
+	count, err = a.ProductMedia().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2486,40 +2311,40 @@ func testProductToManyRemoveOpProductidProductMedia(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidProductMedia) != 2 {
+	if len(a.R.ProductMedia) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidProductMedia[1] != &d {
+	if a.R.ProductMedia[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidProductMedia[0] != &e {
+	if a.R.ProductMedia[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidProductTranslations(t *testing.T) {
+func testProductToManyAddOpProductTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2556,7 +2381,7 @@ func testProductToManyAddOpProductidProductTranslations(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidProductTranslations(ctx, tx, i != 0, x...)
+		err = a.AddProductTranslations(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2564,28 +2389,28 @@ func testProductToManyAddOpProductidProductTranslations(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidProductTranslations[i*2] != first {
+		if a.R.ProductTranslations[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidProductTranslations[i*2+1] != second {
+		if a.R.ProductTranslations[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidProductTranslations().Count(ctx, tx)
+		count, err := a.ProductTranslations().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2595,7 +2420,7 @@ func testProductToManyAddOpProductidProductTranslations(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidProductTranslations(t *testing.T) {
+func testProductToManySetOpProductTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2626,25 +2451,12 @@ func testProductToManySetOpProductidProductTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidProductTranslations(ctx, tx, false, &b, &c)
+	err = a.SetProductTranslations(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidProductTranslations(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidProductTranslations().Count(ctx, tx)
+	count, err := a.ProductTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2652,41 +2464,54 @@ func testProductToManySetOpProductidProductTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetProductTranslations(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ProductTranslations().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidProductTranslations[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ProductTranslations[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidProductTranslations[1] != &e {
+	if a.R.ProductTranslations[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidProductTranslations(t *testing.T) {
+func testProductToManyRemoveOpProductTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2711,12 +2536,12 @@ func testProductToManyRemoveOpProductidProductTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidProductTranslations(ctx, tx, true, foreigners...)
+	err = a.AddProductTranslations(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductTranslations().Count(ctx, tx)
+	count, err := a.ProductTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2724,12 +2549,12 @@ func testProductToManyRemoveOpProductidProductTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidProductTranslations(ctx, tx, foreigners[:2]...)
+	err = a.RemoveProductTranslations(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidProductTranslations().Count(ctx, tx)
+	count, err = a.ProductTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2737,40 +2562,40 @@ func testProductToManyRemoveOpProductidProductTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidProductTranslations) != 2 {
+	if len(a.R.ProductTranslations) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidProductTranslations[1] != &d {
+	if a.R.ProductTranslations[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidProductTranslations[0] != &e {
+	if a.R.ProductTranslations[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidProductVariants(t *testing.T) {
+func testProductToManyAddOpProductVariants(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2807,7 +2632,7 @@ func testProductToManyAddOpProductidProductVariants(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidProductVariants(ctx, tx, i != 0, x...)
+		err = a.AddProductVariants(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2815,28 +2640,28 @@ func testProductToManyAddOpProductidProductVariants(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidProductVariants[i*2] != first {
+		if a.R.ProductVariants[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidProductVariants[i*2+1] != second {
+		if a.R.ProductVariants[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidProductVariants().Count(ctx, tx)
+		count, err := a.ProductVariants().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2846,7 +2671,7 @@ func testProductToManyAddOpProductidProductVariants(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidProductVariants(t *testing.T) {
+func testProductToManySetOpProductVariants(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2877,25 +2702,12 @@ func testProductToManySetOpProductidProductVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidProductVariants(ctx, tx, false, &b, &c)
+	err = a.SetProductVariants(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductVariants().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidProductVariants(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidProductVariants().Count(ctx, tx)
+	count, err := a.ProductVariants().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2903,41 +2715,54 @@ func testProductToManySetOpProductidProductVariants(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetProductVariants(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ProductVariants().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidProductVariants[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ProductVariants[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidProductVariants[1] != &e {
+	if a.R.ProductVariants[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidProductVariants(t *testing.T) {
+func testProductToManyRemoveOpProductVariants(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2962,12 +2787,12 @@ func testProductToManyRemoveOpProductidProductVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidProductVariants(ctx, tx, true, foreigners...)
+	err = a.AddProductVariants(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidProductVariants().Count(ctx, tx)
+	count, err := a.ProductVariants().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2975,12 +2800,12 @@ func testProductToManyRemoveOpProductidProductVariants(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidProductVariants(ctx, tx, foreigners[:2]...)
+	err = a.RemoveProductVariants(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidProductVariants().Count(ctx, tx)
+	count, err = a.ProductVariants().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2988,40 +2813,40 @@ func testProductToManyRemoveOpProductidProductVariants(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidProductVariants) != 2 {
+	if len(a.R.ProductVariants) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidProductVariants[1] != &d {
+	if a.R.ProductVariants[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidProductVariants[0] != &e {
+	if a.R.ProductVariants[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidSaleProducts(t *testing.T) {
+func testProductToManyAddOpSaleProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3058,7 +2883,7 @@ func testProductToManyAddOpProductidSaleProducts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidSaleProducts(ctx, tx, i != 0, x...)
+		err = a.AddSaleProducts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3066,28 +2891,28 @@ func testProductToManyAddOpProductidSaleProducts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidSaleProducts[i*2] != first {
+		if a.R.SaleProducts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidSaleProducts[i*2+1] != second {
+		if a.R.SaleProducts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidSaleProducts().Count(ctx, tx)
+		count, err := a.SaleProducts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3097,7 +2922,7 @@ func testProductToManyAddOpProductidSaleProducts(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidSaleProducts(t *testing.T) {
+func testProductToManySetOpSaleProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3128,25 +2953,12 @@ func testProductToManySetOpProductidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidSaleProducts(ctx, tx, false, &b, &c)
+	err = a.SetSaleProducts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidSaleProducts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidSaleProducts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidSaleProducts().Count(ctx, tx)
+	count, err := a.SaleProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3154,41 +2966,54 @@ func testProductToManySetOpProductidSaleProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetSaleProducts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.SaleProducts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidSaleProducts[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.SaleProducts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidSaleProducts[1] != &e {
+	if a.R.SaleProducts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidSaleProducts(t *testing.T) {
+func testProductToManyRemoveOpSaleProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3213,12 +3038,12 @@ func testProductToManyRemoveOpProductidSaleProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidSaleProducts(ctx, tx, true, foreigners...)
+	err = a.AddSaleProducts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidSaleProducts().Count(ctx, tx)
+	count, err := a.SaleProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3226,12 +3051,12 @@ func testProductToManyRemoveOpProductidSaleProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidSaleProducts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveSaleProducts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidSaleProducts().Count(ctx, tx)
+	count, err = a.SaleProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3239,40 +3064,40 @@ func testProductToManyRemoveOpProductidSaleProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidSaleProducts) != 2 {
+	if len(a.R.SaleProducts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidSaleProducts[1] != &d {
+	if a.R.SaleProducts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidSaleProducts[0] != &e {
+	if a.R.SaleProducts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidShippingMethodExcludedProducts(t *testing.T) {
+func testProductToManyAddOpShippingMethodExcludedProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3309,7 +3134,7 @@ func testProductToManyAddOpProductidShippingMethodExcludedProducts(t *testing.T)
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidShippingMethodExcludedProducts(ctx, tx, i != 0, x...)
+		err = a.AddShippingMethodExcludedProducts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3317,28 +3142,28 @@ func testProductToManyAddOpProductidShippingMethodExcludedProducts(t *testing.T)
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidShippingMethodExcludedProducts[i*2] != first {
+		if a.R.ShippingMethodExcludedProducts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidShippingMethodExcludedProducts[i*2+1] != second {
+		if a.R.ShippingMethodExcludedProducts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidShippingMethodExcludedProducts().Count(ctx, tx)
+		count, err := a.ShippingMethodExcludedProducts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3348,7 +3173,7 @@ func testProductToManyAddOpProductidShippingMethodExcludedProducts(t *testing.T)
 	}
 }
 
-func testProductToManySetOpProductidShippingMethodExcludedProducts(t *testing.T) {
+func testProductToManySetOpShippingMethodExcludedProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3379,25 +3204,12 @@ func testProductToManySetOpProductidShippingMethodExcludedProducts(t *testing.T)
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidShippingMethodExcludedProducts(ctx, tx, false, &b, &c)
+	err = a.SetShippingMethodExcludedProducts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidShippingMethodExcludedProducts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidShippingMethodExcludedProducts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidShippingMethodExcludedProducts().Count(ctx, tx)
+	count, err := a.ShippingMethodExcludedProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3405,41 +3217,54 @@ func testProductToManySetOpProductidShippingMethodExcludedProducts(t *testing.T)
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetShippingMethodExcludedProducts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ShippingMethodExcludedProducts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidShippingMethodExcludedProducts[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ShippingMethodExcludedProducts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidShippingMethodExcludedProducts[1] != &e {
+	if a.R.ShippingMethodExcludedProducts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidShippingMethodExcludedProducts(t *testing.T) {
+func testProductToManyRemoveOpShippingMethodExcludedProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3464,12 +3289,12 @@ func testProductToManyRemoveOpProductidShippingMethodExcludedProducts(t *testing
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidShippingMethodExcludedProducts(ctx, tx, true, foreigners...)
+	err = a.AddShippingMethodExcludedProducts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidShippingMethodExcludedProducts().Count(ctx, tx)
+	count, err := a.ShippingMethodExcludedProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3477,12 +3302,12 @@ func testProductToManyRemoveOpProductidShippingMethodExcludedProducts(t *testing
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidShippingMethodExcludedProducts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveShippingMethodExcludedProducts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidShippingMethodExcludedProducts().Count(ctx, tx)
+	count, err = a.ShippingMethodExcludedProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3490,40 +3315,40 @@ func testProductToManyRemoveOpProductidShippingMethodExcludedProducts(t *testing
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidShippingMethodExcludedProducts) != 2 {
+	if len(a.R.ShippingMethodExcludedProducts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidShippingMethodExcludedProducts[1] != &d {
+	if a.R.ShippingMethodExcludedProducts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidShippingMethodExcludedProducts[0] != &e {
+	if a.R.ShippingMethodExcludedProducts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testProductToManyAddOpProductidVoucherProducts(t *testing.T) {
+func testProductToManyAddOpVoucherProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3560,7 +3385,7 @@ func testProductToManyAddOpProductidVoucherProducts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddProductidVoucherProducts(ctx, tx, i != 0, x...)
+		err = a.AddVoucherProducts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3568,28 +3393,28 @@ func testProductToManyAddOpProductidVoucherProducts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Productid) {
-			t.Error("foreign key was wrong value", a.ID, first.Productid)
+		if !queries.Equal(a.ID, first.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, first.ProductID)
 		}
-		if !queries.Equal(a.ID, second.Productid) {
-			t.Error("foreign key was wrong value", a.ID, second.Productid)
+		if !queries.Equal(a.ID, second.ProductID) {
+			t.Error("foreign key was wrong value", a.ID, second.ProductID)
 		}
 
-		if first.R.ProductidProduct != &a {
+		if first.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ProductidProduct != &a {
+		if second.R.Product != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ProductidVoucherProducts[i*2] != first {
+		if a.R.VoucherProducts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ProductidVoucherProducts[i*2+1] != second {
+		if a.R.VoucherProducts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ProductidVoucherProducts().Count(ctx, tx)
+		count, err := a.VoucherProducts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3599,7 +3424,7 @@ func testProductToManyAddOpProductidVoucherProducts(t *testing.T) {
 	}
 }
 
-func testProductToManySetOpProductidVoucherProducts(t *testing.T) {
+func testProductToManySetOpVoucherProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3630,25 +3455,12 @@ func testProductToManySetOpProductidVoucherProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetProductidVoucherProducts(ctx, tx, false, &b, &c)
+	err = a.SetVoucherProducts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidVoucherProducts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductidVoucherProducts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductidVoucherProducts().Count(ctx, tx)
+	count, err := a.VoucherProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3656,41 +3468,54 @@ func testProductToManySetOpProductidVoucherProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	err = a.SetVoucherProducts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.VoucherProducts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Productid) {
-		t.Error("foreign key was wrong value", a.ID, d.Productid)
+	if !queries.Equal(a.ID, d.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, d.ProductID)
 	}
-	if !queries.Equal(a.ID, e.Productid) {
-		t.Error("foreign key was wrong value", a.ID, e.Productid)
-	}
-
-	if b.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ProductidProduct != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ProductidProduct != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ProductID) {
+		t.Error("foreign key was wrong value", a.ID, e.ProductID)
 	}
 
-	if a.R.ProductidVoucherProducts[0] != &d {
+	if b.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Product != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Product != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.VoucherProducts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ProductidVoucherProducts[1] != &e {
+	if a.R.VoucherProducts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testProductToManyRemoveOpProductidVoucherProducts(t *testing.T) {
+func testProductToManyRemoveOpVoucherProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3715,12 +3540,12 @@ func testProductToManyRemoveOpProductidVoucherProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddProductidVoucherProducts(ctx, tx, true, foreigners...)
+	err = a.AddVoucherProducts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ProductidVoucherProducts().Count(ctx, tx)
+	count, err := a.VoucherProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3728,12 +3553,12 @@ func testProductToManyRemoveOpProductidVoucherProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveProductidVoucherProducts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveVoucherProducts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ProductidVoucherProducts().Count(ctx, tx)
+	count, err = a.VoucherProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3741,35 +3566,35 @@ func testProductToManyRemoveOpProductidVoucherProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Productid) {
+	if !queries.IsValuerNil(b.ProductID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Productid) {
+	if !queries.IsValuerNil(c.ProductID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ProductidProduct != nil {
+	if b.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ProductidProduct != nil {
+	if c.R.Product != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ProductidProduct != &a {
+	if d.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ProductidProduct != &a {
+	if e.R.Product != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ProductidVoucherProducts) != 2 {
+	if len(a.R.VoucherProducts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductidVoucherProducts[1] != &d {
+	if a.R.VoucherProducts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ProductidVoucherProducts[0] != &e {
+	if a.R.VoucherProducts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -3848,7 +3673,7 @@ func testProductsSelect(t *testing.T) {
 }
 
 var (
-	productDBTypes = map[string]string{`ID`: `character varying`, `Producttypeid`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Description`: `text`, `Descriptionplaintext`: `text`, `Categoryid`: `character varying`, `Createat`: `bigint`, `Updateat`: `bigint`, `Chargetaxes`: `boolean`, `Weight`: `real`, `Weightunit`: `text`, `Defaultvariantid`: `character varying`, `Rating`: `real`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`, `Seotitle`: `character varying`, `Seodescription`: `character varying`}
+	productDBTypes = map[string]string{`ID`: `character varying`, `ProductTypeID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Description`: `text`, `DescriptionPlainText`: `text`, `CategoryID`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `ChargeTaxes`: `boolean`, `Weight`: `real`, `WeightUnit`: `text`, `DefaultVariantID`: `character varying`, `Rating`: `real`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
 	_              = bytes.MinRead
 )
 

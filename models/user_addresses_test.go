@@ -494,7 +494,7 @@ func testUserAddressesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testUserAddressToOneAddressUsingAddressidAddress(t *testing.T) {
+func testUserAddressToOneAddressUsingAddress(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testUserAddressToOneAddressUsingAddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Addressid, foreign.ID)
+	queries.Assign(&local.AddressID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.AddressidAddress().One(ctx, tx)
+	check, err := local.Address().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testUserAddressToOneAddressUsingAddressidAddress(t *testing.T) {
 	})
 
 	slice := UserAddressSlice{&local}
-	if err = local.L.LoadAddressidAddress(ctx, tx, false, (*[]*UserAddress)(&slice), nil); err != nil {
+	if err = local.L.LoadAddress(ctx, tx, false, (*[]*UserAddress)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AddressidAddress == nil {
+	if local.R.Address == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.AddressidAddress = nil
-	if err = local.L.LoadAddressidAddress(ctx, tx, true, &local, nil); err != nil {
+	local.R.Address = nil
+	if err = local.L.LoadAddress(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AddressidAddress == nil {
+	if local.R.Address == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testUserAddressToOneAddressUsingAddressidAddress(t *testing.T) {
 	}
 }
 
-func testUserAddressToOneUserUsingUseridUser(t *testing.T) {
+func testUserAddressToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testUserAddressToOneUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Userid, foreign.ID)
+	queries.Assign(&local.UserID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UseridUser().One(ctx, tx)
+	check, err := local.User().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testUserAddressToOneUserUsingUseridUser(t *testing.T) {
 	})
 
 	slice := UserAddressSlice{&local}
-	if err = local.L.LoadUseridUser(ctx, tx, false, (*[]*UserAddress)(&slice), nil); err != nil {
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*UserAddress)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UseridUser = nil
-	if err = local.L.LoadUseridUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testUserAddressToOneUserUsingUseridUser(t *testing.T) {
 	}
 }
 
-func testUserAddressToOneSetOpAddressUsingAddressidAddress(t *testing.T) {
+func testUserAddressToOneSetOpAddressUsingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testUserAddressToOneSetOpAddressUsingAddressidAddress(t *testing.T) {
 	}
 
 	for i, x := range []*Address{&b, &c} {
-		err = a.SetAddressidAddress(ctx, tx, i != 0, x)
+		err = a.SetAddress(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.AddressidAddress != x {
+		if a.R.Address != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.AddressidUserAddresses[0] != &a {
+		if x.R.UserAddresses[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Addressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Addressid)
+		if !queries.Equal(a.AddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.AddressID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Addressid))
-		reflect.Indirect(reflect.ValueOf(&a.Addressid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.AddressID))
+		reflect.Indirect(reflect.ValueOf(&a.AddressID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Addressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Addressid, x.ID)
+		if !queries.Equal(a.AddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.AddressID, x.ID)
 		}
 	}
 }
 
-func testUserAddressToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
+func testUserAddressToOneRemoveOpAddressUsingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testUserAddressToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetAddressidAddress(ctx, tx, true, &b); err != nil {
+	if err = a.SetAddress(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveAddressidAddress(ctx, tx, &b); err != nil {
+	if err = a.RemoveAddress(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.AddressidAddress().Count(ctx, tx)
+	count, err := a.Address().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testUserAddressToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.AddressidAddress != nil {
+	if a.R.Address != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Addressid) {
+	if !queries.IsValuerNil(a.AddressID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.AddressidUserAddresses) != 0 {
+	if len(b.R.UserAddresses) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testUserAddressToOneSetOpUserUsingUseridUser(t *testing.T) {
+func testUserAddressToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testUserAddressToOneSetOpUserUsingUseridUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetUseridUser(ctx, tx, i != 0, x)
+		err = a.SetUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UseridUser != x {
+		if a.R.User != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.UseridUserAddresses[0] != &a {
+		if x.R.UserAddresses[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Userid))
-		reflect.Indirect(reflect.ValueOf(&a.Userid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid, x.ID)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
 	}
 }
 
-func testUserAddressToOneRemoveOpUserUsingUseridUser(t *testing.T) {
+func testUserAddressToOneRemoveOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testUserAddressToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetUseridUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetUser(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUseridUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveUser(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UseridUser().Count(ctx, tx)
+	count, err := a.User().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testUserAddressToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UseridUser != nil {
+	if a.R.User != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Userid) {
+	if !queries.IsValuerNil(a.UserID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.UseridUserAddresses) != 0 {
+	if len(b.R.UserAddresses) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testUserAddressesSelect(t *testing.T) {
 }
 
 var (
-	userAddressDBTypes = map[string]string{`ID`: `character varying`, `Userid`: `character varying`, `Addressid`: `character varying`}
+	userAddressDBTypes = map[string]string{`ID`: `character varying`, `UserID`: `character varying`, `AddressID`: `character varying`}
 	_                  = bytes.MinRead
 )
 

@@ -25,9 +25,9 @@ import (
 // AssignedVariantAttributeValue is an object representing the database table.
 type AssignedVariantAttributeValue struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Valueid      null.String `boil:"valueid" json:"valueid,omitempty" toml:"valueid" yaml:"valueid,omitempty"`
-	Assignmentid null.String `boil:"assignmentid" json:"assignmentid,omitempty" toml:"assignmentid" yaml:"assignmentid,omitempty"`
-	Sortorder    null.Int    `boil:"sortorder" json:"sortorder,omitempty" toml:"sortorder" yaml:"sortorder,omitempty"`
+	ValueID      null.String `boil:"value_id" json:"value_id,omitempty" toml:"value_id" yaml:"value_id,omitempty"`
+	AssignmentID null.String `boil:"assignment_id" json:"assignment_id,omitempty" toml:"assignment_id" yaml:"assignment_id,omitempty"`
+	SortOrder    null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *assignedVariantAttributeValueR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignedVariantAttributeValueL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,55 +35,105 @@ type AssignedVariantAttributeValue struct {
 
 var AssignedVariantAttributeValueColumns = struct {
 	ID           string
-	Valueid      string
-	Assignmentid string
-	Sortorder    string
+	ValueID      string
+	AssignmentID string
+	SortOrder    string
 }{
 	ID:           "id",
-	Valueid:      "valueid",
-	Assignmentid: "assignmentid",
-	Sortorder:    "sortorder",
+	ValueID:      "value_id",
+	AssignmentID: "assignment_id",
+	SortOrder:    "sort_order",
 }
 
 var AssignedVariantAttributeValueTableColumns = struct {
 	ID           string
-	Valueid      string
-	Assignmentid string
-	Sortorder    string
+	ValueID      string
+	AssignmentID string
+	SortOrder    string
 }{
 	ID:           "assigned_variant_attribute_values.id",
-	Valueid:      "assigned_variant_attribute_values.valueid",
-	Assignmentid: "assigned_variant_attribute_values.assignmentid",
-	Sortorder:    "assigned_variant_attribute_values.sortorder",
+	ValueID:      "assigned_variant_attribute_values.value_id",
+	AssignmentID: "assigned_variant_attribute_values.assignment_id",
+	SortOrder:    "assigned_variant_attribute_values.sort_order",
 }
 
 // Generated where
 
+type whereHelpernull_String struct{ field string }
+
+func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" LIKE ?", x)
+}
+func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT LIKE ?", x)
+}
+func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" ILIKE ?", x)
+}
+func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT ILIKE ?", x)
+}
+func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var AssignedVariantAttributeValueWhere = struct {
 	ID           whereHelperstring
-	Valueid      whereHelpernull_String
-	Assignmentid whereHelpernull_String
-	Sortorder    whereHelpernull_Int
+	ValueID      whereHelpernull_String
+	AssignmentID whereHelpernull_String
+	SortOrder    whereHelpernull_Int
 }{
 	ID:           whereHelperstring{field: "\"assigned_variant_attribute_values\".\"id\""},
-	Valueid:      whereHelpernull_String{field: "\"assigned_variant_attribute_values\".\"valueid\""},
-	Assignmentid: whereHelpernull_String{field: "\"assigned_variant_attribute_values\".\"assignmentid\""},
-	Sortorder:    whereHelpernull_Int{field: "\"assigned_variant_attribute_values\".\"sortorder\""},
+	ValueID:      whereHelpernull_String{field: "\"assigned_variant_attribute_values\".\"value_id\""},
+	AssignmentID: whereHelpernull_String{field: "\"assigned_variant_attribute_values\".\"assignment_id\""},
+	SortOrder:    whereHelpernull_Int{field: "\"assigned_variant_attribute_values\".\"sort_order\""},
 }
 
 // AssignedVariantAttributeValueRels is where relationship names are stored.
 var AssignedVariantAttributeValueRels = struct {
-	AssignmentidAssignedVariantAttribute string
-	ValueidAttributeValue                string
+	Assignment string
+	Value      string
 }{
-	AssignmentidAssignedVariantAttribute: "AssignmentidAssignedVariantAttribute",
-	ValueidAttributeValue:                "ValueidAttributeValue",
+	Assignment: "Assignment",
+	Value:      "Value",
 }
 
 // assignedVariantAttributeValueR is where relationships are stored.
 type assignedVariantAttributeValueR struct {
-	AssignmentidAssignedVariantAttribute *AssignedVariantAttribute `boil:"AssignmentidAssignedVariantAttribute" json:"AssignmentidAssignedVariantAttribute" toml:"AssignmentidAssignedVariantAttribute" yaml:"AssignmentidAssignedVariantAttribute"`
-	ValueidAttributeValue                *AttributeValue           `boil:"ValueidAttributeValue" json:"ValueidAttributeValue" toml:"ValueidAttributeValue" yaml:"ValueidAttributeValue"`
+	Assignment *AssignedVariantAttribute `boil:"Assignment" json:"Assignment" toml:"Assignment" yaml:"Assignment"`
+	Value      *AttributeValue           `boil:"Value" json:"Value" toml:"Value" yaml:"Value"`
 }
 
 // NewStruct creates a new relationship struct
@@ -91,27 +141,27 @@ func (*assignedVariantAttributeValueR) NewStruct() *assignedVariantAttributeValu
 	return &assignedVariantAttributeValueR{}
 }
 
-func (r *assignedVariantAttributeValueR) GetAssignmentidAssignedVariantAttribute() *AssignedVariantAttribute {
+func (r *assignedVariantAttributeValueR) GetAssignment() *AssignedVariantAttribute {
 	if r == nil {
 		return nil
 	}
-	return r.AssignmentidAssignedVariantAttribute
+	return r.Assignment
 }
 
-func (r *assignedVariantAttributeValueR) GetValueidAttributeValue() *AttributeValue {
+func (r *assignedVariantAttributeValueR) GetValue() *AttributeValue {
 	if r == nil {
 		return nil
 	}
-	return r.ValueidAttributeValue
+	return r.Value
 }
 
 // assignedVariantAttributeValueL is where Load methods for each relationship are stored.
 type assignedVariantAttributeValueL struct{}
 
 var (
-	assignedVariantAttributeValueAllColumns            = []string{"id", "valueid", "assignmentid", "sortorder"}
+	assignedVariantAttributeValueAllColumns            = []string{"id", "value_id", "assignment_id", "sort_order"}
 	assignedVariantAttributeValueColumnsWithoutDefault = []string{"id"}
-	assignedVariantAttributeValueColumnsWithDefault    = []string{"valueid", "assignmentid", "sortorder"}
+	assignedVariantAttributeValueColumnsWithDefault    = []string{"value_id", "assignment_id", "sort_order"}
 	assignedVariantAttributeValuePrimaryKeyColumns     = []string{"id"}
 	assignedVariantAttributeValueGeneratedColumns      = []string{}
 )
@@ -394,10 +444,10 @@ func (q assignedVariantAttributeValueQuery) Exists(ctx context.Context, exec boi
 	return count > 0, nil
 }
 
-// AssignmentidAssignedVariantAttribute pointed to by the foreign key.
-func (o *AssignedVariantAttributeValue) AssignmentidAssignedVariantAttribute(mods ...qm.QueryMod) assignedVariantAttributeQuery {
+// Assignment pointed to by the foreign key.
+func (o *AssignedVariantAttributeValue) Assignment(mods ...qm.QueryMod) assignedVariantAttributeQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Assignmentid),
+		qm.Where("\"id\" = ?", o.AssignmentID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -405,10 +455,10 @@ func (o *AssignedVariantAttributeValue) AssignmentidAssignedVariantAttribute(mod
 	return AssignedVariantAttributes(queryMods...)
 }
 
-// ValueidAttributeValue pointed to by the foreign key.
-func (o *AssignedVariantAttributeValue) ValueidAttributeValue(mods ...qm.QueryMod) attributeValueQuery {
+// Value pointed to by the foreign key.
+func (o *AssignedVariantAttributeValue) Value(mods ...qm.QueryMod) attributeValueQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Valueid),
+		qm.Where("\"id\" = ?", o.ValueID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +466,9 @@ func (o *AssignedVariantAttributeValue) ValueidAttributeValue(mods ...qm.QueryMo
 	return AttributeValues(queryMods...)
 }
 
-// LoadAssignmentidAssignedVariantAttribute allows an eager lookup of values, cached into the
+// LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedVariantAttributeValueL) LoadAssignmentidAssignedVariantAttribute(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedVariantAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedVariantAttributeValueL) LoadAssignment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedVariantAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedVariantAttributeValue
 	var object *AssignedVariantAttributeValue
 
@@ -449,8 +499,8 @@ func (assignedVariantAttributeValueL) LoadAssignmentidAssignedVariantAttribute(c
 		if object.R == nil {
 			object.R = &assignedVariantAttributeValueR{}
 		}
-		if !queries.IsNil(object.Assignmentid) {
-			args = append(args, object.Assignmentid)
+		if !queries.IsNil(object.AssignmentID) {
+			args = append(args, object.AssignmentID)
 		}
 
 	} else {
@@ -461,13 +511,13 @@ func (assignedVariantAttributeValueL) LoadAssignmentidAssignedVariantAttribute(c
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Assignmentid) {
+				if queries.Equal(a, obj.AssignmentID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Assignmentid) {
-				args = append(args, obj.Assignmentid)
+			if !queries.IsNil(obj.AssignmentID) {
+				args = append(args, obj.AssignmentID)
 			}
 
 		}
@@ -516,22 +566,22 @@ func (assignedVariantAttributeValueL) LoadAssignmentidAssignedVariantAttribute(c
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.AssignmentidAssignedVariantAttribute = foreign
+		object.R.Assignment = foreign
 		if foreign.R == nil {
 			foreign.R = &assignedVariantAttributeR{}
 		}
-		foreign.R.AssignmentidAssignedVariantAttributeValues = append(foreign.R.AssignmentidAssignedVariantAttributeValues, object)
+		foreign.R.AssignmentAssignedVariantAttributeValues = append(foreign.R.AssignmentAssignedVariantAttributeValues, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Assignmentid, foreign.ID) {
-				local.R.AssignmentidAssignedVariantAttribute = foreign
+			if queries.Equal(local.AssignmentID, foreign.ID) {
+				local.R.Assignment = foreign
 				if foreign.R == nil {
 					foreign.R = &assignedVariantAttributeR{}
 				}
-				foreign.R.AssignmentidAssignedVariantAttributeValues = append(foreign.R.AssignmentidAssignedVariantAttributeValues, local)
+				foreign.R.AssignmentAssignedVariantAttributeValues = append(foreign.R.AssignmentAssignedVariantAttributeValues, local)
 				break
 			}
 		}
@@ -540,9 +590,9 @@ func (assignedVariantAttributeValueL) LoadAssignmentidAssignedVariantAttribute(c
 	return nil
 }
 
-// LoadValueidAttributeValue allows an eager lookup of values, cached into the
+// LoadValue allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedVariantAttributeValueL) LoadValueidAttributeValue(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedVariantAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedVariantAttributeValueL) LoadValue(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedVariantAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedVariantAttributeValue
 	var object *AssignedVariantAttributeValue
 
@@ -573,8 +623,8 @@ func (assignedVariantAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 		if object.R == nil {
 			object.R = &assignedVariantAttributeValueR{}
 		}
-		if !queries.IsNil(object.Valueid) {
-			args = append(args, object.Valueid)
+		if !queries.IsNil(object.ValueID) {
+			args = append(args, object.ValueID)
 		}
 
 	} else {
@@ -585,13 +635,13 @@ func (assignedVariantAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Valueid) {
+				if queries.Equal(a, obj.ValueID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Valueid) {
-				args = append(args, obj.Valueid)
+			if !queries.IsNil(obj.ValueID) {
+				args = append(args, obj.ValueID)
 			}
 
 		}
@@ -640,22 +690,22 @@ func (assignedVariantAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ValueidAttributeValue = foreign
+		object.R.Value = foreign
 		if foreign.R == nil {
 			foreign.R = &attributeValueR{}
 		}
-		foreign.R.ValueidAssignedVariantAttributeValues = append(foreign.R.ValueidAssignedVariantAttributeValues, object)
+		foreign.R.ValueAssignedVariantAttributeValues = append(foreign.R.ValueAssignedVariantAttributeValues, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Valueid, foreign.ID) {
-				local.R.ValueidAttributeValue = foreign
+			if queries.Equal(local.ValueID, foreign.ID) {
+				local.R.Value = foreign
 				if foreign.R == nil {
 					foreign.R = &attributeValueR{}
 				}
-				foreign.R.ValueidAssignedVariantAttributeValues = append(foreign.R.ValueidAssignedVariantAttributeValues, local)
+				foreign.R.ValueAssignedVariantAttributeValues = append(foreign.R.ValueAssignedVariantAttributeValues, local)
 				break
 			}
 		}
@@ -664,10 +714,10 @@ func (assignedVariantAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 	return nil
 }
 
-// SetAssignmentidAssignedVariantAttribute of the assignedVariantAttributeValue to the related item.
-// Sets o.R.AssignmentidAssignedVariantAttribute to related.
-// Adds o to related.R.AssignmentidAssignedVariantAttributeValues.
-func (o *AssignedVariantAttributeValue) SetAssignmentidAssignedVariantAttribute(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AssignedVariantAttribute) error {
+// SetAssignment of the assignedVariantAttributeValue to the related item.
+// Sets o.R.Assignment to related.
+// Adds o to related.R.AssignmentAssignedVariantAttributeValues.
+func (o *AssignedVariantAttributeValue) SetAssignment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AssignedVariantAttribute) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -677,7 +727,7 @@ func (o *AssignedVariantAttributeValue) SetAssignmentidAssignedVariantAttribute(
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"assigned_variant_attribute_values\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"assignmentid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedVariantAttributeValuePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -691,63 +741,63 @@ func (o *AssignedVariantAttributeValue) SetAssignmentidAssignedVariantAttribute(
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Assignmentid, related.ID)
+	queries.Assign(&o.AssignmentID, related.ID)
 	if o.R == nil {
 		o.R = &assignedVariantAttributeValueR{
-			AssignmentidAssignedVariantAttribute: related,
+			Assignment: related,
 		}
 	} else {
-		o.R.AssignmentidAssignedVariantAttribute = related
+		o.R.Assignment = related
 	}
 
 	if related.R == nil {
 		related.R = &assignedVariantAttributeR{
-			AssignmentidAssignedVariantAttributeValues: AssignedVariantAttributeValueSlice{o},
+			AssignmentAssignedVariantAttributeValues: AssignedVariantAttributeValueSlice{o},
 		}
 	} else {
-		related.R.AssignmentidAssignedVariantAttributeValues = append(related.R.AssignmentidAssignedVariantAttributeValues, o)
+		related.R.AssignmentAssignedVariantAttributeValues = append(related.R.AssignmentAssignedVariantAttributeValues, o)
 	}
 
 	return nil
 }
 
-// RemoveAssignmentidAssignedVariantAttribute relationship.
-// Sets o.R.AssignmentidAssignedVariantAttribute to nil.
+// RemoveAssignment relationship.
+// Sets o.R.Assignment to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *AssignedVariantAttributeValue) RemoveAssignmentidAssignedVariantAttribute(ctx context.Context, exec boil.ContextExecutor, related *AssignedVariantAttribute) error {
+func (o *AssignedVariantAttributeValue) RemoveAssignment(ctx context.Context, exec boil.ContextExecutor, related *AssignedVariantAttribute) error {
 	var err error
 
-	queries.SetScanner(&o.Assignmentid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("assignmentid")); err != nil {
+	queries.SetScanner(&o.AssignmentID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("assignment_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.AssignmentidAssignedVariantAttribute = nil
+		o.R.Assignment = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.AssignmentidAssignedVariantAttributeValues {
-		if queries.Equal(o.Assignmentid, ri.Assignmentid) {
+	for i, ri := range related.R.AssignmentAssignedVariantAttributeValues {
+		if queries.Equal(o.AssignmentID, ri.AssignmentID) {
 			continue
 		}
 
-		ln := len(related.R.AssignmentidAssignedVariantAttributeValues)
+		ln := len(related.R.AssignmentAssignedVariantAttributeValues)
 		if ln > 1 && i < ln-1 {
-			related.R.AssignmentidAssignedVariantAttributeValues[i] = related.R.AssignmentidAssignedVariantAttributeValues[ln-1]
+			related.R.AssignmentAssignedVariantAttributeValues[i] = related.R.AssignmentAssignedVariantAttributeValues[ln-1]
 		}
-		related.R.AssignmentidAssignedVariantAttributeValues = related.R.AssignmentidAssignedVariantAttributeValues[:ln-1]
+		related.R.AssignmentAssignedVariantAttributeValues = related.R.AssignmentAssignedVariantAttributeValues[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetValueidAttributeValue of the assignedVariantAttributeValue to the related item.
-// Sets o.R.ValueidAttributeValue to related.
-// Adds o to related.R.ValueidAssignedVariantAttributeValues.
-func (o *AssignedVariantAttributeValue) SetValueidAttributeValue(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributeValue) error {
+// SetValue of the assignedVariantAttributeValue to the related item.
+// Sets o.R.Value to related.
+// Adds o to related.R.ValueAssignedVariantAttributeValues.
+func (o *AssignedVariantAttributeValue) SetValue(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributeValue) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -757,7 +807,7 @@ func (o *AssignedVariantAttributeValue) SetValueidAttributeValue(ctx context.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"assigned_variant_attribute_values\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"valueid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedVariantAttributeValuePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -771,54 +821,54 @@ func (o *AssignedVariantAttributeValue) SetValueidAttributeValue(ctx context.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Valueid, related.ID)
+	queries.Assign(&o.ValueID, related.ID)
 	if o.R == nil {
 		o.R = &assignedVariantAttributeValueR{
-			ValueidAttributeValue: related,
+			Value: related,
 		}
 	} else {
-		o.R.ValueidAttributeValue = related
+		o.R.Value = related
 	}
 
 	if related.R == nil {
 		related.R = &attributeValueR{
-			ValueidAssignedVariantAttributeValues: AssignedVariantAttributeValueSlice{o},
+			ValueAssignedVariantAttributeValues: AssignedVariantAttributeValueSlice{o},
 		}
 	} else {
-		related.R.ValueidAssignedVariantAttributeValues = append(related.R.ValueidAssignedVariantAttributeValues, o)
+		related.R.ValueAssignedVariantAttributeValues = append(related.R.ValueAssignedVariantAttributeValues, o)
 	}
 
 	return nil
 }
 
-// RemoveValueidAttributeValue relationship.
-// Sets o.R.ValueidAttributeValue to nil.
+// RemoveValue relationship.
+// Sets o.R.Value to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *AssignedVariantAttributeValue) RemoveValueidAttributeValue(ctx context.Context, exec boil.ContextExecutor, related *AttributeValue) error {
+func (o *AssignedVariantAttributeValue) RemoveValue(ctx context.Context, exec boil.ContextExecutor, related *AttributeValue) error {
 	var err error
 
-	queries.SetScanner(&o.Valueid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("valueid")); err != nil {
+	queries.SetScanner(&o.ValueID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("value_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ValueidAttributeValue = nil
+		o.R.Value = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ValueidAssignedVariantAttributeValues {
-		if queries.Equal(o.Valueid, ri.Valueid) {
+	for i, ri := range related.R.ValueAssignedVariantAttributeValues {
+		if queries.Equal(o.ValueID, ri.ValueID) {
 			continue
 		}
 
-		ln := len(related.R.ValueidAssignedVariantAttributeValues)
+		ln := len(related.R.ValueAssignedVariantAttributeValues)
 		if ln > 1 && i < ln-1 {
-			related.R.ValueidAssignedVariantAttributeValues[i] = related.R.ValueidAssignedVariantAttributeValues[ln-1]
+			related.R.ValueAssignedVariantAttributeValues[i] = related.R.ValueAssignedVariantAttributeValues[ln-1]
 		}
-		related.R.ValueidAssignedVariantAttributeValues = related.R.ValueidAssignedVariantAttributeValues[:ln-1]
+		related.R.ValueAssignedVariantAttributeValues = related.R.ValueAssignedVariantAttributeValues[:ln-1]
 		break
 	}
 	return nil

@@ -1,6 +1,8 @@
 package store
 
 import (
+	"context"
+	"database/sql"
 	"reflect"
 	"strconv"
 	"strings"
@@ -9,6 +11,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var escapeLikeSearchChar = []string{
@@ -185,4 +188,9 @@ func BuildSqlizer(option squirrel.Sqlizer, where string) ([]any, error) {
 	res := make([]any, 0, len(args)+1)
 	res[0] = query
 	return append(res, args...), nil
+}
+
+type ContextRunner interface {
+	boil.ContextTransactor
+	BeginTx(context.Context, *sql.TxOptions) (ContextRunner, error)
 }

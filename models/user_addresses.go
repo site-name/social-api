@@ -25,8 +25,8 @@ import (
 // UserAddress is an object representing the database table.
 type UserAddress struct {
 	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Userid    null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Addressid null.String `boil:"addressid" json:"addressid,omitempty" toml:"addressid" yaml:"addressid,omitempty"`
+	UserID    null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	AddressID null.String `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
 
 	R *userAddressR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userAddressL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,49 +34,49 @@ type UserAddress struct {
 
 var UserAddressColumns = struct {
 	ID        string
-	Userid    string
-	Addressid string
+	UserID    string
+	AddressID string
 }{
 	ID:        "id",
-	Userid:    "userid",
-	Addressid: "addressid",
+	UserID:    "user_id",
+	AddressID: "address_id",
 }
 
 var UserAddressTableColumns = struct {
 	ID        string
-	Userid    string
-	Addressid string
+	UserID    string
+	AddressID string
 }{
 	ID:        "user_addresses.id",
-	Userid:    "user_addresses.userid",
-	Addressid: "user_addresses.addressid",
+	UserID:    "user_addresses.user_id",
+	AddressID: "user_addresses.address_id",
 }
 
 // Generated where
 
 var UserAddressWhere = struct {
 	ID        whereHelperstring
-	Userid    whereHelpernull_String
-	Addressid whereHelpernull_String
+	UserID    whereHelpernull_String
+	AddressID whereHelpernull_String
 }{
 	ID:        whereHelperstring{field: "\"user_addresses\".\"id\""},
-	Userid:    whereHelpernull_String{field: "\"user_addresses\".\"userid\""},
-	Addressid: whereHelpernull_String{field: "\"user_addresses\".\"addressid\""},
+	UserID:    whereHelpernull_String{field: "\"user_addresses\".\"user_id\""},
+	AddressID: whereHelpernull_String{field: "\"user_addresses\".\"address_id\""},
 }
 
 // UserAddressRels is where relationship names are stored.
 var UserAddressRels = struct {
-	AddressidAddress string
-	UseridUser       string
+	Address string
+	User    string
 }{
-	AddressidAddress: "AddressidAddress",
-	UseridUser:       "UseridUser",
+	Address: "Address",
+	User:    "User",
 }
 
 // userAddressR is where relationships are stored.
 type userAddressR struct {
-	AddressidAddress *Address `boil:"AddressidAddress" json:"AddressidAddress" toml:"AddressidAddress" yaml:"AddressidAddress"`
-	UseridUser       *User    `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
+	Address *Address `boil:"Address" json:"Address" toml:"Address" yaml:"Address"`
+	User    *User    `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
@@ -84,27 +84,27 @@ func (*userAddressR) NewStruct() *userAddressR {
 	return &userAddressR{}
 }
 
-func (r *userAddressR) GetAddressidAddress() *Address {
+func (r *userAddressR) GetAddress() *Address {
 	if r == nil {
 		return nil
 	}
-	return r.AddressidAddress
+	return r.Address
 }
 
-func (r *userAddressR) GetUseridUser() *User {
+func (r *userAddressR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
 // userAddressL is where Load methods for each relationship are stored.
 type userAddressL struct{}
 
 var (
-	userAddressAllColumns            = []string{"id", "userid", "addressid"}
+	userAddressAllColumns            = []string{"id", "user_id", "address_id"}
 	userAddressColumnsWithoutDefault = []string{"id"}
-	userAddressColumnsWithDefault    = []string{"userid", "addressid"}
+	userAddressColumnsWithDefault    = []string{"user_id", "address_id"}
 	userAddressPrimaryKeyColumns     = []string{"id"}
 	userAddressGeneratedColumns      = []string{}
 )
@@ -387,10 +387,10 @@ func (q userAddressQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	return count > 0, nil
 }
 
-// AddressidAddress pointed to by the foreign key.
-func (o *UserAddress) AddressidAddress(mods ...qm.QueryMod) addressQuery {
+// Address pointed to by the foreign key.
+func (o *UserAddress) Address(mods ...qm.QueryMod) addressQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Addressid),
+		qm.Where("\"id\" = ?", o.AddressID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -398,10 +398,10 @@ func (o *UserAddress) AddressidAddress(mods ...qm.QueryMod) addressQuery {
 	return Addresses(queryMods...)
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *UserAddress) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *UserAddress) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *UserAddress) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// LoadAddressidAddress allows an eager lookup of values, cached into the
+// LoadAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userAddressL) LoadAddressidAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUserAddress interface{}, mods queries.Applicator) error {
+func (userAddressL) LoadAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUserAddress interface{}, mods queries.Applicator) error {
 	var slice []*UserAddress
 	var object *UserAddress
 
@@ -442,8 +442,8 @@ func (userAddressL) LoadAddressidAddress(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &userAddressR{}
 		}
-		if !queries.IsNil(object.Addressid) {
-			args = append(args, object.Addressid)
+		if !queries.IsNil(object.AddressID) {
+			args = append(args, object.AddressID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (userAddressL) LoadAddressidAddress(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Addressid) {
+				if queries.Equal(a, obj.AddressID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Addressid) {
-				args = append(args, obj.Addressid)
+			if !queries.IsNil(obj.AddressID) {
+				args = append(args, obj.AddressID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (userAddressL) LoadAddressidAddress(ctx context.Context, e boil.ContextExec
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.AddressidAddress = foreign
+		object.R.Address = foreign
 		if foreign.R == nil {
 			foreign.R = &addressR{}
 		}
-		foreign.R.AddressidUserAddresses = append(foreign.R.AddressidUserAddresses, object)
+		foreign.R.UserAddresses = append(foreign.R.UserAddresses, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Addressid, foreign.ID) {
-				local.R.AddressidAddress = foreign
+			if queries.Equal(local.AddressID, foreign.ID) {
+				local.R.Address = foreign
 				if foreign.R == nil {
 					foreign.R = &addressR{}
 				}
-				foreign.R.AddressidUserAddresses = append(foreign.R.AddressidUserAddresses, local)
+				foreign.R.UserAddresses = append(foreign.R.UserAddresses, local)
 				break
 			}
 		}
@@ -533,9 +533,9 @@ func (userAddressL) LoadAddressidAddress(ctx context.Context, e boil.ContextExec
 	return nil
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userAddressL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUserAddress interface{}, mods queries.Applicator) error {
+func (userAddressL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUserAddress interface{}, mods queries.Applicator) error {
 	var slice []*UserAddress
 	var object *UserAddress
 
@@ -566,8 +566,8 @@ func (userAddressL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &userAddressR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -578,13 +578,13 @@ func (userAddressL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -633,22 +633,22 @@ func (userAddressL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridUserAddresses = append(foreign.R.UseridUserAddresses, object)
+		foreign.R.UserAddresses = append(foreign.R.UserAddresses, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridUserAddresses = append(foreign.R.UseridUserAddresses, local)
+				foreign.R.UserAddresses = append(foreign.R.UserAddresses, local)
 				break
 			}
 		}
@@ -657,10 +657,10 @@ func (userAddressL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// SetAddressidAddress of the userAddress to the related item.
-// Sets o.R.AddressidAddress to related.
-// Adds o to related.R.AddressidUserAddresses.
-func (o *UserAddress) SetAddressidAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+// SetAddress of the userAddress to the related item.
+// Sets o.R.Address to related.
+// Adds o to related.R.UserAddresses.
+func (o *UserAddress) SetAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -670,7 +670,7 @@ func (o *UserAddress) SetAddressidAddress(ctx context.Context, exec boil.Context
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"user_addresses\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"addressid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, userAddressPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -684,63 +684,63 @@ func (o *UserAddress) SetAddressidAddress(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Addressid, related.ID)
+	queries.Assign(&o.AddressID, related.ID)
 	if o.R == nil {
 		o.R = &userAddressR{
-			AddressidAddress: related,
+			Address: related,
 		}
 	} else {
-		o.R.AddressidAddress = related
+		o.R.Address = related
 	}
 
 	if related.R == nil {
 		related.R = &addressR{
-			AddressidUserAddresses: UserAddressSlice{o},
+			UserAddresses: UserAddressSlice{o},
 		}
 	} else {
-		related.R.AddressidUserAddresses = append(related.R.AddressidUserAddresses, o)
+		related.R.UserAddresses = append(related.R.UserAddresses, o)
 	}
 
 	return nil
 }
 
-// RemoveAddressidAddress relationship.
-// Sets o.R.AddressidAddress to nil.
+// RemoveAddress relationship.
+// Sets o.R.Address to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *UserAddress) RemoveAddressidAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *UserAddress) RemoveAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
 	var err error
 
-	queries.SetScanner(&o.Addressid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("addressid")); err != nil {
+	queries.SetScanner(&o.AddressID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.AddressidAddress = nil
+		o.R.Address = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.AddressidUserAddresses {
-		if queries.Equal(o.Addressid, ri.Addressid) {
+	for i, ri := range related.R.UserAddresses {
+		if queries.Equal(o.AddressID, ri.AddressID) {
 			continue
 		}
 
-		ln := len(related.R.AddressidUserAddresses)
+		ln := len(related.R.UserAddresses)
 		if ln > 1 && i < ln-1 {
-			related.R.AddressidUserAddresses[i] = related.R.AddressidUserAddresses[ln-1]
+			related.R.UserAddresses[i] = related.R.UserAddresses[ln-1]
 		}
-		related.R.AddressidUserAddresses = related.R.AddressidUserAddresses[:ln-1]
+		related.R.UserAddresses = related.R.UserAddresses[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetUseridUser of the userAddress to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridUserAddresses.
-func (o *UserAddress) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the userAddress to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.UserAddresses.
+func (o *UserAddress) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -750,7 +750,7 @@ func (o *UserAddress) SetUseridUser(ctx context.Context, exec boil.ContextExecut
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"user_addresses\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, userAddressPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -764,54 +764,54 @@ func (o *UserAddress) SetUseridUser(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &userAddressR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridUserAddresses: UserAddressSlice{o},
+			UserAddresses: UserAddressSlice{o},
 		}
 	} else {
-		related.R.UseridUserAddresses = append(related.R.UseridUserAddresses, o)
+		related.R.UserAddresses = append(related.R.UserAddresses, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *UserAddress) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *UserAddress) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridUserAddresses {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.UserAddresses {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridUserAddresses)
+		ln := len(related.R.UserAddresses)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridUserAddresses[i] = related.R.UseridUserAddresses[ln-1]
+			related.R.UserAddresses[i] = related.R.UserAddresses[ln-1]
 		}
-		related.R.UseridUserAddresses = related.R.UseridUserAddresses[:ln-1]
+		related.R.UserAddresses = related.R.UserAddresses[:ln-1]
 		break
 	}
 	return nil

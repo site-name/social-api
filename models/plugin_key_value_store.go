@@ -24,51 +24,51 @@ import (
 
 // PluginKeyValueStore is an object representing the database table.
 type PluginKeyValueStore struct {
-	Pluginid string     `boil:"pluginid" json:"pluginid" toml:"pluginid" yaml:"pluginid"`
-	Pkey     string     `boil:"pkey" json:"pkey" toml:"pkey" yaml:"pkey"`
-	Pvalue   null.Bytes `boil:"pvalue" json:"pvalue,omitempty" toml:"pvalue" yaml:"pvalue,omitempty"`
-	Expireat null.Int64 `boil:"expireat" json:"expireat,omitempty" toml:"expireat" yaml:"expireat,omitempty"`
+	PluginID string     `boil:"plugin_id" json:"plugin_id" toml:"plugin_id" yaml:"plugin_id"`
+	PKey     string     `boil:"p_key" json:"p_key" toml:"p_key" yaml:"p_key"`
+	PValue   null.Bytes `boil:"p_value" json:"p_value,omitempty" toml:"p_value" yaml:"p_value,omitempty"`
+	ExpireAt null.Int64 `boil:"expire_at" json:"expire_at,omitempty" toml:"expire_at" yaml:"expire_at,omitempty"`
 
 	R *pluginKeyValueStoreR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pluginKeyValueStoreL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PluginKeyValueStoreColumns = struct {
-	Pluginid string
-	Pkey     string
-	Pvalue   string
-	Expireat string
+	PluginID string
+	PKey     string
+	PValue   string
+	ExpireAt string
 }{
-	Pluginid: "pluginid",
-	Pkey:     "pkey",
-	Pvalue:   "pvalue",
-	Expireat: "expireat",
+	PluginID: "plugin_id",
+	PKey:     "p_key",
+	PValue:   "p_value",
+	ExpireAt: "expire_at",
 }
 
 var PluginKeyValueStoreTableColumns = struct {
-	Pluginid string
-	Pkey     string
-	Pvalue   string
-	Expireat string
+	PluginID string
+	PKey     string
+	PValue   string
+	ExpireAt string
 }{
-	Pluginid: "plugin_key_value_store.pluginid",
-	Pkey:     "plugin_key_value_store.pkey",
-	Pvalue:   "plugin_key_value_store.pvalue",
-	Expireat: "plugin_key_value_store.expireat",
+	PluginID: "plugin_key_value_store.plugin_id",
+	PKey:     "plugin_key_value_store.p_key",
+	PValue:   "plugin_key_value_store.p_value",
+	ExpireAt: "plugin_key_value_store.expire_at",
 }
 
 // Generated where
 
 var PluginKeyValueStoreWhere = struct {
-	Pluginid whereHelperstring
-	Pkey     whereHelperstring
-	Pvalue   whereHelpernull_Bytes
-	Expireat whereHelpernull_Int64
+	PluginID whereHelperstring
+	PKey     whereHelperstring
+	PValue   whereHelpernull_Bytes
+	ExpireAt whereHelpernull_Int64
 }{
-	Pluginid: whereHelperstring{field: "\"plugin_key_value_store\".\"pluginid\""},
-	Pkey:     whereHelperstring{field: "\"plugin_key_value_store\".\"pkey\""},
-	Pvalue:   whereHelpernull_Bytes{field: "\"plugin_key_value_store\".\"pvalue\""},
-	Expireat: whereHelpernull_Int64{field: "\"plugin_key_value_store\".\"expireat\""},
+	PluginID: whereHelperstring{field: "\"plugin_key_value_store\".\"plugin_id\""},
+	PKey:     whereHelperstring{field: "\"plugin_key_value_store\".\"p_key\""},
+	PValue:   whereHelpernull_Bytes{field: "\"plugin_key_value_store\".\"p_value\""},
+	ExpireAt: whereHelpernull_Int64{field: "\"plugin_key_value_store\".\"expire_at\""},
 }
 
 // PluginKeyValueStoreRels is where relationship names are stored.
@@ -88,10 +88,10 @@ func (*pluginKeyValueStoreR) NewStruct() *pluginKeyValueStoreR {
 type pluginKeyValueStoreL struct{}
 
 var (
-	pluginKeyValueStoreAllColumns            = []string{"pluginid", "pkey", "pvalue", "expireat"}
-	pluginKeyValueStoreColumnsWithoutDefault = []string{"pluginid", "pkey"}
-	pluginKeyValueStoreColumnsWithDefault    = []string{"pvalue", "expireat"}
-	pluginKeyValueStorePrimaryKeyColumns     = []string{"pluginid"}
+	pluginKeyValueStoreAllColumns            = []string{"plugin_id", "p_key", "p_value", "expire_at"}
+	pluginKeyValueStoreColumnsWithoutDefault = []string{"plugin_id", "p_key"}
+	pluginKeyValueStoreColumnsWithDefault    = []string{"p_value", "expire_at"}
+	pluginKeyValueStorePrimaryKeyColumns     = []string{"plugin_id"}
 	pluginKeyValueStoreGeneratedColumns      = []string{}
 )
 
@@ -386,7 +386,7 @@ func PluginKeyValueStores(mods ...qm.QueryMod) pluginKeyValueStoreQuery {
 
 // FindPluginKeyValueStore retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, pluginid string, selectCols ...string) (*PluginKeyValueStore, error) {
+func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, pluginID string, selectCols ...string) (*PluginKeyValueStore, error) {
 	pluginKeyValueStoreObj := &PluginKeyValueStore{}
 
 	sel := "*"
@@ -394,10 +394,10 @@ func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, plu
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"plugin_key_value_store\" where \"pluginid\"=$1", sel,
+		"select %s from \"plugin_key_value_store\" where \"plugin_id\"=$1", sel,
 	)
 
-	q := queries.Raw(query, pluginid)
+	q := queries.Raw(query, pluginID)
 
 	err := q.Bind(ctx, exec, pluginKeyValueStoreObj)
 	if err != nil {
@@ -749,7 +749,7 @@ func (o *PluginKeyValueStore) Delete(ctx context.Context, exec boil.ContextExecu
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pluginKeyValueStorePrimaryKeyMapping)
-	sql := "DELETE FROM \"plugin_key_value_store\" WHERE \"pluginid\"=$1"
+	sql := "DELETE FROM \"plugin_key_value_store\" WHERE \"plugin_id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -846,7 +846,7 @@ func (o PluginKeyValueStoreSlice) DeleteAll(ctx context.Context, exec boil.Conte
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *PluginKeyValueStore) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindPluginKeyValueStore(ctx, exec, o.Pluginid)
+	ret, err := FindPluginKeyValueStore(ctx, exec, o.PluginID)
 	if err != nil {
 		return err
 	}
@@ -885,16 +885,16 @@ func (o *PluginKeyValueStoreSlice) ReloadAll(ctx context.Context, exec boil.Cont
 }
 
 // PluginKeyValueStoreExists checks if the PluginKeyValueStore row exists.
-func PluginKeyValueStoreExists(ctx context.Context, exec boil.ContextExecutor, pluginid string) (bool, error) {
+func PluginKeyValueStoreExists(ctx context.Context, exec boil.ContextExecutor, pluginID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"plugin_key_value_store\" where \"pluginid\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"plugin_key_value_store\" where \"plugin_id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, pluginid)
+		fmt.Fprintln(writer, pluginID)
 	}
-	row := exec.QueryRowContext(ctx, sql, pluginid)
+	row := exec.QueryRowContext(ctx, sql, pluginID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -906,5 +906,5 @@ func PluginKeyValueStoreExists(ctx context.Context, exec boil.ContextExecutor, p
 
 // Exists checks if the PluginKeyValueStore row exists.
 func (o *PluginKeyValueStore) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return PluginKeyValueStoreExists(ctx, exec, o.Pluginid)
+	return PluginKeyValueStoreExists(ctx, exec, o.PluginID)
 }

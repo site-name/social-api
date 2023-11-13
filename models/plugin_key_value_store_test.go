@@ -149,7 +149,7 @@ func testPluginKeyValueStoresExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := PluginKeyValueStoreExists(ctx, tx, o.Pluginid)
+	e, err := PluginKeyValueStoreExists(ctx, tx, o.PluginID)
 	if err != nil {
 		t.Errorf("Unable to check if PluginKeyValueStore exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testPluginKeyValueStoresFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	pluginKeyValueStoreFound, err := FindPluginKeyValueStore(ctx, tx, o.Pluginid)
+	pluginKeyValueStoreFound, err := FindPluginKeyValueStore(ctx, tx, o.PluginID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testPluginKeyValueStoresSelect(t *testing.T) {
 }
 
 var (
-	pluginKeyValueStoreDBTypes = map[string]string{`Pluginid`: `character varying`, `Pkey`: `character varying`, `Pvalue`: `bytea`, `Expireat`: `bigint`}
+	pluginKeyValueStoreDBTypes = map[string]string{`PluginID`: `character varying`, `PKey`: `character varying`, `PValue`: `bytea`, `ExpireAt`: `bigint`}
 	_                          = bytes.MinRead
 )
 

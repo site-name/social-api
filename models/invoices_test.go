@@ -494,7 +494,7 @@ func testInvoicesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testInvoiceToManyInvoiceidInvoiceEvents(t *testing.T) {
+func testInvoiceToManyInvoiceEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testInvoiceToManyInvoiceidInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Invoiceid, a.ID)
-	queries.Assign(&c.Invoiceid, a.ID)
+	queries.Assign(&b.InvoiceID, a.ID)
+	queries.Assign(&c.InvoiceID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testInvoiceToManyInvoiceidInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.InvoiceidInvoiceEvents().All(ctx, tx)
+	check, err := a.InvoiceEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Invoiceid, b.Invoiceid) {
+		if queries.Equal(v.InvoiceID, b.InvoiceID) {
 			bFound = true
 		}
-		if queries.Equal(v.Invoiceid, c.Invoiceid) {
+		if queries.Equal(v.InvoiceID, c.InvoiceID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testInvoiceToManyInvoiceidInvoiceEvents(t *testing.T) {
 	}
 
 	slice := InvoiceSlice{&a}
-	if err = a.L.LoadInvoiceidInvoiceEvents(ctx, tx, false, (*[]*Invoice)(&slice), nil); err != nil {
+	if err = a.L.LoadInvoiceEvents(ctx, tx, false, (*[]*Invoice)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.InvoiceidInvoiceEvents); got != 2 {
+	if got := len(a.R.InvoiceEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.InvoiceidInvoiceEvents = nil
-	if err = a.L.LoadInvoiceidInvoiceEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.InvoiceEvents = nil
+	if err = a.L.LoadInvoiceEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.InvoiceidInvoiceEvents); got != 2 {
+	if got := len(a.R.InvoiceEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testInvoiceToManyInvoiceidInvoiceEvents(t *testing.T) {
 	}
 }
 
-func testInvoiceToManyAddOpInvoiceidInvoiceEvents(t *testing.T) {
+func testInvoiceToManyAddOpInvoiceEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -608,7 +608,7 @@ func testInvoiceToManyAddOpInvoiceidInvoiceEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddInvoiceidInvoiceEvents(ctx, tx, i != 0, x...)
+		err = a.AddInvoiceEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -616,28 +616,28 @@ func testInvoiceToManyAddOpInvoiceidInvoiceEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Invoiceid) {
-			t.Error("foreign key was wrong value", a.ID, first.Invoiceid)
+		if !queries.Equal(a.ID, first.InvoiceID) {
+			t.Error("foreign key was wrong value", a.ID, first.InvoiceID)
 		}
-		if !queries.Equal(a.ID, second.Invoiceid) {
-			t.Error("foreign key was wrong value", a.ID, second.Invoiceid)
+		if !queries.Equal(a.ID, second.InvoiceID) {
+			t.Error("foreign key was wrong value", a.ID, second.InvoiceID)
 		}
 
-		if first.R.InvoiceidInvoice != &a {
+		if first.R.Invoice != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.InvoiceidInvoice != &a {
+		if second.R.Invoice != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.InvoiceidInvoiceEvents[i*2] != first {
+		if a.R.InvoiceEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.InvoiceidInvoiceEvents[i*2+1] != second {
+		if a.R.InvoiceEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.InvoiceidInvoiceEvents().Count(ctx, tx)
+		count, err := a.InvoiceEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -647,7 +647,7 @@ func testInvoiceToManyAddOpInvoiceidInvoiceEvents(t *testing.T) {
 	}
 }
 
-func testInvoiceToManySetOpInvoiceidInvoiceEvents(t *testing.T) {
+func testInvoiceToManySetOpInvoiceEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -678,25 +678,12 @@ func testInvoiceToManySetOpInvoiceidInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetInvoiceidInvoiceEvents(ctx, tx, false, &b, &c)
+	err = a.SetInvoiceEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.InvoiceidInvoiceEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetInvoiceidInvoiceEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.InvoiceidInvoiceEvents().Count(ctx, tx)
+	count, err := a.InvoiceEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -704,41 +691,54 @@ func testInvoiceToManySetOpInvoiceidInvoiceEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Invoiceid) {
+	err = a.SetInvoiceEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.InvoiceEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.InvoiceID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Invoiceid) {
+	if !queries.IsValuerNil(c.InvoiceID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Invoiceid) {
-		t.Error("foreign key was wrong value", a.ID, d.Invoiceid)
+	if !queries.Equal(a.ID, d.InvoiceID) {
+		t.Error("foreign key was wrong value", a.ID, d.InvoiceID)
 	}
-	if !queries.Equal(a.ID, e.Invoiceid) {
-		t.Error("foreign key was wrong value", a.ID, e.Invoiceid)
-	}
-
-	if b.R.InvoiceidInvoice != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.InvoiceidInvoice != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.InvoiceidInvoice != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.InvoiceidInvoice != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.InvoiceID) {
+		t.Error("foreign key was wrong value", a.ID, e.InvoiceID)
 	}
 
-	if a.R.InvoiceidInvoiceEvents[0] != &d {
+	if b.R.Invoice != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Invoice != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Invoice != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Invoice != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.InvoiceEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.InvoiceidInvoiceEvents[1] != &e {
+	if a.R.InvoiceEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testInvoiceToManyRemoveOpInvoiceidInvoiceEvents(t *testing.T) {
+func testInvoiceToManyRemoveOpInvoiceEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -763,12 +763,12 @@ func testInvoiceToManyRemoveOpInvoiceidInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddInvoiceidInvoiceEvents(ctx, tx, true, foreigners...)
+	err = a.AddInvoiceEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.InvoiceidInvoiceEvents().Count(ctx, tx)
+	count, err := a.InvoiceEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -776,12 +776,12 @@ func testInvoiceToManyRemoveOpInvoiceidInvoiceEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveInvoiceidInvoiceEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveInvoiceEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.InvoiceidInvoiceEvents().Count(ctx, tx)
+	count, err = a.InvoiceEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -789,40 +789,40 @@ func testInvoiceToManyRemoveOpInvoiceidInvoiceEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Invoiceid) {
+	if !queries.IsValuerNil(b.InvoiceID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Invoiceid) {
+	if !queries.IsValuerNil(c.InvoiceID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.InvoiceidInvoice != nil {
+	if b.R.Invoice != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.InvoiceidInvoice != nil {
+	if c.R.Invoice != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.InvoiceidInvoice != &a {
+	if d.R.Invoice != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.InvoiceidInvoice != &a {
+	if e.R.Invoice != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.InvoiceidInvoiceEvents) != 2 {
+	if len(a.R.InvoiceEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.InvoiceidInvoiceEvents[1] != &d {
+	if a.R.InvoiceEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.InvoiceidInvoiceEvents[0] != &e {
+	if a.R.InvoiceEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testInvoiceToOneOrderUsingOrderidOrder(t *testing.T) {
+func testInvoiceToOneOrderUsingOrder(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -842,12 +842,12 @@ func testInvoiceToOneOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Orderid, foreign.ID)
+	queries.Assign(&local.OrderID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.OrderidOrder().One(ctx, tx)
+	check, err := local.Order().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -863,18 +863,18 @@ func testInvoiceToOneOrderUsingOrderidOrder(t *testing.T) {
 	})
 
 	slice := InvoiceSlice{&local}
-	if err = local.L.LoadOrderidOrder(ctx, tx, false, (*[]*Invoice)(&slice), nil); err != nil {
+	if err = local.L.LoadOrder(ctx, tx, false, (*[]*Invoice)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.OrderidOrder = nil
-	if err = local.L.LoadOrderidOrder(ctx, tx, true, &local, nil); err != nil {
+	local.R.Order = nil
+	if err = local.L.LoadOrder(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderidOrder == nil {
+	if local.R.Order == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -883,7 +883,7 @@ func testInvoiceToOneOrderUsingOrderidOrder(t *testing.T) {
 	}
 }
 
-func testInvoiceToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
+func testInvoiceToOneSetOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -912,36 +912,36 @@ func testInvoiceToOneSetOpOrderUsingOrderidOrder(t *testing.T) {
 	}
 
 	for i, x := range []*Order{&b, &c} {
-		err = a.SetOrderidOrder(ctx, tx, i != 0, x)
+		err = a.SetOrder(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.OrderidOrder != x {
+		if a.R.Order != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.OrderidInvoices[0] != &a {
+		if x.R.Invoices[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Orderid))
-		reflect.Indirect(reflect.ValueOf(&a.Orderid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.OrderID))
+		reflect.Indirect(reflect.ValueOf(&a.OrderID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Orderid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderid, x.ID)
+		if !queries.Equal(a.OrderID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderID, x.ID)
 		}
 	}
 }
 
-func testInvoiceToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
+func testInvoiceToOneRemoveOpOrderUsingOrder(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -963,15 +963,15 @@ func testInvoiceToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetOrderidOrder(ctx, tx, true, &b); err != nil {
+	if err = a.SetOrder(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveOrderidOrder(ctx, tx, &b); err != nil {
+	if err = a.RemoveOrder(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.OrderidOrder().Count(ctx, tx)
+	count, err := a.Order().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -979,15 +979,15 @@ func testInvoiceToOneRemoveOpOrderUsingOrderidOrder(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.OrderidOrder != nil {
+	if a.R.Order != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Orderid) {
+	if !queries.IsValuerNil(a.OrderID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.OrderidInvoices) != 0 {
+	if len(b.R.Invoices) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1066,7 +1066,7 @@ func testInvoicesSelect(t *testing.T) {
 }
 
 var (
-	invoiceDBTypes = map[string]string{`ID`: `character varying`, `Orderid`: `character varying`, `Number`: `character varying`, `Createat`: `bigint`, `Externalurl`: `character varying`, `Status`: `character varying`, `Message`: `character varying`, `Updateat`: `bigint`, `Invoicefile`: `text`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	invoiceDBTypes = map[string]string{`ID`: `character varying`, `OrderID`: `character varying`, `Number`: `character varying`, `CreateAt`: `bigint`, `ExternalURL`: `character varying`, `Status`: `character varying`, `Message`: `character varying`, `UpdateAt`: `bigint`, `InvoiceFile`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_              = bytes.MinRead
 )
 

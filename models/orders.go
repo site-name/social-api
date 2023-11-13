@@ -25,40 +25,40 @@ import (
 // Order is an object representing the database table.
 type Order struct {
 	ID                           string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat                     null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt                     null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 	Status                       null.String  `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	Userid                       null.String  `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Languagecode                 null.String  `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Trackingclientid             null.String  `boil:"trackingclientid" json:"trackingclientid,omitempty" toml:"trackingclientid" yaml:"trackingclientid,omitempty"`
-	Billingaddressid             null.String  `boil:"billingaddressid" json:"billingaddressid,omitempty" toml:"billingaddressid" yaml:"billingaddressid,omitempty"`
-	Shippingaddressid            null.String  `boil:"shippingaddressid" json:"shippingaddressid,omitempty" toml:"shippingaddressid" yaml:"shippingaddressid,omitempty"`
-	Useremail                    null.String  `boil:"useremail" json:"useremail,omitempty" toml:"useremail" yaml:"useremail,omitempty"`
-	Originalid                   null.String  `boil:"originalid" json:"originalid,omitempty" toml:"originalid" yaml:"originalid,omitempty"`
+	UserID                       null.String  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	LanguageCode                 null.String  `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	TrackingClientID             null.String  `boil:"tracking_client_id" json:"tracking_client_id,omitempty" toml:"tracking_client_id" yaml:"tracking_client_id,omitempty"`
+	BillingAddressID             null.String  `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
+	ShippingAddressID            null.String  `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
+	UserEmail                    null.String  `boil:"user_email" json:"user_email,omitempty" toml:"user_email" yaml:"user_email,omitempty"`
+	OriginalID                   null.String  `boil:"original_id" json:"original_id,omitempty" toml:"original_id" yaml:"original_id,omitempty"`
 	Origin                       null.String  `boil:"origin" json:"origin,omitempty" toml:"origin" yaml:"origin,omitempty"`
 	Currency                     null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	Shippingmethodid             null.String  `boil:"shippingmethodid" json:"shippingmethodid,omitempty" toml:"shippingmethodid" yaml:"shippingmethodid,omitempty"`
-	Collectionpointid            null.String  `boil:"collectionpointid" json:"collectionpointid,omitempty" toml:"collectionpointid" yaml:"collectionpointid,omitempty"`
-	Shippingmethodname           null.String  `boil:"shippingmethodname" json:"shippingmethodname,omitempty" toml:"shippingmethodname" yaml:"shippingmethodname,omitempty"`
-	Collectionpointname          null.String  `boil:"collectionpointname" json:"collectionpointname,omitempty" toml:"collectionpointname" yaml:"collectionpointname,omitempty"`
-	Channelid                    null.String  `boil:"channelid" json:"channelid,omitempty" toml:"channelid" yaml:"channelid,omitempty"`
-	Shippingpricenetamount       null.Float64 `boil:"shippingpricenetamount" json:"shippingpricenetamount,omitempty" toml:"shippingpricenetamount" yaml:"shippingpricenetamount,omitempty"`
-	Shippingpricegrossamount     null.Float64 `boil:"shippingpricegrossamount" json:"shippingpricegrossamount,omitempty" toml:"shippingpricegrossamount" yaml:"shippingpricegrossamount,omitempty"`
-	Shippingtaxrate              null.Float64 `boil:"shippingtaxrate" json:"shippingtaxrate,omitempty" toml:"shippingtaxrate" yaml:"shippingtaxrate,omitempty"`
+	ShippingMethodID             null.String  `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	CollectionPointID            null.String  `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
+	ShippingMethodName           null.String  `boil:"shipping_method_name" json:"shipping_method_name,omitempty" toml:"shipping_method_name" yaml:"shipping_method_name,omitempty"`
+	CollectionPointName          null.String  `boil:"collection_point_name" json:"collection_point_name,omitempty" toml:"collection_point_name" yaml:"collection_point_name,omitempty"`
+	ChannelID                    null.String  `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
+	ShippingPriceNetAmount       null.Float64 `boil:"shipping_price_net_amount" json:"shipping_price_net_amount,omitempty" toml:"shipping_price_net_amount" yaml:"shipping_price_net_amount,omitempty"`
+	ShippingPriceGrossAmount     null.Float64 `boil:"shipping_price_gross_amount" json:"shipping_price_gross_amount,omitempty" toml:"shipping_price_gross_amount" yaml:"shipping_price_gross_amount,omitempty"`
+	ShippingTaxRate              null.Float64 `boil:"shipping_tax_rate" json:"shipping_tax_rate,omitempty" toml:"shipping_tax_rate" yaml:"shipping_tax_rate,omitempty"`
 	Token                        null.String  `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	Checkouttoken                null.String  `boil:"checkouttoken" json:"checkouttoken,omitempty" toml:"checkouttoken" yaml:"checkouttoken,omitempty"`
-	Totalnetamount               null.Float64 `boil:"totalnetamount" json:"totalnetamount,omitempty" toml:"totalnetamount" yaml:"totalnetamount,omitempty"`
-	Undiscountedtotalnetamount   null.Float64 `boil:"undiscountedtotalnetamount" json:"undiscountedtotalnetamount,omitempty" toml:"undiscountedtotalnetamount" yaml:"undiscountedtotalnetamount,omitempty"`
-	Totalgrossamount             null.Float64 `boil:"totalgrossamount" json:"totalgrossamount,omitempty" toml:"totalgrossamount" yaml:"totalgrossamount,omitempty"`
-	Undiscountedtotalgrossamount null.Float64 `boil:"undiscountedtotalgrossamount" json:"undiscountedtotalgrossamount,omitempty" toml:"undiscountedtotalgrossamount" yaml:"undiscountedtotalgrossamount,omitempty"`
-	Totalpaidamount              null.Float64 `boil:"totalpaidamount" json:"totalpaidamount,omitempty" toml:"totalpaidamount" yaml:"totalpaidamount,omitempty"`
-	Voucherid                    null.String  `boil:"voucherid" json:"voucherid,omitempty" toml:"voucherid" yaml:"voucherid,omitempty"`
-	Displaygrossprices           null.Bool    `boil:"displaygrossprices" json:"displaygrossprices,omitempty" toml:"displaygrossprices" yaml:"displaygrossprices,omitempty"`
-	Customernote                 null.String  `boil:"customernote" json:"customernote,omitempty" toml:"customernote" yaml:"customernote,omitempty"`
-	Weightamount                 null.Float32 `boil:"weightamount" json:"weightamount,omitempty" toml:"weightamount" yaml:"weightamount,omitempty"`
-	Weightunit                   null.String  `boil:"weightunit" json:"weightunit,omitempty" toml:"weightunit" yaml:"weightunit,omitempty"`
-	Redirecturl                  null.String  `boil:"redirecturl" json:"redirecturl,omitempty" toml:"redirecturl" yaml:"redirecturl,omitempty"`
+	CheckoutToken                null.String  `boil:"checkout_token" json:"checkout_token,omitempty" toml:"checkout_token" yaml:"checkout_token,omitempty"`
+	TotalNetAmount               null.Float64 `boil:"total_net_amount" json:"total_net_amount,omitempty" toml:"total_net_amount" yaml:"total_net_amount,omitempty"`
+	UndiscountedTotalNetAmount   null.Float64 `boil:"undiscounted_total_net_amount" json:"undiscounted_total_net_amount,omitempty" toml:"undiscounted_total_net_amount" yaml:"undiscounted_total_net_amount,omitempty"`
+	TotalGrossAmount             null.Float64 `boil:"total_gross_amount" json:"total_gross_amount,omitempty" toml:"total_gross_amount" yaml:"total_gross_amount,omitempty"`
+	UndiscountedTotalGrossAmount null.Float64 `boil:"undiscounted_total_gross_amount" json:"undiscounted_total_gross_amount,omitempty" toml:"undiscounted_total_gross_amount" yaml:"undiscounted_total_gross_amount,omitempty"`
+	TotalPaidAmount              null.Float64 `boil:"total_paid_amount" json:"total_paid_amount,omitempty" toml:"total_paid_amount" yaml:"total_paid_amount,omitempty"`
+	VoucherID                    null.String  `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
+	DisplayGrossPrices           null.Bool    `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
+	CustomerNote                 null.String  `boil:"customer_note" json:"customer_note,omitempty" toml:"customer_note" yaml:"customer_note,omitempty"`
+	WeightAmount                 null.Float32 `boil:"weight_amount" json:"weight_amount,omitempty" toml:"weight_amount" yaml:"weight_amount,omitempty"`
+	WeightUnit                   null.String  `boil:"weight_unit" json:"weight_unit,omitempty" toml:"weight_unit" yaml:"weight_unit,omitempty"`
+	RedirectURL                  null.String  `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
 	Metadata                     null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata              null.JSON    `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata              null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *orderR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -66,150 +66,150 @@ type Order struct {
 
 var OrderColumns = struct {
 	ID                           string
-	Createat                     string
+	CreateAt                     string
 	Status                       string
-	Userid                       string
-	Languagecode                 string
-	Trackingclientid             string
-	Billingaddressid             string
-	Shippingaddressid            string
-	Useremail                    string
-	Originalid                   string
+	UserID                       string
+	LanguageCode                 string
+	TrackingClientID             string
+	BillingAddressID             string
+	ShippingAddressID            string
+	UserEmail                    string
+	OriginalID                   string
 	Origin                       string
 	Currency                     string
-	Shippingmethodid             string
-	Collectionpointid            string
-	Shippingmethodname           string
-	Collectionpointname          string
-	Channelid                    string
-	Shippingpricenetamount       string
-	Shippingpricegrossamount     string
-	Shippingtaxrate              string
+	ShippingMethodID             string
+	CollectionPointID            string
+	ShippingMethodName           string
+	CollectionPointName          string
+	ChannelID                    string
+	ShippingPriceNetAmount       string
+	ShippingPriceGrossAmount     string
+	ShippingTaxRate              string
 	Token                        string
-	Checkouttoken                string
-	Totalnetamount               string
-	Undiscountedtotalnetamount   string
-	Totalgrossamount             string
-	Undiscountedtotalgrossamount string
-	Totalpaidamount              string
-	Voucherid                    string
-	Displaygrossprices           string
-	Customernote                 string
-	Weightamount                 string
-	Weightunit                   string
-	Redirecturl                  string
+	CheckoutToken                string
+	TotalNetAmount               string
+	UndiscountedTotalNetAmount   string
+	TotalGrossAmount             string
+	UndiscountedTotalGrossAmount string
+	TotalPaidAmount              string
+	VoucherID                    string
+	DisplayGrossPrices           string
+	CustomerNote                 string
+	WeightAmount                 string
+	WeightUnit                   string
+	RedirectURL                  string
 	Metadata                     string
-	Privatemetadata              string
+	PrivateMetadata              string
 }{
 	ID:                           "id",
-	Createat:                     "createat",
+	CreateAt:                     "create_at",
 	Status:                       "status",
-	Userid:                       "userid",
-	Languagecode:                 "languagecode",
-	Trackingclientid:             "trackingclientid",
-	Billingaddressid:             "billingaddressid",
-	Shippingaddressid:            "shippingaddressid",
-	Useremail:                    "useremail",
-	Originalid:                   "originalid",
+	UserID:                       "user_id",
+	LanguageCode:                 "language_code",
+	TrackingClientID:             "tracking_client_id",
+	BillingAddressID:             "billing_address_id",
+	ShippingAddressID:            "shipping_address_id",
+	UserEmail:                    "user_email",
+	OriginalID:                   "original_id",
 	Origin:                       "origin",
 	Currency:                     "currency",
-	Shippingmethodid:             "shippingmethodid",
-	Collectionpointid:            "collectionpointid",
-	Shippingmethodname:           "shippingmethodname",
-	Collectionpointname:          "collectionpointname",
-	Channelid:                    "channelid",
-	Shippingpricenetamount:       "shippingpricenetamount",
-	Shippingpricegrossamount:     "shippingpricegrossamount",
-	Shippingtaxrate:              "shippingtaxrate",
+	ShippingMethodID:             "shipping_method_id",
+	CollectionPointID:            "collection_point_id",
+	ShippingMethodName:           "shipping_method_name",
+	CollectionPointName:          "collection_point_name",
+	ChannelID:                    "channel_id",
+	ShippingPriceNetAmount:       "shipping_price_net_amount",
+	ShippingPriceGrossAmount:     "shipping_price_gross_amount",
+	ShippingTaxRate:              "shipping_tax_rate",
 	Token:                        "token",
-	Checkouttoken:                "checkouttoken",
-	Totalnetamount:               "totalnetamount",
-	Undiscountedtotalnetamount:   "undiscountedtotalnetamount",
-	Totalgrossamount:             "totalgrossamount",
-	Undiscountedtotalgrossamount: "undiscountedtotalgrossamount",
-	Totalpaidamount:              "totalpaidamount",
-	Voucherid:                    "voucherid",
-	Displaygrossprices:           "displaygrossprices",
-	Customernote:                 "customernote",
-	Weightamount:                 "weightamount",
-	Weightunit:                   "weightunit",
-	Redirecturl:                  "redirecturl",
+	CheckoutToken:                "checkout_token",
+	TotalNetAmount:               "total_net_amount",
+	UndiscountedTotalNetAmount:   "undiscounted_total_net_amount",
+	TotalGrossAmount:             "total_gross_amount",
+	UndiscountedTotalGrossAmount: "undiscounted_total_gross_amount",
+	TotalPaidAmount:              "total_paid_amount",
+	VoucherID:                    "voucher_id",
+	DisplayGrossPrices:           "display_gross_prices",
+	CustomerNote:                 "customer_note",
+	WeightAmount:                 "weight_amount",
+	WeightUnit:                   "weight_unit",
+	RedirectURL:                  "redirect_url",
 	Metadata:                     "metadata",
-	Privatemetadata:              "privatemetadata",
+	PrivateMetadata:              "private_metadata",
 }
 
 var OrderTableColumns = struct {
 	ID                           string
-	Createat                     string
+	CreateAt                     string
 	Status                       string
-	Userid                       string
-	Languagecode                 string
-	Trackingclientid             string
-	Billingaddressid             string
-	Shippingaddressid            string
-	Useremail                    string
-	Originalid                   string
+	UserID                       string
+	LanguageCode                 string
+	TrackingClientID             string
+	BillingAddressID             string
+	ShippingAddressID            string
+	UserEmail                    string
+	OriginalID                   string
 	Origin                       string
 	Currency                     string
-	Shippingmethodid             string
-	Collectionpointid            string
-	Shippingmethodname           string
-	Collectionpointname          string
-	Channelid                    string
-	Shippingpricenetamount       string
-	Shippingpricegrossamount     string
-	Shippingtaxrate              string
+	ShippingMethodID             string
+	CollectionPointID            string
+	ShippingMethodName           string
+	CollectionPointName          string
+	ChannelID                    string
+	ShippingPriceNetAmount       string
+	ShippingPriceGrossAmount     string
+	ShippingTaxRate              string
 	Token                        string
-	Checkouttoken                string
-	Totalnetamount               string
-	Undiscountedtotalnetamount   string
-	Totalgrossamount             string
-	Undiscountedtotalgrossamount string
-	Totalpaidamount              string
-	Voucherid                    string
-	Displaygrossprices           string
-	Customernote                 string
-	Weightamount                 string
-	Weightunit                   string
-	Redirecturl                  string
+	CheckoutToken                string
+	TotalNetAmount               string
+	UndiscountedTotalNetAmount   string
+	TotalGrossAmount             string
+	UndiscountedTotalGrossAmount string
+	TotalPaidAmount              string
+	VoucherID                    string
+	DisplayGrossPrices           string
+	CustomerNote                 string
+	WeightAmount                 string
+	WeightUnit                   string
+	RedirectURL                  string
 	Metadata                     string
-	Privatemetadata              string
+	PrivateMetadata              string
 }{
 	ID:                           "orders.id",
-	Createat:                     "orders.createat",
+	CreateAt:                     "orders.create_at",
 	Status:                       "orders.status",
-	Userid:                       "orders.userid",
-	Languagecode:                 "orders.languagecode",
-	Trackingclientid:             "orders.trackingclientid",
-	Billingaddressid:             "orders.billingaddressid",
-	Shippingaddressid:            "orders.shippingaddressid",
-	Useremail:                    "orders.useremail",
-	Originalid:                   "orders.originalid",
+	UserID:                       "orders.user_id",
+	LanguageCode:                 "orders.language_code",
+	TrackingClientID:             "orders.tracking_client_id",
+	BillingAddressID:             "orders.billing_address_id",
+	ShippingAddressID:            "orders.shipping_address_id",
+	UserEmail:                    "orders.user_email",
+	OriginalID:                   "orders.original_id",
 	Origin:                       "orders.origin",
 	Currency:                     "orders.currency",
-	Shippingmethodid:             "orders.shippingmethodid",
-	Collectionpointid:            "orders.collectionpointid",
-	Shippingmethodname:           "orders.shippingmethodname",
-	Collectionpointname:          "orders.collectionpointname",
-	Channelid:                    "orders.channelid",
-	Shippingpricenetamount:       "orders.shippingpricenetamount",
-	Shippingpricegrossamount:     "orders.shippingpricegrossamount",
-	Shippingtaxrate:              "orders.shippingtaxrate",
+	ShippingMethodID:             "orders.shipping_method_id",
+	CollectionPointID:            "orders.collection_point_id",
+	ShippingMethodName:           "orders.shipping_method_name",
+	CollectionPointName:          "orders.collection_point_name",
+	ChannelID:                    "orders.channel_id",
+	ShippingPriceNetAmount:       "orders.shipping_price_net_amount",
+	ShippingPriceGrossAmount:     "orders.shipping_price_gross_amount",
+	ShippingTaxRate:              "orders.shipping_tax_rate",
 	Token:                        "orders.token",
-	Checkouttoken:                "orders.checkouttoken",
-	Totalnetamount:               "orders.totalnetamount",
-	Undiscountedtotalnetamount:   "orders.undiscountedtotalnetamount",
-	Totalgrossamount:             "orders.totalgrossamount",
-	Undiscountedtotalgrossamount: "orders.undiscountedtotalgrossamount",
-	Totalpaidamount:              "orders.totalpaidamount",
-	Voucherid:                    "orders.voucherid",
-	Displaygrossprices:           "orders.displaygrossprices",
-	Customernote:                 "orders.customernote",
-	Weightamount:                 "orders.weightamount",
-	Weightunit:                   "orders.weightunit",
-	Redirecturl:                  "orders.redirecturl",
+	CheckoutToken:                "orders.checkout_token",
+	TotalNetAmount:               "orders.total_net_amount",
+	UndiscountedTotalNetAmount:   "orders.undiscounted_total_net_amount",
+	TotalGrossAmount:             "orders.total_gross_amount",
+	UndiscountedTotalGrossAmount: "orders.undiscounted_total_gross_amount",
+	TotalPaidAmount:              "orders.total_paid_amount",
+	VoucherID:                    "orders.voucher_id",
+	DisplayGrossPrices:           "orders.display_gross_prices",
+	CustomerNote:                 "orders.customer_note",
+	WeightAmount:                 "orders.weight_amount",
+	WeightUnit:                   "orders.weight_unit",
+	RedirectURL:                  "orders.redirect_url",
 	Metadata:                     "orders.metadata",
-	Privatemetadata:              "orders.privatemetadata",
+	PrivateMetadata:              "orders.private_metadata",
 }
 
 // Generated where
@@ -254,136 +254,136 @@ func (w whereHelpernull_Float32) IsNotNull() qm.QueryMod { return qmhelper.Where
 
 var OrderWhere = struct {
 	ID                           whereHelperstring
-	Createat                     whereHelpernull_Int64
+	CreateAt                     whereHelpernull_Int64
 	Status                       whereHelpernull_String
-	Userid                       whereHelpernull_String
-	Languagecode                 whereHelpernull_String
-	Trackingclientid             whereHelpernull_String
-	Billingaddressid             whereHelpernull_String
-	Shippingaddressid            whereHelpernull_String
-	Useremail                    whereHelpernull_String
-	Originalid                   whereHelpernull_String
+	UserID                       whereHelpernull_String
+	LanguageCode                 whereHelpernull_String
+	TrackingClientID             whereHelpernull_String
+	BillingAddressID             whereHelpernull_String
+	ShippingAddressID            whereHelpernull_String
+	UserEmail                    whereHelpernull_String
+	OriginalID                   whereHelpernull_String
 	Origin                       whereHelpernull_String
 	Currency                     whereHelpernull_String
-	Shippingmethodid             whereHelpernull_String
-	Collectionpointid            whereHelpernull_String
-	Shippingmethodname           whereHelpernull_String
-	Collectionpointname          whereHelpernull_String
-	Channelid                    whereHelpernull_String
-	Shippingpricenetamount       whereHelpernull_Float64
-	Shippingpricegrossamount     whereHelpernull_Float64
-	Shippingtaxrate              whereHelpernull_Float64
+	ShippingMethodID             whereHelpernull_String
+	CollectionPointID            whereHelpernull_String
+	ShippingMethodName           whereHelpernull_String
+	CollectionPointName          whereHelpernull_String
+	ChannelID                    whereHelpernull_String
+	ShippingPriceNetAmount       whereHelpernull_Float64
+	ShippingPriceGrossAmount     whereHelpernull_Float64
+	ShippingTaxRate              whereHelpernull_Float64
 	Token                        whereHelpernull_String
-	Checkouttoken                whereHelpernull_String
-	Totalnetamount               whereHelpernull_Float64
-	Undiscountedtotalnetamount   whereHelpernull_Float64
-	Totalgrossamount             whereHelpernull_Float64
-	Undiscountedtotalgrossamount whereHelpernull_Float64
-	Totalpaidamount              whereHelpernull_Float64
-	Voucherid                    whereHelpernull_String
-	Displaygrossprices           whereHelpernull_Bool
-	Customernote                 whereHelpernull_String
-	Weightamount                 whereHelpernull_Float32
-	Weightunit                   whereHelpernull_String
-	Redirecturl                  whereHelpernull_String
+	CheckoutToken                whereHelpernull_String
+	TotalNetAmount               whereHelpernull_Float64
+	UndiscountedTotalNetAmount   whereHelpernull_Float64
+	TotalGrossAmount             whereHelpernull_Float64
+	UndiscountedTotalGrossAmount whereHelpernull_Float64
+	TotalPaidAmount              whereHelpernull_Float64
+	VoucherID                    whereHelpernull_String
+	DisplayGrossPrices           whereHelpernull_Bool
+	CustomerNote                 whereHelpernull_String
+	WeightAmount                 whereHelpernull_Float32
+	WeightUnit                   whereHelpernull_String
+	RedirectURL                  whereHelpernull_String
 	Metadata                     whereHelpernull_JSON
-	Privatemetadata              whereHelpernull_JSON
+	PrivateMetadata              whereHelpernull_JSON
 }{
 	ID:                           whereHelperstring{field: "\"orders\".\"id\""},
-	Createat:                     whereHelpernull_Int64{field: "\"orders\".\"createat\""},
+	CreateAt:                     whereHelpernull_Int64{field: "\"orders\".\"create_at\""},
 	Status:                       whereHelpernull_String{field: "\"orders\".\"status\""},
-	Userid:                       whereHelpernull_String{field: "\"orders\".\"userid\""},
-	Languagecode:                 whereHelpernull_String{field: "\"orders\".\"languagecode\""},
-	Trackingclientid:             whereHelpernull_String{field: "\"orders\".\"trackingclientid\""},
-	Billingaddressid:             whereHelpernull_String{field: "\"orders\".\"billingaddressid\""},
-	Shippingaddressid:            whereHelpernull_String{field: "\"orders\".\"shippingaddressid\""},
-	Useremail:                    whereHelpernull_String{field: "\"orders\".\"useremail\""},
-	Originalid:                   whereHelpernull_String{field: "\"orders\".\"originalid\""},
+	UserID:                       whereHelpernull_String{field: "\"orders\".\"user_id\""},
+	LanguageCode:                 whereHelpernull_String{field: "\"orders\".\"language_code\""},
+	TrackingClientID:             whereHelpernull_String{field: "\"orders\".\"tracking_client_id\""},
+	BillingAddressID:             whereHelpernull_String{field: "\"orders\".\"billing_address_id\""},
+	ShippingAddressID:            whereHelpernull_String{field: "\"orders\".\"shipping_address_id\""},
+	UserEmail:                    whereHelpernull_String{field: "\"orders\".\"user_email\""},
+	OriginalID:                   whereHelpernull_String{field: "\"orders\".\"original_id\""},
 	Origin:                       whereHelpernull_String{field: "\"orders\".\"origin\""},
 	Currency:                     whereHelpernull_String{field: "\"orders\".\"currency\""},
-	Shippingmethodid:             whereHelpernull_String{field: "\"orders\".\"shippingmethodid\""},
-	Collectionpointid:            whereHelpernull_String{field: "\"orders\".\"collectionpointid\""},
-	Shippingmethodname:           whereHelpernull_String{field: "\"orders\".\"shippingmethodname\""},
-	Collectionpointname:          whereHelpernull_String{field: "\"orders\".\"collectionpointname\""},
-	Channelid:                    whereHelpernull_String{field: "\"orders\".\"channelid\""},
-	Shippingpricenetamount:       whereHelpernull_Float64{field: "\"orders\".\"shippingpricenetamount\""},
-	Shippingpricegrossamount:     whereHelpernull_Float64{field: "\"orders\".\"shippingpricegrossamount\""},
-	Shippingtaxrate:              whereHelpernull_Float64{field: "\"orders\".\"shippingtaxrate\""},
+	ShippingMethodID:             whereHelpernull_String{field: "\"orders\".\"shipping_method_id\""},
+	CollectionPointID:            whereHelpernull_String{field: "\"orders\".\"collection_point_id\""},
+	ShippingMethodName:           whereHelpernull_String{field: "\"orders\".\"shipping_method_name\""},
+	CollectionPointName:          whereHelpernull_String{field: "\"orders\".\"collection_point_name\""},
+	ChannelID:                    whereHelpernull_String{field: "\"orders\".\"channel_id\""},
+	ShippingPriceNetAmount:       whereHelpernull_Float64{field: "\"orders\".\"shipping_price_net_amount\""},
+	ShippingPriceGrossAmount:     whereHelpernull_Float64{field: "\"orders\".\"shipping_price_gross_amount\""},
+	ShippingTaxRate:              whereHelpernull_Float64{field: "\"orders\".\"shipping_tax_rate\""},
 	Token:                        whereHelpernull_String{field: "\"orders\".\"token\""},
-	Checkouttoken:                whereHelpernull_String{field: "\"orders\".\"checkouttoken\""},
-	Totalnetamount:               whereHelpernull_Float64{field: "\"orders\".\"totalnetamount\""},
-	Undiscountedtotalnetamount:   whereHelpernull_Float64{field: "\"orders\".\"undiscountedtotalnetamount\""},
-	Totalgrossamount:             whereHelpernull_Float64{field: "\"orders\".\"totalgrossamount\""},
-	Undiscountedtotalgrossamount: whereHelpernull_Float64{field: "\"orders\".\"undiscountedtotalgrossamount\""},
-	Totalpaidamount:              whereHelpernull_Float64{field: "\"orders\".\"totalpaidamount\""},
-	Voucherid:                    whereHelpernull_String{field: "\"orders\".\"voucherid\""},
-	Displaygrossprices:           whereHelpernull_Bool{field: "\"orders\".\"displaygrossprices\""},
-	Customernote:                 whereHelpernull_String{field: "\"orders\".\"customernote\""},
-	Weightamount:                 whereHelpernull_Float32{field: "\"orders\".\"weightamount\""},
-	Weightunit:                   whereHelpernull_String{field: "\"orders\".\"weightunit\""},
-	Redirecturl:                  whereHelpernull_String{field: "\"orders\".\"redirecturl\""},
+	CheckoutToken:                whereHelpernull_String{field: "\"orders\".\"checkout_token\""},
+	TotalNetAmount:               whereHelpernull_Float64{field: "\"orders\".\"total_net_amount\""},
+	UndiscountedTotalNetAmount:   whereHelpernull_Float64{field: "\"orders\".\"undiscounted_total_net_amount\""},
+	TotalGrossAmount:             whereHelpernull_Float64{field: "\"orders\".\"total_gross_amount\""},
+	UndiscountedTotalGrossAmount: whereHelpernull_Float64{field: "\"orders\".\"undiscounted_total_gross_amount\""},
+	TotalPaidAmount:              whereHelpernull_Float64{field: "\"orders\".\"total_paid_amount\""},
+	VoucherID:                    whereHelpernull_String{field: "\"orders\".\"voucher_id\""},
+	DisplayGrossPrices:           whereHelpernull_Bool{field: "\"orders\".\"display_gross_prices\""},
+	CustomerNote:                 whereHelpernull_String{field: "\"orders\".\"customer_note\""},
+	WeightAmount:                 whereHelpernull_Float32{field: "\"orders\".\"weight_amount\""},
+	WeightUnit:                   whereHelpernull_String{field: "\"orders\".\"weight_unit\""},
+	RedirectURL:                  whereHelpernull_String{field: "\"orders\".\"redirect_url\""},
 	Metadata:                     whereHelpernull_JSON{field: "\"orders\".\"metadata\""},
-	Privatemetadata:              whereHelpernull_JSON{field: "\"orders\".\"privatemetadata\""},
+	PrivateMetadata:              whereHelpernull_JSON{field: "\"orders\".\"private_metadata\""},
 }
 
 // OrderRels is where relationship names are stored.
 var OrderRels = struct {
-	BillingaddressidAddress        string
-	ChannelidChannel               string
-	OriginalidOrder                string
-	ShippingmethodidShippingMethod string
-	UseridUser                     string
-	VoucheridVoucher               string
-	CollectionpointidWarehouse     string
-	OrderidCustomerEvents          string
-	OrderidFulfillments            string
-	OrderidInvoiceEvents           string
-	OrderidInvoices                string
-	OrderidOrderDiscounts          string
-	OrderidOrderEvents             string
-	OrderidOrderGiftcards          string
-	OrderidOrderLines              string
-	OriginalidOrders               string
-	OrderidPayments                string
+	BillingAddress  string
+	Channel         string
+	Original        string
+	ShippingMethod  string
+	User            string
+	Voucher         string
+	CollectionPoint string
+	CustomerEvents  string
+	Fulfillments    string
+	InvoiceEvents   string
+	Invoices        string
+	OrderDiscounts  string
+	OrderEvents     string
+	OrderGiftcards  string
+	OrderLines      string
+	OriginalOrders  string
+	Payments        string
 }{
-	BillingaddressidAddress:        "BillingaddressidAddress",
-	ChannelidChannel:               "ChannelidChannel",
-	OriginalidOrder:                "OriginalidOrder",
-	ShippingmethodidShippingMethod: "ShippingmethodidShippingMethod",
-	UseridUser:                     "UseridUser",
-	VoucheridVoucher:               "VoucheridVoucher",
-	CollectionpointidWarehouse:     "CollectionpointidWarehouse",
-	OrderidCustomerEvents:          "OrderidCustomerEvents",
-	OrderidFulfillments:            "OrderidFulfillments",
-	OrderidInvoiceEvents:           "OrderidInvoiceEvents",
-	OrderidInvoices:                "OrderidInvoices",
-	OrderidOrderDiscounts:          "OrderidOrderDiscounts",
-	OrderidOrderEvents:             "OrderidOrderEvents",
-	OrderidOrderGiftcards:          "OrderidOrderGiftcards",
-	OrderidOrderLines:              "OrderidOrderLines",
-	OriginalidOrders:               "OriginalidOrders",
-	OrderidPayments:                "OrderidPayments",
+	BillingAddress:  "BillingAddress",
+	Channel:         "Channel",
+	Original:        "Original",
+	ShippingMethod:  "ShippingMethod",
+	User:            "User",
+	Voucher:         "Voucher",
+	CollectionPoint: "CollectionPoint",
+	CustomerEvents:  "CustomerEvents",
+	Fulfillments:    "Fulfillments",
+	InvoiceEvents:   "InvoiceEvents",
+	Invoices:        "Invoices",
+	OrderDiscounts:  "OrderDiscounts",
+	OrderEvents:     "OrderEvents",
+	OrderGiftcards:  "OrderGiftcards",
+	OrderLines:      "OrderLines",
+	OriginalOrders:  "OriginalOrders",
+	Payments:        "Payments",
 }
 
 // orderR is where relationships are stored.
 type orderR struct {
-	BillingaddressidAddress        *Address           `boil:"BillingaddressidAddress" json:"BillingaddressidAddress" toml:"BillingaddressidAddress" yaml:"BillingaddressidAddress"`
-	ChannelidChannel               *Channel           `boil:"ChannelidChannel" json:"ChannelidChannel" toml:"ChannelidChannel" yaml:"ChannelidChannel"`
-	OriginalidOrder                *Order             `boil:"OriginalidOrder" json:"OriginalidOrder" toml:"OriginalidOrder" yaml:"OriginalidOrder"`
-	ShippingmethodidShippingMethod *ShippingMethod    `boil:"ShippingmethodidShippingMethod" json:"ShippingmethodidShippingMethod" toml:"ShippingmethodidShippingMethod" yaml:"ShippingmethodidShippingMethod"`
-	UseridUser                     *User              `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
-	VoucheridVoucher               *Voucher           `boil:"VoucheridVoucher" json:"VoucheridVoucher" toml:"VoucheridVoucher" yaml:"VoucheridVoucher"`
-	CollectionpointidWarehouse     *Warehouse         `boil:"CollectionpointidWarehouse" json:"CollectionpointidWarehouse" toml:"CollectionpointidWarehouse" yaml:"CollectionpointidWarehouse"`
-	OrderidCustomerEvents          CustomerEventSlice `boil:"OrderidCustomerEvents" json:"OrderidCustomerEvents" toml:"OrderidCustomerEvents" yaml:"OrderidCustomerEvents"`
-	OrderidFulfillments            FulfillmentSlice   `boil:"OrderidFulfillments" json:"OrderidFulfillments" toml:"OrderidFulfillments" yaml:"OrderidFulfillments"`
-	OrderidInvoiceEvents           InvoiceEventSlice  `boil:"OrderidInvoiceEvents" json:"OrderidInvoiceEvents" toml:"OrderidInvoiceEvents" yaml:"OrderidInvoiceEvents"`
-	OrderidInvoices                InvoiceSlice       `boil:"OrderidInvoices" json:"OrderidInvoices" toml:"OrderidInvoices" yaml:"OrderidInvoices"`
-	OrderidOrderDiscounts          OrderDiscountSlice `boil:"OrderidOrderDiscounts" json:"OrderidOrderDiscounts" toml:"OrderidOrderDiscounts" yaml:"OrderidOrderDiscounts"`
-	OrderidOrderEvents             OrderEventSlice    `boil:"OrderidOrderEvents" json:"OrderidOrderEvents" toml:"OrderidOrderEvents" yaml:"OrderidOrderEvents"`
-	OrderidOrderGiftcards          OrderGiftcardSlice `boil:"OrderidOrderGiftcards" json:"OrderidOrderGiftcards" toml:"OrderidOrderGiftcards" yaml:"OrderidOrderGiftcards"`
-	OrderidOrderLines              OrderLineSlice     `boil:"OrderidOrderLines" json:"OrderidOrderLines" toml:"OrderidOrderLines" yaml:"OrderidOrderLines"`
-	OriginalidOrders               OrderSlice         `boil:"OriginalidOrders" json:"OriginalidOrders" toml:"OriginalidOrders" yaml:"OriginalidOrders"`
-	OrderidPayments                PaymentSlice       `boil:"OrderidPayments" json:"OrderidPayments" toml:"OrderidPayments" yaml:"OrderidPayments"`
+	BillingAddress  *Address           `boil:"BillingAddress" json:"BillingAddress" toml:"BillingAddress" yaml:"BillingAddress"`
+	Channel         *Channel           `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Original        *Order             `boil:"Original" json:"Original" toml:"Original" yaml:"Original"`
+	ShippingMethod  *ShippingMethod    `boil:"ShippingMethod" json:"ShippingMethod" toml:"ShippingMethod" yaml:"ShippingMethod"`
+	User            *User              `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Voucher         *Voucher           `boil:"Voucher" json:"Voucher" toml:"Voucher" yaml:"Voucher"`
+	CollectionPoint *Warehouse         `boil:"CollectionPoint" json:"CollectionPoint" toml:"CollectionPoint" yaml:"CollectionPoint"`
+	CustomerEvents  CustomerEventSlice `boil:"CustomerEvents" json:"CustomerEvents" toml:"CustomerEvents" yaml:"CustomerEvents"`
+	Fulfillments    FulfillmentSlice   `boil:"Fulfillments" json:"Fulfillments" toml:"Fulfillments" yaml:"Fulfillments"`
+	InvoiceEvents   InvoiceEventSlice  `boil:"InvoiceEvents" json:"InvoiceEvents" toml:"InvoiceEvents" yaml:"InvoiceEvents"`
+	Invoices        InvoiceSlice       `boil:"Invoices" json:"Invoices" toml:"Invoices" yaml:"Invoices"`
+	OrderDiscounts  OrderDiscountSlice `boil:"OrderDiscounts" json:"OrderDiscounts" toml:"OrderDiscounts" yaml:"OrderDiscounts"`
+	OrderEvents     OrderEventSlice    `boil:"OrderEvents" json:"OrderEvents" toml:"OrderEvents" yaml:"OrderEvents"`
+	OrderGiftcards  OrderGiftcardSlice `boil:"OrderGiftcards" json:"OrderGiftcards" toml:"OrderGiftcards" yaml:"OrderGiftcards"`
+	OrderLines      OrderLineSlice     `boil:"OrderLines" json:"OrderLines" toml:"OrderLines" yaml:"OrderLines"`
+	OriginalOrders  OrderSlice         `boil:"OriginalOrders" json:"OriginalOrders" toml:"OriginalOrders" yaml:"OriginalOrders"`
+	Payments        PaymentSlice       `boil:"Payments" json:"Payments" toml:"Payments" yaml:"Payments"`
 }
 
 // NewStruct creates a new relationship struct
@@ -391,132 +391,132 @@ func (*orderR) NewStruct() *orderR {
 	return &orderR{}
 }
 
-func (r *orderR) GetBillingaddressidAddress() *Address {
+func (r *orderR) GetBillingAddress() *Address {
 	if r == nil {
 		return nil
 	}
-	return r.BillingaddressidAddress
+	return r.BillingAddress
 }
 
-func (r *orderR) GetChannelidChannel() *Channel {
+func (r *orderR) GetChannel() *Channel {
 	if r == nil {
 		return nil
 	}
-	return r.ChannelidChannel
+	return r.Channel
 }
 
-func (r *orderR) GetOriginalidOrder() *Order {
+func (r *orderR) GetOriginal() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OriginalidOrder
+	return r.Original
 }
 
-func (r *orderR) GetShippingmethodidShippingMethod() *ShippingMethod {
+func (r *orderR) GetShippingMethod() *ShippingMethod {
 	if r == nil {
 		return nil
 	}
-	return r.ShippingmethodidShippingMethod
+	return r.ShippingMethod
 }
 
-func (r *orderR) GetUseridUser() *User {
+func (r *orderR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
-func (r *orderR) GetVoucheridVoucher() *Voucher {
+func (r *orderR) GetVoucher() *Voucher {
 	if r == nil {
 		return nil
 	}
-	return r.VoucheridVoucher
+	return r.Voucher
 }
 
-func (r *orderR) GetCollectionpointidWarehouse() *Warehouse {
+func (r *orderR) GetCollectionPoint() *Warehouse {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionpointidWarehouse
+	return r.CollectionPoint
 }
 
-func (r *orderR) GetOrderidCustomerEvents() CustomerEventSlice {
+func (r *orderR) GetCustomerEvents() CustomerEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidCustomerEvents
+	return r.CustomerEvents
 }
 
-func (r *orderR) GetOrderidFulfillments() FulfillmentSlice {
+func (r *orderR) GetFulfillments() FulfillmentSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidFulfillments
+	return r.Fulfillments
 }
 
-func (r *orderR) GetOrderidInvoiceEvents() InvoiceEventSlice {
+func (r *orderR) GetInvoiceEvents() InvoiceEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidInvoiceEvents
+	return r.InvoiceEvents
 }
 
-func (r *orderR) GetOrderidInvoices() InvoiceSlice {
+func (r *orderR) GetInvoices() InvoiceSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidInvoices
+	return r.Invoices
 }
 
-func (r *orderR) GetOrderidOrderDiscounts() OrderDiscountSlice {
+func (r *orderR) GetOrderDiscounts() OrderDiscountSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrderDiscounts
+	return r.OrderDiscounts
 }
 
-func (r *orderR) GetOrderidOrderEvents() OrderEventSlice {
+func (r *orderR) GetOrderEvents() OrderEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrderEvents
+	return r.OrderEvents
 }
 
-func (r *orderR) GetOrderidOrderGiftcards() OrderGiftcardSlice {
+func (r *orderR) GetOrderGiftcards() OrderGiftcardSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrderGiftcards
+	return r.OrderGiftcards
 }
 
-func (r *orderR) GetOrderidOrderLines() OrderLineSlice {
+func (r *orderR) GetOrderLines() OrderLineSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrderLines
+	return r.OrderLines
 }
 
-func (r *orderR) GetOriginalidOrders() OrderSlice {
+func (r *orderR) GetOriginalOrders() OrderSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OriginalidOrders
+	return r.OriginalOrders
 }
 
-func (r *orderR) GetOrderidPayments() PaymentSlice {
+func (r *orderR) GetPayments() PaymentSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidPayments
+	return r.Payments
 }
 
 // orderL is where Load methods for each relationship are stored.
 type orderL struct{}
 
 var (
-	orderAllColumns            = []string{"id", "createat", "status", "userid", "languagecode", "trackingclientid", "billingaddressid", "shippingaddressid", "useremail", "originalid", "origin", "currency", "shippingmethodid", "collectionpointid", "shippingmethodname", "collectionpointname", "channelid", "shippingpricenetamount", "shippingpricegrossamount", "shippingtaxrate", "token", "checkouttoken", "totalnetamount", "undiscountedtotalnetamount", "totalgrossamount", "undiscountedtotalgrossamount", "totalpaidamount", "voucherid", "displaygrossprices", "customernote", "weightamount", "weightunit", "redirecturl", "metadata", "privatemetadata"}
+	orderAllColumns            = []string{"id", "create_at", "status", "user_id", "language_code", "tracking_client_id", "billing_address_id", "shipping_address_id", "user_email", "original_id", "origin", "currency", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "channel_id", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "token", "checkout_token", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "customer_note", "weight_amount", "weight_unit", "redirect_url", "metadata", "private_metadata"}
 	orderColumnsWithoutDefault = []string{"id"}
-	orderColumnsWithDefault    = []string{"createat", "status", "userid", "languagecode", "trackingclientid", "billingaddressid", "shippingaddressid", "useremail", "originalid", "origin", "currency", "shippingmethodid", "collectionpointid", "shippingmethodname", "collectionpointname", "channelid", "shippingpricenetamount", "shippingpricegrossamount", "shippingtaxrate", "token", "checkouttoken", "totalnetamount", "undiscountedtotalnetamount", "totalgrossamount", "undiscountedtotalgrossamount", "totalpaidamount", "voucherid", "displaygrossprices", "customernote", "weightamount", "weightunit", "redirecturl", "metadata", "privatemetadata"}
+	orderColumnsWithDefault    = []string{"create_at", "status", "user_id", "language_code", "tracking_client_id", "billing_address_id", "shipping_address_id", "user_email", "original_id", "origin", "currency", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "channel_id", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "token", "checkout_token", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "customer_note", "weight_amount", "weight_unit", "redirect_url", "metadata", "private_metadata"}
 	orderPrimaryKeyColumns     = []string{"id"}
 	orderGeneratedColumns      = []string{}
 )
@@ -799,10 +799,10 @@ func (q orderQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool
 	return count > 0, nil
 }
 
-// BillingaddressidAddress pointed to by the foreign key.
-func (o *Order) BillingaddressidAddress(mods ...qm.QueryMod) addressQuery {
+// BillingAddress pointed to by the foreign key.
+func (o *Order) BillingAddress(mods ...qm.QueryMod) addressQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Billingaddressid),
+		qm.Where("\"id\" = ?", o.BillingAddressID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -810,10 +810,10 @@ func (o *Order) BillingaddressidAddress(mods ...qm.QueryMod) addressQuery {
 	return Addresses(queryMods...)
 }
 
-// ChannelidChannel pointed to by the foreign key.
-func (o *Order) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
+// Channel pointed to by the foreign key.
+func (o *Order) Channel(mods ...qm.QueryMod) channelQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Channelid),
+		qm.Where("\"id\" = ?", o.ChannelID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -821,10 +821,10 @@ func (o *Order) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
 	return Channels(queryMods...)
 }
 
-// OriginalidOrder pointed to by the foreign key.
-func (o *Order) OriginalidOrder(mods ...qm.QueryMod) orderQuery {
+// Original pointed to by the foreign key.
+func (o *Order) Original(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Originalid),
+		qm.Where("\"id\" = ?", o.OriginalID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -832,10 +832,10 @@ func (o *Order) OriginalidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// ShippingmethodidShippingMethod pointed to by the foreign key.
-func (o *Order) ShippingmethodidShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
+// ShippingMethod pointed to by the foreign key.
+func (o *Order) ShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Shippingmethodid),
+		qm.Where("\"id\" = ?", o.ShippingMethodID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -843,10 +843,10 @@ func (o *Order) ShippingmethodidShippingMethod(mods ...qm.QueryMod) shippingMeth
 	return ShippingMethods(queryMods...)
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *Order) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *Order) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -854,10 +854,10 @@ func (o *Order) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// VoucheridVoucher pointed to by the foreign key.
-func (o *Order) VoucheridVoucher(mods ...qm.QueryMod) voucherQuery {
+// Voucher pointed to by the foreign key.
+func (o *Order) Voucher(mods ...qm.QueryMod) voucherQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Voucherid),
+		qm.Where("\"id\" = ?", o.VoucherID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -865,10 +865,10 @@ func (o *Order) VoucheridVoucher(mods ...qm.QueryMod) voucherQuery {
 	return Vouchers(queryMods...)
 }
 
-// CollectionpointidWarehouse pointed to by the foreign key.
-func (o *Order) CollectionpointidWarehouse(mods ...qm.QueryMod) warehouseQuery {
+// CollectionPoint pointed to by the foreign key.
+func (o *Order) CollectionPoint(mods ...qm.QueryMod) warehouseQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Collectionpointid),
+		qm.Where("\"id\" = ?", o.CollectionPointID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -876,149 +876,149 @@ func (o *Order) CollectionpointidWarehouse(mods ...qm.QueryMod) warehouseQuery {
 	return Warehouses(queryMods...)
 }
 
-// OrderidCustomerEvents retrieves all the customer_event's CustomerEvents with an executor via orderid column.
-func (o *Order) OrderidCustomerEvents(mods ...qm.QueryMod) customerEventQuery {
+// CustomerEvents retrieves all the customer_event's CustomerEvents with an executor.
+func (o *Order) CustomerEvents(mods ...qm.QueryMod) customerEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"customer_events\".\"orderid\"=?", o.ID),
+		qm.Where("\"customer_events\".\"order_id\"=?", o.ID),
 	)
 
 	return CustomerEvents(queryMods...)
 }
 
-// OrderidFulfillments retrieves all the fulfillment's Fulfillments with an executor via orderid column.
-func (o *Order) OrderidFulfillments(mods ...qm.QueryMod) fulfillmentQuery {
+// Fulfillments retrieves all the fulfillment's Fulfillments with an executor.
+func (o *Order) Fulfillments(mods ...qm.QueryMod) fulfillmentQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"fulfillments\".\"orderid\"=?", o.ID),
+		qm.Where("\"fulfillments\".\"order_id\"=?", o.ID),
 	)
 
 	return Fulfillments(queryMods...)
 }
 
-// OrderidInvoiceEvents retrieves all the invoice_event's InvoiceEvents with an executor via orderid column.
-func (o *Order) OrderidInvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
+// InvoiceEvents retrieves all the invoice_event's InvoiceEvents with an executor.
+func (o *Order) InvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"invoice_events\".\"orderid\"=?", o.ID),
+		qm.Where("\"invoice_events\".\"order_id\"=?", o.ID),
 	)
 
 	return InvoiceEvents(queryMods...)
 }
 
-// OrderidInvoices retrieves all the invoice's Invoices with an executor via orderid column.
-func (o *Order) OrderidInvoices(mods ...qm.QueryMod) invoiceQuery {
+// Invoices retrieves all the invoice's Invoices with an executor.
+func (o *Order) Invoices(mods ...qm.QueryMod) invoiceQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"invoices\".\"orderid\"=?", o.ID),
+		qm.Where("\"invoices\".\"order_id\"=?", o.ID),
 	)
 
 	return Invoices(queryMods...)
 }
 
-// OrderidOrderDiscounts retrieves all the order_discount's OrderDiscounts with an executor via orderid column.
-func (o *Order) OrderidOrderDiscounts(mods ...qm.QueryMod) orderDiscountQuery {
+// OrderDiscounts retrieves all the order_discount's OrderDiscounts with an executor.
+func (o *Order) OrderDiscounts(mods ...qm.QueryMod) orderDiscountQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"order_discounts\".\"orderid\"=?", o.ID),
+		qm.Where("\"order_discounts\".\"order_id\"=?", o.ID),
 	)
 
 	return OrderDiscounts(queryMods...)
 }
 
-// OrderidOrderEvents retrieves all the order_event's OrderEvents with an executor via orderid column.
-func (o *Order) OrderidOrderEvents(mods ...qm.QueryMod) orderEventQuery {
+// OrderEvents retrieves all the order_event's OrderEvents with an executor.
+func (o *Order) OrderEvents(mods ...qm.QueryMod) orderEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"order_events\".\"orderid\"=?", o.ID),
+		qm.Where("\"order_events\".\"order_id\"=?", o.ID),
 	)
 
 	return OrderEvents(queryMods...)
 }
 
-// OrderidOrderGiftcards retrieves all the order_giftcard's OrderGiftcards with an executor via orderid column.
-func (o *Order) OrderidOrderGiftcards(mods ...qm.QueryMod) orderGiftcardQuery {
+// OrderGiftcards retrieves all the order_giftcard's OrderGiftcards with an executor.
+func (o *Order) OrderGiftcards(mods ...qm.QueryMod) orderGiftcardQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"order_giftcards\".\"orderid\"=?", o.ID),
+		qm.Where("\"order_giftcards\".\"order_id\"=?", o.ID),
 	)
 
 	return OrderGiftcards(queryMods...)
 }
 
-// OrderidOrderLines retrieves all the order_line's OrderLines with an executor via orderid column.
-func (o *Order) OrderidOrderLines(mods ...qm.QueryMod) orderLineQuery {
+// OrderLines retrieves all the order_line's OrderLines with an executor.
+func (o *Order) OrderLines(mods ...qm.QueryMod) orderLineQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"order_lines\".\"orderid\"=?", o.ID),
+		qm.Where("\"order_lines\".\"order_id\"=?", o.ID),
 	)
 
 	return OrderLines(queryMods...)
 }
 
-// OriginalidOrders retrieves all the order's Orders with an executor via originalid column.
-func (o *Order) OriginalidOrders(mods ...qm.QueryMod) orderQuery {
+// OriginalOrders retrieves all the order's Orders with an executor via original_id column.
+func (o *Order) OriginalOrders(mods ...qm.QueryMod) orderQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"orders\".\"originalid\"=?", o.ID),
+		qm.Where("\"orders\".\"original_id\"=?", o.ID),
 	)
 
 	return Orders(queryMods...)
 }
 
-// OrderidPayments retrieves all the payment's Payments with an executor via orderid column.
-func (o *Order) OrderidPayments(mods ...qm.QueryMod) paymentQuery {
+// Payments retrieves all the payment's Payments with an executor.
+func (o *Order) Payments(mods ...qm.QueryMod) paymentQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"payments\".\"orderid\"=?", o.ID),
+		qm.Where("\"payments\".\"order_id\"=?", o.ID),
 	)
 
 	return Payments(queryMods...)
 }
 
-// LoadBillingaddressidAddress allows an eager lookup of values, cached into the
+// LoadBillingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadBillingaddressidAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1049,8 +1049,8 @@ func (orderL) LoadBillingaddressidAddress(ctx context.Context, e boil.ContextExe
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Billingaddressid) {
-			args = append(args, object.Billingaddressid)
+		if !queries.IsNil(object.BillingAddressID) {
+			args = append(args, object.BillingAddressID)
 		}
 
 	} else {
@@ -1061,13 +1061,13 @@ func (orderL) LoadBillingaddressidAddress(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Billingaddressid) {
+				if queries.Equal(a, obj.BillingAddressID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Billingaddressid) {
-				args = append(args, obj.Billingaddressid)
+			if !queries.IsNil(obj.BillingAddressID) {
+				args = append(args, obj.BillingAddressID)
 			}
 
 		}
@@ -1116,22 +1116,22 @@ func (orderL) LoadBillingaddressidAddress(ctx context.Context, e boil.ContextExe
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.BillingaddressidAddress = foreign
+		object.R.BillingAddress = foreign
 		if foreign.R == nil {
 			foreign.R = &addressR{}
 		}
-		foreign.R.BillingaddressidOrders = append(foreign.R.BillingaddressidOrders, object)
+		foreign.R.BillingAddressOrders = append(foreign.R.BillingAddressOrders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Billingaddressid, foreign.ID) {
-				local.R.BillingaddressidAddress = foreign
+			if queries.Equal(local.BillingAddressID, foreign.ID) {
+				local.R.BillingAddress = foreign
 				if foreign.R == nil {
 					foreign.R = &addressR{}
 				}
-				foreign.R.BillingaddressidOrders = append(foreign.R.BillingaddressidOrders, local)
+				foreign.R.BillingAddressOrders = append(foreign.R.BillingAddressOrders, local)
 				break
 			}
 		}
@@ -1140,9 +1140,9 @@ func (orderL) LoadBillingaddressidAddress(ctx context.Context, e boil.ContextExe
 	return nil
 }
 
-// LoadChannelidChannel allows an eager lookup of values, cached into the
+// LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1173,8 +1173,8 @@ func (orderL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Channelid) {
-			args = append(args, object.Channelid)
+		if !queries.IsNil(object.ChannelID) {
+			args = append(args, object.ChannelID)
 		}
 
 	} else {
@@ -1185,13 +1185,13 @@ func (orderL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Channelid) {
+				if queries.Equal(a, obj.ChannelID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Channelid) {
-				args = append(args, obj.Channelid)
+			if !queries.IsNil(obj.ChannelID) {
+				args = append(args, obj.ChannelID)
 			}
 
 		}
@@ -1240,22 +1240,22 @@ func (orderL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ChannelidChannel = foreign
+		object.R.Channel = foreign
 		if foreign.R == nil {
 			foreign.R = &channelR{}
 		}
-		foreign.R.ChannelidOrders = append(foreign.R.ChannelidOrders, object)
+		foreign.R.Orders = append(foreign.R.Orders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Channelid, foreign.ID) {
-				local.R.ChannelidChannel = foreign
+			if queries.Equal(local.ChannelID, foreign.ID) {
+				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
 				}
-				foreign.R.ChannelidOrders = append(foreign.R.ChannelidOrders, local)
+				foreign.R.Orders = append(foreign.R.Orders, local)
 				break
 			}
 		}
@@ -1264,9 +1264,9 @@ func (orderL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadOriginalidOrder allows an eager lookup of values, cached into the
+// LoadOriginal allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadOriginalidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadOriginal(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1297,8 +1297,8 @@ func (orderL) LoadOriginalidOrder(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Originalid) {
-			args = append(args, object.Originalid)
+		if !queries.IsNil(object.OriginalID) {
+			args = append(args, object.OriginalID)
 		}
 
 	} else {
@@ -1309,13 +1309,13 @@ func (orderL) LoadOriginalidOrder(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Originalid) {
+				if queries.Equal(a, obj.OriginalID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Originalid) {
-				args = append(args, obj.Originalid)
+			if !queries.IsNil(obj.OriginalID) {
+				args = append(args, obj.OriginalID)
 			}
 
 		}
@@ -1364,22 +1364,22 @@ func (orderL) LoadOriginalidOrder(ctx context.Context, e boil.ContextExecutor, s
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OriginalidOrder = foreign
+		object.R.Original = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OriginalidOrders = append(foreign.R.OriginalidOrders, object)
+		foreign.R.OriginalOrders = append(foreign.R.OriginalOrders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Originalid, foreign.ID) {
-				local.R.OriginalidOrder = foreign
+			if queries.Equal(local.OriginalID, foreign.ID) {
+				local.R.Original = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OriginalidOrders = append(foreign.R.OriginalidOrders, local)
+				foreign.R.OriginalOrders = append(foreign.R.OriginalOrders, local)
 				break
 			}
 		}
@@ -1388,9 +1388,9 @@ func (orderL) LoadOriginalidOrder(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadShippingmethodidShippingMethod allows an eager lookup of values, cached into the
+// LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1421,8 +1421,8 @@ func (orderL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.Con
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Shippingmethodid) {
-			args = append(args, object.Shippingmethodid)
+		if !queries.IsNil(object.ShippingMethodID) {
+			args = append(args, object.ShippingMethodID)
 		}
 
 	} else {
@@ -1433,13 +1433,13 @@ func (orderL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Shippingmethodid) {
+				if queries.Equal(a, obj.ShippingMethodID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Shippingmethodid) {
-				args = append(args, obj.Shippingmethodid)
+			if !queries.IsNil(obj.ShippingMethodID) {
+				args = append(args, obj.ShippingMethodID)
 			}
 
 		}
@@ -1488,22 +1488,22 @@ func (orderL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.Con
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ShippingmethodidShippingMethod = foreign
+		object.R.ShippingMethod = foreign
 		if foreign.R == nil {
 			foreign.R = &shippingMethodR{}
 		}
-		foreign.R.ShippingmethodidOrders = append(foreign.R.ShippingmethodidOrders, object)
+		foreign.R.Orders = append(foreign.R.Orders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Shippingmethodid, foreign.ID) {
-				local.R.ShippingmethodidShippingMethod = foreign
+			if queries.Equal(local.ShippingMethodID, foreign.ID) {
+				local.R.ShippingMethod = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
 				}
-				foreign.R.ShippingmethodidOrders = append(foreign.R.ShippingmethodidOrders, local)
+				foreign.R.Orders = append(foreign.R.Orders, local)
 				break
 			}
 		}
@@ -1512,9 +1512,9 @@ func (orderL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.Con
 	return nil
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1545,8 +1545,8 @@ func (orderL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singul
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -1557,13 +1557,13 @@ func (orderL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -1612,22 +1612,22 @@ func (orderL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singul
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridOrders = append(foreign.R.UseridOrders, object)
+		foreign.R.Orders = append(foreign.R.Orders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridOrders = append(foreign.R.UseridOrders, local)
+				foreign.R.Orders = append(foreign.R.Orders, local)
 				break
 			}
 		}
@@ -1636,9 +1636,9 @@ func (orderL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singul
 	return nil
 }
 
-// LoadVoucheridVoucher allows an eager lookup of values, cached into the
+// LoadVoucher allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadVoucheridVoucher(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadVoucher(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1669,8 +1669,8 @@ func (orderL) LoadVoucheridVoucher(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Voucherid) {
-			args = append(args, object.Voucherid)
+		if !queries.IsNil(object.VoucherID) {
+			args = append(args, object.VoucherID)
 		}
 
 	} else {
@@ -1681,13 +1681,13 @@ func (orderL) LoadVoucheridVoucher(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Voucherid) {
+				if queries.Equal(a, obj.VoucherID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Voucherid) {
-				args = append(args, obj.Voucherid)
+			if !queries.IsNil(obj.VoucherID) {
+				args = append(args, obj.VoucherID)
 			}
 
 		}
@@ -1736,22 +1736,22 @@ func (orderL) LoadVoucheridVoucher(ctx context.Context, e boil.ContextExecutor, 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.VoucheridVoucher = foreign
+		object.R.Voucher = foreign
 		if foreign.R == nil {
 			foreign.R = &voucherR{}
 		}
-		foreign.R.VoucheridOrders = append(foreign.R.VoucheridOrders, object)
+		foreign.R.Orders = append(foreign.R.Orders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Voucherid, foreign.ID) {
-				local.R.VoucheridVoucher = foreign
+			if queries.Equal(local.VoucherID, foreign.ID) {
+				local.R.Voucher = foreign
 				if foreign.R == nil {
 					foreign.R = &voucherR{}
 				}
-				foreign.R.VoucheridOrders = append(foreign.R.VoucheridOrders, local)
+				foreign.R.Orders = append(foreign.R.Orders, local)
 				break
 			}
 		}
@@ -1760,9 +1760,9 @@ func (orderL) LoadVoucheridVoucher(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadCollectionpointidWarehouse allows an eager lookup of values, cached into the
+// LoadCollectionPoint allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1793,8 +1793,8 @@ func (orderL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Context
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.Collectionpointid) {
-			args = append(args, object.Collectionpointid)
+		if !queries.IsNil(object.CollectionPointID) {
+			args = append(args, object.CollectionPointID)
 		}
 
 	} else {
@@ -1805,13 +1805,13 @@ func (orderL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Collectionpointid) {
+				if queries.Equal(a, obj.CollectionPointID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Collectionpointid) {
-				args = append(args, obj.Collectionpointid)
+			if !queries.IsNil(obj.CollectionPointID) {
+				args = append(args, obj.CollectionPointID)
 			}
 
 		}
@@ -1860,22 +1860,22 @@ func (orderL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.CollectionpointidWarehouse = foreign
+		object.R.CollectionPoint = foreign
 		if foreign.R == nil {
 			foreign.R = &warehouseR{}
 		}
-		foreign.R.CollectionpointidOrders = append(foreign.R.CollectionpointidOrders, object)
+		foreign.R.CollectionPointOrders = append(foreign.R.CollectionPointOrders, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Collectionpointid, foreign.ID) {
-				local.R.CollectionpointidWarehouse = foreign
+			if queries.Equal(local.CollectionPointID, foreign.ID) {
+				local.R.CollectionPoint = foreign
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
 				}
-				foreign.R.CollectionpointidOrders = append(foreign.R.CollectionpointidOrders, local)
+				foreign.R.CollectionPointOrders = append(foreign.R.CollectionPointOrders, local)
 				break
 			}
 		}
@@ -1884,9 +1884,9 @@ func (orderL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadOrderidCustomerEvents allows an eager lookup of values, cached into the
+// LoadCustomerEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidCustomerEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -1941,7 +1941,7 @@ func (orderL) LoadOrderidCustomerEvents(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`customer_events`),
-		qm.WhereIn(`customer_events.orderid in ?`, args...),
+		qm.WhereIn(`customer_events.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1972,24 +1972,24 @@ func (orderL) LoadOrderidCustomerEvents(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.OrderidCustomerEvents = resultSlice
+		object.R.CustomerEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &customerEventR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidCustomerEvents = append(local.R.OrderidCustomerEvents, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.CustomerEvents = append(local.R.CustomerEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &customerEventR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -1998,9 +1998,9 @@ func (orderL) LoadOrderidCustomerEvents(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// LoadOrderidFulfillments allows an eager lookup of values, cached into the
+// LoadFulfillments allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidFulfillments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadFulfillments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2055,7 +2055,7 @@ func (orderL) LoadOrderidFulfillments(ctx context.Context, e boil.ContextExecuto
 
 	query := NewQuery(
 		qm.From(`fulfillments`),
-		qm.WhereIn(`fulfillments.orderid in ?`, args...),
+		qm.WhereIn(`fulfillments.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2086,24 +2086,24 @@ func (orderL) LoadOrderidFulfillments(ctx context.Context, e boil.ContextExecuto
 		}
 	}
 	if singular {
-		object.R.OrderidFulfillments = resultSlice
+		object.R.Fulfillments = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &fulfillmentR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidFulfillments = append(local.R.OrderidFulfillments, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.Fulfillments = append(local.R.Fulfillments, foreign)
 				if foreign.R == nil {
 					foreign.R = &fulfillmentR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2112,9 +2112,9 @@ func (orderL) LoadOrderidFulfillments(ctx context.Context, e boil.ContextExecuto
 	return nil
 }
 
-// LoadOrderidInvoiceEvents allows an eager lookup of values, cached into the
+// LoadInvoiceEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2169,7 +2169,7 @@ func (orderL) LoadOrderidInvoiceEvents(ctx context.Context, e boil.ContextExecut
 
 	query := NewQuery(
 		qm.From(`invoice_events`),
-		qm.WhereIn(`invoice_events.orderid in ?`, args...),
+		qm.WhereIn(`invoice_events.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2200,24 +2200,24 @@ func (orderL) LoadOrderidInvoiceEvents(ctx context.Context, e boil.ContextExecut
 		}
 	}
 	if singular {
-		object.R.OrderidInvoiceEvents = resultSlice
+		object.R.InvoiceEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &invoiceEventR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidInvoiceEvents = append(local.R.OrderidInvoiceEvents, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.InvoiceEvents = append(local.R.InvoiceEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &invoiceEventR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2226,9 +2226,9 @@ func (orderL) LoadOrderidInvoiceEvents(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// LoadOrderidInvoices allows an eager lookup of values, cached into the
+// LoadInvoices allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidInvoices(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadInvoices(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2283,7 +2283,7 @@ func (orderL) LoadOrderidInvoices(ctx context.Context, e boil.ContextExecutor, s
 
 	query := NewQuery(
 		qm.From(`invoices`),
-		qm.WhereIn(`invoices.orderid in ?`, args...),
+		qm.WhereIn(`invoices.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2314,24 +2314,24 @@ func (orderL) LoadOrderidInvoices(ctx context.Context, e boil.ContextExecutor, s
 		}
 	}
 	if singular {
-		object.R.OrderidInvoices = resultSlice
+		object.R.Invoices = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &invoiceR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidInvoices = append(local.R.OrderidInvoices, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.Invoices = append(local.R.Invoices, foreign)
 				if foreign.R == nil {
 					foreign.R = &invoiceR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2340,9 +2340,9 @@ func (orderL) LoadOrderidInvoices(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadOrderidOrderDiscounts allows an eager lookup of values, cached into the
+// LoadOrderDiscounts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidOrderDiscounts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadOrderDiscounts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2397,7 +2397,7 @@ func (orderL) LoadOrderidOrderDiscounts(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`order_discounts`),
-		qm.WhereIn(`order_discounts.orderid in ?`, args...),
+		qm.WhereIn(`order_discounts.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2428,24 +2428,24 @@ func (orderL) LoadOrderidOrderDiscounts(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.OrderidOrderDiscounts = resultSlice
+		object.R.OrderDiscounts = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderDiscountR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidOrderDiscounts = append(local.R.OrderidOrderDiscounts, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.OrderDiscounts = append(local.R.OrderDiscounts, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderDiscountR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2454,9 +2454,9 @@ func (orderL) LoadOrderidOrderDiscounts(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// LoadOrderidOrderEvents allows an eager lookup of values, cached into the
+// LoadOrderEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidOrderEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2511,7 +2511,7 @@ func (orderL) LoadOrderidOrderEvents(ctx context.Context, e boil.ContextExecutor
 
 	query := NewQuery(
 		qm.From(`order_events`),
-		qm.WhereIn(`order_events.orderid in ?`, args...),
+		qm.WhereIn(`order_events.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2542,24 +2542,24 @@ func (orderL) LoadOrderidOrderEvents(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.OrderidOrderEvents = resultSlice
+		object.R.OrderEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderEventR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidOrderEvents = append(local.R.OrderidOrderEvents, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.OrderEvents = append(local.R.OrderEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderEventR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2568,9 +2568,9 @@ func (orderL) LoadOrderidOrderEvents(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// LoadOrderidOrderGiftcards allows an eager lookup of values, cached into the
+// LoadOrderGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidOrderGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2625,7 +2625,7 @@ func (orderL) LoadOrderidOrderGiftcards(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`order_giftcards`),
-		qm.WhereIn(`order_giftcards.orderid in ?`, args...),
+		qm.WhereIn(`order_giftcards.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2656,24 +2656,24 @@ func (orderL) LoadOrderidOrderGiftcards(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.OrderidOrderGiftcards = resultSlice
+		object.R.OrderGiftcards = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderGiftcardR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidOrderGiftcards = append(local.R.OrderidOrderGiftcards, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.OrderGiftcards = append(local.R.OrderGiftcards, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderGiftcardR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2682,9 +2682,9 @@ func (orderL) LoadOrderidOrderGiftcards(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// LoadOrderidOrderLines allows an eager lookup of values, cached into the
+// LoadOrderLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidOrderLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadOrderLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2739,7 +2739,7 @@ func (orderL) LoadOrderidOrderLines(ctx context.Context, e boil.ContextExecutor,
 
 	query := NewQuery(
 		qm.From(`order_lines`),
-		qm.WhereIn(`order_lines.orderid in ?`, args...),
+		qm.WhereIn(`order_lines.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2770,24 +2770,24 @@ func (orderL) LoadOrderidOrderLines(ctx context.Context, e boil.ContextExecutor,
 		}
 	}
 	if singular {
-		object.R.OrderidOrderLines = resultSlice
+		object.R.OrderLines = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderLineR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidOrderLines = append(local.R.OrderidOrderLines, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.OrderLines = append(local.R.OrderLines, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderLineR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -2796,9 +2796,9 @@ func (orderL) LoadOrderidOrderLines(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// LoadOriginalidOrders allows an eager lookup of values, cached into the
+// LoadOriginalOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOriginalidOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadOriginalOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2853,7 +2853,7 @@ func (orderL) LoadOriginalidOrders(ctx context.Context, e boil.ContextExecutor, 
 
 	query := NewQuery(
 		qm.From(`orders`),
-		qm.WhereIn(`orders.originalid in ?`, args...),
+		qm.WhereIn(`orders.original_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2884,24 +2884,24 @@ func (orderL) LoadOriginalidOrders(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.OriginalidOrders = resultSlice
+		object.R.OriginalOrders = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &orderR{}
 			}
-			foreign.R.OriginalidOrder = object
+			foreign.R.Original = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Originalid) {
-				local.R.OriginalidOrders = append(local.R.OriginalidOrders, foreign)
+			if queries.Equal(local.ID, foreign.OriginalID) {
+				local.R.OriginalOrders = append(local.R.OriginalOrders, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OriginalidOrder = local
+				foreign.R.Original = local
 				break
 			}
 		}
@@ -2910,9 +2910,9 @@ func (orderL) LoadOriginalidOrders(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadOrderidPayments allows an eager lookup of values, cached into the
+// LoadPayments allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderL) LoadOrderidPayments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
+func (orderL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrder interface{}, mods queries.Applicator) error {
 	var slice []*Order
 	var object *Order
 
@@ -2967,7 +2967,7 @@ func (orderL) LoadOrderidPayments(ctx context.Context, e boil.ContextExecutor, s
 
 	query := NewQuery(
 		qm.From(`payments`),
-		qm.WhereIn(`payments.orderid in ?`, args...),
+		qm.WhereIn(`payments.order_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -2998,24 +2998,24 @@ func (orderL) LoadOrderidPayments(ctx context.Context, e boil.ContextExecutor, s
 		}
 	}
 	if singular {
-		object.R.OrderidPayments = resultSlice
+		object.R.Payments = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &paymentR{}
 			}
-			foreign.R.OrderidOrder = object
+			foreign.R.Order = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderid) {
-				local.R.OrderidPayments = append(local.R.OrderidPayments, foreign)
+			if queries.Equal(local.ID, foreign.OrderID) {
+				local.R.Payments = append(local.R.Payments, foreign)
 				if foreign.R == nil {
 					foreign.R = &paymentR{}
 				}
-				foreign.R.OrderidOrder = local
+				foreign.R.Order = local
 				break
 			}
 		}
@@ -3024,10 +3024,10 @@ func (orderL) LoadOrderidPayments(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// SetBillingaddressidAddress of the order to the related item.
-// Sets o.R.BillingaddressidAddress to related.
-// Adds o to related.R.BillingaddressidOrders.
-func (o *Order) SetBillingaddressidAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+// SetBillingAddress of the order to the related item.
+// Sets o.R.BillingAddress to related.
+// Adds o to related.R.BillingAddressOrders.
+func (o *Order) SetBillingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3037,7 +3037,7 @@ func (o *Order) SetBillingaddressidAddress(ctx context.Context, exec boil.Contex
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"billingaddressid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3051,63 +3051,63 @@ func (o *Order) SetBillingaddressidAddress(ctx context.Context, exec boil.Contex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Billingaddressid, related.ID)
+	queries.Assign(&o.BillingAddressID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			BillingaddressidAddress: related,
+			BillingAddress: related,
 		}
 	} else {
-		o.R.BillingaddressidAddress = related
+		o.R.BillingAddress = related
 	}
 
 	if related.R == nil {
 		related.R = &addressR{
-			BillingaddressidOrders: OrderSlice{o},
+			BillingAddressOrders: OrderSlice{o},
 		}
 	} else {
-		related.R.BillingaddressidOrders = append(related.R.BillingaddressidOrders, o)
+		related.R.BillingAddressOrders = append(related.R.BillingAddressOrders, o)
 	}
 
 	return nil
 }
 
-// RemoveBillingaddressidAddress relationship.
-// Sets o.R.BillingaddressidAddress to nil.
+// RemoveBillingAddress relationship.
+// Sets o.R.BillingAddress to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveBillingaddressidAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *Order) RemoveBillingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
 	var err error
 
-	queries.SetScanner(&o.Billingaddressid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("billingaddressid")); err != nil {
+	queries.SetScanner(&o.BillingAddressID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.BillingaddressidAddress = nil
+		o.R.BillingAddress = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.BillingaddressidOrders {
-		if queries.Equal(o.Billingaddressid, ri.Billingaddressid) {
+	for i, ri := range related.R.BillingAddressOrders {
+		if queries.Equal(o.BillingAddressID, ri.BillingAddressID) {
 			continue
 		}
 
-		ln := len(related.R.BillingaddressidOrders)
+		ln := len(related.R.BillingAddressOrders)
 		if ln > 1 && i < ln-1 {
-			related.R.BillingaddressidOrders[i] = related.R.BillingaddressidOrders[ln-1]
+			related.R.BillingAddressOrders[i] = related.R.BillingAddressOrders[ln-1]
 		}
-		related.R.BillingaddressidOrders = related.R.BillingaddressidOrders[:ln-1]
+		related.R.BillingAddressOrders = related.R.BillingAddressOrders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetChannelidChannel of the order to the related item.
-// Sets o.R.ChannelidChannel to related.
-// Adds o to related.R.ChannelidOrders.
-func (o *Order) SetChannelidChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+// SetChannel of the order to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.Orders.
+func (o *Order) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3117,7 +3117,7 @@ func (o *Order) SetChannelidChannel(ctx context.Context, exec boil.ContextExecut
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"channelid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3131,63 +3131,63 @@ func (o *Order) SetChannelidChannel(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Channelid, related.ID)
+	queries.Assign(&o.ChannelID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			ChannelidChannel: related,
+			Channel: related,
 		}
 	} else {
-		o.R.ChannelidChannel = related
+		o.R.Channel = related
 	}
 
 	if related.R == nil {
 		related.R = &channelR{
-			ChannelidOrders: OrderSlice{o},
+			Orders: OrderSlice{o},
 		}
 	} else {
-		related.R.ChannelidOrders = append(related.R.ChannelidOrders, o)
+		related.R.Orders = append(related.R.Orders, o)
 	}
 
 	return nil
 }
 
-// RemoveChannelidChannel relationship.
-// Sets o.R.ChannelidChannel to nil.
+// RemoveChannel relationship.
+// Sets o.R.Channel to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveChannelidChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
+func (o *Order) RemoveChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
 	var err error
 
-	queries.SetScanner(&o.Channelid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("channelid")); err != nil {
+	queries.SetScanner(&o.ChannelID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ChannelidChannel = nil
+		o.R.Channel = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ChannelidOrders {
-		if queries.Equal(o.Channelid, ri.Channelid) {
+	for i, ri := range related.R.Orders {
+		if queries.Equal(o.ChannelID, ri.ChannelID) {
 			continue
 		}
 
-		ln := len(related.R.ChannelidOrders)
+		ln := len(related.R.Orders)
 		if ln > 1 && i < ln-1 {
-			related.R.ChannelidOrders[i] = related.R.ChannelidOrders[ln-1]
+			related.R.Orders[i] = related.R.Orders[ln-1]
 		}
-		related.R.ChannelidOrders = related.R.ChannelidOrders[:ln-1]
+		related.R.Orders = related.R.Orders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetOriginalidOrder of the order to the related item.
-// Sets o.R.OriginalidOrder to related.
-// Adds o to related.R.OriginalidOrders.
-func (o *Order) SetOriginalidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOriginal of the order to the related item.
+// Sets o.R.Original to related.
+// Adds o to related.R.OriginalOrders.
+func (o *Order) SetOriginal(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3197,7 +3197,7 @@ func (o *Order) SetOriginalidOrder(ctx context.Context, exec boil.ContextExecuto
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"originalid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"original_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3211,63 +3211,63 @@ func (o *Order) SetOriginalidOrder(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Originalid, related.ID)
+	queries.Assign(&o.OriginalID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			OriginalidOrder: related,
+			Original: related,
 		}
 	} else {
-		o.R.OriginalidOrder = related
+		o.R.Original = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OriginalidOrders: OrderSlice{o},
+			OriginalOrders: OrderSlice{o},
 		}
 	} else {
-		related.R.OriginalidOrders = append(related.R.OriginalidOrders, o)
+		related.R.OriginalOrders = append(related.R.OriginalOrders, o)
 	}
 
 	return nil
 }
 
-// RemoveOriginalidOrder relationship.
-// Sets o.R.OriginalidOrder to nil.
+// RemoveOriginal relationship.
+// Sets o.R.Original to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveOriginalidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *Order) RemoveOriginal(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Originalid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("originalid")); err != nil {
+	queries.SetScanner(&o.OriginalID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("original_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OriginalidOrder = nil
+		o.R.Original = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OriginalidOrders {
-		if queries.Equal(o.Originalid, ri.Originalid) {
+	for i, ri := range related.R.OriginalOrders {
+		if queries.Equal(o.OriginalID, ri.OriginalID) {
 			continue
 		}
 
-		ln := len(related.R.OriginalidOrders)
+		ln := len(related.R.OriginalOrders)
 		if ln > 1 && i < ln-1 {
-			related.R.OriginalidOrders[i] = related.R.OriginalidOrders[ln-1]
+			related.R.OriginalOrders[i] = related.R.OriginalOrders[ln-1]
 		}
-		related.R.OriginalidOrders = related.R.OriginalidOrders[:ln-1]
+		related.R.OriginalOrders = related.R.OriginalOrders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetShippingmethodidShippingMethod of the order to the related item.
-// Sets o.R.ShippingmethodidShippingMethod to related.
-// Adds o to related.R.ShippingmethodidOrders.
-func (o *Order) SetShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
+// SetShippingMethod of the order to the related item.
+// Sets o.R.ShippingMethod to related.
+// Adds o to related.R.Orders.
+func (o *Order) SetShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3277,7 +3277,7 @@ func (o *Order) SetShippingmethodidShippingMethod(ctx context.Context, exec boil
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"shippingmethodid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3291,63 +3291,63 @@ func (o *Order) SetShippingmethodidShippingMethod(ctx context.Context, exec boil
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Shippingmethodid, related.ID)
+	queries.Assign(&o.ShippingMethodID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			ShippingmethodidShippingMethod: related,
+			ShippingMethod: related,
 		}
 	} else {
-		o.R.ShippingmethodidShippingMethod = related
+		o.R.ShippingMethod = related
 	}
 
 	if related.R == nil {
 		related.R = &shippingMethodR{
-			ShippingmethodidOrders: OrderSlice{o},
+			Orders: OrderSlice{o},
 		}
 	} else {
-		related.R.ShippingmethodidOrders = append(related.R.ShippingmethodidOrders, o)
+		related.R.Orders = append(related.R.Orders, o)
 	}
 
 	return nil
 }
 
-// RemoveShippingmethodidShippingMethod relationship.
-// Sets o.R.ShippingmethodidShippingMethod to nil.
+// RemoveShippingMethod relationship.
+// Sets o.R.ShippingMethod to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
+func (o *Order) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
 	var err error
 
-	queries.SetScanner(&o.Shippingmethodid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shippingmethodid")); err != nil {
+	queries.SetScanner(&o.ShippingMethodID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ShippingmethodidShippingMethod = nil
+		o.R.ShippingMethod = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ShippingmethodidOrders {
-		if queries.Equal(o.Shippingmethodid, ri.Shippingmethodid) {
+	for i, ri := range related.R.Orders {
+		if queries.Equal(o.ShippingMethodID, ri.ShippingMethodID) {
 			continue
 		}
 
-		ln := len(related.R.ShippingmethodidOrders)
+		ln := len(related.R.Orders)
 		if ln > 1 && i < ln-1 {
-			related.R.ShippingmethodidOrders[i] = related.R.ShippingmethodidOrders[ln-1]
+			related.R.Orders[i] = related.R.Orders[ln-1]
 		}
-		related.R.ShippingmethodidOrders = related.R.ShippingmethodidOrders[:ln-1]
+		related.R.Orders = related.R.Orders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetUseridUser of the order to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridOrders.
-func (o *Order) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the order to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.Orders.
+func (o *Order) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3357,7 +3357,7 @@ func (o *Order) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, in
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3371,63 +3371,63 @@ func (o *Order) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, in
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridOrders: OrderSlice{o},
+			Orders: OrderSlice{o},
 		}
 	} else {
-		related.R.UseridOrders = append(related.R.UseridOrders, o)
+		related.R.Orders = append(related.R.Orders, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *Order) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridOrders {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.Orders {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridOrders)
+		ln := len(related.R.Orders)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridOrders[i] = related.R.UseridOrders[ln-1]
+			related.R.Orders[i] = related.R.Orders[ln-1]
 		}
-		related.R.UseridOrders = related.R.UseridOrders[:ln-1]
+		related.R.Orders = related.R.Orders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetVoucheridVoucher of the order to the related item.
-// Sets o.R.VoucheridVoucher to related.
-// Adds o to related.R.VoucheridOrders.
-func (o *Order) SetVoucheridVoucher(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Voucher) error {
+// SetVoucher of the order to the related item.
+// Sets o.R.Voucher to related.
+// Adds o to related.R.Orders.
+func (o *Order) SetVoucher(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Voucher) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3437,7 +3437,7 @@ func (o *Order) SetVoucheridVoucher(ctx context.Context, exec boil.ContextExecut
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"voucherid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3451,63 +3451,63 @@ func (o *Order) SetVoucheridVoucher(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Voucherid, related.ID)
+	queries.Assign(&o.VoucherID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			VoucheridVoucher: related,
+			Voucher: related,
 		}
 	} else {
-		o.R.VoucheridVoucher = related
+		o.R.Voucher = related
 	}
 
 	if related.R == nil {
 		related.R = &voucherR{
-			VoucheridOrders: OrderSlice{o},
+			Orders: OrderSlice{o},
 		}
 	} else {
-		related.R.VoucheridOrders = append(related.R.VoucheridOrders, o)
+		related.R.Orders = append(related.R.Orders, o)
 	}
 
 	return nil
 }
 
-// RemoveVoucheridVoucher relationship.
-// Sets o.R.VoucheridVoucher to nil.
+// RemoveVoucher relationship.
+// Sets o.R.Voucher to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveVoucheridVoucher(ctx context.Context, exec boil.ContextExecutor, related *Voucher) error {
+func (o *Order) RemoveVoucher(ctx context.Context, exec boil.ContextExecutor, related *Voucher) error {
 	var err error
 
-	queries.SetScanner(&o.Voucherid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("voucherid")); err != nil {
+	queries.SetScanner(&o.VoucherID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.VoucheridVoucher = nil
+		o.R.Voucher = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.VoucheridOrders {
-		if queries.Equal(o.Voucherid, ri.Voucherid) {
+	for i, ri := range related.R.Orders {
+		if queries.Equal(o.VoucherID, ri.VoucherID) {
 			continue
 		}
 
-		ln := len(related.R.VoucheridOrders)
+		ln := len(related.R.Orders)
 		if ln > 1 && i < ln-1 {
-			related.R.VoucheridOrders[i] = related.R.VoucheridOrders[ln-1]
+			related.R.Orders[i] = related.R.Orders[ln-1]
 		}
-		related.R.VoucheridOrders = related.R.VoucheridOrders[:ln-1]
+		related.R.Orders = related.R.Orders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetCollectionpointidWarehouse of the order to the related item.
-// Sets o.R.CollectionpointidWarehouse to related.
-// Adds o to related.R.CollectionpointidOrders.
-func (o *Order) SetCollectionpointidWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
+// SetCollectionPoint of the order to the related item.
+// Sets o.R.CollectionPoint to related.
+// Adds o to related.R.CollectionPointOrders.
+func (o *Order) SetCollectionPoint(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -3517,7 +3517,7 @@ func (o *Order) SetCollectionpointidWarehouse(ctx context.Context, exec boil.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"orders\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"collectionpointid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_point_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -3531,75 +3531,75 @@ func (o *Order) SetCollectionpointidWarehouse(ctx context.Context, exec boil.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Collectionpointid, related.ID)
+	queries.Assign(&o.CollectionPointID, related.ID)
 	if o.R == nil {
 		o.R = &orderR{
-			CollectionpointidWarehouse: related,
+			CollectionPoint: related,
 		}
 	} else {
-		o.R.CollectionpointidWarehouse = related
+		o.R.CollectionPoint = related
 	}
 
 	if related.R == nil {
 		related.R = &warehouseR{
-			CollectionpointidOrders: OrderSlice{o},
+			CollectionPointOrders: OrderSlice{o},
 		}
 	} else {
-		related.R.CollectionpointidOrders = append(related.R.CollectionpointidOrders, o)
+		related.R.CollectionPointOrders = append(related.R.CollectionPointOrders, o)
 	}
 
 	return nil
 }
 
-// RemoveCollectionpointidWarehouse relationship.
-// Sets o.R.CollectionpointidWarehouse to nil.
+// RemoveCollectionPoint relationship.
+// Sets o.R.CollectionPoint to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveCollectionpointidWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
+func (o *Order) RemoveCollectionPoint(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
 	var err error
 
-	queries.SetScanner(&o.Collectionpointid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collectionpointid")); err != nil {
+	queries.SetScanner(&o.CollectionPointID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_point_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.CollectionpointidWarehouse = nil
+		o.R.CollectionPoint = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.CollectionpointidOrders {
-		if queries.Equal(o.Collectionpointid, ri.Collectionpointid) {
+	for i, ri := range related.R.CollectionPointOrders {
+		if queries.Equal(o.CollectionPointID, ri.CollectionPointID) {
 			continue
 		}
 
-		ln := len(related.R.CollectionpointidOrders)
+		ln := len(related.R.CollectionPointOrders)
 		if ln > 1 && i < ln-1 {
-			related.R.CollectionpointidOrders[i] = related.R.CollectionpointidOrders[ln-1]
+			related.R.CollectionPointOrders[i] = related.R.CollectionPointOrders[ln-1]
 		}
-		related.R.CollectionpointidOrders = related.R.CollectionpointidOrders[:ln-1]
+		related.R.CollectionPointOrders = related.R.CollectionPointOrders[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddOrderidCustomerEvents adds the given related objects to the existing relationships
+// AddCustomerEvents adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidCustomerEvents.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
+// Appends related to o.R.CustomerEvents.
+// Sets related.R.Order appropriately.
+func (o *Order) AddCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"customer_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, customerEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3613,38 +3613,38 @@ func (o *Order) AddOrderidCustomerEvents(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidCustomerEvents: related,
+			CustomerEvents: related,
 		}
 	} else {
-		o.R.OrderidCustomerEvents = append(o.R.OrderidCustomerEvents, related...)
+		o.R.CustomerEvents = append(o.R.CustomerEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &customerEventR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidCustomerEvents removes all previously related items of the
+// SetCustomerEvents removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidCustomerEvents accordingly.
-// Replaces o.R.OrderidCustomerEvents with related.
-// Sets related.R.OrderidOrder's OrderidCustomerEvents accordingly.
-func (o *Order) SetOrderidCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
-	query := "update \"customer_events\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's CustomerEvents accordingly.
+// Replaces o.R.CustomerEvents with related.
+// Sets related.R.Order's CustomerEvents accordingly.
+func (o *Order) SetCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
+	query := "update \"customer_events\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3657,35 +3657,35 @@ func (o *Order) SetOrderidCustomerEvents(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidCustomerEvents {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.CustomerEvents {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidCustomerEvents = nil
+		o.R.CustomerEvents = nil
 	}
 
-	return o.AddOrderidCustomerEvents(ctx, exec, insert, related...)
+	return o.AddCustomerEvents(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidCustomerEvents relationships from objects passed in.
-// Removes related items from R.OrderidCustomerEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidCustomerEvents(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerEvent) error {
+// RemoveCustomerEvents relationships from objects passed in.
+// Removes related items from R.CustomerEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveCustomerEvents(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -3694,16 +3694,16 @@ func (o *Order) RemoveOrderidCustomerEvents(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidCustomerEvents {
+		for i, ri := range o.R.CustomerEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidCustomerEvents)
+			ln := len(o.R.CustomerEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidCustomerEvents[i] = o.R.OrderidCustomerEvents[ln-1]
+				o.R.CustomerEvents[i] = o.R.CustomerEvents[ln-1]
 			}
-			o.R.OrderidCustomerEvents = o.R.OrderidCustomerEvents[:ln-1]
+			o.R.CustomerEvents = o.R.CustomerEvents[:ln-1]
 			break
 		}
 	}
@@ -3711,22 +3711,22 @@ func (o *Order) RemoveOrderidCustomerEvents(ctx context.Context, exec boil.Conte
 	return nil
 }
 
-// AddOrderidFulfillments adds the given related objects to the existing relationships
+// AddFulfillments adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidFulfillments.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidFulfillments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Fulfillment) error {
+// Appends related to o.R.Fulfillments.
+// Sets related.R.Order appropriately.
+func (o *Order) AddFulfillments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Fulfillment) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"fulfillments\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, fulfillmentPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3740,38 +3740,38 @@ func (o *Order) AddOrderidFulfillments(ctx context.Context, exec boil.ContextExe
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidFulfillments: related,
+			Fulfillments: related,
 		}
 	} else {
-		o.R.OrderidFulfillments = append(o.R.OrderidFulfillments, related...)
+		o.R.Fulfillments = append(o.R.Fulfillments, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &fulfillmentR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidFulfillments removes all previously related items of the
+// SetFulfillments removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidFulfillments accordingly.
-// Replaces o.R.OrderidFulfillments with related.
-// Sets related.R.OrderidOrder's OrderidFulfillments accordingly.
-func (o *Order) SetOrderidFulfillments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Fulfillment) error {
-	query := "update \"fulfillments\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's Fulfillments accordingly.
+// Replaces o.R.Fulfillments with related.
+// Sets related.R.Order's Fulfillments accordingly.
+func (o *Order) SetFulfillments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Fulfillment) error {
+	query := "update \"fulfillments\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3784,35 +3784,35 @@ func (o *Order) SetOrderidFulfillments(ctx context.Context, exec boil.ContextExe
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidFulfillments {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.Fulfillments {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidFulfillments = nil
+		o.R.Fulfillments = nil
 	}
 
-	return o.AddOrderidFulfillments(ctx, exec, insert, related...)
+	return o.AddFulfillments(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidFulfillments relationships from objects passed in.
-// Removes related items from R.OrderidFulfillments (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidFulfillments(ctx context.Context, exec boil.ContextExecutor, related ...*Fulfillment) error {
+// RemoveFulfillments relationships from objects passed in.
+// Removes related items from R.Fulfillments (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveFulfillments(ctx context.Context, exec boil.ContextExecutor, related ...*Fulfillment) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -3821,16 +3821,16 @@ func (o *Order) RemoveOrderidFulfillments(ctx context.Context, exec boil.Context
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidFulfillments {
+		for i, ri := range o.R.Fulfillments {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidFulfillments)
+			ln := len(o.R.Fulfillments)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidFulfillments[i] = o.R.OrderidFulfillments[ln-1]
+				o.R.Fulfillments[i] = o.R.Fulfillments[ln-1]
 			}
-			o.R.OrderidFulfillments = o.R.OrderidFulfillments[:ln-1]
+			o.R.Fulfillments = o.R.Fulfillments[:ln-1]
 			break
 		}
 	}
@@ -3838,22 +3838,22 @@ func (o *Order) RemoveOrderidFulfillments(ctx context.Context, exec boil.Context
 	return nil
 }
 
-// AddOrderidInvoiceEvents adds the given related objects to the existing relationships
+// AddInvoiceEvents adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidInvoiceEvents.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+// Appends related to o.R.InvoiceEvents.
+// Sets related.R.Order appropriately.
+func (o *Order) AddInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"invoice_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3867,38 +3867,38 @@ func (o *Order) AddOrderidInvoiceEvents(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidInvoiceEvents: related,
+			InvoiceEvents: related,
 		}
 	} else {
-		o.R.OrderidInvoiceEvents = append(o.R.OrderidInvoiceEvents, related...)
+		o.R.InvoiceEvents = append(o.R.InvoiceEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &invoiceEventR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidInvoiceEvents removes all previously related items of the
+// SetInvoiceEvents removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidInvoiceEvents accordingly.
-// Replaces o.R.OrderidInvoiceEvents with related.
-// Sets related.R.OrderidOrder's OrderidInvoiceEvents accordingly.
-func (o *Order) SetOrderidInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
-	query := "update \"invoice_events\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's InvoiceEvents accordingly.
+// Replaces o.R.InvoiceEvents with related.
+// Sets related.R.Order's InvoiceEvents accordingly.
+func (o *Order) SetInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+	query := "update \"invoice_events\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -3911,35 +3911,35 @@ func (o *Order) SetOrderidInvoiceEvents(ctx context.Context, exec boil.ContextEx
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidInvoiceEvents {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.InvoiceEvents {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidInvoiceEvents = nil
+		o.R.InvoiceEvents = nil
 	}
 
-	return o.AddOrderidInvoiceEvents(ctx, exec, insert, related...)
+	return o.AddInvoiceEvents(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidInvoiceEvents relationships from objects passed in.
-// Removes related items from R.OrderidInvoiceEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
+// RemoveInvoiceEvents relationships from objects passed in.
+// Removes related items from R.InvoiceEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -3948,16 +3948,16 @@ func (o *Order) RemoveOrderidInvoiceEvents(ctx context.Context, exec boil.Contex
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidInvoiceEvents {
+		for i, ri := range o.R.InvoiceEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidInvoiceEvents)
+			ln := len(o.R.InvoiceEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidInvoiceEvents[i] = o.R.OrderidInvoiceEvents[ln-1]
+				o.R.InvoiceEvents[i] = o.R.InvoiceEvents[ln-1]
 			}
-			o.R.OrderidInvoiceEvents = o.R.OrderidInvoiceEvents[:ln-1]
+			o.R.InvoiceEvents = o.R.InvoiceEvents[:ln-1]
 			break
 		}
 	}
@@ -3965,22 +3965,22 @@ func (o *Order) RemoveOrderidInvoiceEvents(ctx context.Context, exec boil.Contex
 	return nil
 }
 
-// AddOrderidInvoices adds the given related objects to the existing relationships
+// AddInvoices adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidInvoices.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidInvoices(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Invoice) error {
+// Appends related to o.R.Invoices.
+// Sets related.R.Order appropriately.
+func (o *Order) AddInvoices(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Invoice) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"invoices\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, invoicePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -3994,38 +3994,38 @@ func (o *Order) AddOrderidInvoices(ctx context.Context, exec boil.ContextExecuto
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidInvoices: related,
+			Invoices: related,
 		}
 	} else {
-		o.R.OrderidInvoices = append(o.R.OrderidInvoices, related...)
+		o.R.Invoices = append(o.R.Invoices, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &invoiceR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidInvoices removes all previously related items of the
+// SetInvoices removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidInvoices accordingly.
-// Replaces o.R.OrderidInvoices with related.
-// Sets related.R.OrderidOrder's OrderidInvoices accordingly.
-func (o *Order) SetOrderidInvoices(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Invoice) error {
-	query := "update \"invoices\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's Invoices accordingly.
+// Replaces o.R.Invoices with related.
+// Sets related.R.Order's Invoices accordingly.
+func (o *Order) SetInvoices(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Invoice) error {
+	query := "update \"invoices\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4038,35 +4038,35 @@ func (o *Order) SetOrderidInvoices(ctx context.Context, exec boil.ContextExecuto
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidInvoices {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.Invoices {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidInvoices = nil
+		o.R.Invoices = nil
 	}
 
-	return o.AddOrderidInvoices(ctx, exec, insert, related...)
+	return o.AddInvoices(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidInvoices relationships from objects passed in.
-// Removes related items from R.OrderidInvoices (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidInvoices(ctx context.Context, exec boil.ContextExecutor, related ...*Invoice) error {
+// RemoveInvoices relationships from objects passed in.
+// Removes related items from R.Invoices (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveInvoices(ctx context.Context, exec boil.ContextExecutor, related ...*Invoice) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -4075,16 +4075,16 @@ func (o *Order) RemoveOrderidInvoices(ctx context.Context, exec boil.ContextExec
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidInvoices {
+		for i, ri := range o.R.Invoices {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidInvoices)
+			ln := len(o.R.Invoices)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidInvoices[i] = o.R.OrderidInvoices[ln-1]
+				o.R.Invoices[i] = o.R.Invoices[ln-1]
 			}
-			o.R.OrderidInvoices = o.R.OrderidInvoices[:ln-1]
+			o.R.Invoices = o.R.Invoices[:ln-1]
 			break
 		}
 	}
@@ -4092,22 +4092,22 @@ func (o *Order) RemoveOrderidInvoices(ctx context.Context, exec boil.ContextExec
 	return nil
 }
 
-// AddOrderidOrderDiscounts adds the given related objects to the existing relationships
+// AddOrderDiscounts adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidOrderDiscounts.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidOrderDiscounts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderDiscount) error {
+// Appends related to o.R.OrderDiscounts.
+// Sets related.R.Order appropriately.
+func (o *Order) AddOrderDiscounts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderDiscount) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"order_discounts\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderDiscountPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4121,38 +4121,38 @@ func (o *Order) AddOrderidOrderDiscounts(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidOrderDiscounts: related,
+			OrderDiscounts: related,
 		}
 	} else {
-		o.R.OrderidOrderDiscounts = append(o.R.OrderidOrderDiscounts, related...)
+		o.R.OrderDiscounts = append(o.R.OrderDiscounts, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderDiscountR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidOrderDiscounts removes all previously related items of the
+// SetOrderDiscounts removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidOrderDiscounts accordingly.
-// Replaces o.R.OrderidOrderDiscounts with related.
-// Sets related.R.OrderidOrder's OrderidOrderDiscounts accordingly.
-func (o *Order) SetOrderidOrderDiscounts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderDiscount) error {
-	query := "update \"order_discounts\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's OrderDiscounts accordingly.
+// Replaces o.R.OrderDiscounts with related.
+// Sets related.R.Order's OrderDiscounts accordingly.
+func (o *Order) SetOrderDiscounts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderDiscount) error {
+	query := "update \"order_discounts\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4165,35 +4165,35 @@ func (o *Order) SetOrderidOrderDiscounts(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidOrderDiscounts {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.OrderDiscounts {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidOrderDiscounts = nil
+		o.R.OrderDiscounts = nil
 	}
 
-	return o.AddOrderidOrderDiscounts(ctx, exec, insert, related...)
+	return o.AddOrderDiscounts(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidOrderDiscounts relationships from objects passed in.
-// Removes related items from R.OrderidOrderDiscounts (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidOrderDiscounts(ctx context.Context, exec boil.ContextExecutor, related ...*OrderDiscount) error {
+// RemoveOrderDiscounts relationships from objects passed in.
+// Removes related items from R.OrderDiscounts (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveOrderDiscounts(ctx context.Context, exec boil.ContextExecutor, related ...*OrderDiscount) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -4202,16 +4202,16 @@ func (o *Order) RemoveOrderidOrderDiscounts(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidOrderDiscounts {
+		for i, ri := range o.R.OrderDiscounts {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidOrderDiscounts)
+			ln := len(o.R.OrderDiscounts)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidOrderDiscounts[i] = o.R.OrderidOrderDiscounts[ln-1]
+				o.R.OrderDiscounts[i] = o.R.OrderDiscounts[ln-1]
 			}
-			o.R.OrderidOrderDiscounts = o.R.OrderidOrderDiscounts[:ln-1]
+			o.R.OrderDiscounts = o.R.OrderDiscounts[:ln-1]
 			break
 		}
 	}
@@ -4219,22 +4219,22 @@ func (o *Order) RemoveOrderidOrderDiscounts(ctx context.Context, exec boil.Conte
 	return nil
 }
 
-// AddOrderidOrderEvents adds the given related objects to the existing relationships
+// AddOrderEvents adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidOrderEvents.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
+// Appends related to o.R.OrderEvents.
+// Sets related.R.Order appropriately.
+func (o *Order) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"order_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4248,38 +4248,38 @@ func (o *Order) AddOrderidOrderEvents(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidOrderEvents: related,
+			OrderEvents: related,
 		}
 	} else {
-		o.R.OrderidOrderEvents = append(o.R.OrderidOrderEvents, related...)
+		o.R.OrderEvents = append(o.R.OrderEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderEventR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidOrderEvents removes all previously related items of the
+// SetOrderEvents removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidOrderEvents accordingly.
-// Replaces o.R.OrderidOrderEvents with related.
-// Sets related.R.OrderidOrder's OrderidOrderEvents accordingly.
-func (o *Order) SetOrderidOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
-	query := "update \"order_events\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's OrderEvents accordingly.
+// Replaces o.R.OrderEvents with related.
+// Sets related.R.Order's OrderEvents accordingly.
+func (o *Order) SetOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
+	query := "update \"order_events\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4292,35 +4292,35 @@ func (o *Order) SetOrderidOrderEvents(ctx context.Context, exec boil.ContextExec
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidOrderEvents {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.OrderEvents {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidOrderEvents = nil
+		o.R.OrderEvents = nil
 	}
 
-	return o.AddOrderidOrderEvents(ctx, exec, insert, related...)
+	return o.AddOrderEvents(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidOrderEvents relationships from objects passed in.
-// Removes related items from R.OrderidOrderEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidOrderEvents(ctx context.Context, exec boil.ContextExecutor, related ...*OrderEvent) error {
+// RemoveOrderEvents relationships from objects passed in.
+// Removes related items from R.OrderEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveOrderEvents(ctx context.Context, exec boil.ContextExecutor, related ...*OrderEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -4329,16 +4329,16 @@ func (o *Order) RemoveOrderidOrderEvents(ctx context.Context, exec boil.ContextE
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidOrderEvents {
+		for i, ri := range o.R.OrderEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidOrderEvents)
+			ln := len(o.R.OrderEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidOrderEvents[i] = o.R.OrderidOrderEvents[ln-1]
+				o.R.OrderEvents[i] = o.R.OrderEvents[ln-1]
 			}
-			o.R.OrderidOrderEvents = o.R.OrderidOrderEvents[:ln-1]
+			o.R.OrderEvents = o.R.OrderEvents[:ln-1]
 			break
 		}
 	}
@@ -4346,22 +4346,22 @@ func (o *Order) RemoveOrderidOrderEvents(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// AddOrderidOrderGiftcards adds the given related objects to the existing relationships
+// AddOrderGiftcards adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidOrderGiftcards.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
+// Appends related to o.R.OrderGiftcards.
+// Sets related.R.Order appropriately.
+func (o *Order) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"order_giftcards\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderGiftcardPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4375,38 +4375,38 @@ func (o *Order) AddOrderidOrderGiftcards(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidOrderGiftcards: related,
+			OrderGiftcards: related,
 		}
 	} else {
-		o.R.OrderidOrderGiftcards = append(o.R.OrderidOrderGiftcards, related...)
+		o.R.OrderGiftcards = append(o.R.OrderGiftcards, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderGiftcardR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidOrderGiftcards removes all previously related items of the
+// SetOrderGiftcards removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidOrderGiftcards accordingly.
-// Replaces o.R.OrderidOrderGiftcards with related.
-// Sets related.R.OrderidOrder's OrderidOrderGiftcards accordingly.
-func (o *Order) SetOrderidOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
-	query := "update \"order_giftcards\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's OrderGiftcards accordingly.
+// Replaces o.R.OrderGiftcards with related.
+// Sets related.R.Order's OrderGiftcards accordingly.
+func (o *Order) SetOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
+	query := "update \"order_giftcards\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4419,35 +4419,35 @@ func (o *Order) SetOrderidOrderGiftcards(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidOrderGiftcards {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.OrderGiftcards {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidOrderGiftcards = nil
+		o.R.OrderGiftcards = nil
 	}
 
-	return o.AddOrderidOrderGiftcards(ctx, exec, insert, related...)
+	return o.AddOrderGiftcards(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidOrderGiftcards relationships from objects passed in.
-// Removes related items from R.OrderidOrderGiftcards (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*OrderGiftcard) error {
+// RemoveOrderGiftcards relationships from objects passed in.
+// Removes related items from R.OrderGiftcards (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*OrderGiftcard) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -4456,16 +4456,16 @@ func (o *Order) RemoveOrderidOrderGiftcards(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidOrderGiftcards {
+		for i, ri := range o.R.OrderGiftcards {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidOrderGiftcards)
+			ln := len(o.R.OrderGiftcards)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidOrderGiftcards[i] = o.R.OrderidOrderGiftcards[ln-1]
+				o.R.OrderGiftcards[i] = o.R.OrderGiftcards[ln-1]
 			}
-			o.R.OrderidOrderGiftcards = o.R.OrderidOrderGiftcards[:ln-1]
+			o.R.OrderGiftcards = o.R.OrderGiftcards[:ln-1]
 			break
 		}
 	}
@@ -4473,22 +4473,22 @@ func (o *Order) RemoveOrderidOrderGiftcards(ctx context.Context, exec boil.Conte
 	return nil
 }
 
-// AddOrderidOrderLines adds the given related objects to the existing relationships
+// AddOrderLines adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidOrderLines.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidOrderLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderLine) error {
+// Appends related to o.R.OrderLines.
+// Sets related.R.Order appropriately.
+func (o *Order) AddOrderLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderLine) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"order_lines\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4502,38 +4502,38 @@ func (o *Order) AddOrderidOrderLines(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidOrderLines: related,
+			OrderLines: related,
 		}
 	} else {
-		o.R.OrderidOrderLines = append(o.R.OrderidOrderLines, related...)
+		o.R.OrderLines = append(o.R.OrderLines, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderLineR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidOrderLines removes all previously related items of the
+// SetOrderLines removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidOrderLines accordingly.
-// Replaces o.R.OrderidOrderLines with related.
-// Sets related.R.OrderidOrder's OrderidOrderLines accordingly.
-func (o *Order) SetOrderidOrderLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderLine) error {
-	query := "update \"order_lines\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's OrderLines accordingly.
+// Replaces o.R.OrderLines with related.
+// Sets related.R.Order's OrderLines accordingly.
+func (o *Order) SetOrderLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderLine) error {
+	query := "update \"order_lines\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4546,35 +4546,35 @@ func (o *Order) SetOrderidOrderLines(ctx context.Context, exec boil.ContextExecu
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidOrderLines {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.OrderLines {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidOrderLines = nil
+		o.R.OrderLines = nil
 	}
 
-	return o.AddOrderidOrderLines(ctx, exec, insert, related...)
+	return o.AddOrderLines(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidOrderLines relationships from objects passed in.
-// Removes related items from R.OrderidOrderLines (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidOrderLines(ctx context.Context, exec boil.ContextExecutor, related ...*OrderLine) error {
+// RemoveOrderLines relationships from objects passed in.
+// Removes related items from R.OrderLines (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemoveOrderLines(ctx context.Context, exec boil.ContextExecutor, related ...*OrderLine) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -4583,16 +4583,16 @@ func (o *Order) RemoveOrderidOrderLines(ctx context.Context, exec boil.ContextEx
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidOrderLines {
+		for i, ri := range o.R.OrderLines {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidOrderLines)
+			ln := len(o.R.OrderLines)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidOrderLines[i] = o.R.OrderidOrderLines[ln-1]
+				o.R.OrderLines[i] = o.R.OrderLines[ln-1]
 			}
-			o.R.OrderidOrderLines = o.R.OrderidOrderLines[:ln-1]
+			o.R.OrderLines = o.R.OrderLines[:ln-1]
 			break
 		}
 	}
@@ -4600,22 +4600,22 @@ func (o *Order) RemoveOrderidOrderLines(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// AddOriginalidOrders adds the given related objects to the existing relationships
+// AddOriginalOrders adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OriginalidOrders.
-// Sets related.R.OriginalidOrder appropriately.
-func (o *Order) AddOriginalidOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+// Appends related to o.R.OriginalOrders.
+// Sets related.R.Original appropriately.
+func (o *Order) AddOriginalOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Originalid, o.ID)
+			queries.Assign(&rel.OriginalID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"orders\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"originalid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"original_id"}),
 				strmangle.WhereClause("\"", "\"", 2, orderPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4629,38 +4629,38 @@ func (o *Order) AddOriginalidOrders(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Originalid, o.ID)
+			queries.Assign(&rel.OriginalID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OriginalidOrders: related,
+			OriginalOrders: related,
 		}
 	} else {
-		o.R.OriginalidOrders = append(o.R.OriginalidOrders, related...)
+		o.R.OriginalOrders = append(o.R.OriginalOrders, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &orderR{
-				OriginalidOrder: o,
+				Original: o,
 			}
 		} else {
-			rel.R.OriginalidOrder = o
+			rel.R.Original = o
 		}
 	}
 	return nil
 }
 
-// SetOriginalidOrders removes all previously related items of the
+// SetOriginalOrders removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OriginalidOrder's OriginalidOrders accordingly.
-// Replaces o.R.OriginalidOrders with related.
-// Sets related.R.OriginalidOrder's OriginalidOrders accordingly.
-func (o *Order) SetOriginalidOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
-	query := "update \"orders\" set \"originalid\" = null where \"originalid\" = $1"
+// Sets o.R.Original's OriginalOrders accordingly.
+// Replaces o.R.OriginalOrders with related.
+// Sets related.R.Original's OriginalOrders accordingly.
+func (o *Order) SetOriginalOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+	query := "update \"orders\" set \"original_id\" = null where \"original_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4673,35 +4673,35 @@ func (o *Order) SetOriginalidOrders(ctx context.Context, exec boil.ContextExecut
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OriginalidOrders {
-			queries.SetScanner(&rel.Originalid, nil)
+		for _, rel := range o.R.OriginalOrders {
+			queries.SetScanner(&rel.OriginalID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OriginalidOrder = nil
+			rel.R.Original = nil
 		}
-		o.R.OriginalidOrders = nil
+		o.R.OriginalOrders = nil
 	}
 
-	return o.AddOriginalidOrders(ctx, exec, insert, related...)
+	return o.AddOriginalOrders(ctx, exec, insert, related...)
 }
 
-// RemoveOriginalidOrders relationships from objects passed in.
-// Removes related items from R.OriginalidOrders (uses pointer comparison, removal does not keep order)
-// Sets related.R.OriginalidOrder.
-func (o *Order) RemoveOriginalidOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
+// RemoveOriginalOrders relationships from objects passed in.
+// Removes related items from R.OriginalOrders (uses pointer comparison, removal does not keep order)
+// Sets related.R.Original.
+func (o *Order) RemoveOriginalOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Originalid, nil)
+		queries.SetScanner(&rel.OriginalID, nil)
 		if rel.R != nil {
-			rel.R.OriginalidOrder = nil
+			rel.R.Original = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("originalid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("original_id")); err != nil {
 			return err
 		}
 	}
@@ -4710,16 +4710,16 @@ func (o *Order) RemoveOriginalidOrders(ctx context.Context, exec boil.ContextExe
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OriginalidOrders {
+		for i, ri := range o.R.OriginalOrders {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OriginalidOrders)
+			ln := len(o.R.OriginalOrders)
 			if ln > 1 && i < ln-1 {
-				o.R.OriginalidOrders[i] = o.R.OriginalidOrders[ln-1]
+				o.R.OriginalOrders[i] = o.R.OriginalOrders[ln-1]
 			}
-			o.R.OriginalidOrders = o.R.OriginalidOrders[:ln-1]
+			o.R.OriginalOrders = o.R.OriginalOrders[:ln-1]
 			break
 		}
 	}
@@ -4727,22 +4727,22 @@ func (o *Order) RemoveOriginalidOrders(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddOrderidPayments adds the given related objects to the existing relationships
+// AddPayments adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
-// Appends related to o.R.OrderidPayments.
-// Sets related.R.OrderidOrder appropriately.
-func (o *Order) AddOrderidPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+// Appends related to o.R.Payments.
+// Sets related.R.Order appropriately.
+func (o *Order) AddPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"payments\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 				strmangle.WhereClause("\"", "\"", 2, paymentPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -4756,38 +4756,38 @@ func (o *Order) AddOrderidPayments(ctx context.Context, exec boil.ContextExecuto
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderid, o.ID)
+			queries.Assign(&rel.OrderID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderR{
-			OrderidPayments: related,
+			Payments: related,
 		}
 	} else {
-		o.R.OrderidPayments = append(o.R.OrderidPayments, related...)
+		o.R.Payments = append(o.R.Payments, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &paymentR{
-				OrderidOrder: o,
+				Order: o,
 			}
 		} else {
-			rel.R.OrderidOrder = o
+			rel.R.Order = o
 		}
 	}
 	return nil
 }
 
-// SetOrderidPayments removes all previously related items of the
+// SetPayments removes all previously related items of the
 // order replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderidOrder's OrderidPayments accordingly.
-// Replaces o.R.OrderidPayments with related.
-// Sets related.R.OrderidOrder's OrderidPayments accordingly.
-func (o *Order) SetOrderidPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
-	query := "update \"payments\" set \"orderid\" = null where \"orderid\" = $1"
+// Sets o.R.Order's Payments accordingly.
+// Replaces o.R.Payments with related.
+// Sets related.R.Order's Payments accordingly.
+func (o *Order) SetPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+	query := "update \"payments\" set \"order_id\" = null where \"order_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -4800,35 +4800,35 @@ func (o *Order) SetOrderidPayments(ctx context.Context, exec boil.ContextExecuto
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderidPayments {
-			queries.SetScanner(&rel.Orderid, nil)
+		for _, rel := range o.R.Payments {
+			queries.SetScanner(&rel.OrderID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		o.R.OrderidPayments = nil
+		o.R.Payments = nil
 	}
 
-	return o.AddOrderidPayments(ctx, exec, insert, related...)
+	return o.AddPayments(ctx, exec, insert, related...)
 }
 
-// RemoveOrderidPayments relationships from objects passed in.
-// Removes related items from R.OrderidPayments (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderidOrder.
-func (o *Order) RemoveOrderidPayments(ctx context.Context, exec boil.ContextExecutor, related ...*Payment) error {
+// RemovePayments relationships from objects passed in.
+// Removes related items from R.Payments (uses pointer comparison, removal does not keep order)
+// Sets related.R.Order.
+func (o *Order) RemovePayments(ctx context.Context, exec boil.ContextExecutor, related ...*Payment) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderid, nil)
+		queries.SetScanner(&rel.OrderID, nil)
 		if rel.R != nil {
-			rel.R.OrderidOrder = nil
+			rel.R.Order = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 			return err
 		}
 	}
@@ -4837,16 +4837,16 @@ func (o *Order) RemoveOrderidPayments(ctx context.Context, exec boil.ContextExec
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderidPayments {
+		for i, ri := range o.R.Payments {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderidPayments)
+			ln := len(o.R.Payments)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderidPayments[i] = o.R.OrderidPayments[ln-1]
+				o.R.Payments[i] = o.R.Payments[ln-1]
 			}
-			o.R.OrderidPayments = o.R.OrderidPayments[:ln-1]
+			o.R.Payments = o.R.Payments[:ln-1]
 			break
 		}
 	}

@@ -25,8 +25,8 @@ import (
 // ProductVariantTranslation is an object representing the database table.
 type ProductVariantTranslation struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode     null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Productvariantid null.String `boil:"productvariantid" json:"productvariantid,omitempty" toml:"productvariantid" yaml:"productvariantid,omitempty"`
+	LanguageCode     null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
 	Name             null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 
 	R *productVariantTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,25 +35,25 @@ type ProductVariantTranslation struct {
 
 var ProductVariantTranslationColumns = struct {
 	ID               string
-	Languagecode     string
-	Productvariantid string
+	LanguageCode     string
+	ProductVariantID string
 	Name             string
 }{
 	ID:               "id",
-	Languagecode:     "languagecode",
-	Productvariantid: "productvariantid",
+	LanguageCode:     "language_code",
+	ProductVariantID: "product_variant_id",
 	Name:             "name",
 }
 
 var ProductVariantTranslationTableColumns = struct {
 	ID               string
-	Languagecode     string
-	Productvariantid string
+	LanguageCode     string
+	ProductVariantID string
 	Name             string
 }{
 	ID:               "product_variant_translations.id",
-	Languagecode:     "product_variant_translations.languagecode",
-	Productvariantid: "product_variant_translations.productvariantid",
+	LanguageCode:     "product_variant_translations.language_code",
+	ProductVariantID: "product_variant_translations.product_variant_id",
 	Name:             "product_variant_translations.name",
 }
 
@@ -61,26 +61,26 @@ var ProductVariantTranslationTableColumns = struct {
 
 var ProductVariantTranslationWhere = struct {
 	ID               whereHelperstring
-	Languagecode     whereHelpernull_String
-	Productvariantid whereHelpernull_String
+	LanguageCode     whereHelpernull_String
+	ProductVariantID whereHelpernull_String
 	Name             whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"product_variant_translations\".\"id\""},
-	Languagecode:     whereHelpernull_String{field: "\"product_variant_translations\".\"languagecode\""},
-	Productvariantid: whereHelpernull_String{field: "\"product_variant_translations\".\"productvariantid\""},
+	LanguageCode:     whereHelpernull_String{field: "\"product_variant_translations\".\"language_code\""},
+	ProductVariantID: whereHelpernull_String{field: "\"product_variant_translations\".\"product_variant_id\""},
 	Name:             whereHelpernull_String{field: "\"product_variant_translations\".\"name\""},
 }
 
 // ProductVariantTranslationRels is where relationship names are stored.
 var ProductVariantTranslationRels = struct {
-	ProductvariantidProductVariant string
+	ProductVariant string
 }{
-	ProductvariantidProductVariant: "ProductvariantidProductVariant",
+	ProductVariant: "ProductVariant",
 }
 
 // productVariantTranslationR is where relationships are stored.
 type productVariantTranslationR struct {
-	ProductvariantidProductVariant *ProductVariant `boil:"ProductvariantidProductVariant" json:"ProductvariantidProductVariant" toml:"ProductvariantidProductVariant" yaml:"ProductvariantidProductVariant"`
+	ProductVariant *ProductVariant `boil:"ProductVariant" json:"ProductVariant" toml:"ProductVariant" yaml:"ProductVariant"`
 }
 
 // NewStruct creates a new relationship struct
@@ -88,20 +88,20 @@ func (*productVariantTranslationR) NewStruct() *productVariantTranslationR {
 	return &productVariantTranslationR{}
 }
 
-func (r *productVariantTranslationR) GetProductvariantidProductVariant() *ProductVariant {
+func (r *productVariantTranslationR) GetProductVariant() *ProductVariant {
 	if r == nil {
 		return nil
 	}
-	return r.ProductvariantidProductVariant
+	return r.ProductVariant
 }
 
 // productVariantTranslationL is where Load methods for each relationship are stored.
 type productVariantTranslationL struct{}
 
 var (
-	productVariantTranslationAllColumns            = []string{"id", "languagecode", "productvariantid", "name"}
+	productVariantTranslationAllColumns            = []string{"id", "language_code", "product_variant_id", "name"}
 	productVariantTranslationColumnsWithoutDefault = []string{"id"}
-	productVariantTranslationColumnsWithDefault    = []string{"languagecode", "productvariantid", "name"}
+	productVariantTranslationColumnsWithDefault    = []string{"language_code", "product_variant_id", "name"}
 	productVariantTranslationPrimaryKeyColumns     = []string{"id"}
 	productVariantTranslationGeneratedColumns      = []string{}
 )
@@ -384,10 +384,10 @@ func (q productVariantTranslationQuery) Exists(ctx context.Context, exec boil.Co
 	return count > 0, nil
 }
 
-// ProductvariantidProductVariant pointed to by the foreign key.
-func (o *ProductVariantTranslation) ProductvariantidProductVariant(mods ...qm.QueryMod) productVariantQuery {
+// ProductVariant pointed to by the foreign key.
+func (o *ProductVariantTranslation) ProductVariant(mods ...qm.QueryMod) productVariantQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productvariantid),
+		qm.Where("\"id\" = ?", o.ProductVariantID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -395,9 +395,9 @@ func (o *ProductVariantTranslation) ProductvariantidProductVariant(mods ...qm.Qu
 	return ProductVariants(queryMods...)
 }
 
-// LoadProductvariantidProductVariant allows an eager lookup of values, cached into the
+// LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productVariantTranslationL) LoadProductvariantidProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductVariantTranslation interface{}, mods queries.Applicator) error {
+func (productVariantTranslationL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductVariantTranslation interface{}, mods queries.Applicator) error {
 	var slice []*ProductVariantTranslation
 	var object *ProductVariantTranslation
 
@@ -428,8 +428,8 @@ func (productVariantTranslationL) LoadProductvariantidProductVariant(ctx context
 		if object.R == nil {
 			object.R = &productVariantTranslationR{}
 		}
-		if !queries.IsNil(object.Productvariantid) {
-			args = append(args, object.Productvariantid)
+		if !queries.IsNil(object.ProductVariantID) {
+			args = append(args, object.ProductVariantID)
 		}
 
 	} else {
@@ -440,13 +440,13 @@ func (productVariantTranslationL) LoadProductvariantidProductVariant(ctx context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productvariantid) {
+				if queries.Equal(a, obj.ProductVariantID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productvariantid) {
-				args = append(args, obj.Productvariantid)
+			if !queries.IsNil(obj.ProductVariantID) {
+				args = append(args, obj.ProductVariantID)
 			}
 
 		}
@@ -495,22 +495,22 @@ func (productVariantTranslationL) LoadProductvariantidProductVariant(ctx context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductvariantidProductVariant = foreign
+		object.R.ProductVariant = foreign
 		if foreign.R == nil {
 			foreign.R = &productVariantR{}
 		}
-		foreign.R.ProductvariantidProductVariantTranslations = append(foreign.R.ProductvariantidProductVariantTranslations, object)
+		foreign.R.ProductVariantTranslations = append(foreign.R.ProductVariantTranslations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productvariantid, foreign.ID) {
-				local.R.ProductvariantidProductVariant = foreign
+			if queries.Equal(local.ProductVariantID, foreign.ID) {
+				local.R.ProductVariant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
 				}
-				foreign.R.ProductvariantidProductVariantTranslations = append(foreign.R.ProductvariantidProductVariantTranslations, local)
+				foreign.R.ProductVariantTranslations = append(foreign.R.ProductVariantTranslations, local)
 				break
 			}
 		}
@@ -519,10 +519,10 @@ func (productVariantTranslationL) LoadProductvariantidProductVariant(ctx context
 	return nil
 }
 
-// SetProductvariantidProductVariant of the productVariantTranslation to the related item.
-// Sets o.R.ProductvariantidProductVariant to related.
-// Adds o to related.R.ProductvariantidProductVariantTranslations.
-func (o *ProductVariantTranslation) SetProductvariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+// SetProductVariant of the productVariantTranslation to the related item.
+// Sets o.R.ProductVariant to related.
+// Adds o to related.R.ProductVariantTranslations.
+func (o *ProductVariantTranslation) SetProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -532,7 +532,7 @@ func (o *ProductVariantTranslation) SetProductvariantidProductVariant(ctx contex
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"product_variant_translations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productvariantid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productVariantTranslationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -546,54 +546,54 @@ func (o *ProductVariantTranslation) SetProductvariantidProductVariant(ctx contex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productvariantid, related.ID)
+	queries.Assign(&o.ProductVariantID, related.ID)
 	if o.R == nil {
 		o.R = &productVariantTranslationR{
-			ProductvariantidProductVariant: related,
+			ProductVariant: related,
 		}
 	} else {
-		o.R.ProductvariantidProductVariant = related
+		o.R.ProductVariant = related
 	}
 
 	if related.R == nil {
 		related.R = &productVariantR{
-			ProductvariantidProductVariantTranslations: ProductVariantTranslationSlice{o},
+			ProductVariantTranslations: ProductVariantTranslationSlice{o},
 		}
 	} else {
-		related.R.ProductvariantidProductVariantTranslations = append(related.R.ProductvariantidProductVariantTranslations, o)
+		related.R.ProductVariantTranslations = append(related.R.ProductVariantTranslations, o)
 	}
 
 	return nil
 }
 
-// RemoveProductvariantidProductVariant relationship.
-// Sets o.R.ProductvariantidProductVariant to nil.
+// RemoveProductVariant relationship.
+// Sets o.R.ProductVariant to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ProductVariantTranslation) RemoveProductvariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
+func (o *ProductVariantTranslation) RemoveProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
 	var err error
 
-	queries.SetScanner(&o.Productvariantid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productvariantid")); err != nil {
+	queries.SetScanner(&o.ProductVariantID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_variant_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductvariantidProductVariant = nil
+		o.R.ProductVariant = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductvariantidProductVariantTranslations {
-		if queries.Equal(o.Productvariantid, ri.Productvariantid) {
+	for i, ri := range related.R.ProductVariantTranslations {
+		if queries.Equal(o.ProductVariantID, ri.ProductVariantID) {
 			continue
 		}
 
-		ln := len(related.R.ProductvariantidProductVariantTranslations)
+		ln := len(related.R.ProductVariantTranslations)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductvariantidProductVariantTranslations[i] = related.R.ProductvariantidProductVariantTranslations[ln-1]
+			related.R.ProductVariantTranslations[i] = related.R.ProductVariantTranslations[ln-1]
 		}
-		related.R.ProductvariantidProductVariantTranslations = related.R.ProductvariantidProductVariantTranslations[:ln-1]
+		related.R.ProductVariantTranslations = related.R.ProductVariantTranslations[:ln-1]
 		break
 	}
 	return nil

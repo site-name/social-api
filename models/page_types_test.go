@@ -494,7 +494,7 @@ func testPageTypesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testPageTypeToManyPagetypeidAttributePages(t *testing.T) {
+func testPageTypeToManyAttributePages(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testPageTypeToManyPagetypeidAttributePages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Pagetypeid, a.ID)
-	queries.Assign(&c.Pagetypeid, a.ID)
+	queries.Assign(&b.PageTypeID, a.ID)
+	queries.Assign(&c.PageTypeID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testPageTypeToManyPagetypeidAttributePages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.PagetypeidAttributePages().All(ctx, tx)
+	check, err := a.AttributePages().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Pagetypeid, b.Pagetypeid) {
+		if queries.Equal(v.PageTypeID, b.PageTypeID) {
 			bFound = true
 		}
-		if queries.Equal(v.Pagetypeid, c.Pagetypeid) {
+		if queries.Equal(v.PageTypeID, c.PageTypeID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testPageTypeToManyPagetypeidAttributePages(t *testing.T) {
 	}
 
 	slice := PageTypeSlice{&a}
-	if err = a.L.LoadPagetypeidAttributePages(ctx, tx, false, (*[]*PageType)(&slice), nil); err != nil {
+	if err = a.L.LoadAttributePages(ctx, tx, false, (*[]*PageType)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.PagetypeidAttributePages); got != 2 {
+	if got := len(a.R.AttributePages); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.PagetypeidAttributePages = nil
-	if err = a.L.LoadPagetypeidAttributePages(ctx, tx, true, &a, nil); err != nil {
+	a.R.AttributePages = nil
+	if err = a.L.LoadAttributePages(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.PagetypeidAttributePages); got != 2 {
+	if got := len(a.R.AttributePages); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testPageTypeToManyPagetypeidAttributePages(t *testing.T) {
 	}
 }
 
-func testPageTypeToManyPagetypeidPages(t *testing.T) {
+func testPageTypeToManyPages(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testPageTypeToManyPagetypeidPages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Pagetypeid, a.ID)
-	queries.Assign(&c.Pagetypeid, a.ID)
+	queries.Assign(&b.PageTypeID, a.ID)
+	queries.Assign(&c.PageTypeID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testPageTypeToManyPagetypeidPages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.PagetypeidPages().All(ctx, tx)
+	check, err := a.Pages().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Pagetypeid, b.Pagetypeid) {
+		if queries.Equal(v.PageTypeID, b.PageTypeID) {
 			bFound = true
 		}
-		if queries.Equal(v.Pagetypeid, c.Pagetypeid) {
+		if queries.Equal(v.PageTypeID, c.PageTypeID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testPageTypeToManyPagetypeidPages(t *testing.T) {
 	}
 
 	slice := PageTypeSlice{&a}
-	if err = a.L.LoadPagetypeidPages(ctx, tx, false, (*[]*PageType)(&slice), nil); err != nil {
+	if err = a.L.LoadPages(ctx, tx, false, (*[]*PageType)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.PagetypeidPages); got != 2 {
+	if got := len(a.R.Pages); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.PagetypeidPages = nil
-	if err = a.L.LoadPagetypeidPages(ctx, tx, true, &a, nil); err != nil {
+	a.R.Pages = nil
+	if err = a.L.LoadPages(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.PagetypeidPages); got != 2 {
+	if got := len(a.R.Pages); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testPageTypeToManyPagetypeidPages(t *testing.T) {
 	}
 }
 
-func testPageTypeToManyAddOpPagetypeidAttributePages(t *testing.T) {
+func testPageTypeToManyAddOpAttributePages(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -685,7 +685,7 @@ func testPageTypeToManyAddOpPagetypeidAttributePages(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddPagetypeidAttributePages(ctx, tx, i != 0, x...)
+		err = a.AddAttributePages(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -693,28 +693,28 @@ func testPageTypeToManyAddOpPagetypeidAttributePages(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Pagetypeid) {
-			t.Error("foreign key was wrong value", a.ID, first.Pagetypeid)
+		if !queries.Equal(a.ID, first.PageTypeID) {
+			t.Error("foreign key was wrong value", a.ID, first.PageTypeID)
 		}
-		if !queries.Equal(a.ID, second.Pagetypeid) {
-			t.Error("foreign key was wrong value", a.ID, second.Pagetypeid)
+		if !queries.Equal(a.ID, second.PageTypeID) {
+			t.Error("foreign key was wrong value", a.ID, second.PageTypeID)
 		}
 
-		if first.R.PagetypeidPageType != &a {
+		if first.R.PageType != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.PagetypeidPageType != &a {
+		if second.R.PageType != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.PagetypeidAttributePages[i*2] != first {
+		if a.R.AttributePages[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.PagetypeidAttributePages[i*2+1] != second {
+		if a.R.AttributePages[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.PagetypeidAttributePages().Count(ctx, tx)
+		count, err := a.AttributePages().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -724,7 +724,7 @@ func testPageTypeToManyAddOpPagetypeidAttributePages(t *testing.T) {
 	}
 }
 
-func testPageTypeToManySetOpPagetypeidAttributePages(t *testing.T) {
+func testPageTypeToManySetOpAttributePages(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -755,25 +755,12 @@ func testPageTypeToManySetOpPagetypeidAttributePages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetPagetypeidAttributePages(ctx, tx, false, &b, &c)
+	err = a.SetAttributePages(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.PagetypeidAttributePages().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetPagetypeidAttributePages(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.PagetypeidAttributePages().Count(ctx, tx)
+	count, err := a.AttributePages().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -781,41 +768,54 @@ func testPageTypeToManySetOpPagetypeidAttributePages(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Pagetypeid) {
+	err = a.SetAttributePages(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.AttributePages().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.PageTypeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Pagetypeid) {
+	if !queries.IsValuerNil(c.PageTypeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Pagetypeid) {
-		t.Error("foreign key was wrong value", a.ID, d.Pagetypeid)
+	if !queries.Equal(a.ID, d.PageTypeID) {
+		t.Error("foreign key was wrong value", a.ID, d.PageTypeID)
 	}
-	if !queries.Equal(a.ID, e.Pagetypeid) {
-		t.Error("foreign key was wrong value", a.ID, e.Pagetypeid)
-	}
-
-	if b.R.PagetypeidPageType != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.PagetypeidPageType != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.PagetypeidPageType != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.PagetypeidPageType != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.PageTypeID) {
+		t.Error("foreign key was wrong value", a.ID, e.PageTypeID)
 	}
 
-	if a.R.PagetypeidAttributePages[0] != &d {
+	if b.R.PageType != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.PageType != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.PageType != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.PageType != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.AttributePages[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.PagetypeidAttributePages[1] != &e {
+	if a.R.AttributePages[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testPageTypeToManyRemoveOpPagetypeidAttributePages(t *testing.T) {
+func testPageTypeToManyRemoveOpAttributePages(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -840,12 +840,12 @@ func testPageTypeToManyRemoveOpPagetypeidAttributePages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddPagetypeidAttributePages(ctx, tx, true, foreigners...)
+	err = a.AddAttributePages(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.PagetypeidAttributePages().Count(ctx, tx)
+	count, err := a.AttributePages().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -853,12 +853,12 @@ func testPageTypeToManyRemoveOpPagetypeidAttributePages(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemovePagetypeidAttributePages(ctx, tx, foreigners[:2]...)
+	err = a.RemoveAttributePages(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.PagetypeidAttributePages().Count(ctx, tx)
+	count, err = a.AttributePages().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -866,40 +866,40 @@ func testPageTypeToManyRemoveOpPagetypeidAttributePages(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Pagetypeid) {
+	if !queries.IsValuerNil(b.PageTypeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Pagetypeid) {
+	if !queries.IsValuerNil(c.PageTypeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.PagetypeidPageType != nil {
+	if b.R.PageType != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.PagetypeidPageType != nil {
+	if c.R.PageType != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.PagetypeidPageType != &a {
+	if d.R.PageType != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.PagetypeidPageType != &a {
+	if e.R.PageType != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.PagetypeidAttributePages) != 2 {
+	if len(a.R.AttributePages) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.PagetypeidAttributePages[1] != &d {
+	if a.R.AttributePages[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.PagetypeidAttributePages[0] != &e {
+	if a.R.AttributePages[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testPageTypeToManyAddOpPagetypeidPages(t *testing.T) {
+func testPageTypeToManyAddOpPages(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -936,7 +936,7 @@ func testPageTypeToManyAddOpPagetypeidPages(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddPagetypeidPages(ctx, tx, i != 0, x...)
+		err = a.AddPages(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -944,28 +944,28 @@ func testPageTypeToManyAddOpPagetypeidPages(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Pagetypeid) {
-			t.Error("foreign key was wrong value", a.ID, first.Pagetypeid)
+		if !queries.Equal(a.ID, first.PageTypeID) {
+			t.Error("foreign key was wrong value", a.ID, first.PageTypeID)
 		}
-		if !queries.Equal(a.ID, second.Pagetypeid) {
-			t.Error("foreign key was wrong value", a.ID, second.Pagetypeid)
+		if !queries.Equal(a.ID, second.PageTypeID) {
+			t.Error("foreign key was wrong value", a.ID, second.PageTypeID)
 		}
 
-		if first.R.PagetypeidPageType != &a {
+		if first.R.PageType != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.PagetypeidPageType != &a {
+		if second.R.PageType != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.PagetypeidPages[i*2] != first {
+		if a.R.Pages[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.PagetypeidPages[i*2+1] != second {
+		if a.R.Pages[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.PagetypeidPages().Count(ctx, tx)
+		count, err := a.Pages().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -975,7 +975,7 @@ func testPageTypeToManyAddOpPagetypeidPages(t *testing.T) {
 	}
 }
 
-func testPageTypeToManySetOpPagetypeidPages(t *testing.T) {
+func testPageTypeToManySetOpPages(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1006,25 +1006,12 @@ func testPageTypeToManySetOpPagetypeidPages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetPagetypeidPages(ctx, tx, false, &b, &c)
+	err = a.SetPages(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.PagetypeidPages().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetPagetypeidPages(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.PagetypeidPages().Count(ctx, tx)
+	count, err := a.Pages().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1032,41 +1019,54 @@ func testPageTypeToManySetOpPagetypeidPages(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Pagetypeid) {
+	err = a.SetPages(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Pages().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.PageTypeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Pagetypeid) {
+	if !queries.IsValuerNil(c.PageTypeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Pagetypeid) {
-		t.Error("foreign key was wrong value", a.ID, d.Pagetypeid)
+	if !queries.Equal(a.ID, d.PageTypeID) {
+		t.Error("foreign key was wrong value", a.ID, d.PageTypeID)
 	}
-	if !queries.Equal(a.ID, e.Pagetypeid) {
-		t.Error("foreign key was wrong value", a.ID, e.Pagetypeid)
-	}
-
-	if b.R.PagetypeidPageType != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.PagetypeidPageType != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.PagetypeidPageType != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.PagetypeidPageType != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.PageTypeID) {
+		t.Error("foreign key was wrong value", a.ID, e.PageTypeID)
 	}
 
-	if a.R.PagetypeidPages[0] != &d {
+	if b.R.PageType != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.PageType != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.PageType != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.PageType != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Pages[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.PagetypeidPages[1] != &e {
+	if a.R.Pages[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testPageTypeToManyRemoveOpPagetypeidPages(t *testing.T) {
+func testPageTypeToManyRemoveOpPages(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1091,12 +1091,12 @@ func testPageTypeToManyRemoveOpPagetypeidPages(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddPagetypeidPages(ctx, tx, true, foreigners...)
+	err = a.AddPages(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.PagetypeidPages().Count(ctx, tx)
+	count, err := a.Pages().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1104,12 +1104,12 @@ func testPageTypeToManyRemoveOpPagetypeidPages(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemovePagetypeidPages(ctx, tx, foreigners[:2]...)
+	err = a.RemovePages(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.PagetypeidPages().Count(ctx, tx)
+	count, err = a.Pages().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1117,35 +1117,35 @@ func testPageTypeToManyRemoveOpPagetypeidPages(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Pagetypeid) {
+	if !queries.IsValuerNil(b.PageTypeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Pagetypeid) {
+	if !queries.IsValuerNil(c.PageTypeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.PagetypeidPageType != nil {
+	if b.R.PageType != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.PagetypeidPageType != nil {
+	if c.R.PageType != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.PagetypeidPageType != &a {
+	if d.R.PageType != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.PagetypeidPageType != &a {
+	if e.R.PageType != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.PagetypeidPages) != 2 {
+	if len(a.R.Pages) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.PagetypeidPages[1] != &d {
+	if a.R.Pages[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.PagetypeidPages[0] != &e {
+	if a.R.Pages[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -1224,7 +1224,7 @@ func testPageTypesSelect(t *testing.T) {
 }
 
 var (
-	pageTypeDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	pageTypeDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_               = bytes.MinRead
 )
 

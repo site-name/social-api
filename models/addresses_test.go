@@ -494,7 +494,7 @@ func testAddressesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testAddressToManyBillingaddressidCheckouts(t *testing.T) {
+func testAddressToManyBillingAddressCheckouts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testAddressToManyBillingaddressidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Billingaddressid, a.ID)
-	queries.Assign(&c.Billingaddressid, a.ID)
+	queries.Assign(&b.BillingAddressID, a.ID)
+	queries.Assign(&c.BillingAddressID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testAddressToManyBillingaddressidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.BillingaddressidCheckouts().All(ctx, tx)
+	check, err := a.BillingAddressCheckouts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Billingaddressid, b.Billingaddressid) {
+		if queries.Equal(v.BillingAddressID, b.BillingAddressID) {
 			bFound = true
 		}
-		if queries.Equal(v.Billingaddressid, c.Billingaddressid) {
+		if queries.Equal(v.BillingAddressID, c.BillingAddressID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testAddressToManyBillingaddressidCheckouts(t *testing.T) {
 	}
 
 	slice := AddressSlice{&a}
-	if err = a.L.LoadBillingaddressidCheckouts(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
+	if err = a.L.LoadBillingAddressCheckouts(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BillingaddressidCheckouts); got != 2 {
+	if got := len(a.R.BillingAddressCheckouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.BillingaddressidCheckouts = nil
-	if err = a.L.LoadBillingaddressidCheckouts(ctx, tx, true, &a, nil); err != nil {
+	a.R.BillingAddressCheckouts = nil
+	if err = a.L.LoadBillingAddressCheckouts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BillingaddressidCheckouts); got != 2 {
+	if got := len(a.R.BillingAddressCheckouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testAddressToManyBillingaddressidCheckouts(t *testing.T) {
 	}
 }
 
-func testAddressToManyBillingaddressidOrders(t *testing.T) {
+func testAddressToManyBillingAddressOrders(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testAddressToManyBillingaddressidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Billingaddressid, a.ID)
-	queries.Assign(&c.Billingaddressid, a.ID)
+	queries.Assign(&b.BillingAddressID, a.ID)
+	queries.Assign(&c.BillingAddressID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testAddressToManyBillingaddressidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.BillingaddressidOrders().All(ctx, tx)
+	check, err := a.BillingAddressOrders().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Billingaddressid, b.Billingaddressid) {
+		if queries.Equal(v.BillingAddressID, b.BillingAddressID) {
 			bFound = true
 		}
-		if queries.Equal(v.Billingaddressid, c.Billingaddressid) {
+		if queries.Equal(v.BillingAddressID, c.BillingAddressID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testAddressToManyBillingaddressidOrders(t *testing.T) {
 	}
 
 	slice := AddressSlice{&a}
-	if err = a.L.LoadBillingaddressidOrders(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
+	if err = a.L.LoadBillingAddressOrders(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BillingaddressidOrders); got != 2 {
+	if got := len(a.R.BillingAddressOrders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.BillingaddressidOrders = nil
-	if err = a.L.LoadBillingaddressidOrders(ctx, tx, true, &a, nil); err != nil {
+	a.R.BillingAddressOrders = nil
+	if err = a.L.LoadBillingAddressOrders(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BillingaddressidOrders); got != 2 {
+	if got := len(a.R.BillingAddressOrders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testAddressToManyBillingaddressidOrders(t *testing.T) {
 	}
 }
 
-func testAddressToManyAddressidShops(t *testing.T) {
+func testAddressToManyShops(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testAddressToManyAddressidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Addressid, a.ID)
-	queries.Assign(&c.Addressid, a.ID)
+	queries.Assign(&b.AddressID, a.ID)
+	queries.Assign(&c.AddressID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testAddressToManyAddressidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.AddressidShops().All(ctx, tx)
+	check, err := a.Shops().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Addressid, b.Addressid) {
+		if queries.Equal(v.AddressID, b.AddressID) {
 			bFound = true
 		}
-		if queries.Equal(v.Addressid, c.Addressid) {
+		if queries.Equal(v.AddressID, c.AddressID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testAddressToManyAddressidShops(t *testing.T) {
 	}
 
 	slice := AddressSlice{&a}
-	if err = a.L.LoadAddressidShops(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
+	if err = a.L.LoadShops(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AddressidShops); got != 2 {
+	if got := len(a.R.Shops); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AddressidShops = nil
-	if err = a.L.LoadAddressidShops(ctx, tx, true, &a, nil); err != nil {
+	a.R.Shops = nil
+	if err = a.L.LoadShops(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AddressidShops); got != 2 {
+	if got := len(a.R.Shops); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testAddressToManyAddressidShops(t *testing.T) {
 	}
 }
 
-func testAddressToManyAddressidUserAddresses(t *testing.T) {
+func testAddressToManyUserAddresses(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -750,8 +750,8 @@ func testAddressToManyAddressidUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Addressid, a.ID)
-	queries.Assign(&c.Addressid, a.ID)
+	queries.Assign(&b.AddressID, a.ID)
+	queries.Assign(&c.AddressID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -759,17 +759,17 @@ func testAddressToManyAddressidUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.AddressidUserAddresses().All(ctx, tx)
+	check, err := a.UserAddresses().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Addressid, b.Addressid) {
+		if queries.Equal(v.AddressID, b.AddressID) {
 			bFound = true
 		}
-		if queries.Equal(v.Addressid, c.Addressid) {
+		if queries.Equal(v.AddressID, c.AddressID) {
 			cFound = true
 		}
 	}
@@ -782,18 +782,18 @@ func testAddressToManyAddressidUserAddresses(t *testing.T) {
 	}
 
 	slice := AddressSlice{&a}
-	if err = a.L.LoadAddressidUserAddresses(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
+	if err = a.L.LoadUserAddresses(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AddressidUserAddresses); got != 2 {
+	if got := len(a.R.UserAddresses); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AddressidUserAddresses = nil
-	if err = a.L.LoadAddressidUserAddresses(ctx, tx, true, &a, nil); err != nil {
+	a.R.UserAddresses = nil
+	if err = a.L.LoadUserAddresses(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AddressidUserAddresses); got != 2 {
+	if got := len(a.R.UserAddresses); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -802,7 +802,7 @@ func testAddressToManyAddressidUserAddresses(t *testing.T) {
 	}
 }
 
-func testAddressToManyDefaultshippingaddressidUsers(t *testing.T) {
+func testAddressToManyDefaultShippingAddressUsers(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -827,8 +827,8 @@ func testAddressToManyDefaultshippingaddressidUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Defaultshippingaddressid, a.ID)
-	queries.Assign(&c.Defaultshippingaddressid, a.ID)
+	queries.Assign(&b.DefaultShippingAddressID, a.ID)
+	queries.Assign(&c.DefaultShippingAddressID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -836,17 +836,17 @@ func testAddressToManyDefaultshippingaddressidUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.DefaultshippingaddressidUsers().All(ctx, tx)
+	check, err := a.DefaultShippingAddressUsers().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Defaultshippingaddressid, b.Defaultshippingaddressid) {
+		if queries.Equal(v.DefaultShippingAddressID, b.DefaultShippingAddressID) {
 			bFound = true
 		}
-		if queries.Equal(v.Defaultshippingaddressid, c.Defaultshippingaddressid) {
+		if queries.Equal(v.DefaultShippingAddressID, c.DefaultShippingAddressID) {
 			cFound = true
 		}
 	}
@@ -859,18 +859,18 @@ func testAddressToManyDefaultshippingaddressidUsers(t *testing.T) {
 	}
 
 	slice := AddressSlice{&a}
-	if err = a.L.LoadDefaultshippingaddressidUsers(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
+	if err = a.L.LoadDefaultShippingAddressUsers(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.DefaultshippingaddressidUsers); got != 2 {
+	if got := len(a.R.DefaultShippingAddressUsers); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.DefaultshippingaddressidUsers = nil
-	if err = a.L.LoadDefaultshippingaddressidUsers(ctx, tx, true, &a, nil); err != nil {
+	a.R.DefaultShippingAddressUsers = nil
+	if err = a.L.LoadDefaultShippingAddressUsers(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.DefaultshippingaddressidUsers); got != 2 {
+	if got := len(a.R.DefaultShippingAddressUsers); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -879,7 +879,7 @@ func testAddressToManyDefaultshippingaddressidUsers(t *testing.T) {
 	}
 }
 
-func testAddressToManyAddressidWarehouses(t *testing.T) {
+func testAddressToManyWarehouses(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -904,8 +904,8 @@ func testAddressToManyAddressidWarehouses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Addressid, a.ID)
-	queries.Assign(&c.Addressid, a.ID)
+	queries.Assign(&b.AddressID, a.ID)
+	queries.Assign(&c.AddressID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -913,17 +913,17 @@ func testAddressToManyAddressidWarehouses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.AddressidWarehouses().All(ctx, tx)
+	check, err := a.Warehouses().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Addressid, b.Addressid) {
+		if queries.Equal(v.AddressID, b.AddressID) {
 			bFound = true
 		}
-		if queries.Equal(v.Addressid, c.Addressid) {
+		if queries.Equal(v.AddressID, c.AddressID) {
 			cFound = true
 		}
 	}
@@ -936,18 +936,18 @@ func testAddressToManyAddressidWarehouses(t *testing.T) {
 	}
 
 	slice := AddressSlice{&a}
-	if err = a.L.LoadAddressidWarehouses(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
+	if err = a.L.LoadWarehouses(ctx, tx, false, (*[]*Address)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AddressidWarehouses); got != 2 {
+	if got := len(a.R.Warehouses); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AddressidWarehouses = nil
-	if err = a.L.LoadAddressidWarehouses(ctx, tx, true, &a, nil); err != nil {
+	a.R.Warehouses = nil
+	if err = a.L.LoadWarehouses(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AddressidWarehouses); got != 2 {
+	if got := len(a.R.Warehouses); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -956,7 +956,7 @@ func testAddressToManyAddressidWarehouses(t *testing.T) {
 	}
 }
 
-func testAddressToManyAddOpBillingaddressidCheckouts(t *testing.T) {
+func testAddressToManyAddOpBillingAddressCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -993,7 +993,7 @@ func testAddressToManyAddOpBillingaddressidCheckouts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddBillingaddressidCheckouts(ctx, tx, i != 0, x...)
+		err = a.AddBillingAddressCheckouts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1001,28 +1001,28 @@ func testAddressToManyAddOpBillingaddressidCheckouts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Billingaddressid) {
-			t.Error("foreign key was wrong value", a.ID, first.Billingaddressid)
+		if !queries.Equal(a.ID, first.BillingAddressID) {
+			t.Error("foreign key was wrong value", a.ID, first.BillingAddressID)
 		}
-		if !queries.Equal(a.ID, second.Billingaddressid) {
-			t.Error("foreign key was wrong value", a.ID, second.Billingaddressid)
+		if !queries.Equal(a.ID, second.BillingAddressID) {
+			t.Error("foreign key was wrong value", a.ID, second.BillingAddressID)
 		}
 
-		if first.R.BillingaddressidAddress != &a {
+		if first.R.BillingAddress != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.BillingaddressidAddress != &a {
+		if second.R.BillingAddress != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.BillingaddressidCheckouts[i*2] != first {
+		if a.R.BillingAddressCheckouts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.BillingaddressidCheckouts[i*2+1] != second {
+		if a.R.BillingAddressCheckouts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.BillingaddressidCheckouts().Count(ctx, tx)
+		count, err := a.BillingAddressCheckouts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1032,7 +1032,7 @@ func testAddressToManyAddOpBillingaddressidCheckouts(t *testing.T) {
 	}
 }
 
-func testAddressToManySetOpBillingaddressidCheckouts(t *testing.T) {
+func testAddressToManySetOpBillingAddressCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1063,25 +1063,12 @@ func testAddressToManySetOpBillingaddressidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetBillingaddressidCheckouts(ctx, tx, false, &b, &c)
+	err = a.SetBillingAddressCheckouts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.BillingaddressidCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetBillingaddressidCheckouts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.BillingaddressidCheckouts().Count(ctx, tx)
+	count, err := a.BillingAddressCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1089,41 +1076,54 @@ func testAddressToManySetOpBillingaddressidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Billingaddressid) {
+	err = a.SetBillingAddressCheckouts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.BillingAddressCheckouts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.BillingAddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Billingaddressid) {
+	if !queries.IsValuerNil(c.BillingAddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Billingaddressid) {
-		t.Error("foreign key was wrong value", a.ID, d.Billingaddressid)
+	if !queries.Equal(a.ID, d.BillingAddressID) {
+		t.Error("foreign key was wrong value", a.ID, d.BillingAddressID)
 	}
-	if !queries.Equal(a.ID, e.Billingaddressid) {
-		t.Error("foreign key was wrong value", a.ID, e.Billingaddressid)
-	}
-
-	if b.R.BillingaddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.BillingaddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.BillingaddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.BillingaddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.BillingAddressID) {
+		t.Error("foreign key was wrong value", a.ID, e.BillingAddressID)
 	}
 
-	if a.R.BillingaddressidCheckouts[0] != &d {
+	if b.R.BillingAddress != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.BillingAddress != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.BillingAddress != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.BillingAddress != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.BillingAddressCheckouts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.BillingaddressidCheckouts[1] != &e {
+	if a.R.BillingAddressCheckouts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAddressToManyRemoveOpBillingaddressidCheckouts(t *testing.T) {
+func testAddressToManyRemoveOpBillingAddressCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1148,12 +1148,12 @@ func testAddressToManyRemoveOpBillingaddressidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddBillingaddressidCheckouts(ctx, tx, true, foreigners...)
+	err = a.AddBillingAddressCheckouts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.BillingaddressidCheckouts().Count(ctx, tx)
+	count, err := a.BillingAddressCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1161,12 +1161,12 @@ func testAddressToManyRemoveOpBillingaddressidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveBillingaddressidCheckouts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveBillingAddressCheckouts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.BillingaddressidCheckouts().Count(ctx, tx)
+	count, err = a.BillingAddressCheckouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1174,40 +1174,40 @@ func testAddressToManyRemoveOpBillingaddressidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Billingaddressid) {
+	if !queries.IsValuerNil(b.BillingAddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Billingaddressid) {
+	if !queries.IsValuerNil(c.BillingAddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.BillingaddressidAddress != nil {
+	if b.R.BillingAddress != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.BillingaddressidAddress != nil {
+	if c.R.BillingAddress != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.BillingaddressidAddress != &a {
+	if d.R.BillingAddress != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.BillingaddressidAddress != &a {
+	if e.R.BillingAddress != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.BillingaddressidCheckouts) != 2 {
+	if len(a.R.BillingAddressCheckouts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.BillingaddressidCheckouts[1] != &d {
+	if a.R.BillingAddressCheckouts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.BillingaddressidCheckouts[0] != &e {
+	if a.R.BillingAddressCheckouts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAddressToManyAddOpBillingaddressidOrders(t *testing.T) {
+func testAddressToManyAddOpBillingAddressOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1244,7 +1244,7 @@ func testAddressToManyAddOpBillingaddressidOrders(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddBillingaddressidOrders(ctx, tx, i != 0, x...)
+		err = a.AddBillingAddressOrders(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1252,28 +1252,28 @@ func testAddressToManyAddOpBillingaddressidOrders(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Billingaddressid) {
-			t.Error("foreign key was wrong value", a.ID, first.Billingaddressid)
+		if !queries.Equal(a.ID, first.BillingAddressID) {
+			t.Error("foreign key was wrong value", a.ID, first.BillingAddressID)
 		}
-		if !queries.Equal(a.ID, second.Billingaddressid) {
-			t.Error("foreign key was wrong value", a.ID, second.Billingaddressid)
+		if !queries.Equal(a.ID, second.BillingAddressID) {
+			t.Error("foreign key was wrong value", a.ID, second.BillingAddressID)
 		}
 
-		if first.R.BillingaddressidAddress != &a {
+		if first.R.BillingAddress != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.BillingaddressidAddress != &a {
+		if second.R.BillingAddress != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.BillingaddressidOrders[i*2] != first {
+		if a.R.BillingAddressOrders[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.BillingaddressidOrders[i*2+1] != second {
+		if a.R.BillingAddressOrders[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.BillingaddressidOrders().Count(ctx, tx)
+		count, err := a.BillingAddressOrders().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1283,7 +1283,7 @@ func testAddressToManyAddOpBillingaddressidOrders(t *testing.T) {
 	}
 }
 
-func testAddressToManySetOpBillingaddressidOrders(t *testing.T) {
+func testAddressToManySetOpBillingAddressOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1314,25 +1314,12 @@ func testAddressToManySetOpBillingaddressidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetBillingaddressidOrders(ctx, tx, false, &b, &c)
+	err = a.SetBillingAddressOrders(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.BillingaddressidOrders().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetBillingaddressidOrders(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.BillingaddressidOrders().Count(ctx, tx)
+	count, err := a.BillingAddressOrders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1340,41 +1327,54 @@ func testAddressToManySetOpBillingaddressidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Billingaddressid) {
+	err = a.SetBillingAddressOrders(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.BillingAddressOrders().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.BillingAddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Billingaddressid) {
+	if !queries.IsValuerNil(c.BillingAddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Billingaddressid) {
-		t.Error("foreign key was wrong value", a.ID, d.Billingaddressid)
+	if !queries.Equal(a.ID, d.BillingAddressID) {
+		t.Error("foreign key was wrong value", a.ID, d.BillingAddressID)
 	}
-	if !queries.Equal(a.ID, e.Billingaddressid) {
-		t.Error("foreign key was wrong value", a.ID, e.Billingaddressid)
-	}
-
-	if b.R.BillingaddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.BillingaddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.BillingaddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.BillingaddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.BillingAddressID) {
+		t.Error("foreign key was wrong value", a.ID, e.BillingAddressID)
 	}
 
-	if a.R.BillingaddressidOrders[0] != &d {
+	if b.R.BillingAddress != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.BillingAddress != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.BillingAddress != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.BillingAddress != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.BillingAddressOrders[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.BillingaddressidOrders[1] != &e {
+	if a.R.BillingAddressOrders[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAddressToManyRemoveOpBillingaddressidOrders(t *testing.T) {
+func testAddressToManyRemoveOpBillingAddressOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1399,12 +1399,12 @@ func testAddressToManyRemoveOpBillingaddressidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddBillingaddressidOrders(ctx, tx, true, foreigners...)
+	err = a.AddBillingAddressOrders(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.BillingaddressidOrders().Count(ctx, tx)
+	count, err := a.BillingAddressOrders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1412,12 +1412,12 @@ func testAddressToManyRemoveOpBillingaddressidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveBillingaddressidOrders(ctx, tx, foreigners[:2]...)
+	err = a.RemoveBillingAddressOrders(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.BillingaddressidOrders().Count(ctx, tx)
+	count, err = a.BillingAddressOrders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1425,40 +1425,40 @@ func testAddressToManyRemoveOpBillingaddressidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Billingaddressid) {
+	if !queries.IsValuerNil(b.BillingAddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Billingaddressid) {
+	if !queries.IsValuerNil(c.BillingAddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.BillingaddressidAddress != nil {
+	if b.R.BillingAddress != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.BillingaddressidAddress != nil {
+	if c.R.BillingAddress != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.BillingaddressidAddress != &a {
+	if d.R.BillingAddress != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.BillingaddressidAddress != &a {
+	if e.R.BillingAddress != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.BillingaddressidOrders) != 2 {
+	if len(a.R.BillingAddressOrders) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.BillingaddressidOrders[1] != &d {
+	if a.R.BillingAddressOrders[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.BillingaddressidOrders[0] != &e {
+	if a.R.BillingAddressOrders[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAddressToManyAddOpAddressidShops(t *testing.T) {
+func testAddressToManyAddOpShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1495,7 +1495,7 @@ func testAddressToManyAddOpAddressidShops(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAddressidShops(ctx, tx, i != 0, x...)
+		err = a.AddShops(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1503,28 +1503,28 @@ func testAddressToManyAddOpAddressidShops(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Addressid) {
-			t.Error("foreign key was wrong value", a.ID, first.Addressid)
+		if !queries.Equal(a.ID, first.AddressID) {
+			t.Error("foreign key was wrong value", a.ID, first.AddressID)
 		}
-		if !queries.Equal(a.ID, second.Addressid) {
-			t.Error("foreign key was wrong value", a.ID, second.Addressid)
+		if !queries.Equal(a.ID, second.AddressID) {
+			t.Error("foreign key was wrong value", a.ID, second.AddressID)
 		}
 
-		if first.R.AddressidAddress != &a {
+		if first.R.Address != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AddressidAddress != &a {
+		if second.R.Address != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AddressidShops[i*2] != first {
+		if a.R.Shops[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AddressidShops[i*2+1] != second {
+		if a.R.Shops[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AddressidShops().Count(ctx, tx)
+		count, err := a.Shops().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1534,7 +1534,7 @@ func testAddressToManyAddOpAddressidShops(t *testing.T) {
 	}
 }
 
-func testAddressToManySetOpAddressidShops(t *testing.T) {
+func testAddressToManySetOpShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1565,25 +1565,12 @@ func testAddressToManySetOpAddressidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetAddressidShops(ctx, tx, false, &b, &c)
+	err = a.SetShops(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AddressidShops().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAddressidShops(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AddressidShops().Count(ctx, tx)
+	count, err := a.Shops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1591,41 +1578,54 @@ func testAddressToManySetOpAddressidShops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Addressid) {
+	err = a.SetShops(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Shops().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.AddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Addressid) {
+	if !queries.IsValuerNil(c.AddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Addressid) {
-		t.Error("foreign key was wrong value", a.ID, d.Addressid)
+	if !queries.Equal(a.ID, d.AddressID) {
+		t.Error("foreign key was wrong value", a.ID, d.AddressID)
 	}
-	if !queries.Equal(a.ID, e.Addressid) {
-		t.Error("foreign key was wrong value", a.ID, e.Addressid)
-	}
-
-	if b.R.AddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.AddressID) {
+		t.Error("foreign key was wrong value", a.ID, e.AddressID)
 	}
 
-	if a.R.AddressidShops[0] != &d {
+	if b.R.Address != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Address != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Address != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Address != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Shops[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.AddressidShops[1] != &e {
+	if a.R.Shops[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAddressToManyRemoveOpAddressidShops(t *testing.T) {
+func testAddressToManyRemoveOpShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1650,12 +1650,12 @@ func testAddressToManyRemoveOpAddressidShops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddAddressidShops(ctx, tx, true, foreigners...)
+	err = a.AddShops(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AddressidShops().Count(ctx, tx)
+	count, err := a.Shops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1663,12 +1663,12 @@ func testAddressToManyRemoveOpAddressidShops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveAddressidShops(ctx, tx, foreigners[:2]...)
+	err = a.RemoveShops(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.AddressidShops().Count(ctx, tx)
+	count, err = a.Shops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1676,40 +1676,40 @@ func testAddressToManyRemoveOpAddressidShops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Addressid) {
+	if !queries.IsValuerNil(b.AddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Addressid) {
+	if !queries.IsValuerNil(c.AddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.AddressidAddress != nil {
+	if b.R.Address != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.AddressidAddress != nil {
+	if c.R.Address != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.AddressidAddress != &a {
+	if d.R.Address != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.AddressidAddress != &a {
+	if e.R.Address != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.AddressidShops) != 2 {
+	if len(a.R.Shops) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AddressidShops[1] != &d {
+	if a.R.Shops[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.AddressidShops[0] != &e {
+	if a.R.Shops[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAddressToManyAddOpAddressidUserAddresses(t *testing.T) {
+func testAddressToManyAddOpUserAddresses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1746,7 +1746,7 @@ func testAddressToManyAddOpAddressidUserAddresses(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAddressidUserAddresses(ctx, tx, i != 0, x...)
+		err = a.AddUserAddresses(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1754,28 +1754,28 @@ func testAddressToManyAddOpAddressidUserAddresses(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Addressid) {
-			t.Error("foreign key was wrong value", a.ID, first.Addressid)
+		if !queries.Equal(a.ID, first.AddressID) {
+			t.Error("foreign key was wrong value", a.ID, first.AddressID)
 		}
-		if !queries.Equal(a.ID, second.Addressid) {
-			t.Error("foreign key was wrong value", a.ID, second.Addressid)
+		if !queries.Equal(a.ID, second.AddressID) {
+			t.Error("foreign key was wrong value", a.ID, second.AddressID)
 		}
 
-		if first.R.AddressidAddress != &a {
+		if first.R.Address != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AddressidAddress != &a {
+		if second.R.Address != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AddressidUserAddresses[i*2] != first {
+		if a.R.UserAddresses[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AddressidUserAddresses[i*2+1] != second {
+		if a.R.UserAddresses[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AddressidUserAddresses().Count(ctx, tx)
+		count, err := a.UserAddresses().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1785,7 +1785,7 @@ func testAddressToManyAddOpAddressidUserAddresses(t *testing.T) {
 	}
 }
 
-func testAddressToManySetOpAddressidUserAddresses(t *testing.T) {
+func testAddressToManySetOpUserAddresses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1816,25 +1816,12 @@ func testAddressToManySetOpAddressidUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetAddressidUserAddresses(ctx, tx, false, &b, &c)
+	err = a.SetUserAddresses(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AddressidUserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAddressidUserAddresses(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AddressidUserAddresses().Count(ctx, tx)
+	count, err := a.UserAddresses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1842,41 +1829,54 @@ func testAddressToManySetOpAddressidUserAddresses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Addressid) {
+	err = a.SetUserAddresses(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.UserAddresses().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.AddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Addressid) {
+	if !queries.IsValuerNil(c.AddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Addressid) {
-		t.Error("foreign key was wrong value", a.ID, d.Addressid)
+	if !queries.Equal(a.ID, d.AddressID) {
+		t.Error("foreign key was wrong value", a.ID, d.AddressID)
 	}
-	if !queries.Equal(a.ID, e.Addressid) {
-		t.Error("foreign key was wrong value", a.ID, e.Addressid)
-	}
-
-	if b.R.AddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.AddressID) {
+		t.Error("foreign key was wrong value", a.ID, e.AddressID)
 	}
 
-	if a.R.AddressidUserAddresses[0] != &d {
+	if b.R.Address != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Address != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Address != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Address != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.UserAddresses[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.AddressidUserAddresses[1] != &e {
+	if a.R.UserAddresses[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAddressToManyRemoveOpAddressidUserAddresses(t *testing.T) {
+func testAddressToManyRemoveOpUserAddresses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1901,12 +1901,12 @@ func testAddressToManyRemoveOpAddressidUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddAddressidUserAddresses(ctx, tx, true, foreigners...)
+	err = a.AddUserAddresses(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AddressidUserAddresses().Count(ctx, tx)
+	count, err := a.UserAddresses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1914,12 +1914,12 @@ func testAddressToManyRemoveOpAddressidUserAddresses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveAddressidUserAddresses(ctx, tx, foreigners[:2]...)
+	err = a.RemoveUserAddresses(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.AddressidUserAddresses().Count(ctx, tx)
+	count, err = a.UserAddresses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1927,40 +1927,40 @@ func testAddressToManyRemoveOpAddressidUserAddresses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Addressid) {
+	if !queries.IsValuerNil(b.AddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Addressid) {
+	if !queries.IsValuerNil(c.AddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.AddressidAddress != nil {
+	if b.R.Address != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.AddressidAddress != nil {
+	if c.R.Address != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.AddressidAddress != &a {
+	if d.R.Address != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.AddressidAddress != &a {
+	if e.R.Address != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.AddressidUserAddresses) != 2 {
+	if len(a.R.UserAddresses) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AddressidUserAddresses[1] != &d {
+	if a.R.UserAddresses[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.AddressidUserAddresses[0] != &e {
+	if a.R.UserAddresses[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAddressToManyAddOpDefaultshippingaddressidUsers(t *testing.T) {
+func testAddressToManyAddOpDefaultShippingAddressUsers(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1997,7 +1997,7 @@ func testAddressToManyAddOpDefaultshippingaddressidUsers(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddDefaultshippingaddressidUsers(ctx, tx, i != 0, x...)
+		err = a.AddDefaultShippingAddressUsers(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2005,28 +2005,28 @@ func testAddressToManyAddOpDefaultshippingaddressidUsers(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Defaultshippingaddressid) {
-			t.Error("foreign key was wrong value", a.ID, first.Defaultshippingaddressid)
+		if !queries.Equal(a.ID, first.DefaultShippingAddressID) {
+			t.Error("foreign key was wrong value", a.ID, first.DefaultShippingAddressID)
 		}
-		if !queries.Equal(a.ID, second.Defaultshippingaddressid) {
-			t.Error("foreign key was wrong value", a.ID, second.Defaultshippingaddressid)
+		if !queries.Equal(a.ID, second.DefaultShippingAddressID) {
+			t.Error("foreign key was wrong value", a.ID, second.DefaultShippingAddressID)
 		}
 
-		if first.R.DefaultshippingaddressidAddress != &a {
+		if first.R.DefaultShippingAddress != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.DefaultshippingaddressidAddress != &a {
+		if second.R.DefaultShippingAddress != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.DefaultshippingaddressidUsers[i*2] != first {
+		if a.R.DefaultShippingAddressUsers[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.DefaultshippingaddressidUsers[i*2+1] != second {
+		if a.R.DefaultShippingAddressUsers[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.DefaultshippingaddressidUsers().Count(ctx, tx)
+		count, err := a.DefaultShippingAddressUsers().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2036,7 +2036,7 @@ func testAddressToManyAddOpDefaultshippingaddressidUsers(t *testing.T) {
 	}
 }
 
-func testAddressToManySetOpDefaultshippingaddressidUsers(t *testing.T) {
+func testAddressToManySetOpDefaultShippingAddressUsers(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2067,25 +2067,12 @@ func testAddressToManySetOpDefaultshippingaddressidUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetDefaultshippingaddressidUsers(ctx, tx, false, &b, &c)
+	err = a.SetDefaultShippingAddressUsers(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.DefaultshippingaddressidUsers().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetDefaultshippingaddressidUsers(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.DefaultshippingaddressidUsers().Count(ctx, tx)
+	count, err := a.DefaultShippingAddressUsers().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2093,41 +2080,54 @@ func testAddressToManySetOpDefaultshippingaddressidUsers(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Defaultshippingaddressid) {
+	err = a.SetDefaultShippingAddressUsers(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.DefaultShippingAddressUsers().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.DefaultShippingAddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Defaultshippingaddressid) {
+	if !queries.IsValuerNil(c.DefaultShippingAddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Defaultshippingaddressid) {
-		t.Error("foreign key was wrong value", a.ID, d.Defaultshippingaddressid)
+	if !queries.Equal(a.ID, d.DefaultShippingAddressID) {
+		t.Error("foreign key was wrong value", a.ID, d.DefaultShippingAddressID)
 	}
-	if !queries.Equal(a.ID, e.Defaultshippingaddressid) {
-		t.Error("foreign key was wrong value", a.ID, e.Defaultshippingaddressid)
-	}
-
-	if b.R.DefaultshippingaddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.DefaultshippingaddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.DefaultshippingaddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.DefaultshippingaddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.DefaultShippingAddressID) {
+		t.Error("foreign key was wrong value", a.ID, e.DefaultShippingAddressID)
 	}
 
-	if a.R.DefaultshippingaddressidUsers[0] != &d {
+	if b.R.DefaultShippingAddress != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.DefaultShippingAddress != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.DefaultShippingAddress != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.DefaultShippingAddress != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.DefaultShippingAddressUsers[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.DefaultshippingaddressidUsers[1] != &e {
+	if a.R.DefaultShippingAddressUsers[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAddressToManyRemoveOpDefaultshippingaddressidUsers(t *testing.T) {
+func testAddressToManyRemoveOpDefaultShippingAddressUsers(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2152,12 +2152,12 @@ func testAddressToManyRemoveOpDefaultshippingaddressidUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddDefaultshippingaddressidUsers(ctx, tx, true, foreigners...)
+	err = a.AddDefaultShippingAddressUsers(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.DefaultshippingaddressidUsers().Count(ctx, tx)
+	count, err := a.DefaultShippingAddressUsers().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2165,12 +2165,12 @@ func testAddressToManyRemoveOpDefaultshippingaddressidUsers(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveDefaultshippingaddressidUsers(ctx, tx, foreigners[:2]...)
+	err = a.RemoveDefaultShippingAddressUsers(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.DefaultshippingaddressidUsers().Count(ctx, tx)
+	count, err = a.DefaultShippingAddressUsers().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2178,40 +2178,40 @@ func testAddressToManyRemoveOpDefaultshippingaddressidUsers(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Defaultshippingaddressid) {
+	if !queries.IsValuerNil(b.DefaultShippingAddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Defaultshippingaddressid) {
+	if !queries.IsValuerNil(c.DefaultShippingAddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.DefaultshippingaddressidAddress != nil {
+	if b.R.DefaultShippingAddress != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.DefaultshippingaddressidAddress != nil {
+	if c.R.DefaultShippingAddress != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.DefaultshippingaddressidAddress != &a {
+	if d.R.DefaultShippingAddress != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.DefaultshippingaddressidAddress != &a {
+	if e.R.DefaultShippingAddress != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.DefaultshippingaddressidUsers) != 2 {
+	if len(a.R.DefaultShippingAddressUsers) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.DefaultshippingaddressidUsers[1] != &d {
+	if a.R.DefaultShippingAddressUsers[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.DefaultshippingaddressidUsers[0] != &e {
+	if a.R.DefaultShippingAddressUsers[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAddressToManyAddOpAddressidWarehouses(t *testing.T) {
+func testAddressToManyAddOpWarehouses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2248,7 +2248,7 @@ func testAddressToManyAddOpAddressidWarehouses(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAddressidWarehouses(ctx, tx, i != 0, x...)
+		err = a.AddWarehouses(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2256,28 +2256,28 @@ func testAddressToManyAddOpAddressidWarehouses(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Addressid) {
-			t.Error("foreign key was wrong value", a.ID, first.Addressid)
+		if !queries.Equal(a.ID, first.AddressID) {
+			t.Error("foreign key was wrong value", a.ID, first.AddressID)
 		}
-		if !queries.Equal(a.ID, second.Addressid) {
-			t.Error("foreign key was wrong value", a.ID, second.Addressid)
+		if !queries.Equal(a.ID, second.AddressID) {
+			t.Error("foreign key was wrong value", a.ID, second.AddressID)
 		}
 
-		if first.R.AddressidAddress != &a {
+		if first.R.Address != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AddressidAddress != &a {
+		if second.R.Address != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AddressidWarehouses[i*2] != first {
+		if a.R.Warehouses[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AddressidWarehouses[i*2+1] != second {
+		if a.R.Warehouses[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AddressidWarehouses().Count(ctx, tx)
+		count, err := a.Warehouses().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2287,7 +2287,7 @@ func testAddressToManyAddOpAddressidWarehouses(t *testing.T) {
 	}
 }
 
-func testAddressToManySetOpAddressidWarehouses(t *testing.T) {
+func testAddressToManySetOpWarehouses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2318,25 +2318,12 @@ func testAddressToManySetOpAddressidWarehouses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetAddressidWarehouses(ctx, tx, false, &b, &c)
+	err = a.SetWarehouses(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AddressidWarehouses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAddressidWarehouses(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AddressidWarehouses().Count(ctx, tx)
+	count, err := a.Warehouses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2344,41 +2331,54 @@ func testAddressToManySetOpAddressidWarehouses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Addressid) {
+	err = a.SetWarehouses(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Warehouses().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.AddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Addressid) {
+	if !queries.IsValuerNil(c.AddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Addressid) {
-		t.Error("foreign key was wrong value", a.ID, d.Addressid)
+	if !queries.Equal(a.ID, d.AddressID) {
+		t.Error("foreign key was wrong value", a.ID, d.AddressID)
 	}
-	if !queries.Equal(a.ID, e.Addressid) {
-		t.Error("foreign key was wrong value", a.ID, e.Addressid)
-	}
-
-	if b.R.AddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AddressidAddress != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AddressidAddress != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.AddressID) {
+		t.Error("foreign key was wrong value", a.ID, e.AddressID)
 	}
 
-	if a.R.AddressidWarehouses[0] != &d {
+	if b.R.Address != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Address != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Address != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Address != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Warehouses[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.AddressidWarehouses[1] != &e {
+	if a.R.Warehouses[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAddressToManyRemoveOpAddressidWarehouses(t *testing.T) {
+func testAddressToManyRemoveOpWarehouses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2403,12 +2403,12 @@ func testAddressToManyRemoveOpAddressidWarehouses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddAddressidWarehouses(ctx, tx, true, foreigners...)
+	err = a.AddWarehouses(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AddressidWarehouses().Count(ctx, tx)
+	count, err := a.Warehouses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2416,12 +2416,12 @@ func testAddressToManyRemoveOpAddressidWarehouses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveAddressidWarehouses(ctx, tx, foreigners[:2]...)
+	err = a.RemoveWarehouses(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.AddressidWarehouses().Count(ctx, tx)
+	count, err = a.Warehouses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2429,35 +2429,35 @@ func testAddressToManyRemoveOpAddressidWarehouses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Addressid) {
+	if !queries.IsValuerNil(b.AddressID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Addressid) {
+	if !queries.IsValuerNil(c.AddressID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.AddressidAddress != nil {
+	if b.R.Address != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.AddressidAddress != nil {
+	if c.R.Address != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.AddressidAddress != &a {
+	if d.R.Address != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.AddressidAddress != &a {
+	if e.R.Address != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.AddressidWarehouses) != 2 {
+	if len(a.R.Warehouses) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AddressidWarehouses[1] != &d {
+	if a.R.Warehouses[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.AddressidWarehouses[0] != &e {
+	if a.R.Warehouses[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -2536,7 +2536,7 @@ func testAddressesSelect(t *testing.T) {
 }
 
 var (
-	addressDBTypes = map[string]string{`ID`: `character varying`, `Firstname`: `character varying`, `Lastname`: `character varying`, `Companyname`: `character varying`, `Streetaddress1`: `character varying`, `Streetaddress2`: `character varying`, `City`: `character varying`, `Cityarea`: `character varying`, `Postalcode`: `character varying`, `Country`: `character varying`, `Countryarea`: `character varying`, `Phone`: `character varying`, `Createat`: `bigint`, `Updateat`: `bigint`}
+	addressDBTypes = map[string]string{`ID`: `character varying`, `FirstName`: `character varying`, `LastName`: `character varying`, `CompanyName`: `character varying`, `StreetAddress1`: `character varying`, `StreetAddress2`: `character varying`, `City`: `character varying`, `CityArea`: `character varying`, `PostalCode`: `character varying`, `Country`: `character varying`, `CountryArea`: `character varying`, `Phone`: `character varying`, `CreatedAt`: `bigint`, `UpdatedAt`: `bigint`}
 	_              = bytes.MinRead
 )
 

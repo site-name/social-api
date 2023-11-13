@@ -1,20 +1,20 @@
 CREATE TABLE IF NOT EXISTS attributes (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  slug character varying(255),
-  name character varying(250),
-  type character varying(50),
-  inputtype character varying(50),
-  entitytype character varying(50),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug character varying(255) NOT NULL,
+  name character varying(250) NOT NULL,
+  type character varying(50) NOT NULL,
+  input_type character varying(50) NOT NULL,
+  entity_type character varying(50),
   unit character varying(100),
-  valuerequired boolean,
-  isvariantonly boolean,
-  visibleinstorefront boolean,
-  filterableinstorefront boolean,
-  filterableindashboard boolean,
-  storefrontsearchposition integer,
-  availableingrid boolean,
+  value_required boolean NOT NULL,
+  is_variant_only boolean NOT NULL,
+  visible_in_storefront boolean NOT NULL,
+  filterable_in_storefront boolean NOT NULL,
+  filterable_in_dashboard boolean NOT NULL,
+  storefront_search_position integer NOT NULL,
+  available_in_grid boolean NOT NULL,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY attributes

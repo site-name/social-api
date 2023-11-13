@@ -494,7 +494,7 @@ func testWarehouseShippingZonesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testWarehouseShippingZoneToOneShippingZoneUsingShippingzoneidShippingZone(t *testing.T) {
+func testWarehouseShippingZoneToOneShippingZoneUsingShippingZone(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testWarehouseShippingZoneToOneShippingZoneUsingShippingzoneidShippingZone(t
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Shippingzoneid, foreign.ID)
+	queries.Assign(&local.ShippingZoneID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ShippingzoneidShippingZone().One(ctx, tx)
+	check, err := local.ShippingZone().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testWarehouseShippingZoneToOneShippingZoneUsingShippingzoneidShippingZone(t
 	})
 
 	slice := WarehouseShippingZoneSlice{&local}
-	if err = local.L.LoadShippingzoneidShippingZone(ctx, tx, false, (*[]*WarehouseShippingZone)(&slice), nil); err != nil {
+	if err = local.L.LoadShippingZone(ctx, tx, false, (*[]*WarehouseShippingZone)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ShippingzoneidShippingZone == nil {
+	if local.R.ShippingZone == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ShippingzoneidShippingZone = nil
-	if err = local.L.LoadShippingzoneidShippingZone(ctx, tx, true, &local, nil); err != nil {
+	local.R.ShippingZone = nil
+	if err = local.L.LoadShippingZone(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ShippingzoneidShippingZone == nil {
+	if local.R.ShippingZone == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testWarehouseShippingZoneToOneShippingZoneUsingShippingzoneidShippingZone(t
 	}
 }
 
-func testWarehouseShippingZoneToOneWarehouseUsingWarehouseidWarehouse(t *testing.T) {
+func testWarehouseShippingZoneToOneWarehouseUsingWarehouse(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testWarehouseShippingZoneToOneWarehouseUsingWarehouseidWarehouse(t *testing
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Warehouseid, foreign.ID)
+	queries.Assign(&local.WarehouseID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.WarehouseidWarehouse().One(ctx, tx)
+	check, err := local.Warehouse().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testWarehouseShippingZoneToOneWarehouseUsingWarehouseidWarehouse(t *testing
 	})
 
 	slice := WarehouseShippingZoneSlice{&local}
-	if err = local.L.LoadWarehouseidWarehouse(ctx, tx, false, (*[]*WarehouseShippingZone)(&slice), nil); err != nil {
+	if err = local.L.LoadWarehouse(ctx, tx, false, (*[]*WarehouseShippingZone)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.WarehouseidWarehouse == nil {
+	if local.R.Warehouse == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.WarehouseidWarehouse = nil
-	if err = local.L.LoadWarehouseidWarehouse(ctx, tx, true, &local, nil); err != nil {
+	local.R.Warehouse = nil
+	if err = local.L.LoadWarehouse(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.WarehouseidWarehouse == nil {
+	if local.R.Warehouse == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testWarehouseShippingZoneToOneWarehouseUsingWarehouseidWarehouse(t *testing
 	}
 }
 
-func testWarehouseShippingZoneToOneSetOpShippingZoneUsingShippingzoneidShippingZone(t *testing.T) {
+func testWarehouseShippingZoneToOneSetOpShippingZoneUsingShippingZone(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testWarehouseShippingZoneToOneSetOpShippingZoneUsingShippingzoneidShippingZ
 	}
 
 	for i, x := range []*ShippingZone{&b, &c} {
-		err = a.SetShippingzoneidShippingZone(ctx, tx, i != 0, x)
+		err = a.SetShippingZone(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ShippingzoneidShippingZone != x {
+		if a.R.ShippingZone != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ShippingzoneidWarehouseShippingZones[0] != &a {
+		if x.R.WarehouseShippingZones[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Shippingzoneid, x.ID) {
-			t.Error("foreign key was wrong value", a.Shippingzoneid)
+		if !queries.Equal(a.ShippingZoneID, x.ID) {
+			t.Error("foreign key was wrong value", a.ShippingZoneID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Shippingzoneid))
-		reflect.Indirect(reflect.ValueOf(&a.Shippingzoneid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ShippingZoneID))
+		reflect.Indirect(reflect.ValueOf(&a.ShippingZoneID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Shippingzoneid, x.ID) {
-			t.Error("foreign key was wrong value", a.Shippingzoneid, x.ID)
+		if !queries.Equal(a.ShippingZoneID, x.ID) {
+			t.Error("foreign key was wrong value", a.ShippingZoneID, x.ID)
 		}
 	}
 }
 
-func testWarehouseShippingZoneToOneRemoveOpShippingZoneUsingShippingzoneidShippingZone(t *testing.T) {
+func testWarehouseShippingZoneToOneRemoveOpShippingZoneUsingShippingZone(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testWarehouseShippingZoneToOneRemoveOpShippingZoneUsingShippingzoneidShippi
 		t.Fatal(err)
 	}
 
-	if err = a.SetShippingzoneidShippingZone(ctx, tx, true, &b); err != nil {
+	if err = a.SetShippingZone(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveShippingzoneidShippingZone(ctx, tx, &b); err != nil {
+	if err = a.RemoveShippingZone(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ShippingzoneidShippingZone().Count(ctx, tx)
+	count, err := a.ShippingZone().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testWarehouseShippingZoneToOneRemoveOpShippingZoneUsingShippingzoneidShippi
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ShippingzoneidShippingZone != nil {
+	if a.R.ShippingZone != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Shippingzoneid) {
+	if !queries.IsValuerNil(a.ShippingZoneID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ShippingzoneidWarehouseShippingZones) != 0 {
+	if len(b.R.WarehouseShippingZones) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testWarehouseShippingZoneToOneSetOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
+func testWarehouseShippingZoneToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testWarehouseShippingZoneToOneSetOpWarehouseUsingWarehouseidWarehouse(t *te
 	}
 
 	for i, x := range []*Warehouse{&b, &c} {
-		err = a.SetWarehouseidWarehouse(ctx, tx, i != 0, x)
+		err = a.SetWarehouse(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.WarehouseidWarehouse != x {
+		if a.R.Warehouse != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.WarehouseidWarehouseShippingZones[0] != &a {
+		if x.R.WarehouseShippingZones[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Warehouseid, x.ID) {
-			t.Error("foreign key was wrong value", a.Warehouseid)
+		if !queries.Equal(a.WarehouseID, x.ID) {
+			t.Error("foreign key was wrong value", a.WarehouseID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Warehouseid))
-		reflect.Indirect(reflect.ValueOf(&a.Warehouseid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.WarehouseID))
+		reflect.Indirect(reflect.ValueOf(&a.WarehouseID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Warehouseid, x.ID) {
-			t.Error("foreign key was wrong value", a.Warehouseid, x.ID)
+		if !queries.Equal(a.WarehouseID, x.ID) {
+			t.Error("foreign key was wrong value", a.WarehouseID, x.ID)
 		}
 	}
 }
 
-func testWarehouseShippingZoneToOneRemoveOpWarehouseUsingWarehouseidWarehouse(t *testing.T) {
+func testWarehouseShippingZoneToOneRemoveOpWarehouseUsingWarehouse(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testWarehouseShippingZoneToOneRemoveOpWarehouseUsingWarehouseidWarehouse(t 
 		t.Fatal(err)
 	}
 
-	if err = a.SetWarehouseidWarehouse(ctx, tx, true, &b); err != nil {
+	if err = a.SetWarehouse(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveWarehouseidWarehouse(ctx, tx, &b); err != nil {
+	if err = a.RemoveWarehouse(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.WarehouseidWarehouse().Count(ctx, tx)
+	count, err := a.Warehouse().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testWarehouseShippingZoneToOneRemoveOpWarehouseUsingWarehouseidWarehouse(t 
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.WarehouseidWarehouse != nil {
+	if a.R.Warehouse != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Warehouseid) {
+	if !queries.IsValuerNil(a.WarehouseID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.WarehouseidWarehouseShippingZones) != 0 {
+	if len(b.R.WarehouseShippingZones) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testWarehouseShippingZonesSelect(t *testing.T) {
 }
 
 var (
-	warehouseShippingZoneDBTypes = map[string]string{`ID`: `character varying`, `Warehouseid`: `character varying`, `Shippingzoneid`: `character varying`}
+	warehouseShippingZoneDBTypes = map[string]string{`ID`: `character varying`, `WarehouseID`: `character varying`, `ShippingZoneID`: `character varying`}
 	_                            = bytes.MinRead
 )
 

@@ -25,34 +25,33 @@ import (
 // OrderLine is an object representing the database table.
 type OrderLine struct {
 	ID                                string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat                          null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Orderid                           null.String  `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
-	Variantid                         null.String  `boil:"variantid" json:"variantid,omitempty" toml:"variantid" yaml:"variantid,omitempty"`
-	Productname                       null.String  `boil:"productname" json:"productname,omitempty" toml:"productname" yaml:"productname,omitempty"`
-	Variantname                       null.String  `boil:"variantname" json:"variantname,omitempty" toml:"variantname" yaml:"variantname,omitempty"`
-	Translatedproductname             null.String  `boil:"translatedproductname" json:"translatedproductname,omitempty" toml:"translatedproductname" yaml:"translatedproductname,omitempty"`
-	Translatedvariantname             null.String  `boil:"translatedvariantname" json:"translatedvariantname,omitempty" toml:"translatedvariantname" yaml:"translatedvariantname,omitempty"`
-	Productsku                        null.String  `boil:"productsku" json:"productsku,omitempty" toml:"productsku" yaml:"productsku,omitempty"`
-	Productvariantid                  null.String  `boil:"productvariantid" json:"productvariantid,omitempty" toml:"productvariantid" yaml:"productvariantid,omitempty"`
-	Isshippingrequired                null.Bool    `boil:"isshippingrequired" json:"isshippingrequired,omitempty" toml:"isshippingrequired" yaml:"isshippingrequired,omitempty"`
-	Isgiftcard                        null.Bool    `boil:"isgiftcard" json:"isgiftcard,omitempty" toml:"isgiftcard" yaml:"isgiftcard,omitempty"`
+	CreateAt                          null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	OrderID                           null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	VariantID                         null.String  `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
+	ProductName                       null.String  `boil:"product_name" json:"product_name,omitempty" toml:"product_name" yaml:"product_name,omitempty"`
+	VariantName                       null.String  `boil:"variant_name" json:"variant_name,omitempty" toml:"variant_name" yaml:"variant_name,omitempty"`
+	TranslatedProductName             null.String  `boil:"translated_product_name" json:"translated_product_name,omitempty" toml:"translated_product_name" yaml:"translated_product_name,omitempty"`
+	TranslatedVariantName             null.String  `boil:"translated_variant_name" json:"translated_variant_name,omitempty" toml:"translated_variant_name" yaml:"translated_variant_name,omitempty"`
+	ProductSku                        null.String  `boil:"product_sku" json:"product_sku,omitempty" toml:"product_sku" yaml:"product_sku,omitempty"`
+	ProductVariantID                  null.String  `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
+	IsShippingRequired                null.Bool    `boil:"is_shipping_required" json:"is_shipping_required,omitempty" toml:"is_shipping_required" yaml:"is_shipping_required,omitempty"`
+	IsGiftcard                        null.Bool    `boil:"is_giftcard" json:"is_giftcard,omitempty" toml:"is_giftcard" yaml:"is_giftcard,omitempty"`
 	Quantity                          null.Int     `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
-	Quantityfulfilled                 null.Int     `boil:"quantityfulfilled" json:"quantityfulfilled,omitempty" toml:"quantityfulfilled" yaml:"quantityfulfilled,omitempty"`
+	QuantityFulfilled                 null.Int     `boil:"quantity_fulfilled" json:"quantity_fulfilled,omitempty" toml:"quantity_fulfilled" yaml:"quantity_fulfilled,omitempty"`
 	Currency                          null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	Unitdiscountamount                null.Float64 `boil:"unitdiscountamount" json:"unitdiscountamount,omitempty" toml:"unitdiscountamount" yaml:"unitdiscountamount,omitempty"`
-	Unitdiscounttype                  null.String  `boil:"unitdiscounttype" json:"unitdiscounttype,omitempty" toml:"unitdiscounttype" yaml:"unitdiscounttype,omitempty"`
-	Unitdiscountreason                null.String  `boil:"unitdiscountreason" json:"unitdiscountreason,omitempty" toml:"unitdiscountreason" yaml:"unitdiscountreason,omitempty"`
-	Unitpricenetamount                null.Float64 `boil:"unitpricenetamount" json:"unitpricenetamount,omitempty" toml:"unitpricenetamount" yaml:"unitpricenetamount,omitempty"`
-	Unitdiscountvalue                 null.Float64 `boil:"unitdiscountvalue" json:"unitdiscountvalue,omitempty" toml:"unitdiscountvalue" yaml:"unitdiscountvalue,omitempty"`
-	Unitpricegrossamount              null.Float64 `boil:"unitpricegrossamount" json:"unitpricegrossamount,omitempty" toml:"unitpricegrossamount" yaml:"unitpricegrossamount,omitempty"`
-	Totalpricenetamount               null.Float64 `boil:"totalpricenetamount" json:"totalpricenetamount,omitempty" toml:"totalpricenetamount" yaml:"totalpricenetamount,omitempty"`
-	Totalpricegrossamount             null.Float64 `boil:"totalpricegrossamount" json:"totalpricegrossamount,omitempty" toml:"totalpricegrossamount" yaml:"totalpricegrossamount,omitempty"`
-	Undiscountedunitpricegrossamount  null.Float64 `boil:"undiscountedunitpricegrossamount" json:"undiscountedunitpricegrossamount,omitempty" toml:"undiscountedunitpricegrossamount" yaml:"undiscountedunitpricegrossamount,omitempty"`
-	Undiscountedunitpricenetamount    null.Float64 `boil:"undiscountedunitpricenetamount" json:"undiscountedunitpricenetamount,omitempty" toml:"undiscountedunitpricenetamount" yaml:"undiscountedunitpricenetamount,omitempty"`
-	Undiscountedtotalpricegrossamount null.Float64 `boil:"undiscountedtotalpricegrossamount" json:"undiscountedtotalpricegrossamount,omitempty" toml:"undiscountedtotalpricegrossamount" yaml:"undiscountedtotalpricegrossamount,omitempty"`
-	Undiscountedtotalpricenetamount   null.Float64 `boil:"undiscountedtotalpricenetamount" json:"undiscountedtotalpricenetamount,omitempty" toml:"undiscountedtotalpricenetamount" yaml:"undiscountedtotalpricenetamount,omitempty"`
-	Taxrate                           null.Float64 `boil:"taxrate" json:"taxrate,omitempty" toml:"taxrate" yaml:"taxrate,omitempty"`
-	Allocations                       null.String  `boil:"allocations" json:"allocations,omitempty" toml:"allocations" yaml:"allocations,omitempty"`
+	UnitDiscountAmount                null.Float64 `boil:"unit_discount_amount" json:"unit_discount_amount,omitempty" toml:"unit_discount_amount" yaml:"unit_discount_amount,omitempty"`
+	UnitDiscountType                  null.String  `boil:"unit_discount_type" json:"unit_discount_type,omitempty" toml:"unit_discount_type" yaml:"unit_discount_type,omitempty"`
+	UnitDiscountReason                null.String  `boil:"unit_discount_reason" json:"unit_discount_reason,omitempty" toml:"unit_discount_reason" yaml:"unit_discount_reason,omitempty"`
+	UnitPriceNetAmount                null.Float64 `boil:"unit_price_net_amount" json:"unit_price_net_amount,omitempty" toml:"unit_price_net_amount" yaml:"unit_price_net_amount,omitempty"`
+	UnitDiscountValue                 null.Float64 `boil:"unit_discount_value" json:"unit_discount_value,omitempty" toml:"unit_discount_value" yaml:"unit_discount_value,omitempty"`
+	UnitPriceGrossAmount              null.Float64 `boil:"unit_price_gross_amount" json:"unit_price_gross_amount,omitempty" toml:"unit_price_gross_amount" yaml:"unit_price_gross_amount,omitempty"`
+	TotalPriceNetAmount               null.Float64 `boil:"total_price_net_amount" json:"total_price_net_amount,omitempty" toml:"total_price_net_amount" yaml:"total_price_net_amount,omitempty"`
+	TotalPriceGrossAmount             null.Float64 `boil:"total_price_gross_amount" json:"total_price_gross_amount,omitempty" toml:"total_price_gross_amount" yaml:"total_price_gross_amount,omitempty"`
+	UndiscountedUnitPriceGrossAmount  null.Float64 `boil:"undiscounted_unit_price_gross_amount" json:"undiscounted_unit_price_gross_amount,omitempty" toml:"undiscounted_unit_price_gross_amount" yaml:"undiscounted_unit_price_gross_amount,omitempty"`
+	UndiscountedUnitPriceNetAmount    null.Float64 `boil:"undiscounted_unit_price_net_amount" json:"undiscounted_unit_price_net_amount,omitempty" toml:"undiscounted_unit_price_net_amount" yaml:"undiscounted_unit_price_net_amount,omitempty"`
+	UndiscountedTotalPriceGrossAmount null.Float64 `boil:"undiscounted_total_price_gross_amount" json:"undiscounted_total_price_gross_amount,omitempty" toml:"undiscounted_total_price_gross_amount" yaml:"undiscounted_total_price_gross_amount,omitempty"`
+	UndiscountedTotalPriceNetAmount   null.Float64 `boil:"undiscounted_total_price_net_amount" json:"undiscounted_total_price_net_amount,omitempty" toml:"undiscounted_total_price_net_amount" yaml:"undiscounted_total_price_net_amount,omitempty"`
+	TaxRate                           null.Float64 `boil:"tax_rate" json:"tax_rate,omitempty" toml:"tax_rate" yaml:"tax_rate,omitempty"`
 
 	R *orderLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderLineL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -60,214 +59,208 @@ type OrderLine struct {
 
 var OrderLineColumns = struct {
 	ID                                string
-	Createat                          string
-	Orderid                           string
-	Variantid                         string
-	Productname                       string
-	Variantname                       string
-	Translatedproductname             string
-	Translatedvariantname             string
-	Productsku                        string
-	Productvariantid                  string
-	Isshippingrequired                string
-	Isgiftcard                        string
+	CreateAt                          string
+	OrderID                           string
+	VariantID                         string
+	ProductName                       string
+	VariantName                       string
+	TranslatedProductName             string
+	TranslatedVariantName             string
+	ProductSku                        string
+	ProductVariantID                  string
+	IsShippingRequired                string
+	IsGiftcard                        string
 	Quantity                          string
-	Quantityfulfilled                 string
+	QuantityFulfilled                 string
 	Currency                          string
-	Unitdiscountamount                string
-	Unitdiscounttype                  string
-	Unitdiscountreason                string
-	Unitpricenetamount                string
-	Unitdiscountvalue                 string
-	Unitpricegrossamount              string
-	Totalpricenetamount               string
-	Totalpricegrossamount             string
-	Undiscountedunitpricegrossamount  string
-	Undiscountedunitpricenetamount    string
-	Undiscountedtotalpricegrossamount string
-	Undiscountedtotalpricenetamount   string
-	Taxrate                           string
-	Allocations                       string
+	UnitDiscountAmount                string
+	UnitDiscountType                  string
+	UnitDiscountReason                string
+	UnitPriceNetAmount                string
+	UnitDiscountValue                 string
+	UnitPriceGrossAmount              string
+	TotalPriceNetAmount               string
+	TotalPriceGrossAmount             string
+	UndiscountedUnitPriceGrossAmount  string
+	UndiscountedUnitPriceNetAmount    string
+	UndiscountedTotalPriceGrossAmount string
+	UndiscountedTotalPriceNetAmount   string
+	TaxRate                           string
 }{
 	ID:                                "id",
-	Createat:                          "createat",
-	Orderid:                           "orderid",
-	Variantid:                         "variantid",
-	Productname:                       "productname",
-	Variantname:                       "variantname",
-	Translatedproductname:             "translatedproductname",
-	Translatedvariantname:             "translatedvariantname",
-	Productsku:                        "productsku",
-	Productvariantid:                  "productvariantid",
-	Isshippingrequired:                "isshippingrequired",
-	Isgiftcard:                        "isgiftcard",
+	CreateAt:                          "create_at",
+	OrderID:                           "order_id",
+	VariantID:                         "variant_id",
+	ProductName:                       "product_name",
+	VariantName:                       "variant_name",
+	TranslatedProductName:             "translated_product_name",
+	TranslatedVariantName:             "translated_variant_name",
+	ProductSku:                        "product_sku",
+	ProductVariantID:                  "product_variant_id",
+	IsShippingRequired:                "is_shipping_required",
+	IsGiftcard:                        "is_giftcard",
 	Quantity:                          "quantity",
-	Quantityfulfilled:                 "quantityfulfilled",
+	QuantityFulfilled:                 "quantity_fulfilled",
 	Currency:                          "currency",
-	Unitdiscountamount:                "unitdiscountamount",
-	Unitdiscounttype:                  "unitdiscounttype",
-	Unitdiscountreason:                "unitdiscountreason",
-	Unitpricenetamount:                "unitpricenetamount",
-	Unitdiscountvalue:                 "unitdiscountvalue",
-	Unitpricegrossamount:              "unitpricegrossamount",
-	Totalpricenetamount:               "totalpricenetamount",
-	Totalpricegrossamount:             "totalpricegrossamount",
-	Undiscountedunitpricegrossamount:  "undiscountedunitpricegrossamount",
-	Undiscountedunitpricenetamount:    "undiscountedunitpricenetamount",
-	Undiscountedtotalpricegrossamount: "undiscountedtotalpricegrossamount",
-	Undiscountedtotalpricenetamount:   "undiscountedtotalpricenetamount",
-	Taxrate:                           "taxrate",
-	Allocations:                       "allocations",
+	UnitDiscountAmount:                "unit_discount_amount",
+	UnitDiscountType:                  "unit_discount_type",
+	UnitDiscountReason:                "unit_discount_reason",
+	UnitPriceNetAmount:                "unit_price_net_amount",
+	UnitDiscountValue:                 "unit_discount_value",
+	UnitPriceGrossAmount:              "unit_price_gross_amount",
+	TotalPriceNetAmount:               "total_price_net_amount",
+	TotalPriceGrossAmount:             "total_price_gross_amount",
+	UndiscountedUnitPriceGrossAmount:  "undiscounted_unit_price_gross_amount",
+	UndiscountedUnitPriceNetAmount:    "undiscounted_unit_price_net_amount",
+	UndiscountedTotalPriceGrossAmount: "undiscounted_total_price_gross_amount",
+	UndiscountedTotalPriceNetAmount:   "undiscounted_total_price_net_amount",
+	TaxRate:                           "tax_rate",
 }
 
 var OrderLineTableColumns = struct {
 	ID                                string
-	Createat                          string
-	Orderid                           string
-	Variantid                         string
-	Productname                       string
-	Variantname                       string
-	Translatedproductname             string
-	Translatedvariantname             string
-	Productsku                        string
-	Productvariantid                  string
-	Isshippingrequired                string
-	Isgiftcard                        string
+	CreateAt                          string
+	OrderID                           string
+	VariantID                         string
+	ProductName                       string
+	VariantName                       string
+	TranslatedProductName             string
+	TranslatedVariantName             string
+	ProductSku                        string
+	ProductVariantID                  string
+	IsShippingRequired                string
+	IsGiftcard                        string
 	Quantity                          string
-	Quantityfulfilled                 string
+	QuantityFulfilled                 string
 	Currency                          string
-	Unitdiscountamount                string
-	Unitdiscounttype                  string
-	Unitdiscountreason                string
-	Unitpricenetamount                string
-	Unitdiscountvalue                 string
-	Unitpricegrossamount              string
-	Totalpricenetamount               string
-	Totalpricegrossamount             string
-	Undiscountedunitpricegrossamount  string
-	Undiscountedunitpricenetamount    string
-	Undiscountedtotalpricegrossamount string
-	Undiscountedtotalpricenetamount   string
-	Taxrate                           string
-	Allocations                       string
+	UnitDiscountAmount                string
+	UnitDiscountType                  string
+	UnitDiscountReason                string
+	UnitPriceNetAmount                string
+	UnitDiscountValue                 string
+	UnitPriceGrossAmount              string
+	TotalPriceNetAmount               string
+	TotalPriceGrossAmount             string
+	UndiscountedUnitPriceGrossAmount  string
+	UndiscountedUnitPriceNetAmount    string
+	UndiscountedTotalPriceGrossAmount string
+	UndiscountedTotalPriceNetAmount   string
+	TaxRate                           string
 }{
 	ID:                                "order_lines.id",
-	Createat:                          "order_lines.createat",
-	Orderid:                           "order_lines.orderid",
-	Variantid:                         "order_lines.variantid",
-	Productname:                       "order_lines.productname",
-	Variantname:                       "order_lines.variantname",
-	Translatedproductname:             "order_lines.translatedproductname",
-	Translatedvariantname:             "order_lines.translatedvariantname",
-	Productsku:                        "order_lines.productsku",
-	Productvariantid:                  "order_lines.productvariantid",
-	Isshippingrequired:                "order_lines.isshippingrequired",
-	Isgiftcard:                        "order_lines.isgiftcard",
+	CreateAt:                          "order_lines.create_at",
+	OrderID:                           "order_lines.order_id",
+	VariantID:                         "order_lines.variant_id",
+	ProductName:                       "order_lines.product_name",
+	VariantName:                       "order_lines.variant_name",
+	TranslatedProductName:             "order_lines.translated_product_name",
+	TranslatedVariantName:             "order_lines.translated_variant_name",
+	ProductSku:                        "order_lines.product_sku",
+	ProductVariantID:                  "order_lines.product_variant_id",
+	IsShippingRequired:                "order_lines.is_shipping_required",
+	IsGiftcard:                        "order_lines.is_giftcard",
 	Quantity:                          "order_lines.quantity",
-	Quantityfulfilled:                 "order_lines.quantityfulfilled",
+	QuantityFulfilled:                 "order_lines.quantity_fulfilled",
 	Currency:                          "order_lines.currency",
-	Unitdiscountamount:                "order_lines.unitdiscountamount",
-	Unitdiscounttype:                  "order_lines.unitdiscounttype",
-	Unitdiscountreason:                "order_lines.unitdiscountreason",
-	Unitpricenetamount:                "order_lines.unitpricenetamount",
-	Unitdiscountvalue:                 "order_lines.unitdiscountvalue",
-	Unitpricegrossamount:              "order_lines.unitpricegrossamount",
-	Totalpricenetamount:               "order_lines.totalpricenetamount",
-	Totalpricegrossamount:             "order_lines.totalpricegrossamount",
-	Undiscountedunitpricegrossamount:  "order_lines.undiscountedunitpricegrossamount",
-	Undiscountedunitpricenetamount:    "order_lines.undiscountedunitpricenetamount",
-	Undiscountedtotalpricegrossamount: "order_lines.undiscountedtotalpricegrossamount",
-	Undiscountedtotalpricenetamount:   "order_lines.undiscountedtotalpricenetamount",
-	Taxrate:                           "order_lines.taxrate",
-	Allocations:                       "order_lines.allocations",
+	UnitDiscountAmount:                "order_lines.unit_discount_amount",
+	UnitDiscountType:                  "order_lines.unit_discount_type",
+	UnitDiscountReason:                "order_lines.unit_discount_reason",
+	UnitPriceNetAmount:                "order_lines.unit_price_net_amount",
+	UnitDiscountValue:                 "order_lines.unit_discount_value",
+	UnitPriceGrossAmount:              "order_lines.unit_price_gross_amount",
+	TotalPriceNetAmount:               "order_lines.total_price_net_amount",
+	TotalPriceGrossAmount:             "order_lines.total_price_gross_amount",
+	UndiscountedUnitPriceGrossAmount:  "order_lines.undiscounted_unit_price_gross_amount",
+	UndiscountedUnitPriceNetAmount:    "order_lines.undiscounted_unit_price_net_amount",
+	UndiscountedTotalPriceGrossAmount: "order_lines.undiscounted_total_price_gross_amount",
+	UndiscountedTotalPriceNetAmount:   "order_lines.undiscounted_total_price_net_amount",
+	TaxRate:                           "order_lines.tax_rate",
 }
 
 // Generated where
 
 var OrderLineWhere = struct {
 	ID                                whereHelperstring
-	Createat                          whereHelpernull_Int64
-	Orderid                           whereHelpernull_String
-	Variantid                         whereHelpernull_String
-	Productname                       whereHelpernull_String
-	Variantname                       whereHelpernull_String
-	Translatedproductname             whereHelpernull_String
-	Translatedvariantname             whereHelpernull_String
-	Productsku                        whereHelpernull_String
-	Productvariantid                  whereHelpernull_String
-	Isshippingrequired                whereHelpernull_Bool
-	Isgiftcard                        whereHelpernull_Bool
+	CreateAt                          whereHelpernull_Int64
+	OrderID                           whereHelpernull_String
+	VariantID                         whereHelpernull_String
+	ProductName                       whereHelpernull_String
+	VariantName                       whereHelpernull_String
+	TranslatedProductName             whereHelpernull_String
+	TranslatedVariantName             whereHelpernull_String
+	ProductSku                        whereHelpernull_String
+	ProductVariantID                  whereHelpernull_String
+	IsShippingRequired                whereHelpernull_Bool
+	IsGiftcard                        whereHelpernull_Bool
 	Quantity                          whereHelpernull_Int
-	Quantityfulfilled                 whereHelpernull_Int
+	QuantityFulfilled                 whereHelpernull_Int
 	Currency                          whereHelpernull_String
-	Unitdiscountamount                whereHelpernull_Float64
-	Unitdiscounttype                  whereHelpernull_String
-	Unitdiscountreason                whereHelpernull_String
-	Unitpricenetamount                whereHelpernull_Float64
-	Unitdiscountvalue                 whereHelpernull_Float64
-	Unitpricegrossamount              whereHelpernull_Float64
-	Totalpricenetamount               whereHelpernull_Float64
-	Totalpricegrossamount             whereHelpernull_Float64
-	Undiscountedunitpricegrossamount  whereHelpernull_Float64
-	Undiscountedunitpricenetamount    whereHelpernull_Float64
-	Undiscountedtotalpricegrossamount whereHelpernull_Float64
-	Undiscountedtotalpricenetamount   whereHelpernull_Float64
-	Taxrate                           whereHelpernull_Float64
-	Allocations                       whereHelpernull_String
+	UnitDiscountAmount                whereHelpernull_Float64
+	UnitDiscountType                  whereHelpernull_String
+	UnitDiscountReason                whereHelpernull_String
+	UnitPriceNetAmount                whereHelpernull_Float64
+	UnitDiscountValue                 whereHelpernull_Float64
+	UnitPriceGrossAmount              whereHelpernull_Float64
+	TotalPriceNetAmount               whereHelpernull_Float64
+	TotalPriceGrossAmount             whereHelpernull_Float64
+	UndiscountedUnitPriceGrossAmount  whereHelpernull_Float64
+	UndiscountedUnitPriceNetAmount    whereHelpernull_Float64
+	UndiscountedTotalPriceGrossAmount whereHelpernull_Float64
+	UndiscountedTotalPriceNetAmount   whereHelpernull_Float64
+	TaxRate                           whereHelpernull_Float64
 }{
 	ID:                                whereHelperstring{field: "\"order_lines\".\"id\""},
-	Createat:                          whereHelpernull_Int64{field: "\"order_lines\".\"createat\""},
-	Orderid:                           whereHelpernull_String{field: "\"order_lines\".\"orderid\""},
-	Variantid:                         whereHelpernull_String{field: "\"order_lines\".\"variantid\""},
-	Productname:                       whereHelpernull_String{field: "\"order_lines\".\"productname\""},
-	Variantname:                       whereHelpernull_String{field: "\"order_lines\".\"variantname\""},
-	Translatedproductname:             whereHelpernull_String{field: "\"order_lines\".\"translatedproductname\""},
-	Translatedvariantname:             whereHelpernull_String{field: "\"order_lines\".\"translatedvariantname\""},
-	Productsku:                        whereHelpernull_String{field: "\"order_lines\".\"productsku\""},
-	Productvariantid:                  whereHelpernull_String{field: "\"order_lines\".\"productvariantid\""},
-	Isshippingrequired:                whereHelpernull_Bool{field: "\"order_lines\".\"isshippingrequired\""},
-	Isgiftcard:                        whereHelpernull_Bool{field: "\"order_lines\".\"isgiftcard\""},
+	CreateAt:                          whereHelpernull_Int64{field: "\"order_lines\".\"create_at\""},
+	OrderID:                           whereHelpernull_String{field: "\"order_lines\".\"order_id\""},
+	VariantID:                         whereHelpernull_String{field: "\"order_lines\".\"variant_id\""},
+	ProductName:                       whereHelpernull_String{field: "\"order_lines\".\"product_name\""},
+	VariantName:                       whereHelpernull_String{field: "\"order_lines\".\"variant_name\""},
+	TranslatedProductName:             whereHelpernull_String{field: "\"order_lines\".\"translated_product_name\""},
+	TranslatedVariantName:             whereHelpernull_String{field: "\"order_lines\".\"translated_variant_name\""},
+	ProductSku:                        whereHelpernull_String{field: "\"order_lines\".\"product_sku\""},
+	ProductVariantID:                  whereHelpernull_String{field: "\"order_lines\".\"product_variant_id\""},
+	IsShippingRequired:                whereHelpernull_Bool{field: "\"order_lines\".\"is_shipping_required\""},
+	IsGiftcard:                        whereHelpernull_Bool{field: "\"order_lines\".\"is_giftcard\""},
 	Quantity:                          whereHelpernull_Int{field: "\"order_lines\".\"quantity\""},
-	Quantityfulfilled:                 whereHelpernull_Int{field: "\"order_lines\".\"quantityfulfilled\""},
+	QuantityFulfilled:                 whereHelpernull_Int{field: "\"order_lines\".\"quantity_fulfilled\""},
 	Currency:                          whereHelpernull_String{field: "\"order_lines\".\"currency\""},
-	Unitdiscountamount:                whereHelpernull_Float64{field: "\"order_lines\".\"unitdiscountamount\""},
-	Unitdiscounttype:                  whereHelpernull_String{field: "\"order_lines\".\"unitdiscounttype\""},
-	Unitdiscountreason:                whereHelpernull_String{field: "\"order_lines\".\"unitdiscountreason\""},
-	Unitpricenetamount:                whereHelpernull_Float64{field: "\"order_lines\".\"unitpricenetamount\""},
-	Unitdiscountvalue:                 whereHelpernull_Float64{field: "\"order_lines\".\"unitdiscountvalue\""},
-	Unitpricegrossamount:              whereHelpernull_Float64{field: "\"order_lines\".\"unitpricegrossamount\""},
-	Totalpricenetamount:               whereHelpernull_Float64{field: "\"order_lines\".\"totalpricenetamount\""},
-	Totalpricegrossamount:             whereHelpernull_Float64{field: "\"order_lines\".\"totalpricegrossamount\""},
-	Undiscountedunitpricegrossamount:  whereHelpernull_Float64{field: "\"order_lines\".\"undiscountedunitpricegrossamount\""},
-	Undiscountedunitpricenetamount:    whereHelpernull_Float64{field: "\"order_lines\".\"undiscountedunitpricenetamount\""},
-	Undiscountedtotalpricegrossamount: whereHelpernull_Float64{field: "\"order_lines\".\"undiscountedtotalpricegrossamount\""},
-	Undiscountedtotalpricenetamount:   whereHelpernull_Float64{field: "\"order_lines\".\"undiscountedtotalpricenetamount\""},
-	Taxrate:                           whereHelpernull_Float64{field: "\"order_lines\".\"taxrate\""},
-	Allocations:                       whereHelpernull_String{field: "\"order_lines\".\"allocations\""},
+	UnitDiscountAmount:                whereHelpernull_Float64{field: "\"order_lines\".\"unit_discount_amount\""},
+	UnitDiscountType:                  whereHelpernull_String{field: "\"order_lines\".\"unit_discount_type\""},
+	UnitDiscountReason:                whereHelpernull_String{field: "\"order_lines\".\"unit_discount_reason\""},
+	UnitPriceNetAmount:                whereHelpernull_Float64{field: "\"order_lines\".\"unit_price_net_amount\""},
+	UnitDiscountValue:                 whereHelpernull_Float64{field: "\"order_lines\".\"unit_discount_value\""},
+	UnitPriceGrossAmount:              whereHelpernull_Float64{field: "\"order_lines\".\"unit_price_gross_amount\""},
+	TotalPriceNetAmount:               whereHelpernull_Float64{field: "\"order_lines\".\"total_price_net_amount\""},
+	TotalPriceGrossAmount:             whereHelpernull_Float64{field: "\"order_lines\".\"total_price_gross_amount\""},
+	UndiscountedUnitPriceGrossAmount:  whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_unit_price_gross_amount\""},
+	UndiscountedUnitPriceNetAmount:    whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_unit_price_net_amount\""},
+	UndiscountedTotalPriceGrossAmount: whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_total_price_gross_amount\""},
+	UndiscountedTotalPriceNetAmount:   whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_total_price_net_amount\""},
+	TaxRate:                           whereHelpernull_Float64{field: "\"order_lines\".\"tax_rate\""},
 }
 
 // OrderLineRels is where relationship names are stored.
 var OrderLineRels = struct {
-	OrderidOrder                string
-	VariantidProductVariant     string
-	LineidDigitalContentURL     string
-	OrderlineidAllocations      string
-	OrderlineidFulfillmentLines string
+	Order                 string
+	Variant               string
+	LineDigitalContentURL string
+	Allocations           string
+	FulfillmentLines      string
 }{
-	OrderidOrder:                "OrderidOrder",
-	VariantidProductVariant:     "VariantidProductVariant",
-	LineidDigitalContentURL:     "LineidDigitalContentURL",
-	OrderlineidAllocations:      "OrderlineidAllocations",
-	OrderlineidFulfillmentLines: "OrderlineidFulfillmentLines",
+	Order:                 "Order",
+	Variant:               "Variant",
+	LineDigitalContentURL: "LineDigitalContentURL",
+	Allocations:           "Allocations",
+	FulfillmentLines:      "FulfillmentLines",
 }
 
 // orderLineR is where relationships are stored.
 type orderLineR struct {
-	OrderidOrder                *Order               `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
-	VariantidProductVariant     *ProductVariant      `boil:"VariantidProductVariant" json:"VariantidProductVariant" toml:"VariantidProductVariant" yaml:"VariantidProductVariant"`
-	LineidDigitalContentURL     *DigitalContentURL   `boil:"LineidDigitalContentURL" json:"LineidDigitalContentURL" toml:"LineidDigitalContentURL" yaml:"LineidDigitalContentURL"`
-	OrderlineidAllocations      AllocationSlice      `boil:"OrderlineidAllocations" json:"OrderlineidAllocations" toml:"OrderlineidAllocations" yaml:"OrderlineidAllocations"`
-	OrderlineidFulfillmentLines FulfillmentLineSlice `boil:"OrderlineidFulfillmentLines" json:"OrderlineidFulfillmentLines" toml:"OrderlineidFulfillmentLines" yaml:"OrderlineidFulfillmentLines"`
+	Order                 *Order               `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	Variant               *ProductVariant      `boil:"Variant" json:"Variant" toml:"Variant" yaml:"Variant"`
+	LineDigitalContentURL *DigitalContentURL   `boil:"LineDigitalContentURL" json:"LineDigitalContentURL" toml:"LineDigitalContentURL" yaml:"LineDigitalContentURL"`
+	Allocations           AllocationSlice      `boil:"Allocations" json:"Allocations" toml:"Allocations" yaml:"Allocations"`
+	FulfillmentLines      FulfillmentLineSlice `boil:"FulfillmentLines" json:"FulfillmentLines" toml:"FulfillmentLines" yaml:"FulfillmentLines"`
 }
 
 // NewStruct creates a new relationship struct
@@ -275,48 +268,48 @@ func (*orderLineR) NewStruct() *orderLineR {
 	return &orderLineR{}
 }
 
-func (r *orderLineR) GetOrderidOrder() *Order {
+func (r *orderLineR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
-func (r *orderLineR) GetVariantidProductVariant() *ProductVariant {
+func (r *orderLineR) GetVariant() *ProductVariant {
 	if r == nil {
 		return nil
 	}
-	return r.VariantidProductVariant
+	return r.Variant
 }
 
-func (r *orderLineR) GetLineidDigitalContentURL() *DigitalContentURL {
+func (r *orderLineR) GetLineDigitalContentURL() *DigitalContentURL {
 	if r == nil {
 		return nil
 	}
-	return r.LineidDigitalContentURL
+	return r.LineDigitalContentURL
 }
 
-func (r *orderLineR) GetOrderlineidAllocations() AllocationSlice {
+func (r *orderLineR) GetAllocations() AllocationSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderlineidAllocations
+	return r.Allocations
 }
 
-func (r *orderLineR) GetOrderlineidFulfillmentLines() FulfillmentLineSlice {
+func (r *orderLineR) GetFulfillmentLines() FulfillmentLineSlice {
 	if r == nil {
 		return nil
 	}
-	return r.OrderlineidFulfillmentLines
+	return r.FulfillmentLines
 }
 
 // orderLineL is where Load methods for each relationship are stored.
 type orderLineL struct{}
 
 var (
-	orderLineAllColumns            = []string{"id", "createat", "orderid", "variantid", "productname", "variantname", "translatedproductname", "translatedvariantname", "productsku", "productvariantid", "isshippingrequired", "isgiftcard", "quantity", "quantityfulfilled", "currency", "unitdiscountamount", "unitdiscounttype", "unitdiscountreason", "unitpricenetamount", "unitdiscountvalue", "unitpricegrossamount", "totalpricenetamount", "totalpricegrossamount", "undiscountedunitpricegrossamount", "undiscountedunitpricenetamount", "undiscountedtotalpricegrossamount", "undiscountedtotalpricenetamount", "taxrate", "allocations"}
+	orderLineAllColumns            = []string{"id", "create_at", "order_id", "variant_id", "product_name", "variant_name", "translated_product_name", "translated_variant_name", "product_sku", "product_variant_id", "is_shipping_required", "is_giftcard", "quantity", "quantity_fulfilled", "currency", "unit_discount_amount", "unit_discount_type", "unit_discount_reason", "unit_price_net_amount", "unit_discount_value", "unit_price_gross_amount", "total_price_net_amount", "total_price_gross_amount", "undiscounted_unit_price_gross_amount", "undiscounted_unit_price_net_amount", "undiscounted_total_price_gross_amount", "undiscounted_total_price_net_amount", "tax_rate"}
 	orderLineColumnsWithoutDefault = []string{"id"}
-	orderLineColumnsWithDefault    = []string{"createat", "orderid", "variantid", "productname", "variantname", "translatedproductname", "translatedvariantname", "productsku", "productvariantid", "isshippingrequired", "isgiftcard", "quantity", "quantityfulfilled", "currency", "unitdiscountamount", "unitdiscounttype", "unitdiscountreason", "unitpricenetamount", "unitdiscountvalue", "unitpricegrossamount", "totalpricenetamount", "totalpricegrossamount", "undiscountedunitpricegrossamount", "undiscountedunitpricenetamount", "undiscountedtotalpricegrossamount", "undiscountedtotalpricenetamount", "taxrate", "allocations"}
+	orderLineColumnsWithDefault    = []string{"create_at", "order_id", "variant_id", "product_name", "variant_name", "translated_product_name", "translated_variant_name", "product_sku", "product_variant_id", "is_shipping_required", "is_giftcard", "quantity", "quantity_fulfilled", "currency", "unit_discount_amount", "unit_discount_type", "unit_discount_reason", "unit_price_net_amount", "unit_discount_value", "unit_price_gross_amount", "total_price_net_amount", "total_price_gross_amount", "undiscounted_unit_price_gross_amount", "undiscounted_unit_price_net_amount", "undiscounted_total_price_gross_amount", "undiscounted_total_price_net_amount", "tax_rate"}
 	orderLinePrimaryKeyColumns     = []string{"id"}
 	orderLineGeneratedColumns      = []string{}
 )
@@ -599,10 +592,10 @@ func (q orderLineQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (
 	return count > 0, nil
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *OrderLine) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *OrderLine) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -610,10 +603,10 @@ func (o *OrderLine) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// VariantidProductVariant pointed to by the foreign key.
-func (o *OrderLine) VariantidProductVariant(mods ...qm.QueryMod) productVariantQuery {
+// Variant pointed to by the foreign key.
+func (o *OrderLine) Variant(mods ...qm.QueryMod) productVariantQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Variantid),
+		qm.Where("\"id\" = ?", o.VariantID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -621,10 +614,10 @@ func (o *OrderLine) VariantidProductVariant(mods ...qm.QueryMod) productVariantQ
 	return ProductVariants(queryMods...)
 }
 
-// LineidDigitalContentURL pointed to by the foreign key.
-func (o *OrderLine) LineidDigitalContentURL(mods ...qm.QueryMod) digitalContentURLQuery {
+// LineDigitalContentURL pointed to by the foreign key.
+func (o *OrderLine) LineDigitalContentURL(mods ...qm.QueryMod) digitalContentURLQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"lineid\" = ?", o.ID),
+		qm.Where("\"line_id\" = ?", o.ID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -632,37 +625,37 @@ func (o *OrderLine) LineidDigitalContentURL(mods ...qm.QueryMod) digitalContentU
 	return DigitalContentUrls(queryMods...)
 }
 
-// OrderlineidAllocations retrieves all the allocation's Allocations with an executor via orderlineid column.
-func (o *OrderLine) OrderlineidAllocations(mods ...qm.QueryMod) allocationQuery {
+// Allocations retrieves all the allocation's Allocations with an executor.
+func (o *OrderLine) Allocations(mods ...qm.QueryMod) allocationQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"allocations\".\"orderlineid\"=?", o.ID),
+		qm.Where("\"allocations\".\"order_line_id\"=?", o.ID),
 	)
 
 	return Allocations(queryMods...)
 }
 
-// OrderlineidFulfillmentLines retrieves all the fulfillment_line's FulfillmentLines with an executor via orderlineid column.
-func (o *OrderLine) OrderlineidFulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
+// FulfillmentLines retrieves all the fulfillment_line's FulfillmentLines with an executor.
+func (o *OrderLine) FulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"fulfillment_lines\".\"orderlineid\"=?", o.ID),
+		qm.Where("\"fulfillment_lines\".\"order_line_id\"=?", o.ID),
 	)
 
 	return FulfillmentLines(queryMods...)
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderLineL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
+func (orderLineL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -693,8 +686,8 @@ func (orderLineL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &orderLineR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -705,13 +698,13 @@ func (orderLineL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -760,22 +753,22 @@ func (orderLineL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, 
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidOrderLines = append(foreign.R.OrderidOrderLines, object)
+		foreign.R.OrderLines = append(foreign.R.OrderLines, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidOrderLines = append(foreign.R.OrderidOrderLines, local)
+				foreign.R.OrderLines = append(foreign.R.OrderLines, local)
 				break
 			}
 		}
@@ -784,9 +777,9 @@ func (orderLineL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadVariantidProductVariant allows an eager lookup of values, cached into the
+// LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderLineL) LoadVariantidProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
+func (orderLineL) LoadVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -817,8 +810,8 @@ func (orderLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Contex
 		if object.R == nil {
 			object.R = &orderLineR{}
 		}
-		if !queries.IsNil(object.Variantid) {
-			args = append(args, object.Variantid)
+		if !queries.IsNil(object.VariantID) {
+			args = append(args, object.VariantID)
 		}
 
 	} else {
@@ -829,13 +822,13 @@ func (orderLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Variantid) {
+				if queries.Equal(a, obj.VariantID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Variantid) {
-				args = append(args, obj.Variantid)
+			if !queries.IsNil(obj.VariantID) {
+				args = append(args, obj.VariantID)
 			}
 
 		}
@@ -884,22 +877,22 @@ func (orderLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Contex
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.VariantidProductVariant = foreign
+		object.R.Variant = foreign
 		if foreign.R == nil {
 			foreign.R = &productVariantR{}
 		}
-		foreign.R.VariantidOrderLines = append(foreign.R.VariantidOrderLines, object)
+		foreign.R.VariantOrderLines = append(foreign.R.VariantOrderLines, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Variantid, foreign.ID) {
-				local.R.VariantidProductVariant = foreign
+			if queries.Equal(local.VariantID, foreign.ID) {
+				local.R.Variant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
 				}
-				foreign.R.VariantidOrderLines = append(foreign.R.VariantidOrderLines, local)
+				foreign.R.VariantOrderLines = append(foreign.R.VariantOrderLines, local)
 				break
 			}
 		}
@@ -908,9 +901,9 @@ func (orderLineL) LoadVariantidProductVariant(ctx context.Context, e boil.Contex
 	return nil
 }
 
-// LoadLineidDigitalContentURL allows an eager lookup of values, cached into the
+// LoadLineDigitalContentURL allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func (orderLineL) LoadLineidDigitalContentURL(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
+func (orderLineL) LoadLineDigitalContentURL(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -965,7 +958,7 @@ func (orderLineL) LoadLineidDigitalContentURL(ctx context.Context, e boil.Contex
 
 	query := NewQuery(
 		qm.From(`digital_content_urls`),
-		qm.WhereIn(`digital_content_urls.lineid in ?`, args...),
+		qm.WhereIn(`digital_content_urls.line_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1002,21 +995,21 @@ func (orderLineL) LoadLineidDigitalContentURL(ctx context.Context, e boil.Contex
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.LineidDigitalContentURL = foreign
+		object.R.LineDigitalContentURL = foreign
 		if foreign.R == nil {
 			foreign.R = &digitalContentURLR{}
 		}
-		foreign.R.LineidOrderLine = object
+		foreign.R.Line = object
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ID, foreign.Lineid) {
-				local.R.LineidDigitalContentURL = foreign
+			if queries.Equal(local.ID, foreign.LineID) {
+				local.R.LineDigitalContentURL = foreign
 				if foreign.R == nil {
 					foreign.R = &digitalContentURLR{}
 				}
-				foreign.R.LineidOrderLine = local
+				foreign.R.Line = local
 				break
 			}
 		}
@@ -1025,9 +1018,9 @@ func (orderLineL) LoadLineidDigitalContentURL(ctx context.Context, e boil.Contex
 	return nil
 }
 
-// LoadOrderlineidAllocations allows an eager lookup of values, cached into the
+// LoadAllocations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderLineL) LoadOrderlineidAllocations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
+func (orderLineL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -1067,7 +1060,7 @@ func (orderLineL) LoadOrderlineidAllocations(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1082,7 +1075,7 @@ func (orderLineL) LoadOrderlineidAllocations(ctx context.Context, e boil.Context
 
 	query := NewQuery(
 		qm.From(`allocations`),
-		qm.WhereIn(`allocations.orderlineid in ?`, args...),
+		qm.WhereIn(`allocations.order_line_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1113,24 +1106,24 @@ func (orderLineL) LoadOrderlineidAllocations(ctx context.Context, e boil.Context
 		}
 	}
 	if singular {
-		object.R.OrderlineidAllocations = resultSlice
+		object.R.Allocations = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &allocationR{}
 			}
-			foreign.R.OrderlineidOrderLine = object
+			foreign.R.OrderLine = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderlineid) {
-				local.R.OrderlineidAllocations = append(local.R.OrderlineidAllocations, foreign)
+			if local.ID == foreign.OrderLineID {
+				local.R.Allocations = append(local.R.Allocations, foreign)
 				if foreign.R == nil {
 					foreign.R = &allocationR{}
 				}
-				foreign.R.OrderlineidOrderLine = local
+				foreign.R.OrderLine = local
 				break
 			}
 		}
@@ -1139,9 +1132,9 @@ func (orderLineL) LoadOrderlineidAllocations(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadOrderlineidFulfillmentLines allows an eager lookup of values, cached into the
+// LoadFulfillmentLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (orderLineL) LoadOrderlineidFulfillmentLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
+func (orderLineL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderLine interface{}, mods queries.Applicator) error {
 	var slice []*OrderLine
 	var object *OrderLine
 
@@ -1196,7 +1189,7 @@ func (orderLineL) LoadOrderlineidFulfillmentLines(ctx context.Context, e boil.Co
 
 	query := NewQuery(
 		qm.From(`fulfillment_lines`),
-		qm.WhereIn(`fulfillment_lines.orderlineid in ?`, args...),
+		qm.WhereIn(`fulfillment_lines.order_line_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1227,24 +1220,24 @@ func (orderLineL) LoadOrderlineidFulfillmentLines(ctx context.Context, e boil.Co
 		}
 	}
 	if singular {
-		object.R.OrderlineidFulfillmentLines = resultSlice
+		object.R.FulfillmentLines = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &fulfillmentLineR{}
 			}
-			foreign.R.OrderlineidOrderLine = object
+			foreign.R.OrderLine = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Orderlineid) {
-				local.R.OrderlineidFulfillmentLines = append(local.R.OrderlineidFulfillmentLines, foreign)
+			if queries.Equal(local.ID, foreign.OrderLineID) {
+				local.R.FulfillmentLines = append(local.R.FulfillmentLines, foreign)
 				if foreign.R == nil {
 					foreign.R = &fulfillmentLineR{}
 				}
-				foreign.R.OrderlineidOrderLine = local
+				foreign.R.OrderLine = local
 				break
 			}
 		}
@@ -1253,10 +1246,10 @@ func (orderLineL) LoadOrderlineidFulfillmentLines(ctx context.Context, e boil.Co
 	return nil
 }
 
-// SetOrderidOrder of the orderLine to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidOrderLines.
-func (o *OrderLine) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the orderLine to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.OrderLines.
+func (o *OrderLine) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1266,7 +1259,7 @@ func (o *OrderLine) SetOrderidOrder(ctx context.Context, exec boil.ContextExecut
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_lines\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1280,63 +1273,63 @@ func (o *OrderLine) SetOrderidOrder(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &orderLineR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidOrderLines: OrderLineSlice{o},
+			OrderLines: OrderLineSlice{o},
 		}
 	} else {
-		related.R.OrderidOrderLines = append(related.R.OrderidOrderLines, o)
+		related.R.OrderLines = append(related.R.OrderLines, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderLine) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *OrderLine) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidOrderLines {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.OrderLines {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidOrderLines)
+		ln := len(related.R.OrderLines)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidOrderLines[i] = related.R.OrderidOrderLines[ln-1]
+			related.R.OrderLines[i] = related.R.OrderLines[ln-1]
 		}
-		related.R.OrderidOrderLines = related.R.OrderidOrderLines[:ln-1]
+		related.R.OrderLines = related.R.OrderLines[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetVariantidProductVariant of the orderLine to the related item.
-// Sets o.R.VariantidProductVariant to related.
-// Adds o to related.R.VariantidOrderLines.
-func (o *OrderLine) SetVariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+// SetVariant of the orderLine to the related item.
+// Sets o.R.Variant to related.
+// Adds o to related.R.VariantOrderLines.
+func (o *OrderLine) SetVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1346,7 +1339,7 @@ func (o *OrderLine) SetVariantidProductVariant(ctx context.Context, exec boil.Co
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_lines\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"variantid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderLinePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -1360,67 +1353,67 @@ func (o *OrderLine) SetVariantidProductVariant(ctx context.Context, exec boil.Co
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Variantid, related.ID)
+	queries.Assign(&o.VariantID, related.ID)
 	if o.R == nil {
 		o.R = &orderLineR{
-			VariantidProductVariant: related,
+			Variant: related,
 		}
 	} else {
-		o.R.VariantidProductVariant = related
+		o.R.Variant = related
 	}
 
 	if related.R == nil {
 		related.R = &productVariantR{
-			VariantidOrderLines: OrderLineSlice{o},
+			VariantOrderLines: OrderLineSlice{o},
 		}
 	} else {
-		related.R.VariantidOrderLines = append(related.R.VariantidOrderLines, o)
+		related.R.VariantOrderLines = append(related.R.VariantOrderLines, o)
 	}
 
 	return nil
 }
 
-// RemoveVariantidProductVariant relationship.
-// Sets o.R.VariantidProductVariant to nil.
+// RemoveVariant relationship.
+// Sets o.R.Variant to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderLine) RemoveVariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
+func (o *OrderLine) RemoveVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
 	var err error
 
-	queries.SetScanner(&o.Variantid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("variantid")); err != nil {
+	queries.SetScanner(&o.VariantID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("variant_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.VariantidProductVariant = nil
+		o.R.Variant = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.VariantidOrderLines {
-		if queries.Equal(o.Variantid, ri.Variantid) {
+	for i, ri := range related.R.VariantOrderLines {
+		if queries.Equal(o.VariantID, ri.VariantID) {
 			continue
 		}
 
-		ln := len(related.R.VariantidOrderLines)
+		ln := len(related.R.VariantOrderLines)
 		if ln > 1 && i < ln-1 {
-			related.R.VariantidOrderLines[i] = related.R.VariantidOrderLines[ln-1]
+			related.R.VariantOrderLines[i] = related.R.VariantOrderLines[ln-1]
 		}
-		related.R.VariantidOrderLines = related.R.VariantidOrderLines[:ln-1]
+		related.R.VariantOrderLines = related.R.VariantOrderLines[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetLineidDigitalContentURL of the orderLine to the related item.
-// Sets o.R.LineidDigitalContentURL to related.
-// Adds o to related.R.LineidOrderLine.
-func (o *OrderLine) SetLineidDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, insert bool, related *DigitalContentURL) error {
+// SetLineDigitalContentURL of the orderLine to the related item.
+// Sets o.R.LineDigitalContentURL to related.
+// Adds o to related.R.Line.
+func (o *OrderLine) SetLineDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, insert bool, related *DigitalContentURL) error {
 	var err error
 
 	if insert {
-		queries.Assign(&related.Lineid, o.ID)
+		queries.Assign(&related.LineID, o.ID)
 
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
@@ -1428,7 +1421,7 @@ func (o *OrderLine) SetLineidDigitalContentURL(ctx context.Context, exec boil.Co
 	} else {
 		updateQuery := fmt.Sprintf(
 			"UPDATE \"digital_content_urls\" SET %s WHERE %s",
-			strmangle.SetParamNames("\"", "\"", 1, []string{"lineid"}),
+			strmangle.SetParamNames("\"", "\"", 1, []string{"line_id"}),
 			strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 		)
 		values := []interface{}{o.ID, related.ID}
@@ -1442,67 +1435,67 @@ func (o *OrderLine) SetLineidDigitalContentURL(ctx context.Context, exec boil.Co
 			return errors.Wrap(err, "failed to update foreign table")
 		}
 
-		queries.Assign(&related.Lineid, o.ID)
+		queries.Assign(&related.LineID, o.ID)
 	}
 
 	if o.R == nil {
 		o.R = &orderLineR{
-			LineidDigitalContentURL: related,
+			LineDigitalContentURL: related,
 		}
 	} else {
-		o.R.LineidDigitalContentURL = related
+		o.R.LineDigitalContentURL = related
 	}
 
 	if related.R == nil {
 		related.R = &digitalContentURLR{
-			LineidOrderLine: o,
+			Line: o,
 		}
 	} else {
-		related.R.LineidOrderLine = o
+		related.R.Line = o
 	}
 	return nil
 }
 
-// RemoveLineidDigitalContentURL relationship.
-// Sets o.R.LineidDigitalContentURL to nil.
+// RemoveLineDigitalContentURL relationship.
+// Sets o.R.LineDigitalContentURL to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderLine) RemoveLineidDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, related *DigitalContentURL) error {
+func (o *OrderLine) RemoveLineDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, related *DigitalContentURL) error {
 	var err error
 
-	queries.SetScanner(&related.Lineid, nil)
-	if _, err = related.Update(ctx, exec, boil.Whitelist("lineid")); err != nil {
+	queries.SetScanner(&related.LineID, nil)
+	if _, err = related.Update(ctx, exec, boil.Whitelist("line_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.LineidDigitalContentURL = nil
+		o.R.LineDigitalContentURL = nil
 	}
 
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	related.R.LineidOrderLine = nil
+	related.R.Line = nil
 
 	return nil
 }
 
-// AddOrderlineidAllocations adds the given related objects to the existing relationships
+// AddAllocations adds the given related objects to the existing relationships
 // of the order_line, optionally inserting them as new records.
-// Appends related to o.R.OrderlineidAllocations.
-// Sets related.R.OrderlineidOrderLine appropriately.
-func (o *OrderLine) AddOrderlineidAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
+// Appends related to o.R.Allocations.
+// Sets related.R.OrderLine appropriately.
+func (o *OrderLine) AddAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderlineid, o.ID)
+			rel.OrderLineID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"allocations\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderlineid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 				strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1516,120 +1509,46 @@ func (o *OrderLine) AddOrderlineidAllocations(ctx context.Context, exec boil.Con
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderlineid, o.ID)
+			rel.OrderLineID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderLineR{
-			OrderlineidAllocations: related,
+			Allocations: related,
 		}
 	} else {
-		o.R.OrderlineidAllocations = append(o.R.OrderlineidAllocations, related...)
+		o.R.Allocations = append(o.R.Allocations, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &allocationR{
-				OrderlineidOrderLine: o,
+				OrderLine: o,
 			}
 		} else {
-			rel.R.OrderlineidOrderLine = o
+			rel.R.OrderLine = o
 		}
 	}
 	return nil
 }
 
-// SetOrderlineidAllocations removes all previously related items of the
-// order_line replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.OrderlineidOrderLine's OrderlineidAllocations accordingly.
-// Replaces o.R.OrderlineidAllocations with related.
-// Sets related.R.OrderlineidOrderLine's OrderlineidAllocations accordingly.
-func (o *OrderLine) SetOrderlineidAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
-	query := "update \"allocations\" set \"orderlineid\" = null where \"orderlineid\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.OrderlineidAllocations {
-			queries.SetScanner(&rel.Orderlineid, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.OrderlineidOrderLine = nil
-		}
-		o.R.OrderlineidAllocations = nil
-	}
-
-	return o.AddOrderlineidAllocations(ctx, exec, insert, related...)
-}
-
-// RemoveOrderlineidAllocations relationships from objects passed in.
-// Removes related items from R.OrderlineidAllocations (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderlineidOrderLine.
-func (o *OrderLine) RemoveOrderlineidAllocations(ctx context.Context, exec boil.ContextExecutor, related ...*Allocation) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.Orderlineid, nil)
-		if rel.R != nil {
-			rel.R.OrderlineidOrderLine = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderlineid")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.OrderlineidAllocations {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.OrderlineidAllocations)
-			if ln > 1 && i < ln-1 {
-				o.R.OrderlineidAllocations[i] = o.R.OrderlineidAllocations[ln-1]
-			}
-			o.R.OrderlineidAllocations = o.R.OrderlineidAllocations[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-// AddOrderlineidFulfillmentLines adds the given related objects to the existing relationships
+// AddFulfillmentLines adds the given related objects to the existing relationships
 // of the order_line, optionally inserting them as new records.
-// Appends related to o.R.OrderlineidFulfillmentLines.
-// Sets related.R.OrderlineidOrderLine appropriately.
-func (o *OrderLine) AddOrderlineidFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
+// Appends related to o.R.FulfillmentLines.
+// Sets related.R.OrderLine appropriately.
+func (o *OrderLine) AddFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Orderlineid, o.ID)
+			queries.Assign(&rel.OrderLineID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"fulfillment_lines\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"orderlineid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 				strmangle.WhereClause("\"", "\"", 2, fulfillmentLinePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1643,38 +1562,38 @@ func (o *OrderLine) AddOrderlineidFulfillmentLines(ctx context.Context, exec boi
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Orderlineid, o.ID)
+			queries.Assign(&rel.OrderLineID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &orderLineR{
-			OrderlineidFulfillmentLines: related,
+			FulfillmentLines: related,
 		}
 	} else {
-		o.R.OrderlineidFulfillmentLines = append(o.R.OrderlineidFulfillmentLines, related...)
+		o.R.FulfillmentLines = append(o.R.FulfillmentLines, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &fulfillmentLineR{
-				OrderlineidOrderLine: o,
+				OrderLine: o,
 			}
 		} else {
-			rel.R.OrderlineidOrderLine = o
+			rel.R.OrderLine = o
 		}
 	}
 	return nil
 }
 
-// SetOrderlineidFulfillmentLines removes all previously related items of the
+// SetFulfillmentLines removes all previously related items of the
 // order_line replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.OrderlineidOrderLine's OrderlineidFulfillmentLines accordingly.
-// Replaces o.R.OrderlineidFulfillmentLines with related.
-// Sets related.R.OrderlineidOrderLine's OrderlineidFulfillmentLines accordingly.
-func (o *OrderLine) SetOrderlineidFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
-	query := "update \"fulfillment_lines\" set \"orderlineid\" = null where \"orderlineid\" = $1"
+// Sets o.R.OrderLine's FulfillmentLines accordingly.
+// Replaces o.R.FulfillmentLines with related.
+// Sets related.R.OrderLine's FulfillmentLines accordingly.
+func (o *OrderLine) SetFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
+	query := "update \"fulfillment_lines\" set \"order_line_id\" = null where \"order_line_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1687,35 +1606,35 @@ func (o *OrderLine) SetOrderlineidFulfillmentLines(ctx context.Context, exec boi
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.OrderlineidFulfillmentLines {
-			queries.SetScanner(&rel.Orderlineid, nil)
+		for _, rel := range o.R.FulfillmentLines {
+			queries.SetScanner(&rel.OrderLineID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.OrderlineidOrderLine = nil
+			rel.R.OrderLine = nil
 		}
-		o.R.OrderlineidFulfillmentLines = nil
+		o.R.FulfillmentLines = nil
 	}
 
-	return o.AddOrderlineidFulfillmentLines(ctx, exec, insert, related...)
+	return o.AddFulfillmentLines(ctx, exec, insert, related...)
 }
 
-// RemoveOrderlineidFulfillmentLines relationships from objects passed in.
-// Removes related items from R.OrderlineidFulfillmentLines (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderlineidOrderLine.
-func (o *OrderLine) RemoveOrderlineidFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, related ...*FulfillmentLine) error {
+// RemoveFulfillmentLines relationships from objects passed in.
+// Removes related items from R.FulfillmentLines (uses pointer comparison, removal does not keep order)
+// Sets related.R.OrderLine.
+func (o *OrderLine) RemoveFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, related ...*FulfillmentLine) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Orderlineid, nil)
+		queries.SetScanner(&rel.OrderLineID, nil)
 		if rel.R != nil {
-			rel.R.OrderlineidOrderLine = nil
+			rel.R.OrderLine = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("orderlineid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_line_id")); err != nil {
 			return err
 		}
 	}
@@ -1724,16 +1643,16 @@ func (o *OrderLine) RemoveOrderlineidFulfillmentLines(ctx context.Context, exec 
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.OrderlineidFulfillmentLines {
+		for i, ri := range o.R.FulfillmentLines {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.OrderlineidFulfillmentLines)
+			ln := len(o.R.FulfillmentLines)
 			if ln > 1 && i < ln-1 {
-				o.R.OrderlineidFulfillmentLines[i] = o.R.OrderlineidFulfillmentLines[ln-1]
+				o.R.FulfillmentLines[i] = o.R.FulfillmentLines[ln-1]
 			}
-			o.R.OrderlineidFulfillmentLines = o.R.OrderlineidFulfillmentLines[:ln-1]
+			o.R.FulfillmentLines = o.R.FulfillmentLines[:ln-1]
 			break
 		}
 	}

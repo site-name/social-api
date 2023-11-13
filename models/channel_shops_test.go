@@ -21,24 +21,24 @@ var (
 	_ = queries.Equal
 )
 
-func testChannelshops(t *testing.T) {
+func testChannelShops(t *testing.T) {
 	t.Parallel()
 
-	query := Channelshops()
+	query := ChannelShops()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testChannelshopsDelete(t *testing.T) {
+func testChannelShopsDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func testChannelshopsDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,14 +64,14 @@ func testChannelshopsDelete(t *testing.T) {
 	}
 }
 
-func testChannelshopsQueryDeleteAll(t *testing.T) {
+func testChannelShopsQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -81,13 +81,13 @@ func testChannelshopsQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Channelshops().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := ChannelShops().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,14 +97,14 @@ func testChannelshopsQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testChannelshopsSliceDeleteAll(t *testing.T) {
+func testChannelShopsSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -114,7 +114,7 @@ func testChannelshopsSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := ChannelshopSlice{o}
+	slice := ChannelShopSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -122,7 +122,7 @@ func testChannelshopsSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,14 +132,14 @@ func testChannelshopsSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testChannelshopsExists(t *testing.T) {
+func testChannelShopsExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -149,23 +149,23 @@ func testChannelshopsExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := ChannelshopExists(ctx, tx, o.ID)
+	e, err := ChannelShopExists(ctx, tx, o.ID)
 	if err != nil {
-		t.Errorf("Unable to check if Channelshop exists: %s", err)
+		t.Errorf("Unable to check if ChannelShop exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected ChannelshopExists to return true, but got false.")
+		t.Errorf("Expected ChannelShopExists to return true, but got false.")
 	}
 }
 
-func testChannelshopsFind(t *testing.T) {
+func testChannelShopsFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -175,24 +175,24 @@ func testChannelshopsFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	channelshopFound, err := FindChannelshop(ctx, tx, o.ID)
+	channelShopFound, err := FindChannelShop(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if channelshopFound == nil {
+	if channelShopFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testChannelshopsBind(t *testing.T) {
+func testChannelShopsBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -202,19 +202,19 @@ func testChannelshopsBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Channelshops().Bind(ctx, tx, o); err != nil {
+	if err = ChannelShops().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testChannelshopsOne(t *testing.T) {
+func testChannelShopsOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -224,38 +224,38 @@ func testChannelshopsOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Channelshops().One(ctx, tx); err != nil {
+	if x, err := ChannelShops().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testChannelshopsAll(t *testing.T) {
+func testChannelShopsAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	channelshopOne := &Channelshop{}
-	channelshopTwo := &Channelshop{}
-	if err = randomize.Struct(seed, channelshopOne, channelshopDBTypes, false, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	channelShopOne := &ChannelShop{}
+	channelShopTwo := &ChannelShop{}
+	if err = randomize.Struct(seed, channelShopOne, channelShopDBTypes, false, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
-	if err = randomize.Struct(seed, channelshopTwo, channelshopDBTypes, false, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	if err = randomize.Struct(seed, channelShopTwo, channelShopDBTypes, false, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = channelshopOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = channelShopOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = channelshopTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = channelShopTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Channelshops().All(ctx, tx)
+	slice, err := ChannelShops().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -265,31 +265,31 @@ func testChannelshopsAll(t *testing.T) {
 	}
 }
 
-func testChannelshopsCount(t *testing.T) {
+func testChannelShopsCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	channelshopOne := &Channelshop{}
-	channelshopTwo := &Channelshop{}
-	if err = randomize.Struct(seed, channelshopOne, channelshopDBTypes, false, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	channelShopOne := &ChannelShop{}
+	channelShopTwo := &ChannelShop{}
+	if err = randomize.Struct(seed, channelShopOne, channelShopDBTypes, false, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
-	if err = randomize.Struct(seed, channelshopTwo, channelshopDBTypes, false, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	if err = randomize.Struct(seed, channelShopTwo, channelShopDBTypes, false, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = channelshopOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = channelShopOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = channelshopTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = channelShopTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -299,155 +299,155 @@ func testChannelshopsCount(t *testing.T) {
 	}
 }
 
-func channelshopBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func channelshopAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Channelshop) error {
-	*o = Channelshop{}
+func channelShopAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *ChannelShop) error {
+	*o = ChannelShop{}
 	return nil
 }
 
-func testChannelshopsHooks(t *testing.T) {
+func testChannelShopsHooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	ctx := context.Background()
-	empty := &Channelshop{}
-	o := &Channelshop{}
+	empty := &ChannelShop{}
+	o := &ChannelShop{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, channelshopDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Channelshop object: %s", err)
+	if err = randomize.Struct(seed, o, channelShopDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize ChannelShop object: %s", err)
 	}
 
-	AddChannelshopHook(boil.BeforeInsertHook, channelshopBeforeInsertHook)
+	AddChannelShopHook(boil.BeforeInsertHook, channelShopBeforeInsertHook)
 	if err = o.doBeforeInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	channelshopBeforeInsertHooks = []ChannelshopHook{}
+	channelShopBeforeInsertHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.AfterInsertHook, channelshopAfterInsertHook)
+	AddChannelShopHook(boil.AfterInsertHook, channelShopAfterInsertHook)
 	if err = o.doAfterInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	channelshopAfterInsertHooks = []ChannelshopHook{}
+	channelShopAfterInsertHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.AfterSelectHook, channelshopAfterSelectHook)
+	AddChannelShopHook(boil.AfterSelectHook, channelShopAfterSelectHook)
 	if err = o.doAfterSelectHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	channelshopAfterSelectHooks = []ChannelshopHook{}
+	channelShopAfterSelectHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.BeforeUpdateHook, channelshopBeforeUpdateHook)
+	AddChannelShopHook(boil.BeforeUpdateHook, channelShopBeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	channelshopBeforeUpdateHooks = []ChannelshopHook{}
+	channelShopBeforeUpdateHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.AfterUpdateHook, channelshopAfterUpdateHook)
+	AddChannelShopHook(boil.AfterUpdateHook, channelShopAfterUpdateHook)
 	if err = o.doAfterUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	channelshopAfterUpdateHooks = []ChannelshopHook{}
+	channelShopAfterUpdateHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.BeforeDeleteHook, channelshopBeforeDeleteHook)
+	AddChannelShopHook(boil.BeforeDeleteHook, channelShopBeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	channelshopBeforeDeleteHooks = []ChannelshopHook{}
+	channelShopBeforeDeleteHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.AfterDeleteHook, channelshopAfterDeleteHook)
+	AddChannelShopHook(boil.AfterDeleteHook, channelShopAfterDeleteHook)
 	if err = o.doAfterDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	channelshopAfterDeleteHooks = []ChannelshopHook{}
+	channelShopAfterDeleteHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.BeforeUpsertHook, channelshopBeforeUpsertHook)
+	AddChannelShopHook(boil.BeforeUpsertHook, channelShopBeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	channelshopBeforeUpsertHooks = []ChannelshopHook{}
+	channelShopBeforeUpsertHooks = []ChannelShopHook{}
 
-	AddChannelshopHook(boil.AfterUpsertHook, channelshopAfterUpsertHook)
+	AddChannelShopHook(boil.AfterUpsertHook, channelShopAfterUpsertHook)
 	if err = o.doAfterUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	channelshopAfterUpsertHooks = []ChannelshopHook{}
+	channelShopAfterUpsertHooks = []ChannelShopHook{}
 }
 
-func testChannelshopsInsert(t *testing.T) {
+func testChannelShopsInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -457,7 +457,7 @@ func testChannelshopsInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -467,24 +467,24 @@ func testChannelshopsInsert(t *testing.T) {
 	}
 }
 
-func testChannelshopsInsertWhitelist(t *testing.T) {
+func testChannelShopsInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(channelshopColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(channelShopColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -494,17 +494,17 @@ func testChannelshopsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testChannelshopToOneChannelUsingChannelidChannel(t *testing.T) {
+func testChannelShopToOneChannelUsingChannel(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var local Channelshop
+	var local ChannelShop
 	var foreign Channel
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	if err := randomize.Struct(seed, &local, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, channelDBTypes, false, channelColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Channel struct: %s", err)
@@ -514,12 +514,12 @@ func testChannelshopToOneChannelUsingChannelidChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Channelid, foreign.ID)
+	queries.Assign(&local.ChannelID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ChannelidChannel().One(ctx, tx)
+	check, err := local.Channel().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -534,19 +534,19 @@ func testChannelshopToOneChannelUsingChannelidChannel(t *testing.T) {
 		return nil
 	})
 
-	slice := ChannelshopSlice{&local}
-	if err = local.L.LoadChannelidChannel(ctx, tx, false, (*[]*Channelshop)(&slice), nil); err != nil {
+	slice := ChannelShopSlice{&local}
+	if err = local.L.LoadChannel(ctx, tx, false, (*[]*ChannelShop)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ChannelidChannel = nil
-	if err = local.L.LoadChannelidChannel(ctx, tx, true, &local, nil); err != nil {
+	local.R.Channel = nil
+	if err = local.L.LoadChannel(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ChannelidChannel == nil {
+	if local.R.Channel == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,18 +555,18 @@ func testChannelshopToOneChannelUsingChannelidChannel(t *testing.T) {
 	}
 }
 
-func testChannelshopToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
+func testChannelShopToOneSetOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Channelshop
+	var a ChannelShop
 	var b, c Channel
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, channelshopDBTypes, false, strmangle.SetComplement(channelshopPrimaryKeyColumns, channelshopColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, channelShopDBTypes, false, strmangle.SetComplement(channelShopPrimaryKeyColumns, channelShopColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &b, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
@@ -584,47 +584,47 @@ func testChannelshopToOneSetOpChannelUsingChannelidChannel(t *testing.T) {
 	}
 
 	for i, x := range []*Channel{&b, &c} {
-		err = a.SetChannelidChannel(ctx, tx, i != 0, x)
+		err = a.SetChannel(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ChannelidChannel != x {
+		if a.R.Channel != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ChannelidChannelshops[0] != &a {
+		if x.R.ChannelShops[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Channelid, x.ID) {
-			t.Error("foreign key was wrong value", a.Channelid)
+		if !queries.Equal(a.ChannelID, x.ID) {
+			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Channelid))
-		reflect.Indirect(reflect.ValueOf(&a.Channelid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ChannelID))
+		reflect.Indirect(reflect.ValueOf(&a.ChannelID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Channelid, x.ID) {
-			t.Error("foreign key was wrong value", a.Channelid, x.ID)
+		if !queries.Equal(a.ChannelID, x.ID) {
+			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
 
-func testChannelshopToOneRemoveOpChannelUsingChannelidChannel(t *testing.T) {
+func testChannelShopToOneRemoveOpChannelUsingChannel(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Channelshop
+	var a ChannelShop
 	var b Channel
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, channelshopDBTypes, false, strmangle.SetComplement(channelshopPrimaryKeyColumns, channelshopColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, channelShopDBTypes, false, strmangle.SetComplement(channelShopPrimaryKeyColumns, channelShopColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	if err = randomize.Struct(seed, &b, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
@@ -635,15 +635,15 @@ func testChannelshopToOneRemoveOpChannelUsingChannelidChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetChannelidChannel(ctx, tx, true, &b); err != nil {
+	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveChannelidChannel(ctx, tx, &b); err != nil {
+	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ChannelidChannel().Count(ctx, tx)
+	count, err := a.Channel().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,27 +651,27 @@ func testChannelshopToOneRemoveOpChannelUsingChannelidChannel(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ChannelidChannel != nil {
+	if a.R.Channel != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Channelid) {
+	if !queries.IsValuerNil(a.ChannelID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ChannelidChannelshops) != 0 {
+	if len(b.R.ChannelShops) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testChannelshopsReload(t *testing.T) {
+func testChannelShopsReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -686,14 +686,14 @@ func testChannelshopsReload(t *testing.T) {
 	}
 }
 
-func testChannelshopsReloadAll(t *testing.T) {
+func testChannelShopsReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -703,21 +703,21 @@ func testChannelshopsReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := ChannelshopSlice{o}
+	slice := ChannelShopSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testChannelshopsSelect(t *testing.T) {
+func testChannelShopsSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -727,7 +727,7 @@ func testChannelshopsSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Channelshops().All(ctx, tx)
+	slice, err := ChannelShops().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -738,25 +738,25 @@ func testChannelshopsSelect(t *testing.T) {
 }
 
 var (
-	channelshopDBTypes = map[string]string{`ID`: `character varying`, `Channelid`: `character varying`, `Createat`: `bigint`, `Endat`: `bigint`}
+	channelShopDBTypes = map[string]string{`ID`: `character varying`, `ChannelID`: `character varying`, `CreateAt`: `bigint`, `EndAt`: `bigint`}
 	_                  = bytes.MinRead
 )
 
-func testChannelshopsUpdate(t *testing.T) {
+func testChannelShopsUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(channelshopPrimaryKeyColumns) {
+	if 0 == len(channelShopPrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(channelshopAllColumns) == len(channelshopPrimaryKeyColumns) {
+	if len(channelShopAllColumns) == len(channelShopPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -766,7 +766,7 @@ func testChannelshopsUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -775,8 +775,8 @@ func testChannelshopsUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -786,18 +786,18 @@ func testChannelshopsUpdate(t *testing.T) {
 	}
 }
 
-func testChannelshopsSliceUpdateAll(t *testing.T) {
+func testChannelShopsSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(channelshopAllColumns) == len(channelshopPrimaryKeyColumns) {
+	if len(channelShopAllColumns) == len(channelShopPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Channelshop{}
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := &ChannelShop{}
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -807,7 +807,7 @@ func testChannelshopsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -816,18 +816,18 @@ func testChannelshopsSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, channelshopDBTypes, true, channelshopPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	if err = randomize.Struct(seed, o, channelShopDBTypes, true, channelShopPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(channelshopAllColumns, channelshopPrimaryKeyColumns) {
-		fields = channelshopAllColumns
+	if strmangle.StringSliceMatch(channelShopAllColumns, channelShopPrimaryKeyColumns) {
+		fields = channelShopAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			channelshopAllColumns,
-			channelshopPrimaryKeyColumns,
+			channelShopAllColumns,
+			channelShopPrimaryKeyColumns,
 		)
 	}
 
@@ -845,7 +845,7 @@ func testChannelshopsSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := ChannelshopSlice{o}
+	slice := ChannelShopSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
@@ -853,29 +853,29 @@ func testChannelshopsSliceUpdateAll(t *testing.T) {
 	}
 }
 
-func testChannelshopsUpsert(t *testing.T) {
+func testChannelShopsUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(channelshopAllColumns) == len(channelshopPrimaryKeyColumns) {
+	if len(channelShopAllColumns) == len(channelShopPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Channelshop{}
-	if err = randomize.Struct(seed, &o, channelshopDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	o := ChannelShop{}
+	if err = randomize.Struct(seed, &o, channelShopDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Channelshop: %s", err)
+		t.Errorf("Unable to upsert ChannelShop: %s", err)
 	}
 
-	count, err := Channelshops().Count(ctx, tx)
+	count, err := ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -884,15 +884,15 @@ func testChannelshopsUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, channelshopDBTypes, false, channelshopPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Channelshop struct: %s", err)
+	if err = randomize.Struct(seed, &o, channelShopDBTypes, false, channelShopPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize ChannelShop struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Channelshop: %s", err)
+		t.Errorf("Unable to upsert ChannelShop: %s", err)
 	}
 
-	count, err = Channelshops().Count(ctx, tx)
+	count, err = ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}

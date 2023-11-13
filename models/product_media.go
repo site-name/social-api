@@ -25,15 +25,15 @@ import (
 // ProductMedium is an object representing the database table.
 type ProductMedium struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat    null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Productid   null.String `boil:"productid" json:"productid,omitempty" toml:"productid" yaml:"productid,omitempty"`
+	CreateAt    null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ProductID   null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
 	Ppoi        null.String `boil:"ppoi" json:"ppoi,omitempty" toml:"ppoi" yaml:"ppoi,omitempty"`
 	Image       null.String `boil:"image" json:"image,omitempty" toml:"image" yaml:"image,omitempty"`
 	Alt         null.String `boil:"alt" json:"alt,omitempty" toml:"alt" yaml:"alt,omitempty"`
 	Type        null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Externalurl null.String `boil:"externalurl" json:"externalurl,omitempty" toml:"externalurl" yaml:"externalurl,omitempty"`
-	Oembeddata  null.String `boil:"oembeddata" json:"oembeddata,omitempty" toml:"oembeddata" yaml:"oembeddata,omitempty"`
-	Sortorder   null.Int    `boil:"sortorder" json:"sortorder,omitempty" toml:"sortorder" yaml:"sortorder,omitempty"`
+	ExternalURL null.String `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
+	OembedData  null.String `boil:"oembed_data" json:"oembed_data,omitempty" toml:"oembed_data" yaml:"oembed_data,omitempty"`
+	SortOrder   null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *productMediumR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productMediumL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,91 +41,91 @@ type ProductMedium struct {
 
 var ProductMediumColumns = struct {
 	ID          string
-	Createat    string
-	Productid   string
+	CreateAt    string
+	ProductID   string
 	Ppoi        string
 	Image       string
 	Alt         string
 	Type        string
-	Externalurl string
-	Oembeddata  string
-	Sortorder   string
+	ExternalURL string
+	OembedData  string
+	SortOrder   string
 }{
 	ID:          "id",
-	Createat:    "createat",
-	Productid:   "productid",
+	CreateAt:    "create_at",
+	ProductID:   "product_id",
 	Ppoi:        "ppoi",
 	Image:       "image",
 	Alt:         "alt",
 	Type:        "type",
-	Externalurl: "externalurl",
-	Oembeddata:  "oembeddata",
-	Sortorder:   "sortorder",
+	ExternalURL: "external_url",
+	OembedData:  "oembed_data",
+	SortOrder:   "sort_order",
 }
 
 var ProductMediumTableColumns = struct {
 	ID          string
-	Createat    string
-	Productid   string
+	CreateAt    string
+	ProductID   string
 	Ppoi        string
 	Image       string
 	Alt         string
 	Type        string
-	Externalurl string
-	Oembeddata  string
-	Sortorder   string
+	ExternalURL string
+	OembedData  string
+	SortOrder   string
 }{
 	ID:          "product_media.id",
-	Createat:    "product_media.createat",
-	Productid:   "product_media.productid",
+	CreateAt:    "product_media.create_at",
+	ProductID:   "product_media.product_id",
 	Ppoi:        "product_media.ppoi",
 	Image:       "product_media.image",
 	Alt:         "product_media.alt",
 	Type:        "product_media.type",
-	Externalurl: "product_media.externalurl",
-	Oembeddata:  "product_media.oembeddata",
-	Sortorder:   "product_media.sortorder",
+	ExternalURL: "product_media.external_url",
+	OembedData:  "product_media.oembed_data",
+	SortOrder:   "product_media.sort_order",
 }
 
 // Generated where
 
 var ProductMediumWhere = struct {
 	ID          whereHelperstring
-	Createat    whereHelpernull_Int64
-	Productid   whereHelpernull_String
+	CreateAt    whereHelpernull_Int64
+	ProductID   whereHelpernull_String
 	Ppoi        whereHelpernull_String
 	Image       whereHelpernull_String
 	Alt         whereHelpernull_String
 	Type        whereHelpernull_String
-	Externalurl whereHelpernull_String
-	Oembeddata  whereHelpernull_String
-	Sortorder   whereHelpernull_Int
+	ExternalURL whereHelpernull_String
+	OembedData  whereHelpernull_String
+	SortOrder   whereHelpernull_Int
 }{
 	ID:          whereHelperstring{field: "\"product_media\".\"id\""},
-	Createat:    whereHelpernull_Int64{field: "\"product_media\".\"createat\""},
-	Productid:   whereHelpernull_String{field: "\"product_media\".\"productid\""},
+	CreateAt:    whereHelpernull_Int64{field: "\"product_media\".\"create_at\""},
+	ProductID:   whereHelpernull_String{field: "\"product_media\".\"product_id\""},
 	Ppoi:        whereHelpernull_String{field: "\"product_media\".\"ppoi\""},
 	Image:       whereHelpernull_String{field: "\"product_media\".\"image\""},
 	Alt:         whereHelpernull_String{field: "\"product_media\".\"alt\""},
 	Type:        whereHelpernull_String{field: "\"product_media\".\"type\""},
-	Externalurl: whereHelpernull_String{field: "\"product_media\".\"externalurl\""},
-	Oembeddata:  whereHelpernull_String{field: "\"product_media\".\"oembeddata\""},
-	Sortorder:   whereHelpernull_Int{field: "\"product_media\".\"sortorder\""},
+	ExternalURL: whereHelpernull_String{field: "\"product_media\".\"external_url\""},
+	OembedData:  whereHelpernull_String{field: "\"product_media\".\"oembed_data\""},
+	SortOrder:   whereHelpernull_Int{field: "\"product_media\".\"sort_order\""},
 }
 
 // ProductMediumRels is where relationship names are stored.
 var ProductMediumRels = struct {
-	ProductidProduct    string
-	MediaidVariantMedia string
+	Product            string
+	MediumVariantMedia string
 }{
-	ProductidProduct:    "ProductidProduct",
-	MediaidVariantMedia: "MediaidVariantMedia",
+	Product:            "Product",
+	MediumVariantMedia: "MediumVariantMedia",
 }
 
 // productMediumR is where relationships are stored.
 type productMediumR struct {
-	ProductidProduct    *Product           `boil:"ProductidProduct" json:"ProductidProduct" toml:"ProductidProduct" yaml:"ProductidProduct"`
-	MediaidVariantMedia VariantMediumSlice `boil:"MediaidVariantMedia" json:"MediaidVariantMedia" toml:"MediaidVariantMedia" yaml:"MediaidVariantMedia"`
+	Product            *Product           `boil:"Product" json:"Product" toml:"Product" yaml:"Product"`
+	MediumVariantMedia VariantMediumSlice `boil:"MediumVariantMedia" json:"MediumVariantMedia" toml:"MediumVariantMedia" yaml:"MediumVariantMedia"`
 }
 
 // NewStruct creates a new relationship struct
@@ -133,27 +133,27 @@ func (*productMediumR) NewStruct() *productMediumR {
 	return &productMediumR{}
 }
 
-func (r *productMediumR) GetProductidProduct() *Product {
+func (r *productMediumR) GetProduct() *Product {
 	if r == nil {
 		return nil
 	}
-	return r.ProductidProduct
+	return r.Product
 }
 
-func (r *productMediumR) GetMediaidVariantMedia() VariantMediumSlice {
+func (r *productMediumR) GetMediumVariantMedia() VariantMediumSlice {
 	if r == nil {
 		return nil
 	}
-	return r.MediaidVariantMedia
+	return r.MediumVariantMedia
 }
 
 // productMediumL is where Load methods for each relationship are stored.
 type productMediumL struct{}
 
 var (
-	productMediumAllColumns            = []string{"id", "createat", "productid", "ppoi", "image", "alt", "type", "externalurl", "oembeddata", "sortorder"}
+	productMediumAllColumns            = []string{"id", "create_at", "product_id", "ppoi", "image", "alt", "type", "external_url", "oembed_data", "sort_order"}
 	productMediumColumnsWithoutDefault = []string{"id"}
-	productMediumColumnsWithDefault    = []string{"createat", "productid", "ppoi", "image", "alt", "type", "externalurl", "oembeddata", "sortorder"}
+	productMediumColumnsWithDefault    = []string{"create_at", "product_id", "ppoi", "image", "alt", "type", "external_url", "oembed_data", "sort_order"}
 	productMediumPrimaryKeyColumns     = []string{"id"}
 	productMediumGeneratedColumns      = []string{}
 )
@@ -436,10 +436,10 @@ func (q productMediumQuery) Exists(ctx context.Context, exec boil.ContextExecuto
 	return count > 0, nil
 }
 
-// ProductidProduct pointed to by the foreign key.
-func (o *ProductMedium) ProductidProduct(mods ...qm.QueryMod) productQuery {
+// Product pointed to by the foreign key.
+func (o *ProductMedium) Product(mods ...qm.QueryMod) productQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productid),
+		qm.Where("\"id\" = ?", o.ProductID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -447,23 +447,23 @@ func (o *ProductMedium) ProductidProduct(mods ...qm.QueryMod) productQuery {
 	return Products(queryMods...)
 }
 
-// MediaidVariantMedia retrieves all the variant_medium's VariantMedia with an executor via mediaid column.
-func (o *ProductMedium) MediaidVariantMedia(mods ...qm.QueryMod) variantMediumQuery {
+// MediumVariantMedia retrieves all the variant_medium's VariantMedia with an executor via media_id column.
+func (o *ProductMedium) MediumVariantMedia(mods ...qm.QueryMod) variantMediumQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"variant_media\".\"mediaid\"=?", o.ID),
+		qm.Where("\"variant_media\".\"media_id\"=?", o.ID),
 	)
 
 	return VariantMedia(queryMods...)
 }
 
-// LoadProductidProduct allows an eager lookup of values, cached into the
+// LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productMediumL) LoadProductidProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
+func (productMediumL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
 	var slice []*ProductMedium
 	var object *ProductMedium
 
@@ -494,8 +494,8 @@ func (productMediumL) LoadProductidProduct(ctx context.Context, e boil.ContextEx
 		if object.R == nil {
 			object.R = &productMediumR{}
 		}
-		if !queries.IsNil(object.Productid) {
-			args = append(args, object.Productid)
+		if !queries.IsNil(object.ProductID) {
+			args = append(args, object.ProductID)
 		}
 
 	} else {
@@ -506,13 +506,13 @@ func (productMediumL) LoadProductidProduct(ctx context.Context, e boil.ContextEx
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productid) {
+				if queries.Equal(a, obj.ProductID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productid) {
-				args = append(args, obj.Productid)
+			if !queries.IsNil(obj.ProductID) {
+				args = append(args, obj.ProductID)
 			}
 
 		}
@@ -561,22 +561,22 @@ func (productMediumL) LoadProductidProduct(ctx context.Context, e boil.ContextEx
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductidProduct = foreign
+		object.R.Product = foreign
 		if foreign.R == nil {
 			foreign.R = &productR{}
 		}
-		foreign.R.ProductidProductMedia = append(foreign.R.ProductidProductMedia, object)
+		foreign.R.ProductMedia = append(foreign.R.ProductMedia, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productid, foreign.ID) {
-				local.R.ProductidProduct = foreign
+			if queries.Equal(local.ProductID, foreign.ID) {
+				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
 				}
-				foreign.R.ProductidProductMedia = append(foreign.R.ProductidProductMedia, local)
+				foreign.R.ProductMedia = append(foreign.R.ProductMedia, local)
 				break
 			}
 		}
@@ -585,9 +585,9 @@ func (productMediumL) LoadProductidProduct(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// LoadMediaidVariantMedia allows an eager lookup of values, cached into the
+// LoadMediumVariantMedia allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productMediumL) LoadMediaidVariantMedia(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
+func (productMediumL) LoadMediumVariantMedia(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
 	var slice []*ProductMedium
 	var object *ProductMedium
 
@@ -642,7 +642,7 @@ func (productMediumL) LoadMediaidVariantMedia(ctx context.Context, e boil.Contex
 
 	query := NewQuery(
 		qm.From(`variant_media`),
-		qm.WhereIn(`variant_media.mediaid in ?`, args...),
+		qm.WhereIn(`variant_media.media_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -673,24 +673,24 @@ func (productMediumL) LoadMediaidVariantMedia(ctx context.Context, e boil.Contex
 		}
 	}
 	if singular {
-		object.R.MediaidVariantMedia = resultSlice
+		object.R.MediumVariantMedia = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &variantMediumR{}
 			}
-			foreign.R.MediaidProductMedium = object
+			foreign.R.Medium = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Mediaid) {
-				local.R.MediaidVariantMedia = append(local.R.MediaidVariantMedia, foreign)
+			if queries.Equal(local.ID, foreign.MediaID) {
+				local.R.MediumVariantMedia = append(local.R.MediumVariantMedia, foreign)
 				if foreign.R == nil {
 					foreign.R = &variantMediumR{}
 				}
-				foreign.R.MediaidProductMedium = local
+				foreign.R.Medium = local
 				break
 			}
 		}
@@ -699,10 +699,10 @@ func (productMediumL) LoadMediaidVariantMedia(ctx context.Context, e boil.Contex
 	return nil
 }
 
-// SetProductidProduct of the productMedium to the related item.
-// Sets o.R.ProductidProduct to related.
-// Adds o to related.R.ProductidProductMedia.
-func (o *ProductMedium) SetProductidProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
+// SetProduct of the productMedium to the related item.
+// Sets o.R.Product to related.
+// Adds o to related.R.ProductMedia.
+func (o *ProductMedium) SetProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -712,7 +712,7 @@ func (o *ProductMedium) SetProductidProduct(ctx context.Context, exec boil.Conte
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"product_media\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_id"}),
 		strmangle.WhereClause("\"", "\"", 2, productMediumPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -726,75 +726,75 @@ func (o *ProductMedium) SetProductidProduct(ctx context.Context, exec boil.Conte
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productid, related.ID)
+	queries.Assign(&o.ProductID, related.ID)
 	if o.R == nil {
 		o.R = &productMediumR{
-			ProductidProduct: related,
+			Product: related,
 		}
 	} else {
-		o.R.ProductidProduct = related
+		o.R.Product = related
 	}
 
 	if related.R == nil {
 		related.R = &productR{
-			ProductidProductMedia: ProductMediumSlice{o},
+			ProductMedia: ProductMediumSlice{o},
 		}
 	} else {
-		related.R.ProductidProductMedia = append(related.R.ProductidProductMedia, o)
+		related.R.ProductMedia = append(related.R.ProductMedia, o)
 	}
 
 	return nil
 }
 
-// RemoveProductidProduct relationship.
-// Sets o.R.ProductidProduct to nil.
+// RemoveProduct relationship.
+// Sets o.R.Product to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ProductMedium) RemoveProductidProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
+func (o *ProductMedium) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
 	var err error
 
-	queries.SetScanner(&o.Productid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productid")); err != nil {
+	queries.SetScanner(&o.ProductID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductidProduct = nil
+		o.R.Product = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductidProductMedia {
-		if queries.Equal(o.Productid, ri.Productid) {
+	for i, ri := range related.R.ProductMedia {
+		if queries.Equal(o.ProductID, ri.ProductID) {
 			continue
 		}
 
-		ln := len(related.R.ProductidProductMedia)
+		ln := len(related.R.ProductMedia)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductidProductMedia[i] = related.R.ProductidProductMedia[ln-1]
+			related.R.ProductMedia[i] = related.R.ProductMedia[ln-1]
 		}
-		related.R.ProductidProductMedia = related.R.ProductidProductMedia[:ln-1]
+		related.R.ProductMedia = related.R.ProductMedia[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddMediaidVariantMedia adds the given related objects to the existing relationships
+// AddMediumVariantMedia adds the given related objects to the existing relationships
 // of the product_medium, optionally inserting them as new records.
-// Appends related to o.R.MediaidVariantMedia.
-// Sets related.R.MediaidProductMedium appropriately.
-func (o *ProductMedium) AddMediaidVariantMedia(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VariantMedium) error {
+// Appends related to o.R.MediumVariantMedia.
+// Sets related.R.Medium appropriately.
+func (o *ProductMedium) AddMediumVariantMedia(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VariantMedium) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Mediaid, o.ID)
+			queries.Assign(&rel.MediaID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"variant_media\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"mediaid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"media_id"}),
 				strmangle.WhereClause("\"", "\"", 2, variantMediumPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -808,38 +808,38 @@ func (o *ProductMedium) AddMediaidVariantMedia(ctx context.Context, exec boil.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Mediaid, o.ID)
+			queries.Assign(&rel.MediaID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &productMediumR{
-			MediaidVariantMedia: related,
+			MediumVariantMedia: related,
 		}
 	} else {
-		o.R.MediaidVariantMedia = append(o.R.MediaidVariantMedia, related...)
+		o.R.MediumVariantMedia = append(o.R.MediumVariantMedia, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &variantMediumR{
-				MediaidProductMedium: o,
+				Medium: o,
 			}
 		} else {
-			rel.R.MediaidProductMedium = o
+			rel.R.Medium = o
 		}
 	}
 	return nil
 }
 
-// SetMediaidVariantMedia removes all previously related items of the
+// SetMediumVariantMedia removes all previously related items of the
 // product_medium replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.MediaidProductMedium's MediaidVariantMedia accordingly.
-// Replaces o.R.MediaidVariantMedia with related.
-// Sets related.R.MediaidProductMedium's MediaidVariantMedia accordingly.
-func (o *ProductMedium) SetMediaidVariantMedia(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VariantMedium) error {
-	query := "update \"variant_media\" set \"mediaid\" = null where \"mediaid\" = $1"
+// Sets o.R.Medium's MediumVariantMedia accordingly.
+// Replaces o.R.MediumVariantMedia with related.
+// Sets related.R.Medium's MediumVariantMedia accordingly.
+func (o *ProductMedium) SetMediumVariantMedia(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VariantMedium) error {
+	query := "update \"variant_media\" set \"media_id\" = null where \"media_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -852,35 +852,35 @@ func (o *ProductMedium) SetMediaidVariantMedia(ctx context.Context, exec boil.Co
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.MediaidVariantMedia {
-			queries.SetScanner(&rel.Mediaid, nil)
+		for _, rel := range o.R.MediumVariantMedia {
+			queries.SetScanner(&rel.MediaID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.MediaidProductMedium = nil
+			rel.R.Medium = nil
 		}
-		o.R.MediaidVariantMedia = nil
+		o.R.MediumVariantMedia = nil
 	}
 
-	return o.AddMediaidVariantMedia(ctx, exec, insert, related...)
+	return o.AddMediumVariantMedia(ctx, exec, insert, related...)
 }
 
-// RemoveMediaidVariantMedia relationships from objects passed in.
-// Removes related items from R.MediaidVariantMedia (uses pointer comparison, removal does not keep order)
-// Sets related.R.MediaidProductMedium.
-func (o *ProductMedium) RemoveMediaidVariantMedia(ctx context.Context, exec boil.ContextExecutor, related ...*VariantMedium) error {
+// RemoveMediumVariantMedia relationships from objects passed in.
+// Removes related items from R.MediumVariantMedia (uses pointer comparison, removal does not keep order)
+// Sets related.R.Medium.
+func (o *ProductMedium) RemoveMediumVariantMedia(ctx context.Context, exec boil.ContextExecutor, related ...*VariantMedium) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Mediaid, nil)
+		queries.SetScanner(&rel.MediaID, nil)
 		if rel.R != nil {
-			rel.R.MediaidProductMedium = nil
+			rel.R.Medium = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("mediaid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("media_id")); err != nil {
 			return err
 		}
 	}
@@ -889,16 +889,16 @@ func (o *ProductMedium) RemoveMediaidVariantMedia(ctx context.Context, exec boil
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.MediaidVariantMedia {
+		for i, ri := range o.R.MediumVariantMedia {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.MediaidVariantMedia)
+			ln := len(o.R.MediumVariantMedia)
 			if ln > 1 && i < ln-1 {
-				o.R.MediaidVariantMedia[i] = o.R.MediaidVariantMedia[ln-1]
+				o.R.MediumVariantMedia[i] = o.R.MediumVariantMedia[ln-1]
 			}
-			o.R.MediaidVariantMedia = o.R.MediaidVariantMedia[:ln-1]
+			o.R.MediumVariantMedia = o.R.MediumVariantMedia[:ln-1]
 			break
 		}
 	}

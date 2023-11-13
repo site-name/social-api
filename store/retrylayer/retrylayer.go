@@ -1002,13 +1002,13 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
+func (s *RetryLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError {
 
-	return s.AddressStore.DeleteAddresses(transaction, addressIDs)
+	return s.AddressStore.DeleteAddresses(tx, addressIDs)
 
 }
 
-func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
+func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error) {
 
 	tries := 0
 	for {
@@ -1028,7 +1028,7 @@ func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOptio
 
 }
 
-func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
+func (s *RetryLayerAddressStore) Get(addressID string) (*models.Address, error) {
 
 	tries := 0
 	for {
@@ -1048,11 +1048,11 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error) {
 
 	tries := 0
 	for {
-		result, err := s.AddressStore.Upsert(transaction, address)
+		result, err := s.AddressStore.Upsert(tx, address)
 		if err == nil {
 			return result, nil
 		}

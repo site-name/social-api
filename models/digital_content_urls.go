@@ -26,10 +26,10 @@ import (
 type DigitalContentURL struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Token       null.String `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	Contentid   null.String `boil:"contentid" json:"contentid,omitempty" toml:"contentid" yaml:"contentid,omitempty"`
-	Createat    null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Downloadnum null.Int    `boil:"downloadnum" json:"downloadnum,omitempty" toml:"downloadnum" yaml:"downloadnum,omitempty"`
-	Lineid      null.String `boil:"lineid" json:"lineid,omitempty" toml:"lineid" yaml:"lineid,omitempty"`
+	ContentID   null.String `boil:"content_id" json:"content_id,omitempty" toml:"content_id" yaml:"content_id,omitempty"`
+	CreateAt    null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	DownloadNum null.Int    `boil:"download_num" json:"download_num,omitempty" toml:"download_num" yaml:"download_num,omitempty"`
+	LineID      null.String `boil:"line_id" json:"line_id,omitempty" toml:"line_id" yaml:"line_id,omitempty"`
 
 	R *digitalContentURLR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L digitalContentURLL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,33 +38,33 @@ type DigitalContentURL struct {
 var DigitalContentURLColumns = struct {
 	ID          string
 	Token       string
-	Contentid   string
-	Createat    string
-	Downloadnum string
-	Lineid      string
+	ContentID   string
+	CreateAt    string
+	DownloadNum string
+	LineID      string
 }{
 	ID:          "id",
 	Token:       "token",
-	Contentid:   "contentid",
-	Createat:    "createat",
-	Downloadnum: "downloadnum",
-	Lineid:      "lineid",
+	ContentID:   "content_id",
+	CreateAt:    "create_at",
+	DownloadNum: "download_num",
+	LineID:      "line_id",
 }
 
 var DigitalContentURLTableColumns = struct {
 	ID          string
 	Token       string
-	Contentid   string
-	Createat    string
-	Downloadnum string
-	Lineid      string
+	ContentID   string
+	CreateAt    string
+	DownloadNum string
+	LineID      string
 }{
 	ID:          "digital_content_urls.id",
 	Token:       "digital_content_urls.token",
-	Contentid:   "digital_content_urls.contentid",
-	Createat:    "digital_content_urls.createat",
-	Downloadnum: "digital_content_urls.downloadnum",
-	Lineid:      "digital_content_urls.lineid",
+	ContentID:   "digital_content_urls.content_id",
+	CreateAt:    "digital_content_urls.create_at",
+	DownloadNum: "digital_content_urls.download_num",
+	LineID:      "digital_content_urls.line_id",
 }
 
 // Generated where
@@ -72,32 +72,32 @@ var DigitalContentURLTableColumns = struct {
 var DigitalContentURLWhere = struct {
 	ID          whereHelperstring
 	Token       whereHelpernull_String
-	Contentid   whereHelpernull_String
-	Createat    whereHelpernull_Int64
-	Downloadnum whereHelpernull_Int
-	Lineid      whereHelpernull_String
+	ContentID   whereHelpernull_String
+	CreateAt    whereHelpernull_Int64
+	DownloadNum whereHelpernull_Int
+	LineID      whereHelpernull_String
 }{
 	ID:          whereHelperstring{field: "\"digital_content_urls\".\"id\""},
 	Token:       whereHelpernull_String{field: "\"digital_content_urls\".\"token\""},
-	Contentid:   whereHelpernull_String{field: "\"digital_content_urls\".\"contentid\""},
-	Createat:    whereHelpernull_Int64{field: "\"digital_content_urls\".\"createat\""},
-	Downloadnum: whereHelpernull_Int{field: "\"digital_content_urls\".\"downloadnum\""},
-	Lineid:      whereHelpernull_String{field: "\"digital_content_urls\".\"lineid\""},
+	ContentID:   whereHelpernull_String{field: "\"digital_content_urls\".\"content_id\""},
+	CreateAt:    whereHelpernull_Int64{field: "\"digital_content_urls\".\"create_at\""},
+	DownloadNum: whereHelpernull_Int{field: "\"digital_content_urls\".\"download_num\""},
+	LineID:      whereHelpernull_String{field: "\"digital_content_urls\".\"line_id\""},
 }
 
 // DigitalContentURLRels is where relationship names are stored.
 var DigitalContentURLRels = struct {
-	ContentidDigitalContent string
-	LineidOrderLine         string
+	Content string
+	Line    string
 }{
-	ContentidDigitalContent: "ContentidDigitalContent",
-	LineidOrderLine:         "LineidOrderLine",
+	Content: "Content",
+	Line:    "Line",
 }
 
 // digitalContentURLR is where relationships are stored.
 type digitalContentURLR struct {
-	ContentidDigitalContent *DigitalContent `boil:"ContentidDigitalContent" json:"ContentidDigitalContent" toml:"ContentidDigitalContent" yaml:"ContentidDigitalContent"`
-	LineidOrderLine         *OrderLine      `boil:"LineidOrderLine" json:"LineidOrderLine" toml:"LineidOrderLine" yaml:"LineidOrderLine"`
+	Content *DigitalContent `boil:"Content" json:"Content" toml:"Content" yaml:"Content"`
+	Line    *OrderLine      `boil:"Line" json:"Line" toml:"Line" yaml:"Line"`
 }
 
 // NewStruct creates a new relationship struct
@@ -105,27 +105,27 @@ func (*digitalContentURLR) NewStruct() *digitalContentURLR {
 	return &digitalContentURLR{}
 }
 
-func (r *digitalContentURLR) GetContentidDigitalContent() *DigitalContent {
+func (r *digitalContentURLR) GetContent() *DigitalContent {
 	if r == nil {
 		return nil
 	}
-	return r.ContentidDigitalContent
+	return r.Content
 }
 
-func (r *digitalContentURLR) GetLineidOrderLine() *OrderLine {
+func (r *digitalContentURLR) GetLine() *OrderLine {
 	if r == nil {
 		return nil
 	}
-	return r.LineidOrderLine
+	return r.Line
 }
 
 // digitalContentURLL is where Load methods for each relationship are stored.
 type digitalContentURLL struct{}
 
 var (
-	digitalContentURLAllColumns            = []string{"id", "token", "contentid", "createat", "downloadnum", "lineid"}
+	digitalContentURLAllColumns            = []string{"id", "token", "content_id", "create_at", "download_num", "line_id"}
 	digitalContentURLColumnsWithoutDefault = []string{"id"}
-	digitalContentURLColumnsWithDefault    = []string{"token", "contentid", "createat", "downloadnum", "lineid"}
+	digitalContentURLColumnsWithDefault    = []string{"token", "content_id", "create_at", "download_num", "line_id"}
 	digitalContentURLPrimaryKeyColumns     = []string{"id"}
 	digitalContentURLGeneratedColumns      = []string{}
 )
@@ -408,10 +408,10 @@ func (q digitalContentURLQuery) Exists(ctx context.Context, exec boil.ContextExe
 	return count > 0, nil
 }
 
-// ContentidDigitalContent pointed to by the foreign key.
-func (o *DigitalContentURL) ContentidDigitalContent(mods ...qm.QueryMod) digitalContentQuery {
+// Content pointed to by the foreign key.
+func (o *DigitalContentURL) Content(mods ...qm.QueryMod) digitalContentQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Contentid),
+		qm.Where("\"id\" = ?", o.ContentID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -419,10 +419,10 @@ func (o *DigitalContentURL) ContentidDigitalContent(mods ...qm.QueryMod) digital
 	return DigitalContents(queryMods...)
 }
 
-// LineidOrderLine pointed to by the foreign key.
-func (o *DigitalContentURL) LineidOrderLine(mods ...qm.QueryMod) orderLineQuery {
+// Line pointed to by the foreign key.
+func (o *DigitalContentURL) Line(mods ...qm.QueryMod) orderLineQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Lineid),
+		qm.Where("\"id\" = ?", o.LineID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -430,9 +430,9 @@ func (o *DigitalContentURL) LineidOrderLine(mods ...qm.QueryMod) orderLineQuery 
 	return OrderLines(queryMods...)
 }
 
-// LoadContentidDigitalContent allows an eager lookup of values, cached into the
+// LoadContent allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentURLL) LoadContentidDigitalContent(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
+func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
 	var slice []*DigitalContentURL
 	var object *DigitalContentURL
 
@@ -463,8 +463,8 @@ func (digitalContentURLL) LoadContentidDigitalContent(ctx context.Context, e boi
 		if object.R == nil {
 			object.R = &digitalContentURLR{}
 		}
-		if !queries.IsNil(object.Contentid) {
-			args = append(args, object.Contentid)
+		if !queries.IsNil(object.ContentID) {
+			args = append(args, object.ContentID)
 		}
 
 	} else {
@@ -475,13 +475,13 @@ func (digitalContentURLL) LoadContentidDigitalContent(ctx context.Context, e boi
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Contentid) {
+				if queries.Equal(a, obj.ContentID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Contentid) {
-				args = append(args, obj.Contentid)
+			if !queries.IsNil(obj.ContentID) {
+				args = append(args, obj.ContentID)
 			}
 
 		}
@@ -530,22 +530,22 @@ func (digitalContentURLL) LoadContentidDigitalContent(ctx context.Context, e boi
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ContentidDigitalContent = foreign
+		object.R.Content = foreign
 		if foreign.R == nil {
 			foreign.R = &digitalContentR{}
 		}
-		foreign.R.ContentidDigitalContentUrls = append(foreign.R.ContentidDigitalContentUrls, object)
+		foreign.R.ContentDigitalContentUrls = append(foreign.R.ContentDigitalContentUrls, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Contentid, foreign.ID) {
-				local.R.ContentidDigitalContent = foreign
+			if queries.Equal(local.ContentID, foreign.ID) {
+				local.R.Content = foreign
 				if foreign.R == nil {
 					foreign.R = &digitalContentR{}
 				}
-				foreign.R.ContentidDigitalContentUrls = append(foreign.R.ContentidDigitalContentUrls, local)
+				foreign.R.ContentDigitalContentUrls = append(foreign.R.ContentDigitalContentUrls, local)
 				break
 			}
 		}
@@ -554,9 +554,9 @@ func (digitalContentURLL) LoadContentidDigitalContent(ctx context.Context, e boi
 	return nil
 }
 
-// LoadLineidOrderLine allows an eager lookup of values, cached into the
+// LoadLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentURLL) LoadLineidOrderLine(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
+func (digitalContentURLL) LoadLine(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
 	var slice []*DigitalContentURL
 	var object *DigitalContentURL
 
@@ -587,8 +587,8 @@ func (digitalContentURLL) LoadLineidOrderLine(ctx context.Context, e boil.Contex
 		if object.R == nil {
 			object.R = &digitalContentURLR{}
 		}
-		if !queries.IsNil(object.Lineid) {
-			args = append(args, object.Lineid)
+		if !queries.IsNil(object.LineID) {
+			args = append(args, object.LineID)
 		}
 
 	} else {
@@ -599,13 +599,13 @@ func (digitalContentURLL) LoadLineidOrderLine(ctx context.Context, e boil.Contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Lineid) {
+				if queries.Equal(a, obj.LineID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Lineid) {
-				args = append(args, obj.Lineid)
+			if !queries.IsNil(obj.LineID) {
+				args = append(args, obj.LineID)
 			}
 
 		}
@@ -654,22 +654,22 @@ func (digitalContentURLL) LoadLineidOrderLine(ctx context.Context, e boil.Contex
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.LineidOrderLine = foreign
+		object.R.Line = foreign
 		if foreign.R == nil {
 			foreign.R = &orderLineR{}
 		}
-		foreign.R.LineidDigitalContentURL = object
+		foreign.R.LineDigitalContentURL = object
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Lineid, foreign.ID) {
-				local.R.LineidOrderLine = foreign
+			if queries.Equal(local.LineID, foreign.ID) {
+				local.R.Line = foreign
 				if foreign.R == nil {
 					foreign.R = &orderLineR{}
 				}
-				foreign.R.LineidDigitalContentURL = local
+				foreign.R.LineDigitalContentURL = local
 				break
 			}
 		}
@@ -678,10 +678,10 @@ func (digitalContentURLL) LoadLineidOrderLine(ctx context.Context, e boil.Contex
 	return nil
 }
 
-// SetContentidDigitalContent of the digitalContentURL to the related item.
-// Sets o.R.ContentidDigitalContent to related.
-// Adds o to related.R.ContentidDigitalContentUrls.
-func (o *DigitalContentURL) SetContentidDigitalContent(ctx context.Context, exec boil.ContextExecutor, insert bool, related *DigitalContent) error {
+// SetContent of the digitalContentURL to the related item.
+// Sets o.R.Content to related.
+// Adds o to related.R.ContentDigitalContentUrls.
+func (o *DigitalContentURL) SetContent(ctx context.Context, exec boil.ContextExecutor, insert bool, related *DigitalContent) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -691,7 +691,7 @@ func (o *DigitalContentURL) SetContentidDigitalContent(ctx context.Context, exec
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"digital_content_urls\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"contentid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"content_id"}),
 		strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -705,63 +705,63 @@ func (o *DigitalContentURL) SetContentidDigitalContent(ctx context.Context, exec
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Contentid, related.ID)
+	queries.Assign(&o.ContentID, related.ID)
 	if o.R == nil {
 		o.R = &digitalContentURLR{
-			ContentidDigitalContent: related,
+			Content: related,
 		}
 	} else {
-		o.R.ContentidDigitalContent = related
+		o.R.Content = related
 	}
 
 	if related.R == nil {
 		related.R = &digitalContentR{
-			ContentidDigitalContentUrls: DigitalContentURLSlice{o},
+			ContentDigitalContentUrls: DigitalContentURLSlice{o},
 		}
 	} else {
-		related.R.ContentidDigitalContentUrls = append(related.R.ContentidDigitalContentUrls, o)
+		related.R.ContentDigitalContentUrls = append(related.R.ContentDigitalContentUrls, o)
 	}
 
 	return nil
 }
 
-// RemoveContentidDigitalContent relationship.
-// Sets o.R.ContentidDigitalContent to nil.
+// RemoveContent relationship.
+// Sets o.R.Content to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *DigitalContentURL) RemoveContentidDigitalContent(ctx context.Context, exec boil.ContextExecutor, related *DigitalContent) error {
+func (o *DigitalContentURL) RemoveContent(ctx context.Context, exec boil.ContextExecutor, related *DigitalContent) error {
 	var err error
 
-	queries.SetScanner(&o.Contentid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("contentid")); err != nil {
+	queries.SetScanner(&o.ContentID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("content_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ContentidDigitalContent = nil
+		o.R.Content = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ContentidDigitalContentUrls {
-		if queries.Equal(o.Contentid, ri.Contentid) {
+	for i, ri := range related.R.ContentDigitalContentUrls {
+		if queries.Equal(o.ContentID, ri.ContentID) {
 			continue
 		}
 
-		ln := len(related.R.ContentidDigitalContentUrls)
+		ln := len(related.R.ContentDigitalContentUrls)
 		if ln > 1 && i < ln-1 {
-			related.R.ContentidDigitalContentUrls[i] = related.R.ContentidDigitalContentUrls[ln-1]
+			related.R.ContentDigitalContentUrls[i] = related.R.ContentDigitalContentUrls[ln-1]
 		}
-		related.R.ContentidDigitalContentUrls = related.R.ContentidDigitalContentUrls[:ln-1]
+		related.R.ContentDigitalContentUrls = related.R.ContentDigitalContentUrls[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetLineidOrderLine of the digitalContentURL to the related item.
-// Sets o.R.LineidOrderLine to related.
-// Adds o to related.R.LineidDigitalContentURL.
-func (o *DigitalContentURL) SetLineidOrderLine(ctx context.Context, exec boil.ContextExecutor, insert bool, related *OrderLine) error {
+// SetLine of the digitalContentURL to the related item.
+// Sets o.R.Line to related.
+// Adds o to related.R.LineDigitalContentURL.
+func (o *DigitalContentURL) SetLine(ctx context.Context, exec boil.ContextExecutor, insert bool, related *OrderLine) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -771,7 +771,7 @@ func (o *DigitalContentURL) SetLineidOrderLine(ctx context.Context, exec boil.Co
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"digital_content_urls\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"lineid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"line_id"}),
 		strmangle.WhereClause("\"", "\"", 2, digitalContentURLPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -785,45 +785,45 @@ func (o *DigitalContentURL) SetLineidOrderLine(ctx context.Context, exec boil.Co
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Lineid, related.ID)
+	queries.Assign(&o.LineID, related.ID)
 	if o.R == nil {
 		o.R = &digitalContentURLR{
-			LineidOrderLine: related,
+			Line: related,
 		}
 	} else {
-		o.R.LineidOrderLine = related
+		o.R.Line = related
 	}
 
 	if related.R == nil {
 		related.R = &orderLineR{
-			LineidDigitalContentURL: o,
+			LineDigitalContentURL: o,
 		}
 	} else {
-		related.R.LineidDigitalContentURL = o
+		related.R.LineDigitalContentURL = o
 	}
 
 	return nil
 }
 
-// RemoveLineidOrderLine relationship.
-// Sets o.R.LineidOrderLine to nil.
+// RemoveLine relationship.
+// Sets o.R.Line to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *DigitalContentURL) RemoveLineidOrderLine(ctx context.Context, exec boil.ContextExecutor, related *OrderLine) error {
+func (o *DigitalContentURL) RemoveLine(ctx context.Context, exec boil.ContextExecutor, related *OrderLine) error {
 	var err error
 
-	queries.SetScanner(&o.Lineid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("lineid")); err != nil {
+	queries.SetScanner(&o.LineID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("line_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.LineidOrderLine = nil
+		o.R.Line = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	related.R.LineidDigitalContentURL = nil
+	related.R.LineDigitalContentURL = nil
 	return nil
 }
 

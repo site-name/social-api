@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS shop_staffs (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  staffid character varying(36),
-  createat bigint,
-  endat bigint,
-  salaryperiod character varying(10),
-  slary double precision,
-  salarycurrency character varying(5)
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  staff_id uuid,
+  created_at bigint,
+  end_at bigint,
+  salary_period character varying(10),
+  salary double precision,
+  salary_currency character varying(5)
 );

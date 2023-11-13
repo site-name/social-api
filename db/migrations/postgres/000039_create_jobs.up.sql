@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS jobs (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   type character varying(32),
   priority bigint,
-  createat bigint,
-  startat bigint,
-  lastactivityat bigint,
+  created_at bigint,
+  start_at bigint,
+  last_activity_at bigint,
   status character varying(32),
   progress bigint,
   data jsonb

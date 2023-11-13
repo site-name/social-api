@@ -25,9 +25,9 @@ import (
 // PreorderAllocation is an object representing the database table.
 type PreorderAllocation struct {
 	ID                             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Orderlineid                    null.String `boil:"orderlineid" json:"orderlineid,omitempty" toml:"orderlineid" yaml:"orderlineid,omitempty"`
+	OrderLineID                    null.String `boil:"order_line_id" json:"order_line_id,omitempty" toml:"order_line_id" yaml:"order_line_id,omitempty"`
 	Quantity                       null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
-	Productvariantchannellistingid null.String `boil:"productvariantchannellistingid" json:"productvariantchannellistingid,omitempty" toml:"productvariantchannellistingid" yaml:"productvariantchannellistingid,omitempty"`
+	ProductVariantChannelListingID null.String `boil:"product_variant_channel_listing_id" json:"product_variant_channel_listing_id,omitempty" toml:"product_variant_channel_listing_id" yaml:"product_variant_channel_listing_id,omitempty"`
 
 	R *preorderAllocationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L preorderAllocationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,40 +35,40 @@ type PreorderAllocation struct {
 
 var PreorderAllocationColumns = struct {
 	ID                             string
-	Orderlineid                    string
+	OrderLineID                    string
 	Quantity                       string
-	Productvariantchannellistingid string
+	ProductVariantChannelListingID string
 }{
 	ID:                             "id",
-	Orderlineid:                    "orderlineid",
+	OrderLineID:                    "order_line_id",
 	Quantity:                       "quantity",
-	Productvariantchannellistingid: "productvariantchannellistingid",
+	ProductVariantChannelListingID: "product_variant_channel_listing_id",
 }
 
 var PreorderAllocationTableColumns = struct {
 	ID                             string
-	Orderlineid                    string
+	OrderLineID                    string
 	Quantity                       string
-	Productvariantchannellistingid string
+	ProductVariantChannelListingID string
 }{
 	ID:                             "preorder_allocations.id",
-	Orderlineid:                    "preorder_allocations.orderlineid",
+	OrderLineID:                    "preorder_allocations.order_line_id",
 	Quantity:                       "preorder_allocations.quantity",
-	Productvariantchannellistingid: "preorder_allocations.productvariantchannellistingid",
+	ProductVariantChannelListingID: "preorder_allocations.product_variant_channel_listing_id",
 }
 
 // Generated where
 
 var PreorderAllocationWhere = struct {
 	ID                             whereHelperstring
-	Orderlineid                    whereHelpernull_String
+	OrderLineID                    whereHelpernull_String
 	Quantity                       whereHelpernull_Int
-	Productvariantchannellistingid whereHelpernull_String
+	ProductVariantChannelListingID whereHelpernull_String
 }{
 	ID:                             whereHelperstring{field: "\"preorder_allocations\".\"id\""},
-	Orderlineid:                    whereHelpernull_String{field: "\"preorder_allocations\".\"orderlineid\""},
+	OrderLineID:                    whereHelpernull_String{field: "\"preorder_allocations\".\"order_line_id\""},
 	Quantity:                       whereHelpernull_Int{field: "\"preorder_allocations\".\"quantity\""},
-	Productvariantchannellistingid: whereHelpernull_String{field: "\"preorder_allocations\".\"productvariantchannellistingid\""},
+	ProductVariantChannelListingID: whereHelpernull_String{field: "\"preorder_allocations\".\"product_variant_channel_listing_id\""},
 }
 
 // PreorderAllocationRels is where relationship names are stored.
@@ -88,9 +88,9 @@ func (*preorderAllocationR) NewStruct() *preorderAllocationR {
 type preorderAllocationL struct{}
 
 var (
-	preorderAllocationAllColumns            = []string{"id", "orderlineid", "quantity", "productvariantchannellistingid"}
+	preorderAllocationAllColumns            = []string{"id", "order_line_id", "quantity", "product_variant_channel_listing_id"}
 	preorderAllocationColumnsWithoutDefault = []string{"id"}
-	preorderAllocationColumnsWithDefault    = []string{"orderlineid", "quantity", "productvariantchannellistingid"}
+	preorderAllocationColumnsWithDefault    = []string{"order_line_id", "quantity", "product_variant_channel_listing_id"}
 	preorderAllocationPrimaryKeyColumns     = []string{"id"}
 	preorderAllocationGeneratedColumns      = []string{}
 )

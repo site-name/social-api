@@ -494,7 +494,7 @@ func testMenuItemsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testMenuItemToManyMenuitemidMenuItemTranslations(t *testing.T) {
+func testMenuItemToManyMenuItemTranslations(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testMenuItemToManyMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Menuitemid, a.ID)
-	queries.Assign(&c.Menuitemid, a.ID)
+	queries.Assign(&b.MenuItemID, a.ID)
+	queries.Assign(&c.MenuItemID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testMenuItemToManyMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.MenuitemidMenuItemTranslations().All(ctx, tx)
+	check, err := a.MenuItemTranslations().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Menuitemid, b.Menuitemid) {
+		if queries.Equal(v.MenuItemID, b.MenuItemID) {
 			bFound = true
 		}
-		if queries.Equal(v.Menuitemid, c.Menuitemid) {
+		if queries.Equal(v.MenuItemID, c.MenuItemID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testMenuItemToManyMenuitemidMenuItemTranslations(t *testing.T) {
 	}
 
 	slice := MenuItemSlice{&a}
-	if err = a.L.LoadMenuitemidMenuItemTranslations(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = a.L.LoadMenuItemTranslations(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.MenuitemidMenuItemTranslations); got != 2 {
+	if got := len(a.R.MenuItemTranslations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.MenuitemidMenuItemTranslations = nil
-	if err = a.L.LoadMenuitemidMenuItemTranslations(ctx, tx, true, &a, nil); err != nil {
+	a.R.MenuItemTranslations = nil
+	if err = a.L.LoadMenuItemTranslations(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.MenuitemidMenuItemTranslations); got != 2 {
+	if got := len(a.R.MenuItemTranslations); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testMenuItemToManyMenuitemidMenuItemTranslations(t *testing.T) {
 	}
 }
 
-func testMenuItemToManyParentidMenuItems(t *testing.T) {
+func testMenuItemToManyParentMenuItems(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testMenuItemToManyParentidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Parentid, a.ID)
-	queries.Assign(&c.Parentid, a.ID)
+	queries.Assign(&b.ParentID, a.ID)
+	queries.Assign(&c.ParentID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testMenuItemToManyParentidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ParentidMenuItems().All(ctx, tx)
+	check, err := a.ParentMenuItems().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Parentid, b.Parentid) {
+		if queries.Equal(v.ParentID, b.ParentID) {
 			bFound = true
 		}
-		if queries.Equal(v.Parentid, c.Parentid) {
+		if queries.Equal(v.ParentID, c.ParentID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testMenuItemToManyParentidMenuItems(t *testing.T) {
 	}
 
 	slice := MenuItemSlice{&a}
-	if err = a.L.LoadParentidMenuItems(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = a.L.LoadParentMenuItems(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ParentidMenuItems); got != 2 {
+	if got := len(a.R.ParentMenuItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ParentidMenuItems = nil
-	if err = a.L.LoadParentidMenuItems(ctx, tx, true, &a, nil); err != nil {
+	a.R.ParentMenuItems = nil
+	if err = a.L.LoadParentMenuItems(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ParentidMenuItems); got != 2 {
+	if got := len(a.R.ParentMenuItems); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testMenuItemToManyParentidMenuItems(t *testing.T) {
 	}
 }
 
-func testMenuItemToManyAddOpMenuitemidMenuItemTranslations(t *testing.T) {
+func testMenuItemToManyAddOpMenuItemTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -685,7 +685,7 @@ func testMenuItemToManyAddOpMenuitemidMenuItemTranslations(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddMenuitemidMenuItemTranslations(ctx, tx, i != 0, x...)
+		err = a.AddMenuItemTranslations(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -693,28 +693,28 @@ func testMenuItemToManyAddOpMenuitemidMenuItemTranslations(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Menuitemid) {
-			t.Error("foreign key was wrong value", a.ID, first.Menuitemid)
+		if !queries.Equal(a.ID, first.MenuItemID) {
+			t.Error("foreign key was wrong value", a.ID, first.MenuItemID)
 		}
-		if !queries.Equal(a.ID, second.Menuitemid) {
-			t.Error("foreign key was wrong value", a.ID, second.Menuitemid)
+		if !queries.Equal(a.ID, second.MenuItemID) {
+			t.Error("foreign key was wrong value", a.ID, second.MenuItemID)
 		}
 
-		if first.R.MenuitemidMenuItem != &a {
+		if first.R.MenuItem != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.MenuitemidMenuItem != &a {
+		if second.R.MenuItem != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.MenuitemidMenuItemTranslations[i*2] != first {
+		if a.R.MenuItemTranslations[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.MenuitemidMenuItemTranslations[i*2+1] != second {
+		if a.R.MenuItemTranslations[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.MenuitemidMenuItemTranslations().Count(ctx, tx)
+		count, err := a.MenuItemTranslations().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -724,7 +724,7 @@ func testMenuItemToManyAddOpMenuitemidMenuItemTranslations(t *testing.T) {
 	}
 }
 
-func testMenuItemToManySetOpMenuitemidMenuItemTranslations(t *testing.T) {
+func testMenuItemToManySetOpMenuItemTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -755,25 +755,12 @@ func testMenuItemToManySetOpMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetMenuitemidMenuItemTranslations(ctx, tx, false, &b, &c)
+	err = a.SetMenuItemTranslations(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.MenuitemidMenuItemTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetMenuitemidMenuItemTranslations(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.MenuitemidMenuItemTranslations().Count(ctx, tx)
+	count, err := a.MenuItemTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -781,41 +768,54 @@ func testMenuItemToManySetOpMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Menuitemid) {
+	err = a.SetMenuItemTranslations(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.MenuItemTranslations().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.MenuItemID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Menuitemid) {
+	if !queries.IsValuerNil(c.MenuItemID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Menuitemid) {
-		t.Error("foreign key was wrong value", a.ID, d.Menuitemid)
+	if !queries.Equal(a.ID, d.MenuItemID) {
+		t.Error("foreign key was wrong value", a.ID, d.MenuItemID)
 	}
-	if !queries.Equal(a.ID, e.Menuitemid) {
-		t.Error("foreign key was wrong value", a.ID, e.Menuitemid)
-	}
-
-	if b.R.MenuitemidMenuItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.MenuitemidMenuItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.MenuitemidMenuItem != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.MenuitemidMenuItem != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.MenuItemID) {
+		t.Error("foreign key was wrong value", a.ID, e.MenuItemID)
 	}
 
-	if a.R.MenuitemidMenuItemTranslations[0] != &d {
+	if b.R.MenuItem != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.MenuItem != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.MenuItem != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.MenuItem != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.MenuItemTranslations[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.MenuitemidMenuItemTranslations[1] != &e {
+	if a.R.MenuItemTranslations[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testMenuItemToManyRemoveOpMenuitemidMenuItemTranslations(t *testing.T) {
+func testMenuItemToManyRemoveOpMenuItemTranslations(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -840,12 +840,12 @@ func testMenuItemToManyRemoveOpMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddMenuitemidMenuItemTranslations(ctx, tx, true, foreigners...)
+	err = a.AddMenuItemTranslations(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.MenuitemidMenuItemTranslations().Count(ctx, tx)
+	count, err := a.MenuItemTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -853,12 +853,12 @@ func testMenuItemToManyRemoveOpMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveMenuitemidMenuItemTranslations(ctx, tx, foreigners[:2]...)
+	err = a.RemoveMenuItemTranslations(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.MenuitemidMenuItemTranslations().Count(ctx, tx)
+	count, err = a.MenuItemTranslations().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -866,40 +866,40 @@ func testMenuItemToManyRemoveOpMenuitemidMenuItemTranslations(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Menuitemid) {
+	if !queries.IsValuerNil(b.MenuItemID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Menuitemid) {
+	if !queries.IsValuerNil(c.MenuItemID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.MenuitemidMenuItem != nil {
+	if b.R.MenuItem != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.MenuitemidMenuItem != nil {
+	if c.R.MenuItem != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.MenuitemidMenuItem != &a {
+	if d.R.MenuItem != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.MenuitemidMenuItem != &a {
+	if e.R.MenuItem != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.MenuitemidMenuItemTranslations) != 2 {
+	if len(a.R.MenuItemTranslations) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.MenuitemidMenuItemTranslations[1] != &d {
+	if a.R.MenuItemTranslations[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.MenuitemidMenuItemTranslations[0] != &e {
+	if a.R.MenuItemTranslations[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testMenuItemToManyAddOpParentidMenuItems(t *testing.T) {
+func testMenuItemToManyAddOpParentMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -936,7 +936,7 @@ func testMenuItemToManyAddOpParentidMenuItems(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddParentidMenuItems(ctx, tx, i != 0, x...)
+		err = a.AddParentMenuItems(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -944,28 +944,28 @@ func testMenuItemToManyAddOpParentidMenuItems(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Parentid) {
-			t.Error("foreign key was wrong value", a.ID, first.Parentid)
+		if !queries.Equal(a.ID, first.ParentID) {
+			t.Error("foreign key was wrong value", a.ID, first.ParentID)
 		}
-		if !queries.Equal(a.ID, second.Parentid) {
-			t.Error("foreign key was wrong value", a.ID, second.Parentid)
+		if !queries.Equal(a.ID, second.ParentID) {
+			t.Error("foreign key was wrong value", a.ID, second.ParentID)
 		}
 
-		if first.R.ParentidMenuItem != &a {
+		if first.R.Parent != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ParentidMenuItem != &a {
+		if second.R.Parent != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ParentidMenuItems[i*2] != first {
+		if a.R.ParentMenuItems[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ParentidMenuItems[i*2+1] != second {
+		if a.R.ParentMenuItems[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ParentidMenuItems().Count(ctx, tx)
+		count, err := a.ParentMenuItems().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -975,7 +975,7 @@ func testMenuItemToManyAddOpParentidMenuItems(t *testing.T) {
 	}
 }
 
-func testMenuItemToManySetOpParentidMenuItems(t *testing.T) {
+func testMenuItemToManySetOpParentMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1006,25 +1006,12 @@ func testMenuItemToManySetOpParentidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetParentidMenuItems(ctx, tx, false, &b, &c)
+	err = a.SetParentMenuItems(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ParentidMenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetParentidMenuItems(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ParentidMenuItems().Count(ctx, tx)
+	count, err := a.ParentMenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1032,41 +1019,54 @@ func testMenuItemToManySetOpParentidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Parentid) {
+	err = a.SetParentMenuItems(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ParentMenuItems().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ParentID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Parentid) {
+	if !queries.IsValuerNil(c.ParentID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Parentid) {
-		t.Error("foreign key was wrong value", a.ID, d.Parentid)
+	if !queries.Equal(a.ID, d.ParentID) {
+		t.Error("foreign key was wrong value", a.ID, d.ParentID)
 	}
-	if !queries.Equal(a.ID, e.Parentid) {
-		t.Error("foreign key was wrong value", a.ID, e.Parentid)
-	}
-
-	if b.R.ParentidMenuItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ParentidMenuItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ParentidMenuItem != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ParentidMenuItem != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ParentID) {
+		t.Error("foreign key was wrong value", a.ID, e.ParentID)
 	}
 
-	if a.R.ParentidMenuItems[0] != &d {
+	if b.R.Parent != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Parent != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Parent != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Parent != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ParentMenuItems[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ParentidMenuItems[1] != &e {
+	if a.R.ParentMenuItems[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testMenuItemToManyRemoveOpParentidMenuItems(t *testing.T) {
+func testMenuItemToManyRemoveOpParentMenuItems(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1091,12 +1091,12 @@ func testMenuItemToManyRemoveOpParentidMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddParentidMenuItems(ctx, tx, true, foreigners...)
+	err = a.AddParentMenuItems(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ParentidMenuItems().Count(ctx, tx)
+	count, err := a.ParentMenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1104,12 +1104,12 @@ func testMenuItemToManyRemoveOpParentidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveParentidMenuItems(ctx, tx, foreigners[:2]...)
+	err = a.RemoveParentMenuItems(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ParentidMenuItems().Count(ctx, tx)
+	count, err = a.ParentMenuItems().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1117,40 +1117,40 @@ func testMenuItemToManyRemoveOpParentidMenuItems(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Parentid) {
+	if !queries.IsValuerNil(b.ParentID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Parentid) {
+	if !queries.IsValuerNil(c.ParentID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ParentidMenuItem != nil {
+	if b.R.Parent != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ParentidMenuItem != nil {
+	if c.R.Parent != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ParentidMenuItem != &a {
+	if d.R.Parent != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ParentidMenuItem != &a {
+	if e.R.Parent != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ParentidMenuItems) != 2 {
+	if len(a.R.ParentMenuItems) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ParentidMenuItems[1] != &d {
+	if a.R.ParentMenuItems[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ParentidMenuItems[0] != &e {
+	if a.R.ParentMenuItems[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testMenuItemToOneCategoryUsingCategoryidCategory(t *testing.T) {
+func testMenuItemToOneCategoryUsingCategory(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1170,12 +1170,12 @@ func testMenuItemToOneCategoryUsingCategoryidCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Categoryid, foreign.ID)
+	queries.Assign(&local.CategoryID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CategoryidCategory().One(ctx, tx)
+	check, err := local.Category().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1191,18 +1191,18 @@ func testMenuItemToOneCategoryUsingCategoryidCategory(t *testing.T) {
 	})
 
 	slice := MenuItemSlice{&local}
-	if err = local.L.LoadCategoryidCategory(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = local.L.LoadCategory(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CategoryidCategory == nil {
+	if local.R.Category == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CategoryidCategory = nil
-	if err = local.L.LoadCategoryidCategory(ctx, tx, true, &local, nil); err != nil {
+	local.R.Category = nil
+	if err = local.L.LoadCategory(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CategoryidCategory == nil {
+	if local.R.Category == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1211,7 +1211,7 @@ func testMenuItemToOneCategoryUsingCategoryidCategory(t *testing.T) {
 	}
 }
 
-func testMenuItemToOneCollectionUsingCollectionidCollection(t *testing.T) {
+func testMenuItemToOneCollectionUsingCollection(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1231,12 +1231,12 @@ func testMenuItemToOneCollectionUsingCollectionidCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Collectionid, foreign.ID)
+	queries.Assign(&local.CollectionID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CollectionidCollection().One(ctx, tx)
+	check, err := local.Collection().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1252,18 +1252,18 @@ func testMenuItemToOneCollectionUsingCollectionidCollection(t *testing.T) {
 	})
 
 	slice := MenuItemSlice{&local}
-	if err = local.L.LoadCollectionidCollection(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = local.L.LoadCollection(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CollectionidCollection = nil
-	if err = local.L.LoadCollectionidCollection(ctx, tx, true, &local, nil); err != nil {
+	local.R.Collection = nil
+	if err = local.L.LoadCollection(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1272,7 +1272,7 @@ func testMenuItemToOneCollectionUsingCollectionidCollection(t *testing.T) {
 	}
 }
 
-func testMenuItemToOneMenuItemUsingParentidMenuItem(t *testing.T) {
+func testMenuItemToOneMenuItemUsingParent(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1292,12 +1292,12 @@ func testMenuItemToOneMenuItemUsingParentidMenuItem(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Parentid, foreign.ID)
+	queries.Assign(&local.ParentID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ParentidMenuItem().One(ctx, tx)
+	check, err := local.Parent().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1313,18 +1313,18 @@ func testMenuItemToOneMenuItemUsingParentidMenuItem(t *testing.T) {
 	})
 
 	slice := MenuItemSlice{&local}
-	if err = local.L.LoadParentidMenuItem(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = local.L.LoadParent(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ParentidMenuItem == nil {
+	if local.R.Parent == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ParentidMenuItem = nil
-	if err = local.L.LoadParentidMenuItem(ctx, tx, true, &local, nil); err != nil {
+	local.R.Parent = nil
+	if err = local.L.LoadParent(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ParentidMenuItem == nil {
+	if local.R.Parent == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1333,7 +1333,7 @@ func testMenuItemToOneMenuItemUsingParentidMenuItem(t *testing.T) {
 	}
 }
 
-func testMenuItemToOneMenuUsingMenuidMenu(t *testing.T) {
+func testMenuItemToOneMenuUsingMenu(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1353,12 +1353,12 @@ func testMenuItemToOneMenuUsingMenuidMenu(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Menuid, foreign.ID)
+	queries.Assign(&local.MenuID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.MenuidMenu().One(ctx, tx)
+	check, err := local.Menu().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1374,18 +1374,18 @@ func testMenuItemToOneMenuUsingMenuidMenu(t *testing.T) {
 	})
 
 	slice := MenuItemSlice{&local}
-	if err = local.L.LoadMenuidMenu(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = local.L.LoadMenu(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.MenuidMenu == nil {
+	if local.R.Menu == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.MenuidMenu = nil
-	if err = local.L.LoadMenuidMenu(ctx, tx, true, &local, nil); err != nil {
+	local.R.Menu = nil
+	if err = local.L.LoadMenu(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.MenuidMenu == nil {
+	if local.R.Menu == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1394,7 +1394,7 @@ func testMenuItemToOneMenuUsingMenuidMenu(t *testing.T) {
 	}
 }
 
-func testMenuItemToOnePageUsingPageidPage(t *testing.T) {
+func testMenuItemToOnePageUsingPage(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1414,12 +1414,12 @@ func testMenuItemToOnePageUsingPageidPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Pageid, foreign.ID)
+	queries.Assign(&local.PageID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.PageidPage().One(ctx, tx)
+	check, err := local.Page().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1435,18 +1435,18 @@ func testMenuItemToOnePageUsingPageidPage(t *testing.T) {
 	})
 
 	slice := MenuItemSlice{&local}
-	if err = local.L.LoadPageidPage(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
+	if err = local.L.LoadPage(ctx, tx, false, (*[]*MenuItem)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.PageidPage == nil {
+	if local.R.Page == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.PageidPage = nil
-	if err = local.L.LoadPageidPage(ctx, tx, true, &local, nil); err != nil {
+	local.R.Page = nil
+	if err = local.L.LoadPage(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.PageidPage == nil {
+	if local.R.Page == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1455,7 +1455,7 @@ func testMenuItemToOnePageUsingPageidPage(t *testing.T) {
 	}
 }
 
-func testMenuItemToOneSetOpCategoryUsingCategoryidCategory(t *testing.T) {
+func testMenuItemToOneSetOpCategoryUsingCategory(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1484,36 +1484,36 @@ func testMenuItemToOneSetOpCategoryUsingCategoryidCategory(t *testing.T) {
 	}
 
 	for i, x := range []*Category{&b, &c} {
-		err = a.SetCategoryidCategory(ctx, tx, i != 0, x)
+		err = a.SetCategory(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CategoryidCategory != x {
+		if a.R.Category != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CategoryidMenuItems[0] != &a {
+		if x.R.MenuItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Categoryid, x.ID) {
-			t.Error("foreign key was wrong value", a.Categoryid)
+		if !queries.Equal(a.CategoryID, x.ID) {
+			t.Error("foreign key was wrong value", a.CategoryID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Categoryid))
-		reflect.Indirect(reflect.ValueOf(&a.Categoryid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CategoryID))
+		reflect.Indirect(reflect.ValueOf(&a.CategoryID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Categoryid, x.ID) {
-			t.Error("foreign key was wrong value", a.Categoryid, x.ID)
+		if !queries.Equal(a.CategoryID, x.ID) {
+			t.Error("foreign key was wrong value", a.CategoryID, x.ID)
 		}
 	}
 }
 
-func testMenuItemToOneRemoveOpCategoryUsingCategoryidCategory(t *testing.T) {
+func testMenuItemToOneRemoveOpCategoryUsingCategory(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1535,15 +1535,15 @@ func testMenuItemToOneRemoveOpCategoryUsingCategoryidCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetCategoryidCategory(ctx, tx, true, &b); err != nil {
+	if err = a.SetCategory(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCategoryidCategory(ctx, tx, &b); err != nil {
+	if err = a.RemoveCategory(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CategoryidCategory().Count(ctx, tx)
+	count, err := a.Category().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1551,20 +1551,20 @@ func testMenuItemToOneRemoveOpCategoryUsingCategoryidCategory(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CategoryidCategory != nil {
+	if a.R.Category != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Categoryid) {
+	if !queries.IsValuerNil(a.CategoryID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CategoryidMenuItems) != 0 {
+	if len(b.R.MenuItems) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testMenuItemToOneSetOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testMenuItemToOneSetOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1593,36 +1593,36 @@ func testMenuItemToOneSetOpCollectionUsingCollectionidCollection(t *testing.T) {
 	}
 
 	for i, x := range []*Collection{&b, &c} {
-		err = a.SetCollectionidCollection(ctx, tx, i != 0, x)
+		err = a.SetCollection(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CollectionidCollection != x {
+		if a.R.Collection != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CollectionidMenuItems[0] != &a {
+		if x.R.MenuItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Collectionid))
-		reflect.Indirect(reflect.ValueOf(&a.Collectionid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CollectionID))
+		reflect.Indirect(reflect.ValueOf(&a.CollectionID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid, x.ID)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID, x.ID)
 		}
 	}
 }
 
-func testMenuItemToOneRemoveOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testMenuItemToOneRemoveOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1644,15 +1644,15 @@ func testMenuItemToOneRemoveOpCollectionUsingCollectionidCollection(t *testing.T
 		t.Fatal(err)
 	}
 
-	if err = a.SetCollectionidCollection(ctx, tx, true, &b); err != nil {
+	if err = a.SetCollection(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCollectionidCollection(ctx, tx, &b); err != nil {
+	if err = a.RemoveCollection(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CollectionidCollection().Count(ctx, tx)
+	count, err := a.Collection().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1660,20 +1660,20 @@ func testMenuItemToOneRemoveOpCollectionUsingCollectionidCollection(t *testing.T
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CollectionidCollection != nil {
+	if a.R.Collection != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Collectionid) {
+	if !queries.IsValuerNil(a.CollectionID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CollectionidMenuItems) != 0 {
+	if len(b.R.MenuItems) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testMenuItemToOneSetOpMenuItemUsingParentidMenuItem(t *testing.T) {
+func testMenuItemToOneSetOpMenuItemUsingParent(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1702,36 +1702,36 @@ func testMenuItemToOneSetOpMenuItemUsingParentidMenuItem(t *testing.T) {
 	}
 
 	for i, x := range []*MenuItem{&b, &c} {
-		err = a.SetParentidMenuItem(ctx, tx, i != 0, x)
+		err = a.SetParent(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ParentidMenuItem != x {
+		if a.R.Parent != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ParentidMenuItems[0] != &a {
+		if x.R.ParentMenuItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Parentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Parentid)
+		if !queries.Equal(a.ParentID, x.ID) {
+			t.Error("foreign key was wrong value", a.ParentID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Parentid))
-		reflect.Indirect(reflect.ValueOf(&a.Parentid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ParentID))
+		reflect.Indirect(reflect.ValueOf(&a.ParentID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Parentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Parentid, x.ID)
+		if !queries.Equal(a.ParentID, x.ID) {
+			t.Error("foreign key was wrong value", a.ParentID, x.ID)
 		}
 	}
 }
 
-func testMenuItemToOneRemoveOpMenuItemUsingParentidMenuItem(t *testing.T) {
+func testMenuItemToOneRemoveOpMenuItemUsingParent(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1753,15 +1753,15 @@ func testMenuItemToOneRemoveOpMenuItemUsingParentidMenuItem(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetParentidMenuItem(ctx, tx, true, &b); err != nil {
+	if err = a.SetParent(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveParentidMenuItem(ctx, tx, &b); err != nil {
+	if err = a.RemoveParent(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ParentidMenuItem().Count(ctx, tx)
+	count, err := a.Parent().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1769,20 +1769,20 @@ func testMenuItemToOneRemoveOpMenuItemUsingParentidMenuItem(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ParentidMenuItem != nil {
+	if a.R.Parent != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Parentid) {
+	if !queries.IsValuerNil(a.ParentID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ParentidMenuItems) != 0 {
+	if len(b.R.ParentMenuItems) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testMenuItemToOneSetOpMenuUsingMenuidMenu(t *testing.T) {
+func testMenuItemToOneSetOpMenuUsingMenu(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1811,36 +1811,36 @@ func testMenuItemToOneSetOpMenuUsingMenuidMenu(t *testing.T) {
 	}
 
 	for i, x := range []*Menu{&b, &c} {
-		err = a.SetMenuidMenu(ctx, tx, i != 0, x)
+		err = a.SetMenu(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.MenuidMenu != x {
+		if a.R.Menu != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.MenuidMenuItems[0] != &a {
+		if x.R.MenuItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Menuid, x.ID) {
-			t.Error("foreign key was wrong value", a.Menuid)
+		if !queries.Equal(a.MenuID, x.ID) {
+			t.Error("foreign key was wrong value", a.MenuID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Menuid))
-		reflect.Indirect(reflect.ValueOf(&a.Menuid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.MenuID))
+		reflect.Indirect(reflect.ValueOf(&a.MenuID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Menuid, x.ID) {
-			t.Error("foreign key was wrong value", a.Menuid, x.ID)
+		if !queries.Equal(a.MenuID, x.ID) {
+			t.Error("foreign key was wrong value", a.MenuID, x.ID)
 		}
 	}
 }
 
-func testMenuItemToOneRemoveOpMenuUsingMenuidMenu(t *testing.T) {
+func testMenuItemToOneRemoveOpMenuUsingMenu(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1862,15 +1862,15 @@ func testMenuItemToOneRemoveOpMenuUsingMenuidMenu(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetMenuidMenu(ctx, tx, true, &b); err != nil {
+	if err = a.SetMenu(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveMenuidMenu(ctx, tx, &b); err != nil {
+	if err = a.RemoveMenu(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.MenuidMenu().Count(ctx, tx)
+	count, err := a.Menu().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1878,20 +1878,20 @@ func testMenuItemToOneRemoveOpMenuUsingMenuidMenu(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.MenuidMenu != nil {
+	if a.R.Menu != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Menuid) {
+	if !queries.IsValuerNil(a.MenuID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.MenuidMenuItems) != 0 {
+	if len(b.R.MenuItems) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testMenuItemToOneSetOpPageUsingPageidPage(t *testing.T) {
+func testMenuItemToOneSetOpPageUsingPage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1920,36 +1920,36 @@ func testMenuItemToOneSetOpPageUsingPageidPage(t *testing.T) {
 	}
 
 	for i, x := range []*Page{&b, &c} {
-		err = a.SetPageidPage(ctx, tx, i != 0, x)
+		err = a.SetPage(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.PageidPage != x {
+		if a.R.Page != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.PageidMenuItems[0] != &a {
+		if x.R.MenuItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Pageid, x.ID) {
-			t.Error("foreign key was wrong value", a.Pageid)
+		if !queries.Equal(a.PageID, x.ID) {
+			t.Error("foreign key was wrong value", a.PageID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Pageid))
-		reflect.Indirect(reflect.ValueOf(&a.Pageid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.PageID))
+		reflect.Indirect(reflect.ValueOf(&a.PageID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Pageid, x.ID) {
-			t.Error("foreign key was wrong value", a.Pageid, x.ID)
+		if !queries.Equal(a.PageID, x.ID) {
+			t.Error("foreign key was wrong value", a.PageID, x.ID)
 		}
 	}
 }
 
-func testMenuItemToOneRemoveOpPageUsingPageidPage(t *testing.T) {
+func testMenuItemToOneRemoveOpPageUsingPage(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1971,15 +1971,15 @@ func testMenuItemToOneRemoveOpPageUsingPageidPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetPageidPage(ctx, tx, true, &b); err != nil {
+	if err = a.SetPage(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemovePageidPage(ctx, tx, &b); err != nil {
+	if err = a.RemovePage(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.PageidPage().Count(ctx, tx)
+	count, err := a.Page().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1987,15 +1987,15 @@ func testMenuItemToOneRemoveOpPageUsingPageidPage(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.PageidPage != nil {
+	if a.R.Page != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Pageid) {
+	if !queries.IsValuerNil(a.PageID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.PageidMenuItems) != 0 {
+	if len(b.R.MenuItems) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -2074,7 +2074,7 @@ func testMenuItemsSelect(t *testing.T) {
 }
 
 var (
-	menuItemDBTypes = map[string]string{`ID`: `character varying`, `Menuid`: `character varying`, `Name`: `character varying`, `Parentid`: `character varying`, `URL`: `character varying`, `Categoryid`: `character varying`, `Collectionid`: `character varying`, `Pageid`: `character varying`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`, `Sortorder`: `integer`}
+	menuItemDBTypes = map[string]string{`ID`: `character varying`, `MenuID`: `character varying`, `Name`: `character varying`, `ParentID`: `character varying`, `URL`: `character varying`, `CategoryID`: `character varying`, `CollectionID`: `character varying`, `PageID`: `character varying`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`, `SortOrder`: `integer`}
 	_               = bytes.MinRead
 )
 

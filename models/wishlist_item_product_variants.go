@@ -25,8 +25,8 @@ import (
 // WishlistItemProductVariant is an object representing the database table.
 type WishlistItemProductVariant struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Wishlistitemid   null.String `boil:"wishlistitemid" json:"wishlistitemid,omitempty" toml:"wishlistitemid" yaml:"wishlistitemid,omitempty"`
-	Productvariantid null.String `boil:"productvariantid" json:"productvariantid,omitempty" toml:"productvariantid" yaml:"productvariantid,omitempty"`
+	WishlistItemID   null.String `boil:"wishlist_item_id" json:"wishlist_item_id,omitempty" toml:"wishlist_item_id" yaml:"wishlist_item_id,omitempty"`
+	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
 
 	R *wishlistItemProductVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L wishlistItemProductVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,49 +34,49 @@ type WishlistItemProductVariant struct {
 
 var WishlistItemProductVariantColumns = struct {
 	ID               string
-	Wishlistitemid   string
-	Productvariantid string
+	WishlistItemID   string
+	ProductVariantID string
 }{
 	ID:               "id",
-	Wishlistitemid:   "wishlistitemid",
-	Productvariantid: "productvariantid",
+	WishlistItemID:   "wishlist_item_id",
+	ProductVariantID: "product_variant_id",
 }
 
 var WishlistItemProductVariantTableColumns = struct {
 	ID               string
-	Wishlistitemid   string
-	Productvariantid string
+	WishlistItemID   string
+	ProductVariantID string
 }{
 	ID:               "wishlist_item_product_variants.id",
-	Wishlistitemid:   "wishlist_item_product_variants.wishlistitemid",
-	Productvariantid: "wishlist_item_product_variants.productvariantid",
+	WishlistItemID:   "wishlist_item_product_variants.wishlist_item_id",
+	ProductVariantID: "wishlist_item_product_variants.product_variant_id",
 }
 
 // Generated where
 
 var WishlistItemProductVariantWhere = struct {
 	ID               whereHelperstring
-	Wishlistitemid   whereHelpernull_String
-	Productvariantid whereHelpernull_String
+	WishlistItemID   whereHelpernull_String
+	ProductVariantID whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"wishlist_item_product_variants\".\"id\""},
-	Wishlistitemid:   whereHelpernull_String{field: "\"wishlist_item_product_variants\".\"wishlistitemid\""},
-	Productvariantid: whereHelpernull_String{field: "\"wishlist_item_product_variants\".\"productvariantid\""},
+	WishlistItemID:   whereHelpernull_String{field: "\"wishlist_item_product_variants\".\"wishlist_item_id\""},
+	ProductVariantID: whereHelpernull_String{field: "\"wishlist_item_product_variants\".\"product_variant_id\""},
 }
 
 // WishlistItemProductVariantRels is where relationship names are stored.
 var WishlistItemProductVariantRels = struct {
-	ProductvariantidProductVariant string
-	WishlistitemidWishlistItem     string
+	ProductVariant string
+	WishlistItem   string
 }{
-	ProductvariantidProductVariant: "ProductvariantidProductVariant",
-	WishlistitemidWishlistItem:     "WishlistitemidWishlistItem",
+	ProductVariant: "ProductVariant",
+	WishlistItem:   "WishlistItem",
 }
 
 // wishlistItemProductVariantR is where relationships are stored.
 type wishlistItemProductVariantR struct {
-	ProductvariantidProductVariant *ProductVariant `boil:"ProductvariantidProductVariant" json:"ProductvariantidProductVariant" toml:"ProductvariantidProductVariant" yaml:"ProductvariantidProductVariant"`
-	WishlistitemidWishlistItem     *WishlistItem   `boil:"WishlistitemidWishlistItem" json:"WishlistitemidWishlistItem" toml:"WishlistitemidWishlistItem" yaml:"WishlistitemidWishlistItem"`
+	ProductVariant *ProductVariant `boil:"ProductVariant" json:"ProductVariant" toml:"ProductVariant" yaml:"ProductVariant"`
+	WishlistItem   *WishlistItem   `boil:"WishlistItem" json:"WishlistItem" toml:"WishlistItem" yaml:"WishlistItem"`
 }
 
 // NewStruct creates a new relationship struct
@@ -84,27 +84,27 @@ func (*wishlistItemProductVariantR) NewStruct() *wishlistItemProductVariantR {
 	return &wishlistItemProductVariantR{}
 }
 
-func (r *wishlistItemProductVariantR) GetProductvariantidProductVariant() *ProductVariant {
+func (r *wishlistItemProductVariantR) GetProductVariant() *ProductVariant {
 	if r == nil {
 		return nil
 	}
-	return r.ProductvariantidProductVariant
+	return r.ProductVariant
 }
 
-func (r *wishlistItemProductVariantR) GetWishlistitemidWishlistItem() *WishlistItem {
+func (r *wishlistItemProductVariantR) GetWishlistItem() *WishlistItem {
 	if r == nil {
 		return nil
 	}
-	return r.WishlistitemidWishlistItem
+	return r.WishlistItem
 }
 
 // wishlistItemProductVariantL is where Load methods for each relationship are stored.
 type wishlistItemProductVariantL struct{}
 
 var (
-	wishlistItemProductVariantAllColumns            = []string{"id", "wishlistitemid", "productvariantid"}
+	wishlistItemProductVariantAllColumns            = []string{"id", "wishlist_item_id", "product_variant_id"}
 	wishlistItemProductVariantColumnsWithoutDefault = []string{"id"}
-	wishlistItemProductVariantColumnsWithDefault    = []string{"wishlistitemid", "productvariantid"}
+	wishlistItemProductVariantColumnsWithDefault    = []string{"wishlist_item_id", "product_variant_id"}
 	wishlistItemProductVariantPrimaryKeyColumns     = []string{"id"}
 	wishlistItemProductVariantGeneratedColumns      = []string{}
 )
@@ -387,10 +387,10 @@ func (q wishlistItemProductVariantQuery) Exists(ctx context.Context, exec boil.C
 	return count > 0, nil
 }
 
-// ProductvariantidProductVariant pointed to by the foreign key.
-func (o *WishlistItemProductVariant) ProductvariantidProductVariant(mods ...qm.QueryMod) productVariantQuery {
+// ProductVariant pointed to by the foreign key.
+func (o *WishlistItemProductVariant) ProductVariant(mods ...qm.QueryMod) productVariantQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Productvariantid),
+		qm.Where("\"id\" = ?", o.ProductVariantID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -398,10 +398,10 @@ func (o *WishlistItemProductVariant) ProductvariantidProductVariant(mods ...qm.Q
 	return ProductVariants(queryMods...)
 }
 
-// WishlistitemidWishlistItem pointed to by the foreign key.
-func (o *WishlistItemProductVariant) WishlistitemidWishlistItem(mods ...qm.QueryMod) wishlistItemQuery {
+// WishlistItem pointed to by the foreign key.
+func (o *WishlistItemProductVariant) WishlistItem(mods ...qm.QueryMod) wishlistItemQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Wishlistitemid),
+		qm.Where("\"id\" = ?", o.WishlistItemID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *WishlistItemProductVariant) WishlistitemidWishlistItem(mods ...qm.Query
 	return WishlistItems(queryMods...)
 }
 
-// LoadProductvariantidProductVariant allows an eager lookup of values, cached into the
+// LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistItemProductVariantL) LoadProductvariantidProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
+func (wishlistItemProductVariantL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
 	var slice []*WishlistItemProductVariant
 	var object *WishlistItemProductVariant
 
@@ -442,8 +442,8 @@ func (wishlistItemProductVariantL) LoadProductvariantidProductVariant(ctx contex
 		if object.R == nil {
 			object.R = &wishlistItemProductVariantR{}
 		}
-		if !queries.IsNil(object.Productvariantid) {
-			args = append(args, object.Productvariantid)
+		if !queries.IsNil(object.ProductVariantID) {
+			args = append(args, object.ProductVariantID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (wishlistItemProductVariantL) LoadProductvariantidProductVariant(ctx contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Productvariantid) {
+				if queries.Equal(a, obj.ProductVariantID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Productvariantid) {
-				args = append(args, obj.Productvariantid)
+			if !queries.IsNil(obj.ProductVariantID) {
+				args = append(args, obj.ProductVariantID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (wishlistItemProductVariantL) LoadProductvariantidProductVariant(ctx contex
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ProductvariantidProductVariant = foreign
+		object.R.ProductVariant = foreign
 		if foreign.R == nil {
 			foreign.R = &productVariantR{}
 		}
-		foreign.R.ProductvariantidWishlistItemProductVariants = append(foreign.R.ProductvariantidWishlistItemProductVariants, object)
+		foreign.R.WishlistItemProductVariants = append(foreign.R.WishlistItemProductVariants, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Productvariantid, foreign.ID) {
-				local.R.ProductvariantidProductVariant = foreign
+			if queries.Equal(local.ProductVariantID, foreign.ID) {
+				local.R.ProductVariant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
 				}
-				foreign.R.ProductvariantidWishlistItemProductVariants = append(foreign.R.ProductvariantidWishlistItemProductVariants, local)
+				foreign.R.WishlistItemProductVariants = append(foreign.R.WishlistItemProductVariants, local)
 				break
 			}
 		}
@@ -533,9 +533,9 @@ func (wishlistItemProductVariantL) LoadProductvariantidProductVariant(ctx contex
 	return nil
 }
 
-// LoadWishlistitemidWishlistItem allows an eager lookup of values, cached into the
+// LoadWishlistItem allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistItemProductVariantL) LoadWishlistitemidWishlistItem(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
+func (wishlistItemProductVariantL) LoadWishlistItem(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
 	var slice []*WishlistItemProductVariant
 	var object *WishlistItemProductVariant
 
@@ -566,8 +566,8 @@ func (wishlistItemProductVariantL) LoadWishlistitemidWishlistItem(ctx context.Co
 		if object.R == nil {
 			object.R = &wishlistItemProductVariantR{}
 		}
-		if !queries.IsNil(object.Wishlistitemid) {
-			args = append(args, object.Wishlistitemid)
+		if !queries.IsNil(object.WishlistItemID) {
+			args = append(args, object.WishlistItemID)
 		}
 
 	} else {
@@ -578,13 +578,13 @@ func (wishlistItemProductVariantL) LoadWishlistitemidWishlistItem(ctx context.Co
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Wishlistitemid) {
+				if queries.Equal(a, obj.WishlistItemID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Wishlistitemid) {
-				args = append(args, obj.Wishlistitemid)
+			if !queries.IsNil(obj.WishlistItemID) {
+				args = append(args, obj.WishlistItemID)
 			}
 
 		}
@@ -633,22 +633,22 @@ func (wishlistItemProductVariantL) LoadWishlistitemidWishlistItem(ctx context.Co
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.WishlistitemidWishlistItem = foreign
+		object.R.WishlistItem = foreign
 		if foreign.R == nil {
 			foreign.R = &wishlistItemR{}
 		}
-		foreign.R.WishlistitemidWishlistItemProductVariants = append(foreign.R.WishlistitemidWishlistItemProductVariants, object)
+		foreign.R.WishlistItemProductVariants = append(foreign.R.WishlistItemProductVariants, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Wishlistitemid, foreign.ID) {
-				local.R.WishlistitemidWishlistItem = foreign
+			if queries.Equal(local.WishlistItemID, foreign.ID) {
+				local.R.WishlistItem = foreign
 				if foreign.R == nil {
 					foreign.R = &wishlistItemR{}
 				}
-				foreign.R.WishlistitemidWishlistItemProductVariants = append(foreign.R.WishlistitemidWishlistItemProductVariants, local)
+				foreign.R.WishlistItemProductVariants = append(foreign.R.WishlistItemProductVariants, local)
 				break
 			}
 		}
@@ -657,10 +657,10 @@ func (wishlistItemProductVariantL) LoadWishlistitemidWishlistItem(ctx context.Co
 	return nil
 }
 
-// SetProductvariantidProductVariant of the wishlistItemProductVariant to the related item.
-// Sets o.R.ProductvariantidProductVariant to related.
-// Adds o to related.R.ProductvariantidWishlistItemProductVariants.
-func (o *WishlistItemProductVariant) SetProductvariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+// SetProductVariant of the wishlistItemProductVariant to the related item.
+// Sets o.R.ProductVariant to related.
+// Adds o to related.R.WishlistItemProductVariants.
+func (o *WishlistItemProductVariant) SetProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -670,7 +670,7 @@ func (o *WishlistItemProductVariant) SetProductvariantidProductVariant(ctx conte
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"wishlist_item_product_variants\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"productvariantid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"product_variant_id"}),
 		strmangle.WhereClause("\"", "\"", 2, wishlistItemProductVariantPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -684,63 +684,63 @@ func (o *WishlistItemProductVariant) SetProductvariantidProductVariant(ctx conte
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Productvariantid, related.ID)
+	queries.Assign(&o.ProductVariantID, related.ID)
 	if o.R == nil {
 		o.R = &wishlistItemProductVariantR{
-			ProductvariantidProductVariant: related,
+			ProductVariant: related,
 		}
 	} else {
-		o.R.ProductvariantidProductVariant = related
+		o.R.ProductVariant = related
 	}
 
 	if related.R == nil {
 		related.R = &productVariantR{
-			ProductvariantidWishlistItemProductVariants: WishlistItemProductVariantSlice{o},
+			WishlistItemProductVariants: WishlistItemProductVariantSlice{o},
 		}
 	} else {
-		related.R.ProductvariantidWishlistItemProductVariants = append(related.R.ProductvariantidWishlistItemProductVariants, o)
+		related.R.WishlistItemProductVariants = append(related.R.WishlistItemProductVariants, o)
 	}
 
 	return nil
 }
 
-// RemoveProductvariantidProductVariant relationship.
-// Sets o.R.ProductvariantidProductVariant to nil.
+// RemoveProductVariant relationship.
+// Sets o.R.ProductVariant to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *WishlistItemProductVariant) RemoveProductvariantidProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
+func (o *WishlistItemProductVariant) RemoveProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
 	var err error
 
-	queries.SetScanner(&o.Productvariantid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("productvariantid")); err != nil {
+	queries.SetScanner(&o.ProductVariantID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("product_variant_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ProductvariantidProductVariant = nil
+		o.R.ProductVariant = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ProductvariantidWishlistItemProductVariants {
-		if queries.Equal(o.Productvariantid, ri.Productvariantid) {
+	for i, ri := range related.R.WishlistItemProductVariants {
+		if queries.Equal(o.ProductVariantID, ri.ProductVariantID) {
 			continue
 		}
 
-		ln := len(related.R.ProductvariantidWishlistItemProductVariants)
+		ln := len(related.R.WishlistItemProductVariants)
 		if ln > 1 && i < ln-1 {
-			related.R.ProductvariantidWishlistItemProductVariants[i] = related.R.ProductvariantidWishlistItemProductVariants[ln-1]
+			related.R.WishlistItemProductVariants[i] = related.R.WishlistItemProductVariants[ln-1]
 		}
-		related.R.ProductvariantidWishlistItemProductVariants = related.R.ProductvariantidWishlistItemProductVariants[:ln-1]
+		related.R.WishlistItemProductVariants = related.R.WishlistItemProductVariants[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetWishlistitemidWishlistItem of the wishlistItemProductVariant to the related item.
-// Sets o.R.WishlistitemidWishlistItem to related.
-// Adds o to related.R.WishlistitemidWishlistItemProductVariants.
-func (o *WishlistItemProductVariant) SetWishlistitemidWishlistItem(ctx context.Context, exec boil.ContextExecutor, insert bool, related *WishlistItem) error {
+// SetWishlistItem of the wishlistItemProductVariant to the related item.
+// Sets o.R.WishlistItem to related.
+// Adds o to related.R.WishlistItemProductVariants.
+func (o *WishlistItemProductVariant) SetWishlistItem(ctx context.Context, exec boil.ContextExecutor, insert bool, related *WishlistItem) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -750,7 +750,7 @@ func (o *WishlistItemProductVariant) SetWishlistitemidWishlistItem(ctx context.C
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"wishlist_item_product_variants\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"wishlistitemid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"wishlist_item_id"}),
 		strmangle.WhereClause("\"", "\"", 2, wishlistItemProductVariantPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -764,54 +764,54 @@ func (o *WishlistItemProductVariant) SetWishlistitemidWishlistItem(ctx context.C
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Wishlistitemid, related.ID)
+	queries.Assign(&o.WishlistItemID, related.ID)
 	if o.R == nil {
 		o.R = &wishlistItemProductVariantR{
-			WishlistitemidWishlistItem: related,
+			WishlistItem: related,
 		}
 	} else {
-		o.R.WishlistitemidWishlistItem = related
+		o.R.WishlistItem = related
 	}
 
 	if related.R == nil {
 		related.R = &wishlistItemR{
-			WishlistitemidWishlistItemProductVariants: WishlistItemProductVariantSlice{o},
+			WishlistItemProductVariants: WishlistItemProductVariantSlice{o},
 		}
 	} else {
-		related.R.WishlistitemidWishlistItemProductVariants = append(related.R.WishlistitemidWishlistItemProductVariants, o)
+		related.R.WishlistItemProductVariants = append(related.R.WishlistItemProductVariants, o)
 	}
 
 	return nil
 }
 
-// RemoveWishlistitemidWishlistItem relationship.
-// Sets o.R.WishlistitemidWishlistItem to nil.
+// RemoveWishlistItem relationship.
+// Sets o.R.WishlistItem to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *WishlistItemProductVariant) RemoveWishlistitemidWishlistItem(ctx context.Context, exec boil.ContextExecutor, related *WishlistItem) error {
+func (o *WishlistItemProductVariant) RemoveWishlistItem(ctx context.Context, exec boil.ContextExecutor, related *WishlistItem) error {
 	var err error
 
-	queries.SetScanner(&o.Wishlistitemid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("wishlistitemid")); err != nil {
+	queries.SetScanner(&o.WishlistItemID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("wishlist_item_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.WishlistitemidWishlistItem = nil
+		o.R.WishlistItem = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.WishlistitemidWishlistItemProductVariants {
-		if queries.Equal(o.Wishlistitemid, ri.Wishlistitemid) {
+	for i, ri := range related.R.WishlistItemProductVariants {
+		if queries.Equal(o.WishlistItemID, ri.WishlistItemID) {
 			continue
 		}
 
-		ln := len(related.R.WishlistitemidWishlistItemProductVariants)
+		ln := len(related.R.WishlistItemProductVariants)
 		if ln > 1 && i < ln-1 {
-			related.R.WishlistitemidWishlistItemProductVariants[i] = related.R.WishlistitemidWishlistItemProductVariants[ln-1]
+			related.R.WishlistItemProductVariants[i] = related.R.WishlistItemProductVariants[ln-1]
 		}
-		related.R.WishlistitemidWishlistItemProductVariants = related.R.WishlistitemidWishlistItemProductVariants[:ln-1]
+		related.R.WishlistItemProductVariants = related.R.WishlistItemProductVariants[:ln-1]
 		break
 	}
 	return nil

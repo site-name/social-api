@@ -494,7 +494,7 @@ func testSaleTranslationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testSaleTranslationToOneSaleUsingSaleidSale(t *testing.T) {
+func testSaleTranslationToOneSaleUsingSale(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testSaleTranslationToOneSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Saleid, foreign.ID)
+	queries.Assign(&local.SaleID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.SaleidSale().One(ctx, tx)
+	check, err := local.Sale().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testSaleTranslationToOneSaleUsingSaleidSale(t *testing.T) {
 	})
 
 	slice := SaleTranslationSlice{&local}
-	if err = local.L.LoadSaleidSale(ctx, tx, false, (*[]*SaleTranslation)(&slice), nil); err != nil {
+	if err = local.L.LoadSale(ctx, tx, false, (*[]*SaleTranslation)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.SaleidSale = nil
-	if err = local.L.LoadSaleidSale(ctx, tx, true, &local, nil); err != nil {
+	local.R.Sale = nil
+	if err = local.L.LoadSale(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testSaleTranslationToOneSaleUsingSaleidSale(t *testing.T) {
 	}
 }
 
-func testSaleTranslationToOneSetOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleTranslationToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testSaleTranslationToOneSetOpSaleUsingSaleidSale(t *testing.T) {
 	}
 
 	for i, x := range []*Sale{&b, &c} {
-		err = a.SetSaleidSale(ctx, tx, i != 0, x)
+		err = a.SetSale(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.SaleidSale != x {
+		if a.R.Sale != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.SaleidSaleTranslations[0] != &a {
+		if x.R.SaleTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Saleid))
-		reflect.Indirect(reflect.ValueOf(&a.Saleid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.SaleID))
+		reflect.Indirect(reflect.ValueOf(&a.SaleID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid, x.ID)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
 	}
 }
 
-func testSaleTranslationToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleTranslationToOneRemoveOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testSaleTranslationToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetSaleidSale(ctx, tx, true, &b); err != nil {
+	if err = a.SetSale(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveSaleidSale(ctx, tx, &b); err != nil {
+	if err = a.RemoveSale(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.SaleidSale().Count(ctx, tx)
+	count, err := a.Sale().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testSaleTranslationToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.SaleidSale != nil {
+	if a.R.Sale != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Saleid) {
+	if !queries.IsValuerNil(a.SaleID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.SaleidSaleTranslations) != 0 {
+	if len(b.R.SaleTranslations) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testSaleTranslationsSelect(t *testing.T) {
 }
 
 var (
-	saleTranslationDBTypes = map[string]string{`ID`: `character varying`, `Languagecode`: `character varying`, `Name`: `character varying`, `Saleid`: `character varying`}
+	saleTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `Name`: `character varying`, `SaleID`: `character varying`}
 	_                      = bytes.MinRead
 )
 

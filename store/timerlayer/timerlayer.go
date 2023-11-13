@@ -991,10 +991,10 @@ type TimerLayerWishlistItemStore struct {
 	Root *TimerLayer
 }
 
-func (s *TimerLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
+func (s *TimerLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError {
 	start := timemodule.Now()
 
-	result := s.AddressStore.DeleteAddresses(transaction, addressIDs)
+	result := s.AddressStore.DeleteAddresses(tx, addressIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1007,7 +1007,7 @@ func (s *TimerLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressID
 	return result
 }
 
-func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
+func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.FilterByOption(option)
@@ -1023,7 +1023,7 @@ func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOptio
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Get(addressID string) (*model.Address, error) {
+func (s *TimerLayerAddressStore) Get(addressID string) (*models.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Get(addressID)
@@ -1039,10 +1039,10 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*model.Address, error) {
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
+func (s *TimerLayerAddressStore) Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error) {
 	start := timemodule.Now()
 
-	result, err := s.AddressStore.Upsert(transaction, address)
+	result, err := s.AddressStore.Upsert(tx, address)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

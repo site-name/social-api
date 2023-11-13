@@ -494,7 +494,7 @@ func testSaleProductsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testSaleProductToOneProductUsingProductidProduct(t *testing.T) {
+func testSaleProductToOneProductUsingProduct(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testSaleProductToOneProductUsingProductidProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Productid, foreign.ID)
+	queries.Assign(&local.ProductID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ProductidProduct().One(ctx, tx)
+	check, err := local.Product().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testSaleProductToOneProductUsingProductidProduct(t *testing.T) {
 	})
 
 	slice := SaleProductSlice{&local}
-	if err = local.L.LoadProductidProduct(ctx, tx, false, (*[]*SaleProduct)(&slice), nil); err != nil {
+	if err = local.L.LoadProduct(ctx, tx, false, (*[]*SaleProduct)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductidProduct == nil {
+	if local.R.Product == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ProductidProduct = nil
-	if err = local.L.LoadProductidProduct(ctx, tx, true, &local, nil); err != nil {
+	local.R.Product = nil
+	if err = local.L.LoadProduct(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductidProduct == nil {
+	if local.R.Product == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testSaleProductToOneProductUsingProductidProduct(t *testing.T) {
 	}
 }
 
-func testSaleProductToOneSaleUsingSaleidSale(t *testing.T) {
+func testSaleProductToOneSaleUsingSale(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testSaleProductToOneSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Saleid, foreign.ID)
+	queries.Assign(&local.SaleID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.SaleidSale().One(ctx, tx)
+	check, err := local.Sale().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testSaleProductToOneSaleUsingSaleidSale(t *testing.T) {
 	})
 
 	slice := SaleProductSlice{&local}
-	if err = local.L.LoadSaleidSale(ctx, tx, false, (*[]*SaleProduct)(&slice), nil); err != nil {
+	if err = local.L.LoadSale(ctx, tx, false, (*[]*SaleProduct)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.SaleidSale = nil
-	if err = local.L.LoadSaleidSale(ctx, tx, true, &local, nil); err != nil {
+	local.R.Sale = nil
+	if err = local.L.LoadSale(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testSaleProductToOneSaleUsingSaleidSale(t *testing.T) {
 	}
 }
 
-func testSaleProductToOneSetOpProductUsingProductidProduct(t *testing.T) {
+func testSaleProductToOneSetOpProductUsingProduct(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testSaleProductToOneSetOpProductUsingProductidProduct(t *testing.T) {
 	}
 
 	for i, x := range []*Product{&b, &c} {
-		err = a.SetProductidProduct(ctx, tx, i != 0, x)
+		err = a.SetProduct(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ProductidProduct != x {
+		if a.R.Product != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ProductidSaleProducts[0] != &a {
+		if x.R.SaleProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Productid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productid)
+		if !queries.Equal(a.ProductID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Productid))
-		reflect.Indirect(reflect.ValueOf(&a.Productid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ProductID))
+		reflect.Indirect(reflect.ValueOf(&a.ProductID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Productid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productid, x.ID)
+		if !queries.Equal(a.ProductID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductID, x.ID)
 		}
 	}
 }
 
-func testSaleProductToOneRemoveOpProductUsingProductidProduct(t *testing.T) {
+func testSaleProductToOneRemoveOpProductUsingProduct(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testSaleProductToOneRemoveOpProductUsingProductidProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetProductidProduct(ctx, tx, true, &b); err != nil {
+	if err = a.SetProduct(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveProductidProduct(ctx, tx, &b); err != nil {
+	if err = a.RemoveProduct(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ProductidProduct().Count(ctx, tx)
+	count, err := a.Product().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testSaleProductToOneRemoveOpProductUsingProductidProduct(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ProductidProduct != nil {
+	if a.R.Product != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Productid) {
+	if !queries.IsValuerNil(a.ProductID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ProductidSaleProducts) != 0 {
+	if len(b.R.SaleProducts) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testSaleProductToOneSetOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleProductToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testSaleProductToOneSetOpSaleUsingSaleidSale(t *testing.T) {
 	}
 
 	for i, x := range []*Sale{&b, &c} {
-		err = a.SetSaleidSale(ctx, tx, i != 0, x)
+		err = a.SetSale(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.SaleidSale != x {
+		if a.R.Sale != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.SaleidSaleProducts[0] != &a {
+		if x.R.SaleProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Saleid))
-		reflect.Indirect(reflect.ValueOf(&a.Saleid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.SaleID))
+		reflect.Indirect(reflect.ValueOf(&a.SaleID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid, x.ID)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
 	}
 }
 
-func testSaleProductToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleProductToOneRemoveOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testSaleProductToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetSaleidSale(ctx, tx, true, &b); err != nil {
+	if err = a.SetSale(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveSaleidSale(ctx, tx, &b); err != nil {
+	if err = a.RemoveSale(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.SaleidSale().Count(ctx, tx)
+	count, err := a.Sale().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testSaleProductToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.SaleidSale != nil {
+	if a.R.Sale != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Saleid) {
+	if !queries.IsValuerNil(a.SaleID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.SaleidSaleProducts) != 0 {
+	if len(b.R.SaleProducts) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testSaleProductsSelect(t *testing.T) {
 }
 
 var (
-	saleProductDBTypes = map[string]string{`ID`: `character varying`, `Saleid`: `character varying`, `Productid`: `character varying`, `Createat`: `bigint`}
+	saleProductDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `ProductID`: `character varying`, `CreateAt`: `bigint`}
 	_                  = bytes.MinRead
 )
 

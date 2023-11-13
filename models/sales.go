@@ -27,12 +27,12 @@ type Sale struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Type            null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Startdate       null.Int64  `boil:"startdate" json:"startdate,omitempty" toml:"startdate" yaml:"startdate,omitempty"`
-	Enddate         null.Int64  `boil:"enddate" json:"enddate,omitempty" toml:"enddate" yaml:"enddate,omitempty"`
-	Createat        null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat        null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
+	StartDate       null.Int64  `boil:"start_date" json:"start_date,omitempty" toml:"start_date" yaml:"start_date,omitempty"`
+	EndDate         null.Int64  `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
+	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt        null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
 	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata null.JSON   `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *saleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,44 +42,44 @@ var SaleColumns = struct {
 	ID              string
 	Name            string
 	Type            string
-	Startdate       string
-	Enddate         string
-	Createat        string
-	Updateat        string
+	StartDate       string
+	EndDate         string
+	CreateAt        string
+	UpdateAt        string
 	Metadata        string
-	Privatemetadata string
+	PrivateMetadata string
 }{
 	ID:              "id",
 	Name:            "name",
 	Type:            "type",
-	Startdate:       "startdate",
-	Enddate:         "enddate",
-	Createat:        "createat",
-	Updateat:        "updateat",
+	StartDate:       "start_date",
+	EndDate:         "end_date",
+	CreateAt:        "create_at",
+	UpdateAt:        "update_at",
 	Metadata:        "metadata",
-	Privatemetadata: "privatemetadata",
+	PrivateMetadata: "private_metadata",
 }
 
 var SaleTableColumns = struct {
 	ID              string
 	Name            string
 	Type            string
-	Startdate       string
-	Enddate         string
-	Createat        string
-	Updateat        string
+	StartDate       string
+	EndDate         string
+	CreateAt        string
+	UpdateAt        string
 	Metadata        string
-	Privatemetadata string
+	PrivateMetadata string
 }{
 	ID:              "sales.id",
 	Name:            "sales.name",
 	Type:            "sales.type",
-	Startdate:       "sales.startdate",
-	Enddate:         "sales.enddate",
-	Createat:        "sales.createat",
-	Updateat:        "sales.updateat",
+	StartDate:       "sales.start_date",
+	EndDate:         "sales.end_date",
+	CreateAt:        "sales.create_at",
+	UpdateAt:        "sales.update_at",
 	Metadata:        "sales.metadata",
-	Privatemetadata: "sales.privatemetadata",
+	PrivateMetadata: "sales.private_metadata",
 }
 
 // Generated where
@@ -88,46 +88,46 @@ var SaleWhere = struct {
 	ID              whereHelperstring
 	Name            whereHelpernull_String
 	Type            whereHelpernull_String
-	Startdate       whereHelpernull_Int64
-	Enddate         whereHelpernull_Int64
-	Createat        whereHelpernull_Int64
-	Updateat        whereHelpernull_Int64
+	StartDate       whereHelpernull_Int64
+	EndDate         whereHelpernull_Int64
+	CreateAt        whereHelpernull_Int64
+	UpdateAt        whereHelpernull_Int64
 	Metadata        whereHelpernull_JSON
-	Privatemetadata whereHelpernull_JSON
+	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"sales\".\"id\""},
 	Name:            whereHelpernull_String{field: "\"sales\".\"name\""},
 	Type:            whereHelpernull_String{field: "\"sales\".\"type\""},
-	Startdate:       whereHelpernull_Int64{field: "\"sales\".\"startdate\""},
-	Enddate:         whereHelpernull_Int64{field: "\"sales\".\"enddate\""},
-	Createat:        whereHelpernull_Int64{field: "\"sales\".\"createat\""},
-	Updateat:        whereHelpernull_Int64{field: "\"sales\".\"updateat\""},
+	StartDate:       whereHelpernull_Int64{field: "\"sales\".\"start_date\""},
+	EndDate:         whereHelpernull_Int64{field: "\"sales\".\"end_date\""},
+	CreateAt:        whereHelpernull_Int64{field: "\"sales\".\"create_at\""},
+	UpdateAt:        whereHelpernull_Int64{field: "\"sales\".\"update_at\""},
 	Metadata:        whereHelpernull_JSON{field: "\"sales\".\"metadata\""},
-	Privatemetadata: whereHelpernull_JSON{field: "\"sales\".\"privatemetadata\""},
+	PrivateMetadata: whereHelpernull_JSON{field: "\"sales\".\"private_metadata\""},
 }
 
 // SaleRels is where relationship names are stored.
 var SaleRels = struct {
-	SaleidSaleCategories      string
-	SaleidSaleChannelListings string
-	SaleidSaleCollections     string
-	SaleidSaleProducts        string
-	SaleidSaleTranslations    string
+	SaleCategories      string
+	SaleChannelListings string
+	SaleCollections     string
+	SaleProducts        string
+	SaleTranslations    string
 }{
-	SaleidSaleCategories:      "SaleidSaleCategories",
-	SaleidSaleChannelListings: "SaleidSaleChannelListings",
-	SaleidSaleCollections:     "SaleidSaleCollections",
-	SaleidSaleProducts:        "SaleidSaleProducts",
-	SaleidSaleTranslations:    "SaleidSaleTranslations",
+	SaleCategories:      "SaleCategories",
+	SaleChannelListings: "SaleChannelListings",
+	SaleCollections:     "SaleCollections",
+	SaleProducts:        "SaleProducts",
+	SaleTranslations:    "SaleTranslations",
 }
 
 // saleR is where relationships are stored.
 type saleR struct {
-	SaleidSaleCategories      SaleCategorySlice       `boil:"SaleidSaleCategories" json:"SaleidSaleCategories" toml:"SaleidSaleCategories" yaml:"SaleidSaleCategories"`
-	SaleidSaleChannelListings SaleChannelListingSlice `boil:"SaleidSaleChannelListings" json:"SaleidSaleChannelListings" toml:"SaleidSaleChannelListings" yaml:"SaleidSaleChannelListings"`
-	SaleidSaleCollections     SaleCollectionSlice     `boil:"SaleidSaleCollections" json:"SaleidSaleCollections" toml:"SaleidSaleCollections" yaml:"SaleidSaleCollections"`
-	SaleidSaleProducts        SaleProductSlice        `boil:"SaleidSaleProducts" json:"SaleidSaleProducts" toml:"SaleidSaleProducts" yaml:"SaleidSaleProducts"`
-	SaleidSaleTranslations    SaleTranslationSlice    `boil:"SaleidSaleTranslations" json:"SaleidSaleTranslations" toml:"SaleidSaleTranslations" yaml:"SaleidSaleTranslations"`
+	SaleCategories      SaleCategorySlice       `boil:"SaleCategories" json:"SaleCategories" toml:"SaleCategories" yaml:"SaleCategories"`
+	SaleChannelListings SaleChannelListingSlice `boil:"SaleChannelListings" json:"SaleChannelListings" toml:"SaleChannelListings" yaml:"SaleChannelListings"`
+	SaleCollections     SaleCollectionSlice     `boil:"SaleCollections" json:"SaleCollections" toml:"SaleCollections" yaml:"SaleCollections"`
+	SaleProducts        SaleProductSlice        `boil:"SaleProducts" json:"SaleProducts" toml:"SaleProducts" yaml:"SaleProducts"`
+	SaleTranslations    SaleTranslationSlice    `boil:"SaleTranslations" json:"SaleTranslations" toml:"SaleTranslations" yaml:"SaleTranslations"`
 }
 
 // NewStruct creates a new relationship struct
@@ -135,48 +135,48 @@ func (*saleR) NewStruct() *saleR {
 	return &saleR{}
 }
 
-func (r *saleR) GetSaleidSaleCategories() SaleCategorySlice {
+func (r *saleR) GetSaleCategories() SaleCategorySlice {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSaleCategories
+	return r.SaleCategories
 }
 
-func (r *saleR) GetSaleidSaleChannelListings() SaleChannelListingSlice {
+func (r *saleR) GetSaleChannelListings() SaleChannelListingSlice {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSaleChannelListings
+	return r.SaleChannelListings
 }
 
-func (r *saleR) GetSaleidSaleCollections() SaleCollectionSlice {
+func (r *saleR) GetSaleCollections() SaleCollectionSlice {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSaleCollections
+	return r.SaleCollections
 }
 
-func (r *saleR) GetSaleidSaleProducts() SaleProductSlice {
+func (r *saleR) GetSaleProducts() SaleProductSlice {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSaleProducts
+	return r.SaleProducts
 }
 
-func (r *saleR) GetSaleidSaleTranslations() SaleTranslationSlice {
+func (r *saleR) GetSaleTranslations() SaleTranslationSlice {
 	if r == nil {
 		return nil
 	}
-	return r.SaleidSaleTranslations
+	return r.SaleTranslations
 }
 
 // saleL is where Load methods for each relationship are stored.
 type saleL struct{}
 
 var (
-	saleAllColumns            = []string{"id", "name", "type", "startdate", "enddate", "createat", "updateat", "metadata", "privatemetadata"}
+	saleAllColumns            = []string{"id", "name", "type", "start_date", "end_date", "create_at", "update_at", "metadata", "private_metadata"}
 	saleColumnsWithoutDefault = []string{"id"}
-	saleColumnsWithDefault    = []string{"name", "type", "startdate", "enddate", "createat", "updateat", "metadata", "privatemetadata"}
+	saleColumnsWithDefault    = []string{"name", "type", "start_date", "end_date", "create_at", "update_at", "metadata", "private_metadata"}
 	salePrimaryKeyColumns     = []string{"id"}
 	saleGeneratedColumns      = []string{}
 )
@@ -459,79 +459,79 @@ func (q saleQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// SaleidSaleCategories retrieves all the sale_category's SaleCategories with an executor via saleid column.
-func (o *Sale) SaleidSaleCategories(mods ...qm.QueryMod) saleCategoryQuery {
+// SaleCategories retrieves all the sale_category's SaleCategories with an executor.
+func (o *Sale) SaleCategories(mods ...qm.QueryMod) saleCategoryQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"sale_categories\".\"saleid\"=?", o.ID),
+		qm.Where("\"sale_categories\".\"sale_id\"=?", o.ID),
 	)
 
 	return SaleCategories(queryMods...)
 }
 
-// SaleidSaleChannelListings retrieves all the sale_channel_listing's SaleChannelListings with an executor via saleid column.
-func (o *Sale) SaleidSaleChannelListings(mods ...qm.QueryMod) saleChannelListingQuery {
+// SaleChannelListings retrieves all the sale_channel_listing's SaleChannelListings with an executor.
+func (o *Sale) SaleChannelListings(mods ...qm.QueryMod) saleChannelListingQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"sale_channel_listings\".\"saleid\"=?", o.ID),
+		qm.Where("\"sale_channel_listings\".\"sale_id\"=?", o.ID),
 	)
 
 	return SaleChannelListings(queryMods...)
 }
 
-// SaleidSaleCollections retrieves all the sale_collection's SaleCollections with an executor via saleid column.
-func (o *Sale) SaleidSaleCollections(mods ...qm.QueryMod) saleCollectionQuery {
+// SaleCollections retrieves all the sale_collection's SaleCollections with an executor.
+func (o *Sale) SaleCollections(mods ...qm.QueryMod) saleCollectionQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"sale_collections\".\"saleid\"=?", o.ID),
+		qm.Where("\"sale_collections\".\"sale_id\"=?", o.ID),
 	)
 
 	return SaleCollections(queryMods...)
 }
 
-// SaleidSaleProducts retrieves all the sale_product's SaleProducts with an executor via saleid column.
-func (o *Sale) SaleidSaleProducts(mods ...qm.QueryMod) saleProductQuery {
+// SaleProducts retrieves all the sale_product's SaleProducts with an executor.
+func (o *Sale) SaleProducts(mods ...qm.QueryMod) saleProductQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"sale_products\".\"saleid\"=?", o.ID),
+		qm.Where("\"sale_products\".\"sale_id\"=?", o.ID),
 	)
 
 	return SaleProducts(queryMods...)
 }
 
-// SaleidSaleTranslations retrieves all the sale_translation's SaleTranslations with an executor via saleid column.
-func (o *Sale) SaleidSaleTranslations(mods ...qm.QueryMod) saleTranslationQuery {
+// SaleTranslations retrieves all the sale_translation's SaleTranslations with an executor.
+func (o *Sale) SaleTranslations(mods ...qm.QueryMod) saleTranslationQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"sale_translations\".\"saleid\"=?", o.ID),
+		qm.Where("\"sale_translations\".\"sale_id\"=?", o.ID),
 	)
 
 	return SaleTranslations(queryMods...)
 }
 
-// LoadSaleidSaleCategories allows an eager lookup of values, cached into the
+// LoadSaleCategories allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleidSaleCategories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleCategories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -586,7 +586,7 @@ func (saleL) LoadSaleidSaleCategories(ctx context.Context, e boil.ContextExecuto
 
 	query := NewQuery(
 		qm.From(`sale_categories`),
-		qm.WhereIn(`sale_categories.saleid in ?`, args...),
+		qm.WhereIn(`sale_categories.sale_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -617,24 +617,24 @@ func (saleL) LoadSaleidSaleCategories(ctx context.Context, e boil.ContextExecuto
 		}
 	}
 	if singular {
-		object.R.SaleidSaleCategories = resultSlice
+		object.R.SaleCategories = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &saleCategoryR{}
 			}
-			foreign.R.SaleidSale = object
+			foreign.R.Sale = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Saleid) {
-				local.R.SaleidSaleCategories = append(local.R.SaleidSaleCategories, foreign)
+			if queries.Equal(local.ID, foreign.SaleID) {
+				local.R.SaleCategories = append(local.R.SaleCategories, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleCategoryR{}
 				}
-				foreign.R.SaleidSale = local
+				foreign.R.Sale = local
 				break
 			}
 		}
@@ -643,9 +643,9 @@ func (saleL) LoadSaleidSaleCategories(ctx context.Context, e boil.ContextExecuto
 	return nil
 }
 
-// LoadSaleidSaleChannelListings allows an eager lookup of values, cached into the
+// LoadSaleChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleidSaleChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -700,7 +700,7 @@ func (saleL) LoadSaleidSaleChannelListings(ctx context.Context, e boil.ContextEx
 
 	query := NewQuery(
 		qm.From(`sale_channel_listings`),
-		qm.WhereIn(`sale_channel_listings.saleid in ?`, args...),
+		qm.WhereIn(`sale_channel_listings.sale_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -731,24 +731,24 @@ func (saleL) LoadSaleidSaleChannelListings(ctx context.Context, e boil.ContextEx
 		}
 	}
 	if singular {
-		object.R.SaleidSaleChannelListings = resultSlice
+		object.R.SaleChannelListings = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &saleChannelListingR{}
 			}
-			foreign.R.SaleidSale = object
+			foreign.R.Sale = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Saleid) {
-				local.R.SaleidSaleChannelListings = append(local.R.SaleidSaleChannelListings, foreign)
+			if queries.Equal(local.ID, foreign.SaleID) {
+				local.R.SaleChannelListings = append(local.R.SaleChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleChannelListingR{}
 				}
-				foreign.R.SaleidSale = local
+				foreign.R.Sale = local
 				break
 			}
 		}
@@ -757,9 +757,9 @@ func (saleL) LoadSaleidSaleChannelListings(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// LoadSaleidSaleCollections allows an eager lookup of values, cached into the
+// LoadSaleCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleidSaleCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -814,7 +814,7 @@ func (saleL) LoadSaleidSaleCollections(ctx context.Context, e boil.ContextExecut
 
 	query := NewQuery(
 		qm.From(`sale_collections`),
-		qm.WhereIn(`sale_collections.saleid in ?`, args...),
+		qm.WhereIn(`sale_collections.sale_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -845,24 +845,24 @@ func (saleL) LoadSaleidSaleCollections(ctx context.Context, e boil.ContextExecut
 		}
 	}
 	if singular {
-		object.R.SaleidSaleCollections = resultSlice
+		object.R.SaleCollections = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &saleCollectionR{}
 			}
-			foreign.R.SaleidSale = object
+			foreign.R.Sale = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Saleid) {
-				local.R.SaleidSaleCollections = append(local.R.SaleidSaleCollections, foreign)
+			if queries.Equal(local.ID, foreign.SaleID) {
+				local.R.SaleCollections = append(local.R.SaleCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleCollectionR{}
 				}
-				foreign.R.SaleidSale = local
+				foreign.R.Sale = local
 				break
 			}
 		}
@@ -871,9 +871,9 @@ func (saleL) LoadSaleidSaleCollections(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// LoadSaleidSaleProducts allows an eager lookup of values, cached into the
+// LoadSaleProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleidSaleProducts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleProducts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -928,7 +928,7 @@ func (saleL) LoadSaleidSaleProducts(ctx context.Context, e boil.ContextExecutor,
 
 	query := NewQuery(
 		qm.From(`sale_products`),
-		qm.WhereIn(`sale_products.saleid in ?`, args...),
+		qm.WhereIn(`sale_products.sale_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -959,24 +959,24 @@ func (saleL) LoadSaleidSaleProducts(ctx context.Context, e boil.ContextExecutor,
 		}
 	}
 	if singular {
-		object.R.SaleidSaleProducts = resultSlice
+		object.R.SaleProducts = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &saleProductR{}
 			}
-			foreign.R.SaleidSale = object
+			foreign.R.Sale = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Saleid) {
-				local.R.SaleidSaleProducts = append(local.R.SaleidSaleProducts, foreign)
+			if queries.Equal(local.ID, foreign.SaleID) {
+				local.R.SaleProducts = append(local.R.SaleProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleProductR{}
 				}
-				foreign.R.SaleidSale = local
+				foreign.R.Sale = local
 				break
 			}
 		}
@@ -985,9 +985,9 @@ func (saleL) LoadSaleidSaleProducts(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// LoadSaleidSaleTranslations allows an eager lookup of values, cached into the
+// LoadSaleTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (saleL) LoadSaleidSaleTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
+func (saleL) LoadSaleTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSale interface{}, mods queries.Applicator) error {
 	var slice []*Sale
 	var object *Sale
 
@@ -1042,7 +1042,7 @@ func (saleL) LoadSaleidSaleTranslations(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`sale_translations`),
-		qm.WhereIn(`sale_translations.saleid in ?`, args...),
+		qm.WhereIn(`sale_translations.sale_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1073,24 +1073,24 @@ func (saleL) LoadSaleidSaleTranslations(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.SaleidSaleTranslations = resultSlice
+		object.R.SaleTranslations = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &saleTranslationR{}
 			}
-			foreign.R.SaleidSale = object
+			foreign.R.Sale = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Saleid) {
-				local.R.SaleidSaleTranslations = append(local.R.SaleidSaleTranslations, foreign)
+			if queries.Equal(local.ID, foreign.SaleID) {
+				local.R.SaleTranslations = append(local.R.SaleTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleTranslationR{}
 				}
-				foreign.R.SaleidSale = local
+				foreign.R.Sale = local
 				break
 			}
 		}
@@ -1099,22 +1099,22 @@ func (saleL) LoadSaleidSaleTranslations(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// AddSaleidSaleCategories adds the given related objects to the existing relationships
+// AddSaleCategories adds the given related objects to the existing relationships
 // of the sale, optionally inserting them as new records.
-// Appends related to o.R.SaleidSaleCategories.
-// Sets related.R.SaleidSale appropriately.
-func (o *Sale) AddSaleidSaleCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCategory) error {
+// Appends related to o.R.SaleCategories.
+// Sets related.R.Sale appropriately.
+func (o *Sale) AddSaleCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCategory) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"sale_categories\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCategoryPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1128,38 +1128,38 @@ func (o *Sale) AddSaleidSaleCategories(ctx context.Context, exec boil.ContextExe
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &saleR{
-			SaleidSaleCategories: related,
+			SaleCategories: related,
 		}
 	} else {
-		o.R.SaleidSaleCategories = append(o.R.SaleidSaleCategories, related...)
+		o.R.SaleCategories = append(o.R.SaleCategories, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &saleCategoryR{
-				SaleidSale: o,
+				Sale: o,
 			}
 		} else {
-			rel.R.SaleidSale = o
+			rel.R.Sale = o
 		}
 	}
 	return nil
 }
 
-// SetSaleidSaleCategories removes all previously related items of the
+// SetSaleCategories removes all previously related items of the
 // sale replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.SaleidSale's SaleidSaleCategories accordingly.
-// Replaces o.R.SaleidSaleCategories with related.
-// Sets related.R.SaleidSale's SaleidSaleCategories accordingly.
-func (o *Sale) SetSaleidSaleCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCategory) error {
-	query := "update \"sale_categories\" set \"saleid\" = null where \"saleid\" = $1"
+// Sets o.R.Sale's SaleCategories accordingly.
+// Replaces o.R.SaleCategories with related.
+// Sets related.R.Sale's SaleCategories accordingly.
+func (o *Sale) SetSaleCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCategory) error {
+	query := "update \"sale_categories\" set \"sale_id\" = null where \"sale_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1172,35 +1172,35 @@ func (o *Sale) SetSaleidSaleCategories(ctx context.Context, exec boil.ContextExe
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.SaleidSaleCategories {
-			queries.SetScanner(&rel.Saleid, nil)
+		for _, rel := range o.R.SaleCategories {
+			queries.SetScanner(&rel.SaleID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		o.R.SaleidSaleCategories = nil
+		o.R.SaleCategories = nil
 	}
 
-	return o.AddSaleidSaleCategories(ctx, exec, insert, related...)
+	return o.AddSaleCategories(ctx, exec, insert, related...)
 }
 
-// RemoveSaleidSaleCategories relationships from objects passed in.
-// Removes related items from R.SaleidSaleCategories (uses pointer comparison, removal does not keep order)
-// Sets related.R.SaleidSale.
-func (o *Sale) RemoveSaleidSaleCategories(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCategory) error {
+// RemoveSaleCategories relationships from objects passed in.
+// Removes related items from R.SaleCategories (uses pointer comparison, removal does not keep order)
+// Sets related.R.Sale.
+func (o *Sale) RemoveSaleCategories(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCategory) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Saleid, nil)
+		queries.SetScanner(&rel.SaleID, nil)
 		if rel.R != nil {
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 			return err
 		}
 	}
@@ -1209,16 +1209,16 @@ func (o *Sale) RemoveSaleidSaleCategories(ctx context.Context, exec boil.Context
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.SaleidSaleCategories {
+		for i, ri := range o.R.SaleCategories {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.SaleidSaleCategories)
+			ln := len(o.R.SaleCategories)
 			if ln > 1 && i < ln-1 {
-				o.R.SaleidSaleCategories[i] = o.R.SaleidSaleCategories[ln-1]
+				o.R.SaleCategories[i] = o.R.SaleCategories[ln-1]
 			}
-			o.R.SaleidSaleCategories = o.R.SaleidSaleCategories[:ln-1]
+			o.R.SaleCategories = o.R.SaleCategories[:ln-1]
 			break
 		}
 	}
@@ -1226,22 +1226,22 @@ func (o *Sale) RemoveSaleidSaleCategories(ctx context.Context, exec boil.Context
 	return nil
 }
 
-// AddSaleidSaleChannelListings adds the given related objects to the existing relationships
+// AddSaleChannelListings adds the given related objects to the existing relationships
 // of the sale, optionally inserting them as new records.
-// Appends related to o.R.SaleidSaleChannelListings.
-// Sets related.R.SaleidSale appropriately.
-func (o *Sale) AddSaleidSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleChannelListing) error {
+// Appends related to o.R.SaleChannelListings.
+// Sets related.R.Sale appropriately.
+func (o *Sale) AddSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"sale_channel_listings\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleChannelListingPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1255,38 +1255,38 @@ func (o *Sale) AddSaleidSaleChannelListings(ctx context.Context, exec boil.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &saleR{
-			SaleidSaleChannelListings: related,
+			SaleChannelListings: related,
 		}
 	} else {
-		o.R.SaleidSaleChannelListings = append(o.R.SaleidSaleChannelListings, related...)
+		o.R.SaleChannelListings = append(o.R.SaleChannelListings, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &saleChannelListingR{
-				SaleidSale: o,
+				Sale: o,
 			}
 		} else {
-			rel.R.SaleidSale = o
+			rel.R.Sale = o
 		}
 	}
 	return nil
 }
 
-// SetSaleidSaleChannelListings removes all previously related items of the
+// SetSaleChannelListings removes all previously related items of the
 // sale replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.SaleidSale's SaleidSaleChannelListings accordingly.
-// Replaces o.R.SaleidSaleChannelListings with related.
-// Sets related.R.SaleidSale's SaleidSaleChannelListings accordingly.
-func (o *Sale) SetSaleidSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleChannelListing) error {
-	query := "update \"sale_channel_listings\" set \"saleid\" = null where \"saleid\" = $1"
+// Sets o.R.Sale's SaleChannelListings accordingly.
+// Replaces o.R.SaleChannelListings with related.
+// Sets related.R.Sale's SaleChannelListings accordingly.
+func (o *Sale) SetSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleChannelListing) error {
+	query := "update \"sale_channel_listings\" set \"sale_id\" = null where \"sale_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1299,35 +1299,35 @@ func (o *Sale) SetSaleidSaleChannelListings(ctx context.Context, exec boil.Conte
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.SaleidSaleChannelListings {
-			queries.SetScanner(&rel.Saleid, nil)
+		for _, rel := range o.R.SaleChannelListings {
+			queries.SetScanner(&rel.SaleID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		o.R.SaleidSaleChannelListings = nil
+		o.R.SaleChannelListings = nil
 	}
 
-	return o.AddSaleidSaleChannelListings(ctx, exec, insert, related...)
+	return o.AddSaleChannelListings(ctx, exec, insert, related...)
 }
 
-// RemoveSaleidSaleChannelListings relationships from objects passed in.
-// Removes related items from R.SaleidSaleChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.SaleidSale.
-func (o *Sale) RemoveSaleidSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*SaleChannelListing) error {
+// RemoveSaleChannelListings relationships from objects passed in.
+// Removes related items from R.SaleChannelListings (uses pointer comparison, removal does not keep order)
+// Sets related.R.Sale.
+func (o *Sale) RemoveSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*SaleChannelListing) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Saleid, nil)
+		queries.SetScanner(&rel.SaleID, nil)
 		if rel.R != nil {
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 			return err
 		}
 	}
@@ -1336,16 +1336,16 @@ func (o *Sale) RemoveSaleidSaleChannelListings(ctx context.Context, exec boil.Co
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.SaleidSaleChannelListings {
+		for i, ri := range o.R.SaleChannelListings {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.SaleidSaleChannelListings)
+			ln := len(o.R.SaleChannelListings)
 			if ln > 1 && i < ln-1 {
-				o.R.SaleidSaleChannelListings[i] = o.R.SaleidSaleChannelListings[ln-1]
+				o.R.SaleChannelListings[i] = o.R.SaleChannelListings[ln-1]
 			}
-			o.R.SaleidSaleChannelListings = o.R.SaleidSaleChannelListings[:ln-1]
+			o.R.SaleChannelListings = o.R.SaleChannelListings[:ln-1]
 			break
 		}
 	}
@@ -1353,22 +1353,22 @@ func (o *Sale) RemoveSaleidSaleChannelListings(ctx context.Context, exec boil.Co
 	return nil
 }
 
-// AddSaleidSaleCollections adds the given related objects to the existing relationships
+// AddSaleCollections adds the given related objects to the existing relationships
 // of the sale, optionally inserting them as new records.
-// Appends related to o.R.SaleidSaleCollections.
-// Sets related.R.SaleidSale appropriately.
-func (o *Sale) AddSaleidSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
+// Appends related to o.R.SaleCollections.
+// Sets related.R.Sale appropriately.
+func (o *Sale) AddSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"sale_collections\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleCollectionPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1382,38 +1382,38 @@ func (o *Sale) AddSaleidSaleCollections(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &saleR{
-			SaleidSaleCollections: related,
+			SaleCollections: related,
 		}
 	} else {
-		o.R.SaleidSaleCollections = append(o.R.SaleidSaleCollections, related...)
+		o.R.SaleCollections = append(o.R.SaleCollections, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &saleCollectionR{
-				SaleidSale: o,
+				Sale: o,
 			}
 		} else {
-			rel.R.SaleidSale = o
+			rel.R.Sale = o
 		}
 	}
 	return nil
 }
 
-// SetSaleidSaleCollections removes all previously related items of the
+// SetSaleCollections removes all previously related items of the
 // sale replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.SaleidSale's SaleidSaleCollections accordingly.
-// Replaces o.R.SaleidSaleCollections with related.
-// Sets related.R.SaleidSale's SaleidSaleCollections accordingly.
-func (o *Sale) SetSaleidSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
-	query := "update \"sale_collections\" set \"saleid\" = null where \"saleid\" = $1"
+// Sets o.R.Sale's SaleCollections accordingly.
+// Replaces o.R.SaleCollections with related.
+// Sets related.R.Sale's SaleCollections accordingly.
+func (o *Sale) SetSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
+	query := "update \"sale_collections\" set \"sale_id\" = null where \"sale_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1426,35 +1426,35 @@ func (o *Sale) SetSaleidSaleCollections(ctx context.Context, exec boil.ContextEx
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.SaleidSaleCollections {
-			queries.SetScanner(&rel.Saleid, nil)
+		for _, rel := range o.R.SaleCollections {
+			queries.SetScanner(&rel.SaleID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		o.R.SaleidSaleCollections = nil
+		o.R.SaleCollections = nil
 	}
 
-	return o.AddSaleidSaleCollections(ctx, exec, insert, related...)
+	return o.AddSaleCollections(ctx, exec, insert, related...)
 }
 
-// RemoveSaleidSaleCollections relationships from objects passed in.
-// Removes related items from R.SaleidSaleCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.SaleidSale.
-func (o *Sale) RemoveSaleidSaleCollections(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCollection) error {
+// RemoveSaleCollections relationships from objects passed in.
+// Removes related items from R.SaleCollections (uses pointer comparison, removal does not keep order)
+// Sets related.R.Sale.
+func (o *Sale) RemoveSaleCollections(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCollection) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Saleid, nil)
+		queries.SetScanner(&rel.SaleID, nil)
 		if rel.R != nil {
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 			return err
 		}
 	}
@@ -1463,16 +1463,16 @@ func (o *Sale) RemoveSaleidSaleCollections(ctx context.Context, exec boil.Contex
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.SaleidSaleCollections {
+		for i, ri := range o.R.SaleCollections {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.SaleidSaleCollections)
+			ln := len(o.R.SaleCollections)
 			if ln > 1 && i < ln-1 {
-				o.R.SaleidSaleCollections[i] = o.R.SaleidSaleCollections[ln-1]
+				o.R.SaleCollections[i] = o.R.SaleCollections[ln-1]
 			}
-			o.R.SaleidSaleCollections = o.R.SaleidSaleCollections[:ln-1]
+			o.R.SaleCollections = o.R.SaleCollections[:ln-1]
 			break
 		}
 	}
@@ -1480,22 +1480,22 @@ func (o *Sale) RemoveSaleidSaleCollections(ctx context.Context, exec boil.Contex
 	return nil
 }
 
-// AddSaleidSaleProducts adds the given related objects to the existing relationships
+// AddSaleProducts adds the given related objects to the existing relationships
 // of the sale, optionally inserting them as new records.
-// Appends related to o.R.SaleidSaleProducts.
-// Sets related.R.SaleidSale appropriately.
-func (o *Sale) AddSaleidSaleProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleProduct) error {
+// Appends related to o.R.SaleProducts.
+// Sets related.R.Sale appropriately.
+func (o *Sale) AddSaleProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleProduct) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"sale_products\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleProductPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1509,38 +1509,38 @@ func (o *Sale) AddSaleidSaleProducts(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &saleR{
-			SaleidSaleProducts: related,
+			SaleProducts: related,
 		}
 	} else {
-		o.R.SaleidSaleProducts = append(o.R.SaleidSaleProducts, related...)
+		o.R.SaleProducts = append(o.R.SaleProducts, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &saleProductR{
-				SaleidSale: o,
+				Sale: o,
 			}
 		} else {
-			rel.R.SaleidSale = o
+			rel.R.Sale = o
 		}
 	}
 	return nil
 }
 
-// SetSaleidSaleProducts removes all previously related items of the
+// SetSaleProducts removes all previously related items of the
 // sale replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.SaleidSale's SaleidSaleProducts accordingly.
-// Replaces o.R.SaleidSaleProducts with related.
-// Sets related.R.SaleidSale's SaleidSaleProducts accordingly.
-func (o *Sale) SetSaleidSaleProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleProduct) error {
-	query := "update \"sale_products\" set \"saleid\" = null where \"saleid\" = $1"
+// Sets o.R.Sale's SaleProducts accordingly.
+// Replaces o.R.SaleProducts with related.
+// Sets related.R.Sale's SaleProducts accordingly.
+func (o *Sale) SetSaleProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleProduct) error {
+	query := "update \"sale_products\" set \"sale_id\" = null where \"sale_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1553,35 +1553,35 @@ func (o *Sale) SetSaleidSaleProducts(ctx context.Context, exec boil.ContextExecu
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.SaleidSaleProducts {
-			queries.SetScanner(&rel.Saleid, nil)
+		for _, rel := range o.R.SaleProducts {
+			queries.SetScanner(&rel.SaleID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		o.R.SaleidSaleProducts = nil
+		o.R.SaleProducts = nil
 	}
 
-	return o.AddSaleidSaleProducts(ctx, exec, insert, related...)
+	return o.AddSaleProducts(ctx, exec, insert, related...)
 }
 
-// RemoveSaleidSaleProducts relationships from objects passed in.
-// Removes related items from R.SaleidSaleProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.SaleidSale.
-func (o *Sale) RemoveSaleidSaleProducts(ctx context.Context, exec boil.ContextExecutor, related ...*SaleProduct) error {
+// RemoveSaleProducts relationships from objects passed in.
+// Removes related items from R.SaleProducts (uses pointer comparison, removal does not keep order)
+// Sets related.R.Sale.
+func (o *Sale) RemoveSaleProducts(ctx context.Context, exec boil.ContextExecutor, related ...*SaleProduct) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Saleid, nil)
+		queries.SetScanner(&rel.SaleID, nil)
 		if rel.R != nil {
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 			return err
 		}
 	}
@@ -1590,16 +1590,16 @@ func (o *Sale) RemoveSaleidSaleProducts(ctx context.Context, exec boil.ContextEx
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.SaleidSaleProducts {
+		for i, ri := range o.R.SaleProducts {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.SaleidSaleProducts)
+			ln := len(o.R.SaleProducts)
 			if ln > 1 && i < ln-1 {
-				o.R.SaleidSaleProducts[i] = o.R.SaleidSaleProducts[ln-1]
+				o.R.SaleProducts[i] = o.R.SaleProducts[ln-1]
 			}
-			o.R.SaleidSaleProducts = o.R.SaleidSaleProducts[:ln-1]
+			o.R.SaleProducts = o.R.SaleProducts[:ln-1]
 			break
 		}
 	}
@@ -1607,22 +1607,22 @@ func (o *Sale) RemoveSaleidSaleProducts(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// AddSaleidSaleTranslations adds the given related objects to the existing relationships
+// AddSaleTranslations adds the given related objects to the existing relationships
 // of the sale, optionally inserting them as new records.
-// Appends related to o.R.SaleidSaleTranslations.
-// Sets related.R.SaleidSale appropriately.
-func (o *Sale) AddSaleidSaleTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleTranslation) error {
+// Appends related to o.R.SaleTranslations.
+// Sets related.R.Sale appropriately.
+func (o *Sale) AddSaleTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleTranslation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"sale_translations\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"saleid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"sale_id"}),
 				strmangle.WhereClause("\"", "\"", 2, saleTranslationPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -1636,38 +1636,38 @@ func (o *Sale) AddSaleidSaleTranslations(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Saleid, o.ID)
+			queries.Assign(&rel.SaleID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &saleR{
-			SaleidSaleTranslations: related,
+			SaleTranslations: related,
 		}
 	} else {
-		o.R.SaleidSaleTranslations = append(o.R.SaleidSaleTranslations, related...)
+		o.R.SaleTranslations = append(o.R.SaleTranslations, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &saleTranslationR{
-				SaleidSale: o,
+				Sale: o,
 			}
 		} else {
-			rel.R.SaleidSale = o
+			rel.R.Sale = o
 		}
 	}
 	return nil
 }
 
-// SetSaleidSaleTranslations removes all previously related items of the
+// SetSaleTranslations removes all previously related items of the
 // sale replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.SaleidSale's SaleidSaleTranslations accordingly.
-// Replaces o.R.SaleidSaleTranslations with related.
-// Sets related.R.SaleidSale's SaleidSaleTranslations accordingly.
-func (o *Sale) SetSaleidSaleTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleTranslation) error {
-	query := "update \"sale_translations\" set \"saleid\" = null where \"saleid\" = $1"
+// Sets o.R.Sale's SaleTranslations accordingly.
+// Replaces o.R.SaleTranslations with related.
+// Sets related.R.Sale's SaleTranslations accordingly.
+func (o *Sale) SetSaleTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleTranslation) error {
+	query := "update \"sale_translations\" set \"sale_id\" = null where \"sale_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1680,35 +1680,35 @@ func (o *Sale) SetSaleidSaleTranslations(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.SaleidSaleTranslations {
-			queries.SetScanner(&rel.Saleid, nil)
+		for _, rel := range o.R.SaleTranslations {
+			queries.SetScanner(&rel.SaleID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		o.R.SaleidSaleTranslations = nil
+		o.R.SaleTranslations = nil
 	}
 
-	return o.AddSaleidSaleTranslations(ctx, exec, insert, related...)
+	return o.AddSaleTranslations(ctx, exec, insert, related...)
 }
 
-// RemoveSaleidSaleTranslations relationships from objects passed in.
-// Removes related items from R.SaleidSaleTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.SaleidSale.
-func (o *Sale) RemoveSaleidSaleTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*SaleTranslation) error {
+// RemoveSaleTranslations relationships from objects passed in.
+// Removes related items from R.SaleTranslations (uses pointer comparison, removal does not keep order)
+// Sets related.R.Sale.
+func (o *Sale) RemoveSaleTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*SaleTranslation) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Saleid, nil)
+		queries.SetScanner(&rel.SaleID, nil)
 		if rel.R != nil {
-			rel.R.SaleidSale = nil
+			rel.R.Sale = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("saleid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
 			return err
 		}
 	}
@@ -1717,16 +1717,16 @@ func (o *Sale) RemoveSaleidSaleTranslations(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.SaleidSaleTranslations {
+		for i, ri := range o.R.SaleTranslations {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.SaleidSaleTranslations)
+			ln := len(o.R.SaleTranslations)
 			if ln > 1 && i < ln-1 {
-				o.R.SaleidSaleTranslations[i] = o.R.SaleidSaleTranslations[ln-1]
+				o.R.SaleTranslations[i] = o.R.SaleTranslations[ln-1]
 			}
-			o.R.SaleidSaleTranslations = o.R.SaleidSaleTranslations[:ln-1]
+			o.R.SaleTranslations = o.R.SaleTranslations[:ln-1]
 			break
 		}
 	}

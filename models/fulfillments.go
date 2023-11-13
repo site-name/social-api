@@ -25,15 +25,15 @@ import (
 // Fulfillment is an object representing the database table.
 type Fulfillment struct {
 	ID                   string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Fulfillmentorder     null.Int     `boil:"fulfillmentorder" json:"fulfillmentorder,omitempty" toml:"fulfillmentorder" yaml:"fulfillmentorder,omitempty"`
-	Orderid              null.String  `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
+	FulfillmentOrder     null.Int     `boil:"fulfillment_order" json:"fulfillment_order,omitempty" toml:"fulfillment_order" yaml:"fulfillment_order,omitempty"`
+	OrderID              null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	Status               null.String  `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	Trackingnumber       null.String  `boil:"trackingnumber" json:"trackingnumber,omitempty" toml:"trackingnumber" yaml:"trackingnumber,omitempty"`
-	Createat             null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Shippingrefundamount null.Float64 `boil:"shippingrefundamount" json:"shippingrefundamount,omitempty" toml:"shippingrefundamount" yaml:"shippingrefundamount,omitempty"`
-	Totalrefundamount    null.Float64 `boil:"totalrefundamount" json:"totalrefundamount,omitempty" toml:"totalrefundamount" yaml:"totalrefundamount,omitempty"`
+	TrackingNumber       null.String  `boil:"tracking_number" json:"tracking_number,omitempty" toml:"tracking_number" yaml:"tracking_number,omitempty"`
+	CreateAt             null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ShippingRefundAmount null.Float64 `boil:"shipping_refund_amount" json:"shipping_refund_amount,omitempty" toml:"shipping_refund_amount" yaml:"shipping_refund_amount,omitempty"`
+	TotalRefundAmount    null.Float64 `boil:"total_refund_amount" json:"total_refund_amount,omitempty" toml:"total_refund_amount" yaml:"total_refund_amount,omitempty"`
 	Metadata             null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata      null.JSON    `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata      null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *fulfillmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L fulfillmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,88 +41,88 @@ type Fulfillment struct {
 
 var FulfillmentColumns = struct {
 	ID                   string
-	Fulfillmentorder     string
-	Orderid              string
+	FulfillmentOrder     string
+	OrderID              string
 	Status               string
-	Trackingnumber       string
-	Createat             string
-	Shippingrefundamount string
-	Totalrefundamount    string
+	TrackingNumber       string
+	CreateAt             string
+	ShippingRefundAmount string
+	TotalRefundAmount    string
 	Metadata             string
-	Privatemetadata      string
+	PrivateMetadata      string
 }{
 	ID:                   "id",
-	Fulfillmentorder:     "fulfillmentorder",
-	Orderid:              "orderid",
+	FulfillmentOrder:     "fulfillment_order",
+	OrderID:              "order_id",
 	Status:               "status",
-	Trackingnumber:       "trackingnumber",
-	Createat:             "createat",
-	Shippingrefundamount: "shippingrefundamount",
-	Totalrefundamount:    "totalrefundamount",
+	TrackingNumber:       "tracking_number",
+	CreateAt:             "create_at",
+	ShippingRefundAmount: "shipping_refund_amount",
+	TotalRefundAmount:    "total_refund_amount",
 	Metadata:             "metadata",
-	Privatemetadata:      "privatemetadata",
+	PrivateMetadata:      "private_metadata",
 }
 
 var FulfillmentTableColumns = struct {
 	ID                   string
-	Fulfillmentorder     string
-	Orderid              string
+	FulfillmentOrder     string
+	OrderID              string
 	Status               string
-	Trackingnumber       string
-	Createat             string
-	Shippingrefundamount string
-	Totalrefundamount    string
+	TrackingNumber       string
+	CreateAt             string
+	ShippingRefundAmount string
+	TotalRefundAmount    string
 	Metadata             string
-	Privatemetadata      string
+	PrivateMetadata      string
 }{
 	ID:                   "fulfillments.id",
-	Fulfillmentorder:     "fulfillments.fulfillmentorder",
-	Orderid:              "fulfillments.orderid",
+	FulfillmentOrder:     "fulfillments.fulfillment_order",
+	OrderID:              "fulfillments.order_id",
 	Status:               "fulfillments.status",
-	Trackingnumber:       "fulfillments.trackingnumber",
-	Createat:             "fulfillments.createat",
-	Shippingrefundamount: "fulfillments.shippingrefundamount",
-	Totalrefundamount:    "fulfillments.totalrefundamount",
+	TrackingNumber:       "fulfillments.tracking_number",
+	CreateAt:             "fulfillments.create_at",
+	ShippingRefundAmount: "fulfillments.shipping_refund_amount",
+	TotalRefundAmount:    "fulfillments.total_refund_amount",
 	Metadata:             "fulfillments.metadata",
-	Privatemetadata:      "fulfillments.privatemetadata",
+	PrivateMetadata:      "fulfillments.private_metadata",
 }
 
 // Generated where
 
 var FulfillmentWhere = struct {
 	ID                   whereHelperstring
-	Fulfillmentorder     whereHelpernull_Int
-	Orderid              whereHelpernull_String
+	FulfillmentOrder     whereHelpernull_Int
+	OrderID              whereHelpernull_String
 	Status               whereHelpernull_String
-	Trackingnumber       whereHelpernull_String
-	Createat             whereHelpernull_Int64
-	Shippingrefundamount whereHelpernull_Float64
-	Totalrefundamount    whereHelpernull_Float64
+	TrackingNumber       whereHelpernull_String
+	CreateAt             whereHelpernull_Int64
+	ShippingRefundAmount whereHelpernull_Float64
+	TotalRefundAmount    whereHelpernull_Float64
 	Metadata             whereHelpernull_JSON
-	Privatemetadata      whereHelpernull_JSON
+	PrivateMetadata      whereHelpernull_JSON
 }{
 	ID:                   whereHelperstring{field: "\"fulfillments\".\"id\""},
-	Fulfillmentorder:     whereHelpernull_Int{field: "\"fulfillments\".\"fulfillmentorder\""},
-	Orderid:              whereHelpernull_String{field: "\"fulfillments\".\"orderid\""},
+	FulfillmentOrder:     whereHelpernull_Int{field: "\"fulfillments\".\"fulfillment_order\""},
+	OrderID:              whereHelpernull_String{field: "\"fulfillments\".\"order_id\""},
 	Status:               whereHelpernull_String{field: "\"fulfillments\".\"status\""},
-	Trackingnumber:       whereHelpernull_String{field: "\"fulfillments\".\"trackingnumber\""},
-	Createat:             whereHelpernull_Int64{field: "\"fulfillments\".\"createat\""},
-	Shippingrefundamount: whereHelpernull_Float64{field: "\"fulfillments\".\"shippingrefundamount\""},
-	Totalrefundamount:    whereHelpernull_Float64{field: "\"fulfillments\".\"totalrefundamount\""},
+	TrackingNumber:       whereHelpernull_String{field: "\"fulfillments\".\"tracking_number\""},
+	CreateAt:             whereHelpernull_Int64{field: "\"fulfillments\".\"create_at\""},
+	ShippingRefundAmount: whereHelpernull_Float64{field: "\"fulfillments\".\"shipping_refund_amount\""},
+	TotalRefundAmount:    whereHelpernull_Float64{field: "\"fulfillments\".\"total_refund_amount\""},
 	Metadata:             whereHelpernull_JSON{field: "\"fulfillments\".\"metadata\""},
-	Privatemetadata:      whereHelpernull_JSON{field: "\"fulfillments\".\"privatemetadata\""},
+	PrivateMetadata:      whereHelpernull_JSON{field: "\"fulfillments\".\"private_metadata\""},
 }
 
 // FulfillmentRels is where relationship names are stored.
 var FulfillmentRels = struct {
-	OrderidOrder string
+	Order string
 }{
-	OrderidOrder: "OrderidOrder",
+	Order: "Order",
 }
 
 // fulfillmentR is where relationships are stored.
 type fulfillmentR struct {
-	OrderidOrder *Order `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
+	Order *Order `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
 }
 
 // NewStruct creates a new relationship struct
@@ -130,20 +130,20 @@ func (*fulfillmentR) NewStruct() *fulfillmentR {
 	return &fulfillmentR{}
 }
 
-func (r *fulfillmentR) GetOrderidOrder() *Order {
+func (r *fulfillmentR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
 // fulfillmentL is where Load methods for each relationship are stored.
 type fulfillmentL struct{}
 
 var (
-	fulfillmentAllColumns            = []string{"id", "fulfillmentorder", "orderid", "status", "trackingnumber", "createat", "shippingrefundamount", "totalrefundamount", "metadata", "privatemetadata"}
+	fulfillmentAllColumns            = []string{"id", "fulfillment_order", "order_id", "status", "tracking_number", "create_at", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
 	fulfillmentColumnsWithoutDefault = []string{"id"}
-	fulfillmentColumnsWithDefault    = []string{"fulfillmentorder", "orderid", "status", "trackingnumber", "createat", "shippingrefundamount", "totalrefundamount", "metadata", "privatemetadata"}
+	fulfillmentColumnsWithDefault    = []string{"fulfillment_order", "order_id", "status", "tracking_number", "create_at", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
 	fulfillmentPrimaryKeyColumns     = []string{"id"}
 	fulfillmentGeneratedColumns      = []string{}
 )
@@ -426,10 +426,10 @@ func (q fulfillmentQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	return count > 0, nil
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *Fulfillment) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *Fulfillment) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -437,9 +437,9 @@ func (o *Fulfillment) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (fulfillmentL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeFulfillment interface{}, mods queries.Applicator) error {
+func (fulfillmentL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeFulfillment interface{}, mods queries.Applicator) error {
 	var slice []*Fulfillment
 	var object *Fulfillment
 
@@ -470,8 +470,8 @@ func (fulfillmentL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor
 		if object.R == nil {
 			object.R = &fulfillmentR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -482,13 +482,13 @@ func (fulfillmentL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -537,22 +537,22 @@ func (fulfillmentL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidFulfillments = append(foreign.R.OrderidFulfillments, object)
+		foreign.R.Fulfillments = append(foreign.R.Fulfillments, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidFulfillments = append(foreign.R.OrderidFulfillments, local)
+				foreign.R.Fulfillments = append(foreign.R.Fulfillments, local)
 				break
 			}
 		}
@@ -561,10 +561,10 @@ func (fulfillmentL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor
 	return nil
 }
 
-// SetOrderidOrder of the fulfillment to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidFulfillments.
-func (o *Fulfillment) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the fulfillment to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.Fulfillments.
+func (o *Fulfillment) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -574,7 +574,7 @@ func (o *Fulfillment) SetOrderidOrder(ctx context.Context, exec boil.ContextExec
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"fulfillments\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, fulfillmentPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -588,54 +588,54 @@ func (o *Fulfillment) SetOrderidOrder(ctx context.Context, exec boil.ContextExec
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &fulfillmentR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidFulfillments: FulfillmentSlice{o},
+			Fulfillments: FulfillmentSlice{o},
 		}
 	} else {
-		related.R.OrderidFulfillments = append(related.R.OrderidFulfillments, o)
+		related.R.Fulfillments = append(related.R.Fulfillments, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Fulfillment) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *Fulfillment) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidFulfillments {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.Fulfillments {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidFulfillments)
+		ln := len(related.R.Fulfillments)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidFulfillments[i] = related.R.OrderidFulfillments[ln-1]
+			related.R.Fulfillments[i] = related.R.Fulfillments[ln-1]
 		}
-		related.R.OrderidFulfillments = related.R.OrderidFulfillments[:ln-1]
+		related.R.Fulfillments = related.R.Fulfillments[:ln-1]
 		break
 	}
 	return nil

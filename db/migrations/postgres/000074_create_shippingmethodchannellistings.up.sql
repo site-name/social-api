@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS shipping_method_channel_listings (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  shippingmethodid character varying(36),
-  channelid character varying(36),
-  minimumorderpriceamount double precision,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  shipping_method_id uuid,
+  channel_id uuid,
+  minimum_order_price_amount double precision,
   currency character varying(3),
-  maximumorderpriceamount double precision,
-  priceamount double precision,
-  createat bigint
+  maximum_order_price_amount double precision,
+  price_amount double precision,
+  created_at bigint
 );
 
 ALTER TABLE ONLY shipping_method_channel_listings
-    ADD CONSTRAINT shipping_method_channel_listings_shippingmethodid_channelid_key UNIQUE (shippingmethodid, channelid);
+    ADD CONSTRAINT shipping_method_channel_listings_shipping_method_id_channel_id_key UNIQUE (shipping_method_id, channel_id);

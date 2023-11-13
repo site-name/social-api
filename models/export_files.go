@@ -25,10 +25,10 @@ import (
 // ExportFile is an object representing the database table.
 type ExportFile struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Userid      null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Contentfile null.String `boil:"contentfile" json:"contentfile,omitempty" toml:"contentfile" yaml:"contentfile,omitempty"`
-	Createat    null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat    null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
+	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	ContentFile null.String `boil:"content_file" json:"content_file,omitempty" toml:"content_file" yaml:"content_file,omitempty"`
+	CreateAt    null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt    null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
 
 	R *exportFileR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L exportFileL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,61 +36,61 @@ type ExportFile struct {
 
 var ExportFileColumns = struct {
 	ID          string
-	Userid      string
-	Contentfile string
-	Createat    string
-	Updateat    string
+	UserID      string
+	ContentFile string
+	CreateAt    string
+	UpdateAt    string
 }{
 	ID:          "id",
-	Userid:      "userid",
-	Contentfile: "contentfile",
-	Createat:    "createat",
-	Updateat:    "updateat",
+	UserID:      "user_id",
+	ContentFile: "content_file",
+	CreateAt:    "create_at",
+	UpdateAt:    "update_at",
 }
 
 var ExportFileTableColumns = struct {
 	ID          string
-	Userid      string
-	Contentfile string
-	Createat    string
-	Updateat    string
+	UserID      string
+	ContentFile string
+	CreateAt    string
+	UpdateAt    string
 }{
 	ID:          "export_files.id",
-	Userid:      "export_files.userid",
-	Contentfile: "export_files.contentfile",
-	Createat:    "export_files.createat",
-	Updateat:    "export_files.updateat",
+	UserID:      "export_files.user_id",
+	ContentFile: "export_files.content_file",
+	CreateAt:    "export_files.create_at",
+	UpdateAt:    "export_files.update_at",
 }
 
 // Generated where
 
 var ExportFileWhere = struct {
 	ID          whereHelperstring
-	Userid      whereHelpernull_String
-	Contentfile whereHelpernull_String
-	Createat    whereHelpernull_Int64
-	Updateat    whereHelpernull_Int64
+	UserID      whereHelpernull_String
+	ContentFile whereHelpernull_String
+	CreateAt    whereHelpernull_Int64
+	UpdateAt    whereHelpernull_Int64
 }{
 	ID:          whereHelperstring{field: "\"export_files\".\"id\""},
-	Userid:      whereHelpernull_String{field: "\"export_files\".\"userid\""},
-	Contentfile: whereHelpernull_String{field: "\"export_files\".\"contentfile\""},
-	Createat:    whereHelpernull_Int64{field: "\"export_files\".\"createat\""},
-	Updateat:    whereHelpernull_Int64{field: "\"export_files\".\"updateat\""},
+	UserID:      whereHelpernull_String{field: "\"export_files\".\"user_id\""},
+	ContentFile: whereHelpernull_String{field: "\"export_files\".\"content_file\""},
+	CreateAt:    whereHelpernull_Int64{field: "\"export_files\".\"create_at\""},
+	UpdateAt:    whereHelpernull_Int64{field: "\"export_files\".\"update_at\""},
 }
 
 // ExportFileRels is where relationship names are stored.
 var ExportFileRels = struct {
-	UseridUser               string
-	ExportfileidExportEvents string
+	User         string
+	ExportEvents string
 }{
-	UseridUser:               "UseridUser",
-	ExportfileidExportEvents: "ExportfileidExportEvents",
+	User:         "User",
+	ExportEvents: "ExportEvents",
 }
 
 // exportFileR is where relationships are stored.
 type exportFileR struct {
-	UseridUser               *User            `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
-	ExportfileidExportEvents ExportEventSlice `boil:"ExportfileidExportEvents" json:"ExportfileidExportEvents" toml:"ExportfileidExportEvents" yaml:"ExportfileidExportEvents"`
+	User         *User            `boil:"User" json:"User" toml:"User" yaml:"User"`
+	ExportEvents ExportEventSlice `boil:"ExportEvents" json:"ExportEvents" toml:"ExportEvents" yaml:"ExportEvents"`
 }
 
 // NewStruct creates a new relationship struct
@@ -98,27 +98,27 @@ func (*exportFileR) NewStruct() *exportFileR {
 	return &exportFileR{}
 }
 
-func (r *exportFileR) GetUseridUser() *User {
+func (r *exportFileR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
-func (r *exportFileR) GetExportfileidExportEvents() ExportEventSlice {
+func (r *exportFileR) GetExportEvents() ExportEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ExportfileidExportEvents
+	return r.ExportEvents
 }
 
 // exportFileL is where Load methods for each relationship are stored.
 type exportFileL struct{}
 
 var (
-	exportFileAllColumns            = []string{"id", "userid", "contentfile", "createat", "updateat"}
+	exportFileAllColumns            = []string{"id", "user_id", "content_file", "create_at", "update_at"}
 	exportFileColumnsWithoutDefault = []string{"id"}
-	exportFileColumnsWithDefault    = []string{"userid", "contentfile", "createat", "updateat"}
+	exportFileColumnsWithDefault    = []string{"user_id", "content_file", "create_at", "update_at"}
 	exportFilePrimaryKeyColumns     = []string{"id"}
 	exportFileGeneratedColumns      = []string{}
 )
@@ -401,10 +401,10 @@ func (q exportFileQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	return count > 0, nil
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *ExportFile) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *ExportFile) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -412,23 +412,23 @@ func (o *ExportFile) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// ExportfileidExportEvents retrieves all the export_event's ExportEvents with an executor via exportfileid column.
-func (o *ExportFile) ExportfileidExportEvents(mods ...qm.QueryMod) exportEventQuery {
+// ExportEvents retrieves all the export_event's ExportEvents with an executor.
+func (o *ExportFile) ExportEvents(mods ...qm.QueryMod) exportEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"export_events\".\"exportfileid\"=?", o.ID),
+		qm.Where("\"export_events\".\"export_file_id\"=?", o.ID),
 	)
 
 	return ExportEvents(queryMods...)
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (exportFileL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeExportFile interface{}, mods queries.Applicator) error {
+func (exportFileL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeExportFile interface{}, mods queries.Applicator) error {
 	var slice []*ExportFile
 	var object *ExportFile
 
@@ -459,8 +459,8 @@ func (exportFileL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &exportFileR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -471,13 +471,13 @@ func (exportFileL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -526,22 +526,22 @@ func (exportFileL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridExportFiles = append(foreign.R.UseridExportFiles, object)
+		foreign.R.ExportFiles = append(foreign.R.ExportFiles, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridExportFiles = append(foreign.R.UseridExportFiles, local)
+				foreign.R.ExportFiles = append(foreign.R.ExportFiles, local)
 				break
 			}
 		}
@@ -550,9 +550,9 @@ func (exportFileL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadExportfileidExportEvents allows an eager lookup of values, cached into the
+// LoadExportEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (exportFileL) LoadExportfileidExportEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeExportFile interface{}, mods queries.Applicator) error {
+func (exportFileL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeExportFile interface{}, mods queries.Applicator) error {
 	var slice []*ExportFile
 	var object *ExportFile
 
@@ -607,7 +607,7 @@ func (exportFileL) LoadExportfileidExportEvents(ctx context.Context, e boil.Cont
 
 	query := NewQuery(
 		qm.From(`export_events`),
-		qm.WhereIn(`export_events.exportfileid in ?`, args...),
+		qm.WhereIn(`export_events.export_file_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -638,24 +638,24 @@ func (exportFileL) LoadExportfileidExportEvents(ctx context.Context, e boil.Cont
 		}
 	}
 	if singular {
-		object.R.ExportfileidExportEvents = resultSlice
+		object.R.ExportEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &exportEventR{}
 			}
-			foreign.R.ExportfileidExportFile = object
+			foreign.R.ExportFile = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Exportfileid) {
-				local.R.ExportfileidExportEvents = append(local.R.ExportfileidExportEvents, foreign)
+			if queries.Equal(local.ID, foreign.ExportFileID) {
+				local.R.ExportEvents = append(local.R.ExportEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &exportEventR{}
 				}
-				foreign.R.ExportfileidExportFile = local
+				foreign.R.ExportFile = local
 				break
 			}
 		}
@@ -664,10 +664,10 @@ func (exportFileL) LoadExportfileidExportEvents(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// SetUseridUser of the exportFile to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridExportFiles.
-func (o *ExportFile) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the exportFile to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.ExportFiles.
+func (o *ExportFile) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -677,7 +677,7 @@ func (o *ExportFile) SetUseridUser(ctx context.Context, exec boil.ContextExecuto
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"export_files\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, exportFilePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -691,75 +691,75 @@ func (o *ExportFile) SetUseridUser(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &exportFileR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridExportFiles: ExportFileSlice{o},
+			ExportFiles: ExportFileSlice{o},
 		}
 	} else {
-		related.R.UseridExportFiles = append(related.R.UseridExportFiles, o)
+		related.R.ExportFiles = append(related.R.ExportFiles, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ExportFile) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *ExportFile) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridExportFiles {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.ExportFiles {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridExportFiles)
+		ln := len(related.R.ExportFiles)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridExportFiles[i] = related.R.UseridExportFiles[ln-1]
+			related.R.ExportFiles[i] = related.R.ExportFiles[ln-1]
 		}
-		related.R.UseridExportFiles = related.R.UseridExportFiles[:ln-1]
+		related.R.ExportFiles = related.R.ExportFiles[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddExportfileidExportEvents adds the given related objects to the existing relationships
+// AddExportEvents adds the given related objects to the existing relationships
 // of the export_file, optionally inserting them as new records.
-// Appends related to o.R.ExportfileidExportEvents.
-// Sets related.R.ExportfileidExportFile appropriately.
-func (o *ExportFile) AddExportfileidExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
+// Appends related to o.R.ExportEvents.
+// Sets related.R.ExportFile appropriately.
+func (o *ExportFile) AddExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Exportfileid, o.ID)
+			queries.Assign(&rel.ExportFileID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"export_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"exportfileid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"export_file_id"}),
 				strmangle.WhereClause("\"", "\"", 2, exportEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -773,38 +773,38 @@ func (o *ExportFile) AddExportfileidExportEvents(ctx context.Context, exec boil.
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Exportfileid, o.ID)
+			queries.Assign(&rel.ExportFileID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &exportFileR{
-			ExportfileidExportEvents: related,
+			ExportEvents: related,
 		}
 	} else {
-		o.R.ExportfileidExportEvents = append(o.R.ExportfileidExportEvents, related...)
+		o.R.ExportEvents = append(o.R.ExportEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &exportEventR{
-				ExportfileidExportFile: o,
+				ExportFile: o,
 			}
 		} else {
-			rel.R.ExportfileidExportFile = o
+			rel.R.ExportFile = o
 		}
 	}
 	return nil
 }
 
-// SetExportfileidExportEvents removes all previously related items of the
+// SetExportEvents removes all previously related items of the
 // export_file replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.ExportfileidExportFile's ExportfileidExportEvents accordingly.
-// Replaces o.R.ExportfileidExportEvents with related.
-// Sets related.R.ExportfileidExportFile's ExportfileidExportEvents accordingly.
-func (o *ExportFile) SetExportfileidExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
-	query := "update \"export_events\" set \"exportfileid\" = null where \"exportfileid\" = $1"
+// Sets o.R.ExportFile's ExportEvents accordingly.
+// Replaces o.R.ExportEvents with related.
+// Sets related.R.ExportFile's ExportEvents accordingly.
+func (o *ExportFile) SetExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
+	query := "update \"export_events\" set \"export_file_id\" = null where \"export_file_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -817,35 +817,35 @@ func (o *ExportFile) SetExportfileidExportEvents(ctx context.Context, exec boil.
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.ExportfileidExportEvents {
-			queries.SetScanner(&rel.Exportfileid, nil)
+		for _, rel := range o.R.ExportEvents {
+			queries.SetScanner(&rel.ExportFileID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.ExportfileidExportFile = nil
+			rel.R.ExportFile = nil
 		}
-		o.R.ExportfileidExportEvents = nil
+		o.R.ExportEvents = nil
 	}
 
-	return o.AddExportfileidExportEvents(ctx, exec, insert, related...)
+	return o.AddExportEvents(ctx, exec, insert, related...)
 }
 
-// RemoveExportfileidExportEvents relationships from objects passed in.
-// Removes related items from R.ExportfileidExportEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.ExportfileidExportFile.
-func (o *ExportFile) RemoveExportfileidExportEvents(ctx context.Context, exec boil.ContextExecutor, related ...*ExportEvent) error {
+// RemoveExportEvents relationships from objects passed in.
+// Removes related items from R.ExportEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.ExportFile.
+func (o *ExportFile) RemoveExportEvents(ctx context.Context, exec boil.ContextExecutor, related ...*ExportEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Exportfileid, nil)
+		queries.SetScanner(&rel.ExportFileID, nil)
 		if rel.R != nil {
-			rel.R.ExportfileidExportFile = nil
+			rel.R.ExportFile = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("exportfileid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("export_file_id")); err != nil {
 			return err
 		}
 	}
@@ -854,16 +854,16 @@ func (o *ExportFile) RemoveExportfileidExportEvents(ctx context.Context, exec bo
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.ExportfileidExportEvents {
+		for i, ri := range o.R.ExportEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.ExportfileidExportEvents)
+			ln := len(o.R.ExportEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.ExportfileidExportEvents[i] = o.R.ExportfileidExportEvents[ln-1]
+				o.R.ExportEvents[i] = o.R.ExportEvents[ln-1]
 			}
-			o.R.ExportfileidExportEvents = o.R.ExportfileidExportEvents[:ln-1]
+			o.R.ExportEvents = o.R.ExportEvents[:ln-1]
 			break
 		}
 	}

@@ -494,7 +494,7 @@ func testVoucherCustomersInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testVoucherCustomerToOneVoucherUsingVoucheridVoucher(t *testing.T) {
+func testVoucherCustomerToOneVoucherUsingVoucher(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testVoucherCustomerToOneVoucherUsingVoucheridVoucher(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Voucherid, foreign.ID)
+	queries.Assign(&local.VoucherID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.VoucheridVoucher().One(ctx, tx)
+	check, err := local.Voucher().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testVoucherCustomerToOneVoucherUsingVoucheridVoucher(t *testing.T) {
 	})
 
 	slice := VoucherCustomerSlice{&local}
-	if err = local.L.LoadVoucheridVoucher(ctx, tx, false, (*[]*VoucherCustomer)(&slice), nil); err != nil {
+	if err = local.L.LoadVoucher(ctx, tx, false, (*[]*VoucherCustomer)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VoucheridVoucher == nil {
+	if local.R.Voucher == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.VoucheridVoucher = nil
-	if err = local.L.LoadVoucheridVoucher(ctx, tx, true, &local, nil); err != nil {
+	local.R.Voucher = nil
+	if err = local.L.LoadVoucher(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VoucheridVoucher == nil {
+	if local.R.Voucher == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testVoucherCustomerToOneVoucherUsingVoucheridVoucher(t *testing.T) {
 	}
 }
 
-func testVoucherCustomerToOneSetOpVoucherUsingVoucheridVoucher(t *testing.T) {
+func testVoucherCustomerToOneSetOpVoucherUsingVoucher(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testVoucherCustomerToOneSetOpVoucherUsingVoucheridVoucher(t *testing.T) {
 	}
 
 	for i, x := range []*Voucher{&b, &c} {
-		err = a.SetVoucheridVoucher(ctx, tx, i != 0, x)
+		err = a.SetVoucher(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.VoucheridVoucher != x {
+		if a.R.Voucher != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.VoucheridVoucherCustomers[0] != &a {
+		if x.R.VoucherCustomers[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Voucherid, x.ID) {
-			t.Error("foreign key was wrong value", a.Voucherid)
+		if !queries.Equal(a.VoucherID, x.ID) {
+			t.Error("foreign key was wrong value", a.VoucherID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Voucherid))
-		reflect.Indirect(reflect.ValueOf(&a.Voucherid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.VoucherID))
+		reflect.Indirect(reflect.ValueOf(&a.VoucherID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Voucherid, x.ID) {
-			t.Error("foreign key was wrong value", a.Voucherid, x.ID)
+		if !queries.Equal(a.VoucherID, x.ID) {
+			t.Error("foreign key was wrong value", a.VoucherID, x.ID)
 		}
 	}
 }
 
-func testVoucherCustomerToOneRemoveOpVoucherUsingVoucheridVoucher(t *testing.T) {
+func testVoucherCustomerToOneRemoveOpVoucherUsingVoucher(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testVoucherCustomerToOneRemoveOpVoucherUsingVoucheridVoucher(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	if err = a.SetVoucheridVoucher(ctx, tx, true, &b); err != nil {
+	if err = a.SetVoucher(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveVoucheridVoucher(ctx, tx, &b); err != nil {
+	if err = a.RemoveVoucher(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.VoucheridVoucher().Count(ctx, tx)
+	count, err := a.Voucher().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testVoucherCustomerToOneRemoveOpVoucherUsingVoucheridVoucher(t *testing.T) 
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.VoucheridVoucher != nil {
+	if a.R.Voucher != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Voucherid) {
+	if !queries.IsValuerNil(a.VoucherID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.VoucheridVoucherCustomers) != 0 {
+	if len(b.R.VoucherCustomers) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testVoucherCustomersSelect(t *testing.T) {
 }
 
 var (
-	voucherCustomerDBTypes = map[string]string{`ID`: `character varying`, `Voucherid`: `character varying`, `Customeremail`: `character varying`}
+	voucherCustomerDBTypes = map[string]string{`ID`: `character varying`, `VoucherID`: `character varying`, `CustomerEmail`: `character varying`}
 	_                      = bytes.MinRead
 )
 

@@ -494,7 +494,7 @@ func testProductVariantTranslationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testProductVariantTranslationToOneProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testProductVariantTranslationToOneProductVariantUsingProductVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testProductVariantTranslationToOneProductVariantUsingProductvariantidProduc
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Productvariantid, foreign.ID)
+	queries.Assign(&local.ProductVariantID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.ProductvariantidProductVariant().One(ctx, tx)
+	check, err := local.ProductVariant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testProductVariantTranslationToOneProductVariantUsingProductvariantidProduc
 	})
 
 	slice := ProductVariantTranslationSlice{&local}
-	if err = local.L.LoadProductvariantidProductVariant(ctx, tx, false, (*[]*ProductVariantTranslation)(&slice), nil); err != nil {
+	if err = local.L.LoadProductVariant(ctx, tx, false, (*[]*ProductVariantTranslation)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductvariantidProductVariant == nil {
+	if local.R.ProductVariant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.ProductvariantidProductVariant = nil
-	if err = local.L.LoadProductvariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.ProductVariant = nil
+	if err = local.L.LoadProductVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.ProductvariantidProductVariant == nil {
+	if local.R.ProductVariant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testProductVariantTranslationToOneProductVariantUsingProductvariantidProduc
 	}
 }
 
-func testProductVariantTranslationToOneSetOpProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testProductVariantTranslationToOneSetOpProductVariantUsingProductVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testProductVariantTranslationToOneSetOpProductVariantUsingProductvariantidP
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetProductvariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetProductVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.ProductvariantidProductVariant != x {
+		if a.R.ProductVariant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ProductvariantidProductVariantTranslations[0] != &a {
+		if x.R.ProductVariantTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Productvariantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productvariantid)
+		if !queries.Equal(a.ProductVariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductVariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Productvariantid))
-		reflect.Indirect(reflect.ValueOf(&a.Productvariantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.ProductVariantID))
+		reflect.Indirect(reflect.ValueOf(&a.ProductVariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Productvariantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Productvariantid, x.ID)
+		if !queries.Equal(a.ProductVariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.ProductVariantID, x.ID)
 		}
 	}
 }
 
-func testProductVariantTranslationToOneRemoveOpProductVariantUsingProductvariantidProductVariant(t *testing.T) {
+func testProductVariantTranslationToOneRemoveOpProductVariantUsingProductVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testProductVariantTranslationToOneRemoveOpProductVariantUsingProductvariant
 		t.Fatal(err)
 	}
 
-	if err = a.SetProductvariantidProductVariant(ctx, tx, true, &b); err != nil {
+	if err = a.SetProductVariant(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveProductvariantidProductVariant(ctx, tx, &b); err != nil {
+	if err = a.RemoveProductVariant(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.ProductvariantidProductVariant().Count(ctx, tx)
+	count, err := a.ProductVariant().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testProductVariantTranslationToOneRemoveOpProductVariantUsingProductvariant
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.ProductvariantidProductVariant != nil {
+	if a.R.ProductVariant != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Productvariantid) {
+	if !queries.IsValuerNil(a.ProductVariantID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.ProductvariantidProductVariantTranslations) != 0 {
+	if len(b.R.ProductVariantTranslations) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testProductVariantTranslationsSelect(t *testing.T) {
 }
 
 var (
-	productVariantTranslationDBTypes = map[string]string{`ID`: `character varying`, `Languagecode`: `character varying`, `Productvariantid`: `character varying`, `Name`: `character varying`}
+	productVariantTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `ProductVariantID`: `character varying`, `Name`: `character varying`}
 	_                                = bytes.MinRead
 )
 

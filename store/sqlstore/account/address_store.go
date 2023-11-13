@@ -1,13 +1,17 @@
 package account
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/models"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
@@ -100,7 +104,7 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	return res, nil
 }
 
-func (as *SqlAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
+func (as *SqlAddressStore) DeleteAddresses(transaction boil.ContextTransactor, addressIDs []string) *model.AppError {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
@@ -108,6 +112,12 @@ func (as *SqlAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []st
 	if err != nil {
 		return model.NewAppError("store.DeleteAddresses", "app.account.delete_addresses.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
+
+	// a := models.Address{ID: }
+	addrs := models.AddressSlice{}
+	qm.WhereIn()
+
+	models.Addresses(qm.WhereIn()).DeleteAll(context.Background())
 
 	return nil
 }

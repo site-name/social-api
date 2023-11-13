@@ -25,9 +25,9 @@ import (
 // VoucherproductVariant is an object representing the database table.
 type VoucherproductVariant struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Voucherid        null.String `boil:"voucherid" json:"voucherid,omitempty" toml:"voucherid" yaml:"voucherid,omitempty"`
-	Productvariantid null.String `boil:"productvariantid" json:"productvariantid,omitempty" toml:"productvariantid" yaml:"productvariantid,omitempty"`
-	Createat         null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	VoucherID        null.String `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
+	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
+	CreateAt         null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 
 	R *voucherproductVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherproductVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,40 +35,40 @@ type VoucherproductVariant struct {
 
 var VoucherproductVariantColumns = struct {
 	ID               string
-	Voucherid        string
-	Productvariantid string
-	Createat         string
+	VoucherID        string
+	ProductVariantID string
+	CreateAt         string
 }{
 	ID:               "id",
-	Voucherid:        "voucherid",
-	Productvariantid: "productvariantid",
-	Createat:         "createat",
+	VoucherID:        "voucher_id",
+	ProductVariantID: "product_variant_id",
+	CreateAt:         "create_at",
 }
 
 var VoucherproductVariantTableColumns = struct {
 	ID               string
-	Voucherid        string
-	Productvariantid string
-	Createat         string
+	VoucherID        string
+	ProductVariantID string
+	CreateAt         string
 }{
 	ID:               "voucherproduct_variants.id",
-	Voucherid:        "voucherproduct_variants.voucherid",
-	Productvariantid: "voucherproduct_variants.productvariantid",
-	Createat:         "voucherproduct_variants.createat",
+	VoucherID:        "voucherproduct_variants.voucher_id",
+	ProductVariantID: "voucherproduct_variants.product_variant_id",
+	CreateAt:         "voucherproduct_variants.create_at",
 }
 
 // Generated where
 
 var VoucherproductVariantWhere = struct {
 	ID               whereHelperstring
-	Voucherid        whereHelpernull_String
-	Productvariantid whereHelpernull_String
-	Createat         whereHelpernull_Int64
+	VoucherID        whereHelpernull_String
+	ProductVariantID whereHelpernull_String
+	CreateAt         whereHelpernull_Int64
 }{
 	ID:               whereHelperstring{field: "\"voucherproduct_variants\".\"id\""},
-	Voucherid:        whereHelpernull_String{field: "\"voucherproduct_variants\".\"voucherid\""},
-	Productvariantid: whereHelpernull_String{field: "\"voucherproduct_variants\".\"productvariantid\""},
-	Createat:         whereHelpernull_Int64{field: "\"voucherproduct_variants\".\"createat\""},
+	VoucherID:        whereHelpernull_String{field: "\"voucherproduct_variants\".\"voucher_id\""},
+	ProductVariantID: whereHelpernull_String{field: "\"voucherproduct_variants\".\"product_variant_id\""},
+	CreateAt:         whereHelpernull_Int64{field: "\"voucherproduct_variants\".\"create_at\""},
 }
 
 // VoucherproductVariantRels is where relationship names are stored.
@@ -88,9 +88,9 @@ func (*voucherproductVariantR) NewStruct() *voucherproductVariantR {
 type voucherproductVariantL struct{}
 
 var (
-	voucherproductVariantAllColumns            = []string{"id", "voucherid", "productvariantid", "createat"}
+	voucherproductVariantAllColumns            = []string{"id", "voucher_id", "product_variant_id", "create_at"}
 	voucherproductVariantColumnsWithoutDefault = []string{"id"}
-	voucherproductVariantColumnsWithDefault    = []string{"voucherid", "productvariantid", "createat"}
+	voucherproductVariantColumnsWithDefault    = []string{"voucher_id", "product_variant_id", "create_at"}
 	voucherproductVariantPrimaryKeyColumns     = []string{"id"}
 	voucherproductVariantGeneratedColumns      = []string{}
 )

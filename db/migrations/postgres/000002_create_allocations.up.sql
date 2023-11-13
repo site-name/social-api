@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS allocations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  createat bigint,
-  orderlineid character varying(36),
-  stockid character varying(36),
-  quantityallocated integer
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at bigint NOT NULL,
+  order_line_id uuid NOT NULL,
+  stock_id uuid NOT NULL,
+  quantity_allocated integer NOT NULL
 );
 
 ALTER TABLE ONLY allocations
-ADD CONSTRAINT allocations_orderlineid_stockid_key UNIQUE (orderlineid, stockid);
+ADD CONSTRAINT allocations_order_line_id_stock_id_key UNIQUE (order_line_id, stock_id);

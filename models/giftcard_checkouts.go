@@ -25,8 +25,8 @@ import (
 // GiftcardCheckout is an object representing the database table.
 type GiftcardCheckout struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Giftcardid null.String `boil:"giftcardid" json:"giftcardid,omitempty" toml:"giftcardid" yaml:"giftcardid,omitempty"`
-	Checkoutid null.String `boil:"checkoutid" json:"checkoutid,omitempty" toml:"checkoutid" yaml:"checkoutid,omitempty"`
+	GiftcardID null.String `boil:"giftcard_id" json:"giftcard_id,omitempty" toml:"giftcard_id" yaml:"giftcard_id,omitempty"`
+	CheckoutID null.String `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
 
 	R *giftcardCheckoutR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardCheckoutL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,49 +34,49 @@ type GiftcardCheckout struct {
 
 var GiftcardCheckoutColumns = struct {
 	ID         string
-	Giftcardid string
-	Checkoutid string
+	GiftcardID string
+	CheckoutID string
 }{
 	ID:         "id",
-	Giftcardid: "giftcardid",
-	Checkoutid: "checkoutid",
+	GiftcardID: "giftcard_id",
+	CheckoutID: "checkout_id",
 }
 
 var GiftcardCheckoutTableColumns = struct {
 	ID         string
-	Giftcardid string
-	Checkoutid string
+	GiftcardID string
+	CheckoutID string
 }{
 	ID:         "giftcard_checkouts.id",
-	Giftcardid: "giftcard_checkouts.giftcardid",
-	Checkoutid: "giftcard_checkouts.checkoutid",
+	GiftcardID: "giftcard_checkouts.giftcard_id",
+	CheckoutID: "giftcard_checkouts.checkout_id",
 }
 
 // Generated where
 
 var GiftcardCheckoutWhere = struct {
 	ID         whereHelperstring
-	Giftcardid whereHelpernull_String
-	Checkoutid whereHelpernull_String
+	GiftcardID whereHelpernull_String
+	CheckoutID whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"giftcard_checkouts\".\"id\""},
-	Giftcardid: whereHelpernull_String{field: "\"giftcard_checkouts\".\"giftcardid\""},
-	Checkoutid: whereHelpernull_String{field: "\"giftcard_checkouts\".\"checkoutid\""},
+	GiftcardID: whereHelpernull_String{field: "\"giftcard_checkouts\".\"giftcard_id\""},
+	CheckoutID: whereHelpernull_String{field: "\"giftcard_checkouts\".\"checkout_id\""},
 }
 
 // GiftcardCheckoutRels is where relationship names are stored.
 var GiftcardCheckoutRels = struct {
-	CheckoutidCheckout string
-	GiftcardidGiftcard string
+	Checkout string
+	Giftcard string
 }{
-	CheckoutidCheckout: "CheckoutidCheckout",
-	GiftcardidGiftcard: "GiftcardidGiftcard",
+	Checkout: "Checkout",
+	Giftcard: "Giftcard",
 }
 
 // giftcardCheckoutR is where relationships are stored.
 type giftcardCheckoutR struct {
-	CheckoutidCheckout *Checkout `boil:"CheckoutidCheckout" json:"CheckoutidCheckout" toml:"CheckoutidCheckout" yaml:"CheckoutidCheckout"`
-	GiftcardidGiftcard *Giftcard `boil:"GiftcardidGiftcard" json:"GiftcardidGiftcard" toml:"GiftcardidGiftcard" yaml:"GiftcardidGiftcard"`
+	Checkout *Checkout `boil:"Checkout" json:"Checkout" toml:"Checkout" yaml:"Checkout"`
+	Giftcard *Giftcard `boil:"Giftcard" json:"Giftcard" toml:"Giftcard" yaml:"Giftcard"`
 }
 
 // NewStruct creates a new relationship struct
@@ -84,27 +84,27 @@ func (*giftcardCheckoutR) NewStruct() *giftcardCheckoutR {
 	return &giftcardCheckoutR{}
 }
 
-func (r *giftcardCheckoutR) GetCheckoutidCheckout() *Checkout {
+func (r *giftcardCheckoutR) GetCheckout() *Checkout {
 	if r == nil {
 		return nil
 	}
-	return r.CheckoutidCheckout
+	return r.Checkout
 }
 
-func (r *giftcardCheckoutR) GetGiftcardidGiftcard() *Giftcard {
+func (r *giftcardCheckoutR) GetGiftcard() *Giftcard {
 	if r == nil {
 		return nil
 	}
-	return r.GiftcardidGiftcard
+	return r.Giftcard
 }
 
 // giftcardCheckoutL is where Load methods for each relationship are stored.
 type giftcardCheckoutL struct{}
 
 var (
-	giftcardCheckoutAllColumns            = []string{"id", "giftcardid", "checkoutid"}
+	giftcardCheckoutAllColumns            = []string{"id", "giftcard_id", "checkout_id"}
 	giftcardCheckoutColumnsWithoutDefault = []string{"id"}
-	giftcardCheckoutColumnsWithDefault    = []string{"giftcardid", "checkoutid"}
+	giftcardCheckoutColumnsWithDefault    = []string{"giftcard_id", "checkout_id"}
 	giftcardCheckoutPrimaryKeyColumns     = []string{"id"}
 	giftcardCheckoutGeneratedColumns      = []string{}
 )
@@ -387,10 +387,10 @@ func (q giftcardCheckoutQuery) Exists(ctx context.Context, exec boil.ContextExec
 	return count > 0, nil
 }
 
-// CheckoutidCheckout pointed to by the foreign key.
-func (o *GiftcardCheckout) CheckoutidCheckout(mods ...qm.QueryMod) checkoutQuery {
+// Checkout pointed to by the foreign key.
+func (o *GiftcardCheckout) Checkout(mods ...qm.QueryMod) checkoutQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"token\" = ?", o.Checkoutid),
+		qm.Where("\"token\" = ?", o.CheckoutID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -398,10 +398,10 @@ func (o *GiftcardCheckout) CheckoutidCheckout(mods ...qm.QueryMod) checkoutQuery
 	return Checkouts(queryMods...)
 }
 
-// GiftcardidGiftcard pointed to by the foreign key.
-func (o *GiftcardCheckout) GiftcardidGiftcard(mods ...qm.QueryMod) giftcardQuery {
+// Giftcard pointed to by the foreign key.
+func (o *GiftcardCheckout) Giftcard(mods ...qm.QueryMod) giftcardQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Giftcardid),
+		qm.Where("\"id\" = ?", o.GiftcardID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *GiftcardCheckout) GiftcardidGiftcard(mods ...qm.QueryMod) giftcardQuery
 	return Giftcards(queryMods...)
 }
 
-// LoadCheckoutidCheckout allows an eager lookup of values, cached into the
+// LoadCheckout allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardCheckoutL) LoadCheckoutidCheckout(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
+func (giftcardCheckoutL) LoadCheckout(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
 	var slice []*GiftcardCheckout
 	var object *GiftcardCheckout
 
@@ -442,8 +442,8 @@ func (giftcardCheckoutL) LoadCheckoutidCheckout(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &giftcardCheckoutR{}
 		}
-		if !queries.IsNil(object.Checkoutid) {
-			args = append(args, object.Checkoutid)
+		if !queries.IsNil(object.CheckoutID) {
+			args = append(args, object.CheckoutID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (giftcardCheckoutL) LoadCheckoutidCheckout(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Checkoutid) {
+				if queries.Equal(a, obj.CheckoutID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Checkoutid) {
-				args = append(args, obj.Checkoutid)
+			if !queries.IsNil(obj.CheckoutID) {
+				args = append(args, obj.CheckoutID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (giftcardCheckoutL) LoadCheckoutidCheckout(ctx context.Context, e boil.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.CheckoutidCheckout = foreign
+		object.R.Checkout = foreign
 		if foreign.R == nil {
 			foreign.R = &checkoutR{}
 		}
-		foreign.R.CheckoutidGiftcardCheckouts = append(foreign.R.CheckoutidGiftcardCheckouts, object)
+		foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Checkoutid, foreign.Token) {
-				local.R.CheckoutidCheckout = foreign
+			if queries.Equal(local.CheckoutID, foreign.Token) {
+				local.R.Checkout = foreign
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
 				}
-				foreign.R.CheckoutidGiftcardCheckouts = append(foreign.R.CheckoutidGiftcardCheckouts, local)
+				foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, local)
 				break
 			}
 		}
@@ -533,9 +533,9 @@ func (giftcardCheckoutL) LoadCheckoutidCheckout(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// LoadGiftcardidGiftcard allows an eager lookup of values, cached into the
+// LoadGiftcard allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardCheckoutL) LoadGiftcardidGiftcard(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
+func (giftcardCheckoutL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcardCheckout interface{}, mods queries.Applicator) error {
 	var slice []*GiftcardCheckout
 	var object *GiftcardCheckout
 
@@ -566,8 +566,8 @@ func (giftcardCheckoutL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &giftcardCheckoutR{}
 		}
-		if !queries.IsNil(object.Giftcardid) {
-			args = append(args, object.Giftcardid)
+		if !queries.IsNil(object.GiftcardID) {
+			args = append(args, object.GiftcardID)
 		}
 
 	} else {
@@ -578,13 +578,13 @@ func (giftcardCheckoutL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Giftcardid) {
+				if queries.Equal(a, obj.GiftcardID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Giftcardid) {
-				args = append(args, obj.Giftcardid)
+			if !queries.IsNil(obj.GiftcardID) {
+				args = append(args, obj.GiftcardID)
 			}
 
 		}
@@ -633,22 +633,22 @@ func (giftcardCheckoutL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.GiftcardidGiftcard = foreign
+		object.R.Giftcard = foreign
 		if foreign.R == nil {
 			foreign.R = &giftcardR{}
 		}
-		foreign.R.GiftcardidGiftcardCheckouts = append(foreign.R.GiftcardidGiftcardCheckouts, object)
+		foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Giftcardid, foreign.ID) {
-				local.R.GiftcardidGiftcard = foreign
+			if queries.Equal(local.GiftcardID, foreign.ID) {
+				local.R.Giftcard = foreign
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
 				}
-				foreign.R.GiftcardidGiftcardCheckouts = append(foreign.R.GiftcardidGiftcardCheckouts, local)
+				foreign.R.GiftcardCheckouts = append(foreign.R.GiftcardCheckouts, local)
 				break
 			}
 		}
@@ -657,10 +657,10 @@ func (giftcardCheckoutL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// SetCheckoutidCheckout of the giftcardCheckout to the related item.
-// Sets o.R.CheckoutidCheckout to related.
-// Adds o to related.R.CheckoutidGiftcardCheckouts.
-func (o *GiftcardCheckout) SetCheckoutidCheckout(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Checkout) error {
+// SetCheckout of the giftcardCheckout to the related item.
+// Sets o.R.Checkout to related.
+// Adds o to related.R.GiftcardCheckouts.
+func (o *GiftcardCheckout) SetCheckout(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Checkout) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -670,7 +670,7 @@ func (o *GiftcardCheckout) SetCheckoutidCheckout(ctx context.Context, exec boil.
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"giftcard_checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"checkoutid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.Token, o.ID}
@@ -684,63 +684,63 @@ func (o *GiftcardCheckout) SetCheckoutidCheckout(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Checkoutid, related.Token)
+	queries.Assign(&o.CheckoutID, related.Token)
 	if o.R == nil {
 		o.R = &giftcardCheckoutR{
-			CheckoutidCheckout: related,
+			Checkout: related,
 		}
 	} else {
-		o.R.CheckoutidCheckout = related
+		o.R.Checkout = related
 	}
 
 	if related.R == nil {
 		related.R = &checkoutR{
-			CheckoutidGiftcardCheckouts: GiftcardCheckoutSlice{o},
+			GiftcardCheckouts: GiftcardCheckoutSlice{o},
 		}
 	} else {
-		related.R.CheckoutidGiftcardCheckouts = append(related.R.CheckoutidGiftcardCheckouts, o)
+		related.R.GiftcardCheckouts = append(related.R.GiftcardCheckouts, o)
 	}
 
 	return nil
 }
 
-// RemoveCheckoutidCheckout relationship.
-// Sets o.R.CheckoutidCheckout to nil.
+// RemoveCheckout relationship.
+// Sets o.R.Checkout to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *GiftcardCheckout) RemoveCheckoutidCheckout(ctx context.Context, exec boil.ContextExecutor, related *Checkout) error {
+func (o *GiftcardCheckout) RemoveCheckout(ctx context.Context, exec boil.ContextExecutor, related *Checkout) error {
 	var err error
 
-	queries.SetScanner(&o.Checkoutid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("checkoutid")); err != nil {
+	queries.SetScanner(&o.CheckoutID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.CheckoutidCheckout = nil
+		o.R.Checkout = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.CheckoutidGiftcardCheckouts {
-		if queries.Equal(o.Checkoutid, ri.Checkoutid) {
+	for i, ri := range related.R.GiftcardCheckouts {
+		if queries.Equal(o.CheckoutID, ri.CheckoutID) {
 			continue
 		}
 
-		ln := len(related.R.CheckoutidGiftcardCheckouts)
+		ln := len(related.R.GiftcardCheckouts)
 		if ln > 1 && i < ln-1 {
-			related.R.CheckoutidGiftcardCheckouts[i] = related.R.CheckoutidGiftcardCheckouts[ln-1]
+			related.R.GiftcardCheckouts[i] = related.R.GiftcardCheckouts[ln-1]
 		}
-		related.R.CheckoutidGiftcardCheckouts = related.R.CheckoutidGiftcardCheckouts[:ln-1]
+		related.R.GiftcardCheckouts = related.R.GiftcardCheckouts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetGiftcardidGiftcard of the giftcardCheckout to the related item.
-// Sets o.R.GiftcardidGiftcard to related.
-// Adds o to related.R.GiftcardidGiftcardCheckouts.
-func (o *GiftcardCheckout) SetGiftcardidGiftcard(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Giftcard) error {
+// SetGiftcard of the giftcardCheckout to the related item.
+// Sets o.R.Giftcard to related.
+// Adds o to related.R.GiftcardCheckouts.
+func (o *GiftcardCheckout) SetGiftcard(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Giftcard) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -750,7 +750,7 @@ func (o *GiftcardCheckout) SetGiftcardidGiftcard(ctx context.Context, exec boil.
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"giftcard_checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcardid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -764,54 +764,54 @@ func (o *GiftcardCheckout) SetGiftcardidGiftcard(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Giftcardid, related.ID)
+	queries.Assign(&o.GiftcardID, related.ID)
 	if o.R == nil {
 		o.R = &giftcardCheckoutR{
-			GiftcardidGiftcard: related,
+			Giftcard: related,
 		}
 	} else {
-		o.R.GiftcardidGiftcard = related
+		o.R.Giftcard = related
 	}
 
 	if related.R == nil {
 		related.R = &giftcardR{
-			GiftcardidGiftcardCheckouts: GiftcardCheckoutSlice{o},
+			GiftcardCheckouts: GiftcardCheckoutSlice{o},
 		}
 	} else {
-		related.R.GiftcardidGiftcardCheckouts = append(related.R.GiftcardidGiftcardCheckouts, o)
+		related.R.GiftcardCheckouts = append(related.R.GiftcardCheckouts, o)
 	}
 
 	return nil
 }
 
-// RemoveGiftcardidGiftcard relationship.
-// Sets o.R.GiftcardidGiftcard to nil.
+// RemoveGiftcard relationship.
+// Sets o.R.Giftcard to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *GiftcardCheckout) RemoveGiftcardidGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
+func (o *GiftcardCheckout) RemoveGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
 	var err error
 
-	queries.SetScanner(&o.Giftcardid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcardid")); err != nil {
+	queries.SetScanner(&o.GiftcardID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.GiftcardidGiftcard = nil
+		o.R.Giftcard = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.GiftcardidGiftcardCheckouts {
-		if queries.Equal(o.Giftcardid, ri.Giftcardid) {
+	for i, ri := range related.R.GiftcardCheckouts {
+		if queries.Equal(o.GiftcardID, ri.GiftcardID) {
 			continue
 		}
 
-		ln := len(related.R.GiftcardidGiftcardCheckouts)
+		ln := len(related.R.GiftcardCheckouts)
 		if ln > 1 && i < ln-1 {
-			related.R.GiftcardidGiftcardCheckouts[i] = related.R.GiftcardidGiftcardCheckouts[ln-1]
+			related.R.GiftcardCheckouts[i] = related.R.GiftcardCheckouts[ln-1]
 		}
-		related.R.GiftcardidGiftcardCheckouts = related.R.GiftcardidGiftcardCheckouts[:ln-1]
+		related.R.GiftcardCheckouts = related.R.GiftcardCheckouts[:ln-1]
 		break
 	}
 	return nil

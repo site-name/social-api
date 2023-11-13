@@ -25,7 +25,7 @@ import (
 // Vat is an object representing the database table.
 type Vat struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Countrycode null.String `boil:"countrycode" json:"countrycode,omitempty" toml:"countrycode" yaml:"countrycode,omitempty"`
+	CountryCode null.String `boil:"country_code" json:"country_code,omitempty" toml:"country_code" yaml:"country_code,omitempty"`
 	Data        null.JSON   `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
 
 	R *vatR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,21 +34,21 @@ type Vat struct {
 
 var VatColumns = struct {
 	ID          string
-	Countrycode string
+	CountryCode string
 	Data        string
 }{
 	ID:          "id",
-	Countrycode: "countrycode",
+	CountryCode: "country_code",
 	Data:        "data",
 }
 
 var VatTableColumns = struct {
 	ID          string
-	Countrycode string
+	CountryCode string
 	Data        string
 }{
 	ID:          "vats.id",
-	Countrycode: "vats.countrycode",
+	CountryCode: "vats.country_code",
 	Data:        "vats.data",
 }
 
@@ -56,11 +56,11 @@ var VatTableColumns = struct {
 
 var VatWhere = struct {
 	ID          whereHelperstring
-	Countrycode whereHelpernull_String
+	CountryCode whereHelpernull_String
 	Data        whereHelpernull_JSON
 }{
 	ID:          whereHelperstring{field: "\"vats\".\"id\""},
-	Countrycode: whereHelpernull_String{field: "\"vats\".\"countrycode\""},
+	CountryCode: whereHelpernull_String{field: "\"vats\".\"country_code\""},
 	Data:        whereHelpernull_JSON{field: "\"vats\".\"data\""},
 }
 
@@ -81,9 +81,9 @@ func (*vatR) NewStruct() *vatR {
 type vatL struct{}
 
 var (
-	vatAllColumns            = []string{"id", "countrycode", "data"}
+	vatAllColumns            = []string{"id", "country_code", "data"}
 	vatColumnsWithoutDefault = []string{"id"}
-	vatColumnsWithDefault    = []string{"countrycode", "data"}
+	vatColumnsWithDefault    = []string{"country_code", "data"}
 	vatPrimaryKeyColumns     = []string{"id"}
 	vatGeneratedColumns      = []string{}
 )

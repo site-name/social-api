@@ -494,7 +494,7 @@ func testCollectionTranslationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testCollectionTranslationToOneCollectionUsingCollectionidCollection(t *testing.T) {
+func testCollectionTranslationToOneCollectionUsingCollection(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testCollectionTranslationToOneCollectionUsingCollectionidCollection(t *test
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Collectionid, foreign.ID)
+	queries.Assign(&local.CollectionID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CollectionidCollection().One(ctx, tx)
+	check, err := local.Collection().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testCollectionTranslationToOneCollectionUsingCollectionidCollection(t *test
 	})
 
 	slice := CollectionTranslationSlice{&local}
-	if err = local.L.LoadCollectionidCollection(ctx, tx, false, (*[]*CollectionTranslation)(&slice), nil); err != nil {
+	if err = local.L.LoadCollection(ctx, tx, false, (*[]*CollectionTranslation)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CollectionidCollection = nil
-	if err = local.L.LoadCollectionidCollection(ctx, tx, true, &local, nil); err != nil {
+	local.R.Collection = nil
+	if err = local.L.LoadCollection(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testCollectionTranslationToOneCollectionUsingCollectionidCollection(t *test
 	}
 }
 
-func testCollectionTranslationToOneSetOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testCollectionTranslationToOneSetOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testCollectionTranslationToOneSetOpCollectionUsingCollectionidCollection(t 
 	}
 
 	for i, x := range []*Collection{&b, &c} {
-		err = a.SetCollectionidCollection(ctx, tx, i != 0, x)
+		err = a.SetCollection(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CollectionidCollection != x {
+		if a.R.Collection != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CollectionidCollectionTranslations[0] != &a {
+		if x.R.CollectionTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Collectionid))
-		reflect.Indirect(reflect.ValueOf(&a.Collectionid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CollectionID))
+		reflect.Indirect(reflect.ValueOf(&a.CollectionID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid, x.ID)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID, x.ID)
 		}
 	}
 }
 
-func testCollectionTranslationToOneRemoveOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testCollectionTranslationToOneRemoveOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testCollectionTranslationToOneRemoveOpCollectionUsingCollectionidCollection
 		t.Fatal(err)
 	}
 
-	if err = a.SetCollectionidCollection(ctx, tx, true, &b); err != nil {
+	if err = a.SetCollection(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCollectionidCollection(ctx, tx, &b); err != nil {
+	if err = a.RemoveCollection(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CollectionidCollection().Count(ctx, tx)
+	count, err := a.Collection().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testCollectionTranslationToOneRemoveOpCollectionUsingCollectionidCollection
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CollectionidCollection != nil {
+	if a.R.Collection != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Collectionid) {
+	if !queries.IsValuerNil(a.CollectionID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CollectionidCollectionTranslations) != 0 {
+	if len(b.R.CollectionTranslations) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testCollectionTranslationsSelect(t *testing.T) {
 }
 
 var (
-	collectionTranslationDBTypes = map[string]string{`ID`: `character varying`, `Languagecode`: `character varying`, `Collectionid`: `character varying`, `Name`: `character varying`, `Description`: `text`, `Seotitle`: `character varying`, `Seodescription`: `character varying`}
+	collectionTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `CollectionID`: `character varying`, `Name`: `character varying`, `Description`: `text`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
 	_                            = bytes.MinRead
 )
 

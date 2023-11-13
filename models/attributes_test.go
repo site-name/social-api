@@ -494,7 +494,7 @@ func testAttributesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testAttributeToManyAttributeidAttributeProducts(t *testing.T) {
+func testAttributeToManyAttributeProducts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testAttributeToManyAttributeidAttributeProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Attributeid, a.ID)
-	queries.Assign(&c.Attributeid, a.ID)
+	queries.Assign(&b.AttributeID, a.ID)
+	queries.Assign(&c.AttributeID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testAttributeToManyAttributeidAttributeProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.AttributeidAttributeProducts().All(ctx, tx)
+	check, err := a.AttributeProducts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Attributeid, b.Attributeid) {
+		if queries.Equal(v.AttributeID, b.AttributeID) {
 			bFound = true
 		}
-		if queries.Equal(v.Attributeid, c.Attributeid) {
+		if queries.Equal(v.AttributeID, c.AttributeID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testAttributeToManyAttributeidAttributeProducts(t *testing.T) {
 	}
 
 	slice := AttributeSlice{&a}
-	if err = a.L.LoadAttributeidAttributeProducts(ctx, tx, false, (*[]*Attribute)(&slice), nil); err != nil {
+	if err = a.L.LoadAttributeProducts(ctx, tx, false, (*[]*Attribute)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AttributeidAttributeProducts); got != 2 {
+	if got := len(a.R.AttributeProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AttributeidAttributeProducts = nil
-	if err = a.L.LoadAttributeidAttributeProducts(ctx, tx, true, &a, nil); err != nil {
+	a.R.AttributeProducts = nil
+	if err = a.L.LoadAttributeProducts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AttributeidAttributeProducts); got != 2 {
+	if got := len(a.R.AttributeProducts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testAttributeToManyAttributeidAttributeProducts(t *testing.T) {
 	}
 }
 
-func testAttributeToManyAttributeidAttributeValues(t *testing.T) {
+func testAttributeToManyAttributeValues(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testAttributeToManyAttributeidAttributeValues(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Attributeid, a.ID)
-	queries.Assign(&c.Attributeid, a.ID)
+	queries.Assign(&b.AttributeID, a.ID)
+	queries.Assign(&c.AttributeID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testAttributeToManyAttributeidAttributeValues(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.AttributeidAttributeValues().All(ctx, tx)
+	check, err := a.AttributeValues().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Attributeid, b.Attributeid) {
+		if queries.Equal(v.AttributeID, b.AttributeID) {
 			bFound = true
 		}
-		if queries.Equal(v.Attributeid, c.Attributeid) {
+		if queries.Equal(v.AttributeID, c.AttributeID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testAttributeToManyAttributeidAttributeValues(t *testing.T) {
 	}
 
 	slice := AttributeSlice{&a}
-	if err = a.L.LoadAttributeidAttributeValues(ctx, tx, false, (*[]*Attribute)(&slice), nil); err != nil {
+	if err = a.L.LoadAttributeValues(ctx, tx, false, (*[]*Attribute)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AttributeidAttributeValues); got != 2 {
+	if got := len(a.R.AttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AttributeidAttributeValues = nil
-	if err = a.L.LoadAttributeidAttributeValues(ctx, tx, true, &a, nil); err != nil {
+	a.R.AttributeValues = nil
+	if err = a.L.LoadAttributeValues(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AttributeidAttributeValues); got != 2 {
+	if got := len(a.R.AttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testAttributeToManyAttributeidAttributeValues(t *testing.T) {
 	}
 }
 
-func testAttributeToManyAttributeidAttributeVariants(t *testing.T) {
+func testAttributeToManyAttributeVariants(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testAttributeToManyAttributeidAttributeVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Attributeid, a.ID)
-	queries.Assign(&c.Attributeid, a.ID)
+	queries.Assign(&b.AttributeID, a.ID)
+	queries.Assign(&c.AttributeID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testAttributeToManyAttributeidAttributeVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.AttributeidAttributeVariants().All(ctx, tx)
+	check, err := a.AttributeVariants().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Attributeid, b.Attributeid) {
+		if queries.Equal(v.AttributeID, b.AttributeID) {
 			bFound = true
 		}
-		if queries.Equal(v.Attributeid, c.Attributeid) {
+		if queries.Equal(v.AttributeID, c.AttributeID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testAttributeToManyAttributeidAttributeVariants(t *testing.T) {
 	}
 
 	slice := AttributeSlice{&a}
-	if err = a.L.LoadAttributeidAttributeVariants(ctx, tx, false, (*[]*Attribute)(&slice), nil); err != nil {
+	if err = a.L.LoadAttributeVariants(ctx, tx, false, (*[]*Attribute)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AttributeidAttributeVariants); got != 2 {
+	if got := len(a.R.AttributeVariants); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.AttributeidAttributeVariants = nil
-	if err = a.L.LoadAttributeidAttributeVariants(ctx, tx, true, &a, nil); err != nil {
+	a.R.AttributeVariants = nil
+	if err = a.L.LoadAttributeVariants(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.AttributeidAttributeVariants); got != 2 {
+	if got := len(a.R.AttributeVariants); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testAttributeToManyAttributeidAttributeVariants(t *testing.T) {
 	}
 }
 
-func testAttributeToManyAddOpAttributeidAttributeProducts(t *testing.T) {
+func testAttributeToManyAddOpAttributeProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -762,7 +762,7 @@ func testAttributeToManyAddOpAttributeidAttributeProducts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAttributeidAttributeProducts(ctx, tx, i != 0, x...)
+		err = a.AddAttributeProducts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -770,28 +770,28 @@ func testAttributeToManyAddOpAttributeidAttributeProducts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Attributeid) {
-			t.Error("foreign key was wrong value", a.ID, first.Attributeid)
+		if !queries.Equal(a.ID, first.AttributeID) {
+			t.Error("foreign key was wrong value", a.ID, first.AttributeID)
 		}
-		if !queries.Equal(a.ID, second.Attributeid) {
-			t.Error("foreign key was wrong value", a.ID, second.Attributeid)
+		if !queries.Equal(a.ID, second.AttributeID) {
+			t.Error("foreign key was wrong value", a.ID, second.AttributeID)
 		}
 
-		if first.R.AttributeidAttribute != &a {
+		if first.R.Attribute != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AttributeidAttribute != &a {
+		if second.R.Attribute != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AttributeidAttributeProducts[i*2] != first {
+		if a.R.AttributeProducts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AttributeidAttributeProducts[i*2+1] != second {
+		if a.R.AttributeProducts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AttributeidAttributeProducts().Count(ctx, tx)
+		count, err := a.AttributeProducts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -801,7 +801,7 @@ func testAttributeToManyAddOpAttributeidAttributeProducts(t *testing.T) {
 	}
 }
 
-func testAttributeToManySetOpAttributeidAttributeProducts(t *testing.T) {
+func testAttributeToManySetOpAttributeProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -832,25 +832,12 @@ func testAttributeToManySetOpAttributeidAttributeProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetAttributeidAttributeProducts(ctx, tx, false, &b, &c)
+	err = a.SetAttributeProducts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AttributeidAttributeProducts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAttributeidAttributeProducts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AttributeidAttributeProducts().Count(ctx, tx)
+	count, err := a.AttributeProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -858,41 +845,54 @@ func testAttributeToManySetOpAttributeidAttributeProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Attributeid) {
+	err = a.SetAttributeProducts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.AttributeProducts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.AttributeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Attributeid) {
+	if !queries.IsValuerNil(c.AttributeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Attributeid) {
-		t.Error("foreign key was wrong value", a.ID, d.Attributeid)
+	if !queries.Equal(a.ID, d.AttributeID) {
+		t.Error("foreign key was wrong value", a.ID, d.AttributeID)
 	}
-	if !queries.Equal(a.ID, e.Attributeid) {
-		t.Error("foreign key was wrong value", a.ID, e.Attributeid)
-	}
-
-	if b.R.AttributeidAttribute != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AttributeidAttribute != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AttributeidAttribute != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AttributeidAttribute != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.AttributeID) {
+		t.Error("foreign key was wrong value", a.ID, e.AttributeID)
 	}
 
-	if a.R.AttributeidAttributeProducts[0] != &d {
+	if b.R.Attribute != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Attribute != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Attribute != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Attribute != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.AttributeProducts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.AttributeidAttributeProducts[1] != &e {
+	if a.R.AttributeProducts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAttributeToManyRemoveOpAttributeidAttributeProducts(t *testing.T) {
+func testAttributeToManyRemoveOpAttributeProducts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -917,12 +917,12 @@ func testAttributeToManyRemoveOpAttributeidAttributeProducts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddAttributeidAttributeProducts(ctx, tx, true, foreigners...)
+	err = a.AddAttributeProducts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AttributeidAttributeProducts().Count(ctx, tx)
+	count, err := a.AttributeProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -930,12 +930,12 @@ func testAttributeToManyRemoveOpAttributeidAttributeProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveAttributeidAttributeProducts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveAttributeProducts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.AttributeidAttributeProducts().Count(ctx, tx)
+	count, err = a.AttributeProducts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -943,40 +943,40 @@ func testAttributeToManyRemoveOpAttributeidAttributeProducts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Attributeid) {
+	if !queries.IsValuerNil(b.AttributeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Attributeid) {
+	if !queries.IsValuerNil(c.AttributeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.AttributeidAttribute != nil {
+	if b.R.Attribute != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.AttributeidAttribute != nil {
+	if c.R.Attribute != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.AttributeidAttribute != &a {
+	if d.R.Attribute != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.AttributeidAttribute != &a {
+	if e.R.Attribute != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.AttributeidAttributeProducts) != 2 {
+	if len(a.R.AttributeProducts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AttributeidAttributeProducts[1] != &d {
+	if a.R.AttributeProducts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.AttributeidAttributeProducts[0] != &e {
+	if a.R.AttributeProducts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAttributeToManyAddOpAttributeidAttributeValues(t *testing.T) {
+func testAttributeToManyAddOpAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1013,7 +1013,7 @@ func testAttributeToManyAddOpAttributeidAttributeValues(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAttributeidAttributeValues(ctx, tx, i != 0, x...)
+		err = a.AddAttributeValues(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1021,28 +1021,28 @@ func testAttributeToManyAddOpAttributeidAttributeValues(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Attributeid) {
-			t.Error("foreign key was wrong value", a.ID, first.Attributeid)
+		if !queries.Equal(a.ID, first.AttributeID) {
+			t.Error("foreign key was wrong value", a.ID, first.AttributeID)
 		}
-		if !queries.Equal(a.ID, second.Attributeid) {
-			t.Error("foreign key was wrong value", a.ID, second.Attributeid)
+		if !queries.Equal(a.ID, second.AttributeID) {
+			t.Error("foreign key was wrong value", a.ID, second.AttributeID)
 		}
 
-		if first.R.AttributeidAttribute != &a {
+		if first.R.Attribute != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AttributeidAttribute != &a {
+		if second.R.Attribute != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AttributeidAttributeValues[i*2] != first {
+		if a.R.AttributeValues[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AttributeidAttributeValues[i*2+1] != second {
+		if a.R.AttributeValues[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AttributeidAttributeValues().Count(ctx, tx)
+		count, err := a.AttributeValues().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1052,7 +1052,7 @@ func testAttributeToManyAddOpAttributeidAttributeValues(t *testing.T) {
 	}
 }
 
-func testAttributeToManySetOpAttributeidAttributeValues(t *testing.T) {
+func testAttributeToManySetOpAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1083,25 +1083,12 @@ func testAttributeToManySetOpAttributeidAttributeValues(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetAttributeidAttributeValues(ctx, tx, false, &b, &c)
+	err = a.SetAttributeValues(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AttributeidAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAttributeidAttributeValues(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AttributeidAttributeValues().Count(ctx, tx)
+	count, err := a.AttributeValues().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1109,41 +1096,54 @@ func testAttributeToManySetOpAttributeidAttributeValues(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Attributeid) {
+	err = a.SetAttributeValues(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.AttributeValues().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.AttributeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Attributeid) {
+	if !queries.IsValuerNil(c.AttributeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Attributeid) {
-		t.Error("foreign key was wrong value", a.ID, d.Attributeid)
+	if !queries.Equal(a.ID, d.AttributeID) {
+		t.Error("foreign key was wrong value", a.ID, d.AttributeID)
 	}
-	if !queries.Equal(a.ID, e.Attributeid) {
-		t.Error("foreign key was wrong value", a.ID, e.Attributeid)
-	}
-
-	if b.R.AttributeidAttribute != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AttributeidAttribute != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AttributeidAttribute != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AttributeidAttribute != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.AttributeID) {
+		t.Error("foreign key was wrong value", a.ID, e.AttributeID)
 	}
 
-	if a.R.AttributeidAttributeValues[0] != &d {
+	if b.R.Attribute != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Attribute != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Attribute != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Attribute != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.AttributeValues[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.AttributeidAttributeValues[1] != &e {
+	if a.R.AttributeValues[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAttributeToManyRemoveOpAttributeidAttributeValues(t *testing.T) {
+func testAttributeToManyRemoveOpAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1168,12 +1168,12 @@ func testAttributeToManyRemoveOpAttributeidAttributeValues(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddAttributeidAttributeValues(ctx, tx, true, foreigners...)
+	err = a.AddAttributeValues(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AttributeidAttributeValues().Count(ctx, tx)
+	count, err := a.AttributeValues().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1181,12 +1181,12 @@ func testAttributeToManyRemoveOpAttributeidAttributeValues(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveAttributeidAttributeValues(ctx, tx, foreigners[:2]...)
+	err = a.RemoveAttributeValues(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.AttributeidAttributeValues().Count(ctx, tx)
+	count, err = a.AttributeValues().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1194,40 +1194,40 @@ func testAttributeToManyRemoveOpAttributeidAttributeValues(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Attributeid) {
+	if !queries.IsValuerNil(b.AttributeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Attributeid) {
+	if !queries.IsValuerNil(c.AttributeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.AttributeidAttribute != nil {
+	if b.R.Attribute != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.AttributeidAttribute != nil {
+	if c.R.Attribute != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.AttributeidAttribute != &a {
+	if d.R.Attribute != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.AttributeidAttribute != &a {
+	if e.R.Attribute != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.AttributeidAttributeValues) != 2 {
+	if len(a.R.AttributeValues) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AttributeidAttributeValues[1] != &d {
+	if a.R.AttributeValues[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.AttributeidAttributeValues[0] != &e {
+	if a.R.AttributeValues[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAttributeToManyAddOpAttributeidAttributeVariants(t *testing.T) {
+func testAttributeToManyAddOpAttributeVariants(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1264,7 +1264,7 @@ func testAttributeToManyAddOpAttributeidAttributeVariants(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddAttributeidAttributeVariants(ctx, tx, i != 0, x...)
+		err = a.AddAttributeVariants(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1272,28 +1272,28 @@ func testAttributeToManyAddOpAttributeidAttributeVariants(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Attributeid) {
-			t.Error("foreign key was wrong value", a.ID, first.Attributeid)
+		if !queries.Equal(a.ID, first.AttributeID) {
+			t.Error("foreign key was wrong value", a.ID, first.AttributeID)
 		}
-		if !queries.Equal(a.ID, second.Attributeid) {
-			t.Error("foreign key was wrong value", a.ID, second.Attributeid)
+		if !queries.Equal(a.ID, second.AttributeID) {
+			t.Error("foreign key was wrong value", a.ID, second.AttributeID)
 		}
 
-		if first.R.AttributeidAttribute != &a {
+		if first.R.Attribute != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.AttributeidAttribute != &a {
+		if second.R.Attribute != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.AttributeidAttributeVariants[i*2] != first {
+		if a.R.AttributeVariants[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.AttributeidAttributeVariants[i*2+1] != second {
+		if a.R.AttributeVariants[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.AttributeidAttributeVariants().Count(ctx, tx)
+		count, err := a.AttributeVariants().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1303,7 +1303,7 @@ func testAttributeToManyAddOpAttributeidAttributeVariants(t *testing.T) {
 	}
 }
 
-func testAttributeToManySetOpAttributeidAttributeVariants(t *testing.T) {
+func testAttributeToManySetOpAttributeVariants(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1334,25 +1334,12 @@ func testAttributeToManySetOpAttributeidAttributeVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetAttributeidAttributeVariants(ctx, tx, false, &b, &c)
+	err = a.SetAttributeVariants(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AttributeidAttributeVariants().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAttributeidAttributeVariants(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AttributeidAttributeVariants().Count(ctx, tx)
+	count, err := a.AttributeVariants().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1360,41 +1347,54 @@ func testAttributeToManySetOpAttributeidAttributeVariants(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Attributeid) {
+	err = a.SetAttributeVariants(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.AttributeVariants().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.AttributeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Attributeid) {
+	if !queries.IsValuerNil(c.AttributeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Attributeid) {
-		t.Error("foreign key was wrong value", a.ID, d.Attributeid)
+	if !queries.Equal(a.ID, d.AttributeID) {
+		t.Error("foreign key was wrong value", a.ID, d.AttributeID)
 	}
-	if !queries.Equal(a.ID, e.Attributeid) {
-		t.Error("foreign key was wrong value", a.ID, e.Attributeid)
-	}
-
-	if b.R.AttributeidAttribute != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.AttributeidAttribute != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.AttributeidAttribute != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.AttributeidAttribute != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.AttributeID) {
+		t.Error("foreign key was wrong value", a.ID, e.AttributeID)
 	}
 
-	if a.R.AttributeidAttributeVariants[0] != &d {
+	if b.R.Attribute != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Attribute != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Attribute != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Attribute != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.AttributeVariants[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.AttributeidAttributeVariants[1] != &e {
+	if a.R.AttributeVariants[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAttributeToManyRemoveOpAttributeidAttributeVariants(t *testing.T) {
+func testAttributeToManyRemoveOpAttributeVariants(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1419,12 +1419,12 @@ func testAttributeToManyRemoveOpAttributeidAttributeVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddAttributeidAttributeVariants(ctx, tx, true, foreigners...)
+	err = a.AddAttributeVariants(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.AttributeidAttributeVariants().Count(ctx, tx)
+	count, err := a.AttributeVariants().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1432,12 +1432,12 @@ func testAttributeToManyRemoveOpAttributeidAttributeVariants(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveAttributeidAttributeVariants(ctx, tx, foreigners[:2]...)
+	err = a.RemoveAttributeVariants(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.AttributeidAttributeVariants().Count(ctx, tx)
+	count, err = a.AttributeVariants().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1445,35 +1445,35 @@ func testAttributeToManyRemoveOpAttributeidAttributeVariants(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Attributeid) {
+	if !queries.IsValuerNil(b.AttributeID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Attributeid) {
+	if !queries.IsValuerNil(c.AttributeID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.AttributeidAttribute != nil {
+	if b.R.Attribute != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.AttributeidAttribute != nil {
+	if c.R.Attribute != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.AttributeidAttribute != &a {
+	if d.R.Attribute != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.AttributeidAttribute != &a {
+	if e.R.Attribute != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.AttributeidAttributeVariants) != 2 {
+	if len(a.R.AttributeVariants) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AttributeidAttributeVariants[1] != &d {
+	if a.R.AttributeVariants[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.AttributeidAttributeVariants[0] != &e {
+	if a.R.AttributeVariants[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
@@ -1552,7 +1552,7 @@ func testAttributesSelect(t *testing.T) {
 }
 
 var (
-	attributeDBTypes = map[string]string{`ID`: `character varying`, `Slug`: `character varying`, `Name`: `character varying`, `Type`: `character varying`, `Inputtype`: `character varying`, `Entitytype`: `character varying`, `Unit`: `character varying`, `Valuerequired`: `boolean`, `Isvariantonly`: `boolean`, `Visibleinstorefront`: `boolean`, `Filterableinstorefront`: `boolean`, `Filterableindashboard`: `boolean`, `Storefrontsearchposition`: `integer`, `Availableingrid`: `boolean`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	attributeDBTypes = map[string]string{`ID`: `character varying`, `Slug`: `character varying`, `Name`: `character varying`, `Type`: `character varying`, `InputType`: `character varying`, `EntityType`: `character varying`, `Unit`: `character varying`, `ValueRequired`: `boolean`, `IsVariantOnly`: `boolean`, `VisibleInStorefront`: `boolean`, `FilterableInStorefront`: `boolean`, `FilterableInDashboard`: `boolean`, `StorefrontSearchPosition`: `integer`, `AvailableInGrid`: `boolean`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_                = bytes.MinRead
 )
 

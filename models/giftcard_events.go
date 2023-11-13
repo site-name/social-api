@@ -28,8 +28,8 @@ type GiftcardEvent struct {
 	Date       null.Int64  `boil:"date" json:"date,omitempty" toml:"date" yaml:"date,omitempty"`
 	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
 	Parameters null.JSON   `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
-	Userid     null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Giftcardid null.String `boil:"giftcardid" json:"giftcardid,omitempty" toml:"giftcardid" yaml:"giftcardid,omitempty"`
+	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	GiftcardID null.String `boil:"giftcard_id" json:"giftcard_id,omitempty" toml:"giftcard_id" yaml:"giftcard_id,omitempty"`
 
 	R *giftcardEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,15 +40,15 @@ var GiftcardEventColumns = struct {
 	Date       string
 	Type       string
 	Parameters string
-	Userid     string
-	Giftcardid string
+	UserID     string
+	GiftcardID string
 }{
 	ID:         "id",
 	Date:       "date",
 	Type:       "type",
 	Parameters: "parameters",
-	Userid:     "userid",
-	Giftcardid: "giftcardid",
+	UserID:     "user_id",
+	GiftcardID: "giftcard_id",
 }
 
 var GiftcardEventTableColumns = struct {
@@ -56,15 +56,15 @@ var GiftcardEventTableColumns = struct {
 	Date       string
 	Type       string
 	Parameters string
-	Userid     string
-	Giftcardid string
+	UserID     string
+	GiftcardID string
 }{
 	ID:         "giftcard_events.id",
 	Date:       "giftcard_events.date",
 	Type:       "giftcard_events.type",
 	Parameters: "giftcard_events.parameters",
-	Userid:     "giftcard_events.userid",
-	Giftcardid: "giftcard_events.giftcardid",
+	UserID:     "giftcard_events.user_id",
+	GiftcardID: "giftcard_events.giftcard_id",
 }
 
 // Generated where
@@ -74,27 +74,27 @@ var GiftcardEventWhere = struct {
 	Date       whereHelpernull_Int64
 	Type       whereHelpernull_String
 	Parameters whereHelpernull_JSON
-	Userid     whereHelpernull_String
-	Giftcardid whereHelpernull_String
+	UserID     whereHelpernull_String
+	GiftcardID whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"giftcard_events\".\"id\""},
 	Date:       whereHelpernull_Int64{field: "\"giftcard_events\".\"date\""},
 	Type:       whereHelpernull_String{field: "\"giftcard_events\".\"type\""},
 	Parameters: whereHelpernull_JSON{field: "\"giftcard_events\".\"parameters\""},
-	Userid:     whereHelpernull_String{field: "\"giftcard_events\".\"userid\""},
-	Giftcardid: whereHelpernull_String{field: "\"giftcard_events\".\"giftcardid\""},
+	UserID:     whereHelpernull_String{field: "\"giftcard_events\".\"user_id\""},
+	GiftcardID: whereHelpernull_String{field: "\"giftcard_events\".\"giftcard_id\""},
 }
 
 // GiftcardEventRels is where relationship names are stored.
 var GiftcardEventRels = struct {
-	GiftcardidGiftcard string
+	Giftcard string
 }{
-	GiftcardidGiftcard: "GiftcardidGiftcard",
+	Giftcard: "Giftcard",
 }
 
 // giftcardEventR is where relationships are stored.
 type giftcardEventR struct {
-	GiftcardidGiftcard *Giftcard `boil:"GiftcardidGiftcard" json:"GiftcardidGiftcard" toml:"GiftcardidGiftcard" yaml:"GiftcardidGiftcard"`
+	Giftcard *Giftcard `boil:"Giftcard" json:"Giftcard" toml:"Giftcard" yaml:"Giftcard"`
 }
 
 // NewStruct creates a new relationship struct
@@ -102,20 +102,20 @@ func (*giftcardEventR) NewStruct() *giftcardEventR {
 	return &giftcardEventR{}
 }
 
-func (r *giftcardEventR) GetGiftcardidGiftcard() *Giftcard {
+func (r *giftcardEventR) GetGiftcard() *Giftcard {
 	if r == nil {
 		return nil
 	}
-	return r.GiftcardidGiftcard
+	return r.Giftcard
 }
 
 // giftcardEventL is where Load methods for each relationship are stored.
 type giftcardEventL struct{}
 
 var (
-	giftcardEventAllColumns            = []string{"id", "date", "type", "parameters", "userid", "giftcardid"}
+	giftcardEventAllColumns            = []string{"id", "date", "type", "parameters", "user_id", "giftcard_id"}
 	giftcardEventColumnsWithoutDefault = []string{"id"}
-	giftcardEventColumnsWithDefault    = []string{"date", "type", "parameters", "userid", "giftcardid"}
+	giftcardEventColumnsWithDefault    = []string{"date", "type", "parameters", "user_id", "giftcard_id"}
 	giftcardEventPrimaryKeyColumns     = []string{"id"}
 	giftcardEventGeneratedColumns      = []string{}
 )
@@ -398,10 +398,10 @@ func (q giftcardEventQuery) Exists(ctx context.Context, exec boil.ContextExecuto
 	return count > 0, nil
 }
 
-// GiftcardidGiftcard pointed to by the foreign key.
-func (o *GiftcardEvent) GiftcardidGiftcard(mods ...qm.QueryMod) giftcardQuery {
+// Giftcard pointed to by the foreign key.
+func (o *GiftcardEvent) Giftcard(mods ...qm.QueryMod) giftcardQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Giftcardid),
+		qm.Where("\"id\" = ?", o.GiftcardID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -409,9 +409,9 @@ func (o *GiftcardEvent) GiftcardidGiftcard(mods ...qm.QueryMod) giftcardQuery {
 	return Giftcards(queryMods...)
 }
 
-// LoadGiftcardidGiftcard allows an eager lookup of values, cached into the
+// LoadGiftcard allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardEventL) LoadGiftcardidGiftcard(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcardEvent interface{}, mods queries.Applicator) error {
+func (giftcardEventL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcardEvent interface{}, mods queries.Applicator) error {
 	var slice []*GiftcardEvent
 	var object *GiftcardEvent
 
@@ -442,8 +442,8 @@ func (giftcardEventL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 		if object.R == nil {
 			object.R = &giftcardEventR{}
 		}
-		if !queries.IsNil(object.Giftcardid) {
-			args = append(args, object.Giftcardid)
+		if !queries.IsNil(object.GiftcardID) {
+			args = append(args, object.GiftcardID)
 		}
 
 	} else {
@@ -454,13 +454,13 @@ func (giftcardEventL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Giftcardid) {
+				if queries.Equal(a, obj.GiftcardID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Giftcardid) {
-				args = append(args, obj.Giftcardid)
+			if !queries.IsNil(obj.GiftcardID) {
+				args = append(args, obj.GiftcardID)
 			}
 
 		}
@@ -509,22 +509,22 @@ func (giftcardEventL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.GiftcardidGiftcard = foreign
+		object.R.Giftcard = foreign
 		if foreign.R == nil {
 			foreign.R = &giftcardR{}
 		}
-		foreign.R.GiftcardidGiftcardEvents = append(foreign.R.GiftcardidGiftcardEvents, object)
+		foreign.R.GiftcardEvents = append(foreign.R.GiftcardEvents, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Giftcardid, foreign.ID) {
-				local.R.GiftcardidGiftcard = foreign
+			if queries.Equal(local.GiftcardID, foreign.ID) {
+				local.R.Giftcard = foreign
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
 				}
-				foreign.R.GiftcardidGiftcardEvents = append(foreign.R.GiftcardidGiftcardEvents, local)
+				foreign.R.GiftcardEvents = append(foreign.R.GiftcardEvents, local)
 				break
 			}
 		}
@@ -533,10 +533,10 @@ func (giftcardEventL) LoadGiftcardidGiftcard(ctx context.Context, e boil.Context
 	return nil
 }
 
-// SetGiftcardidGiftcard of the giftcardEvent to the related item.
-// Sets o.R.GiftcardidGiftcard to related.
-// Adds o to related.R.GiftcardidGiftcardEvents.
-func (o *GiftcardEvent) SetGiftcardidGiftcard(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Giftcard) error {
+// SetGiftcard of the giftcardEvent to the related item.
+// Sets o.R.Giftcard to related.
+// Adds o to related.R.GiftcardEvents.
+func (o *GiftcardEvent) SetGiftcard(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Giftcard) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -546,7 +546,7 @@ func (o *GiftcardEvent) SetGiftcardidGiftcard(ctx context.Context, exec boil.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"giftcard_events\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcardid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"giftcard_id"}),
 		strmangle.WhereClause("\"", "\"", 2, giftcardEventPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -560,54 +560,54 @@ func (o *GiftcardEvent) SetGiftcardidGiftcard(ctx context.Context, exec boil.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Giftcardid, related.ID)
+	queries.Assign(&o.GiftcardID, related.ID)
 	if o.R == nil {
 		o.R = &giftcardEventR{
-			GiftcardidGiftcard: related,
+			Giftcard: related,
 		}
 	} else {
-		o.R.GiftcardidGiftcard = related
+		o.R.Giftcard = related
 	}
 
 	if related.R == nil {
 		related.R = &giftcardR{
-			GiftcardidGiftcardEvents: GiftcardEventSlice{o},
+			GiftcardEvents: GiftcardEventSlice{o},
 		}
 	} else {
-		related.R.GiftcardidGiftcardEvents = append(related.R.GiftcardidGiftcardEvents, o)
+		related.R.GiftcardEvents = append(related.R.GiftcardEvents, o)
 	}
 
 	return nil
 }
 
-// RemoveGiftcardidGiftcard relationship.
-// Sets o.R.GiftcardidGiftcard to nil.
+// RemoveGiftcard relationship.
+// Sets o.R.Giftcard to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *GiftcardEvent) RemoveGiftcardidGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
+func (o *GiftcardEvent) RemoveGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
 	var err error
 
-	queries.SetScanner(&o.Giftcardid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcardid")); err != nil {
+	queries.SetScanner(&o.GiftcardID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.GiftcardidGiftcard = nil
+		o.R.Giftcard = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.GiftcardidGiftcardEvents {
-		if queries.Equal(o.Giftcardid, ri.Giftcardid) {
+	for i, ri := range related.R.GiftcardEvents {
+		if queries.Equal(o.GiftcardID, ri.GiftcardID) {
 			continue
 		}
 
-		ln := len(related.R.GiftcardidGiftcardEvents)
+		ln := len(related.R.GiftcardEvents)
 		if ln > 1 && i < ln-1 {
-			related.R.GiftcardidGiftcardEvents[i] = related.R.GiftcardidGiftcardEvents[ln-1]
+			related.R.GiftcardEvents[i] = related.R.GiftcardEvents[ln-1]
 		}
-		related.R.GiftcardidGiftcardEvents = related.R.GiftcardidGiftcardEvents[:ln-1]
+		related.R.GiftcardEvents = related.R.GiftcardEvents[:ln-1]
 		break
 	}
 	return nil

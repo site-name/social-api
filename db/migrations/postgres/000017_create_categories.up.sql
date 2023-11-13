@@ -1,20 +1,19 @@
 CREATE TABLE IF NOT EXISTS categories (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  name character varying(250),
-  slug character varying(255),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  name character varying(250) NOT NULL,
+  slug character varying(255) NOT NULL,
   description jsonb,
-  parentid character varying(36),
-  level smallint,
-  backgroundimage character varying(200),
-  backgroundimagealt character varying(128),
+  parent_id uuid,
+  level smallint, NOT NULL
+  background_image character varying(200),
+  background_image_alt character varying(128) NOT NULL,
   images character varying(1000),
-  seotitle character varying(70),
-  seodescription character varying(300),
-  nametranslation jsonb,
+  seo_title character varying(70) NOT NULL,
+  seo_description character varying(300) NOT NULL,
+  name_translation jsonb,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
--- ALTER TABLE ONLY categories
--- ADD CONSTRAINT categories_name_key UNIQUE (name);
+
 ALTER TABLE ONLY categories
-ADD CONSTRAINT categories_slug_key UNIQUE (slug);
+    ADD CONSTRAINT categories_slug_key UNIQUE (slug);

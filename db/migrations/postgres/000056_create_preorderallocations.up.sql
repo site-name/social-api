@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS preorder_allocations (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  orderlineid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_line_id uuid,
   quantity integer,
-  productvariantchannellistingid character varying(36)
+  product_variant_channel_listing_id character varying(36)
 );
 
 ALTER TABLE ONLY preorder_allocations
-    ADD CONSTRAINT preorder_allocations_orderlineid_productvariantchannellistin_key UNIQUE (orderlineid, productvariantchannellistingid);
+    ADD CONSTRAINT preorder_allocations_order_line_id_product_variant_channel_listing_id_key UNIQUE (order_line_id, product_variant_channel_listing_id);

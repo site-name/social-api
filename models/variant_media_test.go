@@ -494,7 +494,7 @@ func testVariantMediaInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testVariantMediumToOneProductMediumUsingMediaidProductMedium(t *testing.T) {
+func testVariantMediumToOneProductMediumUsingMedium(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testVariantMediumToOneProductMediumUsingMediaidProductMedium(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Mediaid, foreign.ID)
+	queries.Assign(&local.MediaID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.MediaidProductMedium().One(ctx, tx)
+	check, err := local.Medium().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testVariantMediumToOneProductMediumUsingMediaidProductMedium(t *testing.T) 
 	})
 
 	slice := VariantMediumSlice{&local}
-	if err = local.L.LoadMediaidProductMedium(ctx, tx, false, (*[]*VariantMedium)(&slice), nil); err != nil {
+	if err = local.L.LoadMedium(ctx, tx, false, (*[]*VariantMedium)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.MediaidProductMedium == nil {
+	if local.R.Medium == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.MediaidProductMedium = nil
-	if err = local.L.LoadMediaidProductMedium(ctx, tx, true, &local, nil); err != nil {
+	local.R.Medium = nil
+	if err = local.L.LoadMedium(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.MediaidProductMedium == nil {
+	if local.R.Medium == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testVariantMediumToOneProductMediumUsingMediaidProductMedium(t *testing.T) 
 	}
 }
 
-func testVariantMediumToOneProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testVariantMediumToOneProductVariantUsingVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testVariantMediumToOneProductVariantUsingVariantidProductVariant(t *testing
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Variantid, foreign.ID)
+	queries.Assign(&local.VariantID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.VariantidProductVariant().One(ctx, tx)
+	check, err := local.Variant().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testVariantMediumToOneProductVariantUsingVariantidProductVariant(t *testing
 	})
 
 	slice := VariantMediumSlice{&local}
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, false, (*[]*VariantMedium)(&slice), nil); err != nil {
+	if err = local.L.LoadVariant(ctx, tx, false, (*[]*VariantMedium)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.VariantidProductVariant = nil
-	if err = local.L.LoadVariantidProductVariant(ctx, tx, true, &local, nil); err != nil {
+	local.R.Variant = nil
+	if err = local.L.LoadVariant(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.VariantidProductVariant == nil {
+	if local.R.Variant == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testVariantMediumToOneProductVariantUsingVariantidProductVariant(t *testing
 	}
 }
 
-func testVariantMediumToOneSetOpProductMediumUsingMediaidProductMedium(t *testing.T) {
+func testVariantMediumToOneSetOpProductMediumUsingMedium(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testVariantMediumToOneSetOpProductMediumUsingMediaidProductMedium(t *testin
 	}
 
 	for i, x := range []*ProductMedium{&b, &c} {
-		err = a.SetMediaidProductMedium(ctx, tx, i != 0, x)
+		err = a.SetMedium(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.MediaidProductMedium != x {
+		if a.R.Medium != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.MediaidVariantMedia[0] != &a {
+		if x.R.MediumVariantMedia[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Mediaid, x.ID) {
-			t.Error("foreign key was wrong value", a.Mediaid)
+		if !queries.Equal(a.MediaID, x.ID) {
+			t.Error("foreign key was wrong value", a.MediaID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Mediaid))
-		reflect.Indirect(reflect.ValueOf(&a.Mediaid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.MediaID))
+		reflect.Indirect(reflect.ValueOf(&a.MediaID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Mediaid, x.ID) {
-			t.Error("foreign key was wrong value", a.Mediaid, x.ID)
+		if !queries.Equal(a.MediaID, x.ID) {
+			t.Error("foreign key was wrong value", a.MediaID, x.ID)
 		}
 	}
 }
 
-func testVariantMediumToOneRemoveOpProductMediumUsingMediaidProductMedium(t *testing.T) {
+func testVariantMediumToOneRemoveOpProductMediumUsingMedium(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testVariantMediumToOneRemoveOpProductMediumUsingMediaidProductMedium(t *tes
 		t.Fatal(err)
 	}
 
-	if err = a.SetMediaidProductMedium(ctx, tx, true, &b); err != nil {
+	if err = a.SetMedium(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveMediaidProductMedium(ctx, tx, &b); err != nil {
+	if err = a.RemoveMedium(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.MediaidProductMedium().Count(ctx, tx)
+	count, err := a.Medium().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testVariantMediumToOneRemoveOpProductMediumUsingMediaidProductMedium(t *tes
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.MediaidProductMedium != nil {
+	if a.R.Medium != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Mediaid) {
+	if !queries.IsValuerNil(a.MediaID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.MediaidVariantMedia) != 0 {
+	if len(b.R.MediumVariantMedia) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testVariantMediumToOneSetOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testVariantMediumToOneSetOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testVariantMediumToOneSetOpProductVariantUsingVariantidProductVariant(t *te
 	}
 
 	for i, x := range []*ProductVariant{&b, &c} {
-		err = a.SetVariantidProductVariant(ctx, tx, i != 0, x)
+		err = a.SetVariant(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.VariantidProductVariant != x {
+		if a.R.Variant != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.VariantidVariantMedia[0] != &a {
+		if x.R.VariantVariantMedia[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Variantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Variantid)
+		if !queries.Equal(a.VariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.VariantID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Variantid))
-		reflect.Indirect(reflect.ValueOf(&a.Variantid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.VariantID))
+		reflect.Indirect(reflect.ValueOf(&a.VariantID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Variantid, x.ID) {
-			t.Error("foreign key was wrong value", a.Variantid, x.ID)
+		if !queries.Equal(a.VariantID, x.ID) {
+			t.Error("foreign key was wrong value", a.VariantID, x.ID)
 		}
 	}
 }
 
-func testVariantMediumToOneRemoveOpProductVariantUsingVariantidProductVariant(t *testing.T) {
+func testVariantMediumToOneRemoveOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testVariantMediumToOneRemoveOpProductVariantUsingVariantidProductVariant(t 
 		t.Fatal(err)
 	}
 
-	if err = a.SetVariantidProductVariant(ctx, tx, true, &b); err != nil {
+	if err = a.SetVariant(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveVariantidProductVariant(ctx, tx, &b); err != nil {
+	if err = a.RemoveVariant(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.VariantidProductVariant().Count(ctx, tx)
+	count, err := a.Variant().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testVariantMediumToOneRemoveOpProductVariantUsingVariantidProductVariant(t 
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.VariantidProductVariant != nil {
+	if a.R.Variant != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Variantid) {
+	if !queries.IsValuerNil(a.VariantID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.VariantidVariantMedia) != 0 {
+	if len(b.R.VariantVariantMedia) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testVariantMediaSelect(t *testing.T) {
 }
 
 var (
-	variantMediumDBTypes = map[string]string{`ID`: `character varying`, `Variantid`: `character varying`, `Mediaid`: `character varying`}
+	variantMediumDBTypes = map[string]string{`ID`: `character varying`, `VariantID`: `character varying`, `MediaID`: `character varying`}
 	_                    = bytes.MinRead
 )
 

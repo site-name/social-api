@@ -25,24 +25,24 @@ import (
 // FileInfo is an object representing the database table.
 type FileInfo struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Creatorid       null.String `boil:"creatorid" json:"creatorid,omitempty" toml:"creatorid" yaml:"creatorid,omitempty"`
-	Parentid        null.String `boil:"parentid" json:"parentid,omitempty" toml:"parentid" yaml:"parentid,omitempty"`
-	Createat        null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat        null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
-	Deleteat        null.Int64  `boil:"deleteat" json:"deleteat,omitempty" toml:"deleteat" yaml:"deleteat,omitempty"`
+	CreatorID       null.String `boil:"creator_id" json:"creator_id,omitempty" toml:"creator_id" yaml:"creator_id,omitempty"`
+	ParentID        null.String `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
+	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt        null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	DeleteAt        null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
 	Path            null.String `boil:"path" json:"path,omitempty" toml:"path" yaml:"path,omitempty"`
-	Thumbnailpath   null.String `boil:"thumbnailpath" json:"thumbnailpath,omitempty" toml:"thumbnailpath" yaml:"thumbnailpath,omitempty"`
-	Previewpath     null.String `boil:"previewpath" json:"previewpath,omitempty" toml:"previewpath" yaml:"previewpath,omitempty"`
+	ThumbnailPath   null.String `boil:"thumbnail_path" json:"thumbnail_path,omitempty" toml:"thumbnail_path" yaml:"thumbnail_path,omitempty"`
+	PreviewPath     null.String `boil:"preview_path" json:"preview_path,omitempty" toml:"preview_path" yaml:"preview_path,omitempty"`
 	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 	Extension       null.String `boil:"extension" json:"extension,omitempty" toml:"extension" yaml:"extension,omitempty"`
 	Size            null.Int64  `boil:"size" json:"size,omitempty" toml:"size" yaml:"size,omitempty"`
-	Mimetype        null.String `boil:"mimetype" json:"mimetype,omitempty" toml:"mimetype" yaml:"mimetype,omitempty"`
+	MimeType        null.String `boil:"mime_type" json:"mime_type,omitempty" toml:"mime_type" yaml:"mime_type,omitempty"`
 	Width           null.Int    `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
 	Height          null.Int    `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
-	Haspreviewimage null.Bool   `boil:"haspreviewimage" json:"haspreviewimage,omitempty" toml:"haspreviewimage" yaml:"haspreviewimage,omitempty"`
-	Minipreview     null.Bytes  `boil:"minipreview" json:"minipreview,omitempty" toml:"minipreview" yaml:"minipreview,omitempty"`
+	HasPreviewImage null.Bool   `boil:"has_preview_image" json:"has_preview_image,omitempty" toml:"has_preview_image" yaml:"has_preview_image,omitempty"`
+	MiniPreview     null.Bytes  `boil:"mini_preview" json:"mini_preview,omitempty" toml:"mini_preview" yaml:"mini_preview,omitempty"`
 	Content         null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	Remoteid        null.String `boil:"remoteid" json:"remoteid,omitempty" toml:"remoteid" yaml:"remoteid,omitempty"`
+	RemoteID        null.String `boil:"remote_id" json:"remote_id,omitempty" toml:"remote_id" yaml:"remote_id,omitempty"`
 
 	R *fileInfoR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L fileInfoL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -50,86 +50,86 @@ type FileInfo struct {
 
 var FileInfoColumns = struct {
 	ID              string
-	Creatorid       string
-	Parentid        string
-	Createat        string
-	Updateat        string
-	Deleteat        string
+	CreatorID       string
+	ParentID        string
+	CreateAt        string
+	UpdateAt        string
+	DeleteAt        string
 	Path            string
-	Thumbnailpath   string
-	Previewpath     string
+	ThumbnailPath   string
+	PreviewPath     string
 	Name            string
 	Extension       string
 	Size            string
-	Mimetype        string
+	MimeType        string
 	Width           string
 	Height          string
-	Haspreviewimage string
-	Minipreview     string
+	HasPreviewImage string
+	MiniPreview     string
 	Content         string
-	Remoteid        string
+	RemoteID        string
 }{
 	ID:              "id",
-	Creatorid:       "creatorid",
-	Parentid:        "parentid",
-	Createat:        "createat",
-	Updateat:        "updateat",
-	Deleteat:        "deleteat",
+	CreatorID:       "creator_id",
+	ParentID:        "parent_id",
+	CreateAt:        "create_at",
+	UpdateAt:        "update_at",
+	DeleteAt:        "delete_at",
 	Path:            "path",
-	Thumbnailpath:   "thumbnailpath",
-	Previewpath:     "previewpath",
+	ThumbnailPath:   "thumbnail_path",
+	PreviewPath:     "preview_path",
 	Name:            "name",
 	Extension:       "extension",
 	Size:            "size",
-	Mimetype:        "mimetype",
+	MimeType:        "mime_type",
 	Width:           "width",
 	Height:          "height",
-	Haspreviewimage: "haspreviewimage",
-	Minipreview:     "minipreview",
+	HasPreviewImage: "has_preview_image",
+	MiniPreview:     "mini_preview",
 	Content:         "content",
-	Remoteid:        "remoteid",
+	RemoteID:        "remote_id",
 }
 
 var FileInfoTableColumns = struct {
 	ID              string
-	Creatorid       string
-	Parentid        string
-	Createat        string
-	Updateat        string
-	Deleteat        string
+	CreatorID       string
+	ParentID        string
+	CreateAt        string
+	UpdateAt        string
+	DeleteAt        string
 	Path            string
-	Thumbnailpath   string
-	Previewpath     string
+	ThumbnailPath   string
+	PreviewPath     string
 	Name            string
 	Extension       string
 	Size            string
-	Mimetype        string
+	MimeType        string
 	Width           string
 	Height          string
-	Haspreviewimage string
-	Minipreview     string
+	HasPreviewImage string
+	MiniPreview     string
 	Content         string
-	Remoteid        string
+	RemoteID        string
 }{
 	ID:              "file_infos.id",
-	Creatorid:       "file_infos.creatorid",
-	Parentid:        "file_infos.parentid",
-	Createat:        "file_infos.createat",
-	Updateat:        "file_infos.updateat",
-	Deleteat:        "file_infos.deleteat",
+	CreatorID:       "file_infos.creator_id",
+	ParentID:        "file_infos.parent_id",
+	CreateAt:        "file_infos.create_at",
+	UpdateAt:        "file_infos.update_at",
+	DeleteAt:        "file_infos.delete_at",
 	Path:            "file_infos.path",
-	Thumbnailpath:   "file_infos.thumbnailpath",
-	Previewpath:     "file_infos.previewpath",
+	ThumbnailPath:   "file_infos.thumbnail_path",
+	PreviewPath:     "file_infos.preview_path",
 	Name:            "file_infos.name",
 	Extension:       "file_infos.extension",
 	Size:            "file_infos.size",
-	Mimetype:        "file_infos.mimetype",
+	MimeType:        "file_infos.mime_type",
 	Width:           "file_infos.width",
 	Height:          "file_infos.height",
-	Haspreviewimage: "file_infos.haspreviewimage",
-	Minipreview:     "file_infos.minipreview",
+	HasPreviewImage: "file_infos.has_preview_image",
+	MiniPreview:     "file_infos.mini_preview",
 	Content:         "file_infos.content",
-	Remoteid:        "file_infos.remoteid",
+	RemoteID:        "file_infos.remote_id",
 }
 
 // Generated where
@@ -160,44 +160,44 @@ func (w whereHelpernull_Bytes) IsNotNull() qm.QueryMod { return qmhelper.WhereIs
 
 var FileInfoWhere = struct {
 	ID              whereHelperstring
-	Creatorid       whereHelpernull_String
-	Parentid        whereHelpernull_String
-	Createat        whereHelpernull_Int64
-	Updateat        whereHelpernull_Int64
-	Deleteat        whereHelpernull_Int64
+	CreatorID       whereHelpernull_String
+	ParentID        whereHelpernull_String
+	CreateAt        whereHelpernull_Int64
+	UpdateAt        whereHelpernull_Int64
+	DeleteAt        whereHelpernull_Int64
 	Path            whereHelpernull_String
-	Thumbnailpath   whereHelpernull_String
-	Previewpath     whereHelpernull_String
+	ThumbnailPath   whereHelpernull_String
+	PreviewPath     whereHelpernull_String
 	Name            whereHelpernull_String
 	Extension       whereHelpernull_String
 	Size            whereHelpernull_Int64
-	Mimetype        whereHelpernull_String
+	MimeType        whereHelpernull_String
 	Width           whereHelpernull_Int
 	Height          whereHelpernull_Int
-	Haspreviewimage whereHelpernull_Bool
-	Minipreview     whereHelpernull_Bytes
+	HasPreviewImage whereHelpernull_Bool
+	MiniPreview     whereHelpernull_Bytes
 	Content         whereHelpernull_String
-	Remoteid        whereHelpernull_String
+	RemoteID        whereHelpernull_String
 }{
 	ID:              whereHelperstring{field: "\"file_infos\".\"id\""},
-	Creatorid:       whereHelpernull_String{field: "\"file_infos\".\"creatorid\""},
-	Parentid:        whereHelpernull_String{field: "\"file_infos\".\"parentid\""},
-	Createat:        whereHelpernull_Int64{field: "\"file_infos\".\"createat\""},
-	Updateat:        whereHelpernull_Int64{field: "\"file_infos\".\"updateat\""},
-	Deleteat:        whereHelpernull_Int64{field: "\"file_infos\".\"deleteat\""},
+	CreatorID:       whereHelpernull_String{field: "\"file_infos\".\"creator_id\""},
+	ParentID:        whereHelpernull_String{field: "\"file_infos\".\"parent_id\""},
+	CreateAt:        whereHelpernull_Int64{field: "\"file_infos\".\"create_at\""},
+	UpdateAt:        whereHelpernull_Int64{field: "\"file_infos\".\"update_at\""},
+	DeleteAt:        whereHelpernull_Int64{field: "\"file_infos\".\"delete_at\""},
 	Path:            whereHelpernull_String{field: "\"file_infos\".\"path\""},
-	Thumbnailpath:   whereHelpernull_String{field: "\"file_infos\".\"thumbnailpath\""},
-	Previewpath:     whereHelpernull_String{field: "\"file_infos\".\"previewpath\""},
+	ThumbnailPath:   whereHelpernull_String{field: "\"file_infos\".\"thumbnail_path\""},
+	PreviewPath:     whereHelpernull_String{field: "\"file_infos\".\"preview_path\""},
 	Name:            whereHelpernull_String{field: "\"file_infos\".\"name\""},
 	Extension:       whereHelpernull_String{field: "\"file_infos\".\"extension\""},
 	Size:            whereHelpernull_Int64{field: "\"file_infos\".\"size\""},
-	Mimetype:        whereHelpernull_String{field: "\"file_infos\".\"mimetype\""},
+	MimeType:        whereHelpernull_String{field: "\"file_infos\".\"mime_type\""},
 	Width:           whereHelpernull_Int{field: "\"file_infos\".\"width\""},
 	Height:          whereHelpernull_Int{field: "\"file_infos\".\"height\""},
-	Haspreviewimage: whereHelpernull_Bool{field: "\"file_infos\".\"haspreviewimage\""},
-	Minipreview:     whereHelpernull_Bytes{field: "\"file_infos\".\"minipreview\""},
+	HasPreviewImage: whereHelpernull_Bool{field: "\"file_infos\".\"has_preview_image\""},
+	MiniPreview:     whereHelpernull_Bytes{field: "\"file_infos\".\"mini_preview\""},
 	Content:         whereHelpernull_String{field: "\"file_infos\".\"content\""},
-	Remoteid:        whereHelpernull_String{field: "\"file_infos\".\"remoteid\""},
+	RemoteID:        whereHelpernull_String{field: "\"file_infos\".\"remote_id\""},
 }
 
 // FileInfoRels is where relationship names are stored.
@@ -217,9 +217,9 @@ func (*fileInfoR) NewStruct() *fileInfoR {
 type fileInfoL struct{}
 
 var (
-	fileInfoAllColumns            = []string{"id", "creatorid", "parentid", "createat", "updateat", "deleteat", "path", "thumbnailpath", "previewpath", "name", "extension", "size", "mimetype", "width", "height", "haspreviewimage", "minipreview", "content", "remoteid"}
+	fileInfoAllColumns            = []string{"id", "creator_id", "parent_id", "create_at", "update_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
 	fileInfoColumnsWithoutDefault = []string{"id"}
-	fileInfoColumnsWithDefault    = []string{"creatorid", "parentid", "createat", "updateat", "deleteat", "path", "thumbnailpath", "previewpath", "name", "extension", "size", "mimetype", "width", "height", "haspreviewimage", "minipreview", "content", "remoteid"}
+	fileInfoColumnsWithDefault    = []string{"creator_id", "parent_id", "create_at", "update_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
 	fileInfoPrimaryKeyColumns     = []string{"id"}
 	fileInfoGeneratedColumns      = []string{}
 )

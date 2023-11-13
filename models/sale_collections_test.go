@@ -494,7 +494,7 @@ func testSaleCollectionsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testSaleCollectionToOneCollectionUsingCollectionidCollection(t *testing.T) {
+func testSaleCollectionToOneCollectionUsingCollection(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testSaleCollectionToOneCollectionUsingCollectionidCollection(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Collectionid, foreign.ID)
+	queries.Assign(&local.CollectionID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.CollectionidCollection().One(ctx, tx)
+	check, err := local.Collection().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testSaleCollectionToOneCollectionUsingCollectionidCollection(t *testing.T) 
 	})
 
 	slice := SaleCollectionSlice{&local}
-	if err = local.L.LoadCollectionidCollection(ctx, tx, false, (*[]*SaleCollection)(&slice), nil); err != nil {
+	if err = local.L.LoadCollection(ctx, tx, false, (*[]*SaleCollection)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.CollectionidCollection = nil
-	if err = local.L.LoadCollectionidCollection(ctx, tx, true, &local, nil); err != nil {
+	local.R.Collection = nil
+	if err = local.L.LoadCollection(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.CollectionidCollection == nil {
+	if local.R.Collection == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testSaleCollectionToOneCollectionUsingCollectionidCollection(t *testing.T) 
 	}
 }
 
-func testSaleCollectionToOneSaleUsingSaleidSale(t *testing.T) {
+func testSaleCollectionToOneSaleUsingSale(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testSaleCollectionToOneSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Saleid, foreign.ID)
+	queries.Assign(&local.SaleID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.SaleidSale().One(ctx, tx)
+	check, err := local.Sale().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testSaleCollectionToOneSaleUsingSaleidSale(t *testing.T) {
 	})
 
 	slice := SaleCollectionSlice{&local}
-	if err = local.L.LoadSaleidSale(ctx, tx, false, (*[]*SaleCollection)(&slice), nil); err != nil {
+	if err = local.L.LoadSale(ctx, tx, false, (*[]*SaleCollection)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.SaleidSale = nil
-	if err = local.L.LoadSaleidSale(ctx, tx, true, &local, nil); err != nil {
+	local.R.Sale = nil
+	if err = local.L.LoadSale(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.SaleidSale == nil {
+	if local.R.Sale == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testSaleCollectionToOneSaleUsingSaleidSale(t *testing.T) {
 	}
 }
 
-func testSaleCollectionToOneSetOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testSaleCollectionToOneSetOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testSaleCollectionToOneSetOpCollectionUsingCollectionidCollection(t *testin
 	}
 
 	for i, x := range []*Collection{&b, &c} {
-		err = a.SetCollectionidCollection(ctx, tx, i != 0, x)
+		err = a.SetCollection(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.CollectionidCollection != x {
+		if a.R.Collection != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.CollectionidSaleCollections[0] != &a {
+		if x.R.SaleCollections[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Collectionid))
-		reflect.Indirect(reflect.ValueOf(&a.Collectionid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.CollectionID))
+		reflect.Indirect(reflect.ValueOf(&a.CollectionID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Collectionid, x.ID) {
-			t.Error("foreign key was wrong value", a.Collectionid, x.ID)
+		if !queries.Equal(a.CollectionID, x.ID) {
+			t.Error("foreign key was wrong value", a.CollectionID, x.ID)
 		}
 	}
 }
 
-func testSaleCollectionToOneRemoveOpCollectionUsingCollectionidCollection(t *testing.T) {
+func testSaleCollectionToOneRemoveOpCollectionUsingCollection(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testSaleCollectionToOneRemoveOpCollectionUsingCollectionidCollection(t *tes
 		t.Fatal(err)
 	}
 
-	if err = a.SetCollectionidCollection(ctx, tx, true, &b); err != nil {
+	if err = a.SetCollection(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveCollectionidCollection(ctx, tx, &b); err != nil {
+	if err = a.RemoveCollection(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.CollectionidCollection().Count(ctx, tx)
+	count, err := a.Collection().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testSaleCollectionToOneRemoveOpCollectionUsingCollectionidCollection(t *tes
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.CollectionidCollection != nil {
+	if a.R.Collection != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Collectionid) {
+	if !queries.IsValuerNil(a.CollectionID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.CollectionidSaleCollections) != 0 {
+	if len(b.R.SaleCollections) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testSaleCollectionToOneSetOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleCollectionToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testSaleCollectionToOneSetOpSaleUsingSaleidSale(t *testing.T) {
 	}
 
 	for i, x := range []*Sale{&b, &c} {
-		err = a.SetSaleidSale(ctx, tx, i != 0, x)
+		err = a.SetSale(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.SaleidSale != x {
+		if a.R.Sale != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.SaleidSaleCollections[0] != &a {
+		if x.R.SaleCollections[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Saleid))
-		reflect.Indirect(reflect.ValueOf(&a.Saleid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.SaleID))
+		reflect.Indirect(reflect.ValueOf(&a.SaleID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Saleid, x.ID) {
-			t.Error("foreign key was wrong value", a.Saleid, x.ID)
+		if !queries.Equal(a.SaleID, x.ID) {
+			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
 	}
 }
 
-func testSaleCollectionToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
+func testSaleCollectionToOneRemoveOpSaleUsingSale(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testSaleCollectionToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetSaleidSale(ctx, tx, true, &b); err != nil {
+	if err = a.SetSale(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveSaleidSale(ctx, tx, &b); err != nil {
+	if err = a.RemoveSale(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.SaleidSale().Count(ctx, tx)
+	count, err := a.Sale().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testSaleCollectionToOneRemoveOpSaleUsingSaleidSale(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.SaleidSale != nil {
+	if a.R.Sale != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Saleid) {
+	if !queries.IsValuerNil(a.SaleID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.SaleidSaleCollections) != 0 {
+	if len(b.R.SaleCollections) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testSaleCollectionsSelect(t *testing.T) {
 }
 
 var (
-	saleCollectionDBTypes = map[string]string{`ID`: `character varying`, `Saleid`: `character varying`, `Collectionid`: `character varying`, `Createat`: `bigint`}
+	saleCollectionDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `CollectionID`: `character varying`, `CreateAt`: `bigint`}
 	_                     = bytes.MinRead
 )
 

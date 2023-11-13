@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS shipping_method_postal_code_rules (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  shippingmethodid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  shipping_method_id uuid,
   "start" character varying(32),
   "end" character varying(32),
-  inclusiontype character varying(32)
+  inclusion_type character varying(32)
 );
 ALTER TABLE ONLY shipping_method_postal_code_rules
-ADD CONSTRAINT shipping_method_postal_code_rules_shippingmethodid_start_end_key UNIQUE (shippingmethodid, "start", "end");
+ADD CONSTRAINT shipping_method_postal_code_rules_shipping_method_id_start_end_key UNIQUE (shipping_method_id, "start", "end");

@@ -25,16 +25,16 @@ import (
 // Invoice is an object representing the database table.
 type Invoice struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Orderid         null.String `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
+	OrderID         null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	Number          null.String `boil:"number" json:"number,omitempty" toml:"number" yaml:"number,omitempty"`
-	Createat        null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Externalurl     null.String `boil:"externalurl" json:"externalurl,omitempty" toml:"externalurl" yaml:"externalurl,omitempty"`
+	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ExternalURL     null.String `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
 	Status          null.String `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
 	Message         null.String `boil:"message" json:"message,omitempty" toml:"message" yaml:"message,omitempty"`
-	Updateat        null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
-	Invoicefile     null.String `boil:"invoicefile" json:"invoicefile,omitempty" toml:"invoicefile" yaml:"invoicefile,omitempty"`
+	UpdateAt        null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	InvoiceFile     null.String `boil:"invoice_file" json:"invoice_file,omitempty" toml:"invoice_file" yaml:"invoice_file,omitempty"`
 	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata null.JSON   `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *invoiceR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L invoiceL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,97 +42,97 @@ type Invoice struct {
 
 var InvoiceColumns = struct {
 	ID              string
-	Orderid         string
+	OrderID         string
 	Number          string
-	Createat        string
-	Externalurl     string
+	CreateAt        string
+	ExternalURL     string
 	Status          string
 	Message         string
-	Updateat        string
-	Invoicefile     string
+	UpdateAt        string
+	InvoiceFile     string
 	Metadata        string
-	Privatemetadata string
+	PrivateMetadata string
 }{
 	ID:              "id",
-	Orderid:         "orderid",
+	OrderID:         "order_id",
 	Number:          "number",
-	Createat:        "createat",
-	Externalurl:     "externalurl",
+	CreateAt:        "create_at",
+	ExternalURL:     "external_url",
 	Status:          "status",
 	Message:         "message",
-	Updateat:        "updateat",
-	Invoicefile:     "invoicefile",
+	UpdateAt:        "update_at",
+	InvoiceFile:     "invoice_file",
 	Metadata:        "metadata",
-	Privatemetadata: "privatemetadata",
+	PrivateMetadata: "private_metadata",
 }
 
 var InvoiceTableColumns = struct {
 	ID              string
-	Orderid         string
+	OrderID         string
 	Number          string
-	Createat        string
-	Externalurl     string
+	CreateAt        string
+	ExternalURL     string
 	Status          string
 	Message         string
-	Updateat        string
-	Invoicefile     string
+	UpdateAt        string
+	InvoiceFile     string
 	Metadata        string
-	Privatemetadata string
+	PrivateMetadata string
 }{
 	ID:              "invoices.id",
-	Orderid:         "invoices.orderid",
+	OrderID:         "invoices.order_id",
 	Number:          "invoices.number",
-	Createat:        "invoices.createat",
-	Externalurl:     "invoices.externalurl",
+	CreateAt:        "invoices.create_at",
+	ExternalURL:     "invoices.external_url",
 	Status:          "invoices.status",
 	Message:         "invoices.message",
-	Updateat:        "invoices.updateat",
-	Invoicefile:     "invoices.invoicefile",
+	UpdateAt:        "invoices.update_at",
+	InvoiceFile:     "invoices.invoice_file",
 	Metadata:        "invoices.metadata",
-	Privatemetadata: "invoices.privatemetadata",
+	PrivateMetadata: "invoices.private_metadata",
 }
 
 // Generated where
 
 var InvoiceWhere = struct {
 	ID              whereHelperstring
-	Orderid         whereHelpernull_String
+	OrderID         whereHelpernull_String
 	Number          whereHelpernull_String
-	Createat        whereHelpernull_Int64
-	Externalurl     whereHelpernull_String
+	CreateAt        whereHelpernull_Int64
+	ExternalURL     whereHelpernull_String
 	Status          whereHelpernull_String
 	Message         whereHelpernull_String
-	Updateat        whereHelpernull_Int64
-	Invoicefile     whereHelpernull_String
+	UpdateAt        whereHelpernull_Int64
+	InvoiceFile     whereHelpernull_String
 	Metadata        whereHelpernull_JSON
-	Privatemetadata whereHelpernull_JSON
+	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"invoices\".\"id\""},
-	Orderid:         whereHelpernull_String{field: "\"invoices\".\"orderid\""},
+	OrderID:         whereHelpernull_String{field: "\"invoices\".\"order_id\""},
 	Number:          whereHelpernull_String{field: "\"invoices\".\"number\""},
-	Createat:        whereHelpernull_Int64{field: "\"invoices\".\"createat\""},
-	Externalurl:     whereHelpernull_String{field: "\"invoices\".\"externalurl\""},
+	CreateAt:        whereHelpernull_Int64{field: "\"invoices\".\"create_at\""},
+	ExternalURL:     whereHelpernull_String{field: "\"invoices\".\"external_url\""},
 	Status:          whereHelpernull_String{field: "\"invoices\".\"status\""},
 	Message:         whereHelpernull_String{field: "\"invoices\".\"message\""},
-	Updateat:        whereHelpernull_Int64{field: "\"invoices\".\"updateat\""},
-	Invoicefile:     whereHelpernull_String{field: "\"invoices\".\"invoicefile\""},
+	UpdateAt:        whereHelpernull_Int64{field: "\"invoices\".\"update_at\""},
+	InvoiceFile:     whereHelpernull_String{field: "\"invoices\".\"invoice_file\""},
 	Metadata:        whereHelpernull_JSON{field: "\"invoices\".\"metadata\""},
-	Privatemetadata: whereHelpernull_JSON{field: "\"invoices\".\"privatemetadata\""},
+	PrivateMetadata: whereHelpernull_JSON{field: "\"invoices\".\"private_metadata\""},
 }
 
 // InvoiceRels is where relationship names are stored.
 var InvoiceRels = struct {
-	OrderidOrder           string
-	InvoiceidInvoiceEvents string
+	Order         string
+	InvoiceEvents string
 }{
-	OrderidOrder:           "OrderidOrder",
-	InvoiceidInvoiceEvents: "InvoiceidInvoiceEvents",
+	Order:         "Order",
+	InvoiceEvents: "InvoiceEvents",
 }
 
 // invoiceR is where relationships are stored.
 type invoiceR struct {
-	OrderidOrder           *Order            `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
-	InvoiceidInvoiceEvents InvoiceEventSlice `boil:"InvoiceidInvoiceEvents" json:"InvoiceidInvoiceEvents" toml:"InvoiceidInvoiceEvents" yaml:"InvoiceidInvoiceEvents"`
+	Order         *Order            `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	InvoiceEvents InvoiceEventSlice `boil:"InvoiceEvents" json:"InvoiceEvents" toml:"InvoiceEvents" yaml:"InvoiceEvents"`
 }
 
 // NewStruct creates a new relationship struct
@@ -140,27 +140,27 @@ func (*invoiceR) NewStruct() *invoiceR {
 	return &invoiceR{}
 }
 
-func (r *invoiceR) GetOrderidOrder() *Order {
+func (r *invoiceR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
-func (r *invoiceR) GetInvoiceidInvoiceEvents() InvoiceEventSlice {
+func (r *invoiceR) GetInvoiceEvents() InvoiceEventSlice {
 	if r == nil {
 		return nil
 	}
-	return r.InvoiceidInvoiceEvents
+	return r.InvoiceEvents
 }
 
 // invoiceL is where Load methods for each relationship are stored.
 type invoiceL struct{}
 
 var (
-	invoiceAllColumns            = []string{"id", "orderid", "number", "createat", "externalurl", "status", "message", "updateat", "invoicefile", "metadata", "privatemetadata"}
+	invoiceAllColumns            = []string{"id", "order_id", "number", "create_at", "external_url", "status", "message", "update_at", "invoice_file", "metadata", "private_metadata"}
 	invoiceColumnsWithoutDefault = []string{"id"}
-	invoiceColumnsWithDefault    = []string{"orderid", "number", "createat", "externalurl", "status", "message", "updateat", "invoicefile", "metadata", "privatemetadata"}
+	invoiceColumnsWithDefault    = []string{"order_id", "number", "create_at", "external_url", "status", "message", "update_at", "invoice_file", "metadata", "private_metadata"}
 	invoicePrimaryKeyColumns     = []string{"id"}
 	invoiceGeneratedColumns      = []string{}
 )
@@ -443,10 +443,10 @@ func (q invoiceQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *Invoice) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *Invoice) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -454,23 +454,23 @@ func (o *Invoice) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// InvoiceidInvoiceEvents retrieves all the invoice_event's InvoiceEvents with an executor via invoiceid column.
-func (o *Invoice) InvoiceidInvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
+// InvoiceEvents retrieves all the invoice_event's InvoiceEvents with an executor.
+func (o *Invoice) InvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"invoice_events\".\"invoiceid\"=?", o.ID),
+		qm.Where("\"invoice_events\".\"invoice_id\"=?", o.ID),
 	)
 
 	return InvoiceEvents(queryMods...)
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoice interface{}, mods queries.Applicator) error {
+func (invoiceL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoice interface{}, mods queries.Applicator) error {
 	var slice []*Invoice
 	var object *Invoice
 
@@ -501,8 +501,8 @@ func (invoiceL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &invoiceR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -513,13 +513,13 @@ func (invoiceL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -568,22 +568,22 @@ func (invoiceL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, si
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidInvoices = append(foreign.R.OrderidInvoices, object)
+		foreign.R.Invoices = append(foreign.R.Invoices, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidInvoices = append(foreign.R.OrderidInvoices, local)
+				foreign.R.Invoices = append(foreign.R.Invoices, local)
 				break
 			}
 		}
@@ -592,9 +592,9 @@ func (invoiceL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// LoadInvoiceidInvoiceEvents allows an eager lookup of values, cached into the
+// LoadInvoiceEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (invoiceL) LoadInvoiceidInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoice interface{}, mods queries.Applicator) error {
+func (invoiceL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoice interface{}, mods queries.Applicator) error {
 	var slice []*Invoice
 	var object *Invoice
 
@@ -649,7 +649,7 @@ func (invoiceL) LoadInvoiceidInvoiceEvents(ctx context.Context, e boil.ContextEx
 
 	query := NewQuery(
 		qm.From(`invoice_events`),
-		qm.WhereIn(`invoice_events.invoiceid in ?`, args...),
+		qm.WhereIn(`invoice_events.invoice_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -680,24 +680,24 @@ func (invoiceL) LoadInvoiceidInvoiceEvents(ctx context.Context, e boil.ContextEx
 		}
 	}
 	if singular {
-		object.R.InvoiceidInvoiceEvents = resultSlice
+		object.R.InvoiceEvents = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &invoiceEventR{}
 			}
-			foreign.R.InvoiceidInvoice = object
+			foreign.R.Invoice = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.Invoiceid) {
-				local.R.InvoiceidInvoiceEvents = append(local.R.InvoiceidInvoiceEvents, foreign)
+			if queries.Equal(local.ID, foreign.InvoiceID) {
+				local.R.InvoiceEvents = append(local.R.InvoiceEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &invoiceEventR{}
 				}
-				foreign.R.InvoiceidInvoice = local
+				foreign.R.Invoice = local
 				break
 			}
 		}
@@ -706,10 +706,10 @@ func (invoiceL) LoadInvoiceidInvoiceEvents(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// SetOrderidOrder of the invoice to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidInvoices.
-func (o *Invoice) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the invoice to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.Invoices.
+func (o *Invoice) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -719,7 +719,7 @@ func (o *Invoice) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"invoices\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, invoicePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -733,75 +733,75 @@ func (o *Invoice) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &invoiceR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidInvoices: InvoiceSlice{o},
+			Invoices: InvoiceSlice{o},
 		}
 	} else {
-		related.R.OrderidInvoices = append(related.R.OrderidInvoices, o)
+		related.R.Invoices = append(related.R.Invoices, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Invoice) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *Invoice) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidInvoices {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.Invoices {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidInvoices)
+		ln := len(related.R.Invoices)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidInvoices[i] = related.R.OrderidInvoices[ln-1]
+			related.R.Invoices[i] = related.R.Invoices[ln-1]
 		}
-		related.R.OrderidInvoices = related.R.OrderidInvoices[:ln-1]
+		related.R.Invoices = related.R.Invoices[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddInvoiceidInvoiceEvents adds the given related objects to the existing relationships
+// AddInvoiceEvents adds the given related objects to the existing relationships
 // of the invoice, optionally inserting them as new records.
-// Appends related to o.R.InvoiceidInvoiceEvents.
-// Sets related.R.InvoiceidInvoice appropriately.
-func (o *Invoice) AddInvoiceidInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+// Appends related to o.R.InvoiceEvents.
+// Sets related.R.Invoice appropriately.
+func (o *Invoice) AddInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Invoiceid, o.ID)
+			queries.Assign(&rel.InvoiceID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"invoice_events\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"invoiceid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"invoice_id"}),
 				strmangle.WhereClause("\"", "\"", 2, invoiceEventPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
@@ -815,38 +815,38 @@ func (o *Invoice) AddInvoiceidInvoiceEvents(ctx context.Context, exec boil.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Invoiceid, o.ID)
+			queries.Assign(&rel.InvoiceID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &invoiceR{
-			InvoiceidInvoiceEvents: related,
+			InvoiceEvents: related,
 		}
 	} else {
-		o.R.InvoiceidInvoiceEvents = append(o.R.InvoiceidInvoiceEvents, related...)
+		o.R.InvoiceEvents = append(o.R.InvoiceEvents, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &invoiceEventR{
-				InvoiceidInvoice: o,
+				Invoice: o,
 			}
 		} else {
-			rel.R.InvoiceidInvoice = o
+			rel.R.Invoice = o
 		}
 	}
 	return nil
 }
 
-// SetInvoiceidInvoiceEvents removes all previously related items of the
+// SetInvoiceEvents removes all previously related items of the
 // invoice replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.InvoiceidInvoice's InvoiceidInvoiceEvents accordingly.
-// Replaces o.R.InvoiceidInvoiceEvents with related.
-// Sets related.R.InvoiceidInvoice's InvoiceidInvoiceEvents accordingly.
-func (o *Invoice) SetInvoiceidInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
-	query := "update \"invoice_events\" set \"invoiceid\" = null where \"invoiceid\" = $1"
+// Sets o.R.Invoice's InvoiceEvents accordingly.
+// Replaces o.R.InvoiceEvents with related.
+// Sets related.R.Invoice's InvoiceEvents accordingly.
+func (o *Invoice) SetInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+	query := "update \"invoice_events\" set \"invoice_id\" = null where \"invoice_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -859,35 +859,35 @@ func (o *Invoice) SetInvoiceidInvoiceEvents(ctx context.Context, exec boil.Conte
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.InvoiceidInvoiceEvents {
-			queries.SetScanner(&rel.Invoiceid, nil)
+		for _, rel := range o.R.InvoiceEvents {
+			queries.SetScanner(&rel.InvoiceID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.InvoiceidInvoice = nil
+			rel.R.Invoice = nil
 		}
-		o.R.InvoiceidInvoiceEvents = nil
+		o.R.InvoiceEvents = nil
 	}
 
-	return o.AddInvoiceidInvoiceEvents(ctx, exec, insert, related...)
+	return o.AddInvoiceEvents(ctx, exec, insert, related...)
 }
 
-// RemoveInvoiceidInvoiceEvents relationships from objects passed in.
-// Removes related items from R.InvoiceidInvoiceEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.InvoiceidInvoice.
-func (o *Invoice) RemoveInvoiceidInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
+// RemoveInvoiceEvents relationships from objects passed in.
+// Removes related items from R.InvoiceEvents (uses pointer comparison, removal does not keep order)
+// Sets related.R.Invoice.
+func (o *Invoice) RemoveInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Invoiceid, nil)
+		queries.SetScanner(&rel.InvoiceID, nil)
 		if rel.R != nil {
-			rel.R.InvoiceidInvoice = nil
+			rel.R.Invoice = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("invoiceid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("invoice_id")); err != nil {
 			return err
 		}
 	}
@@ -896,16 +896,16 @@ func (o *Invoice) RemoveInvoiceidInvoiceEvents(ctx context.Context, exec boil.Co
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.InvoiceidInvoiceEvents {
+		for i, ri := range o.R.InvoiceEvents {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.InvoiceidInvoiceEvents)
+			ln := len(o.R.InvoiceEvents)
 			if ln > 1 && i < ln-1 {
-				o.R.InvoiceidInvoiceEvents[i] = o.R.InvoiceidInvoiceEvents[ln-1]
+				o.R.InvoiceEvents[i] = o.R.InvoiceEvents[ln-1]
 			}
-			o.R.InvoiceidInvoiceEvents = o.R.InvoiceidInvoiceEvents[:ln-1]
+			o.R.InvoiceEvents = o.R.InvoiceEvents[:ln-1]
 			break
 		}
 	}

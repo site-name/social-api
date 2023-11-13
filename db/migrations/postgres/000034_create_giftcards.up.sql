@@ -1,22 +1,22 @@
 CREATE TABLE IF NOT EXISTS giftcards (
-  id character varying(36) NOT NULL PRIMARY KEY,
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   code character varying(40),
-  createdbyid character varying(36),
-  usedbyid character varying(36),
-  createdbyemail character varying(128),
-  usedbyemail character varying(128),
-  createat bigint,
-  startdate timestamp with time zone,
-  expirydate timestamp with time zone,
+  created_by_id uuid,
+  used_by_id uuid,
+  created_by_email character varying(128),
+  used_by_email character varying(128),
+  created_at bigint,
+  start_date timestamp with time zone,
+  expiry_date timestamp with time zone,
   tag character varying(255),
-  productid character varying(36),
-  lastusedon bigint,
-  isactive boolean,
+  product_id uuid,
+  last_used_on bigint,
+  is_active boolean,
   currency character varying(3),
-  initialbalanceamount double precision,
-  currentbalanceamount double precision,
+  initial_balance_amount double precision,
+  current_balance_amount double precision,
   metadata jsonb,
-  privatemetadata jsonb
+  private_metadata jsonb
 );
 
 ALTER TABLE ONLY giftcards
@@ -26,6 +26,6 @@ CREATE INDEX idx_giftcards_code ON giftcards USING btree (code);
 
 CREATE INDEX idx_giftcards_metadata ON giftcards USING btree (metadata);
 
-CREATE INDEX idx_giftcards_private_metadata ON giftcards USING btree (privatemetadata);
+CREATE INDEX idx_giftcards_private_metadata ON giftcards USING btree (private_metadata);
 
 CREATE INDEX idx_giftcards_tag ON giftcards USING btree (tag);

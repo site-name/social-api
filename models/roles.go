@@ -26,14 +26,14 @@ import (
 type Role struct {
 	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name          null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Displayname   null.String `boil:"displayname" json:"displayname,omitempty" toml:"displayname" yaml:"displayname,omitempty"`
+	DisplayName   null.String `boil:"display_name" json:"display_name,omitempty" toml:"display_name" yaml:"display_name,omitempty"`
 	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Createat      null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat      null.Int64  `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
-	Deleteat      null.Int64  `boil:"deleteat" json:"deleteat,omitempty" toml:"deleteat" yaml:"deleteat,omitempty"`
+	CreateAt      null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt      null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	DeleteAt      null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
 	Permissions   null.String `boil:"permissions" json:"permissions,omitempty" toml:"permissions" yaml:"permissions,omitempty"`
-	Schememanaged null.Bool   `boil:"schememanaged" json:"schememanaged,omitempty" toml:"schememanaged" yaml:"schememanaged,omitempty"`
-	Builtin       null.Bool   `boil:"builtin" json:"builtin,omitempty" toml:"builtin" yaml:"builtin,omitempty"`
+	SchemeManaged null.Bool   `boil:"scheme_managed" json:"scheme_managed,omitempty" toml:"scheme_managed" yaml:"scheme_managed,omitempty"`
+	BuiltIn       null.Bool   `boil:"built_in" json:"built_in,omitempty" toml:"built_in" yaml:"built_in,omitempty"`
 
 	R *roleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L roleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,49 +42,49 @@ type Role struct {
 var RoleColumns = struct {
 	ID            string
 	Name          string
-	Displayname   string
+	DisplayName   string
 	Description   string
-	Createat      string
-	Updateat      string
-	Deleteat      string
+	CreateAt      string
+	UpdateAt      string
+	DeleteAt      string
 	Permissions   string
-	Schememanaged string
-	Builtin       string
+	SchemeManaged string
+	BuiltIn       string
 }{
 	ID:            "id",
 	Name:          "name",
-	Displayname:   "displayname",
+	DisplayName:   "display_name",
 	Description:   "description",
-	Createat:      "createat",
-	Updateat:      "updateat",
-	Deleteat:      "deleteat",
+	CreateAt:      "create_at",
+	UpdateAt:      "update_at",
+	DeleteAt:      "delete_at",
 	Permissions:   "permissions",
-	Schememanaged: "schememanaged",
-	Builtin:       "builtin",
+	SchemeManaged: "scheme_managed",
+	BuiltIn:       "built_in",
 }
 
 var RoleTableColumns = struct {
 	ID            string
 	Name          string
-	Displayname   string
+	DisplayName   string
 	Description   string
-	Createat      string
-	Updateat      string
-	Deleteat      string
+	CreateAt      string
+	UpdateAt      string
+	DeleteAt      string
 	Permissions   string
-	Schememanaged string
-	Builtin       string
+	SchemeManaged string
+	BuiltIn       string
 }{
 	ID:            "roles.id",
 	Name:          "roles.name",
-	Displayname:   "roles.displayname",
+	DisplayName:   "roles.display_name",
 	Description:   "roles.description",
-	Createat:      "roles.createat",
-	Updateat:      "roles.updateat",
-	Deleteat:      "roles.deleteat",
+	CreateAt:      "roles.create_at",
+	UpdateAt:      "roles.update_at",
+	DeleteAt:      "roles.delete_at",
 	Permissions:   "roles.permissions",
-	Schememanaged: "roles.schememanaged",
-	Builtin:       "roles.builtin",
+	SchemeManaged: "roles.scheme_managed",
+	BuiltIn:       "roles.built_in",
 }
 
 // Generated where
@@ -92,25 +92,25 @@ var RoleTableColumns = struct {
 var RoleWhere = struct {
 	ID            whereHelperstring
 	Name          whereHelpernull_String
-	Displayname   whereHelpernull_String
+	DisplayName   whereHelpernull_String
 	Description   whereHelpernull_String
-	Createat      whereHelpernull_Int64
-	Updateat      whereHelpernull_Int64
-	Deleteat      whereHelpernull_Int64
+	CreateAt      whereHelpernull_Int64
+	UpdateAt      whereHelpernull_Int64
+	DeleteAt      whereHelpernull_Int64
 	Permissions   whereHelpernull_String
-	Schememanaged whereHelpernull_Bool
-	Builtin       whereHelpernull_Bool
+	SchemeManaged whereHelpernull_Bool
+	BuiltIn       whereHelpernull_Bool
 }{
 	ID:            whereHelperstring{field: "\"roles\".\"id\""},
 	Name:          whereHelpernull_String{field: "\"roles\".\"name\""},
-	Displayname:   whereHelpernull_String{field: "\"roles\".\"displayname\""},
+	DisplayName:   whereHelpernull_String{field: "\"roles\".\"display_name\""},
 	Description:   whereHelpernull_String{field: "\"roles\".\"description\""},
-	Createat:      whereHelpernull_Int64{field: "\"roles\".\"createat\""},
-	Updateat:      whereHelpernull_Int64{field: "\"roles\".\"updateat\""},
-	Deleteat:      whereHelpernull_Int64{field: "\"roles\".\"deleteat\""},
+	CreateAt:      whereHelpernull_Int64{field: "\"roles\".\"create_at\""},
+	UpdateAt:      whereHelpernull_Int64{field: "\"roles\".\"update_at\""},
+	DeleteAt:      whereHelpernull_Int64{field: "\"roles\".\"delete_at\""},
 	Permissions:   whereHelpernull_String{field: "\"roles\".\"permissions\""},
-	Schememanaged: whereHelpernull_Bool{field: "\"roles\".\"schememanaged\""},
-	Builtin:       whereHelpernull_Bool{field: "\"roles\".\"builtin\""},
+	SchemeManaged: whereHelpernull_Bool{field: "\"roles\".\"scheme_managed\""},
+	BuiltIn:       whereHelpernull_Bool{field: "\"roles\".\"built_in\""},
 }
 
 // RoleRels is where relationship names are stored.
@@ -130,9 +130,9 @@ func (*roleR) NewStruct() *roleR {
 type roleL struct{}
 
 var (
-	roleAllColumns            = []string{"id", "name", "displayname", "description", "createat", "updateat", "deleteat", "permissions", "schememanaged", "builtin"}
+	roleAllColumns            = []string{"id", "name", "display_name", "description", "create_at", "update_at", "delete_at", "permissions", "scheme_managed", "built_in"}
 	roleColumnsWithoutDefault = []string{"id"}
-	roleColumnsWithDefault    = []string{"name", "displayname", "description", "createat", "updateat", "deleteat", "permissions", "schememanaged", "builtin"}
+	roleColumnsWithDefault    = []string{"name", "display_name", "description", "create_at", "update_at", "delete_at", "permissions", "scheme_managed", "built_in"}
 	rolePrimaryKeyColumns     = []string{"id"}
 	roleGeneratedColumns      = []string{}
 )

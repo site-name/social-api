@@ -25,8 +25,8 @@ import (
 // AttributeTranslation is an object representing the database table.
 type AttributeTranslation struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Attributeid  null.String `boil:"attributeid" json:"attributeid,omitempty" toml:"attributeid" yaml:"attributeid,omitempty"`
-	Languagecode null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
+	AttributeID  null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
+	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
 	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
 
 	R *attributeTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,25 +35,25 @@ type AttributeTranslation struct {
 
 var AttributeTranslationColumns = struct {
 	ID           string
-	Attributeid  string
-	Languagecode string
+	AttributeID  string
+	LanguageCode string
 	Name         string
 }{
 	ID:           "id",
-	Attributeid:  "attributeid",
-	Languagecode: "languagecode",
+	AttributeID:  "attribute_id",
+	LanguageCode: "language_code",
 	Name:         "name",
 }
 
 var AttributeTranslationTableColumns = struct {
 	ID           string
-	Attributeid  string
-	Languagecode string
+	AttributeID  string
+	LanguageCode string
 	Name         string
 }{
 	ID:           "attribute_translations.id",
-	Attributeid:  "attribute_translations.attributeid",
-	Languagecode: "attribute_translations.languagecode",
+	AttributeID:  "attribute_translations.attribute_id",
+	LanguageCode: "attribute_translations.language_code",
 	Name:         "attribute_translations.name",
 }
 
@@ -61,13 +61,13 @@ var AttributeTranslationTableColumns = struct {
 
 var AttributeTranslationWhere = struct {
 	ID           whereHelperstring
-	Attributeid  whereHelpernull_String
-	Languagecode whereHelpernull_String
+	AttributeID  whereHelpernull_String
+	LanguageCode whereHelpernull_String
 	Name         whereHelpernull_String
 }{
 	ID:           whereHelperstring{field: "\"attribute_translations\".\"id\""},
-	Attributeid:  whereHelpernull_String{field: "\"attribute_translations\".\"attributeid\""},
-	Languagecode: whereHelpernull_String{field: "\"attribute_translations\".\"languagecode\""},
+	AttributeID:  whereHelpernull_String{field: "\"attribute_translations\".\"attribute_id\""},
+	LanguageCode: whereHelpernull_String{field: "\"attribute_translations\".\"language_code\""},
 	Name:         whereHelpernull_String{field: "\"attribute_translations\".\"name\""},
 }
 
@@ -88,9 +88,9 @@ func (*attributeTranslationR) NewStruct() *attributeTranslationR {
 type attributeTranslationL struct{}
 
 var (
-	attributeTranslationAllColumns            = []string{"id", "attributeid", "languagecode", "name"}
+	attributeTranslationAllColumns            = []string{"id", "attribute_id", "language_code", "name"}
 	attributeTranslationColumnsWithoutDefault = []string{"id"}
-	attributeTranslationColumnsWithDefault    = []string{"attributeid", "languagecode", "name"}
+	attributeTranslationColumnsWithDefault    = []string{"attribute_id", "language_code", "name"}
 	attributeTranslationPrimaryKeyColumns     = []string{"id"}
 	attributeTranslationGeneratedColumns      = []string{}
 )

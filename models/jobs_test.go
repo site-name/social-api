@@ -568,7 +568,7 @@ func testJobsSelect(t *testing.T) {
 }
 
 var (
-	jobDBTypes = map[string]string{`ID`: `character varying`, `Type`: `character varying`, `Priority`: `bigint`, `Createat`: `bigint`, `Startat`: `bigint`, `Lastactivityat`: `bigint`, `Status`: `character varying`, `Progress`: `bigint`, `Data`: `jsonb`}
+	jobDBTypes = map[string]string{`ID`: `character varying`, `Type`: `character varying`, `Priority`: `bigint`, `CreateAt`: `bigint`, `StartAt`: `bigint`, `LastActivityAt`: `bigint`, `Status`: `character varying`, `Progress`: `bigint`, `Data`: `jsonb`}
 	_          = bytes.MinRead
 )
 

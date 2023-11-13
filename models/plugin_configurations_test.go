@@ -568,7 +568,7 @@ func testPluginConfigurationsSelect(t *testing.T) {
 }
 
 var (
-	pluginConfigurationDBTypes = map[string]string{`ID`: `character varying`, `Identifier`: `character varying`, `Name`: `character varying`, `Channelid`: `character varying`, `Description`: `character varying`, `Active`: `boolean`, `Configuration`: `text`}
+	pluginConfigurationDBTypes = map[string]string{`ID`: `character varying`, `Identifier`: `character varying`, `Name`: `character varying`, `ChannelID`: `character varying`, `Description`: `character varying`, `Active`: `boolean`, `Configuration`: `text`}
 	_                          = bytes.MinRead
 )
 

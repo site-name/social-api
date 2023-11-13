@@ -494,7 +494,7 @@ func testShopStaffsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testShopStaffToOneUserUsingStaffidUser(t *testing.T) {
+func testShopStaffToOneUserUsingStaff(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testShopStaffToOneUserUsingStaffidUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Staffid, foreign.ID)
+	queries.Assign(&local.StaffID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.StaffidUser().One(ctx, tx)
+	check, err := local.Staff().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testShopStaffToOneUserUsingStaffidUser(t *testing.T) {
 	})
 
 	slice := ShopStaffSlice{&local}
-	if err = local.L.LoadStaffidUser(ctx, tx, false, (*[]*ShopStaff)(&slice), nil); err != nil {
+	if err = local.L.LoadStaff(ctx, tx, false, (*[]*ShopStaff)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.StaffidUser == nil {
+	if local.R.Staff == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.StaffidUser = nil
-	if err = local.L.LoadStaffidUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.Staff = nil
+	if err = local.L.LoadStaff(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.StaffidUser == nil {
+	if local.R.Staff == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testShopStaffToOneUserUsingStaffidUser(t *testing.T) {
 	}
 }
 
-func testShopStaffToOneSetOpUserUsingStaffidUser(t *testing.T) {
+func testShopStaffToOneSetOpUserUsingStaff(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testShopStaffToOneSetOpUserUsingStaffidUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetStaffidUser(ctx, tx, i != 0, x)
+		err = a.SetStaff(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.StaffidUser != x {
+		if a.R.Staff != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.StaffidShopStaffs[0] != &a {
+		if x.R.StaffShopStaffs[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Staffid, x.ID) {
-			t.Error("foreign key was wrong value", a.Staffid)
+		if !queries.Equal(a.StaffID, x.ID) {
+			t.Error("foreign key was wrong value", a.StaffID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Staffid))
-		reflect.Indirect(reflect.ValueOf(&a.Staffid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.StaffID))
+		reflect.Indirect(reflect.ValueOf(&a.StaffID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Staffid, x.ID) {
-			t.Error("foreign key was wrong value", a.Staffid, x.ID)
+		if !queries.Equal(a.StaffID, x.ID) {
+			t.Error("foreign key was wrong value", a.StaffID, x.ID)
 		}
 	}
 }
 
-func testShopStaffToOneRemoveOpUserUsingStaffidUser(t *testing.T) {
+func testShopStaffToOneRemoveOpUserUsingStaff(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testShopStaffToOneRemoveOpUserUsingStaffidUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetStaffidUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetStaff(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveStaffidUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveStaff(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.StaffidUser().Count(ctx, tx)
+	count, err := a.Staff().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testShopStaffToOneRemoveOpUserUsingStaffidUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.StaffidUser != nil {
+	if a.R.Staff != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Staffid) {
+	if !queries.IsValuerNil(a.StaffID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.StaffidShopStaffs) != 0 {
+	if len(b.R.StaffShopStaffs) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testShopStaffsSelect(t *testing.T) {
 }
 
 var (
-	shopStaffDBTypes = map[string]string{`ID`: `character varying`, `Staffid`: `character varying`, `Createat`: `bigint`, `Endat`: `bigint`, `Salaryperiod`: `character varying`, `Slary`: `double precision`, `Salarycurrency`: `character varying`}
+	shopStaffDBTypes = map[string]string{`ID`: `character varying`, `StaffID`: `character varying`, `CreateAt`: `bigint`, `EndAt`: `bigint`, `SalaryPeriod`: `character varying`, `Salary`: `double precision`, `SalaryCurrency`: `character varying`}
 	_                = bytes.MinRead
 )
 

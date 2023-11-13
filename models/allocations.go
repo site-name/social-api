@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // Allocation is an object representing the database table.
 type Allocation struct {
-	ID                string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat          null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Orderlineid       null.String `boil:"orderlineid" json:"orderlineid,omitempty" toml:"orderlineid" yaml:"orderlineid,omitempty"`
-	Stockid           null.String `boil:"stockid" json:"stockid,omitempty" toml:"stockid" yaml:"stockid,omitempty"`
-	Quantityallocated null.Int    `boil:"quantityallocated" json:"quantityallocated,omitempty" toml:"quantityallocated" yaml:"quantityallocated,omitempty"`
+	ID                string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt         int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	OrderLineID       string `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
+	StockID           string `boil:"stock_id" json:"stock_id" toml:"stock_id" yaml:"stock_id"`
+	QuantityAllocated int    `boil:"quantity_allocated" json:"quantity_allocated" toml:"quantity_allocated" yaml:"quantity_allocated"`
 
 	R *allocationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L allocationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,187 +35,84 @@ type Allocation struct {
 
 var AllocationColumns = struct {
 	ID                string
-	Createat          string
-	Orderlineid       string
-	Stockid           string
-	Quantityallocated string
+	CreatedAt         string
+	OrderLineID       string
+	StockID           string
+	QuantityAllocated string
 }{
 	ID:                "id",
-	Createat:          "createat",
-	Orderlineid:       "orderlineid",
-	Stockid:           "stockid",
-	Quantityallocated: "quantityallocated",
+	CreatedAt:         "created_at",
+	OrderLineID:       "order_line_id",
+	StockID:           "stock_id",
+	QuantityAllocated: "quantity_allocated",
 }
 
 var AllocationTableColumns = struct {
 	ID                string
-	Createat          string
-	Orderlineid       string
-	Stockid           string
-	Quantityallocated string
+	CreatedAt         string
+	OrderLineID       string
+	StockID           string
+	QuantityAllocated string
 }{
 	ID:                "allocations.id",
-	Createat:          "allocations.createat",
-	Orderlineid:       "allocations.orderlineid",
-	Stockid:           "allocations.stockid",
-	Quantityallocated: "allocations.quantityallocated",
+	CreatedAt:         "allocations.created_at",
+	OrderLineID:       "allocations.order_line_id",
+	StockID:           "allocations.stock_id",
+	QuantityAllocated: "allocations.quantity_allocated",
 }
 
 // Generated where
 
-type whereHelpernull_Int64 struct{ field string }
+type whereHelperint struct{ field string }
 
-func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Int64) NEQ(x null.Int64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Int64) LT(x null.Int64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Int64) LTE(x null.Int64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Int64) GT(x null.Int64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Int64) GTE(x null.Int64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_Int64) IN(slice []int64) qm.QueryMod {
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelpernull_Int64) NIN(slice []int64) qm.QueryMod {
+func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
-
-func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" LIKE ?", x)
-}
-func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT LIKE ?", x)
-}
-func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" ILIKE ?", x)
-}
-func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT ILIKE ?", x)
-}
-func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
-type whereHelpernull_Int struct{ field string }
-
-func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var AllocationWhere = struct {
 	ID                whereHelperstring
-	Createat          whereHelpernull_Int64
-	Orderlineid       whereHelpernull_String
-	Stockid           whereHelpernull_String
-	Quantityallocated whereHelpernull_Int
+	CreatedAt         whereHelperint64
+	OrderLineID       whereHelperstring
+	StockID           whereHelperstring
+	QuantityAllocated whereHelperint
 }{
 	ID:                whereHelperstring{field: "\"allocations\".\"id\""},
-	Createat:          whereHelpernull_Int64{field: "\"allocations\".\"createat\""},
-	Orderlineid:       whereHelpernull_String{field: "\"allocations\".\"orderlineid\""},
-	Stockid:           whereHelpernull_String{field: "\"allocations\".\"stockid\""},
-	Quantityallocated: whereHelpernull_Int{field: "\"allocations\".\"quantityallocated\""},
+	CreatedAt:         whereHelperint64{field: "\"allocations\".\"created_at\""},
+	OrderLineID:       whereHelperstring{field: "\"allocations\".\"order_line_id\""},
+	StockID:           whereHelperstring{field: "\"allocations\".\"stock_id\""},
+	QuantityAllocated: whereHelperint{field: "\"allocations\".\"quantity_allocated\""},
 }
 
 // AllocationRels is where relationship names are stored.
 var AllocationRels = struct {
-	OrderlineidOrderLine string
-	StockidStock         string
+	OrderLine string
+	Stock     string
 }{
-	OrderlineidOrderLine: "OrderlineidOrderLine",
-	StockidStock:         "StockidStock",
+	OrderLine: "OrderLine",
+	Stock:     "Stock",
 }
 
 // allocationR is where relationships are stored.
 type allocationR struct {
-	OrderlineidOrderLine *OrderLine `boil:"OrderlineidOrderLine" json:"OrderlineidOrderLine" toml:"OrderlineidOrderLine" yaml:"OrderlineidOrderLine"`
-	StockidStock         *Stock     `boil:"StockidStock" json:"StockidStock" toml:"StockidStock" yaml:"StockidStock"`
+	OrderLine *OrderLine `boil:"OrderLine" json:"OrderLine" toml:"OrderLine" yaml:"OrderLine"`
+	Stock     *Stock     `boil:"Stock" json:"Stock" toml:"Stock" yaml:"Stock"`
 }
 
 // NewStruct creates a new relationship struct
@@ -224,27 +120,27 @@ func (*allocationR) NewStruct() *allocationR {
 	return &allocationR{}
 }
 
-func (r *allocationR) GetOrderlineidOrderLine() *OrderLine {
+func (r *allocationR) GetOrderLine() *OrderLine {
 	if r == nil {
 		return nil
 	}
-	return r.OrderlineidOrderLine
+	return r.OrderLine
 }
 
-func (r *allocationR) GetStockidStock() *Stock {
+func (r *allocationR) GetStock() *Stock {
 	if r == nil {
 		return nil
 	}
-	return r.StockidStock
+	return r.Stock
 }
 
 // allocationL is where Load methods for each relationship are stored.
 type allocationL struct{}
 
 var (
-	allocationAllColumns            = []string{"id", "createat", "orderlineid", "stockid", "quantityallocated"}
-	allocationColumnsWithoutDefault = []string{"id"}
-	allocationColumnsWithDefault    = []string{"createat", "orderlineid", "stockid", "quantityallocated"}
+	allocationAllColumns            = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
+	allocationColumnsWithoutDefault = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
+	allocationColumnsWithDefault    = []string{}
 	allocationPrimaryKeyColumns     = []string{"id"}
 	allocationGeneratedColumns      = []string{}
 )
@@ -527,10 +423,10 @@ func (q allocationQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	return count > 0, nil
 }
 
-// OrderlineidOrderLine pointed to by the foreign key.
-func (o *Allocation) OrderlineidOrderLine(mods ...qm.QueryMod) orderLineQuery {
+// OrderLine pointed to by the foreign key.
+func (o *Allocation) OrderLine(mods ...qm.QueryMod) orderLineQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderlineid),
+		qm.Where("\"id\" = ?", o.OrderLineID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -538,10 +434,10 @@ func (o *Allocation) OrderlineidOrderLine(mods ...qm.QueryMod) orderLineQuery {
 	return OrderLines(queryMods...)
 }
 
-// StockidStock pointed to by the foreign key.
-func (o *Allocation) StockidStock(mods ...qm.QueryMod) stockQuery {
+// Stock pointed to by the foreign key.
+func (o *Allocation) Stock(mods ...qm.QueryMod) stockQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Stockid),
+		qm.Where("\"id\" = ?", o.StockID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -549,9 +445,9 @@ func (o *Allocation) StockidStock(mods ...qm.QueryMod) stockQuery {
 	return Stocks(queryMods...)
 }
 
-// LoadOrderlineidOrderLine allows an eager lookup of values, cached into the
+// LoadOrderLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (allocationL) LoadOrderlineidOrderLine(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
+func (allocationL) LoadOrderLine(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
 	var slice []*Allocation
 	var object *Allocation
 
@@ -582,9 +478,7 @@ func (allocationL) LoadOrderlineidOrderLine(ctx context.Context, e boil.ContextE
 		if object.R == nil {
 			object.R = &allocationR{}
 		}
-		if !queries.IsNil(object.Orderlineid) {
-			args = append(args, object.Orderlineid)
-		}
+		args = append(args, object.OrderLineID)
 
 	} else {
 	Outer:
@@ -594,14 +488,12 @@ func (allocationL) LoadOrderlineidOrderLine(ctx context.Context, e boil.ContextE
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderlineid) {
+				if a == obj.OrderLineID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderlineid) {
-				args = append(args, obj.Orderlineid)
-			}
+			args = append(args, obj.OrderLineID)
 
 		}
 	}
@@ -649,22 +541,22 @@ func (allocationL) LoadOrderlineidOrderLine(ctx context.Context, e boil.ContextE
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderlineidOrderLine = foreign
+		object.R.OrderLine = foreign
 		if foreign.R == nil {
 			foreign.R = &orderLineR{}
 		}
-		foreign.R.OrderlineidAllocations = append(foreign.R.OrderlineidAllocations, object)
+		foreign.R.Allocations = append(foreign.R.Allocations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderlineid, foreign.ID) {
-				local.R.OrderlineidOrderLine = foreign
+			if local.OrderLineID == foreign.ID {
+				local.R.OrderLine = foreign
 				if foreign.R == nil {
 					foreign.R = &orderLineR{}
 				}
-				foreign.R.OrderlineidAllocations = append(foreign.R.OrderlineidAllocations, local)
+				foreign.R.Allocations = append(foreign.R.Allocations, local)
 				break
 			}
 		}
@@ -673,9 +565,9 @@ func (allocationL) LoadOrderlineidOrderLine(ctx context.Context, e boil.ContextE
 	return nil
 }
 
-// LoadStockidStock allows an eager lookup of values, cached into the
+// LoadStock allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (allocationL) LoadStockidStock(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
+func (allocationL) LoadStock(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAllocation interface{}, mods queries.Applicator) error {
 	var slice []*Allocation
 	var object *Allocation
 
@@ -706,9 +598,7 @@ func (allocationL) LoadStockidStock(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &allocationR{}
 		}
-		if !queries.IsNil(object.Stockid) {
-			args = append(args, object.Stockid)
-		}
+		args = append(args, object.StockID)
 
 	} else {
 	Outer:
@@ -718,14 +608,12 @@ func (allocationL) LoadStockidStock(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Stockid) {
+				if a == obj.StockID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Stockid) {
-				args = append(args, obj.Stockid)
-			}
+			args = append(args, obj.StockID)
 
 		}
 	}
@@ -773,22 +661,22 @@ func (allocationL) LoadStockidStock(ctx context.Context, e boil.ContextExecutor,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.StockidStock = foreign
+		object.R.Stock = foreign
 		if foreign.R == nil {
 			foreign.R = &stockR{}
 		}
-		foreign.R.StockidAllocations = append(foreign.R.StockidAllocations, object)
+		foreign.R.Allocations = append(foreign.R.Allocations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Stockid, foreign.ID) {
-				local.R.StockidStock = foreign
+			if local.StockID == foreign.ID {
+				local.R.Stock = foreign
 				if foreign.R == nil {
 					foreign.R = &stockR{}
 				}
-				foreign.R.StockidAllocations = append(foreign.R.StockidAllocations, local)
+				foreign.R.Allocations = append(foreign.R.Allocations, local)
 				break
 			}
 		}
@@ -797,10 +685,10 @@ func (allocationL) LoadStockidStock(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// SetOrderlineidOrderLine of the allocation to the related item.
-// Sets o.R.OrderlineidOrderLine to related.
-// Adds o to related.R.OrderlineidAllocations.
-func (o *Allocation) SetOrderlineidOrderLine(ctx context.Context, exec boil.ContextExecutor, insert bool, related *OrderLine) error {
+// SetOrderLine of the allocation to the related item.
+// Sets o.R.OrderLine to related.
+// Adds o to related.R.Allocations.
+func (o *Allocation) SetOrderLine(ctx context.Context, exec boil.ContextExecutor, insert bool, related *OrderLine) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -810,7 +698,7 @@ func (o *Allocation) SetOrderlineidOrderLine(ctx context.Context, exec boil.Cont
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"allocations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderlineid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_line_id"}),
 		strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -824,63 +712,30 @@ func (o *Allocation) SetOrderlineidOrderLine(ctx context.Context, exec boil.Cont
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderlineid, related.ID)
+	o.OrderLineID = related.ID
 	if o.R == nil {
 		o.R = &allocationR{
-			OrderlineidOrderLine: related,
+			OrderLine: related,
 		}
 	} else {
-		o.R.OrderlineidOrderLine = related
+		o.R.OrderLine = related
 	}
 
 	if related.R == nil {
 		related.R = &orderLineR{
-			OrderlineidAllocations: AllocationSlice{o},
+			Allocations: AllocationSlice{o},
 		}
 	} else {
-		related.R.OrderlineidAllocations = append(related.R.OrderlineidAllocations, o)
+		related.R.Allocations = append(related.R.Allocations, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderlineidOrderLine relationship.
-// Sets o.R.OrderlineidOrderLine to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Allocation) RemoveOrderlineidOrderLine(ctx context.Context, exec boil.ContextExecutor, related *OrderLine) error {
-	var err error
-
-	queries.SetScanner(&o.Orderlineid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderlineid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.OrderlineidOrderLine = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.OrderlineidAllocations {
-		if queries.Equal(o.Orderlineid, ri.Orderlineid) {
-			continue
-		}
-
-		ln := len(related.R.OrderlineidAllocations)
-		if ln > 1 && i < ln-1 {
-			related.R.OrderlineidAllocations[i] = related.R.OrderlineidAllocations[ln-1]
-		}
-		related.R.OrderlineidAllocations = related.R.OrderlineidAllocations[:ln-1]
-		break
-	}
-	return nil
-}
-
-// SetStockidStock of the allocation to the related item.
-// Sets o.R.StockidStock to related.
-// Adds o to related.R.StockidAllocations.
-func (o *Allocation) SetStockidStock(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Stock) error {
+// SetStock of the allocation to the related item.
+// Sets o.R.Stock to related.
+// Adds o to related.R.Allocations.
+func (o *Allocation) SetStock(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Stock) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -890,7 +745,7 @@ func (o *Allocation) SetStockidStock(ctx context.Context, exec boil.ContextExecu
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"allocations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"stockid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"stock_id"}),
 		strmangle.WhereClause("\"", "\"", 2, allocationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -904,56 +759,23 @@ func (o *Allocation) SetStockidStock(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Stockid, related.ID)
+	o.StockID = related.ID
 	if o.R == nil {
 		o.R = &allocationR{
-			StockidStock: related,
+			Stock: related,
 		}
 	} else {
-		o.R.StockidStock = related
+		o.R.Stock = related
 	}
 
 	if related.R == nil {
 		related.R = &stockR{
-			StockidAllocations: AllocationSlice{o},
+			Allocations: AllocationSlice{o},
 		}
 	} else {
-		related.R.StockidAllocations = append(related.R.StockidAllocations, o)
+		related.R.Allocations = append(related.R.Allocations, o)
 	}
 
-	return nil
-}
-
-// RemoveStockidStock relationship.
-// Sets o.R.StockidStock to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Allocation) RemoveStockidStock(ctx context.Context, exec boil.ContextExecutor, related *Stock) error {
-	var err error
-
-	queries.SetScanner(&o.Stockid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("stockid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.StockidStock = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.StockidAllocations {
-		if queries.Equal(o.Stockid, ri.Stockid) {
-			continue
-		}
-
-		ln := len(related.R.StockidAllocations)
-		if ln > 1 && i < ln-1 {
-			related.R.StockidAllocations[i] = related.R.StockidAllocations[ln-1]
-		}
-		related.R.StockidAllocations = related.R.StockidAllocations[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1006,6 +828,13 @@ func (o *Allocation) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.CreatedAt).IsZero() {
+			queries.SetScanner(&o.CreatedAt, currTime)
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1210,6 +1039,13 @@ func (o AllocationSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 func (o *Allocation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no allocations provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.CreatedAt).IsZero() {
+			queries.SetScanner(&o.CreatedAt, currTime)
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

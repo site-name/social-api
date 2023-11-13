@@ -149,7 +149,7 @@ func testStatusesExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := StatusExists(ctx, tx, o.Userid)
+	e, err := StatusExists(ctx, tx, o.UserID)
 	if err != nil {
 		t.Errorf("Unable to check if Status exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testStatusesFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	statusFound, err := FindStatus(ctx, tx, o.Userid)
+	statusFound, err := FindStatus(ctx, tx, o.UserID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testStatusesSelect(t *testing.T) {
 }
 
 var (
-	statusDBTypes = map[string]string{`Userid`: `character varying`, `Status`: `character varying`, `Manual`: `boolean`, `Lastactivityat`: `bigint`}
+	statusDBTypes = map[string]string{`UserID`: `character varying`, `Status`: `character varying`, `Manual`: `boolean`, `LastActivityAt`: `bigint`}
 	_             = bytes.MinRead
 )
 

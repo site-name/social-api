@@ -1,16 +1,16 @@
 CREATE TABLE IF NOT EXISTS transactions (
-  id character varying(36) NOT NULL PRIMARY KEY,
-  createat bigint,
-  paymentid character varying(36),
+  id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at bigint,
+  payment_id uuid,
   token character varying(512),
   kind character varying(25),
-  issuccess boolean,
-  actionrequired boolean,
-  actionrequireddata text,
+  is_success boolean,
+  action_required boolean,
+  action_required_data text,
   currency character varying(3),
   amount double precision,
   error character varying(256),
-  customerid character varying(256),
-  gatewayresponse text,
-  alreadyprocessed boolean
+  customer_id character varying(256),
+  gateway_response text,
+  already_processed boolean
 );

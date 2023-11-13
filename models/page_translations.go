@@ -25,12 +25,12 @@ import (
 // PageTranslation is an object representing the database table.
 type PageTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Languagecode   null.String `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
-	Pageid         null.String `boil:"pageid" json:"pageid,omitempty" toml:"pageid" yaml:"pageid,omitempty"`
+	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
+	PageID         null.String `boil:"page_id" json:"page_id,omitempty" toml:"page_id" yaml:"page_id,omitempty"`
 	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	Content        null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	Seotitle       null.String `boil:"seotitle" json:"seotitle,omitempty" toml:"seotitle" yaml:"seotitle,omitempty"`
-	Seodescription null.String `boil:"seodescription" json:"seodescription,omitempty" toml:"seodescription" yaml:"seodescription,omitempty"`
+	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *pageTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,70 +38,70 @@ type PageTranslation struct {
 
 var PageTranslationColumns = struct {
 	ID             string
-	Languagecode   string
-	Pageid         string
+	LanguageCode   string
+	PageID         string
 	Title          string
 	Content        string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "id",
-	Languagecode:   "languagecode",
-	Pageid:         "pageid",
+	LanguageCode:   "language_code",
+	PageID:         "page_id",
 	Title:          "title",
 	Content:        "content",
-	Seotitle:       "seotitle",
-	Seodescription: "seodescription",
+	SeoTitle:       "seo_title",
+	SeoDescription: "seo_description",
 }
 
 var PageTranslationTableColumns = struct {
 	ID             string
-	Languagecode   string
-	Pageid         string
+	LanguageCode   string
+	PageID         string
 	Title          string
 	Content        string
-	Seotitle       string
-	Seodescription string
+	SeoTitle       string
+	SeoDescription string
 }{
 	ID:             "page_translations.id",
-	Languagecode:   "page_translations.languagecode",
-	Pageid:         "page_translations.pageid",
+	LanguageCode:   "page_translations.language_code",
+	PageID:         "page_translations.page_id",
 	Title:          "page_translations.title",
 	Content:        "page_translations.content",
-	Seotitle:       "page_translations.seotitle",
-	Seodescription: "page_translations.seodescription",
+	SeoTitle:       "page_translations.seo_title",
+	SeoDescription: "page_translations.seo_description",
 }
 
 // Generated where
 
 var PageTranslationWhere = struct {
 	ID             whereHelperstring
-	Languagecode   whereHelpernull_String
-	Pageid         whereHelpernull_String
+	LanguageCode   whereHelpernull_String
+	PageID         whereHelpernull_String
 	Title          whereHelpernull_String
 	Content        whereHelpernull_String
-	Seotitle       whereHelpernull_String
-	Seodescription whereHelpernull_String
+	SeoTitle       whereHelpernull_String
+	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"page_translations\".\"id\""},
-	Languagecode:   whereHelpernull_String{field: "\"page_translations\".\"languagecode\""},
-	Pageid:         whereHelpernull_String{field: "\"page_translations\".\"pageid\""},
+	LanguageCode:   whereHelpernull_String{field: "\"page_translations\".\"language_code\""},
+	PageID:         whereHelpernull_String{field: "\"page_translations\".\"page_id\""},
 	Title:          whereHelpernull_String{field: "\"page_translations\".\"title\""},
 	Content:        whereHelpernull_String{field: "\"page_translations\".\"content\""},
-	Seotitle:       whereHelpernull_String{field: "\"page_translations\".\"seotitle\""},
-	Seodescription: whereHelpernull_String{field: "\"page_translations\".\"seodescription\""},
+	SeoTitle:       whereHelpernull_String{field: "\"page_translations\".\"seo_title\""},
+	SeoDescription: whereHelpernull_String{field: "\"page_translations\".\"seo_description\""},
 }
 
 // PageTranslationRels is where relationship names are stored.
 var PageTranslationRels = struct {
-	PageidPage string
+	Page string
 }{
-	PageidPage: "PageidPage",
+	Page: "Page",
 }
 
 // pageTranslationR is where relationships are stored.
 type pageTranslationR struct {
-	PageidPage *Page `boil:"PageidPage" json:"PageidPage" toml:"PageidPage" yaml:"PageidPage"`
+	Page *Page `boil:"Page" json:"Page" toml:"Page" yaml:"Page"`
 }
 
 // NewStruct creates a new relationship struct
@@ -109,20 +109,20 @@ func (*pageTranslationR) NewStruct() *pageTranslationR {
 	return &pageTranslationR{}
 }
 
-func (r *pageTranslationR) GetPageidPage() *Page {
+func (r *pageTranslationR) GetPage() *Page {
 	if r == nil {
 		return nil
 	}
-	return r.PageidPage
+	return r.Page
 }
 
 // pageTranslationL is where Load methods for each relationship are stored.
 type pageTranslationL struct{}
 
 var (
-	pageTranslationAllColumns            = []string{"id", "languagecode", "pageid", "title", "content", "seotitle", "seodescription"}
+	pageTranslationAllColumns            = []string{"id", "language_code", "page_id", "title", "content", "seo_title", "seo_description"}
 	pageTranslationColumnsWithoutDefault = []string{"id"}
-	pageTranslationColumnsWithDefault    = []string{"languagecode", "pageid", "title", "content", "seotitle", "seodescription"}
+	pageTranslationColumnsWithDefault    = []string{"language_code", "page_id", "title", "content", "seo_title", "seo_description"}
 	pageTranslationPrimaryKeyColumns     = []string{"id"}
 	pageTranslationGeneratedColumns      = []string{}
 )
@@ -405,10 +405,10 @@ func (q pageTranslationQuery) Exists(ctx context.Context, exec boil.ContextExecu
 	return count > 0, nil
 }
 
-// PageidPage pointed to by the foreign key.
-func (o *PageTranslation) PageidPage(mods ...qm.QueryMod) pageQuery {
+// Page pointed to by the foreign key.
+func (o *PageTranslation) Page(mods ...qm.QueryMod) pageQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Pageid),
+		qm.Where("\"id\" = ?", o.PageID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +416,9 @@ func (o *PageTranslation) PageidPage(mods ...qm.QueryMod) pageQuery {
 	return Pages(queryMods...)
 }
 
-// LoadPageidPage allows an eager lookup of values, cached into the
+// LoadPage allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (pageTranslationL) LoadPageidPage(ctx context.Context, e boil.ContextExecutor, singular bool, maybePageTranslation interface{}, mods queries.Applicator) error {
+func (pageTranslationL) LoadPage(ctx context.Context, e boil.ContextExecutor, singular bool, maybePageTranslation interface{}, mods queries.Applicator) error {
 	var slice []*PageTranslation
 	var object *PageTranslation
 
@@ -449,8 +449,8 @@ func (pageTranslationL) LoadPageidPage(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &pageTranslationR{}
 		}
-		if !queries.IsNil(object.Pageid) {
-			args = append(args, object.Pageid)
+		if !queries.IsNil(object.PageID) {
+			args = append(args, object.PageID)
 		}
 
 	} else {
@@ -461,13 +461,13 @@ func (pageTranslationL) LoadPageidPage(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Pageid) {
+				if queries.Equal(a, obj.PageID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Pageid) {
-				args = append(args, obj.Pageid)
+			if !queries.IsNil(obj.PageID) {
+				args = append(args, obj.PageID)
 			}
 
 		}
@@ -516,22 +516,22 @@ func (pageTranslationL) LoadPageidPage(ctx context.Context, e boil.ContextExecut
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.PageidPage = foreign
+		object.R.Page = foreign
 		if foreign.R == nil {
 			foreign.R = &pageR{}
 		}
-		foreign.R.PageidPageTranslations = append(foreign.R.PageidPageTranslations, object)
+		foreign.R.PageTranslations = append(foreign.R.PageTranslations, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Pageid, foreign.ID) {
-				local.R.PageidPage = foreign
+			if queries.Equal(local.PageID, foreign.ID) {
+				local.R.Page = foreign
 				if foreign.R == nil {
 					foreign.R = &pageR{}
 				}
-				foreign.R.PageidPageTranslations = append(foreign.R.PageidPageTranslations, local)
+				foreign.R.PageTranslations = append(foreign.R.PageTranslations, local)
 				break
 			}
 		}
@@ -540,10 +540,10 @@ func (pageTranslationL) LoadPageidPage(ctx context.Context, e boil.ContextExecut
 	return nil
 }
 
-// SetPageidPage of the pageTranslation to the related item.
-// Sets o.R.PageidPage to related.
-// Adds o to related.R.PageidPageTranslations.
-func (o *PageTranslation) SetPageidPage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Page) error {
+// SetPage of the pageTranslation to the related item.
+// Sets o.R.Page to related.
+// Adds o to related.R.PageTranslations.
+func (o *PageTranslation) SetPage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Page) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -553,7 +553,7 @@ func (o *PageTranslation) SetPageidPage(ctx context.Context, exec boil.ContextEx
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"page_translations\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"pageid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"page_id"}),
 		strmangle.WhereClause("\"", "\"", 2, pageTranslationPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -567,54 +567,54 @@ func (o *PageTranslation) SetPageidPage(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Pageid, related.ID)
+	queries.Assign(&o.PageID, related.ID)
 	if o.R == nil {
 		o.R = &pageTranslationR{
-			PageidPage: related,
+			Page: related,
 		}
 	} else {
-		o.R.PageidPage = related
+		o.R.Page = related
 	}
 
 	if related.R == nil {
 		related.R = &pageR{
-			PageidPageTranslations: PageTranslationSlice{o},
+			PageTranslations: PageTranslationSlice{o},
 		}
 	} else {
-		related.R.PageidPageTranslations = append(related.R.PageidPageTranslations, o)
+		related.R.PageTranslations = append(related.R.PageTranslations, o)
 	}
 
 	return nil
 }
 
-// RemovePageidPage relationship.
-// Sets o.R.PageidPage to nil.
+// RemovePage relationship.
+// Sets o.R.Page to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *PageTranslation) RemovePageidPage(ctx context.Context, exec boil.ContextExecutor, related *Page) error {
+func (o *PageTranslation) RemovePage(ctx context.Context, exec boil.ContextExecutor, related *Page) error {
 	var err error
 
-	queries.SetScanner(&o.Pageid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("pageid")); err != nil {
+	queries.SetScanner(&o.PageID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("page_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.PageidPage = nil
+		o.R.Page = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.PageidPageTranslations {
-		if queries.Equal(o.Pageid, ri.Pageid) {
+	for i, ri := range related.R.PageTranslations {
+		if queries.Equal(o.PageID, ri.PageID) {
 			continue
 		}
 
-		ln := len(related.R.PageidPageTranslations)
+		ln := len(related.R.PageTranslations)
 		if ln > 1 && i < ln-1 {
-			related.R.PageidPageTranslations[i] = related.R.PageidPageTranslations[ln-1]
+			related.R.PageTranslations[i] = related.R.PageTranslations[ln-1]
 		}
-		related.R.PageidPageTranslations = related.R.PageidPageTranslations[:ln-1]
+		related.R.PageTranslations = related.R.PageTranslations[:ln-1]
 		break
 	}
 	return nil

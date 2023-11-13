@@ -25,28 +25,28 @@ import (
 // Checkout is an object representing the database table.
 type Checkout struct {
 	Token                  string       `boil:"token" json:"token" toml:"token" yaml:"token"`
-	Createat               null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Updateat               null.Int64   `boil:"updateat" json:"updateat,omitempty" toml:"updateat" yaml:"updateat,omitempty"`
-	Userid                 null.String  `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
+	CreateAt               null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	UpdateAt               null.Int64   `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	UserID                 null.String  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	Email                  null.String  `boil:"email" json:"email,omitempty" toml:"email" yaml:"email,omitempty"`
 	Quantity               null.Int     `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
-	Channelid              null.String  `boil:"channelid" json:"channelid,omitempty" toml:"channelid" yaml:"channelid,omitempty"`
-	Billingaddressid       null.String  `boil:"billingaddressid" json:"billingaddressid,omitempty" toml:"billingaddressid" yaml:"billingaddressid,omitempty"`
-	Shippingaddressid      null.String  `boil:"shippingaddressid" json:"shippingaddressid,omitempty" toml:"shippingaddressid" yaml:"shippingaddressid,omitempty"`
-	Shippingmethodid       null.String  `boil:"shippingmethodid" json:"shippingmethodid,omitempty" toml:"shippingmethodid" yaml:"shippingmethodid,omitempty"`
-	Collectionpointid      null.String  `boil:"collectionpointid" json:"collectionpointid,omitempty" toml:"collectionpointid" yaml:"collectionpointid,omitempty"`
+	ChannelID              null.String  `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
+	BillingAddressID       null.String  `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
+	ShippingAddressID      null.String  `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
+	ShippingMethodID       null.String  `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	CollectionPointID      null.String  `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
 	Note                   null.String  `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
 	Currency               null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
 	Country                null.String  `boil:"country" json:"country,omitempty" toml:"country" yaml:"country,omitempty"`
-	Discountamount         null.Float64 `boil:"discountamount" json:"discountamount,omitempty" toml:"discountamount" yaml:"discountamount,omitempty"`
-	Discountname           null.String  `boil:"discountname" json:"discountname,omitempty" toml:"discountname" yaml:"discountname,omitempty"`
-	Translateddiscountname null.String  `boil:"translateddiscountname" json:"translateddiscountname,omitempty" toml:"translateddiscountname" yaml:"translateddiscountname,omitempty"`
-	Vouchercode            null.String  `boil:"vouchercode" json:"vouchercode,omitempty" toml:"vouchercode" yaml:"vouchercode,omitempty"`
-	Redirecturl            null.String  `boil:"redirecturl" json:"redirecturl,omitempty" toml:"redirecturl" yaml:"redirecturl,omitempty"`
-	Trackingcode           null.String  `boil:"trackingcode" json:"trackingcode,omitempty" toml:"trackingcode" yaml:"trackingcode,omitempty"`
-	Languagecode           null.String  `boil:"languagecode" json:"languagecode,omitempty" toml:"languagecode" yaml:"languagecode,omitempty"`
+	DiscountAmount         null.Float64 `boil:"discount_amount" json:"discount_amount,omitempty" toml:"discount_amount" yaml:"discount_amount,omitempty"`
+	DiscountName           null.String  `boil:"discount_name" json:"discount_name,omitempty" toml:"discount_name" yaml:"discount_name,omitempty"`
+	TranslatedDiscountName null.String  `boil:"translated_discount_name" json:"translated_discount_name,omitempty" toml:"translated_discount_name" yaml:"translated_discount_name,omitempty"`
+	VoucherCode            null.String  `boil:"voucher_code" json:"voucher_code,omitempty" toml:"voucher_code" yaml:"voucher_code,omitempty"`
+	RedirectURL            null.String  `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
+	TrackingCode           null.String  `boil:"tracking_code" json:"tracking_code,omitempty" toml:"tracking_code" yaml:"tracking_code,omitempty"`
+	LanguageCode           null.String  `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
 	Metadata               null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	Privatemetadata        null.JSON    `boil:"privatemetadata" json:"privatemetadata,omitempty" toml:"privatemetadata" yaml:"privatemetadata,omitempty"`
+	PrivateMetadata        null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *checkoutR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L checkoutL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -54,102 +54,102 @@ type Checkout struct {
 
 var CheckoutColumns = struct {
 	Token                  string
-	Createat               string
-	Updateat               string
-	Userid                 string
+	CreateAt               string
+	UpdateAt               string
+	UserID                 string
 	Email                  string
 	Quantity               string
-	Channelid              string
-	Billingaddressid       string
-	Shippingaddressid      string
-	Shippingmethodid       string
-	Collectionpointid      string
+	ChannelID              string
+	BillingAddressID       string
+	ShippingAddressID      string
+	ShippingMethodID       string
+	CollectionPointID      string
 	Note                   string
 	Currency               string
 	Country                string
-	Discountamount         string
-	Discountname           string
-	Translateddiscountname string
-	Vouchercode            string
-	Redirecturl            string
-	Trackingcode           string
-	Languagecode           string
+	DiscountAmount         string
+	DiscountName           string
+	TranslatedDiscountName string
+	VoucherCode            string
+	RedirectURL            string
+	TrackingCode           string
+	LanguageCode           string
 	Metadata               string
-	Privatemetadata        string
+	PrivateMetadata        string
 }{
 	Token:                  "token",
-	Createat:               "createat",
-	Updateat:               "updateat",
-	Userid:                 "userid",
+	CreateAt:               "create_at",
+	UpdateAt:               "update_at",
+	UserID:                 "user_id",
 	Email:                  "email",
 	Quantity:               "quantity",
-	Channelid:              "channelid",
-	Billingaddressid:       "billingaddressid",
-	Shippingaddressid:      "shippingaddressid",
-	Shippingmethodid:       "shippingmethodid",
-	Collectionpointid:      "collectionpointid",
+	ChannelID:              "channel_id",
+	BillingAddressID:       "billing_address_id",
+	ShippingAddressID:      "shipping_address_id",
+	ShippingMethodID:       "shipping_method_id",
+	CollectionPointID:      "collection_point_id",
 	Note:                   "note",
 	Currency:               "currency",
 	Country:                "country",
-	Discountamount:         "discountamount",
-	Discountname:           "discountname",
-	Translateddiscountname: "translateddiscountname",
-	Vouchercode:            "vouchercode",
-	Redirecturl:            "redirecturl",
-	Trackingcode:           "trackingcode",
-	Languagecode:           "languagecode",
+	DiscountAmount:         "discount_amount",
+	DiscountName:           "discount_name",
+	TranslatedDiscountName: "translated_discount_name",
+	VoucherCode:            "voucher_code",
+	RedirectURL:            "redirect_url",
+	TrackingCode:           "tracking_code",
+	LanguageCode:           "language_code",
 	Metadata:               "metadata",
-	Privatemetadata:        "privatemetadata",
+	PrivateMetadata:        "private_metadata",
 }
 
 var CheckoutTableColumns = struct {
 	Token                  string
-	Createat               string
-	Updateat               string
-	Userid                 string
+	CreateAt               string
+	UpdateAt               string
+	UserID                 string
 	Email                  string
 	Quantity               string
-	Channelid              string
-	Billingaddressid       string
-	Shippingaddressid      string
-	Shippingmethodid       string
-	Collectionpointid      string
+	ChannelID              string
+	BillingAddressID       string
+	ShippingAddressID      string
+	ShippingMethodID       string
+	CollectionPointID      string
 	Note                   string
 	Currency               string
 	Country                string
-	Discountamount         string
-	Discountname           string
-	Translateddiscountname string
-	Vouchercode            string
-	Redirecturl            string
-	Trackingcode           string
-	Languagecode           string
+	DiscountAmount         string
+	DiscountName           string
+	TranslatedDiscountName string
+	VoucherCode            string
+	RedirectURL            string
+	TrackingCode           string
+	LanguageCode           string
 	Metadata               string
-	Privatemetadata        string
+	PrivateMetadata        string
 }{
 	Token:                  "checkouts.token",
-	Createat:               "checkouts.createat",
-	Updateat:               "checkouts.updateat",
-	Userid:                 "checkouts.userid",
+	CreateAt:               "checkouts.create_at",
+	UpdateAt:               "checkouts.update_at",
+	UserID:                 "checkouts.user_id",
 	Email:                  "checkouts.email",
 	Quantity:               "checkouts.quantity",
-	Channelid:              "checkouts.channelid",
-	Billingaddressid:       "checkouts.billingaddressid",
-	Shippingaddressid:      "checkouts.shippingaddressid",
-	Shippingmethodid:       "checkouts.shippingmethodid",
-	Collectionpointid:      "checkouts.collectionpointid",
+	ChannelID:              "checkouts.channel_id",
+	BillingAddressID:       "checkouts.billing_address_id",
+	ShippingAddressID:      "checkouts.shipping_address_id",
+	ShippingMethodID:       "checkouts.shipping_method_id",
+	CollectionPointID:      "checkouts.collection_point_id",
 	Note:                   "checkouts.note",
 	Currency:               "checkouts.currency",
 	Country:                "checkouts.country",
-	Discountamount:         "checkouts.discountamount",
-	Discountname:           "checkouts.discountname",
-	Translateddiscountname: "checkouts.translateddiscountname",
-	Vouchercode:            "checkouts.vouchercode",
-	Redirecturl:            "checkouts.redirecturl",
-	Trackingcode:           "checkouts.trackingcode",
-	Languagecode:           "checkouts.languagecode",
+	DiscountAmount:         "checkouts.discount_amount",
+	DiscountName:           "checkouts.discount_name",
+	TranslatedDiscountName: "checkouts.translated_discount_name",
+	VoucherCode:            "checkouts.voucher_code",
+	RedirectURL:            "checkouts.redirect_url",
+	TrackingCode:           "checkouts.tracking_code",
+	LanguageCode:           "checkouts.language_code",
 	Metadata:               "checkouts.metadata",
-	Privatemetadata:        "checkouts.privatemetadata",
+	PrivateMetadata:        "checkouts.private_metadata",
 }
 
 // Generated where
@@ -194,85 +194,85 @@ func (w whereHelpernull_Float64) IsNotNull() qm.QueryMod { return qmhelper.Where
 
 var CheckoutWhere = struct {
 	Token                  whereHelperstring
-	Createat               whereHelpernull_Int64
-	Updateat               whereHelpernull_Int64
-	Userid                 whereHelpernull_String
+	CreateAt               whereHelpernull_Int64
+	UpdateAt               whereHelpernull_Int64
+	UserID                 whereHelpernull_String
 	Email                  whereHelpernull_String
 	Quantity               whereHelpernull_Int
-	Channelid              whereHelpernull_String
-	Billingaddressid       whereHelpernull_String
-	Shippingaddressid      whereHelpernull_String
-	Shippingmethodid       whereHelpernull_String
-	Collectionpointid      whereHelpernull_String
+	ChannelID              whereHelpernull_String
+	BillingAddressID       whereHelpernull_String
+	ShippingAddressID      whereHelpernull_String
+	ShippingMethodID       whereHelpernull_String
+	CollectionPointID      whereHelpernull_String
 	Note                   whereHelpernull_String
 	Currency               whereHelpernull_String
 	Country                whereHelpernull_String
-	Discountamount         whereHelpernull_Float64
-	Discountname           whereHelpernull_String
-	Translateddiscountname whereHelpernull_String
-	Vouchercode            whereHelpernull_String
-	Redirecturl            whereHelpernull_String
-	Trackingcode           whereHelpernull_String
-	Languagecode           whereHelpernull_String
+	DiscountAmount         whereHelpernull_Float64
+	DiscountName           whereHelpernull_String
+	TranslatedDiscountName whereHelpernull_String
+	VoucherCode            whereHelpernull_String
+	RedirectURL            whereHelpernull_String
+	TrackingCode           whereHelpernull_String
+	LanguageCode           whereHelpernull_String
 	Metadata               whereHelpernull_JSON
-	Privatemetadata        whereHelpernull_JSON
+	PrivateMetadata        whereHelpernull_JSON
 }{
 	Token:                  whereHelperstring{field: "\"checkouts\".\"token\""},
-	Createat:               whereHelpernull_Int64{field: "\"checkouts\".\"createat\""},
-	Updateat:               whereHelpernull_Int64{field: "\"checkouts\".\"updateat\""},
-	Userid:                 whereHelpernull_String{field: "\"checkouts\".\"userid\""},
+	CreateAt:               whereHelpernull_Int64{field: "\"checkouts\".\"create_at\""},
+	UpdateAt:               whereHelpernull_Int64{field: "\"checkouts\".\"update_at\""},
+	UserID:                 whereHelpernull_String{field: "\"checkouts\".\"user_id\""},
 	Email:                  whereHelpernull_String{field: "\"checkouts\".\"email\""},
 	Quantity:               whereHelpernull_Int{field: "\"checkouts\".\"quantity\""},
-	Channelid:              whereHelpernull_String{field: "\"checkouts\".\"channelid\""},
-	Billingaddressid:       whereHelpernull_String{field: "\"checkouts\".\"billingaddressid\""},
-	Shippingaddressid:      whereHelpernull_String{field: "\"checkouts\".\"shippingaddressid\""},
-	Shippingmethodid:       whereHelpernull_String{field: "\"checkouts\".\"shippingmethodid\""},
-	Collectionpointid:      whereHelpernull_String{field: "\"checkouts\".\"collectionpointid\""},
+	ChannelID:              whereHelpernull_String{field: "\"checkouts\".\"channel_id\""},
+	BillingAddressID:       whereHelpernull_String{field: "\"checkouts\".\"billing_address_id\""},
+	ShippingAddressID:      whereHelpernull_String{field: "\"checkouts\".\"shipping_address_id\""},
+	ShippingMethodID:       whereHelpernull_String{field: "\"checkouts\".\"shipping_method_id\""},
+	CollectionPointID:      whereHelpernull_String{field: "\"checkouts\".\"collection_point_id\""},
 	Note:                   whereHelpernull_String{field: "\"checkouts\".\"note\""},
 	Currency:               whereHelpernull_String{field: "\"checkouts\".\"currency\""},
 	Country:                whereHelpernull_String{field: "\"checkouts\".\"country\""},
-	Discountamount:         whereHelpernull_Float64{field: "\"checkouts\".\"discountamount\""},
-	Discountname:           whereHelpernull_String{field: "\"checkouts\".\"discountname\""},
-	Translateddiscountname: whereHelpernull_String{field: "\"checkouts\".\"translateddiscountname\""},
-	Vouchercode:            whereHelpernull_String{field: "\"checkouts\".\"vouchercode\""},
-	Redirecturl:            whereHelpernull_String{field: "\"checkouts\".\"redirecturl\""},
-	Trackingcode:           whereHelpernull_String{field: "\"checkouts\".\"trackingcode\""},
-	Languagecode:           whereHelpernull_String{field: "\"checkouts\".\"languagecode\""},
+	DiscountAmount:         whereHelpernull_Float64{field: "\"checkouts\".\"discount_amount\""},
+	DiscountName:           whereHelpernull_String{field: "\"checkouts\".\"discount_name\""},
+	TranslatedDiscountName: whereHelpernull_String{field: "\"checkouts\".\"translated_discount_name\""},
+	VoucherCode:            whereHelpernull_String{field: "\"checkouts\".\"voucher_code\""},
+	RedirectURL:            whereHelpernull_String{field: "\"checkouts\".\"redirect_url\""},
+	TrackingCode:           whereHelpernull_String{field: "\"checkouts\".\"tracking_code\""},
+	LanguageCode:           whereHelpernull_String{field: "\"checkouts\".\"language_code\""},
 	Metadata:               whereHelpernull_JSON{field: "\"checkouts\".\"metadata\""},
-	Privatemetadata:        whereHelpernull_JSON{field: "\"checkouts\".\"privatemetadata\""},
+	PrivateMetadata:        whereHelpernull_JSON{field: "\"checkouts\".\"private_metadata\""},
 }
 
 // CheckoutRels is where relationship names are stored.
 var CheckoutRels = struct {
-	BillingaddressidAddress        string
-	ChannelidChannel               string
-	ShippingmethodidShippingMethod string
-	UseridUser                     string
-	CollectionpointidWarehouse     string
-	CheckoutidCheckoutLines        string
-	CheckoutidGiftcardCheckouts    string
-	CheckoutidPayments             string
+	BillingAddress    string
+	Channel           string
+	ShippingMethod    string
+	User              string
+	CollectionPoint   string
+	CheckoutLines     string
+	GiftcardCheckouts string
+	Payments          string
 }{
-	BillingaddressidAddress:        "BillingaddressidAddress",
-	ChannelidChannel:               "ChannelidChannel",
-	ShippingmethodidShippingMethod: "ShippingmethodidShippingMethod",
-	UseridUser:                     "UseridUser",
-	CollectionpointidWarehouse:     "CollectionpointidWarehouse",
-	CheckoutidCheckoutLines:        "CheckoutidCheckoutLines",
-	CheckoutidGiftcardCheckouts:    "CheckoutidGiftcardCheckouts",
-	CheckoutidPayments:             "CheckoutidPayments",
+	BillingAddress:    "BillingAddress",
+	Channel:           "Channel",
+	ShippingMethod:    "ShippingMethod",
+	User:              "User",
+	CollectionPoint:   "CollectionPoint",
+	CheckoutLines:     "CheckoutLines",
+	GiftcardCheckouts: "GiftcardCheckouts",
+	Payments:          "Payments",
 }
 
 // checkoutR is where relationships are stored.
 type checkoutR struct {
-	BillingaddressidAddress        *Address              `boil:"BillingaddressidAddress" json:"BillingaddressidAddress" toml:"BillingaddressidAddress" yaml:"BillingaddressidAddress"`
-	ChannelidChannel               *Channel              `boil:"ChannelidChannel" json:"ChannelidChannel" toml:"ChannelidChannel" yaml:"ChannelidChannel"`
-	ShippingmethodidShippingMethod *ShippingMethod       `boil:"ShippingmethodidShippingMethod" json:"ShippingmethodidShippingMethod" toml:"ShippingmethodidShippingMethod" yaml:"ShippingmethodidShippingMethod"`
-	UseridUser                     *User                 `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
-	CollectionpointidWarehouse     *Warehouse            `boil:"CollectionpointidWarehouse" json:"CollectionpointidWarehouse" toml:"CollectionpointidWarehouse" yaml:"CollectionpointidWarehouse"`
-	CheckoutidCheckoutLines        CheckoutLineSlice     `boil:"CheckoutidCheckoutLines" json:"CheckoutidCheckoutLines" toml:"CheckoutidCheckoutLines" yaml:"CheckoutidCheckoutLines"`
-	CheckoutidGiftcardCheckouts    GiftcardCheckoutSlice `boil:"CheckoutidGiftcardCheckouts" json:"CheckoutidGiftcardCheckouts" toml:"CheckoutidGiftcardCheckouts" yaml:"CheckoutidGiftcardCheckouts"`
-	CheckoutidPayments             PaymentSlice          `boil:"CheckoutidPayments" json:"CheckoutidPayments" toml:"CheckoutidPayments" yaml:"CheckoutidPayments"`
+	BillingAddress    *Address              `boil:"BillingAddress" json:"BillingAddress" toml:"BillingAddress" yaml:"BillingAddress"`
+	Channel           *Channel              `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	ShippingMethod    *ShippingMethod       `boil:"ShippingMethod" json:"ShippingMethod" toml:"ShippingMethod" yaml:"ShippingMethod"`
+	User              *User                 `boil:"User" json:"User" toml:"User" yaml:"User"`
+	CollectionPoint   *Warehouse            `boil:"CollectionPoint" json:"CollectionPoint" toml:"CollectionPoint" yaml:"CollectionPoint"`
+	CheckoutLines     CheckoutLineSlice     `boil:"CheckoutLines" json:"CheckoutLines" toml:"CheckoutLines" yaml:"CheckoutLines"`
+	GiftcardCheckouts GiftcardCheckoutSlice `boil:"GiftcardCheckouts" json:"GiftcardCheckouts" toml:"GiftcardCheckouts" yaml:"GiftcardCheckouts"`
+	Payments          PaymentSlice          `boil:"Payments" json:"Payments" toml:"Payments" yaml:"Payments"`
 }
 
 // NewStruct creates a new relationship struct
@@ -280,69 +280,69 @@ func (*checkoutR) NewStruct() *checkoutR {
 	return &checkoutR{}
 }
 
-func (r *checkoutR) GetBillingaddressidAddress() *Address {
+func (r *checkoutR) GetBillingAddress() *Address {
 	if r == nil {
 		return nil
 	}
-	return r.BillingaddressidAddress
+	return r.BillingAddress
 }
 
-func (r *checkoutR) GetChannelidChannel() *Channel {
+func (r *checkoutR) GetChannel() *Channel {
 	if r == nil {
 		return nil
 	}
-	return r.ChannelidChannel
+	return r.Channel
 }
 
-func (r *checkoutR) GetShippingmethodidShippingMethod() *ShippingMethod {
+func (r *checkoutR) GetShippingMethod() *ShippingMethod {
 	if r == nil {
 		return nil
 	}
-	return r.ShippingmethodidShippingMethod
+	return r.ShippingMethod
 }
 
-func (r *checkoutR) GetUseridUser() *User {
+func (r *checkoutR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
-func (r *checkoutR) GetCollectionpointidWarehouse() *Warehouse {
+func (r *checkoutR) GetCollectionPoint() *Warehouse {
 	if r == nil {
 		return nil
 	}
-	return r.CollectionpointidWarehouse
+	return r.CollectionPoint
 }
 
-func (r *checkoutR) GetCheckoutidCheckoutLines() CheckoutLineSlice {
+func (r *checkoutR) GetCheckoutLines() CheckoutLineSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CheckoutidCheckoutLines
+	return r.CheckoutLines
 }
 
-func (r *checkoutR) GetCheckoutidGiftcardCheckouts() GiftcardCheckoutSlice {
+func (r *checkoutR) GetGiftcardCheckouts() GiftcardCheckoutSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CheckoutidGiftcardCheckouts
+	return r.GiftcardCheckouts
 }
 
-func (r *checkoutR) GetCheckoutidPayments() PaymentSlice {
+func (r *checkoutR) GetPayments() PaymentSlice {
 	if r == nil {
 		return nil
 	}
-	return r.CheckoutidPayments
+	return r.Payments
 }
 
 // checkoutL is where Load methods for each relationship are stored.
 type checkoutL struct{}
 
 var (
-	checkoutAllColumns            = []string{"token", "createat", "updateat", "userid", "email", "quantity", "channelid", "billingaddressid", "shippingaddressid", "shippingmethodid", "collectionpointid", "note", "currency", "country", "discountamount", "discountname", "translateddiscountname", "vouchercode", "redirecturl", "trackingcode", "languagecode", "metadata", "privatemetadata"}
+	checkoutAllColumns            = []string{"token", "create_at", "update_at", "user_id", "email", "quantity", "channel_id", "billing_address_id", "shipping_address_id", "shipping_method_id", "collection_point_id", "note", "currency", "country", "discount_amount", "discount_name", "translated_discount_name", "voucher_code", "redirect_url", "tracking_code", "language_code", "metadata", "private_metadata"}
 	checkoutColumnsWithoutDefault = []string{"token"}
-	checkoutColumnsWithDefault    = []string{"createat", "updateat", "userid", "email", "quantity", "channelid", "billingaddressid", "shippingaddressid", "shippingmethodid", "collectionpointid", "note", "currency", "country", "discountamount", "discountname", "translateddiscountname", "vouchercode", "redirecturl", "trackingcode", "languagecode", "metadata", "privatemetadata"}
+	checkoutColumnsWithDefault    = []string{"create_at", "update_at", "user_id", "email", "quantity", "channel_id", "billing_address_id", "shipping_address_id", "shipping_method_id", "collection_point_id", "note", "currency", "country", "discount_amount", "discount_name", "translated_discount_name", "voucher_code", "redirect_url", "tracking_code", "language_code", "metadata", "private_metadata"}
 	checkoutPrimaryKeyColumns     = []string{"token"}
 	checkoutGeneratedColumns      = []string{}
 )
@@ -625,10 +625,10 @@ func (q checkoutQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (b
 	return count > 0, nil
 }
 
-// BillingaddressidAddress pointed to by the foreign key.
-func (o *Checkout) BillingaddressidAddress(mods ...qm.QueryMod) addressQuery {
+// BillingAddress pointed to by the foreign key.
+func (o *Checkout) BillingAddress(mods ...qm.QueryMod) addressQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Billingaddressid),
+		qm.Where("\"id\" = ?", o.BillingAddressID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -636,10 +636,10 @@ func (o *Checkout) BillingaddressidAddress(mods ...qm.QueryMod) addressQuery {
 	return Addresses(queryMods...)
 }
 
-// ChannelidChannel pointed to by the foreign key.
-func (o *Checkout) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
+// Channel pointed to by the foreign key.
+func (o *Checkout) Channel(mods ...qm.QueryMod) channelQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Channelid),
+		qm.Where("\"id\" = ?", o.ChannelID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -647,10 +647,10 @@ func (o *Checkout) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
 	return Channels(queryMods...)
 }
 
-// ShippingmethodidShippingMethod pointed to by the foreign key.
-func (o *Checkout) ShippingmethodidShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
+// ShippingMethod pointed to by the foreign key.
+func (o *Checkout) ShippingMethod(mods ...qm.QueryMod) shippingMethodQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Shippingmethodid),
+		qm.Where("\"id\" = ?", o.ShippingMethodID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -658,10 +658,10 @@ func (o *Checkout) ShippingmethodidShippingMethod(mods ...qm.QueryMod) shippingM
 	return ShippingMethods(queryMods...)
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *Checkout) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *Checkout) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -669,10 +669,10 @@ func (o *Checkout) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// CollectionpointidWarehouse pointed to by the foreign key.
-func (o *Checkout) CollectionpointidWarehouse(mods ...qm.QueryMod) warehouseQuery {
+// CollectionPoint pointed to by the foreign key.
+func (o *Checkout) CollectionPoint(mods ...qm.QueryMod) warehouseQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Collectionpointid),
+		qm.Where("\"id\" = ?", o.CollectionPointID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -680,51 +680,51 @@ func (o *Checkout) CollectionpointidWarehouse(mods ...qm.QueryMod) warehouseQuer
 	return Warehouses(queryMods...)
 }
 
-// CheckoutidCheckoutLines retrieves all the checkout_line's CheckoutLines with an executor via checkoutid column.
-func (o *Checkout) CheckoutidCheckoutLines(mods ...qm.QueryMod) checkoutLineQuery {
+// CheckoutLines retrieves all the checkout_line's CheckoutLines with an executor.
+func (o *Checkout) CheckoutLines(mods ...qm.QueryMod) checkoutLineQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"checkout_lines\".\"checkoutid\"=?", o.Token),
+		qm.Where("\"checkout_lines\".\"checkout_id\"=?", o.Token),
 	)
 
 	return CheckoutLines(queryMods...)
 }
 
-// CheckoutidGiftcardCheckouts retrieves all the giftcard_checkout's GiftcardCheckouts with an executor via checkoutid column.
-func (o *Checkout) CheckoutidGiftcardCheckouts(mods ...qm.QueryMod) giftcardCheckoutQuery {
+// GiftcardCheckouts retrieves all the giftcard_checkout's GiftcardCheckouts with an executor.
+func (o *Checkout) GiftcardCheckouts(mods ...qm.QueryMod) giftcardCheckoutQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"giftcard_checkouts\".\"checkoutid\"=?", o.Token),
+		qm.Where("\"giftcard_checkouts\".\"checkout_id\"=?", o.Token),
 	)
 
 	return GiftcardCheckouts(queryMods...)
 }
 
-// CheckoutidPayments retrieves all the payment's Payments with an executor via checkoutid column.
-func (o *Checkout) CheckoutidPayments(mods ...qm.QueryMod) paymentQuery {
+// Payments retrieves all the payment's Payments with an executor.
+func (o *Checkout) Payments(mods ...qm.QueryMod) paymentQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"payments\".\"checkoutid\"=?", o.Token),
+		qm.Where("\"payments\".\"checkout_id\"=?", o.Token),
 	)
 
 	return Payments(queryMods...)
 }
 
-// LoadBillingaddressidAddress allows an eager lookup of values, cached into the
+// LoadBillingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadBillingaddressidAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -755,8 +755,8 @@ func (checkoutL) LoadBillingaddressidAddress(ctx context.Context, e boil.Context
 		if object.R == nil {
 			object.R = &checkoutR{}
 		}
-		if !queries.IsNil(object.Billingaddressid) {
-			args = append(args, object.Billingaddressid)
+		if !queries.IsNil(object.BillingAddressID) {
+			args = append(args, object.BillingAddressID)
 		}
 
 	} else {
@@ -767,13 +767,13 @@ func (checkoutL) LoadBillingaddressidAddress(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Billingaddressid) {
+				if queries.Equal(a, obj.BillingAddressID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Billingaddressid) {
-				args = append(args, obj.Billingaddressid)
+			if !queries.IsNil(obj.BillingAddressID) {
+				args = append(args, obj.BillingAddressID)
 			}
 
 		}
@@ -822,22 +822,22 @@ func (checkoutL) LoadBillingaddressidAddress(ctx context.Context, e boil.Context
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.BillingaddressidAddress = foreign
+		object.R.BillingAddress = foreign
 		if foreign.R == nil {
 			foreign.R = &addressR{}
 		}
-		foreign.R.BillingaddressidCheckouts = append(foreign.R.BillingaddressidCheckouts, object)
+		foreign.R.BillingAddressCheckouts = append(foreign.R.BillingAddressCheckouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Billingaddressid, foreign.ID) {
-				local.R.BillingaddressidAddress = foreign
+			if queries.Equal(local.BillingAddressID, foreign.ID) {
+				local.R.BillingAddress = foreign
 				if foreign.R == nil {
 					foreign.R = &addressR{}
 				}
-				foreign.R.BillingaddressidCheckouts = append(foreign.R.BillingaddressidCheckouts, local)
+				foreign.R.BillingAddressCheckouts = append(foreign.R.BillingAddressCheckouts, local)
 				break
 			}
 		}
@@ -846,9 +846,9 @@ func (checkoutL) LoadBillingaddressidAddress(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadChannelidChannel allows an eager lookup of values, cached into the
+// LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -879,8 +879,8 @@ func (checkoutL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &checkoutR{}
 		}
-		if !queries.IsNil(object.Channelid) {
-			args = append(args, object.Channelid)
+		if !queries.IsNil(object.ChannelID) {
+			args = append(args, object.ChannelID)
 		}
 
 	} else {
@@ -891,13 +891,13 @@ func (checkoutL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Channelid) {
+				if queries.Equal(a, obj.ChannelID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Channelid) {
-				args = append(args, obj.Channelid)
+			if !queries.IsNil(obj.ChannelID) {
+				args = append(args, obj.ChannelID)
 			}
 
 		}
@@ -946,22 +946,22 @@ func (checkoutL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecuto
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ChannelidChannel = foreign
+		object.R.Channel = foreign
 		if foreign.R == nil {
 			foreign.R = &channelR{}
 		}
-		foreign.R.ChannelidCheckouts = append(foreign.R.ChannelidCheckouts, object)
+		foreign.R.Checkouts = append(foreign.R.Checkouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Channelid, foreign.ID) {
-				local.R.ChannelidChannel = foreign
+			if queries.Equal(local.ChannelID, foreign.ID) {
+				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
 				}
-				foreign.R.ChannelidCheckouts = append(foreign.R.ChannelidCheckouts, local)
+				foreign.R.Checkouts = append(foreign.R.Checkouts, local)
 				break
 			}
 		}
@@ -970,9 +970,9 @@ func (checkoutL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecuto
 	return nil
 }
 
-// LoadShippingmethodidShippingMethod allows an eager lookup of values, cached into the
+// LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1003,8 +1003,8 @@ func (checkoutL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.
 		if object.R == nil {
 			object.R = &checkoutR{}
 		}
-		if !queries.IsNil(object.Shippingmethodid) {
-			args = append(args, object.Shippingmethodid)
+		if !queries.IsNil(object.ShippingMethodID) {
+			args = append(args, object.ShippingMethodID)
 		}
 
 	} else {
@@ -1015,13 +1015,13 @@ func (checkoutL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Shippingmethodid) {
+				if queries.Equal(a, obj.ShippingMethodID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Shippingmethodid) {
-				args = append(args, obj.Shippingmethodid)
+			if !queries.IsNil(obj.ShippingMethodID) {
+				args = append(args, obj.ShippingMethodID)
 			}
 
 		}
@@ -1070,22 +1070,22 @@ func (checkoutL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ShippingmethodidShippingMethod = foreign
+		object.R.ShippingMethod = foreign
 		if foreign.R == nil {
 			foreign.R = &shippingMethodR{}
 		}
-		foreign.R.ShippingmethodidCheckouts = append(foreign.R.ShippingmethodidCheckouts, object)
+		foreign.R.Checkouts = append(foreign.R.Checkouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Shippingmethodid, foreign.ID) {
-				local.R.ShippingmethodidShippingMethod = foreign
+			if queries.Equal(local.ShippingMethodID, foreign.ID) {
+				local.R.ShippingMethod = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
 				}
-				foreign.R.ShippingmethodidCheckouts = append(foreign.R.ShippingmethodidCheckouts, local)
+				foreign.R.Checkouts = append(foreign.R.Checkouts, local)
 				break
 			}
 		}
@@ -1094,9 +1094,9 @@ func (checkoutL) LoadShippingmethodidShippingMethod(ctx context.Context, e boil.
 	return nil
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1127,8 +1127,8 @@ func (checkoutL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &checkoutR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -1139,13 +1139,13 @@ func (checkoutL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, sin
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -1194,22 +1194,22 @@ func (checkoutL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, sin
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridCheckouts = append(foreign.R.UseridCheckouts, object)
+		foreign.R.Checkouts = append(foreign.R.Checkouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridCheckouts = append(foreign.R.UseridCheckouts, local)
+				foreign.R.Checkouts = append(foreign.R.Checkouts, local)
 				break
 			}
 		}
@@ -1218,9 +1218,9 @@ func (checkoutL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// LoadCollectionpointidWarehouse allows an eager lookup of values, cached into the
+// LoadCollectionPoint allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1251,8 +1251,8 @@ func (checkoutL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &checkoutR{}
 		}
-		if !queries.IsNil(object.Collectionpointid) {
-			args = append(args, object.Collectionpointid)
+		if !queries.IsNil(object.CollectionPointID) {
+			args = append(args, object.CollectionPointID)
 		}
 
 	} else {
@@ -1263,13 +1263,13 @@ func (checkoutL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Collectionpointid) {
+				if queries.Equal(a, obj.CollectionPointID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Collectionpointid) {
-				args = append(args, obj.Collectionpointid)
+			if !queries.IsNil(obj.CollectionPointID) {
+				args = append(args, obj.CollectionPointID)
 			}
 
 		}
@@ -1318,22 +1318,22 @@ func (checkoutL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.CollectionpointidWarehouse = foreign
+		object.R.CollectionPoint = foreign
 		if foreign.R == nil {
 			foreign.R = &warehouseR{}
 		}
-		foreign.R.CollectionpointidCheckouts = append(foreign.R.CollectionpointidCheckouts, object)
+		foreign.R.CollectionPointCheckouts = append(foreign.R.CollectionPointCheckouts, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Collectionpointid, foreign.ID) {
-				local.R.CollectionpointidWarehouse = foreign
+			if queries.Equal(local.CollectionPointID, foreign.ID) {
+				local.R.CollectionPoint = foreign
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
 				}
-				foreign.R.CollectionpointidCheckouts = append(foreign.R.CollectionpointidCheckouts, local)
+				foreign.R.CollectionPointCheckouts = append(foreign.R.CollectionPointCheckouts, local)
 				break
 			}
 		}
@@ -1342,9 +1342,9 @@ func (checkoutL) LoadCollectionpointidWarehouse(ctx context.Context, e boil.Cont
 	return nil
 }
 
-// LoadCheckoutidCheckoutLines allows an eager lookup of values, cached into the
+// LoadCheckoutLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadCheckoutidCheckoutLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadCheckoutLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1399,7 +1399,7 @@ func (checkoutL) LoadCheckoutidCheckoutLines(ctx context.Context, e boil.Context
 
 	query := NewQuery(
 		qm.From(`checkout_lines`),
-		qm.WhereIn(`checkout_lines.checkoutid in ?`, args...),
+		qm.WhereIn(`checkout_lines.checkout_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1430,24 +1430,24 @@ func (checkoutL) LoadCheckoutidCheckoutLines(ctx context.Context, e boil.Context
 		}
 	}
 	if singular {
-		object.R.CheckoutidCheckoutLines = resultSlice
+		object.R.CheckoutLines = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &checkoutLineR{}
 			}
-			foreign.R.CheckoutidCheckout = object
+			foreign.R.Checkout = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.Token, foreign.Checkoutid) {
-				local.R.CheckoutidCheckoutLines = append(local.R.CheckoutidCheckoutLines, foreign)
+			if queries.Equal(local.Token, foreign.CheckoutID) {
+				local.R.CheckoutLines = append(local.R.CheckoutLines, foreign)
 				if foreign.R == nil {
 					foreign.R = &checkoutLineR{}
 				}
-				foreign.R.CheckoutidCheckout = local
+				foreign.R.Checkout = local
 				break
 			}
 		}
@@ -1456,9 +1456,9 @@ func (checkoutL) LoadCheckoutidCheckoutLines(ctx context.Context, e boil.Context
 	return nil
 }
 
-// LoadCheckoutidGiftcardCheckouts allows an eager lookup of values, cached into the
+// LoadGiftcardCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadCheckoutidGiftcardCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1513,7 +1513,7 @@ func (checkoutL) LoadCheckoutidGiftcardCheckouts(ctx context.Context, e boil.Con
 
 	query := NewQuery(
 		qm.From(`giftcard_checkouts`),
-		qm.WhereIn(`giftcard_checkouts.checkoutid in ?`, args...),
+		qm.WhereIn(`giftcard_checkouts.checkout_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1544,24 +1544,24 @@ func (checkoutL) LoadCheckoutidGiftcardCheckouts(ctx context.Context, e boil.Con
 		}
 	}
 	if singular {
-		object.R.CheckoutidGiftcardCheckouts = resultSlice
+		object.R.GiftcardCheckouts = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &giftcardCheckoutR{}
 			}
-			foreign.R.CheckoutidCheckout = object
+			foreign.R.Checkout = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.Token, foreign.Checkoutid) {
-				local.R.CheckoutidGiftcardCheckouts = append(local.R.CheckoutidGiftcardCheckouts, foreign)
+			if queries.Equal(local.Token, foreign.CheckoutID) {
+				local.R.GiftcardCheckouts = append(local.R.GiftcardCheckouts, foreign)
 				if foreign.R == nil {
 					foreign.R = &giftcardCheckoutR{}
 				}
-				foreign.R.CheckoutidCheckout = local
+				foreign.R.Checkout = local
 				break
 			}
 		}
@@ -1570,9 +1570,9 @@ func (checkoutL) LoadCheckoutidGiftcardCheckouts(ctx context.Context, e boil.Con
 	return nil
 }
 
-// LoadCheckoutidPayments allows an eager lookup of values, cached into the
+// LoadPayments allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadCheckoutidPayments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1627,7 +1627,7 @@ func (checkoutL) LoadCheckoutidPayments(ctx context.Context, e boil.ContextExecu
 
 	query := NewQuery(
 		qm.From(`payments`),
-		qm.WhereIn(`payments.checkoutid in ?`, args...),
+		qm.WhereIn(`payments.checkout_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -1658,24 +1658,24 @@ func (checkoutL) LoadCheckoutidPayments(ctx context.Context, e boil.ContextExecu
 		}
 	}
 	if singular {
-		object.R.CheckoutidPayments = resultSlice
+		object.R.Payments = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &paymentR{}
 			}
-			foreign.R.CheckoutidCheckout = object
+			foreign.R.Checkout = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.Token, foreign.Checkoutid) {
-				local.R.CheckoutidPayments = append(local.R.CheckoutidPayments, foreign)
+			if queries.Equal(local.Token, foreign.CheckoutID) {
+				local.R.Payments = append(local.R.Payments, foreign)
 				if foreign.R == nil {
 					foreign.R = &paymentR{}
 				}
-				foreign.R.CheckoutidCheckout = local
+				foreign.R.Checkout = local
 				break
 			}
 		}
@@ -1684,10 +1684,10 @@ func (checkoutL) LoadCheckoutidPayments(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
-// SetBillingaddressidAddress of the checkout to the related item.
-// Sets o.R.BillingaddressidAddress to related.
-// Adds o to related.R.BillingaddressidCheckouts.
-func (o *Checkout) SetBillingaddressidAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+// SetBillingAddress of the checkout to the related item.
+// Sets o.R.BillingAddress to related.
+// Adds o to related.R.BillingAddressCheckouts.
+func (o *Checkout) SetBillingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1697,7 +1697,7 @@ func (o *Checkout) SetBillingaddressidAddress(ctx context.Context, exec boil.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"billingaddressid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"billing_address_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.Token}
@@ -1711,63 +1711,63 @@ func (o *Checkout) SetBillingaddressidAddress(ctx context.Context, exec boil.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Billingaddressid, related.ID)
+	queries.Assign(&o.BillingAddressID, related.ID)
 	if o.R == nil {
 		o.R = &checkoutR{
-			BillingaddressidAddress: related,
+			BillingAddress: related,
 		}
 	} else {
-		o.R.BillingaddressidAddress = related
+		o.R.BillingAddress = related
 	}
 
 	if related.R == nil {
 		related.R = &addressR{
-			BillingaddressidCheckouts: CheckoutSlice{o},
+			BillingAddressCheckouts: CheckoutSlice{o},
 		}
 	} else {
-		related.R.BillingaddressidCheckouts = append(related.R.BillingaddressidCheckouts, o)
+		related.R.BillingAddressCheckouts = append(related.R.BillingAddressCheckouts, o)
 	}
 
 	return nil
 }
 
-// RemoveBillingaddressidAddress relationship.
-// Sets o.R.BillingaddressidAddress to nil.
+// RemoveBillingAddress relationship.
+// Sets o.R.BillingAddress to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveBillingaddressidAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *Checkout) RemoveBillingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
 	var err error
 
-	queries.SetScanner(&o.Billingaddressid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("billingaddressid")); err != nil {
+	queries.SetScanner(&o.BillingAddressID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.BillingaddressidAddress = nil
+		o.R.BillingAddress = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.BillingaddressidCheckouts {
-		if queries.Equal(o.Billingaddressid, ri.Billingaddressid) {
+	for i, ri := range related.R.BillingAddressCheckouts {
+		if queries.Equal(o.BillingAddressID, ri.BillingAddressID) {
 			continue
 		}
 
-		ln := len(related.R.BillingaddressidCheckouts)
+		ln := len(related.R.BillingAddressCheckouts)
 		if ln > 1 && i < ln-1 {
-			related.R.BillingaddressidCheckouts[i] = related.R.BillingaddressidCheckouts[ln-1]
+			related.R.BillingAddressCheckouts[i] = related.R.BillingAddressCheckouts[ln-1]
 		}
-		related.R.BillingaddressidCheckouts = related.R.BillingaddressidCheckouts[:ln-1]
+		related.R.BillingAddressCheckouts = related.R.BillingAddressCheckouts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetChannelidChannel of the checkout to the related item.
-// Sets o.R.ChannelidChannel to related.
-// Adds o to related.R.ChannelidCheckouts.
-func (o *Checkout) SetChannelidChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+// SetChannel of the checkout to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.Checkouts.
+func (o *Checkout) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1777,7 +1777,7 @@ func (o *Checkout) SetChannelidChannel(ctx context.Context, exec boil.ContextExe
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"channelid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.Token}
@@ -1791,63 +1791,63 @@ func (o *Checkout) SetChannelidChannel(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Channelid, related.ID)
+	queries.Assign(&o.ChannelID, related.ID)
 	if o.R == nil {
 		o.R = &checkoutR{
-			ChannelidChannel: related,
+			Channel: related,
 		}
 	} else {
-		o.R.ChannelidChannel = related
+		o.R.Channel = related
 	}
 
 	if related.R == nil {
 		related.R = &channelR{
-			ChannelidCheckouts: CheckoutSlice{o},
+			Checkouts: CheckoutSlice{o},
 		}
 	} else {
-		related.R.ChannelidCheckouts = append(related.R.ChannelidCheckouts, o)
+		related.R.Checkouts = append(related.R.Checkouts, o)
 	}
 
 	return nil
 }
 
-// RemoveChannelidChannel relationship.
-// Sets o.R.ChannelidChannel to nil.
+// RemoveChannel relationship.
+// Sets o.R.Channel to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveChannelidChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
+func (o *Checkout) RemoveChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
 	var err error
 
-	queries.SetScanner(&o.Channelid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("channelid")); err != nil {
+	queries.SetScanner(&o.ChannelID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ChannelidChannel = nil
+		o.R.Channel = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ChannelidCheckouts {
-		if queries.Equal(o.Channelid, ri.Channelid) {
+	for i, ri := range related.R.Checkouts {
+		if queries.Equal(o.ChannelID, ri.ChannelID) {
 			continue
 		}
 
-		ln := len(related.R.ChannelidCheckouts)
+		ln := len(related.R.Checkouts)
 		if ln > 1 && i < ln-1 {
-			related.R.ChannelidCheckouts[i] = related.R.ChannelidCheckouts[ln-1]
+			related.R.Checkouts[i] = related.R.Checkouts[ln-1]
 		}
-		related.R.ChannelidCheckouts = related.R.ChannelidCheckouts[:ln-1]
+		related.R.Checkouts = related.R.Checkouts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetShippingmethodidShippingMethod of the checkout to the related item.
-// Sets o.R.ShippingmethodidShippingMethod to related.
-// Adds o to related.R.ShippingmethodidCheckouts.
-func (o *Checkout) SetShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
+// SetShippingMethod of the checkout to the related item.
+// Sets o.R.ShippingMethod to related.
+// Adds o to related.R.Checkouts.
+func (o *Checkout) SetShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1857,7 +1857,7 @@ func (o *Checkout) SetShippingmethodidShippingMethod(ctx context.Context, exec b
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"shippingmethodid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"shipping_method_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.Token}
@@ -1871,63 +1871,63 @@ func (o *Checkout) SetShippingmethodidShippingMethod(ctx context.Context, exec b
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Shippingmethodid, related.ID)
+	queries.Assign(&o.ShippingMethodID, related.ID)
 	if o.R == nil {
 		o.R = &checkoutR{
-			ShippingmethodidShippingMethod: related,
+			ShippingMethod: related,
 		}
 	} else {
-		o.R.ShippingmethodidShippingMethod = related
+		o.R.ShippingMethod = related
 	}
 
 	if related.R == nil {
 		related.R = &shippingMethodR{
-			ShippingmethodidCheckouts: CheckoutSlice{o},
+			Checkouts: CheckoutSlice{o},
 		}
 	} else {
-		related.R.ShippingmethodidCheckouts = append(related.R.ShippingmethodidCheckouts, o)
+		related.R.Checkouts = append(related.R.Checkouts, o)
 	}
 
 	return nil
 }
 
-// RemoveShippingmethodidShippingMethod relationship.
-// Sets o.R.ShippingmethodidShippingMethod to nil.
+// RemoveShippingMethod relationship.
+// Sets o.R.ShippingMethod to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveShippingmethodidShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
+func (o *Checkout) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
 	var err error
 
-	queries.SetScanner(&o.Shippingmethodid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shippingmethodid")); err != nil {
+	queries.SetScanner(&o.ShippingMethodID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.ShippingmethodidShippingMethod = nil
+		o.R.ShippingMethod = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.ShippingmethodidCheckouts {
-		if queries.Equal(o.Shippingmethodid, ri.Shippingmethodid) {
+	for i, ri := range related.R.Checkouts {
+		if queries.Equal(o.ShippingMethodID, ri.ShippingMethodID) {
 			continue
 		}
 
-		ln := len(related.R.ShippingmethodidCheckouts)
+		ln := len(related.R.Checkouts)
 		if ln > 1 && i < ln-1 {
-			related.R.ShippingmethodidCheckouts[i] = related.R.ShippingmethodidCheckouts[ln-1]
+			related.R.Checkouts[i] = related.R.Checkouts[ln-1]
 		}
-		related.R.ShippingmethodidCheckouts = related.R.ShippingmethodidCheckouts[:ln-1]
+		related.R.Checkouts = related.R.Checkouts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetUseridUser of the checkout to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridCheckouts.
-func (o *Checkout) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the checkout to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.Checkouts.
+func (o *Checkout) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -1937,7 +1937,7 @@ func (o *Checkout) SetUseridUser(ctx context.Context, exec boil.ContextExecutor,
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.Token}
@@ -1951,63 +1951,63 @@ func (o *Checkout) SetUseridUser(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &checkoutR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridCheckouts: CheckoutSlice{o},
+			Checkouts: CheckoutSlice{o},
 		}
 	} else {
-		related.R.UseridCheckouts = append(related.R.UseridCheckouts, o)
+		related.R.Checkouts = append(related.R.Checkouts, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *Checkout) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridCheckouts {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.Checkouts {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridCheckouts)
+		ln := len(related.R.Checkouts)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridCheckouts[i] = related.R.UseridCheckouts[ln-1]
+			related.R.Checkouts[i] = related.R.Checkouts[ln-1]
 		}
-		related.R.UseridCheckouts = related.R.UseridCheckouts[:ln-1]
+		related.R.Checkouts = related.R.Checkouts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetCollectionpointidWarehouse of the checkout to the related item.
-// Sets o.R.CollectionpointidWarehouse to related.
-// Adds o to related.R.CollectionpointidCheckouts.
-func (o *Checkout) SetCollectionpointidWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
+// SetCollectionPoint of the checkout to the related item.
+// Sets o.R.CollectionPoint to related.
+// Adds o to related.R.CollectionPointCheckouts.
+func (o *Checkout) SetCollectionPoint(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -2017,7 +2017,7 @@ func (o *Checkout) SetCollectionpointidWarehouse(ctx context.Context, exec boil.
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"checkouts\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"collectionpointid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"collection_point_id"}),
 		strmangle.WhereClause("\"", "\"", 2, checkoutPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.Token}
@@ -2031,75 +2031,75 @@ func (o *Checkout) SetCollectionpointidWarehouse(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Collectionpointid, related.ID)
+	queries.Assign(&o.CollectionPointID, related.ID)
 	if o.R == nil {
 		o.R = &checkoutR{
-			CollectionpointidWarehouse: related,
+			CollectionPoint: related,
 		}
 	} else {
-		o.R.CollectionpointidWarehouse = related
+		o.R.CollectionPoint = related
 	}
 
 	if related.R == nil {
 		related.R = &warehouseR{
-			CollectionpointidCheckouts: CheckoutSlice{o},
+			CollectionPointCheckouts: CheckoutSlice{o},
 		}
 	} else {
-		related.R.CollectionpointidCheckouts = append(related.R.CollectionpointidCheckouts, o)
+		related.R.CollectionPointCheckouts = append(related.R.CollectionPointCheckouts, o)
 	}
 
 	return nil
 }
 
-// RemoveCollectionpointidWarehouse relationship.
-// Sets o.R.CollectionpointidWarehouse to nil.
+// RemoveCollectionPoint relationship.
+// Sets o.R.CollectionPoint to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveCollectionpointidWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
+func (o *Checkout) RemoveCollectionPoint(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
 	var err error
 
-	queries.SetScanner(&o.Collectionpointid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collectionpointid")); err != nil {
+	queries.SetScanner(&o.CollectionPointID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_point_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.CollectionpointidWarehouse = nil
+		o.R.CollectionPoint = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.CollectionpointidCheckouts {
-		if queries.Equal(o.Collectionpointid, ri.Collectionpointid) {
+	for i, ri := range related.R.CollectionPointCheckouts {
+		if queries.Equal(o.CollectionPointID, ri.CollectionPointID) {
 			continue
 		}
 
-		ln := len(related.R.CollectionpointidCheckouts)
+		ln := len(related.R.CollectionPointCheckouts)
 		if ln > 1 && i < ln-1 {
-			related.R.CollectionpointidCheckouts[i] = related.R.CollectionpointidCheckouts[ln-1]
+			related.R.CollectionPointCheckouts[i] = related.R.CollectionPointCheckouts[ln-1]
 		}
-		related.R.CollectionpointidCheckouts = related.R.CollectionpointidCheckouts[:ln-1]
+		related.R.CollectionPointCheckouts = related.R.CollectionPointCheckouts[:ln-1]
 		break
 	}
 	return nil
 }
 
-// AddCheckoutidCheckoutLines adds the given related objects to the existing relationships
+// AddCheckoutLines adds the given related objects to the existing relationships
 // of the checkout, optionally inserting them as new records.
-// Appends related to o.R.CheckoutidCheckoutLines.
-// Sets related.R.CheckoutidCheckout appropriately.
-func (o *Checkout) AddCheckoutidCheckoutLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CheckoutLine) error {
+// Appends related to o.R.CheckoutLines.
+// Sets related.R.Checkout appropriately.
+func (o *Checkout) AddCheckoutLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CheckoutLine) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Checkoutid, o.Token)
+			queries.Assign(&rel.CheckoutID, o.Token)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"checkout_lines\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"checkoutid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 				strmangle.WhereClause("\"", "\"", 2, checkoutLinePrimaryKeyColumns),
 			)
 			values := []interface{}{o.Token, rel.ID}
@@ -2113,38 +2113,38 @@ func (o *Checkout) AddCheckoutidCheckoutLines(ctx context.Context, exec boil.Con
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Checkoutid, o.Token)
+			queries.Assign(&rel.CheckoutID, o.Token)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &checkoutR{
-			CheckoutidCheckoutLines: related,
+			CheckoutLines: related,
 		}
 	} else {
-		o.R.CheckoutidCheckoutLines = append(o.R.CheckoutidCheckoutLines, related...)
+		o.R.CheckoutLines = append(o.R.CheckoutLines, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &checkoutLineR{
-				CheckoutidCheckout: o,
+				Checkout: o,
 			}
 		} else {
-			rel.R.CheckoutidCheckout = o
+			rel.R.Checkout = o
 		}
 	}
 	return nil
 }
 
-// SetCheckoutidCheckoutLines removes all previously related items of the
+// SetCheckoutLines removes all previously related items of the
 // checkout replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CheckoutidCheckout's CheckoutidCheckoutLines accordingly.
-// Replaces o.R.CheckoutidCheckoutLines with related.
-// Sets related.R.CheckoutidCheckout's CheckoutidCheckoutLines accordingly.
-func (o *Checkout) SetCheckoutidCheckoutLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CheckoutLine) error {
-	query := "update \"checkout_lines\" set \"checkoutid\" = null where \"checkoutid\" = $1"
+// Sets o.R.Checkout's CheckoutLines accordingly.
+// Replaces o.R.CheckoutLines with related.
+// Sets related.R.Checkout's CheckoutLines accordingly.
+func (o *Checkout) SetCheckoutLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CheckoutLine) error {
+	query := "update \"checkout_lines\" set \"checkout_id\" = null where \"checkout_id\" = $1"
 	values := []interface{}{o.Token}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -2157,35 +2157,35 @@ func (o *Checkout) SetCheckoutidCheckoutLines(ctx context.Context, exec boil.Con
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CheckoutidCheckoutLines {
-			queries.SetScanner(&rel.Checkoutid, nil)
+		for _, rel := range o.R.CheckoutLines {
+			queries.SetScanner(&rel.CheckoutID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CheckoutidCheckout = nil
+			rel.R.Checkout = nil
 		}
-		o.R.CheckoutidCheckoutLines = nil
+		o.R.CheckoutLines = nil
 	}
 
-	return o.AddCheckoutidCheckoutLines(ctx, exec, insert, related...)
+	return o.AddCheckoutLines(ctx, exec, insert, related...)
 }
 
-// RemoveCheckoutidCheckoutLines relationships from objects passed in.
-// Removes related items from R.CheckoutidCheckoutLines (uses pointer comparison, removal does not keep order)
-// Sets related.R.CheckoutidCheckout.
-func (o *Checkout) RemoveCheckoutidCheckoutLines(ctx context.Context, exec boil.ContextExecutor, related ...*CheckoutLine) error {
+// RemoveCheckoutLines relationships from objects passed in.
+// Removes related items from R.CheckoutLines (uses pointer comparison, removal does not keep order)
+// Sets related.R.Checkout.
+func (o *Checkout) RemoveCheckoutLines(ctx context.Context, exec boil.ContextExecutor, related ...*CheckoutLine) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Checkoutid, nil)
+		queries.SetScanner(&rel.CheckoutID, nil)
 		if rel.R != nil {
-			rel.R.CheckoutidCheckout = nil
+			rel.R.Checkout = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkoutid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
 			return err
 		}
 	}
@@ -2194,16 +2194,16 @@ func (o *Checkout) RemoveCheckoutidCheckoutLines(ctx context.Context, exec boil.
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CheckoutidCheckoutLines {
+		for i, ri := range o.R.CheckoutLines {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CheckoutidCheckoutLines)
+			ln := len(o.R.CheckoutLines)
 			if ln > 1 && i < ln-1 {
-				o.R.CheckoutidCheckoutLines[i] = o.R.CheckoutidCheckoutLines[ln-1]
+				o.R.CheckoutLines[i] = o.R.CheckoutLines[ln-1]
 			}
-			o.R.CheckoutidCheckoutLines = o.R.CheckoutidCheckoutLines[:ln-1]
+			o.R.CheckoutLines = o.R.CheckoutLines[:ln-1]
 			break
 		}
 	}
@@ -2211,22 +2211,22 @@ func (o *Checkout) RemoveCheckoutidCheckoutLines(ctx context.Context, exec boil.
 	return nil
 }
 
-// AddCheckoutidGiftcardCheckouts adds the given related objects to the existing relationships
+// AddGiftcardCheckouts adds the given related objects to the existing relationships
 // of the checkout, optionally inserting them as new records.
-// Appends related to o.R.CheckoutidGiftcardCheckouts.
-// Sets related.R.CheckoutidCheckout appropriately.
-func (o *Checkout) AddCheckoutidGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
+// Appends related to o.R.GiftcardCheckouts.
+// Sets related.R.Checkout appropriately.
+func (o *Checkout) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Checkoutid, o.Token)
+			queries.Assign(&rel.CheckoutID, o.Token)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"giftcard_checkouts\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"checkoutid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 				strmangle.WhereClause("\"", "\"", 2, giftcardCheckoutPrimaryKeyColumns),
 			)
 			values := []interface{}{o.Token, rel.ID}
@@ -2240,38 +2240,38 @@ func (o *Checkout) AddCheckoutidGiftcardCheckouts(ctx context.Context, exec boil
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Checkoutid, o.Token)
+			queries.Assign(&rel.CheckoutID, o.Token)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &checkoutR{
-			CheckoutidGiftcardCheckouts: related,
+			GiftcardCheckouts: related,
 		}
 	} else {
-		o.R.CheckoutidGiftcardCheckouts = append(o.R.CheckoutidGiftcardCheckouts, related...)
+		o.R.GiftcardCheckouts = append(o.R.GiftcardCheckouts, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &giftcardCheckoutR{
-				CheckoutidCheckout: o,
+				Checkout: o,
 			}
 		} else {
-			rel.R.CheckoutidCheckout = o
+			rel.R.Checkout = o
 		}
 	}
 	return nil
 }
 
-// SetCheckoutidGiftcardCheckouts removes all previously related items of the
+// SetGiftcardCheckouts removes all previously related items of the
 // checkout replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CheckoutidCheckout's CheckoutidGiftcardCheckouts accordingly.
-// Replaces o.R.CheckoutidGiftcardCheckouts with related.
-// Sets related.R.CheckoutidCheckout's CheckoutidGiftcardCheckouts accordingly.
-func (o *Checkout) SetCheckoutidGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
-	query := "update \"giftcard_checkouts\" set \"checkoutid\" = null where \"checkoutid\" = $1"
+// Sets o.R.Checkout's GiftcardCheckouts accordingly.
+// Replaces o.R.GiftcardCheckouts with related.
+// Sets related.R.Checkout's GiftcardCheckouts accordingly.
+func (o *Checkout) SetGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
+	query := "update \"giftcard_checkouts\" set \"checkout_id\" = null where \"checkout_id\" = $1"
 	values := []interface{}{o.Token}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -2284,35 +2284,35 @@ func (o *Checkout) SetCheckoutidGiftcardCheckouts(ctx context.Context, exec boil
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CheckoutidGiftcardCheckouts {
-			queries.SetScanner(&rel.Checkoutid, nil)
+		for _, rel := range o.R.GiftcardCheckouts {
+			queries.SetScanner(&rel.CheckoutID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CheckoutidCheckout = nil
+			rel.R.Checkout = nil
 		}
-		o.R.CheckoutidGiftcardCheckouts = nil
+		o.R.GiftcardCheckouts = nil
 	}
 
-	return o.AddCheckoutidGiftcardCheckouts(ctx, exec, insert, related...)
+	return o.AddGiftcardCheckouts(ctx, exec, insert, related...)
 }
 
-// RemoveCheckoutidGiftcardCheckouts relationships from objects passed in.
-// Removes related items from R.CheckoutidGiftcardCheckouts (uses pointer comparison, removal does not keep order)
-// Sets related.R.CheckoutidCheckout.
-func (o *Checkout) RemoveCheckoutidGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*GiftcardCheckout) error {
+// RemoveGiftcardCheckouts relationships from objects passed in.
+// Removes related items from R.GiftcardCheckouts (uses pointer comparison, removal does not keep order)
+// Sets related.R.Checkout.
+func (o *Checkout) RemoveGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*GiftcardCheckout) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Checkoutid, nil)
+		queries.SetScanner(&rel.CheckoutID, nil)
 		if rel.R != nil {
-			rel.R.CheckoutidCheckout = nil
+			rel.R.Checkout = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkoutid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
 			return err
 		}
 	}
@@ -2321,16 +2321,16 @@ func (o *Checkout) RemoveCheckoutidGiftcardCheckouts(ctx context.Context, exec b
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CheckoutidGiftcardCheckouts {
+		for i, ri := range o.R.GiftcardCheckouts {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CheckoutidGiftcardCheckouts)
+			ln := len(o.R.GiftcardCheckouts)
 			if ln > 1 && i < ln-1 {
-				o.R.CheckoutidGiftcardCheckouts[i] = o.R.CheckoutidGiftcardCheckouts[ln-1]
+				o.R.GiftcardCheckouts[i] = o.R.GiftcardCheckouts[ln-1]
 			}
-			o.R.CheckoutidGiftcardCheckouts = o.R.CheckoutidGiftcardCheckouts[:ln-1]
+			o.R.GiftcardCheckouts = o.R.GiftcardCheckouts[:ln-1]
 			break
 		}
 	}
@@ -2338,22 +2338,22 @@ func (o *Checkout) RemoveCheckoutidGiftcardCheckouts(ctx context.Context, exec b
 	return nil
 }
 
-// AddCheckoutidPayments adds the given related objects to the existing relationships
+// AddPayments adds the given related objects to the existing relationships
 // of the checkout, optionally inserting them as new records.
-// Appends related to o.R.CheckoutidPayments.
-// Sets related.R.CheckoutidCheckout appropriately.
-func (o *Checkout) AddCheckoutidPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+// Appends related to o.R.Payments.
+// Sets related.R.Checkout appropriately.
+func (o *Checkout) AddPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.Checkoutid, o.Token)
+			queries.Assign(&rel.CheckoutID, o.Token)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"payments\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"checkoutid"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"checkout_id"}),
 				strmangle.WhereClause("\"", "\"", 2, paymentPrimaryKeyColumns),
 			)
 			values := []interface{}{o.Token, rel.ID}
@@ -2367,38 +2367,38 @@ func (o *Checkout) AddCheckoutidPayments(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.Checkoutid, o.Token)
+			queries.Assign(&rel.CheckoutID, o.Token)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &checkoutR{
-			CheckoutidPayments: related,
+			Payments: related,
 		}
 	} else {
-		o.R.CheckoutidPayments = append(o.R.CheckoutidPayments, related...)
+		o.R.Payments = append(o.R.Payments, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &paymentR{
-				CheckoutidCheckout: o,
+				Checkout: o,
 			}
 		} else {
-			rel.R.CheckoutidCheckout = o
+			rel.R.Checkout = o
 		}
 	}
 	return nil
 }
 
-// SetCheckoutidPayments removes all previously related items of the
+// SetPayments removes all previously related items of the
 // checkout replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.CheckoutidCheckout's CheckoutidPayments accordingly.
-// Replaces o.R.CheckoutidPayments with related.
-// Sets related.R.CheckoutidCheckout's CheckoutidPayments accordingly.
-func (o *Checkout) SetCheckoutidPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
-	query := "update \"payments\" set \"checkoutid\" = null where \"checkoutid\" = $1"
+// Sets o.R.Checkout's Payments accordingly.
+// Replaces o.R.Payments with related.
+// Sets related.R.Checkout's Payments accordingly.
+func (o *Checkout) SetPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+	query := "update \"payments\" set \"checkout_id\" = null where \"checkout_id\" = $1"
 	values := []interface{}{o.Token}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -2411,35 +2411,35 @@ func (o *Checkout) SetCheckoutidPayments(ctx context.Context, exec boil.ContextE
 	}
 
 	if o.R != nil {
-		for _, rel := range o.R.CheckoutidPayments {
-			queries.SetScanner(&rel.Checkoutid, nil)
+		for _, rel := range o.R.Payments {
+			queries.SetScanner(&rel.CheckoutID, nil)
 			if rel.R == nil {
 				continue
 			}
 
-			rel.R.CheckoutidCheckout = nil
+			rel.R.Checkout = nil
 		}
-		o.R.CheckoutidPayments = nil
+		o.R.Payments = nil
 	}
 
-	return o.AddCheckoutidPayments(ctx, exec, insert, related...)
+	return o.AddPayments(ctx, exec, insert, related...)
 }
 
-// RemoveCheckoutidPayments relationships from objects passed in.
-// Removes related items from R.CheckoutidPayments (uses pointer comparison, removal does not keep order)
-// Sets related.R.CheckoutidCheckout.
-func (o *Checkout) RemoveCheckoutidPayments(ctx context.Context, exec boil.ContextExecutor, related ...*Payment) error {
+// RemovePayments relationships from objects passed in.
+// Removes related items from R.Payments (uses pointer comparison, removal does not keep order)
+// Sets related.R.Checkout.
+func (o *Checkout) RemovePayments(ctx context.Context, exec boil.ContextExecutor, related ...*Payment) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.Checkoutid, nil)
+		queries.SetScanner(&rel.CheckoutID, nil)
 		if rel.R != nil {
-			rel.R.CheckoutidCheckout = nil
+			rel.R.Checkout = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkoutid")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
 			return err
 		}
 	}
@@ -2448,16 +2448,16 @@ func (o *Checkout) RemoveCheckoutidPayments(ctx context.Context, exec boil.Conte
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.CheckoutidPayments {
+		for i, ri := range o.R.Payments {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.CheckoutidPayments)
+			ln := len(o.R.Payments)
 			if ln > 1 && i < ln-1 {
-				o.R.CheckoutidPayments[i] = o.R.CheckoutidPayments[ln-1]
+				o.R.Payments[i] = o.R.Payments[ln-1]
 			}
-			o.R.CheckoutidPayments = o.R.CheckoutidPayments[:ln-1]
+			o.R.Payments = o.R.Payments[:ln-1]
 			break
 		}
 	}

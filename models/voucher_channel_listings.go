@@ -24,87 +24,87 @@ import (
 
 // VoucherChannelListing is an object representing the database table.
 type VoucherChannelListing struct {
-	ID            string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat      null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Voucherid     string       `boil:"voucherid" json:"voucherid" toml:"voucherid" yaml:"voucherid"`
-	Channelid     string       `boil:"channelid" json:"channelid" toml:"channelid" yaml:"channelid"`
-	Discountvalue null.Float64 `boil:"discountvalue" json:"discountvalue,omitempty" toml:"discountvalue" yaml:"discountvalue,omitempty"`
-	Currency      null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	Minspenamount null.Float64 `boil:"minspenamount" json:"minspenamount,omitempty" toml:"minspenamount" yaml:"minspenamount,omitempty"`
+	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreateAt       null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	VoucherID      string       `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	ChannelID      string       `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	DiscountValue  null.Float64 `boil:"discount_value" json:"discount_value,omitempty" toml:"discount_value" yaml:"discount_value,omitempty"`
+	Currency       null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
+	MinSpendAmount null.Float64 `boil:"min_spend_amount" json:"min_spend_amount,omitempty" toml:"min_spend_amount" yaml:"min_spend_amount,omitempty"`
 
 	R *voucherChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var VoucherChannelListingColumns = struct {
-	ID            string
-	Createat      string
-	Voucherid     string
-	Channelid     string
-	Discountvalue string
-	Currency      string
-	Minspenamount string
+	ID             string
+	CreateAt       string
+	VoucherID      string
+	ChannelID      string
+	DiscountValue  string
+	Currency       string
+	MinSpendAmount string
 }{
-	ID:            "id",
-	Createat:      "createat",
-	Voucherid:     "voucherid",
-	Channelid:     "channelid",
-	Discountvalue: "discountvalue",
-	Currency:      "currency",
-	Minspenamount: "minspenamount",
+	ID:             "id",
+	CreateAt:       "create_at",
+	VoucherID:      "voucher_id",
+	ChannelID:      "channel_id",
+	DiscountValue:  "discount_value",
+	Currency:       "currency",
+	MinSpendAmount: "min_spend_amount",
 }
 
 var VoucherChannelListingTableColumns = struct {
-	ID            string
-	Createat      string
-	Voucherid     string
-	Channelid     string
-	Discountvalue string
-	Currency      string
-	Minspenamount string
+	ID             string
+	CreateAt       string
+	VoucherID      string
+	ChannelID      string
+	DiscountValue  string
+	Currency       string
+	MinSpendAmount string
 }{
-	ID:            "voucher_channel_listings.id",
-	Createat:      "voucher_channel_listings.createat",
-	Voucherid:     "voucher_channel_listings.voucherid",
-	Channelid:     "voucher_channel_listings.channelid",
-	Discountvalue: "voucher_channel_listings.discountvalue",
-	Currency:      "voucher_channel_listings.currency",
-	Minspenamount: "voucher_channel_listings.minspenamount",
+	ID:             "voucher_channel_listings.id",
+	CreateAt:       "voucher_channel_listings.create_at",
+	VoucherID:      "voucher_channel_listings.voucher_id",
+	ChannelID:      "voucher_channel_listings.channel_id",
+	DiscountValue:  "voucher_channel_listings.discount_value",
+	Currency:       "voucher_channel_listings.currency",
+	MinSpendAmount: "voucher_channel_listings.min_spend_amount",
 }
 
 // Generated where
 
 var VoucherChannelListingWhere = struct {
-	ID            whereHelperstring
-	Createat      whereHelpernull_Int64
-	Voucherid     whereHelperstring
-	Channelid     whereHelperstring
-	Discountvalue whereHelpernull_Float64
-	Currency      whereHelpernull_String
-	Minspenamount whereHelpernull_Float64
+	ID             whereHelperstring
+	CreateAt       whereHelpernull_Int64
+	VoucherID      whereHelperstring
+	ChannelID      whereHelperstring
+	DiscountValue  whereHelpernull_Float64
+	Currency       whereHelpernull_String
+	MinSpendAmount whereHelpernull_Float64
 }{
-	ID:            whereHelperstring{field: "\"voucher_channel_listings\".\"id\""},
-	Createat:      whereHelpernull_Int64{field: "\"voucher_channel_listings\".\"createat\""},
-	Voucherid:     whereHelperstring{field: "\"voucher_channel_listings\".\"voucherid\""},
-	Channelid:     whereHelperstring{field: "\"voucher_channel_listings\".\"channelid\""},
-	Discountvalue: whereHelpernull_Float64{field: "\"voucher_channel_listings\".\"discountvalue\""},
-	Currency:      whereHelpernull_String{field: "\"voucher_channel_listings\".\"currency\""},
-	Minspenamount: whereHelpernull_Float64{field: "\"voucher_channel_listings\".\"minspenamount\""},
+	ID:             whereHelperstring{field: "\"voucher_channel_listings\".\"id\""},
+	CreateAt:       whereHelpernull_Int64{field: "\"voucher_channel_listings\".\"create_at\""},
+	VoucherID:      whereHelperstring{field: "\"voucher_channel_listings\".\"voucher_id\""},
+	ChannelID:      whereHelperstring{field: "\"voucher_channel_listings\".\"channel_id\""},
+	DiscountValue:  whereHelpernull_Float64{field: "\"voucher_channel_listings\".\"discount_value\""},
+	Currency:       whereHelpernull_String{field: "\"voucher_channel_listings\".\"currency\""},
+	MinSpendAmount: whereHelpernull_Float64{field: "\"voucher_channel_listings\".\"min_spend_amount\""},
 }
 
 // VoucherChannelListingRels is where relationship names are stored.
 var VoucherChannelListingRels = struct {
-	ChannelidChannel string
-	VoucheridVoucher string
+	Channel string
+	Voucher string
 }{
-	ChannelidChannel: "ChannelidChannel",
-	VoucheridVoucher: "VoucheridVoucher",
+	Channel: "Channel",
+	Voucher: "Voucher",
 }
 
 // voucherChannelListingR is where relationships are stored.
 type voucherChannelListingR struct {
-	ChannelidChannel *Channel `boil:"ChannelidChannel" json:"ChannelidChannel" toml:"ChannelidChannel" yaml:"ChannelidChannel"`
-	VoucheridVoucher *Voucher `boil:"VoucheridVoucher" json:"VoucheridVoucher" toml:"VoucheridVoucher" yaml:"VoucheridVoucher"`
+	Channel *Channel `boil:"Channel" json:"Channel" toml:"Channel" yaml:"Channel"`
+	Voucher *Voucher `boil:"Voucher" json:"Voucher" toml:"Voucher" yaml:"Voucher"`
 }
 
 // NewStruct creates a new relationship struct
@@ -112,27 +112,27 @@ func (*voucherChannelListingR) NewStruct() *voucherChannelListingR {
 	return &voucherChannelListingR{}
 }
 
-func (r *voucherChannelListingR) GetChannelidChannel() *Channel {
+func (r *voucherChannelListingR) GetChannel() *Channel {
 	if r == nil {
 		return nil
 	}
-	return r.ChannelidChannel
+	return r.Channel
 }
 
-func (r *voucherChannelListingR) GetVoucheridVoucher() *Voucher {
+func (r *voucherChannelListingR) GetVoucher() *Voucher {
 	if r == nil {
 		return nil
 	}
-	return r.VoucheridVoucher
+	return r.Voucher
 }
 
 // voucherChannelListingL is where Load methods for each relationship are stored.
 type voucherChannelListingL struct{}
 
 var (
-	voucherChannelListingAllColumns            = []string{"id", "createat", "voucherid", "channelid", "discountvalue", "currency", "minspenamount"}
-	voucherChannelListingColumnsWithoutDefault = []string{"id", "voucherid", "channelid"}
-	voucherChannelListingColumnsWithDefault    = []string{"createat", "discountvalue", "currency", "minspenamount"}
+	voucherChannelListingAllColumns            = []string{"id", "create_at", "voucher_id", "channel_id", "discount_value", "currency", "min_spend_amount"}
+	voucherChannelListingColumnsWithoutDefault = []string{"id", "voucher_id", "channel_id"}
+	voucherChannelListingColumnsWithDefault    = []string{"create_at", "discount_value", "currency", "min_spend_amount"}
 	voucherChannelListingPrimaryKeyColumns     = []string{"id"}
 	voucherChannelListingGeneratedColumns      = []string{}
 )
@@ -415,10 +415,10 @@ func (q voucherChannelListingQuery) Exists(ctx context.Context, exec boil.Contex
 	return count > 0, nil
 }
 
-// ChannelidChannel pointed to by the foreign key.
-func (o *VoucherChannelListing) ChannelidChannel(mods ...qm.QueryMod) channelQuery {
+// Channel pointed to by the foreign key.
+func (o *VoucherChannelListing) Channel(mods ...qm.QueryMod) channelQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Channelid),
+		qm.Where("\"id\" = ?", o.ChannelID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -426,10 +426,10 @@ func (o *VoucherChannelListing) ChannelidChannel(mods ...qm.QueryMod) channelQue
 	return Channels(queryMods...)
 }
 
-// VoucheridVoucher pointed to by the foreign key.
-func (o *VoucherChannelListing) VoucheridVoucher(mods ...qm.QueryMod) voucherQuery {
+// Voucher pointed to by the foreign key.
+func (o *VoucherChannelListing) Voucher(mods ...qm.QueryMod) voucherQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Voucherid),
+		qm.Where("\"id\" = ?", o.VoucherID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -437,9 +437,9 @@ func (o *VoucherChannelListing) VoucheridVoucher(mods ...qm.QueryMod) voucherQue
 	return Vouchers(queryMods...)
 }
 
-// LoadChannelidChannel allows an eager lookup of values, cached into the
+// LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
+func (voucherChannelListingL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*VoucherChannelListing
 	var object *VoucherChannelListing
 
@@ -470,7 +470,7 @@ func (voucherChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.C
 		if object.R == nil {
 			object.R = &voucherChannelListingR{}
 		}
-		args = append(args, object.Channelid)
+		args = append(args, object.ChannelID)
 
 	} else {
 	Outer:
@@ -480,12 +480,12 @@ func (voucherChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.C
 			}
 
 			for _, a := range args {
-				if a == obj.Channelid {
+				if a == obj.ChannelID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.Channelid)
+			args = append(args, obj.ChannelID)
 
 		}
 	}
@@ -533,22 +533,22 @@ func (voucherChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.C
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ChannelidChannel = foreign
+		object.R.Channel = foreign
 		if foreign.R == nil {
 			foreign.R = &channelR{}
 		}
-		foreign.R.ChannelidVoucherChannelListings = append(foreign.R.ChannelidVoucherChannelListings, object)
+		foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.Channelid == foreign.ID {
-				local.R.ChannelidChannel = foreign
+			if local.ChannelID == foreign.ID {
+				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
 				}
-				foreign.R.ChannelidVoucherChannelListings = append(foreign.R.ChannelidVoucherChannelListings, local)
+				foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, local)
 				break
 			}
 		}
@@ -557,9 +557,9 @@ func (voucherChannelListingL) LoadChannelidChannel(ctx context.Context, e boil.C
 	return nil
 }
 
-// LoadVoucheridVoucher allows an eager lookup of values, cached into the
+// LoadVoucher allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherChannelListingL) LoadVoucheridVoucher(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
+func (voucherChannelListingL) LoadVoucher(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVoucherChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*VoucherChannelListing
 	var object *VoucherChannelListing
 
@@ -590,7 +590,7 @@ func (voucherChannelListingL) LoadVoucheridVoucher(ctx context.Context, e boil.C
 		if object.R == nil {
 			object.R = &voucherChannelListingR{}
 		}
-		args = append(args, object.Voucherid)
+		args = append(args, object.VoucherID)
 
 	} else {
 	Outer:
@@ -600,12 +600,12 @@ func (voucherChannelListingL) LoadVoucheridVoucher(ctx context.Context, e boil.C
 			}
 
 			for _, a := range args {
-				if a == obj.Voucherid {
+				if a == obj.VoucherID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.Voucherid)
+			args = append(args, obj.VoucherID)
 
 		}
 	}
@@ -653,22 +653,22 @@ func (voucherChannelListingL) LoadVoucheridVoucher(ctx context.Context, e boil.C
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.VoucheridVoucher = foreign
+		object.R.Voucher = foreign
 		if foreign.R == nil {
 			foreign.R = &voucherR{}
 		}
-		foreign.R.VoucheridVoucherChannelListings = append(foreign.R.VoucheridVoucherChannelListings, object)
+		foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.Voucherid == foreign.ID {
-				local.R.VoucheridVoucher = foreign
+			if local.VoucherID == foreign.ID {
+				local.R.Voucher = foreign
 				if foreign.R == nil {
 					foreign.R = &voucherR{}
 				}
-				foreign.R.VoucheridVoucherChannelListings = append(foreign.R.VoucheridVoucherChannelListings, local)
+				foreign.R.VoucherChannelListings = append(foreign.R.VoucherChannelListings, local)
 				break
 			}
 		}
@@ -677,10 +677,10 @@ func (voucherChannelListingL) LoadVoucheridVoucher(ctx context.Context, e boil.C
 	return nil
 }
 
-// SetChannelidChannel of the voucherChannelListing to the related item.
-// Sets o.R.ChannelidChannel to related.
-// Adds o to related.R.ChannelidVoucherChannelListings.
-func (o *VoucherChannelListing) SetChannelidChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+// SetChannel of the voucherChannelListing to the related item.
+// Sets o.R.Channel to related.
+// Adds o to related.R.VoucherChannelListings.
+func (o *VoucherChannelListing) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -690,7 +690,7 @@ func (o *VoucherChannelListing) SetChannelidChannel(ctx context.Context, exec bo
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"voucher_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"channelid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -704,30 +704,30 @@ func (o *VoucherChannelListing) SetChannelidChannel(ctx context.Context, exec bo
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.Channelid = related.ID
+	o.ChannelID = related.ID
 	if o.R == nil {
 		o.R = &voucherChannelListingR{
-			ChannelidChannel: related,
+			Channel: related,
 		}
 	} else {
-		o.R.ChannelidChannel = related
+		o.R.Channel = related
 	}
 
 	if related.R == nil {
 		related.R = &channelR{
-			ChannelidVoucherChannelListings: VoucherChannelListingSlice{o},
+			VoucherChannelListings: VoucherChannelListingSlice{o},
 		}
 	} else {
-		related.R.ChannelidVoucherChannelListings = append(related.R.ChannelidVoucherChannelListings, o)
+		related.R.VoucherChannelListings = append(related.R.VoucherChannelListings, o)
 	}
 
 	return nil
 }
 
-// SetVoucheridVoucher of the voucherChannelListing to the related item.
-// Sets o.R.VoucheridVoucher to related.
-// Adds o to related.R.VoucheridVoucherChannelListings.
-func (o *VoucherChannelListing) SetVoucheridVoucher(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Voucher) error {
+// SetVoucher of the voucherChannelListing to the related item.
+// Sets o.R.Voucher to related.
+// Adds o to related.R.VoucherChannelListings.
+func (o *VoucherChannelListing) SetVoucher(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Voucher) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -737,7 +737,7 @@ func (o *VoucherChannelListing) SetVoucheridVoucher(ctx context.Context, exec bo
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"voucher_channel_listings\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"voucherid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"voucher_id"}),
 		strmangle.WhereClause("\"", "\"", 2, voucherChannelListingPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -751,21 +751,21 @@ func (o *VoucherChannelListing) SetVoucheridVoucher(ctx context.Context, exec bo
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.Voucherid = related.ID
+	o.VoucherID = related.ID
 	if o.R == nil {
 		o.R = &voucherChannelListingR{
-			VoucheridVoucher: related,
+			Voucher: related,
 		}
 	} else {
-		o.R.VoucheridVoucher = related
+		o.R.Voucher = related
 	}
 
 	if related.R == nil {
 		related.R = &voucherR{
-			VoucheridVoucherChannelListings: VoucherChannelListingSlice{o},
+			VoucherChannelListings: VoucherChannelListingSlice{o},
 		}
 	} else {
-		related.R.VoucheridVoucherChannelListings = append(related.R.VoucheridVoucherChannelListings, o)
+		related.R.VoucherChannelListings = append(related.R.VoucherChannelListings, o)
 	}
 
 	return nil

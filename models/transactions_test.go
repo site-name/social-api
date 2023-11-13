@@ -494,7 +494,7 @@ func testTransactionsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testTransactionToOnePaymentUsingPaymentidPayment(t *testing.T) {
+func testTransactionToOnePaymentUsingPayment(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testTransactionToOnePaymentUsingPaymentidPayment(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Paymentid, foreign.ID)
+	queries.Assign(&local.PaymentID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.PaymentidPayment().One(ctx, tx)
+	check, err := local.Payment().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testTransactionToOnePaymentUsingPaymentidPayment(t *testing.T) {
 	})
 
 	slice := TransactionSlice{&local}
-	if err = local.L.LoadPaymentidPayment(ctx, tx, false, (*[]*Transaction)(&slice), nil); err != nil {
+	if err = local.L.LoadPayment(ctx, tx, false, (*[]*Transaction)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.PaymentidPayment == nil {
+	if local.R.Payment == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.PaymentidPayment = nil
-	if err = local.L.LoadPaymentidPayment(ctx, tx, true, &local, nil); err != nil {
+	local.R.Payment = nil
+	if err = local.L.LoadPayment(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.PaymentidPayment == nil {
+	if local.R.Payment == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testTransactionToOnePaymentUsingPaymentidPayment(t *testing.T) {
 	}
 }
 
-func testTransactionToOneSetOpPaymentUsingPaymentidPayment(t *testing.T) {
+func testTransactionToOneSetOpPaymentUsingPayment(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,36 +584,36 @@ func testTransactionToOneSetOpPaymentUsingPaymentidPayment(t *testing.T) {
 	}
 
 	for i, x := range []*Payment{&b, &c} {
-		err = a.SetPaymentidPayment(ctx, tx, i != 0, x)
+		err = a.SetPayment(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.PaymentidPayment != x {
+		if a.R.Payment != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.PaymentidTransactions[0] != &a {
+		if x.R.Transactions[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Paymentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Paymentid)
+		if !queries.Equal(a.PaymentID, x.ID) {
+			t.Error("foreign key was wrong value", a.PaymentID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Paymentid))
-		reflect.Indirect(reflect.ValueOf(&a.Paymentid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.PaymentID))
+		reflect.Indirect(reflect.ValueOf(&a.PaymentID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Paymentid, x.ID) {
-			t.Error("foreign key was wrong value", a.Paymentid, x.ID)
+		if !queries.Equal(a.PaymentID, x.ID) {
+			t.Error("foreign key was wrong value", a.PaymentID, x.ID)
 		}
 	}
 }
 
-func testTransactionToOneRemoveOpPaymentUsingPaymentidPayment(t *testing.T) {
+func testTransactionToOneRemoveOpPaymentUsingPayment(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -635,15 +635,15 @@ func testTransactionToOneRemoveOpPaymentUsingPaymentidPayment(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetPaymentidPayment(ctx, tx, true, &b); err != nil {
+	if err = a.SetPayment(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemovePaymentidPayment(ctx, tx, &b); err != nil {
+	if err = a.RemovePayment(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.PaymentidPayment().Count(ctx, tx)
+	count, err := a.Payment().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -651,15 +651,15 @@ func testTransactionToOneRemoveOpPaymentUsingPaymentidPayment(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.PaymentidPayment != nil {
+	if a.R.Payment != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Paymentid) {
+	if !queries.IsValuerNil(a.PaymentID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.PaymentidTransactions) != 0 {
+	if len(b.R.Transactions) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -738,7 +738,7 @@ func testTransactionsSelect(t *testing.T) {
 }
 
 var (
-	transactionDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Paymentid`: `character varying`, `Token`: `character varying`, `Kind`: `character varying`, `Issuccess`: `boolean`, `Actionrequired`: `boolean`, `Actionrequireddata`: `text`, `Currency`: `character varying`, `Amount`: `double precision`, `Error`: `character varying`, `Customerid`: `character varying`, `Gatewayresponse`: `text`, `Alreadyprocessed`: `boolean`}
+	transactionDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `PaymentID`: `character varying`, `Token`: `character varying`, `Kind`: `character varying`, `IsSuccess`: `boolean`, `ActionRequired`: `boolean`, `ActionRequiredData`: `text`, `Currency`: `character varying`, `Amount`: `double precision`, `Error`: `character varying`, `CustomerID`: `character varying`, `GatewayResponse`: `text`, `AlreadyProcessed`: `boolean`}
 	_                  = bytes.MinRead
 )
 

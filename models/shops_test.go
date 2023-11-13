@@ -494,7 +494,7 @@ func testShopsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testShopToOneAddressUsingAddressidAddress(t *testing.T) {
+func testShopToOneAddressUsingAddress(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testShopToOneAddressUsingAddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Addressid, foreign.ID)
+	queries.Assign(&local.AddressID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.AddressidAddress().One(ctx, tx)
+	check, err := local.Address().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testShopToOneAddressUsingAddressidAddress(t *testing.T) {
 	})
 
 	slice := ShopSlice{&local}
-	if err = local.L.LoadAddressidAddress(ctx, tx, false, (*[]*Shop)(&slice), nil); err != nil {
+	if err = local.L.LoadAddress(ctx, tx, false, (*[]*Shop)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AddressidAddress == nil {
+	if local.R.Address == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.AddressidAddress = nil
-	if err = local.L.LoadAddressidAddress(ctx, tx, true, &local, nil); err != nil {
+	local.R.Address = nil
+	if err = local.L.LoadAddress(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AddressidAddress == nil {
+	if local.R.Address == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testShopToOneAddressUsingAddressidAddress(t *testing.T) {
 	}
 }
 
-func testShopToOneMenuUsingTopmenuidMenu(t *testing.T) {
+func testShopToOneMenuUsingTopMenu(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testShopToOneMenuUsingTopmenuidMenu(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Topmenuid, foreign.ID)
+	queries.Assign(&local.TopMenuID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.TopmenuidMenu().One(ctx, tx)
+	check, err := local.TopMenu().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testShopToOneMenuUsingTopmenuidMenu(t *testing.T) {
 	})
 
 	slice := ShopSlice{&local}
-	if err = local.L.LoadTopmenuidMenu(ctx, tx, false, (*[]*Shop)(&slice), nil); err != nil {
+	if err = local.L.LoadTopMenu(ctx, tx, false, (*[]*Shop)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.TopmenuidMenu == nil {
+	if local.R.TopMenu == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.TopmenuidMenu = nil
-	if err = local.L.LoadTopmenuidMenu(ctx, tx, true, &local, nil); err != nil {
+	local.R.TopMenu = nil
+	if err = local.L.LoadTopMenu(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.TopmenuidMenu == nil {
+	if local.R.TopMenu == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testShopToOneMenuUsingTopmenuidMenu(t *testing.T) {
 	}
 }
 
-func testShopToOneSetOpAddressUsingAddressidAddress(t *testing.T) {
+func testShopToOneSetOpAddressUsingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testShopToOneSetOpAddressUsingAddressidAddress(t *testing.T) {
 	}
 
 	for i, x := range []*Address{&b, &c} {
-		err = a.SetAddressidAddress(ctx, tx, i != 0, x)
+		err = a.SetAddress(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.AddressidAddress != x {
+		if a.R.Address != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.AddressidShops[0] != &a {
+		if x.R.Shops[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Addressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Addressid)
+		if !queries.Equal(a.AddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.AddressID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Addressid))
-		reflect.Indirect(reflect.ValueOf(&a.Addressid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.AddressID))
+		reflect.Indirect(reflect.ValueOf(&a.AddressID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Addressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Addressid, x.ID)
+		if !queries.Equal(a.AddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.AddressID, x.ID)
 		}
 	}
 }
 
-func testShopToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
+func testShopToOneRemoveOpAddressUsingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testShopToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetAddressidAddress(ctx, tx, true, &b); err != nil {
+	if err = a.SetAddress(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveAddressidAddress(ctx, tx, &b); err != nil {
+	if err = a.RemoveAddress(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.AddressidAddress().Count(ctx, tx)
+	count, err := a.Address().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testShopToOneRemoveOpAddressUsingAddressidAddress(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.AddressidAddress != nil {
+	if a.R.Address != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Addressid) {
+	if !queries.IsValuerNil(a.AddressID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.AddressidShops) != 0 {
+	if len(b.R.Shops) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testShopToOneSetOpMenuUsingTopmenuidMenu(t *testing.T) {
+func testShopToOneSetOpMenuUsingTopMenu(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testShopToOneSetOpMenuUsingTopmenuidMenu(t *testing.T) {
 	}
 
 	for i, x := range []*Menu{&b, &c} {
-		err = a.SetTopmenuidMenu(ctx, tx, i != 0, x)
+		err = a.SetTopMenu(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.TopmenuidMenu != x {
+		if a.R.TopMenu != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.TopmenuidShops[0] != &a {
+		if x.R.TopMenuShops[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Topmenuid, x.ID) {
-			t.Error("foreign key was wrong value", a.Topmenuid)
+		if !queries.Equal(a.TopMenuID, x.ID) {
+			t.Error("foreign key was wrong value", a.TopMenuID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Topmenuid))
-		reflect.Indirect(reflect.ValueOf(&a.Topmenuid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.TopMenuID))
+		reflect.Indirect(reflect.ValueOf(&a.TopMenuID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Topmenuid, x.ID) {
-			t.Error("foreign key was wrong value", a.Topmenuid, x.ID)
+		if !queries.Equal(a.TopMenuID, x.ID) {
+			t.Error("foreign key was wrong value", a.TopMenuID, x.ID)
 		}
 	}
 }
 
-func testShopToOneRemoveOpMenuUsingTopmenuidMenu(t *testing.T) {
+func testShopToOneRemoveOpMenuUsingTopMenu(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testShopToOneRemoveOpMenuUsingTopmenuidMenu(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetTopmenuidMenu(ctx, tx, true, &b); err != nil {
+	if err = a.SetTopMenu(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveTopmenuidMenu(ctx, tx, &b); err != nil {
+	if err = a.RemoveTopMenu(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.TopmenuidMenu().Count(ctx, tx)
+	count, err := a.TopMenu().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testShopToOneRemoveOpMenuUsingTopmenuidMenu(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.TopmenuidMenu != nil {
+	if a.R.TopMenu != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Topmenuid) {
+	if !queries.IsValuerNil(a.TopMenuID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.TopmenuidShops) != 0 {
+	if len(b.R.TopMenuShops) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testShopsSelect(t *testing.T) {
 }
 
 var (
-	shopDBTypes = map[string]string{`ID`: `character varying`, `Createat`: `bigint`, `Updateat`: `bigint`, `Name`: `character varying`, `Description`: `character varying`, `Topmenuid`: `character varying`, `Includetaxesinprice`: `boolean`, `Displaygrossprices`: `boolean`, `Chargetaxesonshipping`: `boolean`, `Trackinventorybydefault`: `boolean`, `Defaultweightunit`: `character varying`, `Automaticfulfillmentdigitalproducts`: `boolean`, `Defaultdigitalmaxdownloads`: `integer`, `Defaultdigitalurlvaliddays`: `integer`, `Addressid`: `character varying`, `Defaultmailsendername`: `character varying`, `Defaultmailsenderaddress`: `text`, `Customersetpasswordurl`: `text`, `Automaticallyconfirmallneworders`: `boolean`, `Fulfillmentautoapprove`: `boolean`, `Fulfillmentallowunpaid`: `boolean`, `Giftcardexpirytype`: `character varying`, `Giftcardexpiryperiodtype`: `character varying`, `Giftcardexpiryperiod`: `integer`, `Automaticallyfulfillnonshippablegiftcard`: `boolean`}
+	shopDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `Name`: `character varying`, `Description`: `character varying`, `TopMenuID`: `character varying`, `IncludeTaxesInPrice`: `boolean`, `DisplayGrossPrices`: `boolean`, `ChargeTaxesOnShipping`: `boolean`, `TrackInventoryByDefault`: `boolean`, `DefaultWeightUnit`: `character varying`, `AutomaticFulfillmentDigitalProducts`: `boolean`, `DefaultDigitalMaxDownloads`: `integer`, `DefaultDigitalURLValidDays`: `integer`, `AddressID`: `character varying`, `DefaultMailSenderName`: `character varying`, `DefaultMailSenderAddress`: `text`, `CustomerSetPasswordURL`: `text`, `AutomaticallyConfirmAllNewOrders`: `boolean`, `FulfillmentAutoApprove`: `boolean`, `FulfillmentAllowUnpaid`: `boolean`, `GiftCardExpiryType`: `character varying`, `GiftCardExpiryPeriodType`: `character varying`, `GiftCardExpiryPeriod`: `integer`, `AutomaticallyFulfillNonShippableGiftCard`: `boolean`}
 	_           = bytes.MinRead
 )
 

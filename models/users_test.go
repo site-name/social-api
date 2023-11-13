@@ -494,7 +494,7 @@ func testUsersInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testUserOneToOneWishlistUsingUseridWishlist(t *testing.T) {
+func testUserOneToOneWishlistUsingWishlist(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,18 +514,18 @@ func testUserOneToOneWishlistUsingUseridWishlist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&foreign.Userid, local.ID)
+	queries.Assign(&foreign.UserID, local.ID)
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UseridWishlist().One(ctx, tx)
+	check, err := local.Wishlist().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.Userid, foreign.Userid) {
-		t.Errorf("want: %v, got %v", foreign.Userid, check.Userid)
+	if !queries.Equal(check.UserID, foreign.UserID) {
+		t.Errorf("want: %v, got %v", foreign.UserID, check.UserID)
 	}
 
 	ranAfterSelectHook := false
@@ -535,18 +535,18 @@ func testUserOneToOneWishlistUsingUseridWishlist(t *testing.T) {
 	})
 
 	slice := UserSlice{&local}
-	if err = local.L.LoadUseridWishlist(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = local.L.LoadWishlist(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridWishlist == nil {
+	if local.R.Wishlist == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UseridWishlist = nil
-	if err = local.L.LoadUseridWishlist(ctx, tx, true, &local, nil); err != nil {
+	local.R.Wishlist = nil
+	if err = local.L.LoadWishlist(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridWishlist == nil {
+	if local.R.Wishlist == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testUserOneToOneWishlistUsingUseridWishlist(t *testing.T) {
 	}
 }
 
-func testUserOneToOneSetOpWishlistUsingUseridWishlist(t *testing.T) {
+func testUserOneToOneSetOpWishlistUsingWishlist(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -584,31 +584,31 @@ func testUserOneToOneSetOpWishlistUsingUseridWishlist(t *testing.T) {
 	}
 
 	for i, x := range []*Wishlist{&b, &c} {
-		err = a.SetUseridWishlist(ctx, tx, i != 0, x)
+		err = a.SetWishlist(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UseridWishlist != x {
+		if a.R.Wishlist != x {
 			t.Error("relationship struct not set to correct value")
 		}
-		if x.R.UseridUser != &a {
+		if x.R.User != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 
-		if !queries.Equal(a.ID, x.Userid) {
+		if !queries.Equal(a.ID, x.UserID) {
 			t.Error("foreign key was wrong value", a.ID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(x.Userid))
-		reflect.Indirect(reflect.ValueOf(&x.Userid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(x.UserID))
+		reflect.Indirect(reflect.ValueOf(&x.UserID)).Set(zero)
 
 		if err = x.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ID, x.Userid) {
-			t.Error("foreign key was wrong value", a.ID, x.Userid)
+		if !queries.Equal(a.ID, x.UserID) {
+			t.Error("foreign key was wrong value", a.ID, x.UserID)
 		}
 
 		if _, err = x.Delete(ctx, tx); err != nil {
@@ -617,7 +617,7 @@ func testUserOneToOneSetOpWishlistUsingUseridWishlist(t *testing.T) {
 	}
 }
 
-func testUserOneToOneRemoveOpWishlistUsingUseridWishlist(t *testing.T) {
+func testUserOneToOneRemoveOpWishlistUsingWishlist(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -639,15 +639,15 @@ func testUserOneToOneRemoveOpWishlistUsingUseridWishlist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetUseridWishlist(ctx, tx, true, &b); err != nil {
+	if err = a.SetWishlist(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUseridWishlist(ctx, tx, &b); err != nil {
+	if err = a.RemoveWishlist(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UseridWishlist().Count(ctx, tx)
+	count, err := a.Wishlist().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -655,20 +655,20 @@ func testUserOneToOneRemoveOpWishlistUsingUseridWishlist(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UseridWishlist != nil {
+	if a.R.Wishlist != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("foreign key column should be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testUserToManyUseridCheckouts(t *testing.T) {
+func testUserToManyCheckouts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -693,8 +693,8 @@ func testUserToManyUseridCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -702,17 +702,17 @@ func testUserToManyUseridCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridCheckouts().All(ctx, tx)
+	check, err := a.Checkouts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -725,18 +725,18 @@ func testUserToManyUseridCheckouts(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridCheckouts(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadCheckouts(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridCheckouts); got != 2 {
+	if got := len(a.R.Checkouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridCheckouts = nil
-	if err = a.L.LoadUseridCheckouts(ctx, tx, true, &a, nil); err != nil {
+	a.R.Checkouts = nil
+	if err = a.L.LoadCheckouts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridCheckouts); got != 2 {
+	if got := len(a.R.Checkouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -745,7 +745,7 @@ func testUserToManyUseridCheckouts(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridCustomerEvents(t *testing.T) {
+func testUserToManyCustomerEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -770,8 +770,8 @@ func testUserToManyUseridCustomerEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -779,17 +779,17 @@ func testUserToManyUseridCustomerEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridCustomerEvents().All(ctx, tx)
+	check, err := a.CustomerEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -802,18 +802,18 @@ func testUserToManyUseridCustomerEvents(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridCustomerEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadCustomerEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridCustomerEvents); got != 2 {
+	if got := len(a.R.CustomerEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridCustomerEvents = nil
-	if err = a.L.LoadUseridCustomerEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.CustomerEvents = nil
+	if err = a.L.LoadCustomerEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridCustomerEvents); got != 2 {
+	if got := len(a.R.CustomerEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -822,7 +822,7 @@ func testUserToManyUseridCustomerEvents(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridCustomerNotes(t *testing.T) {
+func testUserToManyCustomerNotes(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -847,8 +847,8 @@ func testUserToManyUseridCustomerNotes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -856,17 +856,17 @@ func testUserToManyUseridCustomerNotes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridCustomerNotes().All(ctx, tx)
+	check, err := a.CustomerNotes().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -879,18 +879,18 @@ func testUserToManyUseridCustomerNotes(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridCustomerNotes(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadCustomerNotes(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridCustomerNotes); got != 2 {
+	if got := len(a.R.CustomerNotes); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridCustomerNotes = nil
-	if err = a.L.LoadUseridCustomerNotes(ctx, tx, true, &a, nil); err != nil {
+	a.R.CustomerNotes = nil
+	if err = a.L.LoadCustomerNotes(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridCustomerNotes); got != 2 {
+	if got := len(a.R.CustomerNotes); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -899,7 +899,7 @@ func testUserToManyUseridCustomerNotes(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridExportEvents(t *testing.T) {
+func testUserToManyExportEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -924,8 +924,8 @@ func testUserToManyUseridExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -933,17 +933,17 @@ func testUserToManyUseridExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridExportEvents().All(ctx, tx)
+	check, err := a.ExportEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -956,18 +956,18 @@ func testUserToManyUseridExportEvents(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridExportEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadExportEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridExportEvents); got != 2 {
+	if got := len(a.R.ExportEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridExportEvents = nil
-	if err = a.L.LoadUseridExportEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.ExportEvents = nil
+	if err = a.L.LoadExportEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridExportEvents); got != 2 {
+	if got := len(a.R.ExportEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -976,7 +976,7 @@ func testUserToManyUseridExportEvents(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridExportFiles(t *testing.T) {
+func testUserToManyExportFiles(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1001,8 +1001,8 @@ func testUserToManyUseridExportFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1010,17 +1010,17 @@ func testUserToManyUseridExportFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridExportFiles().All(ctx, tx)
+	check, err := a.ExportFiles().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -1033,18 +1033,18 @@ func testUserToManyUseridExportFiles(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridExportFiles(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadExportFiles(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridExportFiles); got != 2 {
+	if got := len(a.R.ExportFiles); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridExportFiles = nil
-	if err = a.L.LoadUseridExportFiles(ctx, tx, true, &a, nil); err != nil {
+	a.R.ExportFiles = nil
+	if err = a.L.LoadExportFiles(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridExportFiles); got != 2 {
+	if got := len(a.R.ExportFiles); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1053,7 +1053,7 @@ func testUserToManyUseridExportFiles(t *testing.T) {
 	}
 }
 
-func testUserToManyUsedbyidGiftcards(t *testing.T) {
+func testUserToManyUsedByGiftcards(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1078,8 +1078,8 @@ func testUserToManyUsedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Usedbyid, a.ID)
-	queries.Assign(&c.Usedbyid, a.ID)
+	queries.Assign(&b.UsedByID, a.ID)
+	queries.Assign(&c.UsedByID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1087,17 +1087,17 @@ func testUserToManyUsedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UsedbyidGiftcards().All(ctx, tx)
+	check, err := a.UsedByGiftcards().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Usedbyid, b.Usedbyid) {
+		if queries.Equal(v.UsedByID, b.UsedByID) {
 			bFound = true
 		}
-		if queries.Equal(v.Usedbyid, c.Usedbyid) {
+		if queries.Equal(v.UsedByID, c.UsedByID) {
 			cFound = true
 		}
 	}
@@ -1110,18 +1110,18 @@ func testUserToManyUsedbyidGiftcards(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUsedbyidGiftcards(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadUsedByGiftcards(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UsedbyidGiftcards); got != 2 {
+	if got := len(a.R.UsedByGiftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UsedbyidGiftcards = nil
-	if err = a.L.LoadUsedbyidGiftcards(ctx, tx, true, &a, nil); err != nil {
+	a.R.UsedByGiftcards = nil
+	if err = a.L.LoadUsedByGiftcards(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UsedbyidGiftcards); got != 2 {
+	if got := len(a.R.UsedByGiftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1130,7 +1130,7 @@ func testUserToManyUsedbyidGiftcards(t *testing.T) {
 	}
 }
 
-func testUserToManyCreatedbyidGiftcards(t *testing.T) {
+func testUserToManyCreatedByGiftcards(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1155,8 +1155,8 @@ func testUserToManyCreatedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Createdbyid, a.ID)
-	queries.Assign(&c.Createdbyid, a.ID)
+	queries.Assign(&b.CreatedByID, a.ID)
+	queries.Assign(&c.CreatedByID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1164,17 +1164,17 @@ func testUserToManyCreatedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.CreatedbyidGiftcards().All(ctx, tx)
+	check, err := a.CreatedByGiftcards().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Createdbyid, b.Createdbyid) {
+		if queries.Equal(v.CreatedByID, b.CreatedByID) {
 			bFound = true
 		}
-		if queries.Equal(v.Createdbyid, c.Createdbyid) {
+		if queries.Equal(v.CreatedByID, c.CreatedByID) {
 			cFound = true
 		}
 	}
@@ -1187,18 +1187,18 @@ func testUserToManyCreatedbyidGiftcards(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadCreatedbyidGiftcards(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadCreatedByGiftcards(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CreatedbyidGiftcards); got != 2 {
+	if got := len(a.R.CreatedByGiftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.CreatedbyidGiftcards = nil
-	if err = a.L.LoadCreatedbyidGiftcards(ctx, tx, true, &a, nil); err != nil {
+	a.R.CreatedByGiftcards = nil
+	if err = a.L.LoadCreatedByGiftcards(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.CreatedbyidGiftcards); got != 2 {
+	if got := len(a.R.CreatedByGiftcards); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1207,7 +1207,7 @@ func testUserToManyCreatedbyidGiftcards(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridInvoiceEvents(t *testing.T) {
+func testUserToManyInvoiceEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1232,8 +1232,8 @@ func testUserToManyUseridInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1241,17 +1241,17 @@ func testUserToManyUseridInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridInvoiceEvents().All(ctx, tx)
+	check, err := a.InvoiceEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -1264,18 +1264,18 @@ func testUserToManyUseridInvoiceEvents(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridInvoiceEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadInvoiceEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridInvoiceEvents); got != 2 {
+	if got := len(a.R.InvoiceEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridInvoiceEvents = nil
-	if err = a.L.LoadUseridInvoiceEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.InvoiceEvents = nil
+	if err = a.L.LoadInvoiceEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridInvoiceEvents); got != 2 {
+	if got := len(a.R.InvoiceEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1284,7 +1284,7 @@ func testUserToManyUseridInvoiceEvents(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridOrderEvents(t *testing.T) {
+func testUserToManyOrderEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1309,8 +1309,8 @@ func testUserToManyUseridOrderEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1318,17 +1318,17 @@ func testUserToManyUseridOrderEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridOrderEvents().All(ctx, tx)
+	check, err := a.OrderEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -1341,18 +1341,18 @@ func testUserToManyUseridOrderEvents(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridOrderEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadOrderEvents(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridOrderEvents); got != 2 {
+	if got := len(a.R.OrderEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridOrderEvents = nil
-	if err = a.L.LoadUseridOrderEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.OrderEvents = nil
+	if err = a.L.LoadOrderEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridOrderEvents); got != 2 {
+	if got := len(a.R.OrderEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1361,7 +1361,7 @@ func testUserToManyUseridOrderEvents(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridOrders(t *testing.T) {
+func testUserToManyOrders(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1386,8 +1386,8 @@ func testUserToManyUseridOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1395,17 +1395,17 @@ func testUserToManyUseridOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridOrders().All(ctx, tx)
+	check, err := a.Orders().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -1418,18 +1418,18 @@ func testUserToManyUseridOrders(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridOrders(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadOrders(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridOrders); got != 2 {
+	if got := len(a.R.Orders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridOrders = nil
-	if err = a.L.LoadUseridOrders(ctx, tx, true, &a, nil); err != nil {
+	a.R.Orders = nil
+	if err = a.L.LoadOrders(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridOrders); got != 2 {
+	if got := len(a.R.Orders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1438,7 +1438,7 @@ func testUserToManyUseridOrders(t *testing.T) {
 	}
 }
 
-func testUserToManyStaffidShopStaffs(t *testing.T) {
+func testUserToManyStaffShopStaffs(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1463,8 +1463,8 @@ func testUserToManyStaffidShopStaffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Staffid, a.ID)
-	queries.Assign(&c.Staffid, a.ID)
+	queries.Assign(&b.StaffID, a.ID)
+	queries.Assign(&c.StaffID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1472,17 +1472,17 @@ func testUserToManyStaffidShopStaffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.StaffidShopStaffs().All(ctx, tx)
+	check, err := a.StaffShopStaffs().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Staffid, b.Staffid) {
+		if queries.Equal(v.StaffID, b.StaffID) {
 			bFound = true
 		}
-		if queries.Equal(v.Staffid, c.Staffid) {
+		if queries.Equal(v.StaffID, c.StaffID) {
 			cFound = true
 		}
 	}
@@ -1495,18 +1495,18 @@ func testUserToManyStaffidShopStaffs(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadStaffidShopStaffs(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadStaffShopStaffs(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StaffidShopStaffs); got != 2 {
+	if got := len(a.R.StaffShopStaffs); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.StaffidShopStaffs = nil
-	if err = a.L.LoadStaffidShopStaffs(ctx, tx, true, &a, nil); err != nil {
+	a.R.StaffShopStaffs = nil
+	if err = a.L.LoadStaffShopStaffs(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.StaffidShopStaffs); got != 2 {
+	if got := len(a.R.StaffShopStaffs); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1515,7 +1515,7 @@ func testUserToManyStaffidShopStaffs(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridStaffNotificationRecipients(t *testing.T) {
+func testUserToManyStaffNotificationRecipients(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1540,8 +1540,8 @@ func testUserToManyUseridStaffNotificationRecipients(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1549,17 +1549,17 @@ func testUserToManyUseridStaffNotificationRecipients(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridStaffNotificationRecipients().All(ctx, tx)
+	check, err := a.StaffNotificationRecipients().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -1572,18 +1572,18 @@ func testUserToManyUseridStaffNotificationRecipients(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridStaffNotificationRecipients(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadStaffNotificationRecipients(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridStaffNotificationRecipients); got != 2 {
+	if got := len(a.R.StaffNotificationRecipients); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridStaffNotificationRecipients = nil
-	if err = a.L.LoadUseridStaffNotificationRecipients(ctx, tx, true, &a, nil); err != nil {
+	a.R.StaffNotificationRecipients = nil
+	if err = a.L.LoadStaffNotificationRecipients(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridStaffNotificationRecipients); got != 2 {
+	if got := len(a.R.StaffNotificationRecipients); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1592,7 +1592,7 @@ func testUserToManyUseridStaffNotificationRecipients(t *testing.T) {
 	}
 }
 
-func testUserToManyUseridUserAddresses(t *testing.T) {
+func testUserToManyUserAddresses(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1617,8 +1617,8 @@ func testUserToManyUseridUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Userid, a.ID)
-	queries.Assign(&c.Userid, a.ID)
+	queries.Assign(&b.UserID, a.ID)
+	queries.Assign(&c.UserID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1626,17 +1626,17 @@ func testUserToManyUseridUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.UseridUserAddresses().All(ctx, tx)
+	check, err := a.UserAddresses().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Userid, b.Userid) {
+		if queries.Equal(v.UserID, b.UserID) {
 			bFound = true
 		}
-		if queries.Equal(v.Userid, c.Userid) {
+		if queries.Equal(v.UserID, c.UserID) {
 			cFound = true
 		}
 	}
@@ -1649,18 +1649,18 @@ func testUserToManyUseridUserAddresses(t *testing.T) {
 	}
 
 	slice := UserSlice{&a}
-	if err = a.L.LoadUseridUserAddresses(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = a.L.LoadUserAddresses(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridUserAddresses); got != 2 {
+	if got := len(a.R.UserAddresses); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.UseridUserAddresses = nil
-	if err = a.L.LoadUseridUserAddresses(ctx, tx, true, &a, nil); err != nil {
+	a.R.UserAddresses = nil
+	if err = a.L.LoadUserAddresses(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.UseridUserAddresses); got != 2 {
+	if got := len(a.R.UserAddresses); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1669,7 +1669,7 @@ func testUserToManyUseridUserAddresses(t *testing.T) {
 	}
 }
 
-func testUserToManyAddOpUseridCheckouts(t *testing.T) {
+func testUserToManyAddOpCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1706,7 +1706,7 @@ func testUserToManyAddOpUseridCheckouts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridCheckouts(ctx, tx, i != 0, x...)
+		err = a.AddCheckouts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1714,28 +1714,28 @@ func testUserToManyAddOpUseridCheckouts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridCheckouts[i*2] != first {
+		if a.R.Checkouts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridCheckouts[i*2+1] != second {
+		if a.R.Checkouts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridCheckouts().Count(ctx, tx)
+		count, err := a.Checkouts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1745,7 +1745,7 @@ func testUserToManyAddOpUseridCheckouts(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridCheckouts(t *testing.T) {
+func testUserToManySetOpCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1776,25 +1776,12 @@ func testUserToManySetOpUseridCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridCheckouts(ctx, tx, false, &b, &c)
+	err = a.SetCheckouts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridCheckouts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridCheckouts().Count(ctx, tx)
+	count, err := a.Checkouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1802,41 +1789,54 @@ func testUserToManySetOpUseridCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetCheckouts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Checkouts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridCheckouts[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Checkouts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridCheckouts[1] != &e {
+	if a.R.Checkouts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridCheckouts(t *testing.T) {
+func testUserToManyRemoveOpCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1861,12 +1861,12 @@ func testUserToManyRemoveOpUseridCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridCheckouts(ctx, tx, true, foreigners...)
+	err = a.AddCheckouts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridCheckouts().Count(ctx, tx)
+	count, err := a.Checkouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1874,12 +1874,12 @@ func testUserToManyRemoveOpUseridCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridCheckouts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCheckouts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridCheckouts().Count(ctx, tx)
+	count, err = a.Checkouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1887,40 +1887,40 @@ func testUserToManyRemoveOpUseridCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridCheckouts) != 2 {
+	if len(a.R.Checkouts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridCheckouts[1] != &d {
+	if a.R.Checkouts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridCheckouts[0] != &e {
+	if a.R.Checkouts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridCustomerEvents(t *testing.T) {
+func testUserToManyAddOpCustomerEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1957,7 +1957,7 @@ func testUserToManyAddOpUseridCustomerEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridCustomerEvents(ctx, tx, i != 0, x...)
+		err = a.AddCustomerEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1965,28 +1965,28 @@ func testUserToManyAddOpUseridCustomerEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridCustomerEvents[i*2] != first {
+		if a.R.CustomerEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridCustomerEvents[i*2+1] != second {
+		if a.R.CustomerEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridCustomerEvents().Count(ctx, tx)
+		count, err := a.CustomerEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1996,7 +1996,7 @@ func testUserToManyAddOpUseridCustomerEvents(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridCustomerEvents(t *testing.T) {
+func testUserToManySetOpCustomerEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2027,25 +2027,12 @@ func testUserToManySetOpUseridCustomerEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridCustomerEvents(ctx, tx, false, &b, &c)
+	err = a.SetCustomerEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridCustomerEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridCustomerEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridCustomerEvents().Count(ctx, tx)
+	count, err := a.CustomerEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2053,41 +2040,54 @@ func testUserToManySetOpUseridCustomerEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetCustomerEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.CustomerEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridCustomerEvents[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.CustomerEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridCustomerEvents[1] != &e {
+	if a.R.CustomerEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridCustomerEvents(t *testing.T) {
+func testUserToManyRemoveOpCustomerEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2112,12 +2112,12 @@ func testUserToManyRemoveOpUseridCustomerEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridCustomerEvents(ctx, tx, true, foreigners...)
+	err = a.AddCustomerEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridCustomerEvents().Count(ctx, tx)
+	count, err := a.CustomerEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2125,12 +2125,12 @@ func testUserToManyRemoveOpUseridCustomerEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridCustomerEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCustomerEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridCustomerEvents().Count(ctx, tx)
+	count, err = a.CustomerEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2138,40 +2138,40 @@ func testUserToManyRemoveOpUseridCustomerEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridCustomerEvents) != 2 {
+	if len(a.R.CustomerEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridCustomerEvents[1] != &d {
+	if a.R.CustomerEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridCustomerEvents[0] != &e {
+	if a.R.CustomerEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridCustomerNotes(t *testing.T) {
+func testUserToManyAddOpCustomerNotes(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2208,7 +2208,7 @@ func testUserToManyAddOpUseridCustomerNotes(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridCustomerNotes(ctx, tx, i != 0, x...)
+		err = a.AddCustomerNotes(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2216,28 +2216,28 @@ func testUserToManyAddOpUseridCustomerNotes(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridCustomerNotes[i*2] != first {
+		if a.R.CustomerNotes[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridCustomerNotes[i*2+1] != second {
+		if a.R.CustomerNotes[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridCustomerNotes().Count(ctx, tx)
+		count, err := a.CustomerNotes().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2247,7 +2247,7 @@ func testUserToManyAddOpUseridCustomerNotes(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridCustomerNotes(t *testing.T) {
+func testUserToManySetOpCustomerNotes(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2278,25 +2278,12 @@ func testUserToManySetOpUseridCustomerNotes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridCustomerNotes(ctx, tx, false, &b, &c)
+	err = a.SetCustomerNotes(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridCustomerNotes().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridCustomerNotes(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridCustomerNotes().Count(ctx, tx)
+	count, err := a.CustomerNotes().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2304,41 +2291,54 @@ func testUserToManySetOpUseridCustomerNotes(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetCustomerNotes(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.CustomerNotes().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridCustomerNotes[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.CustomerNotes[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridCustomerNotes[1] != &e {
+	if a.R.CustomerNotes[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridCustomerNotes(t *testing.T) {
+func testUserToManyRemoveOpCustomerNotes(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2363,12 +2363,12 @@ func testUserToManyRemoveOpUseridCustomerNotes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridCustomerNotes(ctx, tx, true, foreigners...)
+	err = a.AddCustomerNotes(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridCustomerNotes().Count(ctx, tx)
+	count, err := a.CustomerNotes().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2376,12 +2376,12 @@ func testUserToManyRemoveOpUseridCustomerNotes(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridCustomerNotes(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCustomerNotes(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridCustomerNotes().Count(ctx, tx)
+	count, err = a.CustomerNotes().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2389,40 +2389,40 @@ func testUserToManyRemoveOpUseridCustomerNotes(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridCustomerNotes) != 2 {
+	if len(a.R.CustomerNotes) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridCustomerNotes[1] != &d {
+	if a.R.CustomerNotes[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridCustomerNotes[0] != &e {
+	if a.R.CustomerNotes[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridExportEvents(t *testing.T) {
+func testUserToManyAddOpExportEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2459,7 +2459,7 @@ func testUserToManyAddOpUseridExportEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridExportEvents(ctx, tx, i != 0, x...)
+		err = a.AddExportEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2467,28 +2467,28 @@ func testUserToManyAddOpUseridExportEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridExportEvents[i*2] != first {
+		if a.R.ExportEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridExportEvents[i*2+1] != second {
+		if a.R.ExportEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridExportEvents().Count(ctx, tx)
+		count, err := a.ExportEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2498,7 +2498,7 @@ func testUserToManyAddOpUseridExportEvents(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridExportEvents(t *testing.T) {
+func testUserToManySetOpExportEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2529,25 +2529,12 @@ func testUserToManySetOpUseridExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridExportEvents(ctx, tx, false, &b, &c)
+	err = a.SetExportEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridExportEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridExportEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridExportEvents().Count(ctx, tx)
+	count, err := a.ExportEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2555,41 +2542,54 @@ func testUserToManySetOpUseridExportEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetExportEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ExportEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridExportEvents[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ExportEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridExportEvents[1] != &e {
+	if a.R.ExportEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridExportEvents(t *testing.T) {
+func testUserToManyRemoveOpExportEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2614,12 +2614,12 @@ func testUserToManyRemoveOpUseridExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridExportEvents(ctx, tx, true, foreigners...)
+	err = a.AddExportEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridExportEvents().Count(ctx, tx)
+	count, err := a.ExportEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2627,12 +2627,12 @@ func testUserToManyRemoveOpUseridExportEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridExportEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveExportEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridExportEvents().Count(ctx, tx)
+	count, err = a.ExportEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2640,40 +2640,40 @@ func testUserToManyRemoveOpUseridExportEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridExportEvents) != 2 {
+	if len(a.R.ExportEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridExportEvents[1] != &d {
+	if a.R.ExportEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridExportEvents[0] != &e {
+	if a.R.ExportEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridExportFiles(t *testing.T) {
+func testUserToManyAddOpExportFiles(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2710,7 +2710,7 @@ func testUserToManyAddOpUseridExportFiles(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridExportFiles(ctx, tx, i != 0, x...)
+		err = a.AddExportFiles(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2718,28 +2718,28 @@ func testUserToManyAddOpUseridExportFiles(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridExportFiles[i*2] != first {
+		if a.R.ExportFiles[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridExportFiles[i*2+1] != second {
+		if a.R.ExportFiles[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridExportFiles().Count(ctx, tx)
+		count, err := a.ExportFiles().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2749,7 +2749,7 @@ func testUserToManyAddOpUseridExportFiles(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridExportFiles(t *testing.T) {
+func testUserToManySetOpExportFiles(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2780,25 +2780,12 @@ func testUserToManySetOpUseridExportFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridExportFiles(ctx, tx, false, &b, &c)
+	err = a.SetExportFiles(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridExportFiles().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridExportFiles(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridExportFiles().Count(ctx, tx)
+	count, err := a.ExportFiles().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2806,41 +2793,54 @@ func testUserToManySetOpUseridExportFiles(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetExportFiles(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ExportFiles().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridExportFiles[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ExportFiles[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridExportFiles[1] != &e {
+	if a.R.ExportFiles[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridExportFiles(t *testing.T) {
+func testUserToManyRemoveOpExportFiles(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2865,12 +2865,12 @@ func testUserToManyRemoveOpUseridExportFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridExportFiles(ctx, tx, true, foreigners...)
+	err = a.AddExportFiles(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridExportFiles().Count(ctx, tx)
+	count, err := a.ExportFiles().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2878,12 +2878,12 @@ func testUserToManyRemoveOpUseridExportFiles(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridExportFiles(ctx, tx, foreigners[:2]...)
+	err = a.RemoveExportFiles(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridExportFiles().Count(ctx, tx)
+	count, err = a.ExportFiles().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2891,40 +2891,40 @@ func testUserToManyRemoveOpUseridExportFiles(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridExportFiles) != 2 {
+	if len(a.R.ExportFiles) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridExportFiles[1] != &d {
+	if a.R.ExportFiles[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridExportFiles[0] != &e {
+	if a.R.ExportFiles[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUsedbyidGiftcards(t *testing.T) {
+func testUserToManyAddOpUsedByGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2961,7 +2961,7 @@ func testUserToManyAddOpUsedbyidGiftcards(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUsedbyidGiftcards(ctx, tx, i != 0, x...)
+		err = a.AddUsedByGiftcards(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2969,28 +2969,28 @@ func testUserToManyAddOpUsedbyidGiftcards(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Usedbyid) {
-			t.Error("foreign key was wrong value", a.ID, first.Usedbyid)
+		if !queries.Equal(a.ID, first.UsedByID) {
+			t.Error("foreign key was wrong value", a.ID, first.UsedByID)
 		}
-		if !queries.Equal(a.ID, second.Usedbyid) {
-			t.Error("foreign key was wrong value", a.ID, second.Usedbyid)
+		if !queries.Equal(a.ID, second.UsedByID) {
+			t.Error("foreign key was wrong value", a.ID, second.UsedByID)
 		}
 
-		if first.R.UsedbyidUser != &a {
+		if first.R.UsedBy != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UsedbyidUser != &a {
+		if second.R.UsedBy != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UsedbyidGiftcards[i*2] != first {
+		if a.R.UsedByGiftcards[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UsedbyidGiftcards[i*2+1] != second {
+		if a.R.UsedByGiftcards[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UsedbyidGiftcards().Count(ctx, tx)
+		count, err := a.UsedByGiftcards().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3000,7 +3000,7 @@ func testUserToManyAddOpUsedbyidGiftcards(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUsedbyidGiftcards(t *testing.T) {
+func testUserToManySetOpUsedByGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3031,25 +3031,12 @@ func testUserToManySetOpUsedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUsedbyidGiftcards(ctx, tx, false, &b, &c)
+	err = a.SetUsedByGiftcards(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UsedbyidGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUsedbyidGiftcards(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UsedbyidGiftcards().Count(ctx, tx)
+	count, err := a.UsedByGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3057,41 +3044,54 @@ func testUserToManySetOpUsedbyidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Usedbyid) {
+	err = a.SetUsedByGiftcards(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.UsedByGiftcards().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UsedByID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Usedbyid) {
+	if !queries.IsValuerNil(c.UsedByID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Usedbyid) {
-		t.Error("foreign key was wrong value", a.ID, d.Usedbyid)
+	if !queries.Equal(a.ID, d.UsedByID) {
+		t.Error("foreign key was wrong value", a.ID, d.UsedByID)
 	}
-	if !queries.Equal(a.ID, e.Usedbyid) {
-		t.Error("foreign key was wrong value", a.ID, e.Usedbyid)
-	}
-
-	if b.R.UsedbyidUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UsedbyidUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UsedbyidUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UsedbyidUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UsedByID) {
+		t.Error("foreign key was wrong value", a.ID, e.UsedByID)
 	}
 
-	if a.R.UsedbyidGiftcards[0] != &d {
+	if b.R.UsedBy != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.UsedBy != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.UsedBy != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.UsedBy != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.UsedByGiftcards[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UsedbyidGiftcards[1] != &e {
+	if a.R.UsedByGiftcards[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUsedbyidGiftcards(t *testing.T) {
+func testUserToManyRemoveOpUsedByGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3116,12 +3116,12 @@ func testUserToManyRemoveOpUsedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUsedbyidGiftcards(ctx, tx, true, foreigners...)
+	err = a.AddUsedByGiftcards(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UsedbyidGiftcards().Count(ctx, tx)
+	count, err := a.UsedByGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3129,12 +3129,12 @@ func testUserToManyRemoveOpUsedbyidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUsedbyidGiftcards(ctx, tx, foreigners[:2]...)
+	err = a.RemoveUsedByGiftcards(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UsedbyidGiftcards().Count(ctx, tx)
+	count, err = a.UsedByGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3142,40 +3142,40 @@ func testUserToManyRemoveOpUsedbyidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Usedbyid) {
+	if !queries.IsValuerNil(b.UsedByID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Usedbyid) {
+	if !queries.IsValuerNil(c.UsedByID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UsedbyidUser != nil {
+	if b.R.UsedBy != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UsedbyidUser != nil {
+	if c.R.UsedBy != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UsedbyidUser != &a {
+	if d.R.UsedBy != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UsedbyidUser != &a {
+	if e.R.UsedBy != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UsedbyidGiftcards) != 2 {
+	if len(a.R.UsedByGiftcards) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UsedbyidGiftcards[1] != &d {
+	if a.R.UsedByGiftcards[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UsedbyidGiftcards[0] != &e {
+	if a.R.UsedByGiftcards[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpCreatedbyidGiftcards(t *testing.T) {
+func testUserToManyAddOpCreatedByGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3212,7 +3212,7 @@ func testUserToManyAddOpCreatedbyidGiftcards(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCreatedbyidGiftcards(ctx, tx, i != 0, x...)
+		err = a.AddCreatedByGiftcards(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3220,28 +3220,28 @@ func testUserToManyAddOpCreatedbyidGiftcards(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Createdbyid) {
-			t.Error("foreign key was wrong value", a.ID, first.Createdbyid)
+		if !queries.Equal(a.ID, first.CreatedByID) {
+			t.Error("foreign key was wrong value", a.ID, first.CreatedByID)
 		}
-		if !queries.Equal(a.ID, second.Createdbyid) {
-			t.Error("foreign key was wrong value", a.ID, second.Createdbyid)
+		if !queries.Equal(a.ID, second.CreatedByID) {
+			t.Error("foreign key was wrong value", a.ID, second.CreatedByID)
 		}
 
-		if first.R.CreatedbyidUser != &a {
+		if first.R.CreatedBy != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.CreatedbyidUser != &a {
+		if second.R.CreatedBy != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.CreatedbyidGiftcards[i*2] != first {
+		if a.R.CreatedByGiftcards[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.CreatedbyidGiftcards[i*2+1] != second {
+		if a.R.CreatedByGiftcards[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.CreatedbyidGiftcards().Count(ctx, tx)
+		count, err := a.CreatedByGiftcards().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3251,7 +3251,7 @@ func testUserToManyAddOpCreatedbyidGiftcards(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpCreatedbyidGiftcards(t *testing.T) {
+func testUserToManySetOpCreatedByGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3282,25 +3282,12 @@ func testUserToManySetOpCreatedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetCreatedbyidGiftcards(ctx, tx, false, &b, &c)
+	err = a.SetCreatedByGiftcards(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CreatedbyidGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCreatedbyidGiftcards(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CreatedbyidGiftcards().Count(ctx, tx)
+	count, err := a.CreatedByGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3308,41 +3295,54 @@ func testUserToManySetOpCreatedbyidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Createdbyid) {
+	err = a.SetCreatedByGiftcards(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.CreatedByGiftcards().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.CreatedByID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Createdbyid) {
+	if !queries.IsValuerNil(c.CreatedByID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Createdbyid) {
-		t.Error("foreign key was wrong value", a.ID, d.Createdbyid)
+	if !queries.Equal(a.ID, d.CreatedByID) {
+		t.Error("foreign key was wrong value", a.ID, d.CreatedByID)
 	}
-	if !queries.Equal(a.ID, e.Createdbyid) {
-		t.Error("foreign key was wrong value", a.ID, e.Createdbyid)
-	}
-
-	if b.R.CreatedbyidUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.CreatedbyidUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.CreatedbyidUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.CreatedbyidUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.CreatedByID) {
+		t.Error("foreign key was wrong value", a.ID, e.CreatedByID)
 	}
 
-	if a.R.CreatedbyidGiftcards[0] != &d {
+	if b.R.CreatedBy != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.CreatedBy != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.CreatedBy != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.CreatedBy != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.CreatedByGiftcards[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.CreatedbyidGiftcards[1] != &e {
+	if a.R.CreatedByGiftcards[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpCreatedbyidGiftcards(t *testing.T) {
+func testUserToManyRemoveOpCreatedByGiftcards(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3367,12 +3367,12 @@ func testUserToManyRemoveOpCreatedbyidGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddCreatedbyidGiftcards(ctx, tx, true, foreigners...)
+	err = a.AddCreatedByGiftcards(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.CreatedbyidGiftcards().Count(ctx, tx)
+	count, err := a.CreatedByGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3380,12 +3380,12 @@ func testUserToManyRemoveOpCreatedbyidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveCreatedbyidGiftcards(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCreatedByGiftcards(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.CreatedbyidGiftcards().Count(ctx, tx)
+	count, err = a.CreatedByGiftcards().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3393,40 +3393,40 @@ func testUserToManyRemoveOpCreatedbyidGiftcards(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Createdbyid) {
+	if !queries.IsValuerNil(b.CreatedByID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Createdbyid) {
+	if !queries.IsValuerNil(c.CreatedByID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.CreatedbyidUser != nil {
+	if b.R.CreatedBy != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.CreatedbyidUser != nil {
+	if c.R.CreatedBy != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.CreatedbyidUser != &a {
+	if d.R.CreatedBy != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.CreatedbyidUser != &a {
+	if e.R.CreatedBy != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.CreatedbyidGiftcards) != 2 {
+	if len(a.R.CreatedByGiftcards) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CreatedbyidGiftcards[1] != &d {
+	if a.R.CreatedByGiftcards[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.CreatedbyidGiftcards[0] != &e {
+	if a.R.CreatedByGiftcards[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridInvoiceEvents(t *testing.T) {
+func testUserToManyAddOpInvoiceEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3463,7 +3463,7 @@ func testUserToManyAddOpUseridInvoiceEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridInvoiceEvents(ctx, tx, i != 0, x...)
+		err = a.AddInvoiceEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3471,28 +3471,28 @@ func testUserToManyAddOpUseridInvoiceEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridInvoiceEvents[i*2] != first {
+		if a.R.InvoiceEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridInvoiceEvents[i*2+1] != second {
+		if a.R.InvoiceEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridInvoiceEvents().Count(ctx, tx)
+		count, err := a.InvoiceEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3502,7 +3502,7 @@ func testUserToManyAddOpUseridInvoiceEvents(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridInvoiceEvents(t *testing.T) {
+func testUserToManySetOpInvoiceEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3533,25 +3533,12 @@ func testUserToManySetOpUseridInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridInvoiceEvents(ctx, tx, false, &b, &c)
+	err = a.SetInvoiceEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridInvoiceEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridInvoiceEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridInvoiceEvents().Count(ctx, tx)
+	count, err := a.InvoiceEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3559,41 +3546,54 @@ func testUserToManySetOpUseridInvoiceEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetInvoiceEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.InvoiceEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridInvoiceEvents[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.InvoiceEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridInvoiceEvents[1] != &e {
+	if a.R.InvoiceEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridInvoiceEvents(t *testing.T) {
+func testUserToManyRemoveOpInvoiceEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3618,12 +3618,12 @@ func testUserToManyRemoveOpUseridInvoiceEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridInvoiceEvents(ctx, tx, true, foreigners...)
+	err = a.AddInvoiceEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridInvoiceEvents().Count(ctx, tx)
+	count, err := a.InvoiceEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3631,12 +3631,12 @@ func testUserToManyRemoveOpUseridInvoiceEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridInvoiceEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveInvoiceEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridInvoiceEvents().Count(ctx, tx)
+	count, err = a.InvoiceEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3644,40 +3644,40 @@ func testUserToManyRemoveOpUseridInvoiceEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridInvoiceEvents) != 2 {
+	if len(a.R.InvoiceEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridInvoiceEvents[1] != &d {
+	if a.R.InvoiceEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridInvoiceEvents[0] != &e {
+	if a.R.InvoiceEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridOrderEvents(t *testing.T) {
+func testUserToManyAddOpOrderEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3714,7 +3714,7 @@ func testUserToManyAddOpUseridOrderEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridOrderEvents(ctx, tx, i != 0, x...)
+		err = a.AddOrderEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3722,28 +3722,28 @@ func testUserToManyAddOpUseridOrderEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridOrderEvents[i*2] != first {
+		if a.R.OrderEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridOrderEvents[i*2+1] != second {
+		if a.R.OrderEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridOrderEvents().Count(ctx, tx)
+		count, err := a.OrderEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3753,7 +3753,7 @@ func testUserToManyAddOpUseridOrderEvents(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridOrderEvents(t *testing.T) {
+func testUserToManySetOpOrderEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3784,25 +3784,12 @@ func testUserToManySetOpUseridOrderEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridOrderEvents(ctx, tx, false, &b, &c)
+	err = a.SetOrderEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridOrderEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridOrderEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridOrderEvents().Count(ctx, tx)
+	count, err := a.OrderEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3810,41 +3797,54 @@ func testUserToManySetOpUseridOrderEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetOrderEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.OrderEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridOrderEvents[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.OrderEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridOrderEvents[1] != &e {
+	if a.R.OrderEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridOrderEvents(t *testing.T) {
+func testUserToManyRemoveOpOrderEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3869,12 +3869,12 @@ func testUserToManyRemoveOpUseridOrderEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridOrderEvents(ctx, tx, true, foreigners...)
+	err = a.AddOrderEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridOrderEvents().Count(ctx, tx)
+	count, err := a.OrderEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3882,12 +3882,12 @@ func testUserToManyRemoveOpUseridOrderEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridOrderEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveOrderEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridOrderEvents().Count(ctx, tx)
+	count, err = a.OrderEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3895,40 +3895,40 @@ func testUserToManyRemoveOpUseridOrderEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridOrderEvents) != 2 {
+	if len(a.R.OrderEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridOrderEvents[1] != &d {
+	if a.R.OrderEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridOrderEvents[0] != &e {
+	if a.R.OrderEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridOrders(t *testing.T) {
+func testUserToManyAddOpOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3965,7 +3965,7 @@ func testUserToManyAddOpUseridOrders(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridOrders(ctx, tx, i != 0, x...)
+		err = a.AddOrders(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3973,28 +3973,28 @@ func testUserToManyAddOpUseridOrders(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridOrders[i*2] != first {
+		if a.R.Orders[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridOrders[i*2+1] != second {
+		if a.R.Orders[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridOrders().Count(ctx, tx)
+		count, err := a.Orders().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4004,7 +4004,7 @@ func testUserToManyAddOpUseridOrders(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridOrders(t *testing.T) {
+func testUserToManySetOpOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4035,25 +4035,12 @@ func testUserToManySetOpUseridOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridOrders(ctx, tx, false, &b, &c)
+	err = a.SetOrders(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridOrders().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridOrders(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridOrders().Count(ctx, tx)
+	count, err := a.Orders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4061,41 +4048,54 @@ func testUserToManySetOpUseridOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetOrders(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Orders().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridOrders[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Orders[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridOrders[1] != &e {
+	if a.R.Orders[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridOrders(t *testing.T) {
+func testUserToManyRemoveOpOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4120,12 +4120,12 @@ func testUserToManyRemoveOpUseridOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridOrders(ctx, tx, true, foreigners...)
+	err = a.AddOrders(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridOrders().Count(ctx, tx)
+	count, err := a.Orders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4133,12 +4133,12 @@ func testUserToManyRemoveOpUseridOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridOrders(ctx, tx, foreigners[:2]...)
+	err = a.RemoveOrders(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridOrders().Count(ctx, tx)
+	count, err = a.Orders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4146,40 +4146,40 @@ func testUserToManyRemoveOpUseridOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridOrders) != 2 {
+	if len(a.R.Orders) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridOrders[1] != &d {
+	if a.R.Orders[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridOrders[0] != &e {
+	if a.R.Orders[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpStaffidShopStaffs(t *testing.T) {
+func testUserToManyAddOpStaffShopStaffs(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4216,7 +4216,7 @@ func testUserToManyAddOpStaffidShopStaffs(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddStaffidShopStaffs(ctx, tx, i != 0, x...)
+		err = a.AddStaffShopStaffs(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4224,28 +4224,28 @@ func testUserToManyAddOpStaffidShopStaffs(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Staffid) {
-			t.Error("foreign key was wrong value", a.ID, first.Staffid)
+		if !queries.Equal(a.ID, first.StaffID) {
+			t.Error("foreign key was wrong value", a.ID, first.StaffID)
 		}
-		if !queries.Equal(a.ID, second.Staffid) {
-			t.Error("foreign key was wrong value", a.ID, second.Staffid)
+		if !queries.Equal(a.ID, second.StaffID) {
+			t.Error("foreign key was wrong value", a.ID, second.StaffID)
 		}
 
-		if first.R.StaffidUser != &a {
+		if first.R.Staff != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.StaffidUser != &a {
+		if second.R.Staff != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.StaffidShopStaffs[i*2] != first {
+		if a.R.StaffShopStaffs[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.StaffidShopStaffs[i*2+1] != second {
+		if a.R.StaffShopStaffs[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.StaffidShopStaffs().Count(ctx, tx)
+		count, err := a.StaffShopStaffs().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4255,7 +4255,7 @@ func testUserToManyAddOpStaffidShopStaffs(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpStaffidShopStaffs(t *testing.T) {
+func testUserToManySetOpStaffShopStaffs(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4286,25 +4286,12 @@ func testUserToManySetOpStaffidShopStaffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetStaffidShopStaffs(ctx, tx, false, &b, &c)
+	err = a.SetStaffShopStaffs(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.StaffidShopStaffs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetStaffidShopStaffs(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.StaffidShopStaffs().Count(ctx, tx)
+	count, err := a.StaffShopStaffs().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4312,41 +4299,54 @@ func testUserToManySetOpStaffidShopStaffs(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Staffid) {
+	err = a.SetStaffShopStaffs(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.StaffShopStaffs().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.StaffID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Staffid) {
+	if !queries.IsValuerNil(c.StaffID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Staffid) {
-		t.Error("foreign key was wrong value", a.ID, d.Staffid)
+	if !queries.Equal(a.ID, d.StaffID) {
+		t.Error("foreign key was wrong value", a.ID, d.StaffID)
 	}
-	if !queries.Equal(a.ID, e.Staffid) {
-		t.Error("foreign key was wrong value", a.ID, e.Staffid)
-	}
-
-	if b.R.StaffidUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.StaffidUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.StaffidUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.StaffidUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.StaffID) {
+		t.Error("foreign key was wrong value", a.ID, e.StaffID)
 	}
 
-	if a.R.StaffidShopStaffs[0] != &d {
+	if b.R.Staff != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Staff != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Staff != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Staff != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.StaffShopStaffs[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.StaffidShopStaffs[1] != &e {
+	if a.R.StaffShopStaffs[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpStaffidShopStaffs(t *testing.T) {
+func testUserToManyRemoveOpStaffShopStaffs(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4371,12 +4371,12 @@ func testUserToManyRemoveOpStaffidShopStaffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddStaffidShopStaffs(ctx, tx, true, foreigners...)
+	err = a.AddStaffShopStaffs(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.StaffidShopStaffs().Count(ctx, tx)
+	count, err := a.StaffShopStaffs().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4384,12 +4384,12 @@ func testUserToManyRemoveOpStaffidShopStaffs(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveStaffidShopStaffs(ctx, tx, foreigners[:2]...)
+	err = a.RemoveStaffShopStaffs(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.StaffidShopStaffs().Count(ctx, tx)
+	count, err = a.StaffShopStaffs().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4397,40 +4397,40 @@ func testUserToManyRemoveOpStaffidShopStaffs(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Staffid) {
+	if !queries.IsValuerNil(b.StaffID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Staffid) {
+	if !queries.IsValuerNil(c.StaffID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.StaffidUser != nil {
+	if b.R.Staff != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.StaffidUser != nil {
+	if c.R.Staff != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.StaffidUser != &a {
+	if d.R.Staff != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.StaffidUser != &a {
+	if e.R.Staff != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.StaffidShopStaffs) != 2 {
+	if len(a.R.StaffShopStaffs) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.StaffidShopStaffs[1] != &d {
+	if a.R.StaffShopStaffs[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.StaffidShopStaffs[0] != &e {
+	if a.R.StaffShopStaffs[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridStaffNotificationRecipients(t *testing.T) {
+func testUserToManyAddOpStaffNotificationRecipients(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4467,7 +4467,7 @@ func testUserToManyAddOpUseridStaffNotificationRecipients(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridStaffNotificationRecipients(ctx, tx, i != 0, x...)
+		err = a.AddStaffNotificationRecipients(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4475,28 +4475,28 @@ func testUserToManyAddOpUseridStaffNotificationRecipients(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridStaffNotificationRecipients[i*2] != first {
+		if a.R.StaffNotificationRecipients[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridStaffNotificationRecipients[i*2+1] != second {
+		if a.R.StaffNotificationRecipients[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridStaffNotificationRecipients().Count(ctx, tx)
+		count, err := a.StaffNotificationRecipients().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4506,7 +4506,7 @@ func testUserToManyAddOpUseridStaffNotificationRecipients(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridStaffNotificationRecipients(t *testing.T) {
+func testUserToManySetOpStaffNotificationRecipients(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4537,25 +4537,12 @@ func testUserToManySetOpUseridStaffNotificationRecipients(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridStaffNotificationRecipients(ctx, tx, false, &b, &c)
+	err = a.SetStaffNotificationRecipients(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridStaffNotificationRecipients().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridStaffNotificationRecipients(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridStaffNotificationRecipients().Count(ctx, tx)
+	count, err := a.StaffNotificationRecipients().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4563,41 +4550,54 @@ func testUserToManySetOpUseridStaffNotificationRecipients(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetStaffNotificationRecipients(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.StaffNotificationRecipients().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridStaffNotificationRecipients[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.StaffNotificationRecipients[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridStaffNotificationRecipients[1] != &e {
+	if a.R.StaffNotificationRecipients[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridStaffNotificationRecipients(t *testing.T) {
+func testUserToManyRemoveOpStaffNotificationRecipients(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4622,12 +4622,12 @@ func testUserToManyRemoveOpUseridStaffNotificationRecipients(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridStaffNotificationRecipients(ctx, tx, true, foreigners...)
+	err = a.AddStaffNotificationRecipients(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridStaffNotificationRecipients().Count(ctx, tx)
+	count, err := a.StaffNotificationRecipients().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4635,12 +4635,12 @@ func testUserToManyRemoveOpUseridStaffNotificationRecipients(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridStaffNotificationRecipients(ctx, tx, foreigners[:2]...)
+	err = a.RemoveStaffNotificationRecipients(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridStaffNotificationRecipients().Count(ctx, tx)
+	count, err = a.StaffNotificationRecipients().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4648,40 +4648,40 @@ func testUserToManyRemoveOpUseridStaffNotificationRecipients(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridStaffNotificationRecipients) != 2 {
+	if len(a.R.StaffNotificationRecipients) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridStaffNotificationRecipients[1] != &d {
+	if a.R.StaffNotificationRecipients[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridStaffNotificationRecipients[0] != &e {
+	if a.R.StaffNotificationRecipients[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToManyAddOpUseridUserAddresses(t *testing.T) {
+func testUserToManyAddOpUserAddresses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4718,7 +4718,7 @@ func testUserToManyAddOpUseridUserAddresses(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddUseridUserAddresses(ctx, tx, i != 0, x...)
+		err = a.AddUserAddresses(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4726,28 +4726,28 @@ func testUserToManyAddOpUseridUserAddresses(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Userid) {
-			t.Error("foreign key was wrong value", a.ID, first.Userid)
+		if !queries.Equal(a.ID, first.UserID) {
+			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.Userid) {
-			t.Error("foreign key was wrong value", a.ID, second.Userid)
+		if !queries.Equal(a.ID, second.UserID) {
+			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
-		if first.R.UseridUser != &a {
+		if first.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.UseridUser != &a {
+		if second.R.User != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.UseridUserAddresses[i*2] != first {
+		if a.R.UserAddresses[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.UseridUserAddresses[i*2+1] != second {
+		if a.R.UserAddresses[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.UseridUserAddresses().Count(ctx, tx)
+		count, err := a.UserAddresses().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -4757,7 +4757,7 @@ func testUserToManyAddOpUseridUserAddresses(t *testing.T) {
 	}
 }
 
-func testUserToManySetOpUseridUserAddresses(t *testing.T) {
+func testUserToManySetOpUserAddresses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4788,25 +4788,12 @@ func testUserToManySetOpUseridUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetUseridUserAddresses(ctx, tx, false, &b, &c)
+	err = a.SetUserAddresses(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridUserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUseridUserAddresses(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UseridUserAddresses().Count(ctx, tx)
+	count, err := a.UserAddresses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4814,41 +4801,54 @@ func testUserToManySetOpUseridUserAddresses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	err = a.SetUserAddresses(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.UserAddresses().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Userid) {
-		t.Error("foreign key was wrong value", a.ID, d.Userid)
+	if !queries.Equal(a.ID, d.UserID) {
+		t.Error("foreign key was wrong value", a.ID, d.UserID)
 	}
-	if !queries.Equal(a.ID, e.Userid) {
-		t.Error("foreign key was wrong value", a.ID, e.Userid)
-	}
-
-	if b.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.UseridUser != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.UseridUser != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.UserID) {
+		t.Error("foreign key was wrong value", a.ID, e.UserID)
 	}
 
-	if a.R.UseridUserAddresses[0] != &d {
+	if b.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.User != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.User != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.UserAddresses[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.UseridUserAddresses[1] != &e {
+	if a.R.UserAddresses[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testUserToManyRemoveOpUseridUserAddresses(t *testing.T) {
+func testUserToManyRemoveOpUserAddresses(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -4873,12 +4873,12 @@ func testUserToManyRemoveOpUseridUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddUseridUserAddresses(ctx, tx, true, foreigners...)
+	err = a.AddUserAddresses(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.UseridUserAddresses().Count(ctx, tx)
+	count, err := a.UserAddresses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4886,12 +4886,12 @@ func testUserToManyRemoveOpUseridUserAddresses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveUseridUserAddresses(ctx, tx, foreigners[:2]...)
+	err = a.RemoveUserAddresses(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.UseridUserAddresses().Count(ctx, tx)
+	count, err = a.UserAddresses().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4899,40 +4899,40 @@ func testUserToManyRemoveOpUseridUserAddresses(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Userid) {
+	if !queries.IsValuerNil(b.UserID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Userid) {
+	if !queries.IsValuerNil(c.UserID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.UseridUser != nil {
+	if b.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.UseridUser != nil {
+	if c.R.User != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.UseridUser != &a {
+	if d.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.UseridUser != &a {
+	if e.R.User != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.UseridUserAddresses) != 2 {
+	if len(a.R.UserAddresses) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UseridUserAddresses[1] != &d {
+	if a.R.UserAddresses[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.UseridUserAddresses[0] != &e {
+	if a.R.UserAddresses[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testUserToOneAddressUsingDefaultshippingaddressidAddress(t *testing.T) {
+func testUserToOneAddressUsingDefaultShippingAddress(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -4952,12 +4952,12 @@ func testUserToOneAddressUsingDefaultshippingaddressidAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Defaultshippingaddressid, foreign.ID)
+	queries.Assign(&local.DefaultShippingAddressID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.DefaultshippingaddressidAddress().One(ctx, tx)
+	check, err := local.DefaultShippingAddress().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -4973,18 +4973,18 @@ func testUserToOneAddressUsingDefaultshippingaddressidAddress(t *testing.T) {
 	})
 
 	slice := UserSlice{&local}
-	if err = local.L.LoadDefaultshippingaddressidAddress(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
+	if err = local.L.LoadDefaultShippingAddress(ctx, tx, false, (*[]*User)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.DefaultshippingaddressidAddress == nil {
+	if local.R.DefaultShippingAddress == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.DefaultshippingaddressidAddress = nil
-	if err = local.L.LoadDefaultshippingaddressidAddress(ctx, tx, true, &local, nil); err != nil {
+	local.R.DefaultShippingAddress = nil
+	if err = local.L.LoadDefaultShippingAddress(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.DefaultshippingaddressidAddress == nil {
+	if local.R.DefaultShippingAddress == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -4993,7 +4993,7 @@ func testUserToOneAddressUsingDefaultshippingaddressidAddress(t *testing.T) {
 	}
 }
 
-func testUserToOneSetOpAddressUsingDefaultshippingaddressidAddress(t *testing.T) {
+func testUserToOneSetOpAddressUsingDefaultShippingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -5022,36 +5022,36 @@ func testUserToOneSetOpAddressUsingDefaultshippingaddressidAddress(t *testing.T)
 	}
 
 	for i, x := range []*Address{&b, &c} {
-		err = a.SetDefaultshippingaddressidAddress(ctx, tx, i != 0, x)
+		err = a.SetDefaultShippingAddress(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.DefaultshippingaddressidAddress != x {
+		if a.R.DefaultShippingAddress != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.DefaultshippingaddressidUsers[0] != &a {
+		if x.R.DefaultShippingAddressUsers[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Defaultshippingaddressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Defaultshippingaddressid)
+		if !queries.Equal(a.DefaultShippingAddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.DefaultShippingAddressID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Defaultshippingaddressid))
-		reflect.Indirect(reflect.ValueOf(&a.Defaultshippingaddressid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.DefaultShippingAddressID))
+		reflect.Indirect(reflect.ValueOf(&a.DefaultShippingAddressID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Defaultshippingaddressid, x.ID) {
-			t.Error("foreign key was wrong value", a.Defaultshippingaddressid, x.ID)
+		if !queries.Equal(a.DefaultShippingAddressID, x.ID) {
+			t.Error("foreign key was wrong value", a.DefaultShippingAddressID, x.ID)
 		}
 	}
 }
 
-func testUserToOneRemoveOpAddressUsingDefaultshippingaddressidAddress(t *testing.T) {
+func testUserToOneRemoveOpAddressUsingDefaultShippingAddress(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -5073,15 +5073,15 @@ func testUserToOneRemoveOpAddressUsingDefaultshippingaddressidAddress(t *testing
 		t.Fatal(err)
 	}
 
-	if err = a.SetDefaultshippingaddressidAddress(ctx, tx, true, &b); err != nil {
+	if err = a.SetDefaultShippingAddress(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveDefaultshippingaddressidAddress(ctx, tx, &b); err != nil {
+	if err = a.RemoveDefaultShippingAddress(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.DefaultshippingaddressidAddress().Count(ctx, tx)
+	count, err := a.DefaultShippingAddress().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -5089,15 +5089,15 @@ func testUserToOneRemoveOpAddressUsingDefaultshippingaddressidAddress(t *testing
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.DefaultshippingaddressidAddress != nil {
+	if a.R.DefaultShippingAddress != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Defaultshippingaddressid) {
+	if !queries.IsValuerNil(a.DefaultShippingAddressID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.DefaultshippingaddressidUsers) != 0 {
+	if len(b.R.DefaultShippingAddressUsers) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -5176,7 +5176,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-	userDBTypes = map[string]string{`ID`: `character varying`, `Email`: `character varying`, `Username`: `character varying`, `Firstname`: `character varying`, `Lastname`: `character varying`, `Defaultshippingaddressid`: `character varying`, `Defaultbillingaddressid`: `character varying`, `Password`: `character varying`, `Authdata`: `character varying`, `Authservice`: `character varying`, `Emailverified`: `boolean`, `Nickname`: `character varying`, `Roles`: `character varying`, `Props`: `jsonb`, `Notifyprops`: `jsonb`, `Lastpasswordupdate`: `bigint`, `Lastpictureupdate`: `bigint`, `Failedattempts`: `integer`, `Locale`: `character varying`, `Timezone`: `jsonb`, `Mfaactive`: `boolean`, `Mfasecret`: `character varying`, `Createat`: `bigint`, `Updateat`: `bigint`, `Deleteat`: `bigint`, `Isactive`: `boolean`, `Note`: `text`, `Jwttokenkey`: `text`, `Metadata`: `jsonb`, `Privatemetadata`: `jsonb`}
+	userDBTypes = map[string]string{`ID`: `character varying`, `Email`: `character varying`, `Username`: `character varying`, `FirstName`: `character varying`, `LastName`: `character varying`, `DefaultShippingAddressID`: `character varying`, `DefaultBillingAddressID`: `character varying`, `Password`: `character varying`, `AuthData`: `character varying`, `AuthService`: `character varying`, `EmailVerified`: `boolean`, `Nickname`: `character varying`, `Roles`: `character varying`, `Props`: `jsonb`, `NotifyProps`: `jsonb`, `LastPasswordUpdate`: `bigint`, `LastPictureUpdate`: `bigint`, `FailedAttempts`: `integer`, `Locale`: `character varying`, `Timezone`: `jsonb`, `MfaActive`: `boolean`, `MfaSecret`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `DeleteAt`: `bigint`, `IsActive`: `boolean`, `Note`: `text`, `JWTTokenKey`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_           = bytes.MinRead
 )
 

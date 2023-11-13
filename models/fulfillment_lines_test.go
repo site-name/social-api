@@ -494,7 +494,7 @@ func testFulfillmentLinesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testFulfillmentLineToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
+func testFulfillmentLineToOneOrderLineUsingOrderLine(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -514,12 +514,12 @@ func testFulfillmentLineToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Orderlineid, foreign.ID)
+	queries.Assign(&local.OrderLineID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.OrderlineidOrderLine().One(ctx, tx)
+	check, err := local.OrderLine().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -535,18 +535,18 @@ func testFulfillmentLineToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 	})
 
 	slice := FulfillmentLineSlice{&local}
-	if err = local.L.LoadOrderlineidOrderLine(ctx, tx, false, (*[]*FulfillmentLine)(&slice), nil); err != nil {
+	if err = local.L.LoadOrderLine(ctx, tx, false, (*[]*FulfillmentLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderlineidOrderLine == nil {
+	if local.R.OrderLine == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.OrderlineidOrderLine = nil
-	if err = local.L.LoadOrderlineidOrderLine(ctx, tx, true, &local, nil); err != nil {
+	local.R.OrderLine = nil
+	if err = local.L.LoadOrderLine(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.OrderlineidOrderLine == nil {
+	if local.R.OrderLine == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -555,7 +555,7 @@ func testFulfillmentLineToOneOrderLineUsingOrderlineidOrderLine(t *testing.T) {
 	}
 }
 
-func testFulfillmentLineToOneStockUsingStockidStock(t *testing.T) {
+func testFulfillmentLineToOneStockUsingStock(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -575,12 +575,12 @@ func testFulfillmentLineToOneStockUsingStockidStock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Stockid, foreign.ID)
+	queries.Assign(&local.StockID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.StockidStock().One(ctx, tx)
+	check, err := local.Stock().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -596,18 +596,18 @@ func testFulfillmentLineToOneStockUsingStockidStock(t *testing.T) {
 	})
 
 	slice := FulfillmentLineSlice{&local}
-	if err = local.L.LoadStockidStock(ctx, tx, false, (*[]*FulfillmentLine)(&slice), nil); err != nil {
+	if err = local.L.LoadStock(ctx, tx, false, (*[]*FulfillmentLine)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.StockidStock == nil {
+	if local.R.Stock == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.StockidStock = nil
-	if err = local.L.LoadStockidStock(ctx, tx, true, &local, nil); err != nil {
+	local.R.Stock = nil
+	if err = local.L.LoadStock(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.StockidStock == nil {
+	if local.R.Stock == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -616,7 +616,7 @@ func testFulfillmentLineToOneStockUsingStockidStock(t *testing.T) {
 	}
 }
 
-func testFulfillmentLineToOneSetOpOrderLineUsingOrderlineidOrderLine(t *testing.T) {
+func testFulfillmentLineToOneSetOpOrderLineUsingOrderLine(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -645,36 +645,36 @@ func testFulfillmentLineToOneSetOpOrderLineUsingOrderlineidOrderLine(t *testing.
 	}
 
 	for i, x := range []*OrderLine{&b, &c} {
-		err = a.SetOrderlineidOrderLine(ctx, tx, i != 0, x)
+		err = a.SetOrderLine(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.OrderlineidOrderLine != x {
+		if a.R.OrderLine != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.OrderlineidFulfillmentLines[0] != &a {
+		if x.R.FulfillmentLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Orderlineid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderlineid)
+		if !queries.Equal(a.OrderLineID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderLineID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Orderlineid))
-		reflect.Indirect(reflect.ValueOf(&a.Orderlineid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.OrderLineID))
+		reflect.Indirect(reflect.ValueOf(&a.OrderLineID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Orderlineid, x.ID) {
-			t.Error("foreign key was wrong value", a.Orderlineid, x.ID)
+		if !queries.Equal(a.OrderLineID, x.ID) {
+			t.Error("foreign key was wrong value", a.OrderLineID, x.ID)
 		}
 	}
 }
 
-func testFulfillmentLineToOneRemoveOpOrderLineUsingOrderlineidOrderLine(t *testing.T) {
+func testFulfillmentLineToOneRemoveOpOrderLineUsingOrderLine(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -696,15 +696,15 @@ func testFulfillmentLineToOneRemoveOpOrderLineUsingOrderlineidOrderLine(t *testi
 		t.Fatal(err)
 	}
 
-	if err = a.SetOrderlineidOrderLine(ctx, tx, true, &b); err != nil {
+	if err = a.SetOrderLine(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveOrderlineidOrderLine(ctx, tx, &b); err != nil {
+	if err = a.RemoveOrderLine(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.OrderlineidOrderLine().Count(ctx, tx)
+	count, err := a.OrderLine().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -712,20 +712,20 @@ func testFulfillmentLineToOneRemoveOpOrderLineUsingOrderlineidOrderLine(t *testi
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.OrderlineidOrderLine != nil {
+	if a.R.OrderLine != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Orderlineid) {
+	if !queries.IsValuerNil(a.OrderLineID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.OrderlineidFulfillmentLines) != 0 {
+	if len(b.R.FulfillmentLines) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
 
-func testFulfillmentLineToOneSetOpStockUsingStockidStock(t *testing.T) {
+func testFulfillmentLineToOneSetOpStockUsingStock(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -754,36 +754,36 @@ func testFulfillmentLineToOneSetOpStockUsingStockidStock(t *testing.T) {
 	}
 
 	for i, x := range []*Stock{&b, &c} {
-		err = a.SetStockidStock(ctx, tx, i != 0, x)
+		err = a.SetStock(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.StockidStock != x {
+		if a.R.Stock != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.StockidFulfillmentLines[0] != &a {
+		if x.R.FulfillmentLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Stockid, x.ID) {
-			t.Error("foreign key was wrong value", a.Stockid)
+		if !queries.Equal(a.StockID, x.ID) {
+			t.Error("foreign key was wrong value", a.StockID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Stockid))
-		reflect.Indirect(reflect.ValueOf(&a.Stockid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.StockID))
+		reflect.Indirect(reflect.ValueOf(&a.StockID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Stockid, x.ID) {
-			t.Error("foreign key was wrong value", a.Stockid, x.ID)
+		if !queries.Equal(a.StockID, x.ID) {
+			t.Error("foreign key was wrong value", a.StockID, x.ID)
 		}
 	}
 }
 
-func testFulfillmentLineToOneRemoveOpStockUsingStockidStock(t *testing.T) {
+func testFulfillmentLineToOneRemoveOpStockUsingStock(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -805,15 +805,15 @@ func testFulfillmentLineToOneRemoveOpStockUsingStockidStock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetStockidStock(ctx, tx, true, &b); err != nil {
+	if err = a.SetStock(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveStockidStock(ctx, tx, &b); err != nil {
+	if err = a.RemoveStock(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.StockidStock().Count(ctx, tx)
+	count, err := a.Stock().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -821,15 +821,15 @@ func testFulfillmentLineToOneRemoveOpStockUsingStockidStock(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.StockidStock != nil {
+	if a.R.Stock != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Stockid) {
+	if !queries.IsValuerNil(a.StockID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.StockidFulfillmentLines) != 0 {
+	if len(b.R.FulfillmentLines) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -908,7 +908,7 @@ func testFulfillmentLinesSelect(t *testing.T) {
 }
 
 var (
-	fulfillmentLineDBTypes = map[string]string{`ID`: `character varying`, `Orderlineid`: `character varying`, `Fulfillmentid`: `character varying`, `Quantity`: `integer`, `Stockid`: `character varying`}
+	fulfillmentLineDBTypes = map[string]string{`ID`: `character varying`, `OrderLineID`: `character varying`, `FulfillmentID`: `character varying`, `Quantity`: `integer`, `StockID`: `character varying`}
 	_                      = bytes.MinRead
 )
 

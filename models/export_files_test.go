@@ -494,7 +494,7 @@ func testExportFilesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testExportFileToManyExportfileidExportEvents(t *testing.T) {
+func testExportFileToManyExportEvents(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,8 @@ func testExportFileToManyExportfileidExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Exportfileid, a.ID)
-	queries.Assign(&c.Exportfileid, a.ID)
+	queries.Assign(&b.ExportFileID, a.ID)
+	queries.Assign(&c.ExportFileID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testExportFileToManyExportfileidExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ExportfileidExportEvents().All(ctx, tx)
+	check, err := a.ExportEvents().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Exportfileid, b.Exportfileid) {
+		if queries.Equal(v.ExportFileID, b.ExportFileID) {
 			bFound = true
 		}
-		if queries.Equal(v.Exportfileid, c.Exportfileid) {
+		if queries.Equal(v.ExportFileID, c.ExportFileID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testExportFileToManyExportfileidExportEvents(t *testing.T) {
 	}
 
 	slice := ExportFileSlice{&a}
-	if err = a.L.LoadExportfileidExportEvents(ctx, tx, false, (*[]*ExportFile)(&slice), nil); err != nil {
+	if err = a.L.LoadExportEvents(ctx, tx, false, (*[]*ExportFile)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ExportfileidExportEvents); got != 2 {
+	if got := len(a.R.ExportEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ExportfileidExportEvents = nil
-	if err = a.L.LoadExportfileidExportEvents(ctx, tx, true, &a, nil); err != nil {
+	a.R.ExportEvents = nil
+	if err = a.L.LoadExportEvents(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ExportfileidExportEvents); got != 2 {
+	if got := len(a.R.ExportEvents); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testExportFileToManyExportfileidExportEvents(t *testing.T) {
 	}
 }
 
-func testExportFileToManyAddOpExportfileidExportEvents(t *testing.T) {
+func testExportFileToManyAddOpExportEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -608,7 +608,7 @@ func testExportFileToManyAddOpExportfileidExportEvents(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddExportfileidExportEvents(ctx, tx, i != 0, x...)
+		err = a.AddExportEvents(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -616,28 +616,28 @@ func testExportFileToManyAddOpExportfileidExportEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Exportfileid) {
-			t.Error("foreign key was wrong value", a.ID, first.Exportfileid)
+		if !queries.Equal(a.ID, first.ExportFileID) {
+			t.Error("foreign key was wrong value", a.ID, first.ExportFileID)
 		}
-		if !queries.Equal(a.ID, second.Exportfileid) {
-			t.Error("foreign key was wrong value", a.ID, second.Exportfileid)
+		if !queries.Equal(a.ID, second.ExportFileID) {
+			t.Error("foreign key was wrong value", a.ID, second.ExportFileID)
 		}
 
-		if first.R.ExportfileidExportFile != &a {
+		if first.R.ExportFile != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ExportfileidExportFile != &a {
+		if second.R.ExportFile != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ExportfileidExportEvents[i*2] != first {
+		if a.R.ExportEvents[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ExportfileidExportEvents[i*2+1] != second {
+		if a.R.ExportEvents[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ExportfileidExportEvents().Count(ctx, tx)
+		count, err := a.ExportEvents().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -647,7 +647,7 @@ func testExportFileToManyAddOpExportfileidExportEvents(t *testing.T) {
 	}
 }
 
-func testExportFileToManySetOpExportfileidExportEvents(t *testing.T) {
+func testExportFileToManySetOpExportEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -678,25 +678,12 @@ func testExportFileToManySetOpExportfileidExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetExportfileidExportEvents(ctx, tx, false, &b, &c)
+	err = a.SetExportEvents(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ExportfileidExportEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetExportfileidExportEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ExportfileidExportEvents().Count(ctx, tx)
+	count, err := a.ExportEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -704,41 +691,54 @@ func testExportFileToManySetOpExportfileidExportEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Exportfileid) {
+	err = a.SetExportEvents(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ExportEvents().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ExportFileID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Exportfileid) {
+	if !queries.IsValuerNil(c.ExportFileID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Exportfileid) {
-		t.Error("foreign key was wrong value", a.ID, d.Exportfileid)
+	if !queries.Equal(a.ID, d.ExportFileID) {
+		t.Error("foreign key was wrong value", a.ID, d.ExportFileID)
 	}
-	if !queries.Equal(a.ID, e.Exportfileid) {
-		t.Error("foreign key was wrong value", a.ID, e.Exportfileid)
-	}
-
-	if b.R.ExportfileidExportFile != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ExportfileidExportFile != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ExportfileidExportFile != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ExportfileidExportFile != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ExportFileID) {
+		t.Error("foreign key was wrong value", a.ID, e.ExportFileID)
 	}
 
-	if a.R.ExportfileidExportEvents[0] != &d {
+	if b.R.ExportFile != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.ExportFile != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.ExportFile != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.ExportFile != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ExportEvents[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ExportfileidExportEvents[1] != &e {
+	if a.R.ExportEvents[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testExportFileToManyRemoveOpExportfileidExportEvents(t *testing.T) {
+func testExportFileToManyRemoveOpExportEvents(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -763,12 +763,12 @@ func testExportFileToManyRemoveOpExportfileidExportEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddExportfileidExportEvents(ctx, tx, true, foreigners...)
+	err = a.AddExportEvents(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ExportfileidExportEvents().Count(ctx, tx)
+	count, err := a.ExportEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -776,12 +776,12 @@ func testExportFileToManyRemoveOpExportfileidExportEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveExportfileidExportEvents(ctx, tx, foreigners[:2]...)
+	err = a.RemoveExportEvents(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ExportfileidExportEvents().Count(ctx, tx)
+	count, err = a.ExportEvents().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -789,40 +789,40 @@ func testExportFileToManyRemoveOpExportfileidExportEvents(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Exportfileid) {
+	if !queries.IsValuerNil(b.ExportFileID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Exportfileid) {
+	if !queries.IsValuerNil(c.ExportFileID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ExportfileidExportFile != nil {
+	if b.R.ExportFile != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ExportfileidExportFile != nil {
+	if c.R.ExportFile != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ExportfileidExportFile != &a {
+	if d.R.ExportFile != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ExportfileidExportFile != &a {
+	if e.R.ExportFile != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ExportfileidExportEvents) != 2 {
+	if len(a.R.ExportEvents) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ExportfileidExportEvents[1] != &d {
+	if a.R.ExportEvents[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ExportfileidExportEvents[0] != &e {
+	if a.R.ExportEvents[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testExportFileToOneUserUsingUseridUser(t *testing.T) {
+func testExportFileToOneUserUsingUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -842,12 +842,12 @@ func testExportFileToOneUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Userid, foreign.ID)
+	queries.Assign(&local.UserID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.UseridUser().One(ctx, tx)
+	check, err := local.User().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -863,18 +863,18 @@ func testExportFileToOneUserUsingUseridUser(t *testing.T) {
 	})
 
 	slice := ExportFileSlice{&local}
-	if err = local.L.LoadUseridUser(ctx, tx, false, (*[]*ExportFile)(&slice), nil); err != nil {
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*ExportFile)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.UseridUser = nil
-	if err = local.L.LoadUseridUser(ctx, tx, true, &local, nil); err != nil {
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.UseridUser == nil {
+	if local.R.User == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -883,7 +883,7 @@ func testExportFileToOneUserUsingUseridUser(t *testing.T) {
 	}
 }
 
-func testExportFileToOneSetOpUserUsingUseridUser(t *testing.T) {
+func testExportFileToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -912,36 +912,36 @@ func testExportFileToOneSetOpUserUsingUseridUser(t *testing.T) {
 	}
 
 	for i, x := range []*User{&b, &c} {
-		err = a.SetUseridUser(ctx, tx, i != 0, x)
+		err = a.SetUser(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.UseridUser != x {
+		if a.R.User != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.UseridExportFiles[0] != &a {
+		if x.R.ExportFiles[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Userid))
-		reflect.Indirect(reflect.ValueOf(&a.Userid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Userid, x.ID) {
-			t.Error("foreign key was wrong value", a.Userid, x.ID)
+		if !queries.Equal(a.UserID, x.ID) {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
 	}
 }
 
-func testExportFileToOneRemoveOpUserUsingUseridUser(t *testing.T) {
+func testExportFileToOneRemoveOpUserUsingUser(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -963,15 +963,15 @@ func testExportFileToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetUseridUser(ctx, tx, true, &b); err != nil {
+	if err = a.SetUser(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveUseridUser(ctx, tx, &b); err != nil {
+	if err = a.RemoveUser(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.UseridUser().Count(ctx, tx)
+	count, err := a.User().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -979,15 +979,15 @@ func testExportFileToOneRemoveOpUserUsingUseridUser(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.UseridUser != nil {
+	if a.R.User != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Userid) {
+	if !queries.IsValuerNil(a.UserID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.UseridExportFiles) != 0 {
+	if len(b.R.ExportFiles) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1066,7 +1066,7 @@ func testExportFilesSelect(t *testing.T) {
 }
 
 var (
-	exportFileDBTypes = map[string]string{`ID`: `character varying`, `Userid`: `character varying`, `Contentfile`: `text`, `Createat`: `bigint`, `Updateat`: `bigint`}
+	exportFileDBTypes = map[string]string{`ID`: `character varying`, `UserID`: `character varying`, `ContentFile`: `text`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`}
 	_                 = bytes.MinRead
 )
 

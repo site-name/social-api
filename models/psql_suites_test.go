@@ -40,9 +40,9 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("CategoryTranslations", testCategoryTranslationsUpsert)
 
-	t.Run("Channels", testChannelsUpsert)
+	t.Run("ChannelShops", testChannelShopsUpsert)
 
-	t.Run("Channelshops", testChannelshopsUpsert)
+	t.Run("Channels", testChannelsUpsert)
 
 	t.Run("CheckoutLines", testCheckoutLinesUpsert)
 
@@ -144,11 +144,11 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("SaleCollections", testSaleCollectionsUpsert)
 
+	t.Run("SaleProductVariants", testSaleProductVariantsUpsert)
+
 	t.Run("SaleProducts", testSaleProductsUpsert)
 
 	t.Run("SaleTranslations", testSaleTranslationsUpsert)
-
-	t.Run("SaleproductVariants", testSaleproductVariantsUpsert)
 
 	t.Run("Sales", testSalesUpsert)
 

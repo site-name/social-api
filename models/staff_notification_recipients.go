@@ -25,8 +25,8 @@ import (
 // StaffNotificationRecipient is an object representing the database table.
 type StaffNotificationRecipient struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Userid     null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
-	Staffemail null.String `boil:"staffemail" json:"staffemail,omitempty" toml:"staffemail" yaml:"staffemail,omitempty"`
+	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	StaffEmail null.String `boil:"staff_email" json:"staff_email,omitempty" toml:"staff_email" yaml:"staff_email,omitempty"`
 	Active     null.Bool   `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
 
 	R *staffNotificationRecipientR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,25 +35,25 @@ type StaffNotificationRecipient struct {
 
 var StaffNotificationRecipientColumns = struct {
 	ID         string
-	Userid     string
-	Staffemail string
+	UserID     string
+	StaffEmail string
 	Active     string
 }{
 	ID:         "id",
-	Userid:     "userid",
-	Staffemail: "staffemail",
+	UserID:     "user_id",
+	StaffEmail: "staff_email",
 	Active:     "active",
 }
 
 var StaffNotificationRecipientTableColumns = struct {
 	ID         string
-	Userid     string
-	Staffemail string
+	UserID     string
+	StaffEmail string
 	Active     string
 }{
 	ID:         "staff_notification_recipients.id",
-	Userid:     "staff_notification_recipients.userid",
-	Staffemail: "staff_notification_recipients.staffemail",
+	UserID:     "staff_notification_recipients.user_id",
+	StaffEmail: "staff_notification_recipients.staff_email",
 	Active:     "staff_notification_recipients.active",
 }
 
@@ -61,26 +61,26 @@ var StaffNotificationRecipientTableColumns = struct {
 
 var StaffNotificationRecipientWhere = struct {
 	ID         whereHelperstring
-	Userid     whereHelpernull_String
-	Staffemail whereHelpernull_String
+	UserID     whereHelpernull_String
+	StaffEmail whereHelpernull_String
 	Active     whereHelpernull_Bool
 }{
 	ID:         whereHelperstring{field: "\"staff_notification_recipients\".\"id\""},
-	Userid:     whereHelpernull_String{field: "\"staff_notification_recipients\".\"userid\""},
-	Staffemail: whereHelpernull_String{field: "\"staff_notification_recipients\".\"staffemail\""},
+	UserID:     whereHelpernull_String{field: "\"staff_notification_recipients\".\"user_id\""},
+	StaffEmail: whereHelpernull_String{field: "\"staff_notification_recipients\".\"staff_email\""},
 	Active:     whereHelpernull_Bool{field: "\"staff_notification_recipients\".\"active\""},
 }
 
 // StaffNotificationRecipientRels is where relationship names are stored.
 var StaffNotificationRecipientRels = struct {
-	UseridUser string
+	User string
 }{
-	UseridUser: "UseridUser",
+	User: "User",
 }
 
 // staffNotificationRecipientR is where relationships are stored.
 type staffNotificationRecipientR struct {
-	UseridUser *User `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
+	User *User `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
@@ -88,20 +88,20 @@ func (*staffNotificationRecipientR) NewStruct() *staffNotificationRecipientR {
 	return &staffNotificationRecipientR{}
 }
 
-func (r *staffNotificationRecipientR) GetUseridUser() *User {
+func (r *staffNotificationRecipientR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
 // staffNotificationRecipientL is where Load methods for each relationship are stored.
 type staffNotificationRecipientL struct{}
 
 var (
-	staffNotificationRecipientAllColumns            = []string{"id", "userid", "staffemail", "active"}
+	staffNotificationRecipientAllColumns            = []string{"id", "user_id", "staff_email", "active"}
 	staffNotificationRecipientColumnsWithoutDefault = []string{"id"}
-	staffNotificationRecipientColumnsWithDefault    = []string{"userid", "staffemail", "active"}
+	staffNotificationRecipientColumnsWithDefault    = []string{"user_id", "staff_email", "active"}
 	staffNotificationRecipientPrimaryKeyColumns     = []string{"id"}
 	staffNotificationRecipientGeneratedColumns      = []string{}
 )
@@ -384,10 +384,10 @@ func (q staffNotificationRecipientQuery) Exists(ctx context.Context, exec boil.C
 	return count > 0, nil
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *StaffNotificationRecipient) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *StaffNotificationRecipient) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -395,9 +395,9 @@ func (o *StaffNotificationRecipient) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (staffNotificationRecipientL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStaffNotificationRecipient interface{}, mods queries.Applicator) error {
+func (staffNotificationRecipientL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStaffNotificationRecipient interface{}, mods queries.Applicator) error {
 	var slice []*StaffNotificationRecipient
 	var object *StaffNotificationRecipient
 
@@ -428,8 +428,8 @@ func (staffNotificationRecipientL) LoadUseridUser(ctx context.Context, e boil.Co
 		if object.R == nil {
 			object.R = &staffNotificationRecipientR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -440,13 +440,13 @@ func (staffNotificationRecipientL) LoadUseridUser(ctx context.Context, e boil.Co
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -495,22 +495,22 @@ func (staffNotificationRecipientL) LoadUseridUser(ctx context.Context, e boil.Co
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridStaffNotificationRecipients = append(foreign.R.UseridStaffNotificationRecipients, object)
+		foreign.R.StaffNotificationRecipients = append(foreign.R.StaffNotificationRecipients, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridStaffNotificationRecipients = append(foreign.R.UseridStaffNotificationRecipients, local)
+				foreign.R.StaffNotificationRecipients = append(foreign.R.StaffNotificationRecipients, local)
 				break
 			}
 		}
@@ -519,10 +519,10 @@ func (staffNotificationRecipientL) LoadUseridUser(ctx context.Context, e boil.Co
 	return nil
 }
 
-// SetUseridUser of the staffNotificationRecipient to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridStaffNotificationRecipients.
-func (o *StaffNotificationRecipient) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the staffNotificationRecipient to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.StaffNotificationRecipients.
+func (o *StaffNotificationRecipient) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -532,7 +532,7 @@ func (o *StaffNotificationRecipient) SetUseridUser(ctx context.Context, exec boi
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"staff_notification_recipients\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, staffNotificationRecipientPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -546,54 +546,54 @@ func (o *StaffNotificationRecipient) SetUseridUser(ctx context.Context, exec boi
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &staffNotificationRecipientR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridStaffNotificationRecipients: StaffNotificationRecipientSlice{o},
+			StaffNotificationRecipients: StaffNotificationRecipientSlice{o},
 		}
 	} else {
-		related.R.UseridStaffNotificationRecipients = append(related.R.UseridStaffNotificationRecipients, o)
+		related.R.StaffNotificationRecipients = append(related.R.StaffNotificationRecipients, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *StaffNotificationRecipient) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *StaffNotificationRecipient) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridStaffNotificationRecipients {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.StaffNotificationRecipients {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridStaffNotificationRecipients)
+		ln := len(related.R.StaffNotificationRecipients)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridStaffNotificationRecipients[i] = related.R.UseridStaffNotificationRecipients[ln-1]
+			related.R.StaffNotificationRecipients[i] = related.R.StaffNotificationRecipients[ln-1]
 		}
-		related.R.UseridStaffNotificationRecipients = related.R.UseridStaffNotificationRecipients[:ln-1]
+		related.R.StaffNotificationRecipients = related.R.StaffNotificationRecipients[:ln-1]
 		break
 	}
 	return nil

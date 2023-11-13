@@ -25,12 +25,12 @@ import (
 // ShopStaff is an object representing the database table.
 type ShopStaff struct {
 	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Staffid        null.String  `boil:"staffid" json:"staffid,omitempty" toml:"staffid" yaml:"staffid,omitempty"`
-	Createat       null.Int64   `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Endat          null.Int64   `boil:"endat" json:"endat,omitempty" toml:"endat" yaml:"endat,omitempty"`
-	Salaryperiod   null.String  `boil:"salaryperiod" json:"salaryperiod,omitempty" toml:"salaryperiod" yaml:"salaryperiod,omitempty"`
-	Slary          null.Float64 `boil:"slary" json:"slary,omitempty" toml:"slary" yaml:"slary,omitempty"`
-	Salarycurrency null.String  `boil:"salarycurrency" json:"salarycurrency,omitempty" toml:"salarycurrency" yaml:"salarycurrency,omitempty"`
+	StaffID        null.String  `boil:"staff_id" json:"staff_id,omitempty" toml:"staff_id" yaml:"staff_id,omitempty"`
+	CreateAt       null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	EndAt          null.Int64   `boil:"end_at" json:"end_at,omitempty" toml:"end_at" yaml:"end_at,omitempty"`
+	SalaryPeriod   null.String  `boil:"salary_period" json:"salary_period,omitempty" toml:"salary_period" yaml:"salary_period,omitempty"`
+	Salary         null.Float64 `boil:"salary" json:"salary,omitempty" toml:"salary" yaml:"salary,omitempty"`
+	SalaryCurrency null.String  `boil:"salary_currency" json:"salary_currency,omitempty" toml:"salary_currency" yaml:"salary_currency,omitempty"`
 
 	R *shopStaffR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopStaffL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,70 +38,70 @@ type ShopStaff struct {
 
 var ShopStaffColumns = struct {
 	ID             string
-	Staffid        string
-	Createat       string
-	Endat          string
-	Salaryperiod   string
-	Slary          string
-	Salarycurrency string
+	StaffID        string
+	CreateAt       string
+	EndAt          string
+	SalaryPeriod   string
+	Salary         string
+	SalaryCurrency string
 }{
 	ID:             "id",
-	Staffid:        "staffid",
-	Createat:       "createat",
-	Endat:          "endat",
-	Salaryperiod:   "salaryperiod",
-	Slary:          "slary",
-	Salarycurrency: "salarycurrency",
+	StaffID:        "staff_id",
+	CreateAt:       "create_at",
+	EndAt:          "end_at",
+	SalaryPeriod:   "salary_period",
+	Salary:         "salary",
+	SalaryCurrency: "salary_currency",
 }
 
 var ShopStaffTableColumns = struct {
 	ID             string
-	Staffid        string
-	Createat       string
-	Endat          string
-	Salaryperiod   string
-	Slary          string
-	Salarycurrency string
+	StaffID        string
+	CreateAt       string
+	EndAt          string
+	SalaryPeriod   string
+	Salary         string
+	SalaryCurrency string
 }{
 	ID:             "shop_staffs.id",
-	Staffid:        "shop_staffs.staffid",
-	Createat:       "shop_staffs.createat",
-	Endat:          "shop_staffs.endat",
-	Salaryperiod:   "shop_staffs.salaryperiod",
-	Slary:          "shop_staffs.slary",
-	Salarycurrency: "shop_staffs.salarycurrency",
+	StaffID:        "shop_staffs.staff_id",
+	CreateAt:       "shop_staffs.create_at",
+	EndAt:          "shop_staffs.end_at",
+	SalaryPeriod:   "shop_staffs.salary_period",
+	Salary:         "shop_staffs.salary",
+	SalaryCurrency: "shop_staffs.salary_currency",
 }
 
 // Generated where
 
 var ShopStaffWhere = struct {
 	ID             whereHelperstring
-	Staffid        whereHelpernull_String
-	Createat       whereHelpernull_Int64
-	Endat          whereHelpernull_Int64
-	Salaryperiod   whereHelpernull_String
-	Slary          whereHelpernull_Float64
-	Salarycurrency whereHelpernull_String
+	StaffID        whereHelpernull_String
+	CreateAt       whereHelpernull_Int64
+	EndAt          whereHelpernull_Int64
+	SalaryPeriod   whereHelpernull_String
+	Salary         whereHelpernull_Float64
+	SalaryCurrency whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"shop_staffs\".\"id\""},
-	Staffid:        whereHelpernull_String{field: "\"shop_staffs\".\"staffid\""},
-	Createat:       whereHelpernull_Int64{field: "\"shop_staffs\".\"createat\""},
-	Endat:          whereHelpernull_Int64{field: "\"shop_staffs\".\"endat\""},
-	Salaryperiod:   whereHelpernull_String{field: "\"shop_staffs\".\"salaryperiod\""},
-	Slary:          whereHelpernull_Float64{field: "\"shop_staffs\".\"slary\""},
-	Salarycurrency: whereHelpernull_String{field: "\"shop_staffs\".\"salarycurrency\""},
+	StaffID:        whereHelpernull_String{field: "\"shop_staffs\".\"staff_id\""},
+	CreateAt:       whereHelpernull_Int64{field: "\"shop_staffs\".\"create_at\""},
+	EndAt:          whereHelpernull_Int64{field: "\"shop_staffs\".\"end_at\""},
+	SalaryPeriod:   whereHelpernull_String{field: "\"shop_staffs\".\"salary_period\""},
+	Salary:         whereHelpernull_Float64{field: "\"shop_staffs\".\"salary\""},
+	SalaryCurrency: whereHelpernull_String{field: "\"shop_staffs\".\"salary_currency\""},
 }
 
 // ShopStaffRels is where relationship names are stored.
 var ShopStaffRels = struct {
-	StaffidUser string
+	Staff string
 }{
-	StaffidUser: "StaffidUser",
+	Staff: "Staff",
 }
 
 // shopStaffR is where relationships are stored.
 type shopStaffR struct {
-	StaffidUser *User `boil:"StaffidUser" json:"StaffidUser" toml:"StaffidUser" yaml:"StaffidUser"`
+	Staff *User `boil:"Staff" json:"Staff" toml:"Staff" yaml:"Staff"`
 }
 
 // NewStruct creates a new relationship struct
@@ -109,20 +109,20 @@ func (*shopStaffR) NewStruct() *shopStaffR {
 	return &shopStaffR{}
 }
 
-func (r *shopStaffR) GetStaffidUser() *User {
+func (r *shopStaffR) GetStaff() *User {
 	if r == nil {
 		return nil
 	}
-	return r.StaffidUser
+	return r.Staff
 }
 
 // shopStaffL is where Load methods for each relationship are stored.
 type shopStaffL struct{}
 
 var (
-	shopStaffAllColumns            = []string{"id", "staffid", "createat", "endat", "salaryperiod", "slary", "salarycurrency"}
+	shopStaffAllColumns            = []string{"id", "staff_id", "create_at", "end_at", "salary_period", "salary", "salary_currency"}
 	shopStaffColumnsWithoutDefault = []string{"id"}
-	shopStaffColumnsWithDefault    = []string{"staffid", "createat", "endat", "salaryperiod", "slary", "salarycurrency"}
+	shopStaffColumnsWithDefault    = []string{"staff_id", "create_at", "end_at", "salary_period", "salary", "salary_currency"}
 	shopStaffPrimaryKeyColumns     = []string{"id"}
 	shopStaffGeneratedColumns      = []string{}
 )
@@ -405,10 +405,10 @@ func (q shopStaffQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (
 	return count > 0, nil
 }
 
-// StaffidUser pointed to by the foreign key.
-func (o *ShopStaff) StaffidUser(mods ...qm.QueryMod) userQuery {
+// Staff pointed to by the foreign key.
+func (o *ShopStaff) Staff(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Staffid),
+		qm.Where("\"id\" = ?", o.StaffID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +416,9 @@ func (o *ShopStaff) StaffidUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// LoadStaffidUser allows an eager lookup of values, cached into the
+// LoadStaff allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shopStaffL) LoadStaffidUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShopStaff interface{}, mods queries.Applicator) error {
+func (shopStaffL) LoadStaff(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShopStaff interface{}, mods queries.Applicator) error {
 	var slice []*ShopStaff
 	var object *ShopStaff
 
@@ -449,8 +449,8 @@ func (shopStaffL) LoadStaffidUser(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &shopStaffR{}
 		}
-		if !queries.IsNil(object.Staffid) {
-			args = append(args, object.Staffid)
+		if !queries.IsNil(object.StaffID) {
+			args = append(args, object.StaffID)
 		}
 
 	} else {
@@ -461,13 +461,13 @@ func (shopStaffL) LoadStaffidUser(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Staffid) {
+				if queries.Equal(a, obj.StaffID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Staffid) {
-				args = append(args, obj.Staffid)
+			if !queries.IsNil(obj.StaffID) {
+				args = append(args, obj.StaffID)
 			}
 
 		}
@@ -516,22 +516,22 @@ func (shopStaffL) LoadStaffidUser(ctx context.Context, e boil.ContextExecutor, s
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.StaffidUser = foreign
+		object.R.Staff = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.StaffidShopStaffs = append(foreign.R.StaffidShopStaffs, object)
+		foreign.R.StaffShopStaffs = append(foreign.R.StaffShopStaffs, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Staffid, foreign.ID) {
-				local.R.StaffidUser = foreign
+			if queries.Equal(local.StaffID, foreign.ID) {
+				local.R.Staff = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.StaffidShopStaffs = append(foreign.R.StaffidShopStaffs, local)
+				foreign.R.StaffShopStaffs = append(foreign.R.StaffShopStaffs, local)
 				break
 			}
 		}
@@ -540,10 +540,10 @@ func (shopStaffL) LoadStaffidUser(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// SetStaffidUser of the shopStaff to the related item.
-// Sets o.R.StaffidUser to related.
-// Adds o to related.R.StaffidShopStaffs.
-func (o *ShopStaff) SetStaffidUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetStaff of the shopStaff to the related item.
+// Sets o.R.Staff to related.
+// Adds o to related.R.StaffShopStaffs.
+func (o *ShopStaff) SetStaff(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -553,7 +553,7 @@ func (o *ShopStaff) SetStaffidUser(ctx context.Context, exec boil.ContextExecuto
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"shop_staffs\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"staffid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"staff_id"}),
 		strmangle.WhereClause("\"", "\"", 2, shopStaffPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -567,54 +567,54 @@ func (o *ShopStaff) SetStaffidUser(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Staffid, related.ID)
+	queries.Assign(&o.StaffID, related.ID)
 	if o.R == nil {
 		o.R = &shopStaffR{
-			StaffidUser: related,
+			Staff: related,
 		}
 	} else {
-		o.R.StaffidUser = related
+		o.R.Staff = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			StaffidShopStaffs: ShopStaffSlice{o},
+			StaffShopStaffs: ShopStaffSlice{o},
 		}
 	} else {
-		related.R.StaffidShopStaffs = append(related.R.StaffidShopStaffs, o)
+		related.R.StaffShopStaffs = append(related.R.StaffShopStaffs, o)
 	}
 
 	return nil
 }
 
-// RemoveStaffidUser relationship.
-// Sets o.R.StaffidUser to nil.
+// RemoveStaff relationship.
+// Sets o.R.Staff to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *ShopStaff) RemoveStaffidUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *ShopStaff) RemoveStaff(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Staffid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("staffid")); err != nil {
+	queries.SetScanner(&o.StaffID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("staff_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.StaffidUser = nil
+		o.R.Staff = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.StaffidShopStaffs {
-		if queries.Equal(o.Staffid, ri.Staffid) {
+	for i, ri := range related.R.StaffShopStaffs {
+		if queries.Equal(o.StaffID, ri.StaffID) {
 			continue
 		}
 
-		ln := len(related.R.StaffidShopStaffs)
+		ln := len(related.R.StaffShopStaffs)
 		if ln > 1 && i < ln-1 {
-			related.R.StaffidShopStaffs[i] = related.R.StaffidShopStaffs[ln-1]
+			related.R.StaffShopStaffs[i] = related.R.StaffShopStaffs[ln-1]
 		}
-		related.R.StaffidShopStaffs = related.R.StaffidShopStaffs[:ln-1]
+		related.R.StaffShopStaffs = related.R.StaffShopStaffs[:ln-1]
 		break
 	}
 	return nil

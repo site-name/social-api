@@ -494,14 +494,14 @@ func testChannelsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidChannelshops(t *testing.T) {
+func testChannelToManyChannelShops(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a Channel
-	var b, c Channelshop
+	var b, c ChannelShop
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, channelDBTypes, true, channelColumnsWithDefault...); err != nil {
@@ -512,15 +512,15 @@ func testChannelToManyChannelidChannelshops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = randomize.Struct(seed, &b, channelshopDBTypes, false, channelshopColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &b, channelShopDBTypes, false, channelShopColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, channelshopDBTypes, false, channelshopColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &c, channelShopDBTypes, false, channelShopColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +528,17 @@ func testChannelToManyChannelidChannelshops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidChannelshops().All(ctx, tx)
+	check, err := a.ChannelShops().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -551,18 +551,18 @@ func testChannelToManyChannelidChannelshops(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidChannelshops(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadChannelShops(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidChannelshops); got != 2 {
+	if got := len(a.R.ChannelShops); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidChannelshops = nil
-	if err = a.L.LoadChannelidChannelshops(ctx, tx, true, &a, nil); err != nil {
+	a.R.ChannelShops = nil
+	if err = a.L.LoadChannelShops(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidChannelshops); got != 2 {
+	if got := len(a.R.ChannelShops); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +571,7 @@ func testChannelToManyChannelidChannelshops(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidCheckouts(t *testing.T) {
+func testChannelToManyCheckouts(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +596,8 @@ func testChannelToManyChannelidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +605,17 @@ func testChannelToManyChannelidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidCheckouts().All(ctx, tx)
+	check, err := a.Checkouts().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -628,18 +628,18 @@ func testChannelToManyChannelidCheckouts(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidCheckouts(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadCheckouts(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidCheckouts); got != 2 {
+	if got := len(a.R.Checkouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidCheckouts = nil
-	if err = a.L.LoadChannelidCheckouts(ctx, tx, true, &a, nil); err != nil {
+	a.R.Checkouts = nil
+	if err = a.L.LoadCheckouts(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidCheckouts); got != 2 {
+	if got := len(a.R.Checkouts); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +648,7 @@ func testChannelToManyChannelidCheckouts(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidCollectionChannelListings(t *testing.T) {
+func testChannelToManyCollectionChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +673,8 @@ func testChannelToManyChannelidCollectionChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +682,17 @@ func testChannelToManyChannelidCollectionChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidCollectionChannelListings().All(ctx, tx)
+	check, err := a.CollectionChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -705,18 +705,18 @@ func testChannelToManyChannelidCollectionChannelListings(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidCollectionChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadCollectionChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidCollectionChannelListings); got != 2 {
+	if got := len(a.R.CollectionChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidCollectionChannelListings = nil
-	if err = a.L.LoadChannelidCollectionChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.CollectionChannelListings = nil
+	if err = a.L.LoadCollectionChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidCollectionChannelListings); got != 2 {
+	if got := len(a.R.CollectionChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +725,7 @@ func testChannelToManyChannelidCollectionChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidOrders(t *testing.T) {
+func testChannelToManyOrders(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -750,8 +750,8 @@ func testChannelToManyChannelidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -759,17 +759,17 @@ func testChannelToManyChannelidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidOrders().All(ctx, tx)
+	check, err := a.Orders().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -782,18 +782,18 @@ func testChannelToManyChannelidOrders(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidOrders(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadOrders(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidOrders); got != 2 {
+	if got := len(a.R.Orders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidOrders = nil
-	if err = a.L.LoadChannelidOrders(ctx, tx, true, &a, nil); err != nil {
+	a.R.Orders = nil
+	if err = a.L.LoadOrders(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidOrders); got != 2 {
+	if got := len(a.R.Orders); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -802,7 +802,7 @@ func testChannelToManyChannelidOrders(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidProductChannelListings(t *testing.T) {
+func testChannelToManyProductChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -827,8 +827,8 @@ func testChannelToManyChannelidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -836,17 +836,17 @@ func testChannelToManyChannelidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidProductChannelListings().All(ctx, tx)
+	check, err := a.ProductChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -859,18 +859,18 @@ func testChannelToManyChannelidProductChannelListings(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidProductChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadProductChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidProductChannelListings); got != 2 {
+	if got := len(a.R.ProductChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidProductChannelListings = nil
-	if err = a.L.LoadChannelidProductChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductChannelListings = nil
+	if err = a.L.LoadProductChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidProductChannelListings); got != 2 {
+	if got := len(a.R.ProductChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -879,7 +879,7 @@ func testChannelToManyChannelidProductChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidProductVariantChannelListings(t *testing.T) {
+func testChannelToManyProductVariantChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -904,8 +904,8 @@ func testChannelToManyChannelidProductVariantChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b.Channelid = a.ID
-	c.Channelid = a.ID
+	b.ChannelID = a.ID
+	c.ChannelID = a.ID
 
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
@@ -914,17 +914,17 @@ func testChannelToManyChannelidProductVariantChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidProductVariantChannelListings().All(ctx, tx)
+	check, err := a.ProductVariantChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if v.Channelid == b.Channelid {
+		if v.ChannelID == b.ChannelID {
 			bFound = true
 		}
-		if v.Channelid == c.Channelid {
+		if v.ChannelID == c.ChannelID {
 			cFound = true
 		}
 	}
@@ -937,18 +937,18 @@ func testChannelToManyChannelidProductVariantChannelListings(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidProductVariantChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadProductVariantChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidProductVariantChannelListings); got != 2 {
+	if got := len(a.R.ProductVariantChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidProductVariantChannelListings = nil
-	if err = a.L.LoadChannelidProductVariantChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.ProductVariantChannelListings = nil
+	if err = a.L.LoadProductVariantChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidProductVariantChannelListings); got != 2 {
+	if got := len(a.R.ProductVariantChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -957,7 +957,7 @@ func testChannelToManyChannelidProductVariantChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidSaleChannelListings(t *testing.T) {
+func testChannelToManySaleChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -982,8 +982,8 @@ func testChannelToManyChannelidSaleChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b.Channelid = a.ID
-	c.Channelid = a.ID
+	b.ChannelID = a.ID
+	c.ChannelID = a.ID
 
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
@@ -992,17 +992,17 @@ func testChannelToManyChannelidSaleChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidSaleChannelListings().All(ctx, tx)
+	check, err := a.SaleChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if v.Channelid == b.Channelid {
+		if v.ChannelID == b.ChannelID {
 			bFound = true
 		}
-		if v.Channelid == c.Channelid {
+		if v.ChannelID == c.ChannelID {
 			cFound = true
 		}
 	}
@@ -1015,18 +1015,18 @@ func testChannelToManyChannelidSaleChannelListings(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidSaleChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadSaleChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidSaleChannelListings); got != 2 {
+	if got := len(a.R.SaleChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidSaleChannelListings = nil
-	if err = a.L.LoadChannelidSaleChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.SaleChannelListings = nil
+	if err = a.L.LoadSaleChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidSaleChannelListings); got != 2 {
+	if got := len(a.R.SaleChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1035,7 +1035,7 @@ func testChannelToManyChannelidSaleChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidShippingMethodChannelListings(t *testing.T) {
+func testChannelToManyShippingMethodChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1060,8 +1060,8 @@ func testChannelToManyChannelidShippingMethodChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1069,17 +1069,17 @@ func testChannelToManyChannelidShippingMethodChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidShippingMethodChannelListings().All(ctx, tx)
+	check, err := a.ShippingMethodChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -1092,18 +1092,18 @@ func testChannelToManyChannelidShippingMethodChannelListings(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidShippingMethodChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadShippingMethodChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidShippingMethodChannelListings); got != 2 {
+	if got := len(a.R.ShippingMethodChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidShippingMethodChannelListings = nil
-	if err = a.L.LoadChannelidShippingMethodChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.ShippingMethodChannelListings = nil
+	if err = a.L.LoadShippingMethodChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidShippingMethodChannelListings); got != 2 {
+	if got := len(a.R.ShippingMethodChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1112,7 +1112,7 @@ func testChannelToManyChannelidShippingMethodChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidShippingZoneChannels(t *testing.T) {
+func testChannelToManyShippingZoneChannels(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1137,8 +1137,8 @@ func testChannelToManyChannelidShippingZoneChannels(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Channelid, a.ID)
-	queries.Assign(&c.Channelid, a.ID)
+	queries.Assign(&b.ChannelID, a.ID)
+	queries.Assign(&c.ChannelID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1146,17 +1146,17 @@ func testChannelToManyChannelidShippingZoneChannels(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidShippingZoneChannels().All(ctx, tx)
+	check, err := a.ShippingZoneChannels().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Channelid, b.Channelid) {
+		if queries.Equal(v.ChannelID, b.ChannelID) {
 			bFound = true
 		}
-		if queries.Equal(v.Channelid, c.Channelid) {
+		if queries.Equal(v.ChannelID, c.ChannelID) {
 			cFound = true
 		}
 	}
@@ -1169,18 +1169,18 @@ func testChannelToManyChannelidShippingZoneChannels(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidShippingZoneChannels(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadShippingZoneChannels(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidShippingZoneChannels); got != 2 {
+	if got := len(a.R.ShippingZoneChannels); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidShippingZoneChannels = nil
-	if err = a.L.LoadChannelidShippingZoneChannels(ctx, tx, true, &a, nil); err != nil {
+	a.R.ShippingZoneChannels = nil
+	if err = a.L.LoadShippingZoneChannels(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidShippingZoneChannels); got != 2 {
+	if got := len(a.R.ShippingZoneChannels); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1189,7 +1189,7 @@ func testChannelToManyChannelidShippingZoneChannels(t *testing.T) {
 	}
 }
 
-func testChannelToManyChannelidVoucherChannelListings(t *testing.T) {
+func testChannelToManyVoucherChannelListings(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1214,8 +1214,8 @@ func testChannelToManyChannelidVoucherChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b.Channelid = a.ID
-	c.Channelid = a.ID
+	b.ChannelID = a.ID
+	c.ChannelID = a.ID
 
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
@@ -1224,17 +1224,17 @@ func testChannelToManyChannelidVoucherChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ChannelidVoucherChannelListings().All(ctx, tx)
+	check, err := a.VoucherChannelListings().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if v.Channelid == b.Channelid {
+		if v.ChannelID == b.ChannelID {
 			bFound = true
 		}
-		if v.Channelid == c.Channelid {
+		if v.ChannelID == c.ChannelID {
 			cFound = true
 		}
 	}
@@ -1247,18 +1247,18 @@ func testChannelToManyChannelidVoucherChannelListings(t *testing.T) {
 	}
 
 	slice := ChannelSlice{&a}
-	if err = a.L.LoadChannelidVoucherChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
+	if err = a.L.LoadVoucherChannelListings(ctx, tx, false, (*[]*Channel)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidVoucherChannelListings); got != 2 {
+	if got := len(a.R.VoucherChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ChannelidVoucherChannelListings = nil
-	if err = a.L.LoadChannelidVoucherChannelListings(ctx, tx, true, &a, nil); err != nil {
+	a.R.VoucherChannelListings = nil
+	if err = a.L.LoadVoucherChannelListings(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ChannelidVoucherChannelListings); got != 2 {
+	if got := len(a.R.VoucherChannelListings); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -1267,7 +1267,7 @@ func testChannelToManyChannelidVoucherChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManyAddOpChannelidChannelshops(t *testing.T) {
+func testChannelToManyAddOpChannelShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1275,15 +1275,15 @@ func testChannelToManyAddOpChannelidChannelshops(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Channel
-	var b, c, d, e Channelshop
+	var b, c, d, e ChannelShop
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Channelshop{&b, &c, &d, &e}
+	foreigners := []*ChannelShop{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, channelshopDBTypes, false, strmangle.SetComplement(channelshopPrimaryKeyColumns, channelshopColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, channelShopDBTypes, false, strmangle.SetComplement(channelShopPrimaryKeyColumns, channelShopColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -1298,13 +1298,13 @@ func testChannelToManyAddOpChannelidChannelshops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*Channelshop{
+	foreignersSplitByInsertion := [][]*ChannelShop{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidChannelshops(ctx, tx, i != 0, x...)
+		err = a.AddChannelShops(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1312,28 +1312,28 @@ func testChannelToManyAddOpChannelidChannelshops(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidChannelshops[i*2] != first {
+		if a.R.ChannelShops[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidChannelshops[i*2+1] != second {
+		if a.R.ChannelShops[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidChannelshops().Count(ctx, tx)
+		count, err := a.ChannelShops().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1343,7 +1343,7 @@ func testChannelToManyAddOpChannelidChannelshops(t *testing.T) {
 	}
 }
 
-func testChannelToManySetOpChannelidChannelshops(t *testing.T) {
+func testChannelToManySetOpChannelShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1351,15 +1351,15 @@ func testChannelToManySetOpChannelidChannelshops(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Channel
-	var b, c, d, e Channelshop
+	var b, c, d, e ChannelShop
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Channelshop{&b, &c, &d, &e}
+	foreigners := []*ChannelShop{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, channelshopDBTypes, false, strmangle.SetComplement(channelshopPrimaryKeyColumns, channelshopColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, channelShopDBTypes, false, strmangle.SetComplement(channelShopPrimaryKeyColumns, channelShopColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -1374,25 +1374,12 @@ func testChannelToManySetOpChannelidChannelshops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidChannelshops(ctx, tx, false, &b, &c)
+	err = a.SetChannelShops(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidChannelshops().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidChannelshops(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidChannelshops().Count(ctx, tx)
+	count, err := a.ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1400,41 +1387,54 @@ func testChannelToManySetOpChannelidChannelshops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetChannelShops(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ChannelShops().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidChannelshops[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ChannelShops[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidChannelshops[1] != &e {
+	if a.R.ChannelShops[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidChannelshops(t *testing.T) {
+func testChannelToManyRemoveOpChannelShops(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1442,15 +1442,15 @@ func testChannelToManyRemoveOpChannelidChannelshops(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Channel
-	var b, c, d, e Channelshop
+	var b, c, d, e ChannelShop
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Channelshop{&b, &c, &d, &e}
+	foreigners := []*ChannelShop{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, channelshopDBTypes, false, strmangle.SetComplement(channelshopPrimaryKeyColumns, channelshopColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, channelShopDBTypes, false, strmangle.SetComplement(channelShopPrimaryKeyColumns, channelShopColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -1459,12 +1459,12 @@ func testChannelToManyRemoveOpChannelidChannelshops(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidChannelshops(ctx, tx, true, foreigners...)
+	err = a.AddChannelShops(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidChannelshops().Count(ctx, tx)
+	count, err := a.ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1472,12 +1472,12 @@ func testChannelToManyRemoveOpChannelidChannelshops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidChannelshops(ctx, tx, foreigners[:2]...)
+	err = a.RemoveChannelShops(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidChannelshops().Count(ctx, tx)
+	count, err = a.ChannelShops().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1485,40 +1485,40 @@ func testChannelToManyRemoveOpChannelidChannelshops(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidChannelshops) != 2 {
+	if len(a.R.ChannelShops) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidChannelshops[1] != &d {
+	if a.R.ChannelShops[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidChannelshops[0] != &e {
+	if a.R.ChannelShops[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidCheckouts(t *testing.T) {
+func testChannelToManyAddOpCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1555,7 +1555,7 @@ func testChannelToManyAddOpChannelidCheckouts(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidCheckouts(ctx, tx, i != 0, x...)
+		err = a.AddCheckouts(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1563,28 +1563,28 @@ func testChannelToManyAddOpChannelidCheckouts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidCheckouts[i*2] != first {
+		if a.R.Checkouts[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidCheckouts[i*2+1] != second {
+		if a.R.Checkouts[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidCheckouts().Count(ctx, tx)
+		count, err := a.Checkouts().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1594,7 +1594,7 @@ func testChannelToManyAddOpChannelidCheckouts(t *testing.T) {
 	}
 }
 
-func testChannelToManySetOpChannelidCheckouts(t *testing.T) {
+func testChannelToManySetOpCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1625,25 +1625,12 @@ func testChannelToManySetOpChannelidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidCheckouts(ctx, tx, false, &b, &c)
+	err = a.SetCheckouts(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidCheckouts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidCheckouts().Count(ctx, tx)
+	count, err := a.Checkouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1651,41 +1638,54 @@ func testChannelToManySetOpChannelidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetCheckouts(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Checkouts().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidCheckouts[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Checkouts[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidCheckouts[1] != &e {
+	if a.R.Checkouts[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidCheckouts(t *testing.T) {
+func testChannelToManyRemoveOpCheckouts(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1710,12 +1710,12 @@ func testChannelToManyRemoveOpChannelidCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidCheckouts(ctx, tx, true, foreigners...)
+	err = a.AddCheckouts(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidCheckouts().Count(ctx, tx)
+	count, err := a.Checkouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1723,12 +1723,12 @@ func testChannelToManyRemoveOpChannelidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidCheckouts(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCheckouts(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidCheckouts().Count(ctx, tx)
+	count, err = a.Checkouts().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1736,40 +1736,40 @@ func testChannelToManyRemoveOpChannelidCheckouts(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidCheckouts) != 2 {
+	if len(a.R.Checkouts) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidCheckouts[1] != &d {
+	if a.R.Checkouts[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidCheckouts[0] != &e {
+	if a.R.Checkouts[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidCollectionChannelListings(t *testing.T) {
+func testChannelToManyAddOpCollectionChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1806,7 +1806,7 @@ func testChannelToManyAddOpChannelidCollectionChannelListings(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidCollectionChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddCollectionChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1814,28 +1814,28 @@ func testChannelToManyAddOpChannelidCollectionChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidCollectionChannelListings[i*2] != first {
+		if a.R.CollectionChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidCollectionChannelListings[i*2+1] != second {
+		if a.R.CollectionChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidCollectionChannelListings().Count(ctx, tx)
+		count, err := a.CollectionChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1845,7 +1845,7 @@ func testChannelToManyAddOpChannelidCollectionChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManySetOpChannelidCollectionChannelListings(t *testing.T) {
+func testChannelToManySetOpCollectionChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1876,25 +1876,12 @@ func testChannelToManySetOpChannelidCollectionChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidCollectionChannelListings(ctx, tx, false, &b, &c)
+	err = a.SetCollectionChannelListings(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidCollectionChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidCollectionChannelListings(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidCollectionChannelListings().Count(ctx, tx)
+	count, err := a.CollectionChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1902,41 +1889,54 @@ func testChannelToManySetOpChannelidCollectionChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetCollectionChannelListings(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.CollectionChannelListings().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidCollectionChannelListings[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.CollectionChannelListings[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidCollectionChannelListings[1] != &e {
+	if a.R.CollectionChannelListings[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidCollectionChannelListings(t *testing.T) {
+func testChannelToManyRemoveOpCollectionChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1961,12 +1961,12 @@ func testChannelToManyRemoveOpChannelidCollectionChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidCollectionChannelListings(ctx, tx, true, foreigners...)
+	err = a.AddCollectionChannelListings(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidCollectionChannelListings().Count(ctx, tx)
+	count, err := a.CollectionChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1974,12 +1974,12 @@ func testChannelToManyRemoveOpChannelidCollectionChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidCollectionChannelListings(ctx, tx, foreigners[:2]...)
+	err = a.RemoveCollectionChannelListings(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidCollectionChannelListings().Count(ctx, tx)
+	count, err = a.CollectionChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1987,40 +1987,40 @@ func testChannelToManyRemoveOpChannelidCollectionChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidCollectionChannelListings) != 2 {
+	if len(a.R.CollectionChannelListings) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidCollectionChannelListings[1] != &d {
+	if a.R.CollectionChannelListings[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidCollectionChannelListings[0] != &e {
+	if a.R.CollectionChannelListings[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidOrders(t *testing.T) {
+func testChannelToManyAddOpOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2057,7 +2057,7 @@ func testChannelToManyAddOpChannelidOrders(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidOrders(ctx, tx, i != 0, x...)
+		err = a.AddOrders(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2065,28 +2065,28 @@ func testChannelToManyAddOpChannelidOrders(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidOrders[i*2] != first {
+		if a.R.Orders[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidOrders[i*2+1] != second {
+		if a.R.Orders[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidOrders().Count(ctx, tx)
+		count, err := a.Orders().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2096,7 +2096,7 @@ func testChannelToManyAddOpChannelidOrders(t *testing.T) {
 	}
 }
 
-func testChannelToManySetOpChannelidOrders(t *testing.T) {
+func testChannelToManySetOpOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2127,25 +2127,12 @@ func testChannelToManySetOpChannelidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidOrders(ctx, tx, false, &b, &c)
+	err = a.SetOrders(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidOrders().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidOrders(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidOrders().Count(ctx, tx)
+	count, err := a.Orders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2153,41 +2140,54 @@ func testChannelToManySetOpChannelidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetOrders(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Orders().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidOrders[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.Orders[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidOrders[1] != &e {
+	if a.R.Orders[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidOrders(t *testing.T) {
+func testChannelToManyRemoveOpOrders(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2212,12 +2212,12 @@ func testChannelToManyRemoveOpChannelidOrders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidOrders(ctx, tx, true, foreigners...)
+	err = a.AddOrders(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidOrders().Count(ctx, tx)
+	count, err := a.Orders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2225,12 +2225,12 @@ func testChannelToManyRemoveOpChannelidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidOrders(ctx, tx, foreigners[:2]...)
+	err = a.RemoveOrders(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidOrders().Count(ctx, tx)
+	count, err = a.Orders().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2238,40 +2238,40 @@ func testChannelToManyRemoveOpChannelidOrders(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidOrders) != 2 {
+	if len(a.R.Orders) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidOrders[1] != &d {
+	if a.R.Orders[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidOrders[0] != &e {
+	if a.R.Orders[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidProductChannelListings(t *testing.T) {
+func testChannelToManyAddOpProductChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2308,7 +2308,7 @@ func testChannelToManyAddOpChannelidProductChannelListings(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidProductChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddProductChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2316,28 +2316,28 @@ func testChannelToManyAddOpChannelidProductChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidProductChannelListings[i*2] != first {
+		if a.R.ProductChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidProductChannelListings[i*2+1] != second {
+		if a.R.ProductChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidProductChannelListings().Count(ctx, tx)
+		count, err := a.ProductChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2347,7 +2347,7 @@ func testChannelToManyAddOpChannelidProductChannelListings(t *testing.T) {
 	}
 }
 
-func testChannelToManySetOpChannelidProductChannelListings(t *testing.T) {
+func testChannelToManySetOpProductChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2378,25 +2378,12 @@ func testChannelToManySetOpChannelidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidProductChannelListings(ctx, tx, false, &b, &c)
+	err = a.SetProductChannelListings(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidProductChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidProductChannelListings(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidProductChannelListings().Count(ctx, tx)
+	count, err := a.ProductChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2404,41 +2391,54 @@ func testChannelToManySetOpChannelidProductChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetProductChannelListings(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ProductChannelListings().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidProductChannelListings[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ProductChannelListings[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidProductChannelListings[1] != &e {
+	if a.R.ProductChannelListings[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidProductChannelListings(t *testing.T) {
+func testChannelToManyRemoveOpProductChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2463,12 +2463,12 @@ func testChannelToManyRemoveOpChannelidProductChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidProductChannelListings(ctx, tx, true, foreigners...)
+	err = a.AddProductChannelListings(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidProductChannelListings().Count(ctx, tx)
+	count, err := a.ProductChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2476,12 +2476,12 @@ func testChannelToManyRemoveOpChannelidProductChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidProductChannelListings(ctx, tx, foreigners[:2]...)
+	err = a.RemoveProductChannelListings(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidProductChannelListings().Count(ctx, tx)
+	count, err = a.ProductChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2489,40 +2489,40 @@ func testChannelToManyRemoveOpChannelidProductChannelListings(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidProductChannelListings) != 2 {
+	if len(a.R.ProductChannelListings) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidProductChannelListings[1] != &d {
+	if a.R.ProductChannelListings[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidProductChannelListings[0] != &e {
+	if a.R.ProductChannelListings[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidProductVariantChannelListings(t *testing.T) {
+func testChannelToManyAddOpProductVariantChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2559,7 +2559,7 @@ func testChannelToManyAddOpChannelidProductVariantChannelListings(t *testing.T) 
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidProductVariantChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddProductVariantChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2567,28 +2567,28 @@ func testChannelToManyAddOpChannelidProductVariantChannelListings(t *testing.T) 
 		first := x[0]
 		second := x[1]
 
-		if a.ID != first.Channelid {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if a.ID != first.ChannelID {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if a.ID != second.Channelid {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if a.ID != second.ChannelID {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidProductVariantChannelListings[i*2] != first {
+		if a.R.ProductVariantChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidProductVariantChannelListings[i*2+1] != second {
+		if a.R.ProductVariantChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidProductVariantChannelListings().Count(ctx, tx)
+		count, err := a.ProductVariantChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2597,7 +2597,7 @@ func testChannelToManyAddOpChannelidProductVariantChannelListings(t *testing.T) 
 		}
 	}
 }
-func testChannelToManyAddOpChannelidSaleChannelListings(t *testing.T) {
+func testChannelToManyAddOpSaleChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2634,7 +2634,7 @@ func testChannelToManyAddOpChannelidSaleChannelListings(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidSaleChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddSaleChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2642,28 +2642,28 @@ func testChannelToManyAddOpChannelidSaleChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if a.ID != first.Channelid {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if a.ID != first.ChannelID {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if a.ID != second.Channelid {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if a.ID != second.ChannelID {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidSaleChannelListings[i*2] != first {
+		if a.R.SaleChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidSaleChannelListings[i*2+1] != second {
+		if a.R.SaleChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidSaleChannelListings().Count(ctx, tx)
+		count, err := a.SaleChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2672,7 +2672,7 @@ func testChannelToManyAddOpChannelidSaleChannelListings(t *testing.T) {
 		}
 	}
 }
-func testChannelToManyAddOpChannelidShippingMethodChannelListings(t *testing.T) {
+func testChannelToManyAddOpShippingMethodChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2709,7 +2709,7 @@ func testChannelToManyAddOpChannelidShippingMethodChannelListings(t *testing.T) 
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidShippingMethodChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddShippingMethodChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2717,28 +2717,28 @@ func testChannelToManyAddOpChannelidShippingMethodChannelListings(t *testing.T) 
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidShippingMethodChannelListings[i*2] != first {
+		if a.R.ShippingMethodChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidShippingMethodChannelListings[i*2+1] != second {
+		if a.R.ShippingMethodChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidShippingMethodChannelListings().Count(ctx, tx)
+		count, err := a.ShippingMethodChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2748,7 +2748,7 @@ func testChannelToManyAddOpChannelidShippingMethodChannelListings(t *testing.T) 
 	}
 }
 
-func testChannelToManySetOpChannelidShippingMethodChannelListings(t *testing.T) {
+func testChannelToManySetOpShippingMethodChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2779,25 +2779,12 @@ func testChannelToManySetOpChannelidShippingMethodChannelListings(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidShippingMethodChannelListings(ctx, tx, false, &b, &c)
+	err = a.SetShippingMethodChannelListings(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidShippingMethodChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidShippingMethodChannelListings(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidShippingMethodChannelListings().Count(ctx, tx)
+	count, err := a.ShippingMethodChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2805,41 +2792,54 @@ func testChannelToManySetOpChannelidShippingMethodChannelListings(t *testing.T) 
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetShippingMethodChannelListings(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ShippingMethodChannelListings().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidShippingMethodChannelListings[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ShippingMethodChannelListings[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidShippingMethodChannelListings[1] != &e {
+	if a.R.ShippingMethodChannelListings[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidShippingMethodChannelListings(t *testing.T) {
+func testChannelToManyRemoveOpShippingMethodChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2864,12 +2864,12 @@ func testChannelToManyRemoveOpChannelidShippingMethodChannelListings(t *testing.
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidShippingMethodChannelListings(ctx, tx, true, foreigners...)
+	err = a.AddShippingMethodChannelListings(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidShippingMethodChannelListings().Count(ctx, tx)
+	count, err := a.ShippingMethodChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2877,12 +2877,12 @@ func testChannelToManyRemoveOpChannelidShippingMethodChannelListings(t *testing.
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidShippingMethodChannelListings(ctx, tx, foreigners[:2]...)
+	err = a.RemoveShippingMethodChannelListings(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidShippingMethodChannelListings().Count(ctx, tx)
+	count, err = a.ShippingMethodChannelListings().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2890,40 +2890,40 @@ func testChannelToManyRemoveOpChannelidShippingMethodChannelListings(t *testing.
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidShippingMethodChannelListings) != 2 {
+	if len(a.R.ShippingMethodChannelListings) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidShippingMethodChannelListings[1] != &d {
+	if a.R.ShippingMethodChannelListings[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidShippingMethodChannelListings[0] != &e {
+	if a.R.ShippingMethodChannelListings[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidShippingZoneChannels(t *testing.T) {
+func testChannelToManyAddOpShippingZoneChannels(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -2960,7 +2960,7 @@ func testChannelToManyAddOpChannelidShippingZoneChannels(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidShippingZoneChannels(ctx, tx, i != 0, x...)
+		err = a.AddShippingZoneChannels(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2968,28 +2968,28 @@ func testChannelToManyAddOpChannelidShippingZoneChannels(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if !queries.Equal(a.ID, first.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if !queries.Equal(a.ID, second.Channelid) {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if !queries.Equal(a.ID, second.ChannelID) {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidShippingZoneChannels[i*2] != first {
+		if a.R.ShippingZoneChannels[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidShippingZoneChannels[i*2+1] != second {
+		if a.R.ShippingZoneChannels[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidShippingZoneChannels().Count(ctx, tx)
+		count, err := a.ShippingZoneChannels().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -2999,7 +2999,7 @@ func testChannelToManyAddOpChannelidShippingZoneChannels(t *testing.T) {
 	}
 }
 
-func testChannelToManySetOpChannelidShippingZoneChannels(t *testing.T) {
+func testChannelToManySetOpShippingZoneChannels(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3030,25 +3030,12 @@ func testChannelToManySetOpChannelidShippingZoneChannels(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetChannelidShippingZoneChannels(ctx, tx, false, &b, &c)
+	err = a.SetShippingZoneChannels(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidShippingZoneChannels().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetChannelidShippingZoneChannels(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ChannelidShippingZoneChannels().Count(ctx, tx)
+	count, err := a.ShippingZoneChannels().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3056,41 +3043,54 @@ func testChannelToManySetOpChannelidShippingZoneChannels(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	err = a.SetShippingZoneChannels(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ShippingZoneChannels().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, d.Channelid)
+	if !queries.Equal(a.ID, d.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, d.ChannelID)
 	}
-	if !queries.Equal(a.ID, e.Channelid) {
-		t.Error("foreign key was wrong value", a.ID, e.Channelid)
-	}
-
-	if b.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ChannelidChannel != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ChannelidChannel != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ChannelID) {
+		t.Error("foreign key was wrong value", a.ID, e.ChannelID)
 	}
 
-	if a.R.ChannelidShippingZoneChannels[0] != &d {
+	if b.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Channel != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Channel != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ShippingZoneChannels[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ChannelidShippingZoneChannels[1] != &e {
+	if a.R.ShippingZoneChannels[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testChannelToManyRemoveOpChannelidShippingZoneChannels(t *testing.T) {
+func testChannelToManyRemoveOpShippingZoneChannels(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3115,12 +3115,12 @@ func testChannelToManyRemoveOpChannelidShippingZoneChannels(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddChannelidShippingZoneChannels(ctx, tx, true, foreigners...)
+	err = a.AddShippingZoneChannels(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ChannelidShippingZoneChannels().Count(ctx, tx)
+	count, err := a.ShippingZoneChannels().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3128,12 +3128,12 @@ func testChannelToManyRemoveOpChannelidShippingZoneChannels(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveChannelidShippingZoneChannels(ctx, tx, foreigners[:2]...)
+	err = a.RemoveShippingZoneChannels(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ChannelidShippingZoneChannels().Count(ctx, tx)
+	count, err = a.ShippingZoneChannels().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3141,40 +3141,40 @@ func testChannelToManyRemoveOpChannelidShippingZoneChannels(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Channelid) {
+	if !queries.IsValuerNil(b.ChannelID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Channelid) {
+	if !queries.IsValuerNil(c.ChannelID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ChannelidChannel != nil {
+	if b.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ChannelidChannel != nil {
+	if c.R.Channel != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ChannelidChannel != &a {
+	if d.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ChannelidChannel != &a {
+	if e.R.Channel != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ChannelidShippingZoneChannels) != 2 {
+	if len(a.R.ShippingZoneChannels) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ChannelidShippingZoneChannels[1] != &d {
+	if a.R.ShippingZoneChannels[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ChannelidShippingZoneChannels[0] != &e {
+	if a.R.ShippingZoneChannels[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testChannelToManyAddOpChannelidVoucherChannelListings(t *testing.T) {
+func testChannelToManyAddOpVoucherChannelListings(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -3211,7 +3211,7 @@ func testChannelToManyAddOpChannelidVoucherChannelListings(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddChannelidVoucherChannelListings(ctx, tx, i != 0, x...)
+		err = a.AddVoucherChannelListings(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3219,28 +3219,28 @@ func testChannelToManyAddOpChannelidVoucherChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if a.ID != first.Channelid {
-			t.Error("foreign key was wrong value", a.ID, first.Channelid)
+		if a.ID != first.ChannelID {
+			t.Error("foreign key was wrong value", a.ID, first.ChannelID)
 		}
-		if a.ID != second.Channelid {
-			t.Error("foreign key was wrong value", a.ID, second.Channelid)
+		if a.ID != second.ChannelID {
+			t.Error("foreign key was wrong value", a.ID, second.ChannelID)
 		}
 
-		if first.R.ChannelidChannel != &a {
+		if first.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ChannelidChannel != &a {
+		if second.R.Channel != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ChannelidVoucherChannelListings[i*2] != first {
+		if a.R.VoucherChannelListings[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ChannelidVoucherChannelListings[i*2+1] != second {
+		if a.R.VoucherChannelListings[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ChannelidVoucherChannelListings().Count(ctx, tx)
+		count, err := a.VoucherChannelListings().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -3324,7 +3324,7 @@ func testChannelsSelect(t *testing.T) {
 }
 
 var (
-	channelDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Isactive`: `boolean`, `Slug`: `character varying`, `Currency`: `text`, `Defaultcountry`: `character varying`}
+	channelDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `IsActive`: `boolean`, `Slug`: `character varying`, `Currency`: `text`, `DefaultCountry`: `character varying`}
 	_              = bytes.MinRead
 )
 

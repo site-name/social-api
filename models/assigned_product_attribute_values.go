@@ -24,10 +24,10 @@ import (
 
 // AssignedProductAttributeValue is an object representing the database table.
 type AssignedProductAttributeValue struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Valueid      null.String `boil:"valueid" json:"valueid,omitempty" toml:"valueid" yaml:"valueid,omitempty"`
-	Assignmentid null.String `boil:"assignmentid" json:"assignmentid,omitempty" toml:"assignmentid" yaml:"assignmentid,omitempty"`
-	Sortorder    null.Int    `boil:"sortorder" json:"sortorder,omitempty" toml:"sortorder" yaml:"sortorder,omitempty"`
+	ID           string   `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ValueID      string   `boil:"value_id" json:"value_id" toml:"value_id" yaml:"value_id"`
+	AssignmentID string   `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
+	SortOrder    null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *assignedProductAttributeValueR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignedProductAttributeValueL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,55 +35,55 @@ type AssignedProductAttributeValue struct {
 
 var AssignedProductAttributeValueColumns = struct {
 	ID           string
-	Valueid      string
-	Assignmentid string
-	Sortorder    string
+	ValueID      string
+	AssignmentID string
+	SortOrder    string
 }{
 	ID:           "id",
-	Valueid:      "valueid",
-	Assignmentid: "assignmentid",
-	Sortorder:    "sortorder",
+	ValueID:      "value_id",
+	AssignmentID: "assignment_id",
+	SortOrder:    "sort_order",
 }
 
 var AssignedProductAttributeValueTableColumns = struct {
 	ID           string
-	Valueid      string
-	Assignmentid string
-	Sortorder    string
+	ValueID      string
+	AssignmentID string
+	SortOrder    string
 }{
 	ID:           "assigned_product_attribute_values.id",
-	Valueid:      "assigned_product_attribute_values.valueid",
-	Assignmentid: "assigned_product_attribute_values.assignmentid",
-	Sortorder:    "assigned_product_attribute_values.sortorder",
+	ValueID:      "assigned_product_attribute_values.value_id",
+	AssignmentID: "assigned_product_attribute_values.assignment_id",
+	SortOrder:    "assigned_product_attribute_values.sort_order",
 }
 
 // Generated where
 
 var AssignedProductAttributeValueWhere = struct {
 	ID           whereHelperstring
-	Valueid      whereHelpernull_String
-	Assignmentid whereHelpernull_String
-	Sortorder    whereHelpernull_Int
+	ValueID      whereHelperstring
+	AssignmentID whereHelperstring
+	SortOrder    whereHelpernull_Int
 }{
 	ID:           whereHelperstring{field: "\"assigned_product_attribute_values\".\"id\""},
-	Valueid:      whereHelpernull_String{field: "\"assigned_product_attribute_values\".\"valueid\""},
-	Assignmentid: whereHelpernull_String{field: "\"assigned_product_attribute_values\".\"assignmentid\""},
-	Sortorder:    whereHelpernull_Int{field: "\"assigned_product_attribute_values\".\"sortorder\""},
+	ValueID:      whereHelperstring{field: "\"assigned_product_attribute_values\".\"value_id\""},
+	AssignmentID: whereHelperstring{field: "\"assigned_product_attribute_values\".\"assignment_id\""},
+	SortOrder:    whereHelpernull_Int{field: "\"assigned_product_attribute_values\".\"sort_order\""},
 }
 
 // AssignedProductAttributeValueRels is where relationship names are stored.
 var AssignedProductAttributeValueRels = struct {
-	AssignmentidAssignedProductAttribute string
-	ValueidAttributeValue                string
+	Assignment string
+	Value      string
 }{
-	AssignmentidAssignedProductAttribute: "AssignmentidAssignedProductAttribute",
-	ValueidAttributeValue:                "ValueidAttributeValue",
+	Assignment: "Assignment",
+	Value:      "Value",
 }
 
 // assignedProductAttributeValueR is where relationships are stored.
 type assignedProductAttributeValueR struct {
-	AssignmentidAssignedProductAttribute *AssignedProductAttribute `boil:"AssignmentidAssignedProductAttribute" json:"AssignmentidAssignedProductAttribute" toml:"AssignmentidAssignedProductAttribute" yaml:"AssignmentidAssignedProductAttribute"`
-	ValueidAttributeValue                *AttributeValue           `boil:"ValueidAttributeValue" json:"ValueidAttributeValue" toml:"ValueidAttributeValue" yaml:"ValueidAttributeValue"`
+	Assignment *AssignedProductAttribute `boil:"Assignment" json:"Assignment" toml:"Assignment" yaml:"Assignment"`
+	Value      *AttributeValue           `boil:"Value" json:"Value" toml:"Value" yaml:"Value"`
 }
 
 // NewStruct creates a new relationship struct
@@ -91,27 +91,27 @@ func (*assignedProductAttributeValueR) NewStruct() *assignedProductAttributeValu
 	return &assignedProductAttributeValueR{}
 }
 
-func (r *assignedProductAttributeValueR) GetAssignmentidAssignedProductAttribute() *AssignedProductAttribute {
+func (r *assignedProductAttributeValueR) GetAssignment() *AssignedProductAttribute {
 	if r == nil {
 		return nil
 	}
-	return r.AssignmentidAssignedProductAttribute
+	return r.Assignment
 }
 
-func (r *assignedProductAttributeValueR) GetValueidAttributeValue() *AttributeValue {
+func (r *assignedProductAttributeValueR) GetValue() *AttributeValue {
 	if r == nil {
 		return nil
 	}
-	return r.ValueidAttributeValue
+	return r.Value
 }
 
 // assignedProductAttributeValueL is where Load methods for each relationship are stored.
 type assignedProductAttributeValueL struct{}
 
 var (
-	assignedProductAttributeValueAllColumns            = []string{"id", "valueid", "assignmentid", "sortorder"}
-	assignedProductAttributeValueColumnsWithoutDefault = []string{"id"}
-	assignedProductAttributeValueColumnsWithDefault    = []string{"valueid", "assignmentid", "sortorder"}
+	assignedProductAttributeValueAllColumns            = []string{"id", "value_id", "assignment_id", "sort_order"}
+	assignedProductAttributeValueColumnsWithoutDefault = []string{"id", "value_id", "assignment_id"}
+	assignedProductAttributeValueColumnsWithDefault    = []string{"sort_order"}
 	assignedProductAttributeValuePrimaryKeyColumns     = []string{"id"}
 	assignedProductAttributeValueGeneratedColumns      = []string{}
 )
@@ -394,10 +394,10 @@ func (q assignedProductAttributeValueQuery) Exists(ctx context.Context, exec boi
 	return count > 0, nil
 }
 
-// AssignmentidAssignedProductAttribute pointed to by the foreign key.
-func (o *AssignedProductAttributeValue) AssignmentidAssignedProductAttribute(mods ...qm.QueryMod) assignedProductAttributeQuery {
+// Assignment pointed to by the foreign key.
+func (o *AssignedProductAttributeValue) Assignment(mods ...qm.QueryMod) assignedProductAttributeQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Assignmentid),
+		qm.Where("\"id\" = ?", o.AssignmentID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -405,10 +405,10 @@ func (o *AssignedProductAttributeValue) AssignmentidAssignedProductAttribute(mod
 	return AssignedProductAttributes(queryMods...)
 }
 
-// ValueidAttributeValue pointed to by the foreign key.
-func (o *AssignedProductAttributeValue) ValueidAttributeValue(mods ...qm.QueryMod) attributeValueQuery {
+// Value pointed to by the foreign key.
+func (o *AssignedProductAttributeValue) Value(mods ...qm.QueryMod) attributeValueQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Valueid),
+		qm.Where("\"id\" = ?", o.ValueID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -416,9 +416,9 @@ func (o *AssignedProductAttributeValue) ValueidAttributeValue(mods ...qm.QueryMo
 	return AttributeValues(queryMods...)
 }
 
-// LoadAssignmentidAssignedProductAttribute allows an eager lookup of values, cached into the
+// LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeValueL) LoadAssignmentidAssignedProductAttribute(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedProductAttributeValueL) LoadAssignment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttributeValue
 	var object *AssignedProductAttributeValue
 
@@ -449,9 +449,7 @@ func (assignedProductAttributeValueL) LoadAssignmentidAssignedProductAttribute(c
 		if object.R == nil {
 			object.R = &assignedProductAttributeValueR{}
 		}
-		if !queries.IsNil(object.Assignmentid) {
-			args = append(args, object.Assignmentid)
-		}
+		args = append(args, object.AssignmentID)
 
 	} else {
 	Outer:
@@ -461,14 +459,12 @@ func (assignedProductAttributeValueL) LoadAssignmentidAssignedProductAttribute(c
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Assignmentid) {
+				if a == obj.AssignmentID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Assignmentid) {
-				args = append(args, obj.Assignmentid)
-			}
+			args = append(args, obj.AssignmentID)
 
 		}
 	}
@@ -516,22 +512,22 @@ func (assignedProductAttributeValueL) LoadAssignmentidAssignedProductAttribute(c
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.AssignmentidAssignedProductAttribute = foreign
+		object.R.Assignment = foreign
 		if foreign.R == nil {
 			foreign.R = &assignedProductAttributeR{}
 		}
-		foreign.R.AssignmentidAssignedProductAttributeValues = append(foreign.R.AssignmentidAssignedProductAttributeValues, object)
+		foreign.R.AssignmentAssignedProductAttributeValues = append(foreign.R.AssignmentAssignedProductAttributeValues, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Assignmentid, foreign.ID) {
-				local.R.AssignmentidAssignedProductAttribute = foreign
+			if local.AssignmentID == foreign.ID {
+				local.R.Assignment = foreign
 				if foreign.R == nil {
 					foreign.R = &assignedProductAttributeR{}
 				}
-				foreign.R.AssignmentidAssignedProductAttributeValues = append(foreign.R.AssignmentidAssignedProductAttributeValues, local)
+				foreign.R.AssignmentAssignedProductAttributeValues = append(foreign.R.AssignmentAssignedProductAttributeValues, local)
 				break
 			}
 		}
@@ -540,9 +536,9 @@ func (assignedProductAttributeValueL) LoadAssignmentidAssignedProductAttribute(c
 	return nil
 }
 
-// LoadValueidAttributeValue allows an eager lookup of values, cached into the
+// LoadValue allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeValueL) LoadValueidAttributeValue(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedProductAttributeValueL) LoadValue(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttributeValue
 	var object *AssignedProductAttributeValue
 
@@ -573,9 +569,7 @@ func (assignedProductAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 		if object.R == nil {
 			object.R = &assignedProductAttributeValueR{}
 		}
-		if !queries.IsNil(object.Valueid) {
-			args = append(args, object.Valueid)
-		}
+		args = append(args, object.ValueID)
 
 	} else {
 	Outer:
@@ -585,14 +579,12 @@ func (assignedProductAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Valueid) {
+				if a == obj.ValueID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Valueid) {
-				args = append(args, obj.Valueid)
-			}
+			args = append(args, obj.ValueID)
 
 		}
 	}
@@ -640,22 +632,22 @@ func (assignedProductAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.ValueidAttributeValue = foreign
+		object.R.Value = foreign
 		if foreign.R == nil {
 			foreign.R = &attributeValueR{}
 		}
-		foreign.R.ValueidAssignedProductAttributeValues = append(foreign.R.ValueidAssignedProductAttributeValues, object)
+		foreign.R.ValueAssignedProductAttributeValues = append(foreign.R.ValueAssignedProductAttributeValues, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Valueid, foreign.ID) {
-				local.R.ValueidAttributeValue = foreign
+			if local.ValueID == foreign.ID {
+				local.R.Value = foreign
 				if foreign.R == nil {
 					foreign.R = &attributeValueR{}
 				}
-				foreign.R.ValueidAssignedProductAttributeValues = append(foreign.R.ValueidAssignedProductAttributeValues, local)
+				foreign.R.ValueAssignedProductAttributeValues = append(foreign.R.ValueAssignedProductAttributeValues, local)
 				break
 			}
 		}
@@ -664,10 +656,10 @@ func (assignedProductAttributeValueL) LoadValueidAttributeValue(ctx context.Cont
 	return nil
 }
 
-// SetAssignmentidAssignedProductAttribute of the assignedProductAttributeValue to the related item.
-// Sets o.R.AssignmentidAssignedProductAttribute to related.
-// Adds o to related.R.AssignmentidAssignedProductAttributeValues.
-func (o *AssignedProductAttributeValue) SetAssignmentidAssignedProductAttribute(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AssignedProductAttribute) error {
+// SetAssignment of the assignedProductAttributeValue to the related item.
+// Sets o.R.Assignment to related.
+// Adds o to related.R.AssignmentAssignedProductAttributeValues.
+func (o *AssignedProductAttributeValue) SetAssignment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AssignedProductAttribute) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -677,7 +669,7 @@ func (o *AssignedProductAttributeValue) SetAssignmentidAssignedProductAttribute(
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"assigned_product_attribute_values\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"assignmentid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"assignment_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -691,63 +683,30 @@ func (o *AssignedProductAttributeValue) SetAssignmentidAssignedProductAttribute(
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Assignmentid, related.ID)
+	o.AssignmentID = related.ID
 	if o.R == nil {
 		o.R = &assignedProductAttributeValueR{
-			AssignmentidAssignedProductAttribute: related,
+			Assignment: related,
 		}
 	} else {
-		o.R.AssignmentidAssignedProductAttribute = related
+		o.R.Assignment = related
 	}
 
 	if related.R == nil {
 		related.R = &assignedProductAttributeR{
-			AssignmentidAssignedProductAttributeValues: AssignedProductAttributeValueSlice{o},
+			AssignmentAssignedProductAttributeValues: AssignedProductAttributeValueSlice{o},
 		}
 	} else {
-		related.R.AssignmentidAssignedProductAttributeValues = append(related.R.AssignmentidAssignedProductAttributeValues, o)
+		related.R.AssignmentAssignedProductAttributeValues = append(related.R.AssignmentAssignedProductAttributeValues, o)
 	}
 
 	return nil
 }
 
-// RemoveAssignmentidAssignedProductAttribute relationship.
-// Sets o.R.AssignmentidAssignedProductAttribute to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AssignedProductAttributeValue) RemoveAssignmentidAssignedProductAttribute(ctx context.Context, exec boil.ContextExecutor, related *AssignedProductAttribute) error {
-	var err error
-
-	queries.SetScanner(&o.Assignmentid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("assignmentid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.AssignmentidAssignedProductAttribute = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AssignmentidAssignedProductAttributeValues {
-		if queries.Equal(o.Assignmentid, ri.Assignmentid) {
-			continue
-		}
-
-		ln := len(related.R.AssignmentidAssignedProductAttributeValues)
-		if ln > 1 && i < ln-1 {
-			related.R.AssignmentidAssignedProductAttributeValues[i] = related.R.AssignmentidAssignedProductAttributeValues[ln-1]
-		}
-		related.R.AssignmentidAssignedProductAttributeValues = related.R.AssignmentidAssignedProductAttributeValues[:ln-1]
-		break
-	}
-	return nil
-}
-
-// SetValueidAttributeValue of the assignedProductAttributeValue to the related item.
-// Sets o.R.ValueidAttributeValue to related.
-// Adds o to related.R.ValueidAssignedProductAttributeValues.
-func (o *AssignedProductAttributeValue) SetValueidAttributeValue(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributeValue) error {
+// SetValue of the assignedProductAttributeValue to the related item.
+// Sets o.R.Value to related.
+// Adds o to related.R.ValueAssignedProductAttributeValues.
+func (o *AssignedProductAttributeValue) SetValue(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributeValue) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -757,7 +716,7 @@ func (o *AssignedProductAttributeValue) SetValueidAttributeValue(ctx context.Con
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"assigned_product_attribute_values\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"valueid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"value_id"}),
 		strmangle.WhereClause("\"", "\"", 2, assignedProductAttributeValuePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -771,56 +730,23 @@ func (o *AssignedProductAttributeValue) SetValueidAttributeValue(ctx context.Con
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Valueid, related.ID)
+	o.ValueID = related.ID
 	if o.R == nil {
 		o.R = &assignedProductAttributeValueR{
-			ValueidAttributeValue: related,
+			Value: related,
 		}
 	} else {
-		o.R.ValueidAttributeValue = related
+		o.R.Value = related
 	}
 
 	if related.R == nil {
 		related.R = &attributeValueR{
-			ValueidAssignedProductAttributeValues: AssignedProductAttributeValueSlice{o},
+			ValueAssignedProductAttributeValues: AssignedProductAttributeValueSlice{o},
 		}
 	} else {
-		related.R.ValueidAssignedProductAttributeValues = append(related.R.ValueidAssignedProductAttributeValues, o)
+		related.R.ValueAssignedProductAttributeValues = append(related.R.ValueAssignedProductAttributeValues, o)
 	}
 
-	return nil
-}
-
-// RemoveValueidAttributeValue relationship.
-// Sets o.R.ValueidAttributeValue to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AssignedProductAttributeValue) RemoveValueidAttributeValue(ctx context.Context, exec boil.ContextExecutor, related *AttributeValue) error {
-	var err error
-
-	queries.SetScanner(&o.Valueid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("valueid")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ValueidAttributeValue = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ValueidAssignedProductAttributeValues {
-		if queries.Equal(o.Valueid, ri.Valueid) {
-			continue
-		}
-
-		ln := len(related.R.ValueidAssignedProductAttributeValues)
-		if ln > 1 && i < ln-1 {
-			related.R.ValueidAssignedProductAttributeValues[i] = related.R.ValueidAssignedProductAttributeValues[ln-1]
-		}
-		related.R.ValueidAssignedProductAttributeValues = related.R.ValueidAssignedProductAttributeValues[:ln-1]
-		break
-	}
 	return nil
 }
 

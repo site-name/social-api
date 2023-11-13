@@ -149,7 +149,7 @@ func testPreferencesExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := PreferenceExists(ctx, tx, o.Userid)
+	e, err := PreferenceExists(ctx, tx, o.UserID)
 	if err != nil {
 		t.Errorf("Unable to check if Preference exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testPreferencesFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	preferenceFound, err := FindPreference(ctx, tx, o.Userid)
+	preferenceFound, err := FindPreference(ctx, tx, o.UserID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testPreferencesSelect(t *testing.T) {
 }
 
 var (
-	preferenceDBTypes = map[string]string{`Userid`: `character varying`, `Category`: `character varying`, `Name`: `character varying`, `Value`: `character varying`}
+	preferenceDBTypes = map[string]string{`UserID`: `character varying`, `Category`: `character varying`, `Name`: `character varying`, `Value`: `character varying`}
 	_                 = bytes.MinRead
 )
 

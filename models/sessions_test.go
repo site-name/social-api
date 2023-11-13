@@ -568,7 +568,7 @@ func testSessionsSelect(t *testing.T) {
 }
 
 var (
-	sessionDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `Createat`: `bigint`, `Expiresat`: `bigint`, `Lastactivityat`: `bigint`, `Userid`: `character varying`, `Devideid`: `character varying`, `Roles`: `character varying`, `Isoauth`: `boolean`, `Expirednotify`: `boolean`, `Props`: `jsonb`, `Local`: `boolean`}
+	sessionDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `CreateAt`: `bigint`, `ExpiresAt`: `bigint`, `LastActivityAt`: `bigint`, `UserID`: `character varying`, `DeviceID`: `character varying`, `Roles`: `character varying`, `IsOauth`: `boolean`, `ExpiredNotify`: `boolean`, `Props`: `jsonb`, `Local`: `boolean`}
 	_              = bytes.MinRead
 )
 

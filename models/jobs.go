@@ -27,9 +27,9 @@ type Job struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Type           null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
 	Priority       null.Int64  `boil:"priority" json:"priority,omitempty" toml:"priority" yaml:"priority,omitempty"`
-	Createat       null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
-	Startat        null.Int64  `boil:"startat" json:"startat,omitempty" toml:"startat" yaml:"startat,omitempty"`
-	Lastactivityat null.Int64  `boil:"lastactivityat" json:"lastactivityat,omitempty" toml:"lastactivityat" yaml:"lastactivityat,omitempty"`
+	CreateAt       null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	StartAt        null.Int64  `boil:"start_at" json:"start_at,omitempty" toml:"start_at" yaml:"start_at,omitempty"`
+	LastActivityAt null.Int64  `boil:"last_activity_at" json:"last_activity_at,omitempty" toml:"last_activity_at" yaml:"last_activity_at,omitempty"`
 	Status         null.String `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
 	Progress       null.Int64  `boil:"progress" json:"progress,omitempty" toml:"progress" yaml:"progress,omitempty"`
 	Data           null.JSON   `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
@@ -42,9 +42,9 @@ var JobColumns = struct {
 	ID             string
 	Type           string
 	Priority       string
-	Createat       string
-	Startat        string
-	Lastactivityat string
+	CreateAt       string
+	StartAt        string
+	LastActivityAt string
 	Status         string
 	Progress       string
 	Data           string
@@ -52,9 +52,9 @@ var JobColumns = struct {
 	ID:             "id",
 	Type:           "type",
 	Priority:       "priority",
-	Createat:       "createat",
-	Startat:        "startat",
-	Lastactivityat: "lastactivityat",
+	CreateAt:       "create_at",
+	StartAt:        "start_at",
+	LastActivityAt: "last_activity_at",
 	Status:         "status",
 	Progress:       "progress",
 	Data:           "data",
@@ -64,9 +64,9 @@ var JobTableColumns = struct {
 	ID             string
 	Type           string
 	Priority       string
-	Createat       string
-	Startat        string
-	Lastactivityat string
+	CreateAt       string
+	StartAt        string
+	LastActivityAt string
 	Status         string
 	Progress       string
 	Data           string
@@ -74,9 +74,9 @@ var JobTableColumns = struct {
 	ID:             "jobs.id",
 	Type:           "jobs.type",
 	Priority:       "jobs.priority",
-	Createat:       "jobs.createat",
-	Startat:        "jobs.startat",
-	Lastactivityat: "jobs.lastactivityat",
+	CreateAt:       "jobs.create_at",
+	StartAt:        "jobs.start_at",
+	LastActivityAt: "jobs.last_activity_at",
 	Status:         "jobs.status",
 	Progress:       "jobs.progress",
 	Data:           "jobs.data",
@@ -88,9 +88,9 @@ var JobWhere = struct {
 	ID             whereHelperstring
 	Type           whereHelpernull_String
 	Priority       whereHelpernull_Int64
-	Createat       whereHelpernull_Int64
-	Startat        whereHelpernull_Int64
-	Lastactivityat whereHelpernull_Int64
+	CreateAt       whereHelpernull_Int64
+	StartAt        whereHelpernull_Int64
+	LastActivityAt whereHelpernull_Int64
 	Status         whereHelpernull_String
 	Progress       whereHelpernull_Int64
 	Data           whereHelpernull_JSON
@@ -98,9 +98,9 @@ var JobWhere = struct {
 	ID:             whereHelperstring{field: "\"jobs\".\"id\""},
 	Type:           whereHelpernull_String{field: "\"jobs\".\"type\""},
 	Priority:       whereHelpernull_Int64{field: "\"jobs\".\"priority\""},
-	Createat:       whereHelpernull_Int64{field: "\"jobs\".\"createat\""},
-	Startat:        whereHelpernull_Int64{field: "\"jobs\".\"startat\""},
-	Lastactivityat: whereHelpernull_Int64{field: "\"jobs\".\"lastactivityat\""},
+	CreateAt:       whereHelpernull_Int64{field: "\"jobs\".\"create_at\""},
+	StartAt:        whereHelpernull_Int64{field: "\"jobs\".\"start_at\""},
+	LastActivityAt: whereHelpernull_Int64{field: "\"jobs\".\"last_activity_at\""},
 	Status:         whereHelpernull_String{field: "\"jobs\".\"status\""},
 	Progress:       whereHelpernull_Int64{field: "\"jobs\".\"progress\""},
 	Data:           whereHelpernull_JSON{field: "\"jobs\".\"data\""},
@@ -123,9 +123,9 @@ func (*jobR) NewStruct() *jobR {
 type jobL struct{}
 
 var (
-	jobAllColumns            = []string{"id", "type", "priority", "createat", "startat", "lastactivityat", "status", "progress", "data"}
+	jobAllColumns            = []string{"id", "type", "priority", "create_at", "start_at", "last_activity_at", "status", "progress", "data"}
 	jobColumnsWithoutDefault = []string{"id"}
-	jobColumnsWithDefault    = []string{"type", "priority", "createat", "startat", "lastactivityat", "status", "progress", "data"}
+	jobColumnsWithDefault    = []string{"type", "priority", "create_at", "start_at", "last_activity_at", "status", "progress", "data"}
 	jobPrimaryKeyColumns     = []string{"id"}
 	jobGeneratedColumns      = []string{}
 )

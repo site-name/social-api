@@ -494,7 +494,7 @@ func testAttributeValuesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testAttributeValueToManyValueidAssignedPageAttributeValues(t *testing.T) {
+func testAttributeValueToManyValueAssignedPageAttributeValues(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -519,8 +519,9 @@ func testAttributeValueToManyValueidAssignedPageAttributeValues(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Valueid, a.ID)
-	queries.Assign(&c.Valueid, a.ID)
+	b.ValueID = a.ID
+	c.ValueID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -528,17 +529,17 @@ func testAttributeValueToManyValueidAssignedPageAttributeValues(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.ValueidAssignedPageAttributeValues().All(ctx, tx)
+	check, err := a.ValueAssignedPageAttributeValues().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Valueid, b.Valueid) {
+		if v.ValueID == b.ValueID {
 			bFound = true
 		}
-		if queries.Equal(v.Valueid, c.Valueid) {
+		if v.ValueID == c.ValueID {
 			cFound = true
 		}
 	}
@@ -551,18 +552,18 @@ func testAttributeValueToManyValueidAssignedPageAttributeValues(t *testing.T) {
 	}
 
 	slice := AttributeValueSlice{&a}
-	if err = a.L.LoadValueidAssignedPageAttributeValues(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
+	if err = a.L.LoadValueAssignedPageAttributeValues(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ValueidAssignedPageAttributeValues); got != 2 {
+	if got := len(a.R.ValueAssignedPageAttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ValueidAssignedPageAttributeValues = nil
-	if err = a.L.LoadValueidAssignedPageAttributeValues(ctx, tx, true, &a, nil); err != nil {
+	a.R.ValueAssignedPageAttributeValues = nil
+	if err = a.L.LoadValueAssignedPageAttributeValues(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ValueidAssignedPageAttributeValues); got != 2 {
+	if got := len(a.R.ValueAssignedPageAttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -571,7 +572,7 @@ func testAttributeValueToManyValueidAssignedPageAttributeValues(t *testing.T) {
 	}
 }
 
-func testAttributeValueToManyValueidAssignedProductAttributeValues(t *testing.T) {
+func testAttributeValueToManyValueAssignedProductAttributeValues(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,8 +597,9 @@ func testAttributeValueToManyValueidAssignedProductAttributeValues(t *testing.T)
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Valueid, a.ID)
-	queries.Assign(&c.Valueid, a.ID)
+	b.ValueID = a.ID
+	c.ValueID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -605,17 +607,17 @@ func testAttributeValueToManyValueidAssignedProductAttributeValues(t *testing.T)
 		t.Fatal(err)
 	}
 
-	check, err := a.ValueidAssignedProductAttributeValues().All(ctx, tx)
+	check, err := a.ValueAssignedProductAttributeValues().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Valueid, b.Valueid) {
+		if v.ValueID == b.ValueID {
 			bFound = true
 		}
-		if queries.Equal(v.Valueid, c.Valueid) {
+		if v.ValueID == c.ValueID {
 			cFound = true
 		}
 	}
@@ -628,18 +630,18 @@ func testAttributeValueToManyValueidAssignedProductAttributeValues(t *testing.T)
 	}
 
 	slice := AttributeValueSlice{&a}
-	if err = a.L.LoadValueidAssignedProductAttributeValues(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
+	if err = a.L.LoadValueAssignedProductAttributeValues(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ValueidAssignedProductAttributeValues); got != 2 {
+	if got := len(a.R.ValueAssignedProductAttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ValueidAssignedProductAttributeValues = nil
-	if err = a.L.LoadValueidAssignedProductAttributeValues(ctx, tx, true, &a, nil); err != nil {
+	a.R.ValueAssignedProductAttributeValues = nil
+	if err = a.L.LoadValueAssignedProductAttributeValues(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ValueidAssignedProductAttributeValues); got != 2 {
+	if got := len(a.R.ValueAssignedProductAttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -648,7 +650,7 @@ func testAttributeValueToManyValueidAssignedProductAttributeValues(t *testing.T)
 	}
 }
 
-func testAttributeValueToManyValueidAssignedVariantAttributeValues(t *testing.T) {
+func testAttributeValueToManyValueAssignedVariantAttributeValues(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -673,8 +675,8 @@ func testAttributeValueToManyValueidAssignedVariantAttributeValues(t *testing.T)
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.Valueid, a.ID)
-	queries.Assign(&c.Valueid, a.ID)
+	queries.Assign(&b.ValueID, a.ID)
+	queries.Assign(&c.ValueID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -682,17 +684,17 @@ func testAttributeValueToManyValueidAssignedVariantAttributeValues(t *testing.T)
 		t.Fatal(err)
 	}
 
-	check, err := a.ValueidAssignedVariantAttributeValues().All(ctx, tx)
+	check, err := a.ValueAssignedVariantAttributeValues().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.Valueid, b.Valueid) {
+		if queries.Equal(v.ValueID, b.ValueID) {
 			bFound = true
 		}
-		if queries.Equal(v.Valueid, c.Valueid) {
+		if queries.Equal(v.ValueID, c.ValueID) {
 			cFound = true
 		}
 	}
@@ -705,18 +707,18 @@ func testAttributeValueToManyValueidAssignedVariantAttributeValues(t *testing.T)
 	}
 
 	slice := AttributeValueSlice{&a}
-	if err = a.L.LoadValueidAssignedVariantAttributeValues(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
+	if err = a.L.LoadValueAssignedVariantAttributeValues(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ValueidAssignedVariantAttributeValues); got != 2 {
+	if got := len(a.R.ValueAssignedVariantAttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.ValueidAssignedVariantAttributeValues = nil
-	if err = a.L.LoadValueidAssignedVariantAttributeValues(ctx, tx, true, &a, nil); err != nil {
+	a.R.ValueAssignedVariantAttributeValues = nil
+	if err = a.L.LoadValueAssignedVariantAttributeValues(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.ValueidAssignedVariantAttributeValues); got != 2 {
+	if got := len(a.R.ValueAssignedVariantAttributeValues); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -725,7 +727,7 @@ func testAttributeValueToManyValueidAssignedVariantAttributeValues(t *testing.T)
 	}
 }
 
-func testAttributeValueToManyAddOpValueidAssignedPageAttributeValues(t *testing.T) {
+func testAttributeValueToManyAddOpValueAssignedPageAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -762,7 +764,7 @@ func testAttributeValueToManyAddOpValueidAssignedPageAttributeValues(t *testing.
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddValueidAssignedPageAttributeValues(ctx, tx, i != 0, x...)
+		err = a.AddValueAssignedPageAttributeValues(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -770,28 +772,28 @@ func testAttributeValueToManyAddOpValueidAssignedPageAttributeValues(t *testing.
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Valueid) {
-			t.Error("foreign key was wrong value", a.ID, first.Valueid)
+		if a.ID != first.ValueID {
+			t.Error("foreign key was wrong value", a.ID, first.ValueID)
 		}
-		if !queries.Equal(a.ID, second.Valueid) {
-			t.Error("foreign key was wrong value", a.ID, second.Valueid)
+		if a.ID != second.ValueID {
+			t.Error("foreign key was wrong value", a.ID, second.ValueID)
 		}
 
-		if first.R.ValueidAttributeValue != &a {
+		if first.R.Value != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ValueidAttributeValue != &a {
+		if second.R.Value != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ValueidAssignedPageAttributeValues[i*2] != first {
+		if a.R.ValueAssignedPageAttributeValues[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ValueidAssignedPageAttributeValues[i*2+1] != second {
+		if a.R.ValueAssignedPageAttributeValues[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ValueidAssignedPageAttributeValues().Count(ctx, tx)
+		count, err := a.ValueAssignedPageAttributeValues().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -800,183 +802,7 @@ func testAttributeValueToManyAddOpValueidAssignedPageAttributeValues(t *testing.
 		}
 	}
 }
-
-func testAttributeValueToManySetOpValueidAssignedPageAttributeValues(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeValue
-	var b, c, d, e AssignedPageAttributeValue
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeValueDBTypes, false, strmangle.SetComplement(attributeValuePrimaryKeyColumns, attributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedPageAttributeValue{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedPageAttributeValueDBTypes, false, strmangle.SetComplement(assignedPageAttributeValuePrimaryKeyColumns, assignedPageAttributeValueColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetValueidAssignedPageAttributeValues(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ValueidAssignedPageAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetValueidAssignedPageAttributeValues(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ValueidAssignedPageAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Valueid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Valueid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.Valueid) {
-		t.Error("foreign key was wrong value", a.ID, d.Valueid)
-	}
-	if !queries.Equal(a.ID, e.Valueid) {
-		t.Error("foreign key was wrong value", a.ID, e.Valueid)
-	}
-
-	if b.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ValueidAttributeValue != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ValueidAttributeValue != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.ValueidAssignedPageAttributeValues[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.ValueidAssignedPageAttributeValues[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testAttributeValueToManyRemoveOpValueidAssignedPageAttributeValues(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeValue
-	var b, c, d, e AssignedPageAttributeValue
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeValueDBTypes, false, strmangle.SetComplement(attributeValuePrimaryKeyColumns, attributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedPageAttributeValue{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedPageAttributeValueDBTypes, false, strmangle.SetComplement(assignedPageAttributeValuePrimaryKeyColumns, assignedPageAttributeValueColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddValueidAssignedPageAttributeValues(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ValueidAssignedPageAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveValueidAssignedPageAttributeValues(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ValueidAssignedPageAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Valueid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Valueid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ValueidAttributeValue != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.ValueidAttributeValue != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.ValueidAssignedPageAttributeValues) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ValueidAssignedPageAttributeValues[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.ValueidAssignedPageAttributeValues[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
-func testAttributeValueToManyAddOpValueidAssignedProductAttributeValues(t *testing.T) {
+func testAttributeValueToManyAddOpValueAssignedProductAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1013,7 +839,7 @@ func testAttributeValueToManyAddOpValueidAssignedProductAttributeValues(t *testi
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddValueidAssignedProductAttributeValues(ctx, tx, i != 0, x...)
+		err = a.AddValueAssignedProductAttributeValues(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1021,28 +847,28 @@ func testAttributeValueToManyAddOpValueidAssignedProductAttributeValues(t *testi
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Valueid) {
-			t.Error("foreign key was wrong value", a.ID, first.Valueid)
+		if a.ID != first.ValueID {
+			t.Error("foreign key was wrong value", a.ID, first.ValueID)
 		}
-		if !queries.Equal(a.ID, second.Valueid) {
-			t.Error("foreign key was wrong value", a.ID, second.Valueid)
+		if a.ID != second.ValueID {
+			t.Error("foreign key was wrong value", a.ID, second.ValueID)
 		}
 
-		if first.R.ValueidAttributeValue != &a {
+		if first.R.Value != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ValueidAttributeValue != &a {
+		if second.R.Value != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ValueidAssignedProductAttributeValues[i*2] != first {
+		if a.R.ValueAssignedProductAttributeValues[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ValueidAssignedProductAttributeValues[i*2+1] != second {
+		if a.R.ValueAssignedProductAttributeValues[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ValueidAssignedProductAttributeValues().Count(ctx, tx)
+		count, err := a.ValueAssignedProductAttributeValues().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1051,183 +877,7 @@ func testAttributeValueToManyAddOpValueidAssignedProductAttributeValues(t *testi
 		}
 	}
 }
-
-func testAttributeValueToManySetOpValueidAssignedProductAttributeValues(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeValue
-	var b, c, d, e AssignedProductAttributeValue
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeValueDBTypes, false, strmangle.SetComplement(attributeValuePrimaryKeyColumns, attributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedProductAttributeValue{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedProductAttributeValueDBTypes, false, strmangle.SetComplement(assignedProductAttributeValuePrimaryKeyColumns, assignedProductAttributeValueColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetValueidAssignedProductAttributeValues(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ValueidAssignedProductAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetValueidAssignedProductAttributeValues(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ValueidAssignedProductAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Valueid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Valueid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.Valueid) {
-		t.Error("foreign key was wrong value", a.ID, d.Valueid)
-	}
-	if !queries.Equal(a.ID, e.Valueid) {
-		t.Error("foreign key was wrong value", a.ID, e.Valueid)
-	}
-
-	if b.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ValueidAttributeValue != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ValueidAttributeValue != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.ValueidAssignedProductAttributeValues[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.ValueidAssignedProductAttributeValues[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testAttributeValueToManyRemoveOpValueidAssignedProductAttributeValues(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeValue
-	var b, c, d, e AssignedProductAttributeValue
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeValueDBTypes, false, strmangle.SetComplement(attributeValuePrimaryKeyColumns, attributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AssignedProductAttributeValue{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, assignedProductAttributeValueDBTypes, false, strmangle.SetComplement(assignedProductAttributeValuePrimaryKeyColumns, assignedProductAttributeValueColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddValueidAssignedProductAttributeValues(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ValueidAssignedProductAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveValueidAssignedProductAttributeValues(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ValueidAssignedProductAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.Valueid) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.Valueid) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ValueidAttributeValue != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.ValueidAttributeValue != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.ValueidAssignedProductAttributeValues) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ValueidAssignedProductAttributeValues[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.ValueidAssignedProductAttributeValues[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
-func testAttributeValueToManyAddOpValueidAssignedVariantAttributeValues(t *testing.T) {
+func testAttributeValueToManyAddOpValueAssignedVariantAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1264,7 +914,7 @@ func testAttributeValueToManyAddOpValueidAssignedVariantAttributeValues(t *testi
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddValueidAssignedVariantAttributeValues(ctx, tx, i != 0, x...)
+		err = a.AddValueAssignedVariantAttributeValues(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1272,28 +922,28 @@ func testAttributeValueToManyAddOpValueidAssignedVariantAttributeValues(t *testi
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.Valueid) {
-			t.Error("foreign key was wrong value", a.ID, first.Valueid)
+		if !queries.Equal(a.ID, first.ValueID) {
+			t.Error("foreign key was wrong value", a.ID, first.ValueID)
 		}
-		if !queries.Equal(a.ID, second.Valueid) {
-			t.Error("foreign key was wrong value", a.ID, second.Valueid)
+		if !queries.Equal(a.ID, second.ValueID) {
+			t.Error("foreign key was wrong value", a.ID, second.ValueID)
 		}
 
-		if first.R.ValueidAttributeValue != &a {
+		if first.R.Value != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.ValueidAttributeValue != &a {
+		if second.R.Value != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.ValueidAssignedVariantAttributeValues[i*2] != first {
+		if a.R.ValueAssignedVariantAttributeValues[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.ValueidAssignedVariantAttributeValues[i*2+1] != second {
+		if a.R.ValueAssignedVariantAttributeValues[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.ValueidAssignedVariantAttributeValues().Count(ctx, tx)
+		count, err := a.ValueAssignedVariantAttributeValues().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1303,7 +953,7 @@ func testAttributeValueToManyAddOpValueidAssignedVariantAttributeValues(t *testi
 	}
 }
 
-func testAttributeValueToManySetOpValueidAssignedVariantAttributeValues(t *testing.T) {
+func testAttributeValueToManySetOpValueAssignedVariantAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1334,25 +984,12 @@ func testAttributeValueToManySetOpValueidAssignedVariantAttributeValues(t *testi
 		t.Fatal(err)
 	}
 
-	err = a.SetValueidAssignedVariantAttributeValues(ctx, tx, false, &b, &c)
+	err = a.SetValueAssignedVariantAttributeValues(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ValueidAssignedVariantAttributeValues().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetValueidAssignedVariantAttributeValues(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ValueidAssignedVariantAttributeValues().Count(ctx, tx)
+	count, err := a.ValueAssignedVariantAttributeValues().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1360,41 +997,54 @@ func testAttributeValueToManySetOpValueidAssignedVariantAttributeValues(t *testi
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Valueid) {
+	err = a.SetValueAssignedVariantAttributeValues(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.ValueAssignedVariantAttributeValues().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.ValueID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Valueid) {
+	if !queries.IsValuerNil(c.ValueID) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	if !queries.Equal(a.ID, d.Valueid) {
-		t.Error("foreign key was wrong value", a.ID, d.Valueid)
+	if !queries.Equal(a.ID, d.ValueID) {
+		t.Error("foreign key was wrong value", a.ID, d.ValueID)
 	}
-	if !queries.Equal(a.ID, e.Valueid) {
-		t.Error("foreign key was wrong value", a.ID, e.Valueid)
-	}
-
-	if b.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.ValueidAttributeValue != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.ValueidAttributeValue != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.ValueidAttributeValue != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.ID, e.ValueID) {
+		t.Error("foreign key was wrong value", a.ID, e.ValueID)
 	}
 
-	if a.R.ValueidAssignedVariantAttributeValues[0] != &d {
+	if b.R.Value != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Value != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Value != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Value != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.ValueAssignedVariantAttributeValues[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.ValueidAssignedVariantAttributeValues[1] != &e {
+	if a.R.ValueAssignedVariantAttributeValues[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testAttributeValueToManyRemoveOpValueidAssignedVariantAttributeValues(t *testing.T) {
+func testAttributeValueToManyRemoveOpValueAssignedVariantAttributeValues(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1419,12 +1069,12 @@ func testAttributeValueToManyRemoveOpValueidAssignedVariantAttributeValues(t *te
 		t.Fatal(err)
 	}
 
-	err = a.AddValueidAssignedVariantAttributeValues(ctx, tx, true, foreigners...)
+	err = a.AddValueAssignedVariantAttributeValues(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.ValueidAssignedVariantAttributeValues().Count(ctx, tx)
+	count, err := a.ValueAssignedVariantAttributeValues().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1432,12 +1082,12 @@ func testAttributeValueToManyRemoveOpValueidAssignedVariantAttributeValues(t *te
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveValueidAssignedVariantAttributeValues(ctx, tx, foreigners[:2]...)
+	err = a.RemoveValueAssignedVariantAttributeValues(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.ValueidAssignedVariantAttributeValues().Count(ctx, tx)
+	count, err = a.ValueAssignedVariantAttributeValues().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1445,40 +1095,40 @@ func testAttributeValueToManyRemoveOpValueidAssignedVariantAttributeValues(t *te
 		t.Error("count was wrong:", count)
 	}
 
-	if !queries.IsValuerNil(b.Valueid) {
+	if !queries.IsValuerNil(b.ValueID) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.Valueid) {
+	if !queries.IsValuerNil(c.ValueID) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.ValueidAttributeValue != nil {
+	if b.R.Value != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.ValueidAttributeValue != nil {
+	if c.R.Value != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.ValueidAttributeValue != &a {
+	if d.R.Value != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.ValueidAttributeValue != &a {
+	if e.R.Value != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.ValueidAssignedVariantAttributeValues) != 2 {
+	if len(a.R.ValueAssignedVariantAttributeValues) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ValueidAssignedVariantAttributeValues[1] != &d {
+	if a.R.ValueAssignedVariantAttributeValues[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.ValueidAssignedVariantAttributeValues[0] != &e {
+	if a.R.ValueAssignedVariantAttributeValues[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testAttributeValueToOneAttributeUsingAttributeidAttribute(t *testing.T) {
+func testAttributeValueToOneAttributeUsingAttribute(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
@@ -1498,12 +1148,12 @@ func testAttributeValueToOneAttributeUsingAttributeidAttribute(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.Attributeid, foreign.ID)
+	queries.Assign(&local.AttributeID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.AttributeidAttribute().One(ctx, tx)
+	check, err := local.Attribute().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1519,18 +1169,18 @@ func testAttributeValueToOneAttributeUsingAttributeidAttribute(t *testing.T) {
 	})
 
 	slice := AttributeValueSlice{&local}
-	if err = local.L.LoadAttributeidAttribute(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
+	if err = local.L.LoadAttribute(ctx, tx, false, (*[]*AttributeValue)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AttributeidAttribute == nil {
+	if local.R.Attribute == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.AttributeidAttribute = nil
-	if err = local.L.LoadAttributeidAttribute(ctx, tx, true, &local, nil); err != nil {
+	local.R.Attribute = nil
+	if err = local.L.LoadAttribute(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.AttributeidAttribute == nil {
+	if local.R.Attribute == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
@@ -1539,7 +1189,7 @@ func testAttributeValueToOneAttributeUsingAttributeidAttribute(t *testing.T) {
 	}
 }
 
-func testAttributeValueToOneSetOpAttributeUsingAttributeidAttribute(t *testing.T) {
+func testAttributeValueToOneSetOpAttributeUsingAttribute(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1568,36 +1218,36 @@ func testAttributeValueToOneSetOpAttributeUsingAttributeidAttribute(t *testing.T
 	}
 
 	for i, x := range []*Attribute{&b, &c} {
-		err = a.SetAttributeidAttribute(ctx, tx, i != 0, x)
+		err = a.SetAttribute(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.AttributeidAttribute != x {
+		if a.R.Attribute != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.AttributeidAttributeValues[0] != &a {
+		if x.R.AttributeValues[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.Attributeid, x.ID) {
-			t.Error("foreign key was wrong value", a.Attributeid)
+		if !queries.Equal(a.AttributeID, x.ID) {
+			t.Error("foreign key was wrong value", a.AttributeID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.Attributeid))
-		reflect.Indirect(reflect.ValueOf(&a.Attributeid)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.AttributeID))
+		reflect.Indirect(reflect.ValueOf(&a.AttributeID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.Attributeid, x.ID) {
-			t.Error("foreign key was wrong value", a.Attributeid, x.ID)
+		if !queries.Equal(a.AttributeID, x.ID) {
+			t.Error("foreign key was wrong value", a.AttributeID, x.ID)
 		}
 	}
 }
 
-func testAttributeValueToOneRemoveOpAttributeUsingAttributeidAttribute(t *testing.T) {
+func testAttributeValueToOneRemoveOpAttributeUsingAttribute(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1619,15 +1269,15 @@ func testAttributeValueToOneRemoveOpAttributeUsingAttributeidAttribute(t *testin
 		t.Fatal(err)
 	}
 
-	if err = a.SetAttributeidAttribute(ctx, tx, true, &b); err != nil {
+	if err = a.SetAttribute(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveAttributeidAttribute(ctx, tx, &b); err != nil {
+	if err = a.RemoveAttribute(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.AttributeidAttribute().Count(ctx, tx)
+	count, err := a.Attribute().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1635,15 +1285,15 @@ func testAttributeValueToOneRemoveOpAttributeUsingAttributeidAttribute(t *testin
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.AttributeidAttribute != nil {
+	if a.R.Attribute != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.Attributeid) {
+	if !queries.IsValuerNil(a.AttributeID) {
 		t.Error("foreign key value should be nil")
 	}
 
-	if len(b.R.AttributeidAttributeValues) != 0 {
+	if len(b.R.AttributeValues) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
 }
@@ -1722,7 +1372,7 @@ func testAttributeValuesSelect(t *testing.T) {
 }
 
 var (
-	attributeValueDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Value`: `character varying`, `Slug`: `character varying`, `Fileurl`: `character varying`, `Contenttype`: `character varying`, `Attributeid`: `character varying`, `Richtext`: `text`, `Boolean`: `boolean`, `Datetime`: `timestamp with time zone`, `Sortorder`: `integer`}
+	attributeValueDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Value`: `character varying`, `Slug`: `character varying`, `FileURL`: `character varying`, `ContentType`: `character varying`, `AttributeID`: `character varying`, `RichText`: `text`, `Boolean`: `boolean`, `Datetime`: `timestamp with time zone`, `SortOrder`: `integer`}
 	_                     = bytes.MinRead
 )
 

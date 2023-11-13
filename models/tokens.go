@@ -25,7 +25,7 @@ import (
 // Token is an object representing the database table.
 type Token struct {
 	Token    string      `boil:"token" json:"token" toml:"token" yaml:"token"`
-	Createat null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 	Type     null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
 	Extra    null.String `boil:"extra" json:"extra,omitempty" toml:"extra" yaml:"extra,omitempty"`
 
@@ -35,24 +35,24 @@ type Token struct {
 
 var TokenColumns = struct {
 	Token    string
-	Createat string
+	CreateAt string
 	Type     string
 	Extra    string
 }{
 	Token:    "token",
-	Createat: "createat",
+	CreateAt: "create_at",
 	Type:     "type",
 	Extra:    "extra",
 }
 
 var TokenTableColumns = struct {
 	Token    string
-	Createat string
+	CreateAt string
 	Type     string
 	Extra    string
 }{
 	Token:    "tokens.token",
-	Createat: "tokens.createat",
+	CreateAt: "tokens.create_at",
 	Type:     "tokens.type",
 	Extra:    "tokens.extra",
 }
@@ -61,12 +61,12 @@ var TokenTableColumns = struct {
 
 var TokenWhere = struct {
 	Token    whereHelperstring
-	Createat whereHelpernull_Int64
+	CreateAt whereHelpernull_Int64
 	Type     whereHelpernull_String
 	Extra    whereHelpernull_String
 }{
 	Token:    whereHelperstring{field: "\"tokens\".\"token\""},
-	Createat: whereHelpernull_Int64{field: "\"tokens\".\"createat\""},
+	CreateAt: whereHelpernull_Int64{field: "\"tokens\".\"create_at\""},
 	Type:     whereHelpernull_String{field: "\"tokens\".\"type\""},
 	Extra:    whereHelpernull_String{field: "\"tokens\".\"extra\""},
 }
@@ -88,9 +88,9 @@ func (*tokenR) NewStruct() *tokenR {
 type tokenL struct{}
 
 var (
-	tokenAllColumns            = []string{"token", "createat", "type", "extra"}
+	tokenAllColumns            = []string{"token", "create_at", "type", "extra"}
 	tokenColumnsWithoutDefault = []string{"token"}
-	tokenColumnsWithDefault    = []string{"createat", "type", "extra"}
+	tokenColumnsWithDefault    = []string{"create_at", "type", "extra"}
 	tokenPrimaryKeyColumns     = []string{"token"}
 	tokenGeneratedColumns      = []string{}
 )

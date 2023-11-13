@@ -25,11 +25,11 @@ import (
 // OrderEvent is an object representing the database table.
 type OrderEvent struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Createat   null.Int64  `boil:"createat" json:"createat,omitempty" toml:"createat" yaml:"createat,omitempty"`
+	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
 	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Orderid    null.String `boil:"orderid" json:"orderid,omitempty" toml:"orderid" yaml:"orderid,omitempty"`
+	OrderID    null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	Parameters null.String `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
-	Userid     null.String `boil:"userid" json:"userid,omitempty" toml:"userid" yaml:"userid,omitempty"`
+	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 
 	R *orderEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,67 +37,67 @@ type OrderEvent struct {
 
 var OrderEventColumns = struct {
 	ID         string
-	Createat   string
+	CreateAt   string
 	Type       string
-	Orderid    string
+	OrderID    string
 	Parameters string
-	Userid     string
+	UserID     string
 }{
 	ID:         "id",
-	Createat:   "createat",
+	CreateAt:   "create_at",
 	Type:       "type",
-	Orderid:    "orderid",
+	OrderID:    "order_id",
 	Parameters: "parameters",
-	Userid:     "userid",
+	UserID:     "user_id",
 }
 
 var OrderEventTableColumns = struct {
 	ID         string
-	Createat   string
+	CreateAt   string
 	Type       string
-	Orderid    string
+	OrderID    string
 	Parameters string
-	Userid     string
+	UserID     string
 }{
 	ID:         "order_events.id",
-	Createat:   "order_events.createat",
+	CreateAt:   "order_events.create_at",
 	Type:       "order_events.type",
-	Orderid:    "order_events.orderid",
+	OrderID:    "order_events.order_id",
 	Parameters: "order_events.parameters",
-	Userid:     "order_events.userid",
+	UserID:     "order_events.user_id",
 }
 
 // Generated where
 
 var OrderEventWhere = struct {
 	ID         whereHelperstring
-	Createat   whereHelpernull_Int64
+	CreateAt   whereHelpernull_Int64
 	Type       whereHelpernull_String
-	Orderid    whereHelpernull_String
+	OrderID    whereHelpernull_String
 	Parameters whereHelpernull_String
-	Userid     whereHelpernull_String
+	UserID     whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"order_events\".\"id\""},
-	Createat:   whereHelpernull_Int64{field: "\"order_events\".\"createat\""},
+	CreateAt:   whereHelpernull_Int64{field: "\"order_events\".\"create_at\""},
 	Type:       whereHelpernull_String{field: "\"order_events\".\"type\""},
-	Orderid:    whereHelpernull_String{field: "\"order_events\".\"orderid\""},
+	OrderID:    whereHelpernull_String{field: "\"order_events\".\"order_id\""},
 	Parameters: whereHelpernull_String{field: "\"order_events\".\"parameters\""},
-	Userid:     whereHelpernull_String{field: "\"order_events\".\"userid\""},
+	UserID:     whereHelpernull_String{field: "\"order_events\".\"user_id\""},
 }
 
 // OrderEventRels is where relationship names are stored.
 var OrderEventRels = struct {
-	OrderidOrder string
-	UseridUser   string
+	Order string
+	User  string
 }{
-	OrderidOrder: "OrderidOrder",
-	UseridUser:   "UseridUser",
+	Order: "Order",
+	User:  "User",
 }
 
 // orderEventR is where relationships are stored.
 type orderEventR struct {
-	OrderidOrder *Order `boil:"OrderidOrder" json:"OrderidOrder" toml:"OrderidOrder" yaml:"OrderidOrder"`
-	UseridUser   *User  `boil:"UseridUser" json:"UseridUser" toml:"UseridUser" yaml:"UseridUser"`
+	Order *Order `boil:"Order" json:"Order" toml:"Order" yaml:"Order"`
+	User  *User  `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
@@ -105,27 +105,27 @@ func (*orderEventR) NewStruct() *orderEventR {
 	return &orderEventR{}
 }
 
-func (r *orderEventR) GetOrderidOrder() *Order {
+func (r *orderEventR) GetOrder() *Order {
 	if r == nil {
 		return nil
 	}
-	return r.OrderidOrder
+	return r.Order
 }
 
-func (r *orderEventR) GetUseridUser() *User {
+func (r *orderEventR) GetUser() *User {
 	if r == nil {
 		return nil
 	}
-	return r.UseridUser
+	return r.User
 }
 
 // orderEventL is where Load methods for each relationship are stored.
 type orderEventL struct{}
 
 var (
-	orderEventAllColumns            = []string{"id", "createat", "type", "orderid", "parameters", "userid"}
+	orderEventAllColumns            = []string{"id", "create_at", "type", "order_id", "parameters", "user_id"}
 	orderEventColumnsWithoutDefault = []string{"id"}
-	orderEventColumnsWithDefault    = []string{"createat", "type", "orderid", "parameters", "userid"}
+	orderEventColumnsWithDefault    = []string{"create_at", "type", "order_id", "parameters", "user_id"}
 	orderEventPrimaryKeyColumns     = []string{"id"}
 	orderEventGeneratedColumns      = []string{}
 )
@@ -408,10 +408,10 @@ func (q orderEventQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	return count > 0, nil
 }
 
-// OrderidOrder pointed to by the foreign key.
-func (o *OrderEvent) OrderidOrder(mods ...qm.QueryMod) orderQuery {
+// Order pointed to by the foreign key.
+func (o *OrderEvent) Order(mods ...qm.QueryMod) orderQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Orderid),
+		qm.Where("\"id\" = ?", o.OrderID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -419,10 +419,10 @@ func (o *OrderEvent) OrderidOrder(mods ...qm.QueryMod) orderQuery {
 	return Orders(queryMods...)
 }
 
-// UseridUser pointed to by the foreign key.
-func (o *OrderEvent) UseridUser(mods ...qm.QueryMod) userQuery {
+// User pointed to by the foreign key.
+func (o *OrderEvent) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.Userid),
+		qm.Where("\"id\" = ?", o.UserID),
 	}
 
 	queryMods = append(queryMods, mods...)
@@ -430,9 +430,9 @@ func (o *OrderEvent) UseridUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// LoadOrderidOrder allows an eager lookup of values, cached into the
+// LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderEvent interface{}, mods queries.Applicator) error {
+func (orderEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderEvent interface{}, mods queries.Applicator) error {
 	var slice []*OrderEvent
 	var object *OrderEvent
 
@@ -463,8 +463,8 @@ func (orderEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &orderEventR{}
 		}
-		if !queries.IsNil(object.Orderid) {
-			args = append(args, object.Orderid)
+		if !queries.IsNil(object.OrderID) {
+			args = append(args, object.OrderID)
 		}
 
 	} else {
@@ -475,13 +475,13 @@ func (orderEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Orderid) {
+				if queries.Equal(a, obj.OrderID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Orderid) {
-				args = append(args, obj.Orderid)
+			if !queries.IsNil(obj.OrderID) {
+				args = append(args, obj.OrderID)
 			}
 
 		}
@@ -530,22 +530,22 @@ func (orderEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor,
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.OrderidOrder = foreign
+		object.R.Order = foreign
 		if foreign.R == nil {
 			foreign.R = &orderR{}
 		}
-		foreign.R.OrderidOrderEvents = append(foreign.R.OrderidOrderEvents, object)
+		foreign.R.OrderEvents = append(foreign.R.OrderEvents, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Orderid, foreign.ID) {
-				local.R.OrderidOrder = foreign
+			if queries.Equal(local.OrderID, foreign.ID) {
+				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
 				}
-				foreign.R.OrderidOrderEvents = append(foreign.R.OrderidOrderEvents, local)
+				foreign.R.OrderEvents = append(foreign.R.OrderEvents, local)
 				break
 			}
 		}
@@ -554,9 +554,9 @@ func (orderEventL) LoadOrderidOrder(ctx context.Context, e boil.ContextExecutor,
 	return nil
 }
 
-// LoadUseridUser allows an eager lookup of values, cached into the
+// LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderEvent interface{}, mods queries.Applicator) error {
+func (orderEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderEvent interface{}, mods queries.Applicator) error {
 	var slice []*OrderEvent
 	var object *OrderEvent
 
@@ -587,8 +587,8 @@ func (orderEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &orderEventR{}
 		}
-		if !queries.IsNil(object.Userid) {
-			args = append(args, object.Userid)
+		if !queries.IsNil(object.UserID) {
+			args = append(args, object.UserID)
 		}
 
 	} else {
@@ -599,13 +599,13 @@ func (orderEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.Userid) {
+				if queries.Equal(a, obj.UserID) {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.Userid) {
-				args = append(args, obj.Userid)
+			if !queries.IsNil(obj.UserID) {
+				args = append(args, obj.UserID)
 			}
 
 		}
@@ -654,22 +654,22 @@ func (orderEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.UseridUser = foreign
+		object.R.User = foreign
 		if foreign.R == nil {
 			foreign.R = &userR{}
 		}
-		foreign.R.UseridOrderEvents = append(foreign.R.UseridOrderEvents, object)
+		foreign.R.OrderEvents = append(foreign.R.OrderEvents, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.Userid, foreign.ID) {
-				local.R.UseridUser = foreign
+			if queries.Equal(local.UserID, foreign.ID) {
+				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
 				}
-				foreign.R.UseridOrderEvents = append(foreign.R.UseridOrderEvents, local)
+				foreign.R.OrderEvents = append(foreign.R.OrderEvents, local)
 				break
 			}
 		}
@@ -678,10 +678,10 @@ func (orderEventL) LoadUseridUser(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// SetOrderidOrder of the orderEvent to the related item.
-// Sets o.R.OrderidOrder to related.
-// Adds o to related.R.OrderidOrderEvents.
-func (o *OrderEvent) SetOrderidOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+// SetOrder of the orderEvent to the related item.
+// Sets o.R.Order to related.
+// Adds o to related.R.OrderEvents.
+func (o *OrderEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -691,7 +691,7 @@ func (o *OrderEvent) SetOrderidOrder(ctx context.Context, exec boil.ContextExecu
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_events\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"orderid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"order_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderEventPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -705,63 +705,63 @@ func (o *OrderEvent) SetOrderidOrder(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Orderid, related.ID)
+	queries.Assign(&o.OrderID, related.ID)
 	if o.R == nil {
 		o.R = &orderEventR{
-			OrderidOrder: related,
+			Order: related,
 		}
 	} else {
-		o.R.OrderidOrder = related
+		o.R.Order = related
 	}
 
 	if related.R == nil {
 		related.R = &orderR{
-			OrderidOrderEvents: OrderEventSlice{o},
+			OrderEvents: OrderEventSlice{o},
 		}
 	} else {
-		related.R.OrderidOrderEvents = append(related.R.OrderidOrderEvents, o)
+		related.R.OrderEvents = append(related.R.OrderEvents, o)
 	}
 
 	return nil
 }
 
-// RemoveOrderidOrder relationship.
-// Sets o.R.OrderidOrder to nil.
+// RemoveOrder relationship.
+// Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderEvent) RemoveOrderidOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *OrderEvent) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
 	var err error
 
-	queries.SetScanner(&o.Orderid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("orderid")); err != nil {
+	queries.SetScanner(&o.OrderID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.OrderidOrder = nil
+		o.R.Order = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.OrderidOrderEvents {
-		if queries.Equal(o.Orderid, ri.Orderid) {
+	for i, ri := range related.R.OrderEvents {
+		if queries.Equal(o.OrderID, ri.OrderID) {
 			continue
 		}
 
-		ln := len(related.R.OrderidOrderEvents)
+		ln := len(related.R.OrderEvents)
 		if ln > 1 && i < ln-1 {
-			related.R.OrderidOrderEvents[i] = related.R.OrderidOrderEvents[ln-1]
+			related.R.OrderEvents[i] = related.R.OrderEvents[ln-1]
 		}
-		related.R.OrderidOrderEvents = related.R.OrderidOrderEvents[:ln-1]
+		related.R.OrderEvents = related.R.OrderEvents[:ln-1]
 		break
 	}
 	return nil
 }
 
-// SetUseridUser of the orderEvent to the related item.
-// Sets o.R.UseridUser to related.
-// Adds o to related.R.UseridOrderEvents.
-func (o *OrderEvent) SetUseridUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetUser of the orderEvent to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.OrderEvents.
+func (o *OrderEvent) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -771,7 +771,7 @@ func (o *OrderEvent) SetUseridUser(ctx context.Context, exec boil.ContextExecuto
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"order_events\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"userid"}),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, orderEventPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -785,54 +785,54 @@ func (o *OrderEvent) SetUseridUser(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.Userid, related.ID)
+	queries.Assign(&o.UserID, related.ID)
 	if o.R == nil {
 		o.R = &orderEventR{
-			UseridUser: related,
+			User: related,
 		}
 	} else {
-		o.R.UseridUser = related
+		o.R.User = related
 	}
 
 	if related.R == nil {
 		related.R = &userR{
-			UseridOrderEvents: OrderEventSlice{o},
+			OrderEvents: OrderEventSlice{o},
 		}
 	} else {
-		related.R.UseridOrderEvents = append(related.R.UseridOrderEvents, o)
+		related.R.OrderEvents = append(related.R.OrderEvents, o)
 	}
 
 	return nil
 }
 
-// RemoveUseridUser relationship.
-// Sets o.R.UseridUser to nil.
+// RemoveUser relationship.
+// Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderEvent) RemoveUseridUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *OrderEvent) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
 	var err error
 
-	queries.SetScanner(&o.Userid, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("userid")); err != nil {
+	queries.SetScanner(&o.UserID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
 	if o.R != nil {
-		o.R.UseridUser = nil
+		o.R.User = nil
 	}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
-	for i, ri := range related.R.UseridOrderEvents {
-		if queries.Equal(o.Userid, ri.Userid) {
+	for i, ri := range related.R.OrderEvents {
+		if queries.Equal(o.UserID, ri.UserID) {
 			continue
 		}
 
-		ln := len(related.R.UseridOrderEvents)
+		ln := len(related.R.OrderEvents)
 		if ln > 1 && i < ln-1 {
-			related.R.UseridOrderEvents[i] = related.R.UseridOrderEvents[ln-1]
+			related.R.OrderEvents[i] = related.R.OrderEvents[ln-1]
 		}
-		related.R.UseridOrderEvents = related.R.UseridOrderEvents[:ln-1]
+		related.R.OrderEvents = related.R.OrderEvents[:ln-1]
 		break
 	}
 	return nil
