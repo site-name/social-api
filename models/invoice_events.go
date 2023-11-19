@@ -25,12 +25,12 @@ import (
 // InvoiceEvent is an object representing the database table.
 type InvoiceEvent struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
+	CreatedAt  int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Type       string      `boil:"type" json:"type" toml:"type" yaml:"type"`
 	InvoiceID  null.String `boil:"invoice_id" json:"invoice_id,omitempty" toml:"invoice_id" yaml:"invoice_id,omitempty"`
 	OrderID    null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Parameters null.String `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	Parameters null.JSON   `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 
 	R *invoiceEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L invoiceEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,7 +38,7 @@ type InvoiceEvent struct {
 
 var InvoiceEventColumns = struct {
 	ID         string
-	CreateAt   string
+	CreatedAt  string
 	Type       string
 	InvoiceID  string
 	OrderID    string
@@ -46,7 +46,7 @@ var InvoiceEventColumns = struct {
 	Parameters string
 }{
 	ID:         "id",
-	CreateAt:   "create_at",
+	CreatedAt:  "created_at",
 	Type:       "type",
 	InvoiceID:  "invoice_id",
 	OrderID:    "order_id",
@@ -56,7 +56,7 @@ var InvoiceEventColumns = struct {
 
 var InvoiceEventTableColumns = struct {
 	ID         string
-	CreateAt   string
+	CreatedAt  string
 	Type       string
 	InvoiceID  string
 	OrderID    string
@@ -64,7 +64,7 @@ var InvoiceEventTableColumns = struct {
 	Parameters string
 }{
 	ID:         "invoice_events.id",
-	CreateAt:   "invoice_events.create_at",
+	CreatedAt:  "invoice_events.created_at",
 	Type:       "invoice_events.type",
 	InvoiceID:  "invoice_events.invoice_id",
 	OrderID:    "invoice_events.order_id",
@@ -76,20 +76,20 @@ var InvoiceEventTableColumns = struct {
 
 var InvoiceEventWhere = struct {
 	ID         whereHelperstring
-	CreateAt   whereHelpernull_Int64
-	Type       whereHelpernull_String
+	CreatedAt  whereHelperint64
+	Type       whereHelperstring
 	InvoiceID  whereHelpernull_String
 	OrderID    whereHelpernull_String
 	UserID     whereHelpernull_String
-	Parameters whereHelpernull_String
+	Parameters whereHelpernull_JSON
 }{
 	ID:         whereHelperstring{field: "\"invoice_events\".\"id\""},
-	CreateAt:   whereHelpernull_Int64{field: "\"invoice_events\".\"create_at\""},
-	Type:       whereHelpernull_String{field: "\"invoice_events\".\"type\""},
+	CreatedAt:  whereHelperint64{field: "\"invoice_events\".\"created_at\""},
+	Type:       whereHelperstring{field: "\"invoice_events\".\"type\""},
 	InvoiceID:  whereHelpernull_String{field: "\"invoice_events\".\"invoice_id\""},
 	OrderID:    whereHelpernull_String{field: "\"invoice_events\".\"order_id\""},
 	UserID:     whereHelpernull_String{field: "\"invoice_events\".\"user_id\""},
-	Parameters: whereHelpernull_String{field: "\"invoice_events\".\"parameters\""},
+	Parameters: whereHelpernull_JSON{field: "\"invoice_events\".\"parameters\""},
 }
 
 // InvoiceEventRels is where relationship names are stored.
@@ -140,9 +140,9 @@ func (r *invoiceEventR) GetUser() *User {
 type invoiceEventL struct{}
 
 var (
-	invoiceEventAllColumns            = []string{"id", "create_at", "type", "invoice_id", "order_id", "user_id", "parameters"}
-	invoiceEventColumnsWithoutDefault = []string{"id"}
-	invoiceEventColumnsWithDefault    = []string{"create_at", "type", "invoice_id", "order_id", "user_id", "parameters"}
+	invoiceEventAllColumns            = []string{"id", "created_at", "type", "invoice_id", "order_id", "user_id", "parameters"}
+	invoiceEventColumnsWithoutDefault = []string{"created_at", "type"}
+	invoiceEventColumnsWithDefault    = []string{"id", "invoice_id", "order_id", "user_id", "parameters"}
 	invoiceEventPrimaryKeyColumns     = []string{"id"}
 	invoiceEventGeneratedColumns      = []string{}
 )
@@ -1208,10 +1208,6 @@ func (o *InvoiceEvent) Update(ctx context.Context, exec boil.ContextExecutor, co
 			invoiceEventAllColumns,
 			invoiceEventPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update invoice_events, could not build whitelist")
 		}

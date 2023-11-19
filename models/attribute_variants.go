@@ -24,11 +24,11 @@ import (
 
 // AttributeVariant is an object representing the database table.
 type AttributeVariant struct {
-	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID      null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
-	ProductTypeID    null.String `boil:"product_type_id" json:"product_type_id,omitempty" toml:"product_type_id" yaml:"product_type_id,omitempty"`
-	VariantSelection null.Bool   `boil:"variant_selection" json:"variant_selection,omitempty" toml:"variant_selection" yaml:"variant_selection,omitempty"`
-	SortOrder        null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID               string   `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID      string   `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	ProductTypeID    string   `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
+	VariantSelection bool     `boil:"variant_selection" json:"variant_selection" toml:"variant_selection" yaml:"variant_selection"`
+	SortOrder        null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributeVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -64,17 +64,26 @@ var AttributeVariantTableColumns = struct {
 
 // Generated where
 
+type whereHelperbool struct{ field string }
+
+func (w whereHelperbool) EQ(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperbool) NEQ(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperbool) LT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperbool) LTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+
 var AttributeVariantWhere = struct {
 	ID               whereHelperstring
-	AttributeID      whereHelpernull_String
-	ProductTypeID    whereHelpernull_String
-	VariantSelection whereHelpernull_Bool
+	AttributeID      whereHelperstring
+	ProductTypeID    whereHelperstring
+	VariantSelection whereHelperbool
 	SortOrder        whereHelpernull_Int
 }{
 	ID:               whereHelperstring{field: "\"attribute_variants\".\"id\""},
-	AttributeID:      whereHelpernull_String{field: "\"attribute_variants\".\"attribute_id\""},
-	ProductTypeID:    whereHelpernull_String{field: "\"attribute_variants\".\"product_type_id\""},
-	VariantSelection: whereHelpernull_Bool{field: "\"attribute_variants\".\"variant_selection\""},
+	AttributeID:      whereHelperstring{field: "\"attribute_variants\".\"attribute_id\""},
+	ProductTypeID:    whereHelperstring{field: "\"attribute_variants\".\"product_type_id\""},
+	VariantSelection: whereHelperbool{field: "\"attribute_variants\".\"variant_selection\""},
 	SortOrder:        whereHelpernull_Int{field: "\"attribute_variants\".\"sort_order\""},
 }
 
@@ -127,8 +136,8 @@ type attributeVariantL struct{}
 
 var (
 	attributeVariantAllColumns            = []string{"id", "attribute_id", "product_type_id", "variant_selection", "sort_order"}
-	attributeVariantColumnsWithoutDefault = []string{"id"}
-	attributeVariantColumnsWithDefault    = []string{"attribute_id", "product_type_id", "variant_selection", "sort_order"}
+	attributeVariantColumnsWithoutDefault = []string{"attribute_id", "product_type_id"}
+	attributeVariantColumnsWithDefault    = []string{"id", "variant_selection", "sort_order"}
 	attributeVariantPrimaryKeyColumns     = []string{"id"}
 	attributeVariantGeneratedColumns      = []string{}
 )
@@ -480,9 +489,7 @@ func (attributeVariantL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &attributeVariantR{}
 		}
-		if !queries.IsNil(object.AttributeID) {
-			args = append(args, object.AttributeID)
-		}
+		args = append(args, object.AttributeID)
 
 	} else {
 	Outer:
@@ -492,14 +499,12 @@ func (attributeVariantL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.AttributeID) {
+				if a == obj.AttributeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.AttributeID) {
-				args = append(args, obj.AttributeID)
-			}
+			args = append(args, obj.AttributeID)
 
 		}
 	}
@@ -557,7 +562,7 @@ func (attributeVariantL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.AttributeID, foreign.ID) {
+			if local.AttributeID == foreign.ID {
 				local.R.Attribute = foreign
 				if foreign.R == nil {
 					foreign.R = &attributeR{}
@@ -604,9 +609,7 @@ func (attributeVariantL) LoadProductType(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &attributeVariantR{}
 		}
-		if !queries.IsNil(object.ProductTypeID) {
-			args = append(args, object.ProductTypeID)
-		}
+		args = append(args, object.ProductTypeID)
 
 	} else {
 	Outer:
@@ -616,14 +619,12 @@ func (attributeVariantL) LoadProductType(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductTypeID) {
+				if a == obj.ProductTypeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductTypeID) {
-				args = append(args, obj.ProductTypeID)
-			}
+			args = append(args, obj.ProductTypeID)
 
 		}
 	}
@@ -681,7 +682,7 @@ func (attributeVariantL) LoadProductType(ctx context.Context, e boil.ContextExec
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductTypeID, foreign.ID) {
+			if local.ProductTypeID == foreign.ID {
 				local.R.ProductType = foreign
 				if foreign.R == nil {
 					foreign.R = &productTypeR{}
@@ -737,7 +738,7 @@ func (attributeVariantL) LoadAssignmentAssignedVariantAttributes(ctx context.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -795,7 +796,7 @@ func (attributeVariantL) LoadAssignmentAssignedVariantAttributes(ctx context.Con
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.AssignmentID) {
+			if local.ID == foreign.AssignmentID {
 				local.R.AssignmentAssignedVariantAttributes = append(local.R.AssignmentAssignedVariantAttributes, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedVariantAttributeR{}
@@ -836,7 +837,7 @@ func (o *AttributeVariant) SetAttribute(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.AttributeID, related.ID)
+	o.AttributeID = related.ID
 	if o.R == nil {
 		o.R = &attributeVariantR{
 			Attribute: related,
@@ -853,39 +854,6 @@ func (o *AttributeVariant) SetAttribute(ctx context.Context, exec boil.ContextEx
 		related.R.AttributeVariants = append(related.R.AttributeVariants, o)
 	}
 
-	return nil
-}
-
-// RemoveAttribute relationship.
-// Sets o.R.Attribute to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AttributeVariant) RemoveAttribute(ctx context.Context, exec boil.ContextExecutor, related *Attribute) error {
-	var err error
-
-	queries.SetScanner(&o.AttributeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Attribute = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AttributeVariants {
-		if queries.Equal(o.AttributeID, ri.AttributeID) {
-			continue
-		}
-
-		ln := len(related.R.AttributeVariants)
-		if ln > 1 && i < ln-1 {
-			related.R.AttributeVariants[i] = related.R.AttributeVariants[ln-1]
-		}
-		related.R.AttributeVariants = related.R.AttributeVariants[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -916,7 +884,7 @@ func (o *AttributeVariant) SetProductType(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductTypeID, related.ID)
+	o.ProductTypeID = related.ID
 	if o.R == nil {
 		o.R = &attributeVariantR{
 			ProductType: related,
@@ -936,39 +904,6 @@ func (o *AttributeVariant) SetProductType(ctx context.Context, exec boil.Context
 	return nil
 }
 
-// RemoveProductType relationship.
-// Sets o.R.ProductType to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AttributeVariant) RemoveProductType(ctx context.Context, exec boil.ContextExecutor, related *ProductType) error {
-	var err error
-
-	queries.SetScanner(&o.ProductTypeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_type_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ProductType = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AttributeVariants {
-		if queries.Equal(o.ProductTypeID, ri.ProductTypeID) {
-			continue
-		}
-
-		ln := len(related.R.AttributeVariants)
-		if ln > 1 && i < ln-1 {
-			related.R.AttributeVariants[i] = related.R.AttributeVariants[ln-1]
-		}
-		related.R.AttributeVariants = related.R.AttributeVariants[:ln-1]
-		break
-	}
-	return nil
-}
-
 // AddAssignmentAssignedVariantAttributes adds the given related objects to the existing relationships
 // of the attribute_variant, optionally inserting them as new records.
 // Appends related to o.R.AssignmentAssignedVariantAttributes.
@@ -977,7 +912,7 @@ func (o *AttributeVariant) AddAssignmentAssignedVariantAttributes(ctx context.Co
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.AssignmentID, o.ID)
+			rel.AssignmentID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -998,7 +933,7 @@ func (o *AttributeVariant) AddAssignmentAssignedVariantAttributes(ctx context.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.AssignmentID, o.ID)
+			rel.AssignmentID = o.ID
 		}
 	}
 
@@ -1019,80 +954,6 @@ func (o *AttributeVariant) AddAssignmentAssignedVariantAttributes(ctx context.Co
 			rel.R.Assignment = o
 		}
 	}
-	return nil
-}
-
-// SetAssignmentAssignedVariantAttributes removes all previously related items of the
-// attribute_variant replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Assignment's AssignmentAssignedVariantAttributes accordingly.
-// Replaces o.R.AssignmentAssignedVariantAttributes with related.
-// Sets related.R.Assignment's AssignmentAssignedVariantAttributes accordingly.
-func (o *AttributeVariant) SetAssignmentAssignedVariantAttributes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedVariantAttribute) error {
-	query := "update \"assigned_variant_attributes\" set \"assignment_id\" = null where \"assignment_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AssignmentAssignedVariantAttributes {
-			queries.SetScanner(&rel.AssignmentID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Assignment = nil
-		}
-		o.R.AssignmentAssignedVariantAttributes = nil
-	}
-
-	return o.AddAssignmentAssignedVariantAttributes(ctx, exec, insert, related...)
-}
-
-// RemoveAssignmentAssignedVariantAttributes relationships from objects passed in.
-// Removes related items from R.AssignmentAssignedVariantAttributes (uses pointer comparison, removal does not keep order)
-// Sets related.R.Assignment.
-func (o *AttributeVariant) RemoveAssignmentAssignedVariantAttributes(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedVariantAttribute) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.AssignmentID, nil)
-		if rel.R != nil {
-			rel.R.Assignment = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("assignment_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AssignmentAssignedVariantAttributes {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AssignmentAssignedVariantAttributes)
-			if ln > 1 && i < ln-1 {
-				o.R.AssignmentAssignedVariantAttributes[i] = o.R.AssignmentAssignedVariantAttributes[ln-1]
-			}
-			o.R.AssignmentAssignedVariantAttributes = o.R.AssignmentAssignedVariantAttributes[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1234,10 +1095,6 @@ func (o *AttributeVariant) Update(ctx context.Context, exec boil.ContextExecutor
 			attributeVariantAllColumns,
 			attributeVariantPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attribute_variants, could not build whitelist")
 		}

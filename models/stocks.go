@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // Stock is an object representing the database table.
 type Stock struct {
-	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt         null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	WarehouseID      null.String `boil:"warehouse_id" json:"warehouse_id,omitempty" toml:"warehouse_id" yaml:"warehouse_id,omitempty"`
-	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
-	Quantity         null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
+	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt        int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	WarehouseID      string `boil:"warehouse_id" json:"warehouse_id" toml:"warehouse_id" yaml:"warehouse_id"`
+	ProductVariantID string `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
+	Quantity         int    `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
 
 	R *stockR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L stockL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,13 +35,13 @@ type Stock struct {
 
 var StockColumns = struct {
 	ID               string
-	CreateAt         string
+	CreatedAt        string
 	WarehouseID      string
 	ProductVariantID string
 	Quantity         string
 }{
 	ID:               "id",
-	CreateAt:         "create_at",
+	CreatedAt:        "created_at",
 	WarehouseID:      "warehouse_id",
 	ProductVariantID: "product_variant_id",
 	Quantity:         "quantity",
@@ -50,13 +49,13 @@ var StockColumns = struct {
 
 var StockTableColumns = struct {
 	ID               string
-	CreateAt         string
+	CreatedAt        string
 	WarehouseID      string
 	ProductVariantID string
 	Quantity         string
 }{
 	ID:               "stocks.id",
-	CreateAt:         "stocks.create_at",
+	CreatedAt:        "stocks.created_at",
 	WarehouseID:      "stocks.warehouse_id",
 	ProductVariantID: "stocks.product_variant_id",
 	Quantity:         "stocks.quantity",
@@ -66,16 +65,16 @@ var StockTableColumns = struct {
 
 var StockWhere = struct {
 	ID               whereHelperstring
-	CreateAt         whereHelpernull_Int64
-	WarehouseID      whereHelpernull_String
-	ProductVariantID whereHelpernull_String
-	Quantity         whereHelpernull_Int
+	CreatedAt        whereHelperint64
+	WarehouseID      whereHelperstring
+	ProductVariantID whereHelperstring
+	Quantity         whereHelperint
 }{
 	ID:               whereHelperstring{field: "\"stocks\".\"id\""},
-	CreateAt:         whereHelpernull_Int64{field: "\"stocks\".\"create_at\""},
-	WarehouseID:      whereHelpernull_String{field: "\"stocks\".\"warehouse_id\""},
-	ProductVariantID: whereHelpernull_String{field: "\"stocks\".\"product_variant_id\""},
-	Quantity:         whereHelpernull_Int{field: "\"stocks\".\"quantity\""},
+	CreatedAt:        whereHelperint64{field: "\"stocks\".\"created_at\""},
+	WarehouseID:      whereHelperstring{field: "\"stocks\".\"warehouse_id\""},
+	ProductVariantID: whereHelperstring{field: "\"stocks\".\"product_variant_id\""},
+	Quantity:         whereHelperint{field: "\"stocks\".\"quantity\""},
 }
 
 // StockRels is where relationship names are stored.
@@ -136,9 +135,9 @@ func (r *stockR) GetFulfillmentLines() FulfillmentLineSlice {
 type stockL struct{}
 
 var (
-	stockAllColumns            = []string{"id", "create_at", "warehouse_id", "product_variant_id", "quantity"}
-	stockColumnsWithoutDefault = []string{"id"}
-	stockColumnsWithDefault    = []string{"create_at", "warehouse_id", "product_variant_id", "quantity"}
+	stockAllColumns            = []string{"id", "created_at", "warehouse_id", "product_variant_id", "quantity"}
+	stockColumnsWithoutDefault = []string{"created_at", "warehouse_id", "product_variant_id", "quantity"}
+	stockColumnsWithDefault    = []string{"id"}
 	stockPrimaryKeyColumns     = []string{"id"}
 	stockGeneratedColumns      = []string{}
 )
@@ -504,9 +503,7 @@ func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &stockR{}
 		}
-		if !queries.IsNil(object.ProductVariantID) {
-			args = append(args, object.ProductVariantID)
-		}
+		args = append(args, object.ProductVariantID)
 
 	} else {
 	Outer:
@@ -516,14 +513,12 @@ func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductVariantID) {
+				if a == obj.ProductVariantID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductVariantID) {
-				args = append(args, obj.ProductVariantID)
-			}
+			args = append(args, obj.ProductVariantID)
 
 		}
 	}
@@ -581,7 +576,7 @@ func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductVariantID, foreign.ID) {
+			if local.ProductVariantID == foreign.ID {
 				local.R.ProductVariant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
@@ -628,9 +623,7 @@ func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singula
 		if object.R == nil {
 			object.R = &stockR{}
 		}
-		if !queries.IsNil(object.WarehouseID) {
-			args = append(args, object.WarehouseID)
-		}
+		args = append(args, object.WarehouseID)
 
 	} else {
 	Outer:
@@ -640,14 +633,12 @@ func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singula
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.WarehouseID) {
+				if a == obj.WarehouseID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.WarehouseID) {
-				args = append(args, obj.WarehouseID)
-			}
+			args = append(args, obj.WarehouseID)
 
 		}
 	}
@@ -705,7 +696,7 @@ func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singula
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.WarehouseID, foreign.ID) {
+			if local.WarehouseID == foreign.ID {
 				local.R.Warehouse = foreign
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
@@ -974,7 +965,7 @@ func (o *Stock) SetProductVariant(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductVariantID, related.ID)
+	o.ProductVariantID = related.ID
 	if o.R == nil {
 		o.R = &stockR{
 			ProductVariant: related,
@@ -991,39 +982,6 @@ func (o *Stock) SetProductVariant(ctx context.Context, exec boil.ContextExecutor
 		related.R.Stocks = append(related.R.Stocks, o)
 	}
 
-	return nil
-}
-
-// RemoveProductVariant relationship.
-// Sets o.R.ProductVariant to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Stock) RemoveProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
-	var err error
-
-	queries.SetScanner(&o.ProductVariantID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_variant_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ProductVariant = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Stocks {
-		if queries.Equal(o.ProductVariantID, ri.ProductVariantID) {
-			continue
-		}
-
-		ln := len(related.R.Stocks)
-		if ln > 1 && i < ln-1 {
-			related.R.Stocks[i] = related.R.Stocks[ln-1]
-		}
-		related.R.Stocks = related.R.Stocks[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1054,7 +1012,7 @@ func (o *Stock) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, ins
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.WarehouseID, related.ID)
+	o.WarehouseID = related.ID
 	if o.R == nil {
 		o.R = &stockR{
 			Warehouse: related,
@@ -1071,39 +1029,6 @@ func (o *Stock) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, ins
 		related.R.Stocks = append(related.R.Stocks, o)
 	}
 
-	return nil
-}
-
-// RemoveWarehouse relationship.
-// Sets o.R.Warehouse to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Stock) RemoveWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
-	var err error
-
-	queries.SetScanner(&o.WarehouseID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("warehouse_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Warehouse = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Stocks {
-		if queries.Equal(o.WarehouseID, ri.WarehouseID) {
-			continue
-		}
-
-		ln := len(related.R.Stocks)
-		if ln > 1 && i < ln-1 {
-			related.R.Stocks[i] = related.R.Stocks[ln-1]
-		}
-		related.R.Stocks = related.R.Stocks[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1425,10 +1350,6 @@ func (o *Stock) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 			stockAllColumns,
 			stockPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update stocks, could not build whitelist")
 		}

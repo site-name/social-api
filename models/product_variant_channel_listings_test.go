@@ -805,7 +805,7 @@ func testProductVariantChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	productVariantChannelListingDBTypes = map[string]string{`ID`: `character varying`, `VariantID`: `character varying`, `ChannelID`: `character varying`, `Currency`: `character varying`, `PriceAmount`: `double precision`, `CostPriceAmount`: `double precision`, `PreorderQuantityThreshold`: `integer`, `CreateAt`: `bigint`}
+	productVariantChannelListingDBTypes = map[string]string{`ID`: `uuid`, `VariantID`: `uuid`, `ChannelID`: `uuid`, `Currency`: `character varying`, `PriceAmount`: `numeric`, `CostPriceAmount`: `numeric`, `PreorderQuantityThreshold`: `integer`, `CreatedAt`: `bigint`}
 	_                                   = bytes.MinRead
 )
 

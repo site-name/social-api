@@ -25,15 +25,15 @@ import (
 // Collection is an object representing the database table.
 type Collection struct {
 	ID                 string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name               null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug               null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
+	Name               string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug               string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	BackgroundImage    null.String `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
-	BackgroundImageAlt null.String `boil:"background_image_alt" json:"background_image_alt,omitempty" toml:"background_image_alt" yaml:"background_image_alt,omitempty"`
+	BackgroundImageAlt string      `boil:"background_image_alt" json:"background_image_alt" toml:"background_image_alt" yaml:"background_image_alt"`
 	Description        null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Metadata           null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata    null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
-	SeoTitle           null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription     null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	SeoTitle           string      `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
+	SeoDescription     string      `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
 	R *collectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L collectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -91,26 +91,26 @@ var CollectionTableColumns = struct {
 
 var CollectionWhere = struct {
 	ID                 whereHelperstring
-	Name               whereHelpernull_String
-	Slug               whereHelpernull_String
+	Name               whereHelperstring
+	Slug               whereHelperstring
 	BackgroundImage    whereHelpernull_String
-	BackgroundImageAlt whereHelpernull_String
+	BackgroundImageAlt whereHelperstring
 	Description        whereHelpernull_String
 	Metadata           whereHelpernull_JSON
 	PrivateMetadata    whereHelpernull_JSON
-	SeoTitle           whereHelpernull_String
-	SeoDescription     whereHelpernull_String
+	SeoTitle           whereHelperstring
+	SeoDescription     whereHelperstring
 }{
 	ID:                 whereHelperstring{field: "\"collections\".\"id\""},
-	Name:               whereHelpernull_String{field: "\"collections\".\"name\""},
-	Slug:               whereHelpernull_String{field: "\"collections\".\"slug\""},
+	Name:               whereHelperstring{field: "\"collections\".\"name\""},
+	Slug:               whereHelperstring{field: "\"collections\".\"slug\""},
 	BackgroundImage:    whereHelpernull_String{field: "\"collections\".\"background_image\""},
-	BackgroundImageAlt: whereHelpernull_String{field: "\"collections\".\"background_image_alt\""},
+	BackgroundImageAlt: whereHelperstring{field: "\"collections\".\"background_image_alt\""},
 	Description:        whereHelpernull_String{field: "\"collections\".\"description\""},
 	Metadata:           whereHelpernull_JSON{field: "\"collections\".\"metadata\""},
 	PrivateMetadata:    whereHelpernull_JSON{field: "\"collections\".\"private_metadata\""},
-	SeoTitle:           whereHelpernull_String{field: "\"collections\".\"seo_title\""},
-	SeoDescription:     whereHelpernull_String{field: "\"collections\".\"seo_description\""},
+	SeoTitle:           whereHelperstring{field: "\"collections\".\"seo_title\""},
+	SeoDescription:     whereHelperstring{field: "\"collections\".\"seo_description\""},
 }
 
 // CollectionRels is where relationship names are stored.
@@ -192,8 +192,8 @@ type collectionL struct{}
 
 var (
 	collectionAllColumns            = []string{"id", "name", "slug", "background_image", "background_image_alt", "description", "metadata", "private_metadata", "seo_title", "seo_description"}
-	collectionColumnsWithoutDefault = []string{"id"}
-	collectionColumnsWithDefault    = []string{"name", "slug", "background_image", "background_image_alt", "description", "metadata", "private_metadata", "seo_title", "seo_description"}
+	collectionColumnsWithoutDefault = []string{"name", "slug", "background_image_alt", "seo_title", "seo_description"}
+	collectionColumnsWithDefault    = []string{"id", "background_image", "description", "metadata", "private_metadata"}
 	collectionPrimaryKeyColumns     = []string{"id"}
 	collectionGeneratedColumns      = []string{}
 )
@@ -602,7 +602,7 @@ func (collectionL) LoadCollectionChannelListings(ctx context.Context, e boil.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -660,7 +660,7 @@ func (collectionL) LoadCollectionChannelListings(ctx context.Context, e boil.Con
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CollectionID) {
+			if local.ID == foreign.CollectionID {
 				local.R.CollectionChannelListings = append(local.R.CollectionChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &collectionChannelListingR{}
@@ -716,7 +716,7 @@ func (collectionL) LoadCollectionTranslations(ctx context.Context, e boil.Contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -774,7 +774,7 @@ func (collectionL) LoadCollectionTranslations(ctx context.Context, e boil.Contex
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CollectionID) {
+			if local.ID == foreign.CollectionID {
 				local.R.CollectionTranslations = append(local.R.CollectionTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &collectionTranslationR{}
@@ -944,7 +944,7 @@ func (collectionL) LoadProductCollections(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1002,7 +1002,7 @@ func (collectionL) LoadProductCollections(ctx context.Context, e boil.ContextExe
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CollectionID) {
+			if local.ID == foreign.CollectionID {
 				local.R.ProductCollections = append(local.R.ProductCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &productCollectionR{}
@@ -1058,7 +1058,7 @@ func (collectionL) LoadSaleCollections(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1116,7 +1116,7 @@ func (collectionL) LoadSaleCollections(ctx context.Context, e boil.ContextExecut
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CollectionID) {
+			if local.ID == foreign.CollectionID {
 				local.R.SaleCollections = append(local.R.SaleCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleCollectionR{}
@@ -1172,7 +1172,7 @@ func (collectionL) LoadVoucherCollections(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1230,7 +1230,7 @@ func (collectionL) LoadVoucherCollections(ctx context.Context, e boil.ContextExe
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CollectionID) {
+			if local.ID == foreign.CollectionID {
 				local.R.VoucherCollections = append(local.R.VoucherCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherCollectionR{}
@@ -1252,7 +1252,7 @@ func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1273,7 +1273,7 @@ func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 		}
 	}
 
@@ -1297,80 +1297,6 @@ func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil
 	return nil
 }
 
-// SetCollectionChannelListings removes all previously related items of the
-// collection replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Collection's CollectionChannelListings accordingly.
-// Replaces o.R.CollectionChannelListings with related.
-// Sets related.R.Collection's CollectionChannelListings accordingly.
-func (o *Collection) SetCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
-	query := "update \"collection_channel_listings\" set \"collection_id\" = null where \"collection_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.CollectionChannelListings {
-			queries.SetScanner(&rel.CollectionID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Collection = nil
-		}
-		o.R.CollectionChannelListings = nil
-	}
-
-	return o.AddCollectionChannelListings(ctx, exec, insert, related...)
-}
-
-// RemoveCollectionChannelListings relationships from objects passed in.
-// Removes related items from R.CollectionChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.Collection.
-func (o *Collection) RemoveCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionChannelListing) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CollectionID, nil)
-		if rel.R != nil {
-			rel.R.Collection = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.CollectionChannelListings {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.CollectionChannelListings)
-			if ln > 1 && i < ln-1 {
-				o.R.CollectionChannelListings[i] = o.R.CollectionChannelListings[ln-1]
-			}
-			o.R.CollectionChannelListings = o.R.CollectionChannelListings[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddCollectionTranslations adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.CollectionTranslations.
@@ -1379,7 +1305,7 @@ func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.Co
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1400,7 +1326,7 @@ func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 		}
 	}
 
@@ -1421,80 +1347,6 @@ func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.Co
 			rel.R.Collection = o
 		}
 	}
-	return nil
-}
-
-// SetCollectionTranslations removes all previously related items of the
-// collection replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Collection's CollectionTranslations accordingly.
-// Replaces o.R.CollectionTranslations with related.
-// Sets related.R.Collection's CollectionTranslations accordingly.
-func (o *Collection) SetCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionTranslation) error {
-	query := "update \"collection_translations\" set \"collection_id\" = null where \"collection_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.CollectionTranslations {
-			queries.SetScanner(&rel.CollectionID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Collection = nil
-		}
-		o.R.CollectionTranslations = nil
-	}
-
-	return o.AddCollectionTranslations(ctx, exec, insert, related...)
-}
-
-// RemoveCollectionTranslations relationships from objects passed in.
-// Removes related items from R.CollectionTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.Collection.
-func (o *Collection) RemoveCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionTranslation) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CollectionID, nil)
-		if rel.R != nil {
-			rel.R.Collection = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.CollectionTranslations {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.CollectionTranslations)
-			if ln > 1 && i < ln-1 {
-				o.R.CollectionTranslations[i] = o.R.CollectionTranslations[ln-1]
-			}
-			o.R.CollectionTranslations = o.R.CollectionTranslations[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1633,7 +1485,7 @@ func (o *Collection) AddProductCollections(ctx context.Context, exec boil.Contex
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1654,7 +1506,7 @@ func (o *Collection) AddProductCollections(ctx context.Context, exec boil.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 		}
 	}
 
@@ -1678,80 +1530,6 @@ func (o *Collection) AddProductCollections(ctx context.Context, exec boil.Contex
 	return nil
 }
 
-// SetProductCollections removes all previously related items of the
-// collection replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Collection's ProductCollections accordingly.
-// Replaces o.R.ProductCollections with related.
-// Sets related.R.Collection's ProductCollections accordingly.
-func (o *Collection) SetProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
-	query := "update \"product_collections\" set \"collection_id\" = null where \"collection_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductCollections {
-			queries.SetScanner(&rel.CollectionID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Collection = nil
-		}
-		o.R.ProductCollections = nil
-	}
-
-	return o.AddProductCollections(ctx, exec, insert, related...)
-}
-
-// RemoveProductCollections relationships from objects passed in.
-// Removes related items from R.ProductCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.Collection.
-func (o *Collection) RemoveProductCollections(ctx context.Context, exec boil.ContextExecutor, related ...*ProductCollection) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CollectionID, nil)
-		if rel.R != nil {
-			rel.R.Collection = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductCollections {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductCollections)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductCollections[i] = o.R.ProductCollections[ln-1]
-			}
-			o.R.ProductCollections = o.R.ProductCollections[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddSaleCollections adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.SaleCollections.
@@ -1760,7 +1538,7 @@ func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextEx
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1781,7 +1559,7 @@ func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 		}
 	}
 
@@ -1805,80 +1583,6 @@ func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// SetSaleCollections removes all previously related items of the
-// collection replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Collection's SaleCollections accordingly.
-// Replaces o.R.SaleCollections with related.
-// Sets related.R.Collection's SaleCollections accordingly.
-func (o *Collection) SetSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
-	query := "update \"sale_collections\" set \"collection_id\" = null where \"collection_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.SaleCollections {
-			queries.SetScanner(&rel.CollectionID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Collection = nil
-		}
-		o.R.SaleCollections = nil
-	}
-
-	return o.AddSaleCollections(ctx, exec, insert, related...)
-}
-
-// RemoveSaleCollections relationships from objects passed in.
-// Removes related items from R.SaleCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.Collection.
-func (o *Collection) RemoveSaleCollections(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCollection) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CollectionID, nil)
-		if rel.R != nil {
-			rel.R.Collection = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.SaleCollections {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.SaleCollections)
-			if ln > 1 && i < ln-1 {
-				o.R.SaleCollections[i] = o.R.SaleCollections[ln-1]
-			}
-			o.R.SaleCollections = o.R.SaleCollections[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddVoucherCollections adds the given related objects to the existing relationships
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.VoucherCollections.
@@ -1887,7 +1591,7 @@ func (o *Collection) AddVoucherCollections(ctx context.Context, exec boil.Contex
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1908,7 +1612,7 @@ func (o *Collection) AddVoucherCollections(ctx context.Context, exec boil.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CollectionID, o.ID)
+			rel.CollectionID = o.ID
 		}
 	}
 
@@ -1929,80 +1633,6 @@ func (o *Collection) AddVoucherCollections(ctx context.Context, exec boil.Contex
 			rel.R.Collection = o
 		}
 	}
-	return nil
-}
-
-// SetVoucherCollections removes all previously related items of the
-// collection replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Collection's VoucherCollections accordingly.
-// Replaces o.R.VoucherCollections with related.
-// Sets related.R.Collection's VoucherCollections accordingly.
-func (o *Collection) SetVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
-	query := "update \"voucher_collections\" set \"collection_id\" = null where \"collection_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherCollections {
-			queries.SetScanner(&rel.CollectionID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Collection = nil
-		}
-		o.R.VoucherCollections = nil
-	}
-
-	return o.AddVoucherCollections(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherCollections relationships from objects passed in.
-// Removes related items from R.VoucherCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.Collection.
-func (o *Collection) RemoveVoucherCollections(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCollection) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CollectionID, nil)
-		if rel.R != nil {
-			rel.R.Collection = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherCollections {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherCollections)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherCollections[i] = o.R.VoucherCollections[ln-1]
-			}
-			o.R.VoucherCollections = o.R.VoucherCollections[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2144,10 +1774,6 @@ func (o *Collection) Update(ctx context.Context, exec boil.ContextExecutor, colu
 			collectionAllColumns,
 			collectionPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update collections, could not build whitelist")
 		}

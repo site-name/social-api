@@ -503,7 +503,7 @@ func testPageTranslationToOnePageUsingPage(t *testing.T) {
 	var foreign Page
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, pageTranslationDBTypes, true, pageTranslationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, pageTranslationDBTypes, false, pageTranslationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize PageTranslation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, pageDBTypes, false, pageColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testPageTranslationToOnePageUsingPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.PageID, foreign.ID)
+	local.PageID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testPageTranslationToOnePageUsingPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testPageTranslationToOneSetOpPageUsingPage(t *testing.T) {
 		if x.R.PageTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.PageID, x.ID) {
+		if a.PageID != x.ID {
 			t.Error("foreign key was wrong value", a.PageID)
 		}
 
@@ -607,60 +607,9 @@ func testPageTranslationToOneSetOpPageUsingPage(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.PageID, x.ID) {
+		if a.PageID != x.ID {
 			t.Error("foreign key was wrong value", a.PageID, x.ID)
 		}
-	}
-}
-
-func testPageTranslationToOneRemoveOpPageUsingPage(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a PageTranslation
-	var b Page
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, pageTranslationDBTypes, false, strmangle.SetComplement(pageTranslationPrimaryKeyColumns, pageTranslationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, pageDBTypes, false, strmangle.SetComplement(pagePrimaryKeyColumns, pageColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetPage(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemovePage(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Page().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Page != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.PageID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.PageTranslations) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testPageTranslationsSelect(t *testing.T) {
 }
 
 var (
-	pageTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `PageID`: `character varying`, `Title`: `character varying`, `Content`: `text`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
+	pageTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `PageID`: `uuid`, `Title`: `character varying`, `Content`: `text`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
 	_                      = bytes.MinRead
 )
 

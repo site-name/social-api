@@ -24,12 +24,12 @@ import (
 
 // Menu is an object representing the database table.
 type Menu struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug            null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug            string    `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	CreatedAt       int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *menuR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L menuL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,14 +39,14 @@ var MenuColumns = struct {
 	ID              string
 	Name            string
 	Slug            string
-	CreateAt        string
+	CreatedAt       string
 	Metadata        string
 	PrivateMetadata string
 }{
 	ID:              "id",
 	Name:            "name",
 	Slug:            "slug",
-	CreateAt:        "create_at",
+	CreatedAt:       "created_at",
 	Metadata:        "metadata",
 	PrivateMetadata: "private_metadata",
 }
@@ -55,14 +55,14 @@ var MenuTableColumns = struct {
 	ID              string
 	Name            string
 	Slug            string
-	CreateAt        string
+	CreatedAt       string
 	Metadata        string
 	PrivateMetadata string
 }{
 	ID:              "menus.id",
 	Name:            "menus.name",
 	Slug:            "menus.slug",
-	CreateAt:        "menus.create_at",
+	CreatedAt:       "menus.created_at",
 	Metadata:        "menus.metadata",
 	PrivateMetadata: "menus.private_metadata",
 }
@@ -71,16 +71,16 @@ var MenuTableColumns = struct {
 
 var MenuWhere = struct {
 	ID              whereHelperstring
-	Name            whereHelpernull_String
-	Slug            whereHelpernull_String
-	CreateAt        whereHelpernull_Int64
+	Name            whereHelperstring
+	Slug            whereHelperstring
+	CreatedAt       whereHelperint64
 	Metadata        whereHelpernull_JSON
 	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"menus\".\"id\""},
-	Name:            whereHelpernull_String{field: "\"menus\".\"name\""},
-	Slug:            whereHelpernull_String{field: "\"menus\".\"slug\""},
-	CreateAt:        whereHelpernull_Int64{field: "\"menus\".\"create_at\""},
+	Name:            whereHelperstring{field: "\"menus\".\"name\""},
+	Slug:            whereHelperstring{field: "\"menus\".\"slug\""},
+	CreatedAt:       whereHelperint64{field: "\"menus\".\"created_at\""},
 	Metadata:        whereHelpernull_JSON{field: "\"menus\".\"metadata\""},
 	PrivateMetadata: whereHelpernull_JSON{field: "\"menus\".\"private_metadata\""},
 }
@@ -123,9 +123,9 @@ func (r *menuR) GetTopMenuShops() ShopSlice {
 type menuL struct{}
 
 var (
-	menuAllColumns            = []string{"id", "name", "slug", "create_at", "metadata", "private_metadata"}
-	menuColumnsWithoutDefault = []string{"id"}
-	menuColumnsWithDefault    = []string{"name", "slug", "create_at", "metadata", "private_metadata"}
+	menuAllColumns            = []string{"id", "name", "slug", "created_at", "metadata", "private_metadata"}
+	menuColumnsWithoutDefault = []string{"name", "slug", "created_at"}
+	menuColumnsWithDefault    = []string{"id", "metadata", "private_metadata"}
 	menuPrimaryKeyColumns     = []string{"id"}
 	menuGeneratedColumns      = []string{}
 )
@@ -478,7 +478,7 @@ func (menuL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -536,7 +536,7 @@ func (menuL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.MenuID) {
+			if local.ID == foreign.MenuID {
 				local.R.MenuItems = append(local.R.MenuItems, foreign)
 				if foreign.R == nil {
 					foreign.R = &menuItemR{}
@@ -672,7 +672,7 @@ func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, inse
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.MenuID, o.ID)
+			rel.MenuID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -693,7 +693,7 @@ func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, inse
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.MenuID, o.ID)
+			rel.MenuID = o.ID
 		}
 	}
 
@@ -714,80 +714,6 @@ func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, inse
 			rel.R.Menu = o
 		}
 	}
-	return nil
-}
-
-// SetMenuItems removes all previously related items of the
-// menu replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Menu's MenuItems accordingly.
-// Replaces o.R.MenuItems with related.
-// Sets related.R.Menu's MenuItems accordingly.
-func (o *Menu) SetMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
-	query := "update \"menu_items\" set \"menu_id\" = null where \"menu_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.MenuItems {
-			queries.SetScanner(&rel.MenuID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Menu = nil
-		}
-		o.R.MenuItems = nil
-	}
-
-	return o.AddMenuItems(ctx, exec, insert, related...)
-}
-
-// RemoveMenuItems relationships from objects passed in.
-// Removes related items from R.MenuItems (uses pointer comparison, removal does not keep order)
-// Sets related.R.Menu.
-func (o *Menu) RemoveMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.MenuID, nil)
-		if rel.R != nil {
-			rel.R.Menu = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("menu_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.MenuItems {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.MenuItems)
-			if ln > 1 && i < ln-1 {
-				o.R.MenuItems[i] = o.R.MenuItems[ln-1]
-			}
-			o.R.MenuItems = o.R.MenuItems[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1056,10 +982,6 @@ func (o *Menu) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 			menuAllColumns,
 			menuPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update menus, could not build whitelist")
 		}

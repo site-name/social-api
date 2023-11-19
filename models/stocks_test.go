@@ -984,7 +984,7 @@ func testStockToOneProductVariantUsingProductVariant(t *testing.T) {
 	var foreign ProductVariant
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, stockDBTypes, true, stockColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, stockDBTypes, false, stockColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Stock struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productVariantDBTypes, false, productVariantColumnsWithDefault...); err != nil {
@@ -995,7 +995,7 @@ func testStockToOneProductVariantUsingProductVariant(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductVariantID, foreign.ID)
+	local.ProductVariantID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1005,7 +1005,7 @@ func testStockToOneProductVariantUsingProductVariant(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -1045,7 +1045,7 @@ func testStockToOneWarehouseUsingWarehouse(t *testing.T) {
 	var foreign Warehouse
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, stockDBTypes, true, stockColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, stockDBTypes, false, stockColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Stock struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, warehouseDBTypes, false, warehouseColumnsWithDefault...); err != nil {
@@ -1056,7 +1056,7 @@ func testStockToOneWarehouseUsingWarehouse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.WarehouseID, foreign.ID)
+	local.WarehouseID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1066,7 +1066,7 @@ func testStockToOneWarehouseUsingWarehouse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -1138,7 +1138,7 @@ func testStockToOneSetOpProductVariantUsingProductVariant(t *testing.T) {
 		if x.R.Stocks[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductVariantID, x.ID) {
+		if a.ProductVariantID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductVariantID)
 		}
 
@@ -1149,63 +1149,11 @@ func testStockToOneSetOpProductVariantUsingProductVariant(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductVariantID, x.ID) {
+		if a.ProductVariantID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductVariantID, x.ID)
 		}
 	}
 }
-
-func testStockToOneRemoveOpProductVariantUsingProductVariant(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Stock
-	var b ProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productVariantDBTypes, false, strmangle.SetComplement(productVariantPrimaryKeyColumns, productVariantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProductVariant(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProductVariant(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ProductVariant().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ProductVariant != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductVariantID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.Stocks) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testStockToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 	var err error
 
@@ -1247,7 +1195,7 @@ func testStockToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 		if x.R.Stocks[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.WarehouseID, x.ID) {
+		if a.WarehouseID != x.ID {
 			t.Error("foreign key was wrong value", a.WarehouseID)
 		}
 
@@ -1258,60 +1206,9 @@ func testStockToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.WarehouseID, x.ID) {
+		if a.WarehouseID != x.ID {
 			t.Error("foreign key was wrong value", a.WarehouseID, x.ID)
 		}
-	}
-}
-
-func testStockToOneRemoveOpWarehouseUsingWarehouse(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Stock
-	var b Warehouse
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, warehouseDBTypes, false, strmangle.SetComplement(warehousePrimaryKeyColumns, warehouseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetWarehouse(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveWarehouse(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Warehouse().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Warehouse != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.WarehouseID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.Stocks) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1389,7 +1286,7 @@ func testStocksSelect(t *testing.T) {
 }
 
 var (
-	stockDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `WarehouseID`: `character varying`, `ProductVariantID`: `character varying`, `Quantity`: `integer`}
+	stockDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `WarehouseID`: `uuid`, `ProductVariantID`: `uuid`, `Quantity`: `integer`}
 	_            = bytes.MinRead
 )
 

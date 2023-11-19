@@ -503,7 +503,7 @@ func testSaleProductToOneProductUsingProduct(t *testing.T) {
 	var foreign Product
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, saleProductDBTypes, true, saleProductColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, saleProductDBTypes, false, saleProductColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize SaleProduct struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productDBTypes, false, productColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testSaleProductToOneProductUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductID, foreign.ID)
+	local.ProductID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testSaleProductToOneProductUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testSaleProductToOneSaleUsingSale(t *testing.T) {
 	var foreign Sale
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, saleProductDBTypes, true, saleProductColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, saleProductDBTypes, false, saleProductColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize SaleProduct struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, saleDBTypes, false, saleColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testSaleProductToOneSaleUsingSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.SaleID, foreign.ID)
+	local.SaleID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testSaleProductToOneSaleUsingSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testSaleProductToOneSetOpProductUsingProduct(t *testing.T) {
 		if x.R.SaleProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID)
 		}
 
@@ -668,63 +668,11 @@ func testSaleProductToOneSetOpProductUsingProduct(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID, x.ID)
 		}
 	}
 }
-
-func testSaleProductToOneRemoveOpProductUsingProduct(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a SaleProduct
-	var b Product
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, saleProductDBTypes, false, strmangle.SetComplement(saleProductPrimaryKeyColumns, saleProductColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productDBTypes, false, strmangle.SetComplement(productPrimaryKeyColumns, productColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProduct(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProduct(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Product().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Product != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.SaleProducts) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testSaleProductToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testSaleProductToOneSetOpSaleUsingSale(t *testing.T) {
 		if x.R.SaleProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.SaleID, x.ID) {
+		if a.SaleID != x.ID {
 			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
@@ -777,60 +725,9 @@ func testSaleProductToOneSetOpSaleUsingSale(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.SaleID, x.ID) {
+		if a.SaleID != x.ID {
 			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
-	}
-}
-
-func testSaleProductToOneRemoveOpSaleUsingSale(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a SaleProduct
-	var b Sale
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, saleProductDBTypes, false, strmangle.SetComplement(saleProductPrimaryKeyColumns, saleProductColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, saleDBTypes, false, strmangle.SetComplement(salePrimaryKeyColumns, saleColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetSale(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveSale(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Sale().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Sale != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.SaleID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.SaleProducts) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testSaleProductsSelect(t *testing.T) {
 }
 
 var (
-	saleProductDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `ProductID`: `character varying`, `CreateAt`: `bigint`}
+	saleProductDBTypes = map[string]string{`ID`: `uuid`, `SaleID`: `uuid`, `ProductID`: `uuid`, `CreatedAt`: `bigint`}
 	_                  = bytes.MinRead
 )
 

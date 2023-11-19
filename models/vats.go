@@ -24,9 +24,9 @@ import (
 
 // Vat is an object representing the database table.
 type Vat struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CountryCode null.String `boil:"country_code" json:"country_code,omitempty" toml:"country_code" yaml:"country_code,omitempty"`
-	Data        null.JSON   `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
+	ID          string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CountryCode string    `boil:"country_code" json:"country_code" toml:"country_code" yaml:"country_code"`
+	Data        null.JSON `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
 
 	R *vatR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L vatL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,11 +56,11 @@ var VatTableColumns = struct {
 
 var VatWhere = struct {
 	ID          whereHelperstring
-	CountryCode whereHelpernull_String
+	CountryCode whereHelperstring
 	Data        whereHelpernull_JSON
 }{
 	ID:          whereHelperstring{field: "\"vats\".\"id\""},
-	CountryCode: whereHelpernull_String{field: "\"vats\".\"country_code\""},
+	CountryCode: whereHelperstring{field: "\"vats\".\"country_code\""},
 	Data:        whereHelpernull_JSON{field: "\"vats\".\"data\""},
 }
 
@@ -82,8 +82,8 @@ type vatL struct{}
 
 var (
 	vatAllColumns            = []string{"id", "country_code", "data"}
-	vatColumnsWithoutDefault = []string{"id"}
-	vatColumnsWithDefault    = []string{"country_code", "data"}
+	vatColumnsWithoutDefault = []string{"country_code"}
+	vatColumnsWithDefault    = []string{"id", "data"}
 	vatPrimaryKeyColumns     = []string{"id"}
 	vatGeneratedColumns      = []string{}
 )
@@ -504,10 +504,6 @@ func (o *Vat) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 			vatAllColumns,
 			vatPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update vats, could not build whitelist")
 		}

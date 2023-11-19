@@ -139,8 +139,8 @@ type allocationL struct{}
 
 var (
 	allocationAllColumns            = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
-	allocationColumnsWithoutDefault = []string{"id", "created_at", "order_line_id", "stock_id", "quantity_allocated"}
-	allocationColumnsWithDefault    = []string{}
+	allocationColumnsWithoutDefault = []string{"created_at", "order_line_id", "stock_id", "quantity_allocated"}
+	allocationColumnsWithDefault    = []string{"id"}
 	allocationPrimaryKeyColumns     = []string{"id"}
 	allocationGeneratedColumns      = []string{}
 )
@@ -828,13 +828,6 @@ func (o *Allocation) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
-		}
-	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -924,10 +917,6 @@ func (o *Allocation) Update(ctx context.Context, exec boil.ContextExecutor, colu
 			allocationAllColumns,
 			allocationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update allocations, could not build whitelist")
 		}
@@ -1039,13 +1028,6 @@ func (o AllocationSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 func (o *Allocation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no allocations provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
-		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

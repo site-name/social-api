@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS voucher_categories (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  voucher_id uuid,
-  category_id uuid,
-  created_at bigint
+  voucher_id uuid NOT NULL,
+  category_id uuid NOT NULL,
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY voucher_categories

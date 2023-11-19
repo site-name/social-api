@@ -19,46 +19,47 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Order is an object representing the database table.
 type Order struct {
-	ID                           string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt                     null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Status                       null.String  `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	UserID                       null.String  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	LanguageCode                 null.String  `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	TrackingClientID             null.String  `boil:"tracking_client_id" json:"tracking_client_id,omitempty" toml:"tracking_client_id" yaml:"tracking_client_id,omitempty"`
-	BillingAddressID             null.String  `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
-	ShippingAddressID            null.String  `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
-	UserEmail                    null.String  `boil:"user_email" json:"user_email,omitempty" toml:"user_email" yaml:"user_email,omitempty"`
-	OriginalID                   null.String  `boil:"original_id" json:"original_id,omitempty" toml:"original_id" yaml:"original_id,omitempty"`
-	Origin                       null.String  `boil:"origin" json:"origin,omitempty" toml:"origin" yaml:"origin,omitempty"`
-	Currency                     null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	ShippingMethodID             null.String  `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
-	CollectionPointID            null.String  `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
-	ShippingMethodName           null.String  `boil:"shipping_method_name" json:"shipping_method_name,omitempty" toml:"shipping_method_name" yaml:"shipping_method_name,omitempty"`
-	CollectionPointName          null.String  `boil:"collection_point_name" json:"collection_point_name,omitempty" toml:"collection_point_name" yaml:"collection_point_name,omitempty"`
-	ChannelID                    null.String  `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
-	ShippingPriceNetAmount       null.Float64 `boil:"shipping_price_net_amount" json:"shipping_price_net_amount,omitempty" toml:"shipping_price_net_amount" yaml:"shipping_price_net_amount,omitempty"`
-	ShippingPriceGrossAmount     null.Float64 `boil:"shipping_price_gross_amount" json:"shipping_price_gross_amount,omitempty" toml:"shipping_price_gross_amount" yaml:"shipping_price_gross_amount,omitempty"`
-	ShippingTaxRate              null.Float64 `boil:"shipping_tax_rate" json:"shipping_tax_rate,omitempty" toml:"shipping_tax_rate" yaml:"shipping_tax_rate,omitempty"`
-	Token                        null.String  `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	CheckoutToken                null.String  `boil:"checkout_token" json:"checkout_token,omitempty" toml:"checkout_token" yaml:"checkout_token,omitempty"`
-	TotalNetAmount               null.Float64 `boil:"total_net_amount" json:"total_net_amount,omitempty" toml:"total_net_amount" yaml:"total_net_amount,omitempty"`
-	UndiscountedTotalNetAmount   null.Float64 `boil:"undiscounted_total_net_amount" json:"undiscounted_total_net_amount,omitempty" toml:"undiscounted_total_net_amount" yaml:"undiscounted_total_net_amount,omitempty"`
-	TotalGrossAmount             null.Float64 `boil:"total_gross_amount" json:"total_gross_amount,omitempty" toml:"total_gross_amount" yaml:"total_gross_amount,omitempty"`
-	UndiscountedTotalGrossAmount null.Float64 `boil:"undiscounted_total_gross_amount" json:"undiscounted_total_gross_amount,omitempty" toml:"undiscounted_total_gross_amount" yaml:"undiscounted_total_gross_amount,omitempty"`
-	TotalPaidAmount              null.Float64 `boil:"total_paid_amount" json:"total_paid_amount,omitempty" toml:"total_paid_amount" yaml:"total_paid_amount,omitempty"`
-	VoucherID                    null.String  `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	DisplayGrossPrices           null.Bool    `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
-	CustomerNote                 null.String  `boil:"customer_note" json:"customer_note,omitempty" toml:"customer_note" yaml:"customer_note,omitempty"`
-	WeightAmount                 null.Float32 `boil:"weight_amount" json:"weight_amount,omitempty" toml:"weight_amount" yaml:"weight_amount,omitempty"`
-	WeightUnit                   null.String  `boil:"weight_unit" json:"weight_unit,omitempty" toml:"weight_unit" yaml:"weight_unit,omitempty"`
-	RedirectURL                  null.String  `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
-	Metadata                     null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata              null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                           string        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt                    int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Status                       string        `boil:"status" json:"status" toml:"status" yaml:"status"`
+	UserID                       null.String   `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	LanguageCode                 string        `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	TrackingClientID             string        `boil:"tracking_client_id" json:"tracking_client_id" toml:"tracking_client_id" yaml:"tracking_client_id"`
+	BillingAddressID             null.String   `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
+	ShippingAddressID            null.String   `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
+	UserEmail                    string        `boil:"user_email" json:"user_email" toml:"user_email" yaml:"user_email"`
+	OriginalID                   null.String   `boil:"original_id" json:"original_id,omitempty" toml:"original_id" yaml:"original_id,omitempty"`
+	Origin                       string        `boil:"origin" json:"origin" toml:"origin" yaml:"origin"`
+	Currency                     string        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	ShippingMethodID             null.String   `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	CollectionPointID            null.String   `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
+	ShippingMethodName           null.String   `boil:"shipping_method_name" json:"shipping_method_name,omitempty" toml:"shipping_method_name" yaml:"shipping_method_name,omitempty"`
+	CollectionPointName          null.String   `boil:"collection_point_name" json:"collection_point_name,omitempty" toml:"collection_point_name" yaml:"collection_point_name,omitempty"`
+	ChannelID                    string        `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	ShippingPriceNetAmount       types.Decimal `boil:"shipping_price_net_amount" json:"shipping_price_net_amount" toml:"shipping_price_net_amount" yaml:"shipping_price_net_amount"`
+	ShippingPriceGrossAmount     types.Decimal `boil:"shipping_price_gross_amount" json:"shipping_price_gross_amount" toml:"shipping_price_gross_amount" yaml:"shipping_price_gross_amount"`
+	ShippingTaxRate              types.Decimal `boil:"shipping_tax_rate" json:"shipping_tax_rate" toml:"shipping_tax_rate" yaml:"shipping_tax_rate"`
+	Token                        string        `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CheckoutToken                string        `boil:"checkout_token" json:"checkout_token" toml:"checkout_token" yaml:"checkout_token"`
+	TotalNetAmount               types.Decimal `boil:"total_net_amount" json:"total_net_amount" toml:"total_net_amount" yaml:"total_net_amount"`
+	UndiscountedTotalNetAmount   types.Decimal `boil:"undiscounted_total_net_amount" json:"undiscounted_total_net_amount" toml:"undiscounted_total_net_amount" yaml:"undiscounted_total_net_amount"`
+	TotalGrossAmount             types.Decimal `boil:"total_gross_amount" json:"total_gross_amount" toml:"total_gross_amount" yaml:"total_gross_amount"`
+	UndiscountedTotalGrossAmount types.Decimal `boil:"undiscounted_total_gross_amount" json:"undiscounted_total_gross_amount" toml:"undiscounted_total_gross_amount" yaml:"undiscounted_total_gross_amount"`
+	TotalPaidAmount              types.Decimal `boil:"total_paid_amount" json:"total_paid_amount" toml:"total_paid_amount" yaml:"total_paid_amount"`
+	VoucherID                    null.String   `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
+	DisplayGrossPrices           null.Bool     `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
+	CustomerNote                 string        `boil:"customer_note" json:"customer_note" toml:"customer_note" yaml:"customer_note"`
+	WeightAmount                 float32       `boil:"weight_amount" json:"weight_amount" toml:"weight_amount" yaml:"weight_amount"`
+	WeightUnit                   string        `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
+	RedirectURL                  null.String   `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
+	Metadata                     null.JSON     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata              null.JSON     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *orderR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -66,7 +67,7 @@ type Order struct {
 
 var OrderColumns = struct {
 	ID                           string
-	CreateAt                     string
+	CreatedAt                    string
 	Status                       string
 	UserID                       string
 	LanguageCode                 string
@@ -102,7 +103,7 @@ var OrderColumns = struct {
 	PrivateMetadata              string
 }{
 	ID:                           "id",
-	CreateAt:                     "create_at",
+	CreatedAt:                    "created_at",
 	Status:                       "status",
 	UserID:                       "user_id",
 	LanguageCode:                 "language_code",
@@ -140,7 +141,7 @@ var OrderColumns = struct {
 
 var OrderTableColumns = struct {
 	ID                           string
-	CreateAt                     string
+	CreatedAt                    string
 	Status                       string
 	UserID                       string
 	LanguageCode                 string
@@ -176,7 +177,7 @@ var OrderTableColumns = struct {
 	PrivateMetadata              string
 }{
 	ID:                           "orders.id",
-	CreateAt:                     "orders.create_at",
+	CreatedAt:                    "orders.created_at",
 	Status:                       "orders.status",
 	UserID:                       "orders.user_id",
 	LanguageCode:                 "orders.language_code",
@@ -214,34 +215,28 @@ var OrderTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Float32 struct{ field string }
+type whereHelperfloat32 struct{ field string }
 
-func (w whereHelpernull_Float32) EQ(x null.Float32) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
+func (w whereHelperfloat32) EQ(x float32) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperfloat32) NEQ(x float32) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
 }
-func (w whereHelpernull_Float32) NEQ(x null.Float32) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Float32) LT(x null.Float32) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Float32) LTE(x null.Float32) qm.QueryMod {
+func (w whereHelperfloat32) LT(x float32) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperfloat32) LTE(x float32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Float32) GT(x null.Float32) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Float32) GTE(x null.Float32) qm.QueryMod {
+func (w whereHelperfloat32) GT(x float32) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperfloat32) GTE(x float32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelpernull_Float32) IN(slice []float32) qm.QueryMod {
+func (w whereHelperfloat32) IN(slice []float32) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelpernull_Float32) NIN(slice []float32) qm.QueryMod {
+func (w whereHelperfloat32) NIN(slice []float32) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -249,78 +244,75 @@ func (w whereHelpernull_Float32) NIN(slice []float32) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-func (w whereHelpernull_Float32) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Float32) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var OrderWhere = struct {
 	ID                           whereHelperstring
-	CreateAt                     whereHelpernull_Int64
-	Status                       whereHelpernull_String
+	CreatedAt                    whereHelperint64
+	Status                       whereHelperstring
 	UserID                       whereHelpernull_String
-	LanguageCode                 whereHelpernull_String
-	TrackingClientID             whereHelpernull_String
+	LanguageCode                 whereHelperstring
+	TrackingClientID             whereHelperstring
 	BillingAddressID             whereHelpernull_String
 	ShippingAddressID            whereHelpernull_String
-	UserEmail                    whereHelpernull_String
+	UserEmail                    whereHelperstring
 	OriginalID                   whereHelpernull_String
-	Origin                       whereHelpernull_String
-	Currency                     whereHelpernull_String
+	Origin                       whereHelperstring
+	Currency                     whereHelperstring
 	ShippingMethodID             whereHelpernull_String
 	CollectionPointID            whereHelpernull_String
 	ShippingMethodName           whereHelpernull_String
 	CollectionPointName          whereHelpernull_String
-	ChannelID                    whereHelpernull_String
-	ShippingPriceNetAmount       whereHelpernull_Float64
-	ShippingPriceGrossAmount     whereHelpernull_Float64
-	ShippingTaxRate              whereHelpernull_Float64
-	Token                        whereHelpernull_String
-	CheckoutToken                whereHelpernull_String
-	TotalNetAmount               whereHelpernull_Float64
-	UndiscountedTotalNetAmount   whereHelpernull_Float64
-	TotalGrossAmount             whereHelpernull_Float64
-	UndiscountedTotalGrossAmount whereHelpernull_Float64
-	TotalPaidAmount              whereHelpernull_Float64
+	ChannelID                    whereHelperstring
+	ShippingPriceNetAmount       whereHelpertypes_Decimal
+	ShippingPriceGrossAmount     whereHelpertypes_Decimal
+	ShippingTaxRate              whereHelpertypes_Decimal
+	Token                        whereHelperstring
+	CheckoutToken                whereHelperstring
+	TotalNetAmount               whereHelpertypes_Decimal
+	UndiscountedTotalNetAmount   whereHelpertypes_Decimal
+	TotalGrossAmount             whereHelpertypes_Decimal
+	UndiscountedTotalGrossAmount whereHelpertypes_Decimal
+	TotalPaidAmount              whereHelpertypes_Decimal
 	VoucherID                    whereHelpernull_String
 	DisplayGrossPrices           whereHelpernull_Bool
-	CustomerNote                 whereHelpernull_String
-	WeightAmount                 whereHelpernull_Float32
-	WeightUnit                   whereHelpernull_String
+	CustomerNote                 whereHelperstring
+	WeightAmount                 whereHelperfloat32
+	WeightUnit                   whereHelperstring
 	RedirectURL                  whereHelpernull_String
 	Metadata                     whereHelpernull_JSON
 	PrivateMetadata              whereHelpernull_JSON
 }{
 	ID:                           whereHelperstring{field: "\"orders\".\"id\""},
-	CreateAt:                     whereHelpernull_Int64{field: "\"orders\".\"create_at\""},
-	Status:                       whereHelpernull_String{field: "\"orders\".\"status\""},
+	CreatedAt:                    whereHelperint64{field: "\"orders\".\"created_at\""},
+	Status:                       whereHelperstring{field: "\"orders\".\"status\""},
 	UserID:                       whereHelpernull_String{field: "\"orders\".\"user_id\""},
-	LanguageCode:                 whereHelpernull_String{field: "\"orders\".\"language_code\""},
-	TrackingClientID:             whereHelpernull_String{field: "\"orders\".\"tracking_client_id\""},
+	LanguageCode:                 whereHelperstring{field: "\"orders\".\"language_code\""},
+	TrackingClientID:             whereHelperstring{field: "\"orders\".\"tracking_client_id\""},
 	BillingAddressID:             whereHelpernull_String{field: "\"orders\".\"billing_address_id\""},
 	ShippingAddressID:            whereHelpernull_String{field: "\"orders\".\"shipping_address_id\""},
-	UserEmail:                    whereHelpernull_String{field: "\"orders\".\"user_email\""},
+	UserEmail:                    whereHelperstring{field: "\"orders\".\"user_email\""},
 	OriginalID:                   whereHelpernull_String{field: "\"orders\".\"original_id\""},
-	Origin:                       whereHelpernull_String{field: "\"orders\".\"origin\""},
-	Currency:                     whereHelpernull_String{field: "\"orders\".\"currency\""},
+	Origin:                       whereHelperstring{field: "\"orders\".\"origin\""},
+	Currency:                     whereHelperstring{field: "\"orders\".\"currency\""},
 	ShippingMethodID:             whereHelpernull_String{field: "\"orders\".\"shipping_method_id\""},
 	CollectionPointID:            whereHelpernull_String{field: "\"orders\".\"collection_point_id\""},
 	ShippingMethodName:           whereHelpernull_String{field: "\"orders\".\"shipping_method_name\""},
 	CollectionPointName:          whereHelpernull_String{field: "\"orders\".\"collection_point_name\""},
-	ChannelID:                    whereHelpernull_String{field: "\"orders\".\"channel_id\""},
-	ShippingPriceNetAmount:       whereHelpernull_Float64{field: "\"orders\".\"shipping_price_net_amount\""},
-	ShippingPriceGrossAmount:     whereHelpernull_Float64{field: "\"orders\".\"shipping_price_gross_amount\""},
-	ShippingTaxRate:              whereHelpernull_Float64{field: "\"orders\".\"shipping_tax_rate\""},
-	Token:                        whereHelpernull_String{field: "\"orders\".\"token\""},
-	CheckoutToken:                whereHelpernull_String{field: "\"orders\".\"checkout_token\""},
-	TotalNetAmount:               whereHelpernull_Float64{field: "\"orders\".\"total_net_amount\""},
-	UndiscountedTotalNetAmount:   whereHelpernull_Float64{field: "\"orders\".\"undiscounted_total_net_amount\""},
-	TotalGrossAmount:             whereHelpernull_Float64{field: "\"orders\".\"total_gross_amount\""},
-	UndiscountedTotalGrossAmount: whereHelpernull_Float64{field: "\"orders\".\"undiscounted_total_gross_amount\""},
-	TotalPaidAmount:              whereHelpernull_Float64{field: "\"orders\".\"total_paid_amount\""},
+	ChannelID:                    whereHelperstring{field: "\"orders\".\"channel_id\""},
+	ShippingPriceNetAmount:       whereHelpertypes_Decimal{field: "\"orders\".\"shipping_price_net_amount\""},
+	ShippingPriceGrossAmount:     whereHelpertypes_Decimal{field: "\"orders\".\"shipping_price_gross_amount\""},
+	ShippingTaxRate:              whereHelpertypes_Decimal{field: "\"orders\".\"shipping_tax_rate\""},
+	Token:                        whereHelperstring{field: "\"orders\".\"token\""},
+	CheckoutToken:                whereHelperstring{field: "\"orders\".\"checkout_token\""},
+	TotalNetAmount:               whereHelpertypes_Decimal{field: "\"orders\".\"total_net_amount\""},
+	UndiscountedTotalNetAmount:   whereHelpertypes_Decimal{field: "\"orders\".\"undiscounted_total_net_amount\""},
+	TotalGrossAmount:             whereHelpertypes_Decimal{field: "\"orders\".\"total_gross_amount\""},
+	UndiscountedTotalGrossAmount: whereHelpertypes_Decimal{field: "\"orders\".\"undiscounted_total_gross_amount\""},
+	TotalPaidAmount:              whereHelpertypes_Decimal{field: "\"orders\".\"total_paid_amount\""},
 	VoucherID:                    whereHelpernull_String{field: "\"orders\".\"voucher_id\""},
 	DisplayGrossPrices:           whereHelpernull_Bool{field: "\"orders\".\"display_gross_prices\""},
-	CustomerNote:                 whereHelpernull_String{field: "\"orders\".\"customer_note\""},
-	WeightAmount:                 whereHelpernull_Float32{field: "\"orders\".\"weight_amount\""},
-	WeightUnit:                   whereHelpernull_String{field: "\"orders\".\"weight_unit\""},
+	CustomerNote:                 whereHelperstring{field: "\"orders\".\"customer_note\""},
+	WeightAmount:                 whereHelperfloat32{field: "\"orders\".\"weight_amount\""},
+	WeightUnit:                   whereHelperstring{field: "\"orders\".\"weight_unit\""},
 	RedirectURL:                  whereHelpernull_String{field: "\"orders\".\"redirect_url\""},
 	Metadata:                     whereHelpernull_JSON{field: "\"orders\".\"metadata\""},
 	PrivateMetadata:              whereHelpernull_JSON{field: "\"orders\".\"private_metadata\""},
@@ -514,9 +506,9 @@ func (r *orderR) GetPayments() PaymentSlice {
 type orderL struct{}
 
 var (
-	orderAllColumns            = []string{"id", "create_at", "status", "user_id", "language_code", "tracking_client_id", "billing_address_id", "shipping_address_id", "user_email", "original_id", "origin", "currency", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "channel_id", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "token", "checkout_token", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "customer_note", "weight_amount", "weight_unit", "redirect_url", "metadata", "private_metadata"}
-	orderColumnsWithoutDefault = []string{"id"}
-	orderColumnsWithDefault    = []string{"create_at", "status", "user_id", "language_code", "tracking_client_id", "billing_address_id", "shipping_address_id", "user_email", "original_id", "origin", "currency", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "channel_id", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "token", "checkout_token", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "customer_note", "weight_amount", "weight_unit", "redirect_url", "metadata", "private_metadata"}
+	orderAllColumns            = []string{"id", "created_at", "status", "user_id", "language_code", "tracking_client_id", "billing_address_id", "shipping_address_id", "user_email", "original_id", "origin", "currency", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "channel_id", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "token", "checkout_token", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "customer_note", "weight_amount", "weight_unit", "redirect_url", "metadata", "private_metadata"}
+	orderColumnsWithoutDefault = []string{"created_at", "status", "language_code", "tracking_client_id", "user_email", "origin", "currency", "channel_id", "token", "checkout_token", "customer_note", "weight_amount", "weight_unit"}
+	orderColumnsWithDefault    = []string{"id", "user_id", "billing_address_id", "shipping_address_id", "original_id", "shipping_method_id", "collection_point_id", "shipping_method_name", "collection_point_name", "shipping_price_net_amount", "shipping_price_gross_amount", "shipping_tax_rate", "total_net_amount", "undiscounted_total_net_amount", "total_gross_amount", "undiscounted_total_gross_amount", "total_paid_amount", "voucher_id", "display_gross_prices", "redirect_url", "metadata", "private_metadata"}
 	orderPrimaryKeyColumns     = []string{"id"}
 	orderGeneratedColumns      = []string{}
 )
@@ -1173,9 +1165,7 @@ func (orderL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular 
 		if object.R == nil {
 			object.R = &orderR{}
 		}
-		if !queries.IsNil(object.ChannelID) {
-			args = append(args, object.ChannelID)
-		}
+		args = append(args, object.ChannelID)
 
 	} else {
 	Outer:
@@ -1185,14 +1175,12 @@ func (orderL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ChannelID) {
+				if a == obj.ChannelID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ChannelID) {
-				args = append(args, obj.ChannelID)
-			}
+			args = append(args, obj.ChannelID)
 
 		}
 	}
@@ -1250,7 +1238,7 @@ func (orderL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ChannelID, foreign.ID) {
+			if local.ChannelID == foreign.ID {
 				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
@@ -2040,7 +2028,7 @@ func (orderL) LoadFulfillments(ctx context.Context, e boil.ContextExecutor, sing
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -2098,7 +2086,7 @@ func (orderL) LoadFulfillments(ctx context.Context, e boil.ContextExecutor, sing
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.OrderID) {
+			if local.ID == foreign.OrderID {
 				local.R.Fulfillments = append(local.R.Fulfillments, foreign)
 				if foreign.R == nil {
 					foreign.R = &fulfillmentR{}
@@ -2496,7 +2484,7 @@ func (orderL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -2554,7 +2542,7 @@ func (orderL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.OrderID) {
+			if local.ID == foreign.OrderID {
 				local.R.OrderEvents = append(local.R.OrderEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderEventR{}
@@ -2610,7 +2598,7 @@ func (orderL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -2668,7 +2656,7 @@ func (orderL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.OrderID) {
+			if local.ID == foreign.OrderID {
 				local.R.OrderGiftcards = append(local.R.OrderGiftcards, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderGiftcardR{}
@@ -2724,7 +2712,7 @@ func (orderL) LoadOrderLines(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -2782,7 +2770,7 @@ func (orderL) LoadOrderLines(ctx context.Context, e boil.ContextExecutor, singul
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.OrderID) {
+			if local.ID == foreign.OrderID {
 				local.R.OrderLines = append(local.R.OrderLines, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderLineR{}
@@ -3131,7 +3119,7 @@ func (o *Order) SetChannel(ctx context.Context, exec boil.ContextExecutor, inser
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ChannelID, related.ID)
+	o.ChannelID = related.ID
 	if o.R == nil {
 		o.R = &orderR{
 			Channel: related,
@@ -3148,39 +3136,6 @@ func (o *Order) SetChannel(ctx context.Context, exec boil.ContextExecutor, inser
 		related.R.Orders = append(related.R.Orders, o)
 	}
 
-	return nil
-}
-
-// RemoveChannel relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Order) RemoveChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
-	var err error
-
-	queries.SetScanner(&o.ChannelID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Channel = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Orders {
-		if queries.Equal(o.ChannelID, ri.ChannelID) {
-			continue
-		}
-
-		ln := len(related.R.Orders)
-		if ln > 1 && i < ln-1 {
-			related.R.Orders[i] = related.R.Orders[ln-1]
-		}
-		related.R.Orders = related.R.Orders[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -3719,7 +3674,7 @@ func (o *Order) AddFulfillments(ctx context.Context, exec boil.ContextExecutor, 
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -3740,7 +3695,7 @@ func (o *Order) AddFulfillments(ctx context.Context, exec boil.ContextExecutor, 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 		}
 	}
 
@@ -3761,80 +3716,6 @@ func (o *Order) AddFulfillments(ctx context.Context, exec boil.ContextExecutor, 
 			rel.R.Order = o
 		}
 	}
-	return nil
-}
-
-// SetFulfillments removes all previously related items of the
-// order replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Order's Fulfillments accordingly.
-// Replaces o.R.Fulfillments with related.
-// Sets related.R.Order's Fulfillments accordingly.
-func (o *Order) SetFulfillments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Fulfillment) error {
-	query := "update \"fulfillments\" set \"order_id\" = null where \"order_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Fulfillments {
-			queries.SetScanner(&rel.OrderID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Order = nil
-		}
-		o.R.Fulfillments = nil
-	}
-
-	return o.AddFulfillments(ctx, exec, insert, related...)
-}
-
-// RemoveFulfillments relationships from objects passed in.
-// Removes related items from R.Fulfillments (uses pointer comparison, removal does not keep order)
-// Sets related.R.Order.
-func (o *Order) RemoveFulfillments(ctx context.Context, exec boil.ContextExecutor, related ...*Fulfillment) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.OrderID, nil)
-		if rel.R != nil {
-			rel.R.Order = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Fulfillments {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Fulfillments)
-			if ln > 1 && i < ln-1 {
-				o.R.Fulfillments[i] = o.R.Fulfillments[ln-1]
-			}
-			o.R.Fulfillments = o.R.Fulfillments[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -4227,7 +4108,7 @@ func (o *Order) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, i
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -4248,7 +4129,7 @@ func (o *Order) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, i
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 		}
 	}
 
@@ -4272,80 +4153,6 @@ func (o *Order) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, i
 	return nil
 }
 
-// SetOrderEvents removes all previously related items of the
-// order replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Order's OrderEvents accordingly.
-// Replaces o.R.OrderEvents with related.
-// Sets related.R.Order's OrderEvents accordingly.
-func (o *Order) SetOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
-	query := "update \"order_events\" set \"order_id\" = null where \"order_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.OrderEvents {
-			queries.SetScanner(&rel.OrderID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Order = nil
-		}
-		o.R.OrderEvents = nil
-	}
-
-	return o.AddOrderEvents(ctx, exec, insert, related...)
-}
-
-// RemoveOrderEvents relationships from objects passed in.
-// Removes related items from R.OrderEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.Order.
-func (o *Order) RemoveOrderEvents(ctx context.Context, exec boil.ContextExecutor, related ...*OrderEvent) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.OrderID, nil)
-		if rel.R != nil {
-			rel.R.Order = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.OrderEvents {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.OrderEvents)
-			if ln > 1 && i < ln-1 {
-				o.R.OrderEvents[i] = o.R.OrderEvents[ln-1]
-			}
-			o.R.OrderEvents = o.R.OrderEvents[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddOrderGiftcards adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
 // Appends related to o.R.OrderGiftcards.
@@ -4354,7 +4161,7 @@ func (o *Order) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecutor
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -4375,7 +4182,7 @@ func (o *Order) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 		}
 	}
 
@@ -4399,80 +4206,6 @@ func (o *Order) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecutor
 	return nil
 }
 
-// SetOrderGiftcards removes all previously related items of the
-// order replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Order's OrderGiftcards accordingly.
-// Replaces o.R.OrderGiftcards with related.
-// Sets related.R.Order's OrderGiftcards accordingly.
-func (o *Order) SetOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
-	query := "update \"order_giftcards\" set \"order_id\" = null where \"order_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.OrderGiftcards {
-			queries.SetScanner(&rel.OrderID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Order = nil
-		}
-		o.R.OrderGiftcards = nil
-	}
-
-	return o.AddOrderGiftcards(ctx, exec, insert, related...)
-}
-
-// RemoveOrderGiftcards relationships from objects passed in.
-// Removes related items from R.OrderGiftcards (uses pointer comparison, removal does not keep order)
-// Sets related.R.Order.
-func (o *Order) RemoveOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*OrderGiftcard) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.OrderID, nil)
-		if rel.R != nil {
-			rel.R.Order = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.OrderGiftcards {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.OrderGiftcards)
-			if ln > 1 && i < ln-1 {
-				o.R.OrderGiftcards[i] = o.R.OrderGiftcards[ln-1]
-			}
-			o.R.OrderGiftcards = o.R.OrderGiftcards[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddOrderLines adds the given related objects to the existing relationships
 // of the order, optionally inserting them as new records.
 // Appends related to o.R.OrderLines.
@@ -4481,7 +4214,7 @@ func (o *Order) AddOrderLines(ctx context.Context, exec boil.ContextExecutor, in
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -4502,7 +4235,7 @@ func (o *Order) AddOrderLines(ctx context.Context, exec boil.ContextExecutor, in
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.OrderID, o.ID)
+			rel.OrderID = o.ID
 		}
 	}
 
@@ -4523,80 +4256,6 @@ func (o *Order) AddOrderLines(ctx context.Context, exec boil.ContextExecutor, in
 			rel.R.Order = o
 		}
 	}
-	return nil
-}
-
-// SetOrderLines removes all previously related items of the
-// order replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Order's OrderLines accordingly.
-// Replaces o.R.OrderLines with related.
-// Sets related.R.Order's OrderLines accordingly.
-func (o *Order) SetOrderLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderLine) error {
-	query := "update \"order_lines\" set \"order_id\" = null where \"order_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.OrderLines {
-			queries.SetScanner(&rel.OrderID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Order = nil
-		}
-		o.R.OrderLines = nil
-	}
-
-	return o.AddOrderLines(ctx, exec, insert, related...)
-}
-
-// RemoveOrderLines relationships from objects passed in.
-// Removes related items from R.OrderLines (uses pointer comparison, removal does not keep order)
-// Sets related.R.Order.
-func (o *Order) RemoveOrderLines(ctx context.Context, exec boil.ContextExecutor, related ...*OrderLine) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.OrderID, nil)
-		if rel.R != nil {
-			rel.R.Order = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.OrderLines {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.OrderLines)
-			if ln > 1 && i < ln-1 {
-				o.R.OrderLines[i] = o.R.OrderLines[ln-1]
-			}
-			o.R.OrderLines = o.R.OrderLines[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -4992,10 +4651,6 @@ func (o *Order) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 			orderAllColumns,
 			orderPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update orders, could not build whitelist")
 		}

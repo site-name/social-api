@@ -89,8 +89,8 @@ type preferenceL struct{}
 
 var (
 	preferenceAllColumns            = []string{"user_id", "category", "name", "value"}
-	preferenceColumnsWithoutDefault = []string{"user_id", "category", "name"}
-	preferenceColumnsWithDefault    = []string{"value"}
+	preferenceColumnsWithoutDefault = []string{"category", "name"}
+	preferenceColumnsWithDefault    = []string{"user_id", "value"}
 	preferencePrimaryKeyColumns     = []string{"user_id"}
 	preferenceGeneratedColumns      = []string{}
 )
@@ -511,10 +511,6 @@ func (o *Preference) Update(ctx context.Context, exec boil.ContextExecutor, colu
 			preferenceAllColumns,
 			preferencePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update preferences, could not build whitelist")
 		}

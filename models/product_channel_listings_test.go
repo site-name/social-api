@@ -503,7 +503,7 @@ func testProductChannelListingToOneChannelUsingChannel(t *testing.T) {
 	var foreign Channel
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, productChannelListingDBTypes, true, productChannelListingColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, productChannelListingDBTypes, false, productChannelListingColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ProductChannelListing struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, channelDBTypes, false, channelColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testProductChannelListingToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ChannelID, foreign.ID)
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testProductChannelListingToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testProductChannelListingToOneProductUsingProduct(t *testing.T) {
 	var foreign Product
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, productChannelListingDBTypes, true, productChannelListingColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, productChannelListingDBTypes, false, productChannelListingColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ProductChannelListing struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productDBTypes, false, productColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testProductChannelListingToOneProductUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductID, foreign.ID)
+	local.ProductID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testProductChannelListingToOneProductUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testProductChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 		if x.R.ProductChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
@@ -668,63 +668,11 @@ func testProductChannelListingToOneSetOpChannelUsingChannel(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-
-func testProductChannelListingToOneRemoveOpChannelUsingChannel(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ProductChannelListing
-	var b Channel
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productChannelListingDBTypes, false, strmangle.SetComplement(productChannelListingPrimaryKeyColumns, productChannelListingColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Channel().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Channel != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ChannelID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ProductChannelListings) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testProductChannelListingToOneSetOpProductUsingProduct(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testProductChannelListingToOneSetOpProductUsingProduct(t *testing.T) {
 		if x.R.ProductChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID)
 		}
 
@@ -777,60 +725,9 @@ func testProductChannelListingToOneSetOpProductUsingProduct(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID, x.ID)
 		}
-	}
-}
-
-func testProductChannelListingToOneRemoveOpProductUsingProduct(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ProductChannelListing
-	var b Product
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productChannelListingDBTypes, false, strmangle.SetComplement(productChannelListingPrimaryKeyColumns, productChannelListingColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productDBTypes, false, strmangle.SetComplement(productPrimaryKeyColumns, productColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProduct(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProduct(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Product().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Product != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ProductChannelListings) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testProductChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	productChannelListingDBTypes = map[string]string{`ID`: `character varying`, `ProductID`: `character varying`, `ChannelID`: `character varying`, `VisibleInListings`: `boolean`, `AvailableForPurchase`: `timestamp with time zone`, `Currency`: `character varying`, `DiscountedPriceAmount`: `double precision`, `CreateAt`: `bigint`, `PublicationDate`: `timestamp with time zone`, `IsPublished`: `boolean`}
+	productChannelListingDBTypes = map[string]string{`ID`: `uuid`, `ProductID`: `uuid`, `ChannelID`: `uuid`, `VisibleInListings`: `boolean`, `AvailableForPurchase`: `bigint`, `Currency`: `character varying`, `DiscountedPriceAmount`: `numeric`, `CreatedAt`: `bigint`, `PublicationDate`: `bigint`, `IsPublished`: `boolean`}
 	_                            = bytes.MinRead
 )
 

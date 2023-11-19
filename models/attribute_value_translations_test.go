@@ -568,7 +568,7 @@ func testAttributeValueTranslationsSelect(t *testing.T) {
 }
 
 var (
-	attributeValueTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `AttributeValueID`: `character varying`, `Name`: `character varying`, `RichText`: `text`}
+	attributeValueTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `AttributeValueID`: `uuid`, `Name`: `character varying`, `RichText`: `text`}
 	_                                = bytes.MinRead
 )
 

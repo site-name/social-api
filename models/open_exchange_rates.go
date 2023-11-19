@@ -25,7 +25,7 @@ import (
 // OpenExchangeRate is an object representing the database table.
 type OpenExchangeRate struct {
 	ID         string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ToCurrency null.String  `boil:"to_currency" json:"to_currency,omitempty" toml:"to_currency" yaml:"to_currency,omitempty"`
+	ToCurrency string       `boil:"to_currency" json:"to_currency" toml:"to_currency" yaml:"to_currency"`
 	Rate       null.Float64 `boil:"rate" json:"rate,omitempty" toml:"rate" yaml:"rate,omitempty"`
 
 	R *openExchangeRateR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,11 +56,11 @@ var OpenExchangeRateTableColumns = struct {
 
 var OpenExchangeRateWhere = struct {
 	ID         whereHelperstring
-	ToCurrency whereHelpernull_String
+	ToCurrency whereHelperstring
 	Rate       whereHelpernull_Float64
 }{
 	ID:         whereHelperstring{field: "\"open_exchange_rates\".\"id\""},
-	ToCurrency: whereHelpernull_String{field: "\"open_exchange_rates\".\"to_currency\""},
+	ToCurrency: whereHelperstring{field: "\"open_exchange_rates\".\"to_currency\""},
 	Rate:       whereHelpernull_Float64{field: "\"open_exchange_rates\".\"rate\""},
 }
 
@@ -82,8 +82,8 @@ type openExchangeRateL struct{}
 
 var (
 	openExchangeRateAllColumns            = []string{"id", "to_currency", "rate"}
-	openExchangeRateColumnsWithoutDefault = []string{"id"}
-	openExchangeRateColumnsWithDefault    = []string{"to_currency", "rate"}
+	openExchangeRateColumnsWithoutDefault = []string{"to_currency"}
+	openExchangeRateColumnsWithDefault    = []string{"id", "rate"}
 	openExchangeRatePrimaryKeyColumns     = []string{"id"}
 	openExchangeRateGeneratedColumns      = []string{}
 )
@@ -504,10 +504,6 @@ func (o *OpenExchangeRate) Update(ctx context.Context, exec boil.ContextExecutor
 			openExchangeRateAllColumns,
 			openExchangeRatePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update open_exchange_rates, could not build whitelist")
 		}

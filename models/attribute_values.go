@@ -25,12 +25,12 @@ import (
 // AttributeValue is an object representing the database table.
 type AttributeValue struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name        null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Value       null.String `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
-	Slug        null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
+	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Value       string      `boil:"value" json:"value" toml:"value" yaml:"value"`
+	Slug        string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	FileURL     null.String `boil:"file_url" json:"file_url,omitempty" toml:"file_url" yaml:"file_url,omitempty"`
 	ContentType null.String `boil:"content_type" json:"content_type,omitempty" toml:"content_type" yaml:"content_type,omitempty"`
-	AttributeID null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
+	AttributeID string      `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
 	RichText    null.String `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
 	Boolean     null.Bool   `boil:"boolean" json:"boolean,omitempty" toml:"boolean" yaml:"boolean,omitempty"`
 	Datetime    null.Time   `boil:"datetime" json:"datetime,omitempty" toml:"datetime" yaml:"datetime,omitempty"`
@@ -144,24 +144,24 @@ func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsN
 
 var AttributeValueWhere = struct {
 	ID          whereHelperstring
-	Name        whereHelpernull_String
-	Value       whereHelpernull_String
-	Slug        whereHelpernull_String
+	Name        whereHelperstring
+	Value       whereHelperstring
+	Slug        whereHelperstring
 	FileURL     whereHelpernull_String
 	ContentType whereHelpernull_String
-	AttributeID whereHelpernull_String
+	AttributeID whereHelperstring
 	RichText    whereHelpernull_String
 	Boolean     whereHelpernull_Bool
 	Datetime    whereHelpernull_Time
 	SortOrder   whereHelpernull_Int
 }{
 	ID:          whereHelperstring{field: "\"attribute_values\".\"id\""},
-	Name:        whereHelpernull_String{field: "\"attribute_values\".\"name\""},
-	Value:       whereHelpernull_String{field: "\"attribute_values\".\"value\""},
-	Slug:        whereHelpernull_String{field: "\"attribute_values\".\"slug\""},
+	Name:        whereHelperstring{field: "\"attribute_values\".\"name\""},
+	Value:       whereHelperstring{field: "\"attribute_values\".\"value\""},
+	Slug:        whereHelperstring{field: "\"attribute_values\".\"slug\""},
 	FileURL:     whereHelpernull_String{field: "\"attribute_values\".\"file_url\""},
 	ContentType: whereHelpernull_String{field: "\"attribute_values\".\"content_type\""},
-	AttributeID: whereHelpernull_String{field: "\"attribute_values\".\"attribute_id\""},
+	AttributeID: whereHelperstring{field: "\"attribute_values\".\"attribute_id\""},
 	RichText:    whereHelpernull_String{field: "\"attribute_values\".\"rich_text\""},
 	Boolean:     whereHelpernull_Bool{field: "\"attribute_values\".\"boolean\""},
 	Datetime:    whereHelpernull_Time{field: "\"attribute_values\".\"datetime\""},
@@ -227,8 +227,8 @@ type attributeValueL struct{}
 
 var (
 	attributeValueAllColumns            = []string{"id", "name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "boolean", "datetime", "sort_order"}
-	attributeValueColumnsWithoutDefault = []string{"id"}
-	attributeValueColumnsWithDefault    = []string{"name", "value", "slug", "file_url", "content_type", "attribute_id", "rich_text", "boolean", "datetime", "sort_order"}
+	attributeValueColumnsWithoutDefault = []string{"name", "value", "slug", "attribute_id"}
+	attributeValueColumnsWithDefault    = []string{"id", "file_url", "content_type", "rich_text", "boolean", "datetime", "sort_order"}
 	attributeValuePrimaryKeyColumns     = []string{"id"}
 	attributeValueGeneratedColumns      = []string{}
 )
@@ -597,9 +597,7 @@ func (attributeValueL) LoadAttribute(ctx context.Context, e boil.ContextExecutor
 		if object.R == nil {
 			object.R = &attributeValueR{}
 		}
-		if !queries.IsNil(object.AttributeID) {
-			args = append(args, object.AttributeID)
-		}
+		args = append(args, object.AttributeID)
 
 	} else {
 	Outer:
@@ -609,14 +607,12 @@ func (attributeValueL) LoadAttribute(ctx context.Context, e boil.ContextExecutor
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.AttributeID) {
+				if a == obj.AttributeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.AttributeID) {
-				args = append(args, obj.AttributeID)
-			}
+			args = append(args, obj.AttributeID)
 
 		}
 	}
@@ -674,7 +670,7 @@ func (attributeValueL) LoadAttribute(ctx context.Context, e boil.ContextExecutor
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.AttributeID, foreign.ID) {
+			if local.AttributeID == foreign.ID {
 				local.R.Attribute = foreign
 				if foreign.R == nil {
 					foreign.R = &attributeR{}
@@ -958,7 +954,7 @@ func (attributeValueL) LoadValueAssignedVariantAttributeValues(ctx context.Conte
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1016,7 +1012,7 @@ func (attributeValueL) LoadValueAssignedVariantAttributeValues(ctx context.Conte
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ValueID) {
+			if local.ID == foreign.ValueID {
 				local.R.ValueAssignedVariantAttributeValues = append(local.R.ValueAssignedVariantAttributeValues, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignedVariantAttributeValueR{}
@@ -1057,7 +1053,7 @@ func (o *AttributeValue) SetAttribute(ctx context.Context, exec boil.ContextExec
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.AttributeID, related.ID)
+	o.AttributeID = related.ID
 	if o.R == nil {
 		o.R = &attributeValueR{
 			Attribute: related,
@@ -1074,39 +1070,6 @@ func (o *AttributeValue) SetAttribute(ctx context.Context, exec boil.ContextExec
 		related.R.AttributeValues = append(related.R.AttributeValues, o)
 	}
 
-	return nil
-}
-
-// RemoveAttribute relationship.
-// Sets o.R.Attribute to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AttributeValue) RemoveAttribute(ctx context.Context, exec boil.ContextExecutor, related *Attribute) error {
-	var err error
-
-	queries.SetScanner(&o.AttributeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Attribute = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AttributeValues {
-		if queries.Equal(o.AttributeID, ri.AttributeID) {
-			continue
-		}
-
-		ln := len(related.R.AttributeValues)
-		if ln > 1 && i < ln-1 {
-			related.R.AttributeValues[i] = related.R.AttributeValues[ln-1]
-		}
-		related.R.AttributeValues = related.R.AttributeValues[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1224,7 +1187,7 @@ func (o *AttributeValue) AddValueAssignedVariantAttributeValues(ctx context.Cont
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ValueID, o.ID)
+			rel.ValueID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1245,7 +1208,7 @@ func (o *AttributeValue) AddValueAssignedVariantAttributeValues(ctx context.Cont
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ValueID, o.ID)
+			rel.ValueID = o.ID
 		}
 	}
 
@@ -1266,80 +1229,6 @@ func (o *AttributeValue) AddValueAssignedVariantAttributeValues(ctx context.Cont
 			rel.R.Value = o
 		}
 	}
-	return nil
-}
-
-// SetValueAssignedVariantAttributeValues removes all previously related items of the
-// attribute_value replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Value's ValueAssignedVariantAttributeValues accordingly.
-// Replaces o.R.ValueAssignedVariantAttributeValues with related.
-// Sets related.R.Value's ValueAssignedVariantAttributeValues accordingly.
-func (o *AttributeValue) SetValueAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AssignedVariantAttributeValue) error {
-	query := "update \"assigned_variant_attribute_values\" set \"value_id\" = null where \"value_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ValueAssignedVariantAttributeValues {
-			queries.SetScanner(&rel.ValueID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Value = nil
-		}
-		o.R.ValueAssignedVariantAttributeValues = nil
-	}
-
-	return o.AddValueAssignedVariantAttributeValues(ctx, exec, insert, related...)
-}
-
-// RemoveValueAssignedVariantAttributeValues relationships from objects passed in.
-// Removes related items from R.ValueAssignedVariantAttributeValues (uses pointer comparison, removal does not keep order)
-// Sets related.R.Value.
-func (o *AttributeValue) RemoveValueAssignedVariantAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AssignedVariantAttributeValue) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ValueID, nil)
-		if rel.R != nil {
-			rel.R.Value = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("value_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ValueAssignedVariantAttributeValues {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ValueAssignedVariantAttributeValues)
-			if ln > 1 && i < ln-1 {
-				o.R.ValueAssignedVariantAttributeValues[i] = o.R.ValueAssignedVariantAttributeValues[ln-1]
-			}
-			o.R.ValueAssignedVariantAttributeValues = o.R.ValueAssignedVariantAttributeValues[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1481,10 +1370,6 @@ func (o *AttributeValue) Update(ctx context.Context, exec boil.ContextExecutor, 
 			attributeValueAllColumns,
 			attributeValuePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attribute_values, could not build whitelist")
 		}

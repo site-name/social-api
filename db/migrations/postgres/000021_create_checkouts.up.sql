@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS checkouts (
-  token character varying(36) NOT NULL PRIMARY KEY,
+  token uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL,
   user_id uuid,

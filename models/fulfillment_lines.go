@@ -25,9 +25,9 @@ import (
 // FulfillmentLine is an object representing the database table.
 type FulfillmentLine struct {
 	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrderLineID   null.String `boil:"order_line_id" json:"order_line_id,omitempty" toml:"order_line_id" yaml:"order_line_id,omitempty"`
-	FulfillmentID null.String `boil:"fulfillment_id" json:"fulfillment_id,omitempty" toml:"fulfillment_id" yaml:"fulfillment_id,omitempty"`
-	Quantity      null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
+	OrderLineID   string      `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
+	FulfillmentID string      `boil:"fulfillment_id" json:"fulfillment_id" toml:"fulfillment_id" yaml:"fulfillment_id"`
+	Quantity      int         `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
 	StockID       null.String `boil:"stock_id" json:"stock_id,omitempty" toml:"stock_id" yaml:"stock_id,omitempty"`
 
 	R *fulfillmentLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -66,15 +66,15 @@ var FulfillmentLineTableColumns = struct {
 
 var FulfillmentLineWhere = struct {
 	ID            whereHelperstring
-	OrderLineID   whereHelpernull_String
-	FulfillmentID whereHelpernull_String
-	Quantity      whereHelpernull_Int
+	OrderLineID   whereHelperstring
+	FulfillmentID whereHelperstring
+	Quantity      whereHelperint
 	StockID       whereHelpernull_String
 }{
 	ID:            whereHelperstring{field: "\"fulfillment_lines\".\"id\""},
-	OrderLineID:   whereHelpernull_String{field: "\"fulfillment_lines\".\"order_line_id\""},
-	FulfillmentID: whereHelpernull_String{field: "\"fulfillment_lines\".\"fulfillment_id\""},
-	Quantity:      whereHelpernull_Int{field: "\"fulfillment_lines\".\"quantity\""},
+	OrderLineID:   whereHelperstring{field: "\"fulfillment_lines\".\"order_line_id\""},
+	FulfillmentID: whereHelperstring{field: "\"fulfillment_lines\".\"fulfillment_id\""},
+	Quantity:      whereHelperint{field: "\"fulfillment_lines\".\"quantity\""},
 	StockID:       whereHelpernull_String{field: "\"fulfillment_lines\".\"stock_id\""},
 }
 
@@ -117,8 +117,8 @@ type fulfillmentLineL struct{}
 
 var (
 	fulfillmentLineAllColumns            = []string{"id", "order_line_id", "fulfillment_id", "quantity", "stock_id"}
-	fulfillmentLineColumnsWithoutDefault = []string{"id"}
-	fulfillmentLineColumnsWithDefault    = []string{"order_line_id", "fulfillment_id", "quantity", "stock_id"}
+	fulfillmentLineColumnsWithoutDefault = []string{"order_line_id", "fulfillment_id", "quantity"}
+	fulfillmentLineColumnsWithDefault    = []string{"id", "stock_id"}
 	fulfillmentLinePrimaryKeyColumns     = []string{"id"}
 	fulfillmentLineGeneratedColumns      = []string{}
 )
@@ -456,9 +456,7 @@ func (fulfillmentLineL) LoadOrderLine(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &fulfillmentLineR{}
 		}
-		if !queries.IsNil(object.OrderLineID) {
-			args = append(args, object.OrderLineID)
-		}
+		args = append(args, object.OrderLineID)
 
 	} else {
 	Outer:
@@ -468,14 +466,12 @@ func (fulfillmentLineL) LoadOrderLine(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.OrderLineID) {
+				if a == obj.OrderLineID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.OrderLineID) {
-				args = append(args, obj.OrderLineID)
-			}
+			args = append(args, obj.OrderLineID)
 
 		}
 	}
@@ -533,7 +529,7 @@ func (fulfillmentLineL) LoadOrderLine(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.OrderLineID, foreign.ID) {
+			if local.OrderLineID == foreign.ID {
 				local.R.OrderLine = foreign
 				if foreign.R == nil {
 					foreign.R = &orderLineR{}
@@ -698,7 +694,7 @@ func (o *FulfillmentLine) SetOrderLine(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.OrderLineID, related.ID)
+	o.OrderLineID = related.ID
 	if o.R == nil {
 		o.R = &fulfillmentLineR{
 			OrderLine: related,
@@ -715,39 +711,6 @@ func (o *FulfillmentLine) SetOrderLine(ctx context.Context, exec boil.ContextExe
 		related.R.FulfillmentLines = append(related.R.FulfillmentLines, o)
 	}
 
-	return nil
-}
-
-// RemoveOrderLine relationship.
-// Sets o.R.OrderLine to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *FulfillmentLine) RemoveOrderLine(ctx context.Context, exec boil.ContextExecutor, related *OrderLine) error {
-	var err error
-
-	queries.SetScanner(&o.OrderLineID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("order_line_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.OrderLine = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.FulfillmentLines {
-		if queries.Equal(o.OrderLineID, ri.OrderLineID) {
-			continue
-		}
-
-		ln := len(related.R.FulfillmentLines)
-		if ln > 1 && i < ln-1 {
-			related.R.FulfillmentLines[i] = related.R.FulfillmentLines[ln-1]
-		}
-		related.R.FulfillmentLines = related.R.FulfillmentLines[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -969,10 +932,6 @@ func (o *FulfillmentLine) Update(ctx context.Context, exec boil.ContextExecutor,
 			fulfillmentLineAllColumns,
 			fulfillmentLinePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update fulfillment_lines, could not build whitelist")
 		}

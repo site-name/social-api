@@ -568,7 +568,7 @@ func testPreorderAllocationsSelect(t *testing.T) {
 }
 
 var (
-	preorderAllocationDBTypes = map[string]string{`ID`: `character varying`, `OrderLineID`: `character varying`, `Quantity`: `integer`, `ProductVariantChannelListingID`: `character varying`}
+	preorderAllocationDBTypes = map[string]string{`ID`: `uuid`, `OrderLineID`: `uuid`, `Quantity`: `smallint`, `ProductVariantChannelListingID`: `uuid`}
 	_                         = bytes.MinRead
 )
 

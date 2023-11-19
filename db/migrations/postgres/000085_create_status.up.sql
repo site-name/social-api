@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS status (
-  user_id character varying(36) NOT NULL PRIMARY KEY,
-  status character varying(32),
-  manual boolean,
-  last_activity_at bigint
+  user_id uuid NOT NULL PRIMARY KEY,
+  status character varying(32) NOT NULL,
+  manual boolean NOT NULL,
+  last_activity_at bigint NOT NULL
 );
 
 CREATE INDEX idx_status_status ON status USING btree (status);

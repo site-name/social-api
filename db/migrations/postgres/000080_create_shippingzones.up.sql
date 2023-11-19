@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS shipping_zones (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(100),
-  countries character varying(749),
+  name character varying(100) NOT NULL,
+  countries character varying(749) NOT NULL,
   default_flag boolean,
-  description text,
-  created_at bigint,
+  description varchar(1000) NOT NULL,
+  created_at bigint NOT NULL,
   metadata jsonb,
   private_metadata jsonb
 );

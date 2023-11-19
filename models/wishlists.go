@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,51 +23,51 @@ import (
 
 // Wishlist is an object representing the database table.
 type Wishlist struct {
-	ID       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Token    null.String `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	UserID   null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	CreateAt null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID        string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Token     string `boil:"token" json:"token" toml:"token" yaml:"token"`
+	UserID    string `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	CreatedAt int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *wishlistR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L wishlistL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var WishlistColumns = struct {
-	ID       string
-	Token    string
-	UserID   string
-	CreateAt string
+	ID        string
+	Token     string
+	UserID    string
+	CreatedAt string
 }{
-	ID:       "id",
-	Token:    "token",
-	UserID:   "user_id",
-	CreateAt: "create_at",
+	ID:        "id",
+	Token:     "token",
+	UserID:    "user_id",
+	CreatedAt: "created_at",
 }
 
 var WishlistTableColumns = struct {
-	ID       string
-	Token    string
-	UserID   string
-	CreateAt string
+	ID        string
+	Token     string
+	UserID    string
+	CreatedAt string
 }{
-	ID:       "wishlists.id",
-	Token:    "wishlists.token",
-	UserID:   "wishlists.user_id",
-	CreateAt: "wishlists.create_at",
+	ID:        "wishlists.id",
+	Token:     "wishlists.token",
+	UserID:    "wishlists.user_id",
+	CreatedAt: "wishlists.created_at",
 }
 
 // Generated where
 
 var WishlistWhere = struct {
-	ID       whereHelperstring
-	Token    whereHelpernull_String
-	UserID   whereHelpernull_String
-	CreateAt whereHelpernull_Int64
+	ID        whereHelperstring
+	Token     whereHelperstring
+	UserID    whereHelperstring
+	CreatedAt whereHelperint64
 }{
-	ID:       whereHelperstring{field: "\"wishlists\".\"id\""},
-	Token:    whereHelpernull_String{field: "\"wishlists\".\"token\""},
-	UserID:   whereHelpernull_String{field: "\"wishlists\".\"user_id\""},
-	CreateAt: whereHelpernull_Int64{field: "\"wishlists\".\"create_at\""},
+	ID:        whereHelperstring{field: "\"wishlists\".\"id\""},
+	Token:     whereHelperstring{field: "\"wishlists\".\"token\""},
+	UserID:    whereHelperstring{field: "\"wishlists\".\"user_id\""},
+	CreatedAt: whereHelperint64{field: "\"wishlists\".\"created_at\""},
 }
 
 // WishlistRels is where relationship names are stored.
@@ -109,9 +108,9 @@ func (r *wishlistR) GetWishlistItems() WishlistItemSlice {
 type wishlistL struct{}
 
 var (
-	wishlistAllColumns            = []string{"id", "token", "user_id", "create_at"}
-	wishlistColumnsWithoutDefault = []string{"id"}
-	wishlistColumnsWithDefault    = []string{"token", "user_id", "create_at"}
+	wishlistAllColumns            = []string{"id", "token", "user_id", "created_at"}
+	wishlistColumnsWithoutDefault = []string{"token", "user_id", "created_at"}
+	wishlistColumnsWithDefault    = []string{"id"}
 	wishlistPrimaryKeyColumns     = []string{"id"}
 	wishlistGeneratedColumns      = []string{}
 )
@@ -452,9 +451,7 @@ func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 		if object.R == nil {
 			object.R = &wishlistR{}
 		}
-		if !queries.IsNil(object.UserID) {
-			args = append(args, object.UserID)
-		}
+		args = append(args, object.UserID)
 
 	} else {
 	Outer:
@@ -464,14 +461,12 @@ func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.UserID) {
+				if a == obj.UserID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.UserID) {
-				args = append(args, obj.UserID)
-			}
+			args = append(args, obj.UserID)
 
 		}
 	}
@@ -529,7 +524,7 @@ func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.UserID, foreign.ID) {
+			if local.UserID == foreign.ID {
 				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -585,7 +580,7 @@ func (wishlistL) LoadWishlistItems(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -643,7 +638,7 @@ func (wishlistL) LoadWishlistItems(ctx context.Context, e boil.ContextExecutor, 
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.WishlistID) {
+			if local.ID == foreign.WishlistID {
 				local.R.WishlistItems = append(local.R.WishlistItems, foreign)
 				if foreign.R == nil {
 					foreign.R = &wishlistItemR{}
@@ -684,7 +679,7 @@ func (o *Wishlist) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.UserID, related.ID)
+	o.UserID = related.ID
 	if o.R == nil {
 		o.R = &wishlistR{
 			User: related,
@@ -704,28 +699,6 @@ func (o *Wishlist) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 	return nil
 }
 
-// RemoveUser relationship.
-// Sets o.R.User to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Wishlist) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.User = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	related.R.Wishlist = nil
-	return nil
-}
-
 // AddWishlistItems adds the given related objects to the existing relationships
 // of the wishlist, optionally inserting them as new records.
 // Appends related to o.R.WishlistItems.
@@ -734,7 +707,7 @@ func (o *Wishlist) AddWishlistItems(ctx context.Context, exec boil.ContextExecut
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.WishlistID, o.ID)
+			rel.WishlistID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -755,7 +728,7 @@ func (o *Wishlist) AddWishlistItems(ctx context.Context, exec boil.ContextExecut
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.WishlistID, o.ID)
+			rel.WishlistID = o.ID
 		}
 	}
 
@@ -776,80 +749,6 @@ func (o *Wishlist) AddWishlistItems(ctx context.Context, exec boil.ContextExecut
 			rel.R.Wishlist = o
 		}
 	}
-	return nil
-}
-
-// SetWishlistItems removes all previously related items of the
-// wishlist replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Wishlist's WishlistItems accordingly.
-// Replaces o.R.WishlistItems with related.
-// Sets related.R.Wishlist's WishlistItems accordingly.
-func (o *Wishlist) SetWishlistItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*WishlistItem) error {
-	query := "update \"wishlist_items\" set \"wishlist_id\" = null where \"wishlist_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.WishlistItems {
-			queries.SetScanner(&rel.WishlistID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Wishlist = nil
-		}
-		o.R.WishlistItems = nil
-	}
-
-	return o.AddWishlistItems(ctx, exec, insert, related...)
-}
-
-// RemoveWishlistItems relationships from objects passed in.
-// Removes related items from R.WishlistItems (uses pointer comparison, removal does not keep order)
-// Sets related.R.Wishlist.
-func (o *Wishlist) RemoveWishlistItems(ctx context.Context, exec boil.ContextExecutor, related ...*WishlistItem) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.WishlistID, nil)
-		if rel.R != nil {
-			rel.R.Wishlist = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("wishlist_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.WishlistItems {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.WishlistItems)
-			if ln > 1 && i < ln-1 {
-				o.R.WishlistItems[i] = o.R.WishlistItems[ln-1]
-			}
-			o.R.WishlistItems = o.R.WishlistItems[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -991,10 +890,6 @@ func (o *Wishlist) Update(ctx context.Context, exec boil.ContextExecutor, column
 			wishlistAllColumns,
 			wishlistPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update wishlists, could not build whitelist")
 		}

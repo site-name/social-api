@@ -568,7 +568,7 @@ func testPreferencesSelect(t *testing.T) {
 }
 
 var (
-	preferenceDBTypes = map[string]string{`UserID`: `character varying`, `Category`: `character varying`, `Name`: `character varying`, `Value`: `character varying`}
+	preferenceDBTypes = map[string]string{`UserID`: `uuid`, `Category`: `character varying`, `Name`: `character varying`, `Value`: `character varying`}
 	_                 = bytes.MinRead
 )
 

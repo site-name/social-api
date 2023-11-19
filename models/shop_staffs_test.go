@@ -503,7 +503,7 @@ func testShopStaffToOneUserUsingStaff(t *testing.T) {
 	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, shopStaffDBTypes, true, shopStaffColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, shopStaffDBTypes, false, shopStaffColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ShopStaff struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testShopStaffToOneUserUsingStaff(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.StaffID, foreign.ID)
+	local.StaffID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testShopStaffToOneUserUsingStaff(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testShopStaffToOneSetOpUserUsingStaff(t *testing.T) {
 		if x.R.StaffShopStaffs[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.StaffID, x.ID) {
+		if a.StaffID != x.ID {
 			t.Error("foreign key was wrong value", a.StaffID)
 		}
 
@@ -607,60 +607,9 @@ func testShopStaffToOneSetOpUserUsingStaff(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.StaffID, x.ID) {
+		if a.StaffID != x.ID {
 			t.Error("foreign key was wrong value", a.StaffID, x.ID)
 		}
-	}
-}
-
-func testShopStaffToOneRemoveOpUserUsingStaff(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ShopStaff
-	var b User
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, shopStaffDBTypes, false, strmangle.SetComplement(shopStaffPrimaryKeyColumns, shopStaffColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetStaff(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveStaff(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Staff().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Staff != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.StaffID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.StaffShopStaffs) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testShopStaffsSelect(t *testing.T) {
 }
 
 var (
-	shopStaffDBTypes = map[string]string{`ID`: `character varying`, `StaffID`: `character varying`, `CreateAt`: `bigint`, `EndAt`: `bigint`, `SalaryPeriod`: `character varying`, `Salary`: `double precision`, `SalaryCurrency`: `character varying`}
+	shopStaffDBTypes = map[string]string{`ID`: `uuid`, `StaffID`: `uuid`, `CreatedAt`: `bigint`, `EndAt`: `bigint`, `SalaryPeriod`: `character varying`, `Salary`: `numeric`, `SalaryCurrency`: `character varying`}
 	_                = bytes.MinRead
 )
 

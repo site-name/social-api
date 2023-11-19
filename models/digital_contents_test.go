@@ -519,8 +519,9 @@ func testDigitalContentToManyContentDigitalContentUrls(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.ContentID, a.ID)
-	queries.Assign(&c.ContentID, a.ID)
+	b.ContentID = a.ID
+	c.ContentID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testDigitalContentToManyContentDigitalContentUrls(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.ContentID, b.ContentID) {
+		if v.ContentID == b.ContentID {
 			bFound = true
 		}
-		if queries.Equal(v.ContentID, c.ContentID) {
+		if v.ContentID == c.ContentID {
 			cFound = true
 		}
 	}
@@ -616,10 +617,10 @@ func testDigitalContentToManyAddOpContentDigitalContentUrls(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.ContentID) {
+		if a.ID != first.ContentID {
 			t.Error("foreign key was wrong value", a.ID, first.ContentID)
 		}
-		if !queries.Equal(a.ID, second.ContentID) {
+		if a.ID != second.ContentID {
 			t.Error("foreign key was wrong value", a.ID, second.ContentID)
 		}
 
@@ -646,182 +647,6 @@ func testDigitalContentToManyAddOpContentDigitalContentUrls(t *testing.T) {
 		}
 	}
 }
-
-func testDigitalContentToManySetOpContentDigitalContentUrls(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a DigitalContent
-	var b, c, d, e DigitalContentURL
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, digitalContentDBTypes, false, strmangle.SetComplement(digitalContentPrimaryKeyColumns, digitalContentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*DigitalContentURL{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, digitalContentURLDBTypes, false, strmangle.SetComplement(digitalContentURLPrimaryKeyColumns, digitalContentURLColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetContentDigitalContentUrls(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ContentDigitalContentUrls().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetContentDigitalContentUrls(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ContentDigitalContentUrls().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.ContentID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.ContentID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.ContentID) {
-		t.Error("foreign key was wrong value", a.ID, d.ContentID)
-	}
-	if !queries.Equal(a.ID, e.ContentID) {
-		t.Error("foreign key was wrong value", a.ID, e.ContentID)
-	}
-
-	if b.R.Content != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Content != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Content != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Content != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.ContentDigitalContentUrls[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.ContentDigitalContentUrls[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testDigitalContentToManyRemoveOpContentDigitalContentUrls(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a DigitalContent
-	var b, c, d, e DigitalContentURL
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, digitalContentDBTypes, false, strmangle.SetComplement(digitalContentPrimaryKeyColumns, digitalContentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*DigitalContentURL{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, digitalContentURLDBTypes, false, strmangle.SetComplement(digitalContentURLPrimaryKeyColumns, digitalContentURLColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddContentDigitalContentUrls(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ContentDigitalContentUrls().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveContentDigitalContentUrls(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ContentDigitalContentUrls().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.ContentID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.ContentID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Content != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Content != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Content != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Content != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.ContentDigitalContentUrls) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ContentDigitalContentUrls[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.ContentDigitalContentUrls[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testDigitalContentToOneProductVariantUsingProductVariant(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -831,7 +656,7 @@ func testDigitalContentToOneProductVariantUsingProductVariant(t *testing.T) {
 	var foreign ProductVariant
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, digitalContentDBTypes, true, digitalContentColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, digitalContentDBTypes, false, digitalContentColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize DigitalContent struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productVariantDBTypes, false, productVariantColumnsWithDefault...); err != nil {
@@ -842,7 +667,7 @@ func testDigitalContentToOneProductVariantUsingProductVariant(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductVariantID, foreign.ID)
+	local.ProductVariantID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -852,7 +677,7 @@ func testDigitalContentToOneProductVariantUsingProductVariant(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -924,7 +749,7 @@ func testDigitalContentToOneSetOpProductVariantUsingProductVariant(t *testing.T)
 		if x.R.DigitalContents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductVariantID, x.ID) {
+		if a.ProductVariantID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductVariantID)
 		}
 
@@ -935,60 +760,9 @@ func testDigitalContentToOneSetOpProductVariantUsingProductVariant(t *testing.T)
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductVariantID, x.ID) {
+		if a.ProductVariantID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductVariantID, x.ID)
 		}
-	}
-}
-
-func testDigitalContentToOneRemoveOpProductVariantUsingProductVariant(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a DigitalContent
-	var b ProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, digitalContentDBTypes, false, strmangle.SetComplement(digitalContentPrimaryKeyColumns, digitalContentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productVariantDBTypes, false, strmangle.SetComplement(productVariantPrimaryKeyColumns, productVariantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProductVariant(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProductVariant(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ProductVariant().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ProductVariant != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductVariantID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.DigitalContents) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1066,7 +840,7 @@ func testDigitalContentsSelect(t *testing.T) {
 }
 
 var (
-	digitalContentDBTypes = map[string]string{`ID`: `character varying`, `UseDefaultSettings`: `boolean`, `AutomaticFulfillment`: `boolean`, `ContentType`: `character varying`, `ProductVariantID`: `character varying`, `ContentFile`: `character varying`, `MaxDownloads`: `integer`, `URLValidDays`: `integer`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	digitalContentDBTypes = map[string]string{`ID`: `uuid`, `UseDefaultSettings`: `boolean`, `AutomaticFulfillment`: `boolean`, `ContentType`: `character varying`, `ProductVariantID`: `uuid`, `ContentFile`: `character varying`, `MaxDownloads`: `integer`, `URLValidDays`: `integer`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_                     = bytes.MinRead
 )
 

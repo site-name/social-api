@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS collection_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  language_code character varying(5),
-  collection_id uuid,
-  name character varying(250),
-  description text,
+  language_code character varying(5) NOT NULL,
+  collection_id uuid NOT NULL,
+  name character varying(250) NOT NULL,
+  description text NOT NULL,
   seo_title character varying(70),
   seo_description character varying(300)
 );

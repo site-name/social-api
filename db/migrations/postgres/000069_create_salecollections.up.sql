@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS sale_collections (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  sale_id uuid,
-  collection_id uuid,
-  created_at bigint
+  sale_id uuid NOT NULL,
+  collection_id uuid NOT NULL,
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY sale_collections

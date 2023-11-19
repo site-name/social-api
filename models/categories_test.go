@@ -673,8 +673,9 @@ func testCategoryToManySaleCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CategoryID, a.ID)
-	queries.Assign(&c.CategoryID, a.ID)
+	b.CategoryID = a.ID
+	c.CategoryID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -689,10 +690,10 @@ func testCategoryToManySaleCategories(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CategoryID, b.CategoryID) {
+		if v.CategoryID == b.CategoryID {
 			bFound = true
 		}
-		if queries.Equal(v.CategoryID, c.CategoryID) {
+		if v.CategoryID == c.CategoryID {
 			cFound = true
 		}
 	}
@@ -750,8 +751,9 @@ func testCategoryToManyVoucherCategories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CategoryID, a.ID)
-	queries.Assign(&c.CategoryID, a.ID)
+	b.CategoryID = a.ID
+	c.CategoryID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -766,10 +768,10 @@ func testCategoryToManyVoucherCategories(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CategoryID, b.CategoryID) {
+		if v.CategoryID == b.CategoryID {
 			bFound = true
 		}
-		if queries.Equal(v.CategoryID, c.CategoryID) {
+		if v.CategoryID == c.CategoryID {
 			cFound = true
 		}
 	}
@@ -1349,10 +1351,10 @@ func testCategoryToManyAddOpSaleCategories(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CategoryID) {
+		if a.ID != first.CategoryID {
 			t.Error("foreign key was wrong value", a.ID, first.CategoryID)
 		}
-		if !queries.Equal(a.ID, second.CategoryID) {
+		if a.ID != second.CategoryID {
 			t.Error("foreign key was wrong value", a.ID, second.CategoryID)
 		}
 
@@ -1379,182 +1381,6 @@ func testCategoryToManyAddOpSaleCategories(t *testing.T) {
 		}
 	}
 }
-
-func testCategoryToManySetOpSaleCategories(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Category
-	var b, c, d, e SaleCategory
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, categoryDBTypes, false, strmangle.SetComplement(categoryPrimaryKeyColumns, categoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*SaleCategory{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, saleCategoryDBTypes, false, strmangle.SetComplement(saleCategoryPrimaryKeyColumns, saleCategoryColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetSaleCategories(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.SaleCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleCategories(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CategoryID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CategoryID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CategoryID) {
-		t.Error("foreign key was wrong value", a.ID, d.CategoryID)
-	}
-	if !queries.Equal(a.ID, e.CategoryID) {
-		t.Error("foreign key was wrong value", a.ID, e.CategoryID)
-	}
-
-	if b.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Category != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Category != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.SaleCategories[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.SaleCategories[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCategoryToManyRemoveOpSaleCategories(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Category
-	var b, c, d, e SaleCategory
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, categoryDBTypes, false, strmangle.SetComplement(categoryPrimaryKeyColumns, categoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*SaleCategory{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, saleCategoryDBTypes, false, strmangle.SetComplement(saleCategoryPrimaryKeyColumns, saleCategoryColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddSaleCategories(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.SaleCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveSaleCategories(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CategoryID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CategoryID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Category != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Category != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.SaleCategories) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleCategories[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.SaleCategories[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCategoryToManyAddOpVoucherCategories(t *testing.T) {
 	var err error
 
@@ -1600,10 +1426,10 @@ func testCategoryToManyAddOpVoucherCategories(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CategoryID) {
+		if a.ID != first.CategoryID {
 			t.Error("foreign key was wrong value", a.ID, first.CategoryID)
 		}
-		if !queries.Equal(a.ID, second.CategoryID) {
+		if a.ID != second.CategoryID {
 			t.Error("foreign key was wrong value", a.ID, second.CategoryID)
 		}
 
@@ -1630,182 +1456,6 @@ func testCategoryToManyAddOpVoucherCategories(t *testing.T) {
 		}
 	}
 }
-
-func testCategoryToManySetOpVoucherCategories(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Category
-	var b, c, d, e VoucherCategory
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, categoryDBTypes, false, strmangle.SetComplement(categoryPrimaryKeyColumns, categoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*VoucherCategory{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, voucherCategoryDBTypes, false, strmangle.SetComplement(voucherCategoryPrimaryKeyColumns, voucherCategoryColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetVoucherCategories(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.VoucherCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetVoucherCategories(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.VoucherCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CategoryID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CategoryID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CategoryID) {
-		t.Error("foreign key was wrong value", a.ID, d.CategoryID)
-	}
-	if !queries.Equal(a.ID, e.CategoryID) {
-		t.Error("foreign key was wrong value", a.ID, e.CategoryID)
-	}
-
-	if b.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Category != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Category != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.VoucherCategories[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.VoucherCategories[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCategoryToManyRemoveOpVoucherCategories(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Category
-	var b, c, d, e VoucherCategory
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, categoryDBTypes, false, strmangle.SetComplement(categoryPrimaryKeyColumns, categoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*VoucherCategory{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, voucherCategoryDBTypes, false, strmangle.SetComplement(voucherCategoryPrimaryKeyColumns, voucherCategoryColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddVoucherCategories(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.VoucherCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveVoucherCategories(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.VoucherCategories().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CategoryID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CategoryID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Category != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Category != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Category != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.VoucherCategories) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.VoucherCategories[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.VoucherCategories[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCategoryToOneCategoryUsingParent(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -2050,7 +1700,7 @@ func testCategoriesSelect(t *testing.T) {
 }
 
 var (
-	categoryDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `Description`: `jsonb`, `ParentID`: `character varying`, `Level`: `smallint`, `BackgroundImage`: `character varying`, `BackgroundImageAlt`: `character varying`, `Images`: `character varying`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`, `NameTranslation`: `jsonb`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	categoryDBTypes = map[string]string{`ID`: `uuid`, `Name`: `character varying`, `Slug`: `character varying`, `Description`: `jsonb`, `ParentID`: `uuid`, `Level`: `smallint`, `BackgroundImage`: `character varying`, `BackgroundImageAlt`: `character varying`, `Images`: `character varying`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`, `NameTranslation`: `jsonb`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_               = bytes.MinRead
 )
 

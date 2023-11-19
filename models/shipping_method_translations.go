@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // ShippingMethodTranslation is an object representing the database table.
 type ShippingMethodTranslation struct {
-	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ShippingMethodID null.String `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
-	LanguageCode     null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	Name             null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Description      null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ShippingMethodID string `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
+	LanguageCode     string `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Name             string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description      string `boil:"description" json:"description" toml:"description" yaml:"description"`
 
 	R *shippingMethodTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -66,16 +65,16 @@ var ShippingMethodTranslationTableColumns = struct {
 
 var ShippingMethodTranslationWhere = struct {
 	ID               whereHelperstring
-	ShippingMethodID whereHelpernull_String
-	LanguageCode     whereHelpernull_String
-	Name             whereHelpernull_String
-	Description      whereHelpernull_String
+	ShippingMethodID whereHelperstring
+	LanguageCode     whereHelperstring
+	Name             whereHelperstring
+	Description      whereHelperstring
 }{
 	ID:               whereHelperstring{field: "\"shipping_method_translations\".\"id\""},
-	ShippingMethodID: whereHelpernull_String{field: "\"shipping_method_translations\".\"shipping_method_id\""},
-	LanguageCode:     whereHelpernull_String{field: "\"shipping_method_translations\".\"language_code\""},
-	Name:             whereHelpernull_String{field: "\"shipping_method_translations\".\"name\""},
-	Description:      whereHelpernull_String{field: "\"shipping_method_translations\".\"description\""},
+	ShippingMethodID: whereHelperstring{field: "\"shipping_method_translations\".\"shipping_method_id\""},
+	LanguageCode:     whereHelperstring{field: "\"shipping_method_translations\".\"language_code\""},
+	Name:             whereHelperstring{field: "\"shipping_method_translations\".\"name\""},
+	Description:      whereHelperstring{field: "\"shipping_method_translations\".\"description\""},
 }
 
 // ShippingMethodTranslationRels is where relationship names are stored.
@@ -96,8 +95,8 @@ type shippingMethodTranslationL struct{}
 
 var (
 	shippingMethodTranslationAllColumns            = []string{"id", "shipping_method_id", "language_code", "name", "description"}
-	shippingMethodTranslationColumnsWithoutDefault = []string{"id"}
-	shippingMethodTranslationColumnsWithDefault    = []string{"shipping_method_id", "language_code", "name", "description"}
+	shippingMethodTranslationColumnsWithoutDefault = []string{"shipping_method_id", "language_code", "name", "description"}
+	shippingMethodTranslationColumnsWithDefault    = []string{"id"}
 	shippingMethodTranslationPrimaryKeyColumns     = []string{"id"}
 	shippingMethodTranslationGeneratedColumns      = []string{}
 )
@@ -518,10 +517,6 @@ func (o *ShippingMethodTranslation) Update(ctx context.Context, exec boil.Contex
 			shippingMethodTranslationAllColumns,
 			shippingMethodTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shipping_method_translations, could not build whitelist")
 		}

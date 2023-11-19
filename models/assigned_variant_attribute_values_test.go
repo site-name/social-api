@@ -503,7 +503,7 @@ func testAssignedVariantAttributeValueToOneAssignedVariantAttributeUsingAssignme
 	var foreign AssignedVariantAttribute
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, assignedVariantAttributeValueDBTypes, true, assignedVariantAttributeValueColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, assignedVariantAttributeValueDBTypes, false, assignedVariantAttributeValueColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize AssignedVariantAttributeValue struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, assignedVariantAttributeDBTypes, false, assignedVariantAttributeColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testAssignedVariantAttributeValueToOneAssignedVariantAttributeUsingAssignme
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.AssignmentID, foreign.ID)
+	local.AssignmentID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testAssignedVariantAttributeValueToOneAssignedVariantAttributeUsingAssignme
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testAssignedVariantAttributeValueToOneAttributeValueUsingValue(t *testing.T
 	var foreign AttributeValue
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, assignedVariantAttributeValueDBTypes, true, assignedVariantAttributeValueColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, assignedVariantAttributeValueDBTypes, false, assignedVariantAttributeValueColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize AssignedVariantAttributeValue struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, attributeValueDBTypes, false, attributeValueColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testAssignedVariantAttributeValueToOneAttributeValueUsingValue(t *testing.T
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ValueID, foreign.ID)
+	local.ValueID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testAssignedVariantAttributeValueToOneAttributeValueUsingValue(t *testing.T
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testAssignedVariantAttributeValueToOneSetOpAssignedVariantAttributeUsingAss
 		if x.R.AssignmentAssignedVariantAttributeValues[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.AssignmentID, x.ID) {
+		if a.AssignmentID != x.ID {
 			t.Error("foreign key was wrong value", a.AssignmentID)
 		}
 
@@ -668,63 +668,11 @@ func testAssignedVariantAttributeValueToOneSetOpAssignedVariantAttributeUsingAss
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.AssignmentID, x.ID) {
+		if a.AssignmentID != x.ID {
 			t.Error("foreign key was wrong value", a.AssignmentID, x.ID)
 		}
 	}
 }
-
-func testAssignedVariantAttributeValueToOneRemoveOpAssignedVariantAttributeUsingAssignment(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AssignedVariantAttributeValue
-	var b AssignedVariantAttribute
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, assignedVariantAttributeValueDBTypes, false, strmangle.SetComplement(assignedVariantAttributeValuePrimaryKeyColumns, assignedVariantAttributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, assignedVariantAttributeDBTypes, false, strmangle.SetComplement(assignedVariantAttributePrimaryKeyColumns, assignedVariantAttributeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetAssignment(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveAssignment(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Assignment().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Assignment != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.AssignmentID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.AssignmentAssignedVariantAttributeValues) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testAssignedVariantAttributeValueToOneSetOpAttributeValueUsingValue(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testAssignedVariantAttributeValueToOneSetOpAttributeValueUsingValue(t *test
 		if x.R.ValueAssignedVariantAttributeValues[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ValueID, x.ID) {
+		if a.ValueID != x.ID {
 			t.Error("foreign key was wrong value", a.ValueID)
 		}
 
@@ -777,60 +725,9 @@ func testAssignedVariantAttributeValueToOneSetOpAttributeValueUsingValue(t *test
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ValueID, x.ID) {
+		if a.ValueID != x.ID {
 			t.Error("foreign key was wrong value", a.ValueID, x.ID)
 		}
-	}
-}
-
-func testAssignedVariantAttributeValueToOneRemoveOpAttributeValueUsingValue(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AssignedVariantAttributeValue
-	var b AttributeValue
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, assignedVariantAttributeValueDBTypes, false, strmangle.SetComplement(assignedVariantAttributeValuePrimaryKeyColumns, assignedVariantAttributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, attributeValueDBTypes, false, strmangle.SetComplement(attributeValuePrimaryKeyColumns, attributeValueColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetValue(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveValue(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Value().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Value != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ValueID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ValueAssignedVariantAttributeValues) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testAssignedVariantAttributeValuesSelect(t *testing.T) {
 }
 
 var (
-	assignedVariantAttributeValueDBTypes = map[string]string{`ID`: `character varying`, `ValueID`: `character varying`, `AssignmentID`: `character varying`, `SortOrder`: `integer`}
+	assignedVariantAttributeValueDBTypes = map[string]string{`ID`: `uuid`, `ValueID`: `uuid`, `AssignmentID`: `uuid`, `SortOrder`: `integer`}
 	_                                    = bytes.MinRead
 )
 

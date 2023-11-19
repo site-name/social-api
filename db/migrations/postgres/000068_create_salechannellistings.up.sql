@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS sale_channel_listings (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  sale_id uuid,
-  channel_id character varying(36) NOT NULL,
-  discount_value double precision,
-  currency text,
-  created_at bigint
+  sale_id uuid NOT NULL,
+  channel_id uuid NOT NULL,
+  discount_value decimal(12,3) DEFAULT 0.00,
+  currency varchar(3) NOT NULL,
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY sale_channel_listings

@@ -25,21 +25,21 @@ import (
 // Voucher is an object representing the database table.
 type Voucher struct {
 	ID                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Type                     null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
+	Type                     string      `boil:"type" json:"type" toml:"type" yaml:"type"`
 	Name                     null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Code                     null.String `boil:"code" json:"code,omitempty" toml:"code" yaml:"code,omitempty"`
+	Code                     string      `boil:"code" json:"code" toml:"code" yaml:"code"`
 	UsageLimit               null.Int    `boil:"usage_limit" json:"usage_limit,omitempty" toml:"usage_limit" yaml:"usage_limit,omitempty"`
-	Used                     null.Int    `boil:"used" json:"used,omitempty" toml:"used" yaml:"used,omitempty"`
-	StartDate                null.Int64  `boil:"start_date" json:"start_date,omitempty" toml:"start_date" yaml:"start_date,omitempty"`
+	Used                     int         `boil:"used" json:"used" toml:"used" yaml:"used"`
+	StartDate                int64       `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
 	EndDate                  null.Int64  `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
-	ApplyOncePerOrder        null.Bool   `boil:"apply_once_per_order" json:"apply_once_per_order,omitempty" toml:"apply_once_per_order" yaml:"apply_once_per_order,omitempty"`
-	ApplyOncePerCustomer     null.Bool   `boil:"apply_once_per_customer" json:"apply_once_per_customer,omitempty" toml:"apply_once_per_customer" yaml:"apply_once_per_customer,omitempty"`
+	ApplyOncePerOrder        bool        `boil:"apply_once_per_order" json:"apply_once_per_order" toml:"apply_once_per_order" yaml:"apply_once_per_order"`
+	ApplyOncePerCustomer     bool        `boil:"apply_once_per_customer" json:"apply_once_per_customer" toml:"apply_once_per_customer" yaml:"apply_once_per_customer"`
 	OnlyForStaff             null.Bool   `boil:"only_for_staff" json:"only_for_staff,omitempty" toml:"only_for_staff" yaml:"only_for_staff,omitempty"`
-	DiscountValueType        null.String `boil:"discount_value_type" json:"discount_value_type,omitempty" toml:"discount_value_type" yaml:"discount_value_type,omitempty"`
-	Countries                null.String `boil:"countries" json:"countries,omitempty" toml:"countries" yaml:"countries,omitempty"`
-	MinCheckoutItemsQuantity null.Int    `boil:"min_checkout_items_quantity" json:"min_checkout_items_quantity,omitempty" toml:"min_checkout_items_quantity" yaml:"min_checkout_items_quantity,omitempty"`
-	CreateAt                 null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt                 null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	DiscountValueType        string      `boil:"discount_value_type" json:"discount_value_type" toml:"discount_value_type" yaml:"discount_value_type"`
+	Countries                string      `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
+	MinCheckoutItemsQuantity int         `boil:"min_checkout_items_quantity" json:"min_checkout_items_quantity" toml:"min_checkout_items_quantity" yaml:"min_checkout_items_quantity"`
+	CreatedAt                int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt                int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	Metadata                 null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata          null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
@@ -62,8 +62,8 @@ var VoucherColumns = struct {
 	DiscountValueType        string
 	Countries                string
 	MinCheckoutItemsQuantity string
-	CreateAt                 string
-	UpdateAt                 string
+	CreatedAt                string
+	UpdatedAt                string
 	Metadata                 string
 	PrivateMetadata          string
 }{
@@ -81,8 +81,8 @@ var VoucherColumns = struct {
 	DiscountValueType:        "discount_value_type",
 	Countries:                "countries",
 	MinCheckoutItemsQuantity: "min_checkout_items_quantity",
-	CreateAt:                 "create_at",
-	UpdateAt:                 "update_at",
+	CreatedAt:                "created_at",
+	UpdatedAt:                "updated_at",
 	Metadata:                 "metadata",
 	PrivateMetadata:          "private_metadata",
 }
@@ -102,8 +102,8 @@ var VoucherTableColumns = struct {
 	DiscountValueType        string
 	Countries                string
 	MinCheckoutItemsQuantity string
-	CreateAt                 string
-	UpdateAt                 string
+	CreatedAt                string
+	UpdatedAt                string
 	Metadata                 string
 	PrivateMetadata          string
 }{
@@ -121,8 +121,8 @@ var VoucherTableColumns = struct {
 	DiscountValueType:        "vouchers.discount_value_type",
 	Countries:                "vouchers.countries",
 	MinCheckoutItemsQuantity: "vouchers.min_checkout_items_quantity",
-	CreateAt:                 "vouchers.create_at",
-	UpdateAt:                 "vouchers.update_at",
+	CreatedAt:                "vouchers.created_at",
+	UpdatedAt:                "vouchers.updated_at",
 	Metadata:                 "vouchers.metadata",
 	PrivateMetadata:          "vouchers.private_metadata",
 }
@@ -131,40 +131,40 @@ var VoucherTableColumns = struct {
 
 var VoucherWhere = struct {
 	ID                       whereHelperstring
-	Type                     whereHelpernull_String
+	Type                     whereHelperstring
 	Name                     whereHelpernull_String
-	Code                     whereHelpernull_String
+	Code                     whereHelperstring
 	UsageLimit               whereHelpernull_Int
-	Used                     whereHelpernull_Int
-	StartDate                whereHelpernull_Int64
+	Used                     whereHelperint
+	StartDate                whereHelperint64
 	EndDate                  whereHelpernull_Int64
-	ApplyOncePerOrder        whereHelpernull_Bool
-	ApplyOncePerCustomer     whereHelpernull_Bool
+	ApplyOncePerOrder        whereHelperbool
+	ApplyOncePerCustomer     whereHelperbool
 	OnlyForStaff             whereHelpernull_Bool
-	DiscountValueType        whereHelpernull_String
-	Countries                whereHelpernull_String
-	MinCheckoutItemsQuantity whereHelpernull_Int
-	CreateAt                 whereHelpernull_Int64
-	UpdateAt                 whereHelpernull_Int64
+	DiscountValueType        whereHelperstring
+	Countries                whereHelperstring
+	MinCheckoutItemsQuantity whereHelperint
+	CreatedAt                whereHelperint64
+	UpdatedAt                whereHelperint64
 	Metadata                 whereHelpernull_JSON
 	PrivateMetadata          whereHelpernull_JSON
 }{
 	ID:                       whereHelperstring{field: "\"vouchers\".\"id\""},
-	Type:                     whereHelpernull_String{field: "\"vouchers\".\"type\""},
+	Type:                     whereHelperstring{field: "\"vouchers\".\"type\""},
 	Name:                     whereHelpernull_String{field: "\"vouchers\".\"name\""},
-	Code:                     whereHelpernull_String{field: "\"vouchers\".\"code\""},
+	Code:                     whereHelperstring{field: "\"vouchers\".\"code\""},
 	UsageLimit:               whereHelpernull_Int{field: "\"vouchers\".\"usage_limit\""},
-	Used:                     whereHelpernull_Int{field: "\"vouchers\".\"used\""},
-	StartDate:                whereHelpernull_Int64{field: "\"vouchers\".\"start_date\""},
+	Used:                     whereHelperint{field: "\"vouchers\".\"used\""},
+	StartDate:                whereHelperint64{field: "\"vouchers\".\"start_date\""},
 	EndDate:                  whereHelpernull_Int64{field: "\"vouchers\".\"end_date\""},
-	ApplyOncePerOrder:        whereHelpernull_Bool{field: "\"vouchers\".\"apply_once_per_order\""},
-	ApplyOncePerCustomer:     whereHelpernull_Bool{field: "\"vouchers\".\"apply_once_per_customer\""},
+	ApplyOncePerOrder:        whereHelperbool{field: "\"vouchers\".\"apply_once_per_order\""},
+	ApplyOncePerCustomer:     whereHelperbool{field: "\"vouchers\".\"apply_once_per_customer\""},
 	OnlyForStaff:             whereHelpernull_Bool{field: "\"vouchers\".\"only_for_staff\""},
-	DiscountValueType:        whereHelpernull_String{field: "\"vouchers\".\"discount_value_type\""},
-	Countries:                whereHelpernull_String{field: "\"vouchers\".\"countries\""},
-	MinCheckoutItemsQuantity: whereHelpernull_Int{field: "\"vouchers\".\"min_checkout_items_quantity\""},
-	CreateAt:                 whereHelpernull_Int64{field: "\"vouchers\".\"create_at\""},
-	UpdateAt:                 whereHelpernull_Int64{field: "\"vouchers\".\"update_at\""},
+	DiscountValueType:        whereHelperstring{field: "\"vouchers\".\"discount_value_type\""},
+	Countries:                whereHelperstring{field: "\"vouchers\".\"countries\""},
+	MinCheckoutItemsQuantity: whereHelperint{field: "\"vouchers\".\"min_checkout_items_quantity\""},
+	CreatedAt:                whereHelperint64{field: "\"vouchers\".\"created_at\""},
+	UpdatedAt:                whereHelperint64{field: "\"vouchers\".\"updated_at\""},
 	Metadata:                 whereHelpernull_JSON{field: "\"vouchers\".\"metadata\""},
 	PrivateMetadata:          whereHelpernull_JSON{field: "\"vouchers\".\"private_metadata\""},
 }
@@ -257,9 +257,9 @@ func (r *voucherR) GetVoucherTranslations() VoucherTranslationSlice {
 type voucherL struct{}
 
 var (
-	voucherAllColumns            = []string{"id", "type", "name", "code", "usage_limit", "used", "start_date", "end_date", "apply_once_per_order", "apply_once_per_customer", "only_for_staff", "discount_value_type", "countries", "min_checkout_items_quantity", "create_at", "update_at", "metadata", "private_metadata"}
-	voucherColumnsWithoutDefault = []string{"id"}
-	voucherColumnsWithDefault    = []string{"type", "name", "code", "usage_limit", "used", "start_date", "end_date", "apply_once_per_order", "apply_once_per_customer", "only_for_staff", "discount_value_type", "countries", "min_checkout_items_quantity", "create_at", "update_at", "metadata", "private_metadata"}
+	voucherAllColumns            = []string{"id", "type", "name", "code", "usage_limit", "used", "start_date", "end_date", "apply_once_per_order", "apply_once_per_customer", "only_for_staff", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at", "metadata", "private_metadata"}
+	voucherColumnsWithoutDefault = []string{"type", "code", "used", "start_date", "apply_once_per_order", "apply_once_per_customer", "discount_value_type", "countries", "min_checkout_items_quantity", "created_at", "updated_at"}
+	voucherColumnsWithDefault    = []string{"id", "name", "usage_limit", "end_date", "only_for_staff", "metadata", "private_metadata"}
 	voucherPrimaryKeyColumns     = []string{"id"}
 	voucherGeneratedColumns      = []string{}
 )
@@ -796,7 +796,7 @@ func (voucherL) LoadVoucherCategories(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -854,7 +854,7 @@ func (voucherL) LoadVoucherCategories(ctx context.Context, e boil.ContextExecuto
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.VoucherID) {
+			if local.ID == foreign.VoucherID {
 				local.R.VoucherCategories = append(local.R.VoucherCategories, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherCategoryR{}
@@ -1024,7 +1024,7 @@ func (voucherL) LoadVoucherCollections(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1082,7 +1082,7 @@ func (voucherL) LoadVoucherCollections(ctx context.Context, e boil.ContextExecut
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.VoucherID) {
+			if local.ID == foreign.VoucherID {
 				local.R.VoucherCollections = append(local.R.VoucherCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherCollectionR{}
@@ -1138,7 +1138,7 @@ func (voucherL) LoadVoucherCustomers(ctx context.Context, e boil.ContextExecutor
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1196,7 +1196,7 @@ func (voucherL) LoadVoucherCustomers(ctx context.Context, e boil.ContextExecutor
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.VoucherID) {
+			if local.ID == foreign.VoucherID {
 				local.R.VoucherCustomers = append(local.R.VoucherCustomers, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherCustomerR{}
@@ -1252,7 +1252,7 @@ func (voucherL) LoadVoucherProducts(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1310,7 +1310,7 @@ func (voucherL) LoadVoucherProducts(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.VoucherID) {
+			if local.ID == foreign.VoucherID {
 				local.R.VoucherProducts = append(local.R.VoucherProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherProductR{}
@@ -1366,7 +1366,7 @@ func (voucherL) LoadVoucherTranslations(ctx context.Context, e boil.ContextExecu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1424,7 +1424,7 @@ func (voucherL) LoadVoucherTranslations(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.VoucherID) {
+			if local.ID == foreign.VoucherID {
 				local.R.VoucherTranslations = append(local.R.VoucherTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherTranslationR{}
@@ -1573,7 +1573,7 @@ func (o *Voucher) AddVoucherCategories(ctx context.Context, exec boil.ContextExe
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1594,7 +1594,7 @@ func (o *Voucher) AddVoucherCategories(ctx context.Context, exec boil.ContextExe
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 		}
 	}
 
@@ -1615,80 +1615,6 @@ func (o *Voucher) AddVoucherCategories(ctx context.Context, exec boil.ContextExe
 			rel.R.Voucher = o
 		}
 	}
-	return nil
-}
-
-// SetVoucherCategories removes all previously related items of the
-// voucher replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Voucher's VoucherCategories accordingly.
-// Replaces o.R.VoucherCategories with related.
-// Sets related.R.Voucher's VoucherCategories accordingly.
-func (o *Voucher) SetVoucherCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCategory) error {
-	query := "update \"voucher_categories\" set \"voucher_id\" = null where \"voucher_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherCategories {
-			queries.SetScanner(&rel.VoucherID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Voucher = nil
-		}
-		o.R.VoucherCategories = nil
-	}
-
-	return o.AddVoucherCategories(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherCategories relationships from objects passed in.
-// Removes related items from R.VoucherCategories (uses pointer comparison, removal does not keep order)
-// Sets related.R.Voucher.
-func (o *Voucher) RemoveVoucherCategories(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCategory) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.VoucherID, nil)
-		if rel.R != nil {
-			rel.R.Voucher = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherCategories {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherCategories)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherCategories[i] = o.R.VoucherCategories[ln-1]
-			}
-			o.R.VoucherCategories = o.R.VoucherCategories[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1753,7 +1679,7 @@ func (o *Voucher) AddVoucherCollections(ctx context.Context, exec boil.ContextEx
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1774,7 +1700,7 @@ func (o *Voucher) AddVoucherCollections(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 		}
 	}
 
@@ -1798,80 +1724,6 @@ func (o *Voucher) AddVoucherCollections(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// SetVoucherCollections removes all previously related items of the
-// voucher replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Voucher's VoucherCollections accordingly.
-// Replaces o.R.VoucherCollections with related.
-// Sets related.R.Voucher's VoucherCollections accordingly.
-func (o *Voucher) SetVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
-	query := "update \"voucher_collections\" set \"voucher_id\" = null where \"voucher_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherCollections {
-			queries.SetScanner(&rel.VoucherID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Voucher = nil
-		}
-		o.R.VoucherCollections = nil
-	}
-
-	return o.AddVoucherCollections(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherCollections relationships from objects passed in.
-// Removes related items from R.VoucherCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.Voucher.
-func (o *Voucher) RemoveVoucherCollections(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCollection) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.VoucherID, nil)
-		if rel.R != nil {
-			rel.R.Voucher = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherCollections {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherCollections)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherCollections[i] = o.R.VoucherCollections[ln-1]
-			}
-			o.R.VoucherCollections = o.R.VoucherCollections[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddVoucherCustomers adds the given related objects to the existing relationships
 // of the voucher, optionally inserting them as new records.
 // Appends related to o.R.VoucherCustomers.
@@ -1880,7 +1732,7 @@ func (o *Voucher) AddVoucherCustomers(ctx context.Context, exec boil.ContextExec
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1901,7 +1753,7 @@ func (o *Voucher) AddVoucherCustomers(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 		}
 	}
 
@@ -1925,80 +1777,6 @@ func (o *Voucher) AddVoucherCustomers(ctx context.Context, exec boil.ContextExec
 	return nil
 }
 
-// SetVoucherCustomers removes all previously related items of the
-// voucher replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Voucher's VoucherCustomers accordingly.
-// Replaces o.R.VoucherCustomers with related.
-// Sets related.R.Voucher's VoucherCustomers accordingly.
-func (o *Voucher) SetVoucherCustomers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCustomer) error {
-	query := "update \"voucher_customers\" set \"voucher_id\" = null where \"voucher_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherCustomers {
-			queries.SetScanner(&rel.VoucherID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Voucher = nil
-		}
-		o.R.VoucherCustomers = nil
-	}
-
-	return o.AddVoucherCustomers(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherCustomers relationships from objects passed in.
-// Removes related items from R.VoucherCustomers (uses pointer comparison, removal does not keep order)
-// Sets related.R.Voucher.
-func (o *Voucher) RemoveVoucherCustomers(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCustomer) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.VoucherID, nil)
-		if rel.R != nil {
-			rel.R.Voucher = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherCustomers {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherCustomers)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherCustomers[i] = o.R.VoucherCustomers[ln-1]
-			}
-			o.R.VoucherCustomers = o.R.VoucherCustomers[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddVoucherProducts adds the given related objects to the existing relationships
 // of the voucher, optionally inserting them as new records.
 // Appends related to o.R.VoucherProducts.
@@ -2007,7 +1785,7 @@ func (o *Voucher) AddVoucherProducts(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2028,7 +1806,7 @@ func (o *Voucher) AddVoucherProducts(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 		}
 	}
 
@@ -2052,80 +1830,6 @@ func (o *Voucher) AddVoucherProducts(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// SetVoucherProducts removes all previously related items of the
-// voucher replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Voucher's VoucherProducts accordingly.
-// Replaces o.R.VoucherProducts with related.
-// Sets related.R.Voucher's VoucherProducts accordingly.
-func (o *Voucher) SetVoucherProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherProduct) error {
-	query := "update \"voucher_products\" set \"voucher_id\" = null where \"voucher_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherProducts {
-			queries.SetScanner(&rel.VoucherID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Voucher = nil
-		}
-		o.R.VoucherProducts = nil
-	}
-
-	return o.AddVoucherProducts(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherProducts relationships from objects passed in.
-// Removes related items from R.VoucherProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Voucher.
-func (o *Voucher) RemoveVoucherProducts(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.VoucherID, nil)
-		if rel.R != nil {
-			rel.R.Voucher = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherProducts[i] = o.R.VoucherProducts[ln-1]
-			}
-			o.R.VoucherProducts = o.R.VoucherProducts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddVoucherTranslations adds the given related objects to the existing relationships
 // of the voucher, optionally inserting them as new records.
 // Appends related to o.R.VoucherTranslations.
@@ -2134,7 +1838,7 @@ func (o *Voucher) AddVoucherTranslations(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2155,7 +1859,7 @@ func (o *Voucher) AddVoucherTranslations(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.VoucherID, o.ID)
+			rel.VoucherID = o.ID
 		}
 	}
 
@@ -2176,80 +1880,6 @@ func (o *Voucher) AddVoucherTranslations(ctx context.Context, exec boil.ContextE
 			rel.R.Voucher = o
 		}
 	}
-	return nil
-}
-
-// SetVoucherTranslations removes all previously related items of the
-// voucher replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Voucher's VoucherTranslations accordingly.
-// Replaces o.R.VoucherTranslations with related.
-// Sets related.R.Voucher's VoucherTranslations accordingly.
-func (o *Voucher) SetVoucherTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherTranslation) error {
-	query := "update \"voucher_translations\" set \"voucher_id\" = null where \"voucher_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherTranslations {
-			queries.SetScanner(&rel.VoucherID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Voucher = nil
-		}
-		o.R.VoucherTranslations = nil
-	}
-
-	return o.AddVoucherTranslations(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherTranslations relationships from objects passed in.
-// Removes related items from R.VoucherTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.Voucher.
-func (o *Voucher) RemoveVoucherTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherTranslation) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.VoucherID, nil)
-		if rel.R != nil {
-			rel.R.Voucher = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherTranslations {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherTranslations)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherTranslations[i] = o.R.VoucherTranslations[ln-1]
-			}
-			o.R.VoucherTranslations = o.R.VoucherTranslations[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2391,10 +2021,6 @@ func (o *Voucher) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			voucherAllColumns,
 			voucherPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update vouchers, could not build whitelist")
 		}

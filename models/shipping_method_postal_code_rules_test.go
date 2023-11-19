@@ -503,7 +503,7 @@ func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingMethod(t *t
 	var foreign ShippingMethod
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, shippingMethodPostalCodeRuleDBTypes, true, shippingMethodPostalCodeRuleColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, shippingMethodPostalCodeRuleDBTypes, false, shippingMethodPostalCodeRuleColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ShippingMethodPostalCodeRule struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, shippingMethodDBTypes, false, shippingMethodColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingMethod(t *t
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ShippingMethodID, foreign.ID)
+	local.ShippingMethodID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testShippingMethodPostalCodeRuleToOneShippingMethodUsingShippingMethod(t *t
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testShippingMethodPostalCodeRuleToOneSetOpShippingMethodUsingShippingMethod
 		if x.R.ShippingMethodPostalCodeRules[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ShippingMethodID, x.ID) {
+		if a.ShippingMethodID != x.ID {
 			t.Error("foreign key was wrong value", a.ShippingMethodID)
 		}
 
@@ -607,60 +607,9 @@ func testShippingMethodPostalCodeRuleToOneSetOpShippingMethodUsingShippingMethod
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ShippingMethodID, x.ID) {
+		if a.ShippingMethodID != x.ID {
 			t.Error("foreign key was wrong value", a.ShippingMethodID, x.ID)
 		}
-	}
-}
-
-func testShippingMethodPostalCodeRuleToOneRemoveOpShippingMethodUsingShippingMethod(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ShippingMethodPostalCodeRule
-	var b ShippingMethod
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, shippingMethodPostalCodeRuleDBTypes, false, strmangle.SetComplement(shippingMethodPostalCodeRulePrimaryKeyColumns, shippingMethodPostalCodeRuleColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, shippingMethodDBTypes, false, strmangle.SetComplement(shippingMethodPrimaryKeyColumns, shippingMethodColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetShippingMethod(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveShippingMethod(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ShippingMethod().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ShippingMethod != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ShippingMethodID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ShippingMethodPostalCodeRules) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testShippingMethodPostalCodeRulesSelect(t *testing.T) {
 }
 
 var (
-	shippingMethodPostalCodeRuleDBTypes = map[string]string{`ID`: `character varying`, `ShippingMethodID`: `character varying`, `Start`: `character varying`, `End`: `character varying`, `InclusionType`: `character varying`}
+	shippingMethodPostalCodeRuleDBTypes = map[string]string{`ID`: `uuid`, `ShippingMethodID`: `uuid`, `Start`: `character varying`, `End`: `character varying`, `InclusionType`: `character varying`}
 	_                                   = bytes.MinRead
 )
 

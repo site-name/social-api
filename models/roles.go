@@ -25,15 +25,15 @@ import (
 // Role is an object representing the database table.
 type Role struct {
 	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name          null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	DisplayName   null.String `boil:"display_name" json:"display_name,omitempty" toml:"display_name" yaml:"display_name,omitempty"`
+	Name          string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	DisplayName   string      `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
 	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	CreateAt      null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt      null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	CreatedAt     int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt     int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeleteAt      null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
-	Permissions   null.String `boil:"permissions" json:"permissions,omitempty" toml:"permissions" yaml:"permissions,omitempty"`
-	SchemeManaged null.Bool   `boil:"scheme_managed" json:"scheme_managed,omitempty" toml:"scheme_managed" yaml:"scheme_managed,omitempty"`
-	BuiltIn       null.Bool   `boil:"built_in" json:"built_in,omitempty" toml:"built_in" yaml:"built_in,omitempty"`
+	Permissions   string      `boil:"permissions" json:"permissions" toml:"permissions" yaml:"permissions"`
+	SchemeManaged bool        `boil:"scheme_managed" json:"scheme_managed" toml:"scheme_managed" yaml:"scheme_managed"`
+	BuiltIn       bool        `boil:"built_in" json:"built_in" toml:"built_in" yaml:"built_in"`
 
 	R *roleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L roleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,8 +44,8 @@ var RoleColumns = struct {
 	Name          string
 	DisplayName   string
 	Description   string
-	CreateAt      string
-	UpdateAt      string
+	CreatedAt     string
+	UpdatedAt     string
 	DeleteAt      string
 	Permissions   string
 	SchemeManaged string
@@ -55,8 +55,8 @@ var RoleColumns = struct {
 	Name:          "name",
 	DisplayName:   "display_name",
 	Description:   "description",
-	CreateAt:      "create_at",
-	UpdateAt:      "update_at",
+	CreatedAt:     "created_at",
+	UpdatedAt:     "updated_at",
 	DeleteAt:      "delete_at",
 	Permissions:   "permissions",
 	SchemeManaged: "scheme_managed",
@@ -68,8 +68,8 @@ var RoleTableColumns = struct {
 	Name          string
 	DisplayName   string
 	Description   string
-	CreateAt      string
-	UpdateAt      string
+	CreatedAt     string
+	UpdatedAt     string
 	DeleteAt      string
 	Permissions   string
 	SchemeManaged string
@@ -79,8 +79,8 @@ var RoleTableColumns = struct {
 	Name:          "roles.name",
 	DisplayName:   "roles.display_name",
 	Description:   "roles.description",
-	CreateAt:      "roles.create_at",
-	UpdateAt:      "roles.update_at",
+	CreatedAt:     "roles.created_at",
+	UpdatedAt:     "roles.updated_at",
 	DeleteAt:      "roles.delete_at",
 	Permissions:   "roles.permissions",
 	SchemeManaged: "roles.scheme_managed",
@@ -91,26 +91,26 @@ var RoleTableColumns = struct {
 
 var RoleWhere = struct {
 	ID            whereHelperstring
-	Name          whereHelpernull_String
-	DisplayName   whereHelpernull_String
+	Name          whereHelperstring
+	DisplayName   whereHelperstring
 	Description   whereHelpernull_String
-	CreateAt      whereHelpernull_Int64
-	UpdateAt      whereHelpernull_Int64
+	CreatedAt     whereHelperint64
+	UpdatedAt     whereHelperint64
 	DeleteAt      whereHelpernull_Int64
-	Permissions   whereHelpernull_String
-	SchemeManaged whereHelpernull_Bool
-	BuiltIn       whereHelpernull_Bool
+	Permissions   whereHelperstring
+	SchemeManaged whereHelperbool
+	BuiltIn       whereHelperbool
 }{
 	ID:            whereHelperstring{field: "\"roles\".\"id\""},
-	Name:          whereHelpernull_String{field: "\"roles\".\"name\""},
-	DisplayName:   whereHelpernull_String{field: "\"roles\".\"display_name\""},
+	Name:          whereHelperstring{field: "\"roles\".\"name\""},
+	DisplayName:   whereHelperstring{field: "\"roles\".\"display_name\""},
 	Description:   whereHelpernull_String{field: "\"roles\".\"description\""},
-	CreateAt:      whereHelpernull_Int64{field: "\"roles\".\"create_at\""},
-	UpdateAt:      whereHelpernull_Int64{field: "\"roles\".\"update_at\""},
+	CreatedAt:     whereHelperint64{field: "\"roles\".\"created_at\""},
+	UpdatedAt:     whereHelperint64{field: "\"roles\".\"updated_at\""},
 	DeleteAt:      whereHelpernull_Int64{field: "\"roles\".\"delete_at\""},
-	Permissions:   whereHelpernull_String{field: "\"roles\".\"permissions\""},
-	SchemeManaged: whereHelpernull_Bool{field: "\"roles\".\"scheme_managed\""},
-	BuiltIn:       whereHelpernull_Bool{field: "\"roles\".\"built_in\""},
+	Permissions:   whereHelperstring{field: "\"roles\".\"permissions\""},
+	SchemeManaged: whereHelperbool{field: "\"roles\".\"scheme_managed\""},
+	BuiltIn:       whereHelperbool{field: "\"roles\".\"built_in\""},
 }
 
 // RoleRels is where relationship names are stored.
@@ -130,9 +130,9 @@ func (*roleR) NewStruct() *roleR {
 type roleL struct{}
 
 var (
-	roleAllColumns            = []string{"id", "name", "display_name", "description", "create_at", "update_at", "delete_at", "permissions", "scheme_managed", "built_in"}
-	roleColumnsWithoutDefault = []string{"id"}
-	roleColumnsWithDefault    = []string{"name", "display_name", "description", "create_at", "update_at", "delete_at", "permissions", "scheme_managed", "built_in"}
+	roleAllColumns            = []string{"id", "name", "display_name", "description", "created_at", "updated_at", "delete_at", "permissions", "scheme_managed", "built_in"}
+	roleColumnsWithoutDefault = []string{"name", "display_name", "created_at", "updated_at", "permissions", "scheme_managed", "built_in"}
+	roleColumnsWithDefault    = []string{"id", "description", "delete_at"}
 	rolePrimaryKeyColumns     = []string{"id"}
 	roleGeneratedColumns      = []string{}
 )
@@ -553,10 +553,6 @@ func (o *Role) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 			roleAllColumns,
 			rolePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update roles, could not build whitelist")
 		}

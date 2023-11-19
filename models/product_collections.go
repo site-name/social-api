@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // ProductCollection is an object representing the database table.
 type ProductCollection struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CollectionID null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
-	ProductID    null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CollectionID string `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
+	ProductID    string `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
 
 	R *productCollectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productCollectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var ProductCollectionTableColumns = struct {
 
 var ProductCollectionWhere = struct {
 	ID           whereHelperstring
-	CollectionID whereHelpernull_String
-	ProductID    whereHelpernull_String
+	CollectionID whereHelperstring
+	ProductID    whereHelperstring
 }{
 	ID:           whereHelperstring{field: "\"product_collections\".\"id\""},
-	CollectionID: whereHelpernull_String{field: "\"product_collections\".\"collection_id\""},
-	ProductID:    whereHelpernull_String{field: "\"product_collections\".\"product_id\""},
+	CollectionID: whereHelperstring{field: "\"product_collections\".\"collection_id\""},
+	ProductID:    whereHelperstring{field: "\"product_collections\".\"product_id\""},
 }
 
 // ProductCollectionRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type productCollectionL struct{}
 
 var (
 	productCollectionAllColumns            = []string{"id", "collection_id", "product_id"}
-	productCollectionColumnsWithoutDefault = []string{"id"}
-	productCollectionColumnsWithDefault    = []string{"collection_id", "product_id"}
+	productCollectionColumnsWithoutDefault = []string{"collection_id", "product_id"}
+	productCollectionColumnsWithDefault    = []string{"id"}
 	productCollectionPrimaryKeyColumns     = []string{"id"}
 	productCollectionGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (productCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &productCollectionR{}
 		}
-		if !queries.IsNil(object.CollectionID) {
-			args = append(args, object.CollectionID)
-		}
+		args = append(args, object.CollectionID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (productCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CollectionID) {
+				if a == obj.CollectionID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CollectionID) {
-				args = append(args, obj.CollectionID)
-			}
+			args = append(args, obj.CollectionID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (productCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CollectionID, foreign.ID) {
+			if local.CollectionID == foreign.ID {
 				local.R.Collection = foreign
 				if foreign.R == nil {
 					foreign.R = &collectionR{}
@@ -566,9 +561,7 @@ func (productCollectionL) LoadProduct(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &productCollectionR{}
 		}
-		if !queries.IsNil(object.ProductID) {
-			args = append(args, object.ProductID)
-		}
+		args = append(args, object.ProductID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (productCollectionL) LoadProduct(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductID) {
+				if a == obj.ProductID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductID) {
-				args = append(args, obj.ProductID)
-			}
+			args = append(args, obj.ProductID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (productCollectionL) LoadProduct(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductID, foreign.ID) {
+			if local.ProductID == foreign.ID {
 				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
@@ -684,7 +675,7 @@ func (o *ProductCollection) SetCollection(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CollectionID, related.ID)
+	o.CollectionID = related.ID
 	if o.R == nil {
 		o.R = &productCollectionR{
 			Collection: related,
@@ -701,39 +692,6 @@ func (o *ProductCollection) SetCollection(ctx context.Context, exec boil.Context
 		related.R.ProductCollections = append(related.R.ProductCollections, o)
 	}
 
-	return nil
-}
-
-// RemoveCollection relationship.
-// Sets o.R.Collection to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ProductCollection) RemoveCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
-	var err error
-
-	queries.SetScanner(&o.CollectionID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Collection = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ProductCollections {
-		if queries.Equal(o.CollectionID, ri.CollectionID) {
-			continue
-		}
-
-		ln := len(related.R.ProductCollections)
-		if ln > 1 && i < ln-1 {
-			related.R.ProductCollections[i] = related.R.ProductCollections[ln-1]
-		}
-		related.R.ProductCollections = related.R.ProductCollections[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *ProductCollection) SetProduct(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductID, related.ID)
+	o.ProductID = related.ID
 	if o.R == nil {
 		o.R = &productCollectionR{
 			Product: related,
@@ -781,39 +739,6 @@ func (o *ProductCollection) SetProduct(ctx context.Context, exec boil.ContextExe
 		related.R.ProductCollections = append(related.R.ProductCollections, o)
 	}
 
-	return nil
-}
-
-// RemoveProduct relationship.
-// Sets o.R.Product to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ProductCollection) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
-	var err error
-
-	queries.SetScanner(&o.ProductID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Product = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ProductCollections {
-		if queries.Equal(o.ProductID, ri.ProductID) {
-			continue
-		}
-
-		ln := len(related.R.ProductCollections)
-		if ln > 1 && i < ln-1 {
-			related.R.ProductCollections[i] = related.R.ProductCollections[ln-1]
-		}
-		related.R.ProductCollections = related.R.ProductCollections[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *ProductCollection) Update(ctx context.Context, exec boil.ContextExecuto
 			productCollectionAllColumns,
 			productCollectionPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update product_collections, could not build whitelist")
 		}

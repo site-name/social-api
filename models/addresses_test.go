@@ -750,8 +750,9 @@ func testAddressToManyUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.AddressID, a.ID)
-	queries.Assign(&c.AddressID, a.ID)
+	b.AddressID = a.ID
+	c.AddressID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -766,10 +767,10 @@ func testAddressToManyUserAddresses(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.AddressID, b.AddressID) {
+		if v.AddressID == b.AddressID {
 			bFound = true
 		}
-		if queries.Equal(v.AddressID, c.AddressID) {
+		if v.AddressID == c.AddressID {
 			cFound = true
 		}
 	}
@@ -1754,10 +1755,10 @@ func testAddressToManyAddOpUserAddresses(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.AddressID) {
+		if a.ID != first.AddressID {
 			t.Error("foreign key was wrong value", a.ID, first.AddressID)
 		}
-		if !queries.Equal(a.ID, second.AddressID) {
+		if a.ID != second.AddressID {
 			t.Error("foreign key was wrong value", a.ID, second.AddressID)
 		}
 
@@ -1784,182 +1785,6 @@ func testAddressToManyAddOpUserAddresses(t *testing.T) {
 		}
 	}
 }
-
-func testAddressToManySetOpUserAddresses(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Address
-	var b, c, d, e UserAddress
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, addressDBTypes, false, strmangle.SetComplement(addressPrimaryKeyColumns, addressColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*UserAddress{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, userAddressDBTypes, false, strmangle.SetComplement(userAddressPrimaryKeyColumns, userAddressColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetUserAddresses(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUserAddresses(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.AddressID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.AddressID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.AddressID) {
-		t.Error("foreign key was wrong value", a.ID, d.AddressID)
-	}
-	if !queries.Equal(a.ID, e.AddressID) {
-		t.Error("foreign key was wrong value", a.ID, e.AddressID)
-	}
-
-	if b.R.Address != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Address != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Address != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Address != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.UserAddresses[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.UserAddresses[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testAddressToManyRemoveOpUserAddresses(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Address
-	var b, c, d, e UserAddress
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, addressDBTypes, false, strmangle.SetComplement(addressPrimaryKeyColumns, addressColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*UserAddress{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, userAddressDBTypes, false, strmangle.SetComplement(userAddressPrimaryKeyColumns, userAddressColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddUserAddresses(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveUserAddresses(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.AddressID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.AddressID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Address != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Address != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Address != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Address != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.UserAddresses) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UserAddresses[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.UserAddresses[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testAddressToManyAddOpDefaultShippingAddressUsers(t *testing.T) {
 	var err error
 
@@ -2536,7 +2361,7 @@ func testAddressesSelect(t *testing.T) {
 }
 
 var (
-	addressDBTypes = map[string]string{`ID`: `character varying`, `FirstName`: `character varying`, `LastName`: `character varying`, `CompanyName`: `character varying`, `StreetAddress1`: `character varying`, `StreetAddress2`: `character varying`, `City`: `character varying`, `CityArea`: `character varying`, `PostalCode`: `character varying`, `Country`: `character varying`, `CountryArea`: `character varying`, `Phone`: `character varying`, `CreatedAt`: `bigint`, `UpdatedAt`: `bigint`}
+	addressDBTypes = map[string]string{`ID`: `uuid`, `FirstName`: `character varying`, `LastName`: `character varying`, `CompanyName`: `character varying`, `StreetAddress1`: `character varying`, `StreetAddress2`: `character varying`, `City`: `character varying`, `CityArea`: `character varying`, `PostalCode`: `character varying`, `Country`: `character varying`, `CountryArea`: `character varying`, `Phone`: `character varying`, `CreatedAt`: `bigint`, `UpdatedAt`: `bigint`}
 	_              = bytes.MinRead
 )
 

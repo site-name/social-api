@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS sales (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(255),
-  type character varying(10),
-  start_date bigint,
+  name character varying(255) NOT NULL,
+  type character varying(10) NOT NULL,
+  start_date bigint NOT NULL, -- future time in milli
   end_date bigint,
-  created_at bigint,
-  updated_at bigint,
+  created_at bigint NOT NULL,
+  updated_at bigint NOT NULL,
   metadata jsonb,
   private_metadata jsonb
 );

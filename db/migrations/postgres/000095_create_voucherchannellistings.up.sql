@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS voucher_channel_listings (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at bigint,
-  voucher_id character varying(36) NOT NULL,
-  channel_id character varying(36) NOT NULL,
-  discount_value double precision,
-  currency character varying(3),
-  min_spend_amount double precision
+  created_at bigint NOT NULL,
+  voucher_id uuid NOT NULL,
+  channel_id uuid NOT NULL,
+  discount_value decimal(12,3) NOT NULL DEFAULT 0.00,
+  currency character varying(3) NOT NULL,
+  min_spend_amount decimal(12,3) NOT NULL DEFAULT 0.00
 );
 
 ALTER TABLE ONLY voucher_channel_listings

@@ -503,7 +503,7 @@ func testShippingZoneChannelToOneChannelUsingChannel(t *testing.T) {
 	var foreign Channel
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, shippingZoneChannelDBTypes, true, shippingZoneChannelColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, shippingZoneChannelDBTypes, false, shippingZoneChannelColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ShippingZoneChannel struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, channelDBTypes, false, channelColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testShippingZoneChannelToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ChannelID, foreign.ID)
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testShippingZoneChannelToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testShippingZoneChannelToOneShippingZoneUsingShippingZone(t *testing.T) {
 	var foreign ShippingZone
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, shippingZoneChannelDBTypes, true, shippingZoneChannelColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, shippingZoneChannelDBTypes, false, shippingZoneChannelColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ShippingZoneChannel struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, shippingZoneDBTypes, false, shippingZoneColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testShippingZoneChannelToOneShippingZoneUsingShippingZone(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ShippingZoneID, foreign.ID)
+	local.ShippingZoneID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testShippingZoneChannelToOneShippingZoneUsingShippingZone(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testShippingZoneChannelToOneSetOpChannelUsingChannel(t *testing.T) {
 		if x.R.ShippingZoneChannels[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
@@ -668,63 +668,11 @@ func testShippingZoneChannelToOneSetOpChannelUsingChannel(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-
-func testShippingZoneChannelToOneRemoveOpChannelUsingChannel(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ShippingZoneChannel
-	var b Channel
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, shippingZoneChannelDBTypes, false, strmangle.SetComplement(shippingZoneChannelPrimaryKeyColumns, shippingZoneChannelColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Channel().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Channel != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ChannelID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ShippingZoneChannels) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testShippingZoneChannelToOneSetOpShippingZoneUsingShippingZone(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testShippingZoneChannelToOneSetOpShippingZoneUsingShippingZone(t *testing.T
 		if x.R.ShippingZoneChannels[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ShippingZoneID, x.ID) {
+		if a.ShippingZoneID != x.ID {
 			t.Error("foreign key was wrong value", a.ShippingZoneID)
 		}
 
@@ -777,60 +725,9 @@ func testShippingZoneChannelToOneSetOpShippingZoneUsingShippingZone(t *testing.T
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ShippingZoneID, x.ID) {
+		if a.ShippingZoneID != x.ID {
 			t.Error("foreign key was wrong value", a.ShippingZoneID, x.ID)
 		}
-	}
-}
-
-func testShippingZoneChannelToOneRemoveOpShippingZoneUsingShippingZone(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ShippingZoneChannel
-	var b ShippingZone
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, shippingZoneChannelDBTypes, false, strmangle.SetComplement(shippingZoneChannelPrimaryKeyColumns, shippingZoneChannelColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, shippingZoneDBTypes, false, strmangle.SetComplement(shippingZonePrimaryKeyColumns, shippingZoneColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetShippingZone(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveShippingZone(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ShippingZone().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ShippingZone != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ShippingZoneID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ShippingZoneChannels) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testShippingZoneChannelsSelect(t *testing.T) {
 }
 
 var (
-	shippingZoneChannelDBTypes = map[string]string{`ID`: `character varying`, `ShippingZoneID`: `character varying`, `ChannelID`: `character varying`}
+	shippingZoneChannelDBTypes = map[string]string{`ID`: `uuid`, `ShippingZoneID`: `uuid`, `ChannelID`: `uuid`}
 	_                          = bytes.MinRead
 )
 

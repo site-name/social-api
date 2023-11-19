@@ -519,8 +519,9 @@ func testProductMediumToManyMediumVariantMedia(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.MediaID, a.ID)
-	queries.Assign(&c.MediaID, a.ID)
+	b.MediaID = a.ID
+	c.MediaID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testProductMediumToManyMediumVariantMedia(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.MediaID, b.MediaID) {
+		if v.MediaID == b.MediaID {
 			bFound = true
 		}
-		if queries.Equal(v.MediaID, c.MediaID) {
+		if v.MediaID == c.MediaID {
 			cFound = true
 		}
 	}
@@ -616,10 +617,10 @@ func testProductMediumToManyAddOpMediumVariantMedia(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.MediaID) {
+		if a.ID != first.MediaID {
 			t.Error("foreign key was wrong value", a.ID, first.MediaID)
 		}
-		if !queries.Equal(a.ID, second.MediaID) {
+		if a.ID != second.MediaID {
 			t.Error("foreign key was wrong value", a.ID, second.MediaID)
 		}
 
@@ -646,182 +647,6 @@ func testProductMediumToManyAddOpMediumVariantMedia(t *testing.T) {
 		}
 	}
 }
-
-func testProductMediumToManySetOpMediumVariantMedia(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ProductMedium
-	var b, c, d, e VariantMedium
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productMediumDBTypes, false, strmangle.SetComplement(productMediumPrimaryKeyColumns, productMediumColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*VariantMedium{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, variantMediumDBTypes, false, strmangle.SetComplement(variantMediumPrimaryKeyColumns, variantMediumColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetMediumVariantMedia(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.MediumVariantMedia().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetMediumVariantMedia(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.MediumVariantMedia().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.MediaID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.MediaID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.MediaID) {
-		t.Error("foreign key was wrong value", a.ID, d.MediaID)
-	}
-	if !queries.Equal(a.ID, e.MediaID) {
-		t.Error("foreign key was wrong value", a.ID, e.MediaID)
-	}
-
-	if b.R.Medium != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Medium != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Medium != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Medium != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.MediumVariantMedia[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.MediumVariantMedia[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testProductMediumToManyRemoveOpMediumVariantMedia(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ProductMedium
-	var b, c, d, e VariantMedium
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productMediumDBTypes, false, strmangle.SetComplement(productMediumPrimaryKeyColumns, productMediumColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*VariantMedium{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, variantMediumDBTypes, false, strmangle.SetComplement(variantMediumPrimaryKeyColumns, variantMediumColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddMediumVariantMedia(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.MediumVariantMedia().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveMediumVariantMedia(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.MediumVariantMedia().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.MediaID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.MediaID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Medium != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Medium != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Medium != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Medium != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.MediumVariantMedia) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.MediumVariantMedia[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.MediumVariantMedia[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testProductMediumToOneProductUsingProduct(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -831,7 +656,7 @@ func testProductMediumToOneProductUsingProduct(t *testing.T) {
 	var foreign Product
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, productMediumDBTypes, true, productMediumColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, productMediumDBTypes, false, productMediumColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ProductMedium struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productDBTypes, false, productColumnsWithDefault...); err != nil {
@@ -842,7 +667,7 @@ func testProductMediumToOneProductUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductID, foreign.ID)
+	local.ProductID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -852,7 +677,7 @@ func testProductMediumToOneProductUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -924,7 +749,7 @@ func testProductMediumToOneSetOpProductUsingProduct(t *testing.T) {
 		if x.R.ProductMedia[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID)
 		}
 
@@ -935,60 +760,9 @@ func testProductMediumToOneSetOpProductUsingProduct(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID, x.ID)
 		}
-	}
-}
-
-func testProductMediumToOneRemoveOpProductUsingProduct(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ProductMedium
-	var b Product
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productMediumDBTypes, false, strmangle.SetComplement(productMediumPrimaryKeyColumns, productMediumColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productDBTypes, false, strmangle.SetComplement(productPrimaryKeyColumns, productColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProduct(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProduct(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Product().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Product != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ProductMedia) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1066,7 +840,7 @@ func testProductMediaSelect(t *testing.T) {
 }
 
 var (
-	productMediumDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `ProductID`: `character varying`, `Ppoi`: `character varying`, `Image`: `character varying`, `Alt`: `character varying`, `Type`: `character varying`, `ExternalURL`: `character varying`, `OembedData`: `text`, `SortOrder`: `integer`}
+	productMediumDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `ProductID`: `uuid`, `Ppoi`: `character varying`, `Image`: `character varying`, `Alt`: `character varying`, `Type`: `character varying`, `ExternalURL`: `character varying`, `OembedData`: `jsonb`, `SortOrder`: `integer`}
 	_                    = bytes.MinRead
 )
 

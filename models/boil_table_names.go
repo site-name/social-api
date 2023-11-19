@@ -21,7 +21,6 @@ var TableNames = struct {
 	Attributes                     string
 	Categories                     string
 	CategoryTranslations           string
-	ChannelShops                   string
 	Channels                       string
 	CheckoutLines                  string
 	Checkouts                      string
@@ -132,7 +131,6 @@ var TableNames = struct {
 	Attributes:                     "attributes",
 	Categories:                     "categories",
 	CategoryTranslations:           "category_translations",
-	ChannelShops:                   "channel_shops",
 	Channels:                       "channels",
 	CheckoutLines:                  "checkout_lines",
 	Checkouts:                      "checkouts",

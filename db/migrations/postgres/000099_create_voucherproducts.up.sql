@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS voucher_products (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  voucher_id uuid,
-  product_id character varying(36)
+  voucher_id uuid NOT NULL,
+  product_id uuid NOT NULL
 );
 
 ALTER TABLE ONLY voucher_products

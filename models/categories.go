@@ -25,16 +25,16 @@ import (
 // Category is an object representing the database table.
 type Category struct {
 	ID                 string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name               null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug               null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
+	Name               string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug               string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	Description        null.JSON   `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	ParentID           null.String `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
-	Level              null.Int16  `boil:"level" json:"level,omitempty" toml:"level" yaml:"level,omitempty"`
+	Level              int16       `boil:"level" json:"level" toml:"level" yaml:"level"`
 	BackgroundImage    null.String `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
-	BackgroundImageAlt null.String `boil:"background_image_alt" json:"background_image_alt,omitempty" toml:"background_image_alt" yaml:"background_image_alt,omitempty"`
+	BackgroundImageAlt string      `boil:"background_image_alt" json:"background_image_alt" toml:"background_image_alt" yaml:"background_image_alt"`
 	Images             null.String `boil:"images" json:"images,omitempty" toml:"images" yaml:"images,omitempty"`
-	SeoTitle           null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription     null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	SeoTitle           string      `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
+	SeoDescription     string      `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 	NameTranslation    null.JSON   `boil:"name_translation" json:"name_translation,omitempty" toml:"name_translation" yaml:"name_translation,omitempty"`
 	Metadata           null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata    null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
@@ -109,34 +109,22 @@ var CategoryTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Int16 struct{ field string }
+type whereHelperint16 struct{ field string }
 
-func (w whereHelpernull_Int16) EQ(x null.Int16) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Int16) NEQ(x null.Int16) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Int16) LT(x null.Int16) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Int16) LTE(x null.Int16) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Int16) GT(x null.Int16) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Int16) GTE(x null.Int16) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_Int16) IN(slice []int16) qm.QueryMod {
+func (w whereHelperint16) EQ(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint16) NEQ(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint16) LT(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint16) LTE(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint16) GT(x int16) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint16) GTE(x int16) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint16) IN(slice []int16) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelpernull_Int16) NIN(slice []int16) qm.QueryMod {
+func (w whereHelperint16) NIN(slice []int16) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -144,36 +132,33 @@ func (w whereHelpernull_Int16) NIN(slice []int16) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-func (w whereHelpernull_Int16) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int16) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var CategoryWhere = struct {
 	ID                 whereHelperstring
-	Name               whereHelpernull_String
-	Slug               whereHelpernull_String
+	Name               whereHelperstring
+	Slug               whereHelperstring
 	Description        whereHelpernull_JSON
 	ParentID           whereHelpernull_String
-	Level              whereHelpernull_Int16
+	Level              whereHelperint16
 	BackgroundImage    whereHelpernull_String
-	BackgroundImageAlt whereHelpernull_String
+	BackgroundImageAlt whereHelperstring
 	Images             whereHelpernull_String
-	SeoTitle           whereHelpernull_String
-	SeoDescription     whereHelpernull_String
+	SeoTitle           whereHelperstring
+	SeoDescription     whereHelperstring
 	NameTranslation    whereHelpernull_JSON
 	Metadata           whereHelpernull_JSON
 	PrivateMetadata    whereHelpernull_JSON
 }{
 	ID:                 whereHelperstring{field: "\"categories\".\"id\""},
-	Name:               whereHelpernull_String{field: "\"categories\".\"name\""},
-	Slug:               whereHelpernull_String{field: "\"categories\".\"slug\""},
+	Name:               whereHelperstring{field: "\"categories\".\"name\""},
+	Slug:               whereHelperstring{field: "\"categories\".\"slug\""},
 	Description:        whereHelpernull_JSON{field: "\"categories\".\"description\""},
 	ParentID:           whereHelpernull_String{field: "\"categories\".\"parent_id\""},
-	Level:              whereHelpernull_Int16{field: "\"categories\".\"level\""},
+	Level:              whereHelperint16{field: "\"categories\".\"level\""},
 	BackgroundImage:    whereHelpernull_String{field: "\"categories\".\"background_image\""},
-	BackgroundImageAlt: whereHelpernull_String{field: "\"categories\".\"background_image_alt\""},
+	BackgroundImageAlt: whereHelperstring{field: "\"categories\".\"background_image_alt\""},
 	Images:             whereHelpernull_String{field: "\"categories\".\"images\""},
-	SeoTitle:           whereHelpernull_String{field: "\"categories\".\"seo_title\""},
-	SeoDescription:     whereHelpernull_String{field: "\"categories\".\"seo_description\""},
+	SeoTitle:           whereHelperstring{field: "\"categories\".\"seo_title\""},
+	SeoDescription:     whereHelperstring{field: "\"categories\".\"seo_description\""},
 	NameTranslation:    whereHelpernull_JSON{field: "\"categories\".\"name_translation\""},
 	Metadata:           whereHelpernull_JSON{field: "\"categories\".\"metadata\""},
 	PrivateMetadata:    whereHelpernull_JSON{field: "\"categories\".\"private_metadata\""},
@@ -248,8 +233,8 @@ type categoryL struct{}
 
 var (
 	categoryAllColumns            = []string{"id", "name", "slug", "description", "parent_id", "level", "background_image", "background_image_alt", "images", "seo_title", "seo_description", "name_translation", "metadata", "private_metadata"}
-	categoryColumnsWithoutDefault = []string{"id"}
-	categoryColumnsWithDefault    = []string{"name", "slug", "description", "parent_id", "level", "background_image", "background_image_alt", "images", "seo_title", "seo_description", "name_translation", "metadata", "private_metadata"}
+	categoryColumnsWithoutDefault = []string{"name", "slug", "level", "background_image_alt", "seo_title", "seo_description"}
+	categoryColumnsWithDefault    = []string{"id", "description", "parent_id", "background_image", "images", "name_translation", "metadata", "private_metadata"}
 	categoryPrimaryKeyColumns     = []string{"id"}
 	categoryGeneratedColumns      = []string{}
 )
@@ -993,7 +978,7 @@ func (categoryL) LoadSaleCategories(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1051,7 +1036,7 @@ func (categoryL) LoadSaleCategories(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CategoryID) {
+			if local.ID == foreign.CategoryID {
 				local.R.SaleCategories = append(local.R.SaleCategories, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleCategoryR{}
@@ -1107,7 +1092,7 @@ func (categoryL) LoadVoucherCategories(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1165,7 +1150,7 @@ func (categoryL) LoadVoucherCategories(ctx context.Context, e boil.ContextExecut
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.CategoryID) {
+			if local.ID == foreign.CategoryID {
 				local.R.VoucherCategories = append(local.R.VoucherCategories, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherCategoryR{}
@@ -1521,7 +1506,7 @@ func (o *Category) AddSaleCategories(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CategoryID, o.ID)
+			rel.CategoryID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1542,7 +1527,7 @@ func (o *Category) AddSaleCategories(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CategoryID, o.ID)
+			rel.CategoryID = o.ID
 		}
 	}
 
@@ -1566,80 +1551,6 @@ func (o *Category) AddSaleCategories(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// SetSaleCategories removes all previously related items of the
-// category replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Category's SaleCategories accordingly.
-// Replaces o.R.SaleCategories with related.
-// Sets related.R.Category's SaleCategories accordingly.
-func (o *Category) SetSaleCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCategory) error {
-	query := "update \"sale_categories\" set \"category_id\" = null where \"category_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.SaleCategories {
-			queries.SetScanner(&rel.CategoryID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Category = nil
-		}
-		o.R.SaleCategories = nil
-	}
-
-	return o.AddSaleCategories(ctx, exec, insert, related...)
-}
-
-// RemoveSaleCategories relationships from objects passed in.
-// Removes related items from R.SaleCategories (uses pointer comparison, removal does not keep order)
-// Sets related.R.Category.
-func (o *Category) RemoveSaleCategories(ctx context.Context, exec boil.ContextExecutor, related ...*SaleCategory) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CategoryID, nil)
-		if rel.R != nil {
-			rel.R.Category = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("category_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.SaleCategories {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.SaleCategories)
-			if ln > 1 && i < ln-1 {
-				o.R.SaleCategories[i] = o.R.SaleCategories[ln-1]
-			}
-			o.R.SaleCategories = o.R.SaleCategories[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddVoucherCategories adds the given related objects to the existing relationships
 // of the category, optionally inserting them as new records.
 // Appends related to o.R.VoucherCategories.
@@ -1648,7 +1559,7 @@ func (o *Category) AddVoucherCategories(ctx context.Context, exec boil.ContextEx
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.CategoryID, o.ID)
+			rel.CategoryID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1669,7 +1580,7 @@ func (o *Category) AddVoucherCategories(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.CategoryID, o.ID)
+			rel.CategoryID = o.ID
 		}
 	}
 
@@ -1690,80 +1601,6 @@ func (o *Category) AddVoucherCategories(ctx context.Context, exec boil.ContextEx
 			rel.R.Category = o
 		}
 	}
-	return nil
-}
-
-// SetVoucherCategories removes all previously related items of the
-// category replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Category's VoucherCategories accordingly.
-// Replaces o.R.VoucherCategories with related.
-// Sets related.R.Category's VoucherCategories accordingly.
-func (o *Category) SetVoucherCategories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCategory) error {
-	query := "update \"voucher_categories\" set \"category_id\" = null where \"category_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherCategories {
-			queries.SetScanner(&rel.CategoryID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Category = nil
-		}
-		o.R.VoucherCategories = nil
-	}
-
-	return o.AddVoucherCategories(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherCategories relationships from objects passed in.
-// Removes related items from R.VoucherCategories (uses pointer comparison, removal does not keep order)
-// Sets related.R.Category.
-func (o *Category) RemoveVoucherCategories(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherCategory) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.CategoryID, nil)
-		if rel.R != nil {
-			rel.R.Category = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("category_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherCategories {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherCategories)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherCategories[i] = o.R.VoucherCategories[ln-1]
-			}
-			o.R.VoucherCategories = o.R.VoucherCategories[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1905,10 +1742,6 @@ func (o *Category) Update(ctx context.Context, exec boil.ContextExecutor, column
 			categoryAllColumns,
 			categoryPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update categories, could not build whitelist")
 		}

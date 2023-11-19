@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS wishlists (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  token character varying(36),
-  user_id uuid,
-  created_at bigint
+  token uuid NOT NULL,
+  user_id uuid NOT NULL,
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY wishlists

@@ -27,8 +27,8 @@ type ExportFile struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	ContentFile null.String `boil:"content_file" json:"content_file,omitempty" toml:"content_file" yaml:"content_file,omitempty"`
-	CreateAt    null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt    null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	CreatedAt   int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt   int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *exportFileR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L exportFileL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,28 +38,28 @@ var ExportFileColumns = struct {
 	ID          string
 	UserID      string
 	ContentFile string
-	CreateAt    string
-	UpdateAt    string
+	CreatedAt   string
+	UpdatedAt   string
 }{
 	ID:          "id",
 	UserID:      "user_id",
 	ContentFile: "content_file",
-	CreateAt:    "create_at",
-	UpdateAt:    "update_at",
+	CreatedAt:   "created_at",
+	UpdatedAt:   "updated_at",
 }
 
 var ExportFileTableColumns = struct {
 	ID          string
 	UserID      string
 	ContentFile string
-	CreateAt    string
-	UpdateAt    string
+	CreatedAt   string
+	UpdatedAt   string
 }{
 	ID:          "export_files.id",
 	UserID:      "export_files.user_id",
 	ContentFile: "export_files.content_file",
-	CreateAt:    "export_files.create_at",
-	UpdateAt:    "export_files.update_at",
+	CreatedAt:   "export_files.created_at",
+	UpdatedAt:   "export_files.updated_at",
 }
 
 // Generated where
@@ -68,14 +68,14 @@ var ExportFileWhere = struct {
 	ID          whereHelperstring
 	UserID      whereHelpernull_String
 	ContentFile whereHelpernull_String
-	CreateAt    whereHelpernull_Int64
-	UpdateAt    whereHelpernull_Int64
+	CreatedAt   whereHelperint64
+	UpdatedAt   whereHelperint64
 }{
 	ID:          whereHelperstring{field: "\"export_files\".\"id\""},
 	UserID:      whereHelpernull_String{field: "\"export_files\".\"user_id\""},
 	ContentFile: whereHelpernull_String{field: "\"export_files\".\"content_file\""},
-	CreateAt:    whereHelpernull_Int64{field: "\"export_files\".\"create_at\""},
-	UpdateAt:    whereHelpernull_Int64{field: "\"export_files\".\"update_at\""},
+	CreatedAt:   whereHelperint64{field: "\"export_files\".\"created_at\""},
+	UpdatedAt:   whereHelperint64{field: "\"export_files\".\"updated_at\""},
 }
 
 // ExportFileRels is where relationship names are stored.
@@ -116,9 +116,9 @@ func (r *exportFileR) GetExportEvents() ExportEventSlice {
 type exportFileL struct{}
 
 var (
-	exportFileAllColumns            = []string{"id", "user_id", "content_file", "create_at", "update_at"}
-	exportFileColumnsWithoutDefault = []string{"id"}
-	exportFileColumnsWithDefault    = []string{"user_id", "content_file", "create_at", "update_at"}
+	exportFileAllColumns            = []string{"id", "user_id", "content_file", "created_at", "updated_at"}
+	exportFileColumnsWithoutDefault = []string{"created_at", "updated_at"}
+	exportFileColumnsWithDefault    = []string{"id", "user_id", "content_file"}
 	exportFilePrimaryKeyColumns     = []string{"id"}
 	exportFileGeneratedColumns      = []string{}
 )
@@ -592,7 +592,7 @@ func (exportFileL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -650,7 +650,7 @@ func (exportFileL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ExportFileID) {
+			if local.ID == foreign.ExportFileID {
 				local.R.ExportEvents = append(local.R.ExportEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &exportEventR{}
@@ -752,7 +752,7 @@ func (o *ExportFile) AddExportEvents(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ExportFileID, o.ID)
+			rel.ExportFileID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -773,7 +773,7 @@ func (o *ExportFile) AddExportEvents(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ExportFileID, o.ID)
+			rel.ExportFileID = o.ID
 		}
 	}
 
@@ -794,80 +794,6 @@ func (o *ExportFile) AddExportEvents(ctx context.Context, exec boil.ContextExecu
 			rel.R.ExportFile = o
 		}
 	}
-	return nil
-}
-
-// SetExportEvents removes all previously related items of the
-// export_file replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ExportFile's ExportEvents accordingly.
-// Replaces o.R.ExportEvents with related.
-// Sets related.R.ExportFile's ExportEvents accordingly.
-func (o *ExportFile) SetExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
-	query := "update \"export_events\" set \"export_file_id\" = null where \"export_file_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ExportEvents {
-			queries.SetScanner(&rel.ExportFileID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ExportFile = nil
-		}
-		o.R.ExportEvents = nil
-	}
-
-	return o.AddExportEvents(ctx, exec, insert, related...)
-}
-
-// RemoveExportEvents relationships from objects passed in.
-// Removes related items from R.ExportEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.ExportFile.
-func (o *ExportFile) RemoveExportEvents(ctx context.Context, exec boil.ContextExecutor, related ...*ExportEvent) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ExportFileID, nil)
-		if rel.R != nil {
-			rel.R.ExportFile = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("export_file_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ExportEvents {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ExportEvents)
-			if ln > 1 && i < ln-1 {
-				o.R.ExportEvents[i] = o.R.ExportEvents[ln-1]
-			}
-			o.R.ExportEvents = o.R.ExportEvents[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1009,10 +935,6 @@ func (o *ExportFile) Update(ctx context.Context, exec boil.ContextExecutor, colu
 			exportFileAllColumns,
 			exportFilePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update export_files, could not build whitelist")
 		}

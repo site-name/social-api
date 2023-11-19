@@ -14,24 +14,24 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ShippingMethodChannelListing is an object representing the database table.
 type ShippingMethodChannelListing struct {
-	ID                      string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ShippingMethodID        null.String  `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
-	ChannelID               null.String  `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
-	MinimumOrderPriceAmount null.Float64 `boil:"minimum_order_price_amount" json:"minimum_order_price_amount,omitempty" toml:"minimum_order_price_amount" yaml:"minimum_order_price_amount,omitempty"`
-	Currency                null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	MaximumOrderPriceAmount null.Float64 `boil:"maximum_order_price_amount" json:"maximum_order_price_amount,omitempty" toml:"maximum_order_price_amount" yaml:"maximum_order_price_amount,omitempty"`
-	PriceAmount             null.Float64 `boil:"price_amount" json:"price_amount,omitempty" toml:"price_amount" yaml:"price_amount,omitempty"`
-	CreateAt                null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID                      string            `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ShippingMethodID        string            `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
+	ChannelID               string            `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	MinimumOrderPriceAmount types.Decimal     `boil:"minimum_order_price_amount" json:"minimum_order_price_amount" toml:"minimum_order_price_amount" yaml:"minimum_order_price_amount"`
+	Currency                string            `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	MaximumOrderPriceAmount types.NullDecimal `boil:"maximum_order_price_amount" json:"maximum_order_price_amount,omitempty" toml:"maximum_order_price_amount" yaml:"maximum_order_price_amount,omitempty"`
+	PriceAmount             types.Decimal     `boil:"price_amount" json:"price_amount" toml:"price_amount" yaml:"price_amount"`
+	CreatedAt               int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *shippingMethodChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,7 +45,7 @@ var ShippingMethodChannelListingColumns = struct {
 	Currency                string
 	MaximumOrderPriceAmount string
 	PriceAmount             string
-	CreateAt                string
+	CreatedAt               string
 }{
 	ID:                      "id",
 	ShippingMethodID:        "shipping_method_id",
@@ -54,7 +54,7 @@ var ShippingMethodChannelListingColumns = struct {
 	Currency:                "currency",
 	MaximumOrderPriceAmount: "maximum_order_price_amount",
 	PriceAmount:             "price_amount",
-	CreateAt:                "create_at",
+	CreatedAt:               "created_at",
 }
 
 var ShippingMethodChannelListingTableColumns = struct {
@@ -65,7 +65,7 @@ var ShippingMethodChannelListingTableColumns = struct {
 	Currency                string
 	MaximumOrderPriceAmount string
 	PriceAmount             string
-	CreateAt                string
+	CreatedAt               string
 }{
 	ID:                      "shipping_method_channel_listings.id",
 	ShippingMethodID:        "shipping_method_channel_listings.shipping_method_id",
@@ -74,29 +74,29 @@ var ShippingMethodChannelListingTableColumns = struct {
 	Currency:                "shipping_method_channel_listings.currency",
 	MaximumOrderPriceAmount: "shipping_method_channel_listings.maximum_order_price_amount",
 	PriceAmount:             "shipping_method_channel_listings.price_amount",
-	CreateAt:                "shipping_method_channel_listings.create_at",
+	CreatedAt:               "shipping_method_channel_listings.created_at",
 }
 
 // Generated where
 
 var ShippingMethodChannelListingWhere = struct {
 	ID                      whereHelperstring
-	ShippingMethodID        whereHelpernull_String
-	ChannelID               whereHelpernull_String
-	MinimumOrderPriceAmount whereHelpernull_Float64
-	Currency                whereHelpernull_String
-	MaximumOrderPriceAmount whereHelpernull_Float64
-	PriceAmount             whereHelpernull_Float64
-	CreateAt                whereHelpernull_Int64
+	ShippingMethodID        whereHelperstring
+	ChannelID               whereHelperstring
+	MinimumOrderPriceAmount whereHelpertypes_Decimal
+	Currency                whereHelperstring
+	MaximumOrderPriceAmount whereHelpertypes_NullDecimal
+	PriceAmount             whereHelpertypes_Decimal
+	CreatedAt               whereHelperint64
 }{
 	ID:                      whereHelperstring{field: "\"shipping_method_channel_listings\".\"id\""},
-	ShippingMethodID:        whereHelpernull_String{field: "\"shipping_method_channel_listings\".\"shipping_method_id\""},
-	ChannelID:               whereHelpernull_String{field: "\"shipping_method_channel_listings\".\"channel_id\""},
-	MinimumOrderPriceAmount: whereHelpernull_Float64{field: "\"shipping_method_channel_listings\".\"minimum_order_price_amount\""},
-	Currency:                whereHelpernull_String{field: "\"shipping_method_channel_listings\".\"currency\""},
-	MaximumOrderPriceAmount: whereHelpernull_Float64{field: "\"shipping_method_channel_listings\".\"maximum_order_price_amount\""},
-	PriceAmount:             whereHelpernull_Float64{field: "\"shipping_method_channel_listings\".\"price_amount\""},
-	CreateAt:                whereHelpernull_Int64{field: "\"shipping_method_channel_listings\".\"create_at\""},
+	ShippingMethodID:        whereHelperstring{field: "\"shipping_method_channel_listings\".\"shipping_method_id\""},
+	ChannelID:               whereHelperstring{field: "\"shipping_method_channel_listings\".\"channel_id\""},
+	MinimumOrderPriceAmount: whereHelpertypes_Decimal{field: "\"shipping_method_channel_listings\".\"minimum_order_price_amount\""},
+	Currency:                whereHelperstring{field: "\"shipping_method_channel_listings\".\"currency\""},
+	MaximumOrderPriceAmount: whereHelpertypes_NullDecimal{field: "\"shipping_method_channel_listings\".\"maximum_order_price_amount\""},
+	PriceAmount:             whereHelpertypes_Decimal{field: "\"shipping_method_channel_listings\".\"price_amount\""},
+	CreatedAt:               whereHelperint64{field: "\"shipping_method_channel_listings\".\"created_at\""},
 }
 
 // ShippingMethodChannelListingRels is where relationship names are stored.
@@ -137,9 +137,9 @@ func (r *shippingMethodChannelListingR) GetShippingMethod() *ShippingMethod {
 type shippingMethodChannelListingL struct{}
 
 var (
-	shippingMethodChannelListingAllColumns            = []string{"id", "shipping_method_id", "channel_id", "minimum_order_price_amount", "currency", "maximum_order_price_amount", "price_amount", "create_at"}
-	shippingMethodChannelListingColumnsWithoutDefault = []string{"id"}
-	shippingMethodChannelListingColumnsWithDefault    = []string{"shipping_method_id", "channel_id", "minimum_order_price_amount", "currency", "maximum_order_price_amount", "price_amount", "create_at"}
+	shippingMethodChannelListingAllColumns            = []string{"id", "shipping_method_id", "channel_id", "minimum_order_price_amount", "currency", "maximum_order_price_amount", "price_amount", "created_at"}
+	shippingMethodChannelListingColumnsWithoutDefault = []string{"shipping_method_id", "channel_id", "currency", "created_at"}
+	shippingMethodChannelListingColumnsWithDefault    = []string{"id", "minimum_order_price_amount", "maximum_order_price_amount", "price_amount"}
 	shippingMethodChannelListingPrimaryKeyColumns     = []string{"id"}
 	shippingMethodChannelListingGeneratedColumns      = []string{}
 )
@@ -477,9 +477,7 @@ func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.Con
 		if object.R == nil {
 			object.R = &shippingMethodChannelListingR{}
 		}
-		if !queries.IsNil(object.ChannelID) {
-			args = append(args, object.ChannelID)
-		}
+		args = append(args, object.ChannelID)
 
 	} else {
 	Outer:
@@ -489,14 +487,12 @@ func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.Con
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ChannelID) {
+				if a == obj.ChannelID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ChannelID) {
-				args = append(args, obj.ChannelID)
-			}
+			args = append(args, obj.ChannelID)
 
 		}
 	}
@@ -554,7 +550,7 @@ func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.Con
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ChannelID, foreign.ID) {
+			if local.ChannelID == foreign.ID {
 				local.R.Channel = foreign
 				if foreign.R == nil {
 					foreign.R = &channelR{}
@@ -601,9 +597,7 @@ func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e b
 		if object.R == nil {
 			object.R = &shippingMethodChannelListingR{}
 		}
-		if !queries.IsNil(object.ShippingMethodID) {
-			args = append(args, object.ShippingMethodID)
-		}
+		args = append(args, object.ShippingMethodID)
 
 	} else {
 	Outer:
@@ -613,14 +607,12 @@ func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e b
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ShippingMethodID) {
+				if a == obj.ShippingMethodID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ShippingMethodID) {
-				args = append(args, obj.ShippingMethodID)
-			}
+			args = append(args, obj.ShippingMethodID)
 
 		}
 	}
@@ -678,7 +670,7 @@ func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e b
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ShippingMethodID, foreign.ID) {
+			if local.ShippingMethodID == foreign.ID {
 				local.R.ShippingMethod = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
@@ -719,7 +711,7 @@ func (o *ShippingMethodChannelListing) SetChannel(ctx context.Context, exec boil
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ChannelID, related.ID)
+	o.ChannelID = related.ID
 	if o.R == nil {
 		o.R = &shippingMethodChannelListingR{
 			Channel: related,
@@ -736,39 +728,6 @@ func (o *ShippingMethodChannelListing) SetChannel(ctx context.Context, exec boil
 		related.R.ShippingMethodChannelListings = append(related.R.ShippingMethodChannelListings, o)
 	}
 
-	return nil
-}
-
-// RemoveChannel relationship.
-// Sets o.R.Channel to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodChannelListing) RemoveChannel(ctx context.Context, exec boil.ContextExecutor, related *Channel) error {
-	var err error
-
-	queries.SetScanner(&o.ChannelID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Channel = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ShippingMethodChannelListings {
-		if queries.Equal(o.ChannelID, ri.ChannelID) {
-			continue
-		}
-
-		ln := len(related.R.ShippingMethodChannelListings)
-		if ln > 1 && i < ln-1 {
-			related.R.ShippingMethodChannelListings[i] = related.R.ShippingMethodChannelListings[ln-1]
-		}
-		related.R.ShippingMethodChannelListings = related.R.ShippingMethodChannelListings[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -799,7 +758,7 @@ func (o *ShippingMethodChannelListing) SetShippingMethod(ctx context.Context, ex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ShippingMethodID, related.ID)
+	o.ShippingMethodID = related.ID
 	if o.R == nil {
 		o.R = &shippingMethodChannelListingR{
 			ShippingMethod: related,
@@ -816,39 +775,6 @@ func (o *ShippingMethodChannelListing) SetShippingMethod(ctx context.Context, ex
 		related.R.ShippingMethodChannelListings = append(related.R.ShippingMethodChannelListings, o)
 	}
 
-	return nil
-}
-
-// RemoveShippingMethod relationship.
-// Sets o.R.ShippingMethod to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodChannelListing) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
-	var err error
-
-	queries.SetScanner(&o.ShippingMethodID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ShippingMethod = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ShippingMethodChannelListings {
-		if queries.Equal(o.ShippingMethodID, ri.ShippingMethodID) {
-			continue
-		}
-
-		ln := len(related.R.ShippingMethodChannelListings)
-		if ln > 1 && i < ln-1 {
-			related.R.ShippingMethodChannelListings[i] = related.R.ShippingMethodChannelListings[ln-1]
-		}
-		related.R.ShippingMethodChannelListings = related.R.ShippingMethodChannelListings[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -990,10 +916,6 @@ func (o *ShippingMethodChannelListing) Update(ctx context.Context, exec boil.Con
 			shippingMethodChannelListingAllColumns,
 			shippingMethodChannelListingPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shipping_method_channel_listings, could not build whitelist")
 		}

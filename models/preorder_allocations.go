@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // PreorderAllocation is an object representing the database table.
 type PreorderAllocation struct {
-	ID                             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrderLineID                    null.String `boil:"order_line_id" json:"order_line_id,omitempty" toml:"order_line_id" yaml:"order_line_id,omitempty"`
-	Quantity                       null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
-	ProductVariantChannelListingID null.String `boil:"product_variant_channel_listing_id" json:"product_variant_channel_listing_id,omitempty" toml:"product_variant_channel_listing_id" yaml:"product_variant_channel_listing_id,omitempty"`
+	ID                             string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	OrderLineID                    string `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
+	Quantity                       int16  `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	ProductVariantChannelListingID string `boil:"product_variant_channel_listing_id" json:"product_variant_channel_listing_id" toml:"product_variant_channel_listing_id" yaml:"product_variant_channel_listing_id"`
 
 	R *preorderAllocationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L preorderAllocationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,14 +60,14 @@ var PreorderAllocationTableColumns = struct {
 
 var PreorderAllocationWhere = struct {
 	ID                             whereHelperstring
-	OrderLineID                    whereHelpernull_String
-	Quantity                       whereHelpernull_Int
-	ProductVariantChannelListingID whereHelpernull_String
+	OrderLineID                    whereHelperstring
+	Quantity                       whereHelperint16
+	ProductVariantChannelListingID whereHelperstring
 }{
 	ID:                             whereHelperstring{field: "\"preorder_allocations\".\"id\""},
-	OrderLineID:                    whereHelpernull_String{field: "\"preorder_allocations\".\"order_line_id\""},
-	Quantity:                       whereHelpernull_Int{field: "\"preorder_allocations\".\"quantity\""},
-	ProductVariantChannelListingID: whereHelpernull_String{field: "\"preorder_allocations\".\"product_variant_channel_listing_id\""},
+	OrderLineID:                    whereHelperstring{field: "\"preorder_allocations\".\"order_line_id\""},
+	Quantity:                       whereHelperint16{field: "\"preorder_allocations\".\"quantity\""},
+	ProductVariantChannelListingID: whereHelperstring{field: "\"preorder_allocations\".\"product_variant_channel_listing_id\""},
 }
 
 // PreorderAllocationRels is where relationship names are stored.
@@ -89,8 +88,8 @@ type preorderAllocationL struct{}
 
 var (
 	preorderAllocationAllColumns            = []string{"id", "order_line_id", "quantity", "product_variant_channel_listing_id"}
-	preorderAllocationColumnsWithoutDefault = []string{"id"}
-	preorderAllocationColumnsWithDefault    = []string{"order_line_id", "quantity", "product_variant_channel_listing_id"}
+	preorderAllocationColumnsWithoutDefault = []string{"order_line_id", "quantity", "product_variant_channel_listing_id"}
+	preorderAllocationColumnsWithDefault    = []string{"id"}
 	preorderAllocationPrimaryKeyColumns     = []string{"id"}
 	preorderAllocationGeneratedColumns      = []string{}
 )
@@ -511,10 +510,6 @@ func (o *PreorderAllocation) Update(ctx context.Context, exec boil.ContextExecut
 			preorderAllocationAllColumns,
 			preorderAllocationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update preorder_allocations, could not build whitelist")
 		}

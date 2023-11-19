@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // VoucherproductVariant is an object representing the database table.
 type VoucherproductVariant struct {
-	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VoucherID        null.String `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
-	CreateAt         null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VoucherID        string `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	ProductVariantID string `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
+	CreatedAt        int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *voucherproductVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherproductVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,38 +36,38 @@ var VoucherproductVariantColumns = struct {
 	ID               string
 	VoucherID        string
 	ProductVariantID string
-	CreateAt         string
+	CreatedAt        string
 }{
 	ID:               "id",
 	VoucherID:        "voucher_id",
 	ProductVariantID: "product_variant_id",
-	CreateAt:         "create_at",
+	CreatedAt:        "created_at",
 }
 
 var VoucherproductVariantTableColumns = struct {
 	ID               string
 	VoucherID        string
 	ProductVariantID string
-	CreateAt         string
+	CreatedAt        string
 }{
 	ID:               "voucherproduct_variants.id",
 	VoucherID:        "voucherproduct_variants.voucher_id",
 	ProductVariantID: "voucherproduct_variants.product_variant_id",
-	CreateAt:         "voucherproduct_variants.create_at",
+	CreatedAt:        "voucherproduct_variants.created_at",
 }
 
 // Generated where
 
 var VoucherproductVariantWhere = struct {
 	ID               whereHelperstring
-	VoucherID        whereHelpernull_String
-	ProductVariantID whereHelpernull_String
-	CreateAt         whereHelpernull_Int64
+	VoucherID        whereHelperstring
+	ProductVariantID whereHelperstring
+	CreatedAt        whereHelperint64
 }{
 	ID:               whereHelperstring{field: "\"voucherproduct_variants\".\"id\""},
-	VoucherID:        whereHelpernull_String{field: "\"voucherproduct_variants\".\"voucher_id\""},
-	ProductVariantID: whereHelpernull_String{field: "\"voucherproduct_variants\".\"product_variant_id\""},
-	CreateAt:         whereHelpernull_Int64{field: "\"voucherproduct_variants\".\"create_at\""},
+	VoucherID:        whereHelperstring{field: "\"voucherproduct_variants\".\"voucher_id\""},
+	ProductVariantID: whereHelperstring{field: "\"voucherproduct_variants\".\"product_variant_id\""},
+	CreatedAt:        whereHelperint64{field: "\"voucherproduct_variants\".\"created_at\""},
 }
 
 // VoucherproductVariantRels is where relationship names are stored.
@@ -88,9 +87,9 @@ func (*voucherproductVariantR) NewStruct() *voucherproductVariantR {
 type voucherproductVariantL struct{}
 
 var (
-	voucherproductVariantAllColumns            = []string{"id", "voucher_id", "product_variant_id", "create_at"}
-	voucherproductVariantColumnsWithoutDefault = []string{"id"}
-	voucherproductVariantColumnsWithDefault    = []string{"voucher_id", "product_variant_id", "create_at"}
+	voucherproductVariantAllColumns            = []string{"id", "voucher_id", "product_variant_id", "created_at"}
+	voucherproductVariantColumnsWithoutDefault = []string{"voucher_id", "product_variant_id", "created_at"}
+	voucherproductVariantColumnsWithDefault    = []string{"id"}
 	voucherproductVariantPrimaryKeyColumns     = []string{"id"}
 	voucherproductVariantGeneratedColumns      = []string{}
 )
@@ -511,10 +510,6 @@ func (o *VoucherproductVariant) Update(ctx context.Context, exec boil.ContextExe
 			voucherproductVariantAllColumns,
 			voucherproductVariantPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update voucherproduct_variants, could not build whitelist")
 		}

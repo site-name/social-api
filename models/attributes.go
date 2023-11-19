@@ -25,19 +25,19 @@ import (
 // Attribute is an object representing the database table.
 type Attribute struct {
 	ID                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Slug                     null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Name                     null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Type                     null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	InputType                null.String `boil:"input_type" json:"input_type,omitempty" toml:"input_type" yaml:"input_type,omitempty"`
+	Slug                     string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Name                     string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Type                     string      `boil:"type" json:"type" toml:"type" yaml:"type"`
+	InputType                string      `boil:"input_type" json:"input_type" toml:"input_type" yaml:"input_type"`
 	EntityType               null.String `boil:"entity_type" json:"entity_type,omitempty" toml:"entity_type" yaml:"entity_type,omitempty"`
 	Unit                     null.String `boil:"unit" json:"unit,omitempty" toml:"unit" yaml:"unit,omitempty"`
-	ValueRequired            null.Bool   `boil:"value_required" json:"value_required,omitempty" toml:"value_required" yaml:"value_required,omitempty"`
-	IsVariantOnly            null.Bool   `boil:"is_variant_only" json:"is_variant_only,omitempty" toml:"is_variant_only" yaml:"is_variant_only,omitempty"`
-	VisibleInStorefront      null.Bool   `boil:"visible_in_storefront" json:"visible_in_storefront,omitempty" toml:"visible_in_storefront" yaml:"visible_in_storefront,omitempty"`
-	FilterableInStorefront   null.Bool   `boil:"filterable_in_storefront" json:"filterable_in_storefront,omitempty" toml:"filterable_in_storefront" yaml:"filterable_in_storefront,omitempty"`
-	FilterableInDashboard    null.Bool   `boil:"filterable_in_dashboard" json:"filterable_in_dashboard,omitempty" toml:"filterable_in_dashboard" yaml:"filterable_in_dashboard,omitempty"`
-	StorefrontSearchPosition null.Int    `boil:"storefront_search_position" json:"storefront_search_position,omitempty" toml:"storefront_search_position" yaml:"storefront_search_position,omitempty"`
-	AvailableInGrid          null.Bool   `boil:"available_in_grid" json:"available_in_grid,omitempty" toml:"available_in_grid" yaml:"available_in_grid,omitempty"`
+	ValueRequired            bool        `boil:"value_required" json:"value_required" toml:"value_required" yaml:"value_required"`
+	IsVariantOnly            bool        `boil:"is_variant_only" json:"is_variant_only" toml:"is_variant_only" yaml:"is_variant_only"`
+	VisibleInStorefront      bool        `boil:"visible_in_storefront" json:"visible_in_storefront" toml:"visible_in_storefront" yaml:"visible_in_storefront"`
+	FilterableInStorefront   bool        `boil:"filterable_in_storefront" json:"filterable_in_storefront" toml:"filterable_in_storefront" yaml:"filterable_in_storefront"`
+	FilterableInDashboard    bool        `boil:"filterable_in_dashboard" json:"filterable_in_dashboard" toml:"filterable_in_dashboard" yaml:"filterable_in_dashboard"`
+	StorefrontSearchPosition int         `boil:"storefront_search_position" json:"storefront_search_position" toml:"storefront_search_position" yaml:"storefront_search_position"`
+	AvailableInGrid          bool        `boil:"available_in_grid" json:"available_in_grid" toml:"available_in_grid" yaml:"available_in_grid"`
 	Metadata                 null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata          null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
@@ -145,36 +145,36 @@ func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsN
 
 var AttributeWhere = struct {
 	ID                       whereHelperstring
-	Slug                     whereHelpernull_String
-	Name                     whereHelpernull_String
-	Type                     whereHelpernull_String
-	InputType                whereHelpernull_String
+	Slug                     whereHelperstring
+	Name                     whereHelperstring
+	Type                     whereHelperstring
+	InputType                whereHelperstring
 	EntityType               whereHelpernull_String
 	Unit                     whereHelpernull_String
-	ValueRequired            whereHelpernull_Bool
-	IsVariantOnly            whereHelpernull_Bool
-	VisibleInStorefront      whereHelpernull_Bool
-	FilterableInStorefront   whereHelpernull_Bool
-	FilterableInDashboard    whereHelpernull_Bool
-	StorefrontSearchPosition whereHelpernull_Int
-	AvailableInGrid          whereHelpernull_Bool
+	ValueRequired            whereHelperbool
+	IsVariantOnly            whereHelperbool
+	VisibleInStorefront      whereHelperbool
+	FilterableInStorefront   whereHelperbool
+	FilterableInDashboard    whereHelperbool
+	StorefrontSearchPosition whereHelperint
+	AvailableInGrid          whereHelperbool
 	Metadata                 whereHelpernull_JSON
 	PrivateMetadata          whereHelpernull_JSON
 }{
 	ID:                       whereHelperstring{field: "\"attributes\".\"id\""},
-	Slug:                     whereHelpernull_String{field: "\"attributes\".\"slug\""},
-	Name:                     whereHelpernull_String{field: "\"attributes\".\"name\""},
-	Type:                     whereHelpernull_String{field: "\"attributes\".\"type\""},
-	InputType:                whereHelpernull_String{field: "\"attributes\".\"input_type\""},
+	Slug:                     whereHelperstring{field: "\"attributes\".\"slug\""},
+	Name:                     whereHelperstring{field: "\"attributes\".\"name\""},
+	Type:                     whereHelperstring{field: "\"attributes\".\"type\""},
+	InputType:                whereHelperstring{field: "\"attributes\".\"input_type\""},
 	EntityType:               whereHelpernull_String{field: "\"attributes\".\"entity_type\""},
 	Unit:                     whereHelpernull_String{field: "\"attributes\".\"unit\""},
-	ValueRequired:            whereHelpernull_Bool{field: "\"attributes\".\"value_required\""},
-	IsVariantOnly:            whereHelpernull_Bool{field: "\"attributes\".\"is_variant_only\""},
-	VisibleInStorefront:      whereHelpernull_Bool{field: "\"attributes\".\"visible_in_storefront\""},
-	FilterableInStorefront:   whereHelpernull_Bool{field: "\"attributes\".\"filterable_in_storefront\""},
-	FilterableInDashboard:    whereHelpernull_Bool{field: "\"attributes\".\"filterable_in_dashboard\""},
-	StorefrontSearchPosition: whereHelpernull_Int{field: "\"attributes\".\"storefront_search_position\""},
-	AvailableInGrid:          whereHelpernull_Bool{field: "\"attributes\".\"available_in_grid\""},
+	ValueRequired:            whereHelperbool{field: "\"attributes\".\"value_required\""},
+	IsVariantOnly:            whereHelperbool{field: "\"attributes\".\"is_variant_only\""},
+	VisibleInStorefront:      whereHelperbool{field: "\"attributes\".\"visible_in_storefront\""},
+	FilterableInStorefront:   whereHelperbool{field: "\"attributes\".\"filterable_in_storefront\""},
+	FilterableInDashboard:    whereHelperbool{field: "\"attributes\".\"filterable_in_dashboard\""},
+	StorefrontSearchPosition: whereHelperint{field: "\"attributes\".\"storefront_search_position\""},
+	AvailableInGrid:          whereHelperbool{field: "\"attributes\".\"available_in_grid\""},
 	Metadata:                 whereHelpernull_JSON{field: "\"attributes\".\"metadata\""},
 	PrivateMetadata:          whereHelpernull_JSON{field: "\"attributes\".\"private_metadata\""},
 }
@@ -228,8 +228,8 @@ type attributeL struct{}
 
 var (
 	attributeAllColumns            = []string{"id", "slug", "name", "type", "input_type", "entity_type", "unit", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid", "metadata", "private_metadata"}
-	attributeColumnsWithoutDefault = []string{"id"}
-	attributeColumnsWithDefault    = []string{"slug", "name", "type", "input_type", "entity_type", "unit", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid", "metadata", "private_metadata"}
+	attributeColumnsWithoutDefault = []string{"slug", "name", "type", "input_type", "value_required", "is_variant_only", "visible_in_storefront", "filterable_in_storefront", "filterable_in_dashboard", "storefront_search_position", "available_in_grid"}
+	attributeColumnsWithDefault    = []string{"id", "entity_type", "unit", "metadata", "private_metadata"}
 	attributePrimaryKeyColumns     = []string{"id"}
 	attributeGeneratedColumns      = []string{}
 )
@@ -596,7 +596,7 @@ func (attributeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExecu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -654,7 +654,7 @@ func (attributeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.AttributeID) {
+			if local.ID == foreign.AttributeID {
 				local.R.AttributeProducts = append(local.R.AttributeProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &attributeProductR{}
@@ -710,7 +710,7 @@ func (attributeL) LoadAttributeValues(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -768,7 +768,7 @@ func (attributeL) LoadAttributeValues(ctx context.Context, e boil.ContextExecuto
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.AttributeID) {
+			if local.ID == foreign.AttributeID {
 				local.R.AttributeValues = append(local.R.AttributeValues, foreign)
 				if foreign.R == nil {
 					foreign.R = &attributeValueR{}
@@ -824,7 +824,7 @@ func (attributeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExecu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -882,7 +882,7 @@ func (attributeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.AttributeID) {
+			if local.ID == foreign.AttributeID {
 				local.R.AttributeVariants = append(local.R.AttributeVariants, foreign)
 				if foreign.R == nil {
 					foreign.R = &attributeVariantR{}
@@ -904,7 +904,7 @@ func (o *Attribute) AddAttributeProducts(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.AttributeID, o.ID)
+			rel.AttributeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -925,7 +925,7 @@ func (o *Attribute) AddAttributeProducts(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.AttributeID, o.ID)
+			rel.AttributeID = o.ID
 		}
 	}
 
@@ -949,80 +949,6 @@ func (o *Attribute) AddAttributeProducts(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// SetAttributeProducts removes all previously related items of the
-// attribute replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Attribute's AttributeProducts accordingly.
-// Replaces o.R.AttributeProducts with related.
-// Sets related.R.Attribute's AttributeProducts accordingly.
-func (o *Attribute) SetAttributeProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeProduct) error {
-	query := "update \"attribute_products\" set \"attribute_id\" = null where \"attribute_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AttributeProducts {
-			queries.SetScanner(&rel.AttributeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Attribute = nil
-		}
-		o.R.AttributeProducts = nil
-	}
-
-	return o.AddAttributeProducts(ctx, exec, insert, related...)
-}
-
-// RemoveAttributeProducts relationships from objects passed in.
-// Removes related items from R.AttributeProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Attribute.
-func (o *Attribute) RemoveAttributeProducts(ctx context.Context, exec boil.ContextExecutor, related ...*AttributeProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.AttributeID, nil)
-		if rel.R != nil {
-			rel.R.Attribute = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AttributeProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AttributeProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.AttributeProducts[i] = o.R.AttributeProducts[ln-1]
-			}
-			o.R.AttributeProducts = o.R.AttributeProducts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddAttributeValues adds the given related objects to the existing relationships
 // of the attribute, optionally inserting them as new records.
 // Appends related to o.R.AttributeValues.
@@ -1031,7 +957,7 @@ func (o *Attribute) AddAttributeValues(ctx context.Context, exec boil.ContextExe
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.AttributeID, o.ID)
+			rel.AttributeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1052,7 +978,7 @@ func (o *Attribute) AddAttributeValues(ctx context.Context, exec boil.ContextExe
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.AttributeID, o.ID)
+			rel.AttributeID = o.ID
 		}
 	}
 
@@ -1076,80 +1002,6 @@ func (o *Attribute) AddAttributeValues(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// SetAttributeValues removes all previously related items of the
-// attribute replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Attribute's AttributeValues accordingly.
-// Replaces o.R.AttributeValues with related.
-// Sets related.R.Attribute's AttributeValues accordingly.
-func (o *Attribute) SetAttributeValues(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeValue) error {
-	query := "update \"attribute_values\" set \"attribute_id\" = null where \"attribute_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AttributeValues {
-			queries.SetScanner(&rel.AttributeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Attribute = nil
-		}
-		o.R.AttributeValues = nil
-	}
-
-	return o.AddAttributeValues(ctx, exec, insert, related...)
-}
-
-// RemoveAttributeValues relationships from objects passed in.
-// Removes related items from R.AttributeValues (uses pointer comparison, removal does not keep order)
-// Sets related.R.Attribute.
-func (o *Attribute) RemoveAttributeValues(ctx context.Context, exec boil.ContextExecutor, related ...*AttributeValue) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.AttributeID, nil)
-		if rel.R != nil {
-			rel.R.Attribute = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AttributeValues {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AttributeValues)
-			if ln > 1 && i < ln-1 {
-				o.R.AttributeValues[i] = o.R.AttributeValues[ln-1]
-			}
-			o.R.AttributeValues = o.R.AttributeValues[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddAttributeVariants adds the given related objects to the existing relationships
 // of the attribute, optionally inserting them as new records.
 // Appends related to o.R.AttributeVariants.
@@ -1158,7 +1010,7 @@ func (o *Attribute) AddAttributeVariants(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.AttributeID, o.ID)
+			rel.AttributeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1179,7 +1031,7 @@ func (o *Attribute) AddAttributeVariants(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.AttributeID, o.ID)
+			rel.AttributeID = o.ID
 		}
 	}
 
@@ -1200,80 +1052,6 @@ func (o *Attribute) AddAttributeVariants(ctx context.Context, exec boil.ContextE
 			rel.R.Attribute = o
 		}
 	}
-	return nil
-}
-
-// SetAttributeVariants removes all previously related items of the
-// attribute replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Attribute's AttributeVariants accordingly.
-// Replaces o.R.AttributeVariants with related.
-// Sets related.R.Attribute's AttributeVariants accordingly.
-func (o *Attribute) SetAttributeVariants(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeVariant) error {
-	query := "update \"attribute_variants\" set \"attribute_id\" = null where \"attribute_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AttributeVariants {
-			queries.SetScanner(&rel.AttributeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Attribute = nil
-		}
-		o.R.AttributeVariants = nil
-	}
-
-	return o.AddAttributeVariants(ctx, exec, insert, related...)
-}
-
-// RemoveAttributeVariants relationships from objects passed in.
-// Removes related items from R.AttributeVariants (uses pointer comparison, removal does not keep order)
-// Sets related.R.Attribute.
-func (o *Attribute) RemoveAttributeVariants(ctx context.Context, exec boil.ContextExecutor, related ...*AttributeVariant) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.AttributeID, nil)
-		if rel.R != nil {
-			rel.R.Attribute = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AttributeVariants {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AttributeVariants)
-			if ln > 1 && i < ln-1 {
-				o.R.AttributeVariants[i] = o.R.AttributeVariants[ln-1]
-			}
-			o.R.AttributeVariants = o.R.AttributeVariants[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1415,10 +1193,6 @@ func (o *Attribute) Update(ctx context.Context, exec boil.ContextExecutor, colum
 			attributeAllColumns,
 			attributePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attributes, could not build whitelist")
 		}

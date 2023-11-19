@@ -19,23 +19,24 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Page is an object representing the database table.
 type Page struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Title           null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
-	Slug            null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	PageTypeID      null.String `boil:"page_type_id" json:"page_type_id,omitempty" toml:"page_type_id" yaml:"page_type_id,omitempty"`
-	Content         null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
-	PublicationDate null.Time   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
-	IsPublished     null.Bool   `boil:"is_published" json:"is_published,omitempty" toml:"is_published" yaml:"is_published,omitempty"`
-	SeoTitle        null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription  null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	ID              string     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Title           string     `boil:"title" json:"title" toml:"title" yaml:"title"`
+	Slug            string     `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	PageTypeID      string     `boil:"page_type_id" json:"page_type_id" toml:"page_type_id" yaml:"page_type_id"`
+	Content         types.JSON `boil:"content" json:"content" toml:"content" yaml:"content"`
+	CreatedAt       int64      `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        null.JSON  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata null.JSON  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	PublicationDate null.Time  `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
+	IsPublished     bool       `boil:"is_published" json:"is_published" toml:"is_published" yaml:"is_published"`
+	SeoTitle        string     `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
+	SeoDescription  string     `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
 	R *pageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,7 +48,7 @@ var PageColumns = struct {
 	Slug            string
 	PageTypeID      string
 	Content         string
-	CreateAt        string
+	CreatedAt       string
 	Metadata        string
 	PrivateMetadata string
 	PublicationDate string
@@ -60,7 +61,7 @@ var PageColumns = struct {
 	Slug:            "slug",
 	PageTypeID:      "page_type_id",
 	Content:         "content",
-	CreateAt:        "create_at",
+	CreatedAt:       "created_at",
 	Metadata:        "metadata",
 	PrivateMetadata: "private_metadata",
 	PublicationDate: "publication_date",
@@ -75,7 +76,7 @@ var PageTableColumns = struct {
 	Slug            string
 	PageTypeID      string
 	Content         string
-	CreateAt        string
+	CreatedAt       string
 	Metadata        string
 	PrivateMetadata string
 	PublicationDate string
@@ -88,7 +89,7 @@ var PageTableColumns = struct {
 	Slug:            "pages.slug",
 	PageTypeID:      "pages.page_type_id",
 	Content:         "pages.content",
-	CreateAt:        "pages.create_at",
+	CreatedAt:       "pages.created_at",
 	Metadata:        "pages.metadata",
 	PrivateMetadata: "pages.private_metadata",
 	PublicationDate: "pages.publication_date",
@@ -99,32 +100,53 @@ var PageTableColumns = struct {
 
 // Generated where
 
+type whereHelpertypes_JSON struct{ field string }
+
+func (w whereHelpertypes_JSON) EQ(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertypes_JSON) NEQ(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertypes_JSON) LT(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertypes_JSON) LTE(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertypes_JSON) GT(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var PageWhere = struct {
 	ID              whereHelperstring
-	Title           whereHelpernull_String
-	Slug            whereHelpernull_String
-	PageTypeID      whereHelpernull_String
-	Content         whereHelpernull_String
-	CreateAt        whereHelpernull_Int64
+	Title           whereHelperstring
+	Slug            whereHelperstring
+	PageTypeID      whereHelperstring
+	Content         whereHelpertypes_JSON
+	CreatedAt       whereHelperint64
 	Metadata        whereHelpernull_JSON
 	PrivateMetadata whereHelpernull_JSON
 	PublicationDate whereHelpernull_Time
-	IsPublished     whereHelpernull_Bool
-	SeoTitle        whereHelpernull_String
-	SeoDescription  whereHelpernull_String
+	IsPublished     whereHelperbool
+	SeoTitle        whereHelperstring
+	SeoDescription  whereHelperstring
 }{
 	ID:              whereHelperstring{field: "\"pages\".\"id\""},
-	Title:           whereHelpernull_String{field: "\"pages\".\"title\""},
-	Slug:            whereHelpernull_String{field: "\"pages\".\"slug\""},
-	PageTypeID:      whereHelpernull_String{field: "\"pages\".\"page_type_id\""},
-	Content:         whereHelpernull_String{field: "\"pages\".\"content\""},
-	CreateAt:        whereHelpernull_Int64{field: "\"pages\".\"create_at\""},
+	Title:           whereHelperstring{field: "\"pages\".\"title\""},
+	Slug:            whereHelperstring{field: "\"pages\".\"slug\""},
+	PageTypeID:      whereHelperstring{field: "\"pages\".\"page_type_id\""},
+	Content:         whereHelpertypes_JSON{field: "\"pages\".\"content\""},
+	CreatedAt:       whereHelperint64{field: "\"pages\".\"created_at\""},
 	Metadata:        whereHelpernull_JSON{field: "\"pages\".\"metadata\""},
 	PrivateMetadata: whereHelpernull_JSON{field: "\"pages\".\"private_metadata\""},
 	PublicationDate: whereHelpernull_Time{field: "\"pages\".\"publication_date\""},
-	IsPublished:     whereHelpernull_Bool{field: "\"pages\".\"is_published\""},
-	SeoTitle:        whereHelpernull_String{field: "\"pages\".\"seo_title\""},
-	SeoDescription:  whereHelpernull_String{field: "\"pages\".\"seo_description\""},
+	IsPublished:     whereHelperbool{field: "\"pages\".\"is_published\""},
+	SeoTitle:        whereHelperstring{field: "\"pages\".\"seo_title\""},
+	SeoDescription:  whereHelperstring{field: "\"pages\".\"seo_description\""},
 }
 
 // PageRels is where relationship names are stored.
@@ -185,9 +207,9 @@ func (r *pageR) GetPageTranslations() PageTranslationSlice {
 type pageL struct{}
 
 var (
-	pageAllColumns            = []string{"id", "title", "slug", "page_type_id", "content", "create_at", "metadata", "private_metadata", "publication_date", "is_published", "seo_title", "seo_description"}
-	pageColumnsWithoutDefault = []string{"id"}
-	pageColumnsWithDefault    = []string{"title", "slug", "page_type_id", "content", "create_at", "metadata", "private_metadata", "publication_date", "is_published", "seo_title", "seo_description"}
+	pageAllColumns            = []string{"id", "title", "slug", "page_type_id", "content", "created_at", "metadata", "private_metadata", "publication_date", "is_published", "seo_title", "seo_description"}
+	pageColumnsWithoutDefault = []string{"title", "slug", "page_type_id", "content", "created_at", "is_published", "seo_title", "seo_description"}
+	pageColumnsWithDefault    = []string{"id", "metadata", "private_metadata", "publication_date"}
 	pagePrimaryKeyColumns     = []string{"id"}
 	pageGeneratedColumns      = []string{}
 )
@@ -556,9 +578,7 @@ func (pageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, singular 
 		if object.R == nil {
 			object.R = &pageR{}
 		}
-		if !queries.IsNil(object.PageTypeID) {
-			args = append(args, object.PageTypeID)
-		}
+		args = append(args, object.PageTypeID)
 
 	} else {
 	Outer:
@@ -568,14 +588,12 @@ func (pageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, singular 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.PageTypeID) {
+				if a == obj.PageTypeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.PageTypeID) {
-				args = append(args, obj.PageTypeID)
-			}
+			args = append(args, obj.PageTypeID)
 
 		}
 	}
@@ -633,7 +651,7 @@ func (pageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, singular 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.PageTypeID, foreign.ID) {
+			if local.PageTypeID == foreign.ID {
 				local.R.PageType = foreign
 				if foreign.R == nil {
 					foreign.R = &pageTypeR{}
@@ -917,7 +935,7 @@ func (pageL) LoadPageTranslations(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -975,7 +993,7 @@ func (pageL) LoadPageTranslations(ctx context.Context, e boil.ContextExecutor, s
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.PageID) {
+			if local.ID == foreign.PageID {
 				local.R.PageTranslations = append(local.R.PageTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &pageTranslationR{}
@@ -1016,7 +1034,7 @@ func (o *Page) SetPageType(ctx context.Context, exec boil.ContextExecutor, inser
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.PageTypeID, related.ID)
+	o.PageTypeID = related.ID
 	if o.R == nil {
 		o.R = &pageR{
 			PageType: related,
@@ -1033,39 +1051,6 @@ func (o *Page) SetPageType(ctx context.Context, exec boil.ContextExecutor, inser
 		related.R.Pages = append(related.R.Pages, o)
 	}
 
-	return nil
-}
-
-// RemovePageType relationship.
-// Sets o.R.PageType to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Page) RemovePageType(ctx context.Context, exec boil.ContextExecutor, related *PageType) error {
-	var err error
-
-	queries.SetScanner(&o.PageTypeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("page_type_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.PageType = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Pages {
-		if queries.Equal(o.PageTypeID, ri.PageTypeID) {
-			continue
-		}
-
-		ln := len(related.R.Pages)
-		if ln > 1 && i < ln-1 {
-			related.R.Pages[i] = related.R.Pages[ln-1]
-		}
-		related.R.Pages = related.R.Pages[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1257,7 +1242,7 @@ func (o *Page) AddPageTranslations(ctx context.Context, exec boil.ContextExecuto
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.PageID, o.ID)
+			rel.PageID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1278,7 +1263,7 @@ func (o *Page) AddPageTranslations(ctx context.Context, exec boil.ContextExecuto
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.PageID, o.ID)
+			rel.PageID = o.ID
 		}
 	}
 
@@ -1299,80 +1284,6 @@ func (o *Page) AddPageTranslations(ctx context.Context, exec boil.ContextExecuto
 			rel.R.Page = o
 		}
 	}
-	return nil
-}
-
-// SetPageTranslations removes all previously related items of the
-// page replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Page's PageTranslations accordingly.
-// Replaces o.R.PageTranslations with related.
-// Sets related.R.Page's PageTranslations accordingly.
-func (o *Page) SetPageTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PageTranslation) error {
-	query := "update \"page_translations\" set \"page_id\" = null where \"page_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.PageTranslations {
-			queries.SetScanner(&rel.PageID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Page = nil
-		}
-		o.R.PageTranslations = nil
-	}
-
-	return o.AddPageTranslations(ctx, exec, insert, related...)
-}
-
-// RemovePageTranslations relationships from objects passed in.
-// Removes related items from R.PageTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.Page.
-func (o *Page) RemovePageTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*PageTranslation) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.PageID, nil)
-		if rel.R != nil {
-			rel.R.Page = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("page_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.PageTranslations {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.PageTranslations)
-			if ln > 1 && i < ln-1 {
-				o.R.PageTranslations[i] = o.R.PageTranslations[ln-1]
-			}
-			o.R.PageTranslations = o.R.PageTranslations[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1514,10 +1425,6 @@ func (o *Page) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 			pageAllColumns,
 			pagePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update pages, could not build whitelist")
 		}

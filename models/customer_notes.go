@@ -26,10 +26,10 @@ import (
 type CustomerNote struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Date       null.Int64  `boil:"date" json:"date,omitempty" toml:"date" yaml:"date,omitempty"`
+	Date       int64       `boil:"date" json:"date" toml:"date" yaml:"date"`
 	Content    null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
 	IsPublic   null.Bool   `boil:"is_public" json:"is_public,omitempty" toml:"is_public" yaml:"is_public,omitempty"`
-	CustomerID null.String `boil:"customer_id" json:"customer_id,omitempty" toml:"customer_id" yaml:"customer_id,omitempty"`
+	CustomerID string      `boil:"customer_id" json:"customer_id" toml:"customer_id" yaml:"customer_id"`
 
 	R *customerNoteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customerNoteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -72,17 +72,17 @@ var CustomerNoteTableColumns = struct {
 var CustomerNoteWhere = struct {
 	ID         whereHelperstring
 	UserID     whereHelpernull_String
-	Date       whereHelpernull_Int64
+	Date       whereHelperint64
 	Content    whereHelpernull_String
 	IsPublic   whereHelpernull_Bool
-	CustomerID whereHelpernull_String
+	CustomerID whereHelperstring
 }{
 	ID:         whereHelperstring{field: "\"customer_notes\".\"id\""},
 	UserID:     whereHelpernull_String{field: "\"customer_notes\".\"user_id\""},
-	Date:       whereHelpernull_Int64{field: "\"customer_notes\".\"date\""},
+	Date:       whereHelperint64{field: "\"customer_notes\".\"date\""},
 	Content:    whereHelpernull_String{field: "\"customer_notes\".\"content\""},
 	IsPublic:   whereHelpernull_Bool{field: "\"customer_notes\".\"is_public\""},
-	CustomerID: whereHelpernull_String{field: "\"customer_notes\".\"customer_id\""},
+	CustomerID: whereHelperstring{field: "\"customer_notes\".\"customer_id\""},
 }
 
 // CustomerNoteRels is where relationship names are stored.
@@ -114,8 +114,8 @@ type customerNoteL struct{}
 
 var (
 	customerNoteAllColumns            = []string{"id", "user_id", "date", "content", "is_public", "customer_id"}
-	customerNoteColumnsWithoutDefault = []string{"id"}
-	customerNoteColumnsWithDefault    = []string{"user_id", "date", "content", "is_public", "customer_id"}
+	customerNoteColumnsWithoutDefault = []string{"date", "customer_id"}
+	customerNoteColumnsWithDefault    = []string{"id", "user_id", "content", "is_public"}
 	customerNotePrimaryKeyColumns     = []string{"id"}
 	customerNoteGeneratedColumns      = []string{}
 )
@@ -751,10 +751,6 @@ func (o *CustomerNote) Update(ctx context.Context, exec boil.ContextExecutor, co
 			customerNoteAllColumns,
 			customerNotePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update customer_notes, could not build whitelist")
 		}

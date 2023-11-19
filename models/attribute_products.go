@@ -24,10 +24,10 @@ import (
 
 // AttributeProduct is an object representing the database table.
 type AttributeProduct struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID   null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
-	ProductTypeID null.String `boil:"product_type_id" json:"product_type_id,omitempty" toml:"product_type_id" yaml:"product_type_id,omitempty"`
-	SortOrder     null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID            string   `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID   string   `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	ProductTypeID string   `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
+	SortOrder     null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributeProductR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeProductL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,13 +61,13 @@ var AttributeProductTableColumns = struct {
 
 var AttributeProductWhere = struct {
 	ID            whereHelperstring
-	AttributeID   whereHelpernull_String
-	ProductTypeID whereHelpernull_String
+	AttributeID   whereHelperstring
+	ProductTypeID whereHelperstring
 	SortOrder     whereHelpernull_Int
 }{
 	ID:            whereHelperstring{field: "\"attribute_products\".\"id\""},
-	AttributeID:   whereHelpernull_String{field: "\"attribute_products\".\"attribute_id\""},
-	ProductTypeID: whereHelpernull_String{field: "\"attribute_products\".\"product_type_id\""},
+	AttributeID:   whereHelperstring{field: "\"attribute_products\".\"attribute_id\""},
+	ProductTypeID: whereHelperstring{field: "\"attribute_products\".\"product_type_id\""},
 	SortOrder:     whereHelpernull_Int{field: "\"attribute_products\".\"sort_order\""},
 }
 
@@ -120,8 +120,8 @@ type attributeProductL struct{}
 
 var (
 	attributeProductAllColumns            = []string{"id", "attribute_id", "product_type_id", "sort_order"}
-	attributeProductColumnsWithoutDefault = []string{"id"}
-	attributeProductColumnsWithDefault    = []string{"attribute_id", "product_type_id", "sort_order"}
+	attributeProductColumnsWithoutDefault = []string{"attribute_id", "product_type_id"}
+	attributeProductColumnsWithDefault    = []string{"id", "sort_order"}
 	attributeProductPrimaryKeyColumns     = []string{"id"}
 	attributeProductGeneratedColumns      = []string{}
 )
@@ -473,9 +473,7 @@ func (attributeProductL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &attributeProductR{}
 		}
-		if !queries.IsNil(object.AttributeID) {
-			args = append(args, object.AttributeID)
-		}
+		args = append(args, object.AttributeID)
 
 	} else {
 	Outer:
@@ -485,14 +483,12 @@ func (attributeProductL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.AttributeID) {
+				if a == obj.AttributeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.AttributeID) {
-				args = append(args, obj.AttributeID)
-			}
+			args = append(args, obj.AttributeID)
 
 		}
 	}
@@ -550,7 +546,7 @@ func (attributeProductL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.AttributeID, foreign.ID) {
+			if local.AttributeID == foreign.ID {
 				local.R.Attribute = foreign
 				if foreign.R == nil {
 					foreign.R = &attributeR{}
@@ -597,9 +593,7 @@ func (attributeProductL) LoadProductType(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &attributeProductR{}
 		}
-		if !queries.IsNil(object.ProductTypeID) {
-			args = append(args, object.ProductTypeID)
-		}
+		args = append(args, object.ProductTypeID)
 
 	} else {
 	Outer:
@@ -609,14 +603,12 @@ func (attributeProductL) LoadProductType(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductTypeID) {
+				if a == obj.ProductTypeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductTypeID) {
-				args = append(args, obj.ProductTypeID)
-			}
+			args = append(args, obj.ProductTypeID)
 
 		}
 	}
@@ -674,7 +666,7 @@ func (attributeProductL) LoadProductType(ctx context.Context, e boil.ContextExec
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductTypeID, foreign.ID) {
+			if local.ProductTypeID == foreign.ID {
 				local.R.ProductType = foreign
 				if foreign.R == nil {
 					foreign.R = &productTypeR{}
@@ -829,7 +821,7 @@ func (o *AttributeProduct) SetAttribute(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.AttributeID, related.ID)
+	o.AttributeID = related.ID
 	if o.R == nil {
 		o.R = &attributeProductR{
 			Attribute: related,
@@ -846,39 +838,6 @@ func (o *AttributeProduct) SetAttribute(ctx context.Context, exec boil.ContextEx
 		related.R.AttributeProducts = append(related.R.AttributeProducts, o)
 	}
 
-	return nil
-}
-
-// RemoveAttribute relationship.
-// Sets o.R.Attribute to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AttributeProduct) RemoveAttribute(ctx context.Context, exec boil.ContextExecutor, related *Attribute) error {
-	var err error
-
-	queries.SetScanner(&o.AttributeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("attribute_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Attribute = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AttributeProducts {
-		if queries.Equal(o.AttributeID, ri.AttributeID) {
-			continue
-		}
-
-		ln := len(related.R.AttributeProducts)
-		if ln > 1 && i < ln-1 {
-			related.R.AttributeProducts[i] = related.R.AttributeProducts[ln-1]
-		}
-		related.R.AttributeProducts = related.R.AttributeProducts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -909,7 +868,7 @@ func (o *AttributeProduct) SetProductType(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductTypeID, related.ID)
+	o.ProductTypeID = related.ID
 	if o.R == nil {
 		o.R = &attributeProductR{
 			ProductType: related,
@@ -926,39 +885,6 @@ func (o *AttributeProduct) SetProductType(ctx context.Context, exec boil.Context
 		related.R.AttributeProducts = append(related.R.AttributeProducts, o)
 	}
 
-	return nil
-}
-
-// RemoveProductType relationship.
-// Sets o.R.ProductType to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AttributeProduct) RemoveProductType(ctx context.Context, exec boil.ContextExecutor, related *ProductType) error {
-	var err error
-
-	queries.SetScanner(&o.ProductTypeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_type_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ProductType = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AttributeProducts {
-		if queries.Equal(o.ProductTypeID, ri.ProductTypeID) {
-			continue
-		}
-
-		ln := len(related.R.AttributeProducts)
-		if ln > 1 && i < ln-1 {
-			related.R.AttributeProducts[i] = related.R.AttributeProducts[ln-1]
-		}
-		related.R.AttributeProducts = related.R.AttributeProducts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1153,10 +1079,6 @@ func (o *AttributeProduct) Update(ctx context.Context, exec boil.ContextExecutor
 			attributeProductAllColumns,
 			attributeProductPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attribute_products, could not build whitelist")
 		}

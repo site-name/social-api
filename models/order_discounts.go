@@ -19,21 +19,22 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // OrderDiscount is an object representing the database table.
 type OrderDiscount struct {
-	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrderID        null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	Type           null.String  `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	ValueType      null.String  `boil:"value_type" json:"value_type,omitempty" toml:"value_type" yaml:"value_type,omitempty"`
-	Value          null.Float64 `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
-	AmountValue    null.Float64 `boil:"amount_value" json:"amount_value,omitempty" toml:"amount_value" yaml:"amount_value,omitempty"`
-	Currency       null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	Name           null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	TranslatedName null.String  `boil:"translated_name" json:"translated_name,omitempty" toml:"translated_name" yaml:"translated_name,omitempty"`
-	Reason         null.String  `boil:"reason" json:"reason,omitempty" toml:"reason" yaml:"reason,omitempty"`
+	ID             string        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	OrderID        null.String   `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	Type           string        `boil:"type" json:"type" toml:"type" yaml:"type"`
+	ValueType      string        `boil:"value_type" json:"value_type" toml:"value_type" yaml:"value_type"`
+	Value          types.Decimal `boil:"value" json:"value" toml:"value" yaml:"value"`
+	AmountValue    types.Decimal `boil:"amount_value" json:"amount_value" toml:"amount_value" yaml:"amount_value"`
+	Currency       string        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	Name           null.String   `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	TranslatedName null.String   `boil:"translated_name" json:"translated_name,omitempty" toml:"translated_name" yaml:"translated_name,omitempty"`
+	Reason         null.String   `boil:"reason" json:"reason,omitempty" toml:"reason" yaml:"reason,omitempty"`
 
 	R *orderDiscountR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderDiscountL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -89,25 +90,46 @@ var OrderDiscountTableColumns = struct {
 
 // Generated where
 
+type whereHelpertypes_Decimal struct{ field string }
+
+func (w whereHelpertypes_Decimal) EQ(x types.Decimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertypes_Decimal) NEQ(x types.Decimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertypes_Decimal) LT(x types.Decimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertypes_Decimal) LTE(x types.Decimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertypes_Decimal) GT(x types.Decimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertypes_Decimal) GTE(x types.Decimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var OrderDiscountWhere = struct {
 	ID             whereHelperstring
 	OrderID        whereHelpernull_String
-	Type           whereHelpernull_String
-	ValueType      whereHelpernull_String
-	Value          whereHelpernull_Float64
-	AmountValue    whereHelpernull_Float64
-	Currency       whereHelpernull_String
+	Type           whereHelperstring
+	ValueType      whereHelperstring
+	Value          whereHelpertypes_Decimal
+	AmountValue    whereHelpertypes_Decimal
+	Currency       whereHelperstring
 	Name           whereHelpernull_String
 	TranslatedName whereHelpernull_String
 	Reason         whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"order_discounts\".\"id\""},
 	OrderID:        whereHelpernull_String{field: "\"order_discounts\".\"order_id\""},
-	Type:           whereHelpernull_String{field: "\"order_discounts\".\"type\""},
-	ValueType:      whereHelpernull_String{field: "\"order_discounts\".\"value_type\""},
-	Value:          whereHelpernull_Float64{field: "\"order_discounts\".\"value\""},
-	AmountValue:    whereHelpernull_Float64{field: "\"order_discounts\".\"amount_value\""},
-	Currency:       whereHelpernull_String{field: "\"order_discounts\".\"currency\""},
+	Type:           whereHelperstring{field: "\"order_discounts\".\"type\""},
+	ValueType:      whereHelperstring{field: "\"order_discounts\".\"value_type\""},
+	Value:          whereHelpertypes_Decimal{field: "\"order_discounts\".\"value\""},
+	AmountValue:    whereHelpertypes_Decimal{field: "\"order_discounts\".\"amount_value\""},
+	Currency:       whereHelperstring{field: "\"order_discounts\".\"currency\""},
 	Name:           whereHelpernull_String{field: "\"order_discounts\".\"name\""},
 	TranslatedName: whereHelpernull_String{field: "\"order_discounts\".\"translated_name\""},
 	Reason:         whereHelpernull_String{field: "\"order_discounts\".\"reason\""},
@@ -142,8 +164,8 @@ type orderDiscountL struct{}
 
 var (
 	orderDiscountAllColumns            = []string{"id", "order_id", "type", "value_type", "value", "amount_value", "currency", "name", "translated_name", "reason"}
-	orderDiscountColumnsWithoutDefault = []string{"id"}
-	orderDiscountColumnsWithDefault    = []string{"order_id", "type", "value_type", "value", "amount_value", "currency", "name", "translated_name", "reason"}
+	orderDiscountColumnsWithoutDefault = []string{"type", "value_type", "currency"}
+	orderDiscountColumnsWithDefault    = []string{"id", "order_id", "value", "amount_value", "name", "translated_name", "reason"}
 	orderDiscountPrimaryKeyColumns     = []string{"id"}
 	orderDiscountGeneratedColumns      = []string{}
 )
@@ -779,10 +801,6 @@ func (o *OrderDiscount) Update(ctx context.Context, exec boil.ContextExecutor, c
 			orderDiscountAllColumns,
 			orderDiscountPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update order_discounts, could not build whitelist")
 		}

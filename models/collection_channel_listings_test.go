@@ -564,7 +564,7 @@ func testCollectionChannelListingToOneCollectionUsingCollection(t *testing.T) {
 	var foreign Collection
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, collectionChannelListingDBTypes, true, collectionChannelListingColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, collectionChannelListingDBTypes, false, collectionChannelListingColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize CollectionChannelListing struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, collectionDBTypes, false, collectionColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testCollectionChannelListingToOneCollectionUsingCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.CollectionID, foreign.ID)
+	local.CollectionID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testCollectionChannelListingToOneCollectionUsingCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -766,7 +766,7 @@ func testCollectionChannelListingToOneSetOpCollectionUsingCollection(t *testing.
 		if x.R.CollectionChannelListings[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.CollectionID, x.ID) {
+		if a.CollectionID != x.ID {
 			t.Error("foreign key was wrong value", a.CollectionID)
 		}
 
@@ -777,60 +777,9 @@ func testCollectionChannelListingToOneSetOpCollectionUsingCollection(t *testing.
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.CollectionID, x.ID) {
+		if a.CollectionID != x.ID {
 			t.Error("foreign key was wrong value", a.CollectionID, x.ID)
 		}
-	}
-}
-
-func testCollectionChannelListingToOneRemoveOpCollectionUsingCollection(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a CollectionChannelListing
-	var b Collection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionChannelListingDBTypes, false, strmangle.SetComplement(collectionChannelListingPrimaryKeyColumns, collectionChannelListingColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetCollection(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveCollection(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Collection().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Collection != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.CollectionID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.CollectionChannelListings) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +857,7 @@ func testCollectionChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	collectionChannelListingDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `CollectionID`: `character varying`, `ChannelID`: `character varying`, `PublicationDate`: `timestamp with time zone`, `IsPublished`: `boolean`}
+	collectionChannelListingDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `CollectionID`: `uuid`, `ChannelID`: `uuid`, `PublicationDate`: `timestamp with time zone`, `IsPublished`: `boolean`}
 	_                               = bytes.MinRead
 )
 

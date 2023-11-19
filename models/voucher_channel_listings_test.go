@@ -805,7 +805,7 @@ func testVoucherChannelListingsSelect(t *testing.T) {
 }
 
 var (
-	voucherChannelListingDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `VoucherID`: `character varying`, `ChannelID`: `character varying`, `DiscountValue`: `double precision`, `Currency`: `character varying`, `MinSpendAmount`: `double precision`}
+	voucherChannelListingDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `VoucherID`: `uuid`, `ChannelID`: `uuid`, `DiscountValue`: `numeric`, `Currency`: `character varying`, `MinSpendAmount`: `numeric`}
 	_                            = bytes.MinRead
 )
 

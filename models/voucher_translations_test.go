@@ -503,7 +503,7 @@ func testVoucherTranslationToOneVoucherUsingVoucher(t *testing.T) {
 	var foreign Voucher
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, voucherTranslationDBTypes, true, voucherTranslationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, voucherTranslationDBTypes, false, voucherTranslationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize VoucherTranslation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, voucherDBTypes, false, voucherColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testVoucherTranslationToOneVoucherUsingVoucher(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.VoucherID, foreign.ID)
+	local.VoucherID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testVoucherTranslationToOneVoucherUsingVoucher(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testVoucherTranslationToOneSetOpVoucherUsingVoucher(t *testing.T) {
 		if x.R.VoucherTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.VoucherID, x.ID) {
+		if a.VoucherID != x.ID {
 			t.Error("foreign key was wrong value", a.VoucherID)
 		}
 
@@ -607,60 +607,9 @@ func testVoucherTranslationToOneSetOpVoucherUsingVoucher(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.VoucherID, x.ID) {
+		if a.VoucherID != x.ID {
 			t.Error("foreign key was wrong value", a.VoucherID, x.ID)
 		}
-	}
-}
-
-func testVoucherTranslationToOneRemoveOpVoucherUsingVoucher(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a VoucherTranslation
-	var b Voucher
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, voucherTranslationDBTypes, false, strmangle.SetComplement(voucherTranslationPrimaryKeyColumns, voucherTranslationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, voucherDBTypes, false, strmangle.SetComplement(voucherPrimaryKeyColumns, voucherColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetVoucher(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveVoucher(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Voucher().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Voucher != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.VoucherID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.VoucherTranslations) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testVoucherTranslationsSelect(t *testing.T) {
 }
 
 var (
-	voucherTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `Name`: `character varying`, `VoucherID`: `character varying`, `CreateAt`: `bigint`}
+	voucherTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `Name`: `character varying`, `VoucherID`: `uuid`, `CreatedAt`: `bigint`}
 	_                         = bytes.MinRead
 )
 

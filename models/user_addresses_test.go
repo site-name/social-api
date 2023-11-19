@@ -503,7 +503,7 @@ func testUserAddressToOneAddressUsingAddress(t *testing.T) {
 	var foreign Address
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, userAddressDBTypes, true, userAddressColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, userAddressDBTypes, false, userAddressColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize UserAddress struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, addressDBTypes, false, addressColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testUserAddressToOneAddressUsingAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.AddressID, foreign.ID)
+	local.AddressID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testUserAddressToOneAddressUsingAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testUserAddressToOneUserUsingUser(t *testing.T) {
 	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, userAddressDBTypes, true, userAddressColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, userAddressDBTypes, false, userAddressColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize UserAddress struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testUserAddressToOneUserUsingUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.UserID, foreign.ID)
+	local.UserID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testUserAddressToOneUserUsingUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testUserAddressToOneSetOpAddressUsingAddress(t *testing.T) {
 		if x.R.UserAddresses[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.AddressID, x.ID) {
+		if a.AddressID != x.ID {
 			t.Error("foreign key was wrong value", a.AddressID)
 		}
 
@@ -668,63 +668,11 @@ func testUserAddressToOneSetOpAddressUsingAddress(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.AddressID, x.ID) {
+		if a.AddressID != x.ID {
 			t.Error("foreign key was wrong value", a.AddressID, x.ID)
 		}
 	}
 }
-
-func testUserAddressToOneRemoveOpAddressUsingAddress(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a UserAddress
-	var b Address
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userAddressDBTypes, false, strmangle.SetComplement(userAddressPrimaryKeyColumns, userAddressColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, addressDBTypes, false, strmangle.SetComplement(addressPrimaryKeyColumns, addressColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetAddress(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveAddress(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Address().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Address != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.AddressID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.UserAddresses) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testUserAddressToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testUserAddressToOneSetOpUserUsingUser(t *testing.T) {
 		if x.R.UserAddresses[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.UserID, x.ID) {
+		if a.UserID != x.ID {
 			t.Error("foreign key was wrong value", a.UserID)
 		}
 
@@ -777,60 +725,9 @@ func testUserAddressToOneSetOpUserUsingUser(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.UserID, x.ID) {
+		if a.UserID != x.ID {
 			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
-	}
-}
-
-func testUserAddressToOneRemoveOpUserUsingUser(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a UserAddress
-	var b User
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userAddressDBTypes, false, strmangle.SetComplement(userAddressPrimaryKeyColumns, userAddressColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetUser(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveUser(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.User().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.User != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.UserID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.UserAddresses) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testUserAddressesSelect(t *testing.T) {
 }
 
 var (
-	userAddressDBTypes = map[string]string{`ID`: `character varying`, `UserID`: `character varying`, `AddressID`: `character varying`}
+	userAddressDBTypes = map[string]string{`ID`: `uuid`, `UserID`: `uuid`, `AddressID`: `uuid`}
 	_                  = bytes.MinRead
 )
 

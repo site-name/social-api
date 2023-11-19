@@ -568,7 +568,7 @@ func testSaleProductVariantsSelect(t *testing.T) {
 }
 
 var (
-	saleProductVariantDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `ProductVariantID`: `character varying`, `CreateAt`: `bigint`}
+	saleProductVariantDBTypes = map[string]string{`ID`: `uuid`, `SaleID`: `uuid`, `ProductVariantID`: `uuid`, `CreatedAt`: `bigint`}
 	_                         = bytes.MinRead
 )
 

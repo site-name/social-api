@@ -26,12 +26,12 @@ import (
 type Invoice struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	OrderID         null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	Number          null.String `boil:"number" json:"number,omitempty" toml:"number" yaml:"number,omitempty"`
-	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	ExternalURL     null.String `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
-	Status          null.String `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	Message         null.String `boil:"message" json:"message,omitempty" toml:"message" yaml:"message,omitempty"`
-	UpdateAt        null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	Number          string      `boil:"number" json:"number" toml:"number" yaml:"number"`
+	CreatedAt       int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ExternalURL     string      `boil:"external_url" json:"external_url" toml:"external_url" yaml:"external_url"`
+	Status          string      `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Message         string      `boil:"message" json:"message" toml:"message" yaml:"message"`
+	UpdatedAt       int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	InvoiceFile     null.String `boil:"invoice_file" json:"invoice_file,omitempty" toml:"invoice_file" yaml:"invoice_file,omitempty"`
 	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
@@ -44,11 +44,11 @@ var InvoiceColumns = struct {
 	ID              string
 	OrderID         string
 	Number          string
-	CreateAt        string
+	CreatedAt       string
 	ExternalURL     string
 	Status          string
 	Message         string
-	UpdateAt        string
+	UpdatedAt       string
 	InvoiceFile     string
 	Metadata        string
 	PrivateMetadata string
@@ -56,11 +56,11 @@ var InvoiceColumns = struct {
 	ID:              "id",
 	OrderID:         "order_id",
 	Number:          "number",
-	CreateAt:        "create_at",
+	CreatedAt:       "created_at",
 	ExternalURL:     "external_url",
 	Status:          "status",
 	Message:         "message",
-	UpdateAt:        "update_at",
+	UpdatedAt:       "updated_at",
 	InvoiceFile:     "invoice_file",
 	Metadata:        "metadata",
 	PrivateMetadata: "private_metadata",
@@ -70,11 +70,11 @@ var InvoiceTableColumns = struct {
 	ID              string
 	OrderID         string
 	Number          string
-	CreateAt        string
+	CreatedAt       string
 	ExternalURL     string
 	Status          string
 	Message         string
-	UpdateAt        string
+	UpdatedAt       string
 	InvoiceFile     string
 	Metadata        string
 	PrivateMetadata string
@@ -82,11 +82,11 @@ var InvoiceTableColumns = struct {
 	ID:              "invoices.id",
 	OrderID:         "invoices.order_id",
 	Number:          "invoices.number",
-	CreateAt:        "invoices.create_at",
+	CreatedAt:       "invoices.created_at",
 	ExternalURL:     "invoices.external_url",
 	Status:          "invoices.status",
 	Message:         "invoices.message",
-	UpdateAt:        "invoices.update_at",
+	UpdatedAt:       "invoices.updated_at",
 	InvoiceFile:     "invoices.invoice_file",
 	Metadata:        "invoices.metadata",
 	PrivateMetadata: "invoices.private_metadata",
@@ -97,24 +97,24 @@ var InvoiceTableColumns = struct {
 var InvoiceWhere = struct {
 	ID              whereHelperstring
 	OrderID         whereHelpernull_String
-	Number          whereHelpernull_String
-	CreateAt        whereHelpernull_Int64
-	ExternalURL     whereHelpernull_String
-	Status          whereHelpernull_String
-	Message         whereHelpernull_String
-	UpdateAt        whereHelpernull_Int64
+	Number          whereHelperstring
+	CreatedAt       whereHelperint64
+	ExternalURL     whereHelperstring
+	Status          whereHelperstring
+	Message         whereHelperstring
+	UpdatedAt       whereHelperint64
 	InvoiceFile     whereHelpernull_String
 	Metadata        whereHelpernull_JSON
 	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"invoices\".\"id\""},
 	OrderID:         whereHelpernull_String{field: "\"invoices\".\"order_id\""},
-	Number:          whereHelpernull_String{field: "\"invoices\".\"number\""},
-	CreateAt:        whereHelpernull_Int64{field: "\"invoices\".\"create_at\""},
-	ExternalURL:     whereHelpernull_String{field: "\"invoices\".\"external_url\""},
-	Status:          whereHelpernull_String{field: "\"invoices\".\"status\""},
-	Message:         whereHelpernull_String{field: "\"invoices\".\"message\""},
-	UpdateAt:        whereHelpernull_Int64{field: "\"invoices\".\"update_at\""},
+	Number:          whereHelperstring{field: "\"invoices\".\"number\""},
+	CreatedAt:       whereHelperint64{field: "\"invoices\".\"created_at\""},
+	ExternalURL:     whereHelperstring{field: "\"invoices\".\"external_url\""},
+	Status:          whereHelperstring{field: "\"invoices\".\"status\""},
+	Message:         whereHelperstring{field: "\"invoices\".\"message\""},
+	UpdatedAt:       whereHelperint64{field: "\"invoices\".\"updated_at\""},
 	InvoiceFile:     whereHelpernull_String{field: "\"invoices\".\"invoice_file\""},
 	Metadata:        whereHelpernull_JSON{field: "\"invoices\".\"metadata\""},
 	PrivateMetadata: whereHelpernull_JSON{field: "\"invoices\".\"private_metadata\""},
@@ -158,9 +158,9 @@ func (r *invoiceR) GetInvoiceEvents() InvoiceEventSlice {
 type invoiceL struct{}
 
 var (
-	invoiceAllColumns            = []string{"id", "order_id", "number", "create_at", "external_url", "status", "message", "update_at", "invoice_file", "metadata", "private_metadata"}
-	invoiceColumnsWithoutDefault = []string{"id"}
-	invoiceColumnsWithDefault    = []string{"order_id", "number", "create_at", "external_url", "status", "message", "update_at", "invoice_file", "metadata", "private_metadata"}
+	invoiceAllColumns            = []string{"id", "order_id", "number", "created_at", "external_url", "status", "message", "updated_at", "invoice_file", "metadata", "private_metadata"}
+	invoiceColumnsWithoutDefault = []string{"number", "created_at", "external_url", "status", "message", "updated_at"}
+	invoiceColumnsWithDefault    = []string{"id", "order_id", "invoice_file", "metadata", "private_metadata"}
 	invoicePrimaryKeyColumns     = []string{"id"}
 	invoiceGeneratedColumns      = []string{}
 )
@@ -1051,10 +1051,6 @@ func (o *Invoice) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			invoiceAllColumns,
 			invoicePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update invoices, could not build whitelist")
 		}

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // ShippingMethodExcludedProduct is an object representing the database table.
 type ShippingMethodExcludedProduct struct {
-	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ShippingMethodID null.String `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
-	ProductID        null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
+	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ShippingMethodID string `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
+	ProductID        string `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
 
 	R *shippingMethodExcludedProductR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodExcludedProductL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var ShippingMethodExcludedProductTableColumns = struct {
 
 var ShippingMethodExcludedProductWhere = struct {
 	ID               whereHelperstring
-	ShippingMethodID whereHelpernull_String
-	ProductID        whereHelpernull_String
+	ShippingMethodID whereHelperstring
+	ProductID        whereHelperstring
 }{
 	ID:               whereHelperstring{field: "\"shipping_method_excluded_products\".\"id\""},
-	ShippingMethodID: whereHelpernull_String{field: "\"shipping_method_excluded_products\".\"shipping_method_id\""},
-	ProductID:        whereHelpernull_String{field: "\"shipping_method_excluded_products\".\"product_id\""},
+	ShippingMethodID: whereHelperstring{field: "\"shipping_method_excluded_products\".\"shipping_method_id\""},
+	ProductID:        whereHelperstring{field: "\"shipping_method_excluded_products\".\"product_id\""},
 }
 
 // ShippingMethodExcludedProductRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type shippingMethodExcludedProductL struct{}
 
 var (
 	shippingMethodExcludedProductAllColumns            = []string{"id", "shipping_method_id", "product_id"}
-	shippingMethodExcludedProductColumnsWithoutDefault = []string{"id"}
-	shippingMethodExcludedProductColumnsWithDefault    = []string{"shipping_method_id", "product_id"}
+	shippingMethodExcludedProductColumnsWithoutDefault = []string{"shipping_method_id", "product_id"}
+	shippingMethodExcludedProductColumnsWithDefault    = []string{"id"}
 	shippingMethodExcludedProductPrimaryKeyColumns     = []string{"id"}
 	shippingMethodExcludedProductGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (shippingMethodExcludedProductL) LoadProduct(ctx context.Context, e boil.Co
 		if object.R == nil {
 			object.R = &shippingMethodExcludedProductR{}
 		}
-		if !queries.IsNil(object.ProductID) {
-			args = append(args, object.ProductID)
-		}
+		args = append(args, object.ProductID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (shippingMethodExcludedProductL) LoadProduct(ctx context.Context, e boil.Co
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductID) {
+				if a == obj.ProductID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductID) {
-				args = append(args, obj.ProductID)
-			}
+			args = append(args, obj.ProductID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (shippingMethodExcludedProductL) LoadProduct(ctx context.Context, e boil.Co
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductID, foreign.ID) {
+			if local.ProductID == foreign.ID {
 				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
@@ -566,9 +561,7 @@ func (shippingMethodExcludedProductL) LoadShippingMethod(ctx context.Context, e 
 		if object.R == nil {
 			object.R = &shippingMethodExcludedProductR{}
 		}
-		if !queries.IsNil(object.ShippingMethodID) {
-			args = append(args, object.ShippingMethodID)
-		}
+		args = append(args, object.ShippingMethodID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (shippingMethodExcludedProductL) LoadShippingMethod(ctx context.Context, e 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ShippingMethodID) {
+				if a == obj.ShippingMethodID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ShippingMethodID) {
-				args = append(args, obj.ShippingMethodID)
-			}
+			args = append(args, obj.ShippingMethodID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (shippingMethodExcludedProductL) LoadShippingMethod(ctx context.Context, e 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ShippingMethodID, foreign.ID) {
+			if local.ShippingMethodID == foreign.ID {
 				local.R.ShippingMethod = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
@@ -684,7 +675,7 @@ func (o *ShippingMethodExcludedProduct) SetProduct(ctx context.Context, exec boi
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductID, related.ID)
+	o.ProductID = related.ID
 	if o.R == nil {
 		o.R = &shippingMethodExcludedProductR{
 			Product: related,
@@ -701,39 +692,6 @@ func (o *ShippingMethodExcludedProduct) SetProduct(ctx context.Context, exec boi
 		related.R.ShippingMethodExcludedProducts = append(related.R.ShippingMethodExcludedProducts, o)
 	}
 
-	return nil
-}
-
-// RemoveProduct relationship.
-// Sets o.R.Product to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodExcludedProduct) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
-	var err error
-
-	queries.SetScanner(&o.ProductID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Product = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ShippingMethodExcludedProducts {
-		if queries.Equal(o.ProductID, ri.ProductID) {
-			continue
-		}
-
-		ln := len(related.R.ShippingMethodExcludedProducts)
-		if ln > 1 && i < ln-1 {
-			related.R.ShippingMethodExcludedProducts[i] = related.R.ShippingMethodExcludedProducts[ln-1]
-		}
-		related.R.ShippingMethodExcludedProducts = related.R.ShippingMethodExcludedProducts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *ShippingMethodExcludedProduct) SetShippingMethod(ctx context.Context, e
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ShippingMethodID, related.ID)
+	o.ShippingMethodID = related.ID
 	if o.R == nil {
 		o.R = &shippingMethodExcludedProductR{
 			ShippingMethod: related,
@@ -781,39 +739,6 @@ func (o *ShippingMethodExcludedProduct) SetShippingMethod(ctx context.Context, e
 		related.R.ShippingMethodExcludedProducts = append(related.R.ShippingMethodExcludedProducts, o)
 	}
 
-	return nil
-}
-
-// RemoveShippingMethod relationship.
-// Sets o.R.ShippingMethod to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethodExcludedProduct) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
-	var err error
-
-	queries.SetScanner(&o.ShippingMethodID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ShippingMethod = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ShippingMethodExcludedProducts {
-		if queries.Equal(o.ShippingMethodID, ri.ShippingMethodID) {
-			continue
-		}
-
-		ln := len(related.R.ShippingMethodExcludedProducts)
-		if ln > 1 && i < ln-1 {
-			related.R.ShippingMethodExcludedProducts[i] = related.R.ShippingMethodExcludedProducts[ln-1]
-		}
-		related.R.ShippingMethodExcludedProducts = related.R.ShippingMethodExcludedProducts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *ShippingMethodExcludedProduct) Update(ctx context.Context, exec boil.Co
 			shippingMethodExcludedProductAllColumns,
 			shippingMethodExcludedProductPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shipping_method_excluded_products, could not build whitelist")
 		}

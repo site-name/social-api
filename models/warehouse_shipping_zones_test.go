@@ -503,7 +503,7 @@ func testWarehouseShippingZoneToOneShippingZoneUsingShippingZone(t *testing.T) {
 	var foreign ShippingZone
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, warehouseShippingZoneDBTypes, true, warehouseShippingZoneColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, warehouseShippingZoneDBTypes, false, warehouseShippingZoneColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize WarehouseShippingZone struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, shippingZoneDBTypes, false, shippingZoneColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testWarehouseShippingZoneToOneShippingZoneUsingShippingZone(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ShippingZoneID, foreign.ID)
+	local.ShippingZoneID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testWarehouseShippingZoneToOneShippingZoneUsingShippingZone(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testWarehouseShippingZoneToOneWarehouseUsingWarehouse(t *testing.T) {
 	var foreign Warehouse
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, warehouseShippingZoneDBTypes, true, warehouseShippingZoneColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, warehouseShippingZoneDBTypes, false, warehouseShippingZoneColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize WarehouseShippingZone struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, warehouseDBTypes, false, warehouseColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testWarehouseShippingZoneToOneWarehouseUsingWarehouse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.WarehouseID, foreign.ID)
+	local.WarehouseID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testWarehouseShippingZoneToOneWarehouseUsingWarehouse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testWarehouseShippingZoneToOneSetOpShippingZoneUsingShippingZone(t *testing
 		if x.R.WarehouseShippingZones[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ShippingZoneID, x.ID) {
+		if a.ShippingZoneID != x.ID {
 			t.Error("foreign key was wrong value", a.ShippingZoneID)
 		}
 
@@ -668,63 +668,11 @@ func testWarehouseShippingZoneToOneSetOpShippingZoneUsingShippingZone(t *testing
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ShippingZoneID, x.ID) {
+		if a.ShippingZoneID != x.ID {
 			t.Error("foreign key was wrong value", a.ShippingZoneID, x.ID)
 		}
 	}
 }
-
-func testWarehouseShippingZoneToOneRemoveOpShippingZoneUsingShippingZone(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a WarehouseShippingZone
-	var b ShippingZone
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, warehouseShippingZoneDBTypes, false, strmangle.SetComplement(warehouseShippingZonePrimaryKeyColumns, warehouseShippingZoneColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, shippingZoneDBTypes, false, strmangle.SetComplement(shippingZonePrimaryKeyColumns, shippingZoneColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetShippingZone(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveShippingZone(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ShippingZone().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ShippingZone != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ShippingZoneID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.WarehouseShippingZones) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testWarehouseShippingZoneToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testWarehouseShippingZoneToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 		if x.R.WarehouseShippingZones[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.WarehouseID, x.ID) {
+		if a.WarehouseID != x.ID {
 			t.Error("foreign key was wrong value", a.WarehouseID)
 		}
 
@@ -777,60 +725,9 @@ func testWarehouseShippingZoneToOneSetOpWarehouseUsingWarehouse(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.WarehouseID, x.ID) {
+		if a.WarehouseID != x.ID {
 			t.Error("foreign key was wrong value", a.WarehouseID, x.ID)
 		}
-	}
-}
-
-func testWarehouseShippingZoneToOneRemoveOpWarehouseUsingWarehouse(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a WarehouseShippingZone
-	var b Warehouse
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, warehouseShippingZoneDBTypes, false, strmangle.SetComplement(warehouseShippingZonePrimaryKeyColumns, warehouseShippingZoneColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, warehouseDBTypes, false, strmangle.SetComplement(warehousePrimaryKeyColumns, warehouseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetWarehouse(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveWarehouse(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Warehouse().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Warehouse != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.WarehouseID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.WarehouseShippingZones) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testWarehouseShippingZonesSelect(t *testing.T) {
 }
 
 var (
-	warehouseShippingZoneDBTypes = map[string]string{`ID`: `character varying`, `WarehouseID`: `character varying`, `ShippingZoneID`: `character varying`}
+	warehouseShippingZoneDBTypes = map[string]string{`ID`: `uuid`, `WarehouseID`: `uuid`, `ShippingZoneID`: `uuid`}
 	_                            = bytes.MinRead
 )
 

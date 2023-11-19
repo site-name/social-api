@@ -25,33 +25,37 @@ import (
 // User is an object representing the database table.
 type User struct {
 	ID                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Email                    null.String `boil:"email" json:"email,omitempty" toml:"email" yaml:"email,omitempty"`
-	Username                 null.String `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
-	FirstName                null.String `boil:"first_name" json:"first_name,omitempty" toml:"first_name" yaml:"first_name,omitempty"`
-	LastName                 null.String `boil:"last_name" json:"last_name,omitempty" toml:"last_name" yaml:"last_name,omitempty"`
+	Email                    string      `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Username                 string      `boil:"username" json:"username" toml:"username" yaml:"username"`
+	FirstName                string      `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
+	LastName                 string      `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
 	DefaultShippingAddressID null.String `boil:"default_shipping_address_id" json:"default_shipping_address_id,omitempty" toml:"default_shipping_address_id" yaml:"default_shipping_address_id,omitempty"`
 	DefaultBillingAddressID  null.String `boil:"default_billing_address_id" json:"default_billing_address_id,omitempty" toml:"default_billing_address_id" yaml:"default_billing_address_id,omitempty"`
-	Password                 null.String `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
+	Password                 string      `boil:"password" json:"password" toml:"password" yaml:"password"`
 	AuthData                 null.String `boil:"auth_data" json:"auth_data,omitempty" toml:"auth_data" yaml:"auth_data,omitempty"`
-	AuthService              null.String `boil:"auth_service" json:"auth_service,omitempty" toml:"auth_service" yaml:"auth_service,omitempty"`
-	EmailVerified            null.Bool   `boil:"email_verified" json:"email_verified,omitempty" toml:"email_verified" yaml:"email_verified,omitempty"`
-	Nickname                 null.String `boil:"nickname" json:"nickname,omitempty" toml:"nickname" yaml:"nickname,omitempty"`
-	Roles                    null.String `boil:"roles" json:"roles,omitempty" toml:"roles" yaml:"roles,omitempty"`
+	AuthService              string      `boil:"auth_service" json:"auth_service" toml:"auth_service" yaml:"auth_service"`
+	EmailVerified            bool        `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
+	Nickname                 string      `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
+	Roles                    string      `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
 	Props                    null.JSON   `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
 	NotifyProps              null.JSON   `boil:"notify_props" json:"notify_props,omitempty" toml:"notify_props" yaml:"notify_props,omitempty"`
-	LastPasswordUpdate       null.Int64  `boil:"last_password_update" json:"last_password_update,omitempty" toml:"last_password_update" yaml:"last_password_update,omitempty"`
-	LastPictureUpdate        null.Int64  `boil:"last_picture_update" json:"last_picture_update,omitempty" toml:"last_picture_update" yaml:"last_picture_update,omitempty"`
-	FailedAttempts           null.Int    `boil:"failed_attempts" json:"failed_attempts,omitempty" toml:"failed_attempts" yaml:"failed_attempts,omitempty"`
-	Locale                   null.String `boil:"locale" json:"locale,omitempty" toml:"locale" yaml:"locale,omitempty"`
+	LastPasswordUpdate       int64       `boil:"last_password_update" json:"last_password_update" toml:"last_password_update" yaml:"last_password_update"`
+	LastPictureUpdate        int64       `boil:"last_picture_update" json:"last_picture_update" toml:"last_picture_update" yaml:"last_picture_update"`
+	FailedAttempts           int         `boil:"failed_attempts" json:"failed_attempts" toml:"failed_attempts" yaml:"failed_attempts"`
+	Locale                   string      `boil:"locale" json:"locale" toml:"locale" yaml:"locale"`
 	Timezone                 null.JSON   `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
-	MfaActive                null.Bool   `boil:"mfa_active" json:"mfa_active,omitempty" toml:"mfa_active" yaml:"mfa_active,omitempty"`
-	MfaSecret                null.String `boil:"mfa_secret" json:"mfa_secret,omitempty" toml:"mfa_secret" yaml:"mfa_secret,omitempty"`
-	CreateAt                 null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt                 null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	MfaActive                bool        `boil:"mfa_active" json:"mfa_active" toml:"mfa_active" yaml:"mfa_active"`
+	MfaSecret                string      `boil:"mfa_secret" json:"mfa_secret" toml:"mfa_secret" yaml:"mfa_secret"`
+	CreatedAt                int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt                int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeleteAt                 null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
-	IsActive                 null.Bool   `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
+	IsActive                 bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	Note                     null.String `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
-	JWTTokenKey              null.String `boil:"jwt_token_key" json:"jwt_token_key,omitempty" toml:"jwt_token_key" yaml:"jwt_token_key,omitempty"`
+	JWTTokenKey              string      `boil:"jwt_token_key" json:"jwt_token_key" toml:"jwt_token_key" yaml:"jwt_token_key"`
+	LastActivityAt           int64       `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
+	TermsOfServiceID         string      `boil:"terms_of_service_id" json:"terms_of_service_id" toml:"terms_of_service_id" yaml:"terms_of_service_id"`
+	TermsIfServiceCreatedAt  int64       `boil:"terms_if_service_created_at" json:"terms_if_service_created_at" toml:"terms_if_service_created_at" yaml:"terms_if_service_created_at"`
+	DisableWelcomeEmail      bool        `boil:"disable_welcome_email" json:"disable_welcome_email" toml:"disable_welcome_email" yaml:"disable_welcome_email"`
 	Metadata                 null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata          null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
@@ -82,12 +86,16 @@ var UserColumns = struct {
 	Timezone                 string
 	MfaActive                string
 	MfaSecret                string
-	CreateAt                 string
-	UpdateAt                 string
+	CreatedAt                string
+	UpdatedAt                string
 	DeleteAt                 string
 	IsActive                 string
 	Note                     string
 	JWTTokenKey              string
+	LastActivityAt           string
+	TermsOfServiceID         string
+	TermsIfServiceCreatedAt  string
+	DisableWelcomeEmail      string
 	Metadata                 string
 	PrivateMetadata          string
 }{
@@ -113,12 +121,16 @@ var UserColumns = struct {
 	Timezone:                 "timezone",
 	MfaActive:                "mfa_active",
 	MfaSecret:                "mfa_secret",
-	CreateAt:                 "create_at",
-	UpdateAt:                 "update_at",
+	CreatedAt:                "created_at",
+	UpdatedAt:                "updated_at",
 	DeleteAt:                 "delete_at",
 	IsActive:                 "is_active",
 	Note:                     "note",
 	JWTTokenKey:              "jwt_token_key",
+	LastActivityAt:           "last_activity_at",
+	TermsOfServiceID:         "terms_of_service_id",
+	TermsIfServiceCreatedAt:  "terms_if_service_created_at",
+	DisableWelcomeEmail:      "disable_welcome_email",
 	Metadata:                 "metadata",
 	PrivateMetadata:          "private_metadata",
 }
@@ -146,12 +158,16 @@ var UserTableColumns = struct {
 	Timezone                 string
 	MfaActive                string
 	MfaSecret                string
-	CreateAt                 string
-	UpdateAt                 string
+	CreatedAt                string
+	UpdatedAt                string
 	DeleteAt                 string
 	IsActive                 string
 	Note                     string
 	JWTTokenKey              string
+	LastActivityAt           string
+	TermsOfServiceID         string
+	TermsIfServiceCreatedAt  string
+	DisableWelcomeEmail      string
 	Metadata                 string
 	PrivateMetadata          string
 }{
@@ -177,12 +193,16 @@ var UserTableColumns = struct {
 	Timezone:                 "users.timezone",
 	MfaActive:                "users.mfa_active",
 	MfaSecret:                "users.mfa_secret",
-	CreateAt:                 "users.create_at",
-	UpdateAt:                 "users.update_at",
+	CreatedAt:                "users.created_at",
+	UpdatedAt:                "users.updated_at",
 	DeleteAt:                 "users.delete_at",
 	IsActive:                 "users.is_active",
 	Note:                     "users.note",
 	JWTTokenKey:              "users.jwt_token_key",
+	LastActivityAt:           "users.last_activity_at",
+	TermsOfServiceID:         "users.terms_of_service_id",
+	TermsIfServiceCreatedAt:  "users.terms_if_service_created_at",
+	DisableWelcomeEmail:      "users.disable_welcome_email",
 	Metadata:                 "users.metadata",
 	PrivateMetadata:          "users.private_metadata",
 }
@@ -191,64 +211,72 @@ var UserTableColumns = struct {
 
 var UserWhere = struct {
 	ID                       whereHelperstring
-	Email                    whereHelpernull_String
-	Username                 whereHelpernull_String
-	FirstName                whereHelpernull_String
-	LastName                 whereHelpernull_String
+	Email                    whereHelperstring
+	Username                 whereHelperstring
+	FirstName                whereHelperstring
+	LastName                 whereHelperstring
 	DefaultShippingAddressID whereHelpernull_String
 	DefaultBillingAddressID  whereHelpernull_String
-	Password                 whereHelpernull_String
+	Password                 whereHelperstring
 	AuthData                 whereHelpernull_String
-	AuthService              whereHelpernull_String
-	EmailVerified            whereHelpernull_Bool
-	Nickname                 whereHelpernull_String
-	Roles                    whereHelpernull_String
+	AuthService              whereHelperstring
+	EmailVerified            whereHelperbool
+	Nickname                 whereHelperstring
+	Roles                    whereHelperstring
 	Props                    whereHelpernull_JSON
 	NotifyProps              whereHelpernull_JSON
-	LastPasswordUpdate       whereHelpernull_Int64
-	LastPictureUpdate        whereHelpernull_Int64
-	FailedAttempts           whereHelpernull_Int
-	Locale                   whereHelpernull_String
+	LastPasswordUpdate       whereHelperint64
+	LastPictureUpdate        whereHelperint64
+	FailedAttempts           whereHelperint
+	Locale                   whereHelperstring
 	Timezone                 whereHelpernull_JSON
-	MfaActive                whereHelpernull_Bool
-	MfaSecret                whereHelpernull_String
-	CreateAt                 whereHelpernull_Int64
-	UpdateAt                 whereHelpernull_Int64
+	MfaActive                whereHelperbool
+	MfaSecret                whereHelperstring
+	CreatedAt                whereHelperint64
+	UpdatedAt                whereHelperint64
 	DeleteAt                 whereHelpernull_Int64
-	IsActive                 whereHelpernull_Bool
+	IsActive                 whereHelperbool
 	Note                     whereHelpernull_String
-	JWTTokenKey              whereHelpernull_String
+	JWTTokenKey              whereHelperstring
+	LastActivityAt           whereHelperint64
+	TermsOfServiceID         whereHelperstring
+	TermsIfServiceCreatedAt  whereHelperint64
+	DisableWelcomeEmail      whereHelperbool
 	Metadata                 whereHelpernull_JSON
 	PrivateMetadata          whereHelpernull_JSON
 }{
 	ID:                       whereHelperstring{field: "\"users\".\"id\""},
-	Email:                    whereHelpernull_String{field: "\"users\".\"email\""},
-	Username:                 whereHelpernull_String{field: "\"users\".\"username\""},
-	FirstName:                whereHelpernull_String{field: "\"users\".\"first_name\""},
-	LastName:                 whereHelpernull_String{field: "\"users\".\"last_name\""},
+	Email:                    whereHelperstring{field: "\"users\".\"email\""},
+	Username:                 whereHelperstring{field: "\"users\".\"username\""},
+	FirstName:                whereHelperstring{field: "\"users\".\"first_name\""},
+	LastName:                 whereHelperstring{field: "\"users\".\"last_name\""},
 	DefaultShippingAddressID: whereHelpernull_String{field: "\"users\".\"default_shipping_address_id\""},
 	DefaultBillingAddressID:  whereHelpernull_String{field: "\"users\".\"default_billing_address_id\""},
-	Password:                 whereHelpernull_String{field: "\"users\".\"password\""},
+	Password:                 whereHelperstring{field: "\"users\".\"password\""},
 	AuthData:                 whereHelpernull_String{field: "\"users\".\"auth_data\""},
-	AuthService:              whereHelpernull_String{field: "\"users\".\"auth_service\""},
-	EmailVerified:            whereHelpernull_Bool{field: "\"users\".\"email_verified\""},
-	Nickname:                 whereHelpernull_String{field: "\"users\".\"nickname\""},
-	Roles:                    whereHelpernull_String{field: "\"users\".\"roles\""},
+	AuthService:              whereHelperstring{field: "\"users\".\"auth_service\""},
+	EmailVerified:            whereHelperbool{field: "\"users\".\"email_verified\""},
+	Nickname:                 whereHelperstring{field: "\"users\".\"nickname\""},
+	Roles:                    whereHelperstring{field: "\"users\".\"roles\""},
 	Props:                    whereHelpernull_JSON{field: "\"users\".\"props\""},
 	NotifyProps:              whereHelpernull_JSON{field: "\"users\".\"notify_props\""},
-	LastPasswordUpdate:       whereHelpernull_Int64{field: "\"users\".\"last_password_update\""},
-	LastPictureUpdate:        whereHelpernull_Int64{field: "\"users\".\"last_picture_update\""},
-	FailedAttempts:           whereHelpernull_Int{field: "\"users\".\"failed_attempts\""},
-	Locale:                   whereHelpernull_String{field: "\"users\".\"locale\""},
+	LastPasswordUpdate:       whereHelperint64{field: "\"users\".\"last_password_update\""},
+	LastPictureUpdate:        whereHelperint64{field: "\"users\".\"last_picture_update\""},
+	FailedAttempts:           whereHelperint{field: "\"users\".\"failed_attempts\""},
+	Locale:                   whereHelperstring{field: "\"users\".\"locale\""},
 	Timezone:                 whereHelpernull_JSON{field: "\"users\".\"timezone\""},
-	MfaActive:                whereHelpernull_Bool{field: "\"users\".\"mfa_active\""},
-	MfaSecret:                whereHelpernull_String{field: "\"users\".\"mfa_secret\""},
-	CreateAt:                 whereHelpernull_Int64{field: "\"users\".\"create_at\""},
-	UpdateAt:                 whereHelpernull_Int64{field: "\"users\".\"update_at\""},
+	MfaActive:                whereHelperbool{field: "\"users\".\"mfa_active\""},
+	MfaSecret:                whereHelperstring{field: "\"users\".\"mfa_secret\""},
+	CreatedAt:                whereHelperint64{field: "\"users\".\"created_at\""},
+	UpdatedAt:                whereHelperint64{field: "\"users\".\"updated_at\""},
 	DeleteAt:                 whereHelpernull_Int64{field: "\"users\".\"delete_at\""},
-	IsActive:                 whereHelpernull_Bool{field: "\"users\".\"is_active\""},
+	IsActive:                 whereHelperbool{field: "\"users\".\"is_active\""},
 	Note:                     whereHelpernull_String{field: "\"users\".\"note\""},
-	JWTTokenKey:              whereHelpernull_String{field: "\"users\".\"jwt_token_key\""},
+	JWTTokenKey:              whereHelperstring{field: "\"users\".\"jwt_token_key\""},
+	LastActivityAt:           whereHelperint64{field: "\"users\".\"last_activity_at\""},
+	TermsOfServiceID:         whereHelperstring{field: "\"users\".\"terms_of_service_id\""},
+	TermsIfServiceCreatedAt:  whereHelperint64{field: "\"users\".\"terms_if_service_created_at\""},
+	DisableWelcomeEmail:      whereHelperbool{field: "\"users\".\"disable_welcome_email\""},
 	Metadata:                 whereHelpernull_JSON{field: "\"users\".\"metadata\""},
 	PrivateMetadata:          whereHelpernull_JSON{field: "\"users\".\"private_metadata\""},
 }
@@ -421,9 +449,9 @@ func (r *userR) GetUserAddresses() UserAddressSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "create_at", "update_at", "delete_at", "is_active", "note", "jwt_token_key", "metadata", "private_metadata"}
-	userColumnsWithoutDefault = []string{"id"}
-	userColumnsWithDefault    = []string{"email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "create_at", "update_at", "delete_at", "is_active", "note", "jwt_token_key", "metadata", "private_metadata"}
+	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "note", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_if_service_created_at", "disable_welcome_email", "metadata", "private_metadata"}
+	userColumnsWithoutDefault = []string{"email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_if_service_created_at", "disable_welcome_email"}
+	userColumnsWithDefault    = []string{"id", "default_shipping_address_id", "default_billing_address_id", "auth_data", "props", "notify_props", "timezone", "delete_at", "note", "metadata", "private_metadata"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -1076,7 +1104,7 @@ func (userL) LoadWishlist(ctx context.Context, e boil.ContextExecutor, singular 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1137,7 +1165,7 @@ func (userL) LoadWishlist(ctx context.Context, e boil.ContextExecutor, singular 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ID, foreign.UserID) {
+			if local.ID == foreign.UserID {
 				local.R.Wishlist = foreign
 				if foreign.R == nil {
 					foreign.R = &wishlistR{}
@@ -2333,7 +2361,7 @@ func (userL) LoadStaffShopStaffs(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -2391,7 +2419,7 @@ func (userL) LoadStaffShopStaffs(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.StaffID) {
+			if local.ID == foreign.StaffID {
 				local.R.StaffShopStaffs = append(local.R.StaffShopStaffs, foreign)
 				if foreign.R == nil {
 					foreign.R = &shopStaffR{}
@@ -2561,7 +2589,7 @@ func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, sing
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -2619,7 +2647,7 @@ func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, sing
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.UserID) {
+			if local.ID == foreign.UserID {
 				local.R.UserAddresses = append(local.R.UserAddresses, foreign)
 				if foreign.R == nil {
 					foreign.R = &userAddressR{}
@@ -2720,7 +2748,7 @@ func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, inser
 	var err error
 
 	if insert {
-		queries.Assign(&related.UserID, o.ID)
+		related.UserID = o.ID
 
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
@@ -2742,7 +2770,7 @@ func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, inser
 			return errors.Wrap(err, "failed to update foreign table")
 		}
 
-		queries.Assign(&related.UserID, o.ID)
+		related.UserID = o.ID
 	}
 
 	if o.R == nil {
@@ -2760,30 +2788,6 @@ func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, inser
 	} else {
 		related.R.User = o
 	}
-	return nil
-}
-
-// RemoveWishlist relationship.
-// Sets o.R.Wishlist to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *User) RemoveWishlist(ctx context.Context, exec boil.ContextExecutor, related *Wishlist) error {
-	var err error
-
-	queries.SetScanner(&related.UserID, nil)
-	if _, err = related.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Wishlist = nil
-	}
-
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	related.R.User = nil
-
 	return nil
 }
 
@@ -4065,7 +4069,7 @@ func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.StaffID, o.ID)
+			rel.StaffID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -4086,7 +4090,7 @@ func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.StaffID, o.ID)
+			rel.StaffID = o.ID
 		}
 	}
 
@@ -4107,80 +4111,6 @@ func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor
 			rel.R.Staff = o
 		}
 	}
-	return nil
-}
-
-// SetStaffShopStaffs removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Staff's StaffShopStaffs accordingly.
-// Replaces o.R.StaffShopStaffs with related.
-// Sets related.R.Staff's StaffShopStaffs accordingly.
-func (o *User) SetStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShopStaff) error {
-	query := "update \"shop_staffs\" set \"staff_id\" = null where \"staff_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.StaffShopStaffs {
-			queries.SetScanner(&rel.StaffID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Staff = nil
-		}
-		o.R.StaffShopStaffs = nil
-	}
-
-	return o.AddStaffShopStaffs(ctx, exec, insert, related...)
-}
-
-// RemoveStaffShopStaffs relationships from objects passed in.
-// Removes related items from R.StaffShopStaffs (uses pointer comparison, removal does not keep order)
-// Sets related.R.Staff.
-func (o *User) RemoveStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor, related ...*ShopStaff) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.StaffID, nil)
-		if rel.R != nil {
-			rel.R.Staff = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("staff_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.StaffShopStaffs {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.StaffShopStaffs)
-			if ln > 1 && i < ln-1 {
-				o.R.StaffShopStaffs[i] = o.R.StaffShopStaffs[ln-1]
-			}
-			o.R.StaffShopStaffs = o.R.StaffShopStaffs[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -4319,7 +4249,7 @@ func (o *User) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, 
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -4340,7 +4270,7 @@ func (o *User) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 		}
 	}
 
@@ -4361,80 +4291,6 @@ func (o *User) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, 
 			rel.R.User = o
 		}
 	}
-	return nil
-}
-
-// SetUserAddresses removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.User's UserAddresses accordingly.
-// Replaces o.R.UserAddresses with related.
-// Sets related.R.User's UserAddresses accordingly.
-func (o *User) SetUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
-	query := "update \"user_addresses\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.UserAddresses {
-			queries.SetScanner(&rel.UserID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.User = nil
-		}
-		o.R.UserAddresses = nil
-	}
-
-	return o.AddUserAddresses(ctx, exec, insert, related...)
-}
-
-// RemoveUserAddresses relationships from objects passed in.
-// Removes related items from R.UserAddresses (uses pointer comparison, removal does not keep order)
-// Sets related.R.User.
-func (o *User) RemoveUserAddresses(ctx context.Context, exec boil.ContextExecutor, related ...*UserAddress) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.UserID, nil)
-		if rel.R != nil {
-			rel.R.User = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.UserAddresses {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.UserAddresses)
-			if ln > 1 && i < ln-1 {
-				o.R.UserAddresses[i] = o.R.UserAddresses[ln-1]
-			}
-			o.R.UserAddresses = o.R.UserAddresses[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -4576,10 +4432,6 @@ func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 			userAllColumns,
 			userPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update users, could not build whitelist")
 		}

@@ -519,8 +519,9 @@ func testCheckoutToManyCheckoutLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CheckoutID, a.Token)
-	queries.Assign(&c.CheckoutID, a.Token)
+	b.CheckoutID = a.Token
+	c.CheckoutID = a.Token
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testCheckoutToManyCheckoutLines(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CheckoutID, b.CheckoutID) {
+		if v.CheckoutID == b.CheckoutID {
 			bFound = true
 		}
-		if queries.Equal(v.CheckoutID, c.CheckoutID) {
+		if v.CheckoutID == c.CheckoutID {
 			cFound = true
 		}
 	}
@@ -596,8 +597,9 @@ func testCheckoutToManyGiftcardCheckouts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CheckoutID, a.Token)
-	queries.Assign(&c.CheckoutID, a.Token)
+	b.CheckoutID = a.Token
+	c.CheckoutID = a.Token
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -612,10 +614,10 @@ func testCheckoutToManyGiftcardCheckouts(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CheckoutID, b.CheckoutID) {
+		if v.CheckoutID == b.CheckoutID {
 			bFound = true
 		}
-		if queries.Equal(v.CheckoutID, c.CheckoutID) {
+		if v.CheckoutID == c.CheckoutID {
 			cFound = true
 		}
 	}
@@ -770,10 +772,10 @@ func testCheckoutToManyAddOpCheckoutLines(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.Token, first.CheckoutID) {
+		if a.Token != first.CheckoutID {
 			t.Error("foreign key was wrong value", a.Token, first.CheckoutID)
 		}
-		if !queries.Equal(a.Token, second.CheckoutID) {
+		if a.Token != second.CheckoutID {
 			t.Error("foreign key was wrong value", a.Token, second.CheckoutID)
 		}
 
@@ -800,182 +802,6 @@ func testCheckoutToManyAddOpCheckoutLines(t *testing.T) {
 		}
 	}
 }
-
-func testCheckoutToManySetOpCheckoutLines(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Checkout
-	var b, c, d, e CheckoutLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutDBTypes, false, strmangle.SetComplement(checkoutPrimaryKeyColumns, checkoutColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*CheckoutLine{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, checkoutLineDBTypes, false, strmangle.SetComplement(checkoutLinePrimaryKeyColumns, checkoutLineColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetCheckoutLines(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.CheckoutLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCheckoutLines(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CheckoutLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CheckoutID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CheckoutID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.Token, d.CheckoutID) {
-		t.Error("foreign key was wrong value", a.Token, d.CheckoutID)
-	}
-	if !queries.Equal(a.Token, e.CheckoutID) {
-		t.Error("foreign key was wrong value", a.Token, e.CheckoutID)
-	}
-
-	if b.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Checkout != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Checkout != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.CheckoutLines[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.CheckoutLines[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCheckoutToManyRemoveOpCheckoutLines(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Checkout
-	var b, c, d, e CheckoutLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutDBTypes, false, strmangle.SetComplement(checkoutPrimaryKeyColumns, checkoutColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*CheckoutLine{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, checkoutLineDBTypes, false, strmangle.SetComplement(checkoutLinePrimaryKeyColumns, checkoutLineColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddCheckoutLines(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.CheckoutLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveCheckoutLines(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CheckoutLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CheckoutID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CheckoutID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Checkout != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Checkout != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.CheckoutLines) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CheckoutLines[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.CheckoutLines[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCheckoutToManyAddOpGiftcardCheckouts(t *testing.T) {
 	var err error
 
@@ -1021,10 +847,10 @@ func testCheckoutToManyAddOpGiftcardCheckouts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.Token, first.CheckoutID) {
+		if a.Token != first.CheckoutID {
 			t.Error("foreign key was wrong value", a.Token, first.CheckoutID)
 		}
-		if !queries.Equal(a.Token, second.CheckoutID) {
+		if a.Token != second.CheckoutID {
 			t.Error("foreign key was wrong value", a.Token, second.CheckoutID)
 		}
 
@@ -1051,182 +877,6 @@ func testCheckoutToManyAddOpGiftcardCheckouts(t *testing.T) {
 		}
 	}
 }
-
-func testCheckoutToManySetOpGiftcardCheckouts(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Checkout
-	var b, c, d, e GiftcardCheckout
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutDBTypes, false, strmangle.SetComplement(checkoutPrimaryKeyColumns, checkoutColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*GiftcardCheckout{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, giftcardCheckoutDBTypes, false, strmangle.SetComplement(giftcardCheckoutPrimaryKeyColumns, giftcardCheckoutColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetGiftcardCheckouts(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.GiftcardCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetGiftcardCheckouts(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.GiftcardCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CheckoutID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CheckoutID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.Token, d.CheckoutID) {
-		t.Error("foreign key was wrong value", a.Token, d.CheckoutID)
-	}
-	if !queries.Equal(a.Token, e.CheckoutID) {
-		t.Error("foreign key was wrong value", a.Token, e.CheckoutID)
-	}
-
-	if b.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Checkout != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Checkout != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.GiftcardCheckouts[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.GiftcardCheckouts[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCheckoutToManyRemoveOpGiftcardCheckouts(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Checkout
-	var b, c, d, e GiftcardCheckout
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutDBTypes, false, strmangle.SetComplement(checkoutPrimaryKeyColumns, checkoutColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*GiftcardCheckout{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, giftcardCheckoutDBTypes, false, strmangle.SetComplement(giftcardCheckoutPrimaryKeyColumns, giftcardCheckoutColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddGiftcardCheckouts(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.GiftcardCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveGiftcardCheckouts(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.GiftcardCheckouts().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CheckoutID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CheckoutID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Checkout != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Checkout != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Checkout != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.GiftcardCheckouts) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.GiftcardCheckouts[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.GiftcardCheckouts[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCheckoutToManyAddOpPayments(t *testing.T) {
 	var err error
 
@@ -1548,7 +1198,7 @@ func testCheckoutToOneChannelUsingChannel(t *testing.T) {
 	var foreign Channel
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, checkoutDBTypes, true, checkoutColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, checkoutDBTypes, false, checkoutColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Checkout struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, channelDBTypes, false, channelColumnsWithDefault...); err != nil {
@@ -1559,7 +1209,7 @@ func testCheckoutToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ChannelID, foreign.ID)
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1569,7 +1219,7 @@ func testCheckoutToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -1933,7 +1583,7 @@ func testCheckoutToOneSetOpChannelUsingChannel(t *testing.T) {
 		if x.R.Checkouts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
@@ -1944,63 +1594,11 @@ func testCheckoutToOneSetOpChannelUsingChannel(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-
-func testCheckoutToOneRemoveOpChannelUsingChannel(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Checkout
-	var b Channel
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutDBTypes, false, strmangle.SetComplement(checkoutPrimaryKeyColumns, checkoutColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Channel().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Channel != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ChannelID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.Checkouts) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testCheckoutToOneSetOpShippingMethodUsingShippingMethod(t *testing.T) {
 	var err error
 
@@ -2402,7 +2000,7 @@ func testCheckoutsSelect(t *testing.T) {
 }
 
 var (
-	checkoutDBTypes = map[string]string{`Token`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `UserID`: `character varying`, `Email`: `text`, `Quantity`: `integer`, `ChannelID`: `character varying`, `BillingAddressID`: `character varying`, `ShippingAddressID`: `character varying`, `ShippingMethodID`: `character varying`, `CollectionPointID`: `character varying`, `Note`: `text`, `Currency`: `text`, `Country`: `character varying`, `DiscountAmount`: `double precision`, `DiscountName`: `character varying`, `TranslatedDiscountName`: `character varying`, `VoucherCode`: `character varying`, `RedirectURL`: `text`, `TrackingCode`: `character varying`, `LanguageCode`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	checkoutDBTypes = map[string]string{`Token`: `uuid`, `CreatedAt`: `bigint`, `UpdatedAt`: `bigint`, `UserID`: `uuid`, `Email`: `text`, `Quantity`: `integer`, `ChannelID`: `uuid`, `BillingAddressID`: `uuid`, `ShippingAddressID`: `uuid`, `ShippingMethodID`: `uuid`, `CollectionPointID`: `uuid`, `Note`: `text`, `Currency`: `text`, `Country`: `character varying`, `DiscountAmount`: `double precision`, `DiscountName`: `character varying`, `TranslatedDiscountName`: `character varying`, `VoucherCode`: `character varying`, `RedirectURL`: `text`, `TrackingCode`: `character varying`, `LanguageCode`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_               = bytes.MinRead
 )
 

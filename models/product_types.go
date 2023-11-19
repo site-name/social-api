@@ -25,14 +25,14 @@ import (
 // ProductType is an object representing the database table.
 type ProductType struct {
 	ID                 string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name               null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug               null.String  `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Kind               null.String  `boil:"kind" json:"kind,omitempty" toml:"kind" yaml:"kind,omitempty"`
+	Name               string       `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug               string       `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Kind               string       `boil:"kind" json:"kind" toml:"kind" yaml:"kind"`
 	HasVariants        null.Bool    `boil:"has_variants" json:"has_variants,omitempty" toml:"has_variants" yaml:"has_variants,omitempty"`
 	IsShippingRequired null.Bool    `boil:"is_shipping_required" json:"is_shipping_required,omitempty" toml:"is_shipping_required" yaml:"is_shipping_required,omitempty"`
 	IsDigital          null.Bool    `boil:"is_digital" json:"is_digital,omitempty" toml:"is_digital" yaml:"is_digital,omitempty"`
 	Weight             null.Float32 `boil:"weight" json:"weight,omitempty" toml:"weight" yaml:"weight,omitempty"`
-	WeightUnit         null.String  `boil:"weight_unit" json:"weight_unit,omitempty" toml:"weight_unit" yaml:"weight_unit,omitempty"`
+	WeightUnit         string       `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
 	Metadata           null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata    null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
@@ -94,28 +94,66 @@ var ProductTypeTableColumns = struct {
 
 // Generated where
 
+type whereHelpernull_Float32 struct{ field string }
+
+func (w whereHelpernull_Float32) EQ(x null.Float32) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Float32) NEQ(x null.Float32) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Float32) LT(x null.Float32) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Float32) LTE(x null.Float32) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Float32) GT(x null.Float32) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Float32) GTE(x null.Float32) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_Float32) IN(slice []float32) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_Float32) NIN(slice []float32) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_Float32) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Float32) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var ProductTypeWhere = struct {
 	ID                 whereHelperstring
-	Name               whereHelpernull_String
-	Slug               whereHelpernull_String
-	Kind               whereHelpernull_String
+	Name               whereHelperstring
+	Slug               whereHelperstring
+	Kind               whereHelperstring
 	HasVariants        whereHelpernull_Bool
 	IsShippingRequired whereHelpernull_Bool
 	IsDigital          whereHelpernull_Bool
 	Weight             whereHelpernull_Float32
-	WeightUnit         whereHelpernull_String
+	WeightUnit         whereHelperstring
 	Metadata           whereHelpernull_JSON
 	PrivateMetadata    whereHelpernull_JSON
 }{
 	ID:                 whereHelperstring{field: "\"product_types\".\"id\""},
-	Name:               whereHelpernull_String{field: "\"product_types\".\"name\""},
-	Slug:               whereHelpernull_String{field: "\"product_types\".\"slug\""},
-	Kind:               whereHelpernull_String{field: "\"product_types\".\"kind\""},
+	Name:               whereHelperstring{field: "\"product_types\".\"name\""},
+	Slug:               whereHelperstring{field: "\"product_types\".\"slug\""},
+	Kind:               whereHelperstring{field: "\"product_types\".\"kind\""},
 	HasVariants:        whereHelpernull_Bool{field: "\"product_types\".\"has_variants\""},
 	IsShippingRequired: whereHelpernull_Bool{field: "\"product_types\".\"is_shipping_required\""},
 	IsDigital:          whereHelpernull_Bool{field: "\"product_types\".\"is_digital\""},
 	Weight:             whereHelpernull_Float32{field: "\"product_types\".\"weight\""},
-	WeightUnit:         whereHelpernull_String{field: "\"product_types\".\"weight_unit\""},
+	WeightUnit:         whereHelperstring{field: "\"product_types\".\"weight_unit\""},
 	Metadata:           whereHelpernull_JSON{field: "\"product_types\".\"metadata\""},
 	PrivateMetadata:    whereHelpernull_JSON{field: "\"product_types\".\"private_metadata\""},
 }
@@ -159,8 +197,8 @@ type productTypeL struct{}
 
 var (
 	productTypeAllColumns            = []string{"id", "name", "slug", "kind", "has_variants", "is_shipping_required", "is_digital", "weight", "weight_unit", "metadata", "private_metadata"}
-	productTypeColumnsWithoutDefault = []string{"id"}
-	productTypeColumnsWithDefault    = []string{"name", "slug", "kind", "has_variants", "is_shipping_required", "is_digital", "weight", "weight_unit", "metadata", "private_metadata"}
+	productTypeColumnsWithoutDefault = []string{"name", "slug", "kind", "weight_unit"}
+	productTypeColumnsWithDefault    = []string{"id", "has_variants", "is_shipping_required", "is_digital", "weight", "metadata", "private_metadata"}
 	productTypePrimaryKeyColumns     = []string{"id"}
 	productTypeGeneratedColumns      = []string{}
 )
@@ -513,7 +551,7 @@ func (productTypeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -571,7 +609,7 @@ func (productTypeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExe
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductTypeID) {
+			if local.ID == foreign.ProductTypeID {
 				local.R.AttributeProducts = append(local.R.AttributeProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &attributeProductR{}
@@ -627,7 +665,7 @@ func (productTypeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -685,7 +723,7 @@ func (productTypeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExe
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductTypeID) {
+			if local.ID == foreign.ProductTypeID {
 				local.R.AttributeVariants = append(local.R.AttributeVariants, foreign)
 				if foreign.R == nil {
 					foreign.R = &attributeVariantR{}
@@ -707,7 +745,7 @@ func (o *ProductType) AddAttributeProducts(ctx context.Context, exec boil.Contex
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductTypeID, o.ID)
+			rel.ProductTypeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -728,7 +766,7 @@ func (o *ProductType) AddAttributeProducts(ctx context.Context, exec boil.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductTypeID, o.ID)
+			rel.ProductTypeID = o.ID
 		}
 	}
 
@@ -752,80 +790,6 @@ func (o *ProductType) AddAttributeProducts(ctx context.Context, exec boil.Contex
 	return nil
 }
 
-// SetAttributeProducts removes all previously related items of the
-// product_type replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ProductType's AttributeProducts accordingly.
-// Replaces o.R.AttributeProducts with related.
-// Sets related.R.ProductType's AttributeProducts accordingly.
-func (o *ProductType) SetAttributeProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeProduct) error {
-	query := "update \"attribute_products\" set \"product_type_id\" = null where \"product_type_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AttributeProducts {
-			queries.SetScanner(&rel.ProductTypeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ProductType = nil
-		}
-		o.R.AttributeProducts = nil
-	}
-
-	return o.AddAttributeProducts(ctx, exec, insert, related...)
-}
-
-// RemoveAttributeProducts relationships from objects passed in.
-// Removes related items from R.AttributeProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.ProductType.
-func (o *ProductType) RemoveAttributeProducts(ctx context.Context, exec boil.ContextExecutor, related ...*AttributeProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductTypeID, nil)
-		if rel.R != nil {
-			rel.R.ProductType = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_type_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AttributeProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AttributeProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.AttributeProducts[i] = o.R.AttributeProducts[ln-1]
-			}
-			o.R.AttributeProducts = o.R.AttributeProducts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddAttributeVariants adds the given related objects to the existing relationships
 // of the product_type, optionally inserting them as new records.
 // Appends related to o.R.AttributeVariants.
@@ -834,7 +798,7 @@ func (o *ProductType) AddAttributeVariants(ctx context.Context, exec boil.Contex
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductTypeID, o.ID)
+			rel.ProductTypeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -855,7 +819,7 @@ func (o *ProductType) AddAttributeVariants(ctx context.Context, exec boil.Contex
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductTypeID, o.ID)
+			rel.ProductTypeID = o.ID
 		}
 	}
 
@@ -876,80 +840,6 @@ func (o *ProductType) AddAttributeVariants(ctx context.Context, exec boil.Contex
 			rel.R.ProductType = o
 		}
 	}
-	return nil
-}
-
-// SetAttributeVariants removes all previously related items of the
-// product_type replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ProductType's AttributeVariants accordingly.
-// Replaces o.R.AttributeVariants with related.
-// Sets related.R.ProductType's AttributeVariants accordingly.
-func (o *ProductType) SetAttributeVariants(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeVariant) error {
-	query := "update \"attribute_variants\" set \"product_type_id\" = null where \"product_type_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AttributeVariants {
-			queries.SetScanner(&rel.ProductTypeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ProductType = nil
-		}
-		o.R.AttributeVariants = nil
-	}
-
-	return o.AddAttributeVariants(ctx, exec, insert, related...)
-}
-
-// RemoveAttributeVariants relationships from objects passed in.
-// Removes related items from R.AttributeVariants (uses pointer comparison, removal does not keep order)
-// Sets related.R.ProductType.
-func (o *ProductType) RemoveAttributeVariants(ctx context.Context, exec boil.ContextExecutor, related ...*AttributeVariant) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductTypeID, nil)
-		if rel.R != nil {
-			rel.R.ProductType = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_type_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AttributeVariants {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AttributeVariants)
-			if ln > 1 && i < ln-1 {
-				o.R.AttributeVariants[i] = o.R.AttributeVariants[ln-1]
-			}
-			o.R.AttributeVariants = o.R.AttributeVariants[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1091,10 +981,6 @@ func (o *ProductType) Update(ctx context.Context, exec boil.ContextExecutor, col
 			productTypeAllColumns,
 			productTypePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update product_types, could not build whitelist")
 		}

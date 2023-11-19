@@ -4,6 +4,7 @@ no-tests = false
 add-enum-types = true
 pkgname = "models"
 tracing = true
+no-auto-timestamps = true
 
 [psql]
   dbname = "sitename_test"

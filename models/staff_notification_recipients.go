@@ -100,8 +100,8 @@ type staffNotificationRecipientL struct{}
 
 var (
 	staffNotificationRecipientAllColumns            = []string{"id", "user_id", "staff_email", "active"}
-	staffNotificationRecipientColumnsWithoutDefault = []string{"id"}
-	staffNotificationRecipientColumnsWithDefault    = []string{"user_id", "staff_email", "active"}
+	staffNotificationRecipientColumnsWithoutDefault = []string{}
+	staffNotificationRecipientColumnsWithDefault    = []string{"id", "user_id", "staff_email", "active"}
 	staffNotificationRecipientPrimaryKeyColumns     = []string{"id"}
 	staffNotificationRecipientGeneratedColumns      = []string{}
 )
@@ -737,10 +737,6 @@ func (o *StaffNotificationRecipient) Update(ctx context.Context, exec boil.Conte
 			staffNotificationRecipientAllColumns,
 			staffNotificationRecipientPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update staff_notification_recipients, could not build whitelist")
 		}

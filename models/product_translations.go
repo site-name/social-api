@@ -25,10 +25,10 @@ import (
 // ProductTranslation is an object representing the database table.
 type ProductTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	ProductID      null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
-	Name           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Description    null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	LanguageCode   string      `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	ProductID      string      `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	Name           string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description    string      `boil:"description" json:"description" toml:"description" yaml:"description"`
 	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
 	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
@@ -76,18 +76,18 @@ var ProductTranslationTableColumns = struct {
 
 var ProductTranslationWhere = struct {
 	ID             whereHelperstring
-	LanguageCode   whereHelpernull_String
-	ProductID      whereHelpernull_String
-	Name           whereHelpernull_String
-	Description    whereHelpernull_String
+	LanguageCode   whereHelperstring
+	ProductID      whereHelperstring
+	Name           whereHelperstring
+	Description    whereHelperstring
 	SeoTitle       whereHelpernull_String
 	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"product_translations\".\"id\""},
-	LanguageCode:   whereHelpernull_String{field: "\"product_translations\".\"language_code\""},
-	ProductID:      whereHelpernull_String{field: "\"product_translations\".\"product_id\""},
-	Name:           whereHelpernull_String{field: "\"product_translations\".\"name\""},
-	Description:    whereHelpernull_String{field: "\"product_translations\".\"description\""},
+	LanguageCode:   whereHelperstring{field: "\"product_translations\".\"language_code\""},
+	ProductID:      whereHelperstring{field: "\"product_translations\".\"product_id\""},
+	Name:           whereHelperstring{field: "\"product_translations\".\"name\""},
+	Description:    whereHelperstring{field: "\"product_translations\".\"description\""},
 	SeoTitle:       whereHelpernull_String{field: "\"product_translations\".\"seo_title\""},
 	SeoDescription: whereHelpernull_String{field: "\"product_translations\".\"seo_description\""},
 }
@@ -121,8 +121,8 @@ type productTranslationL struct{}
 
 var (
 	productTranslationAllColumns            = []string{"id", "language_code", "product_id", "name", "description", "seo_title", "seo_description"}
-	productTranslationColumnsWithoutDefault = []string{"id"}
-	productTranslationColumnsWithDefault    = []string{"language_code", "product_id", "name", "description", "seo_title", "seo_description"}
+	productTranslationColumnsWithoutDefault = []string{"language_code", "product_id", "name", "description"}
+	productTranslationColumnsWithDefault    = []string{"id", "seo_title", "seo_description"}
 	productTranslationPrimaryKeyColumns     = []string{"id"}
 	productTranslationGeneratedColumns      = []string{}
 )
@@ -449,9 +449,7 @@ func (productTranslationL) LoadProduct(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &productTranslationR{}
 		}
-		if !queries.IsNil(object.ProductID) {
-			args = append(args, object.ProductID)
-		}
+		args = append(args, object.ProductID)
 
 	} else {
 	Outer:
@@ -461,14 +459,12 @@ func (productTranslationL) LoadProduct(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductID) {
+				if a == obj.ProductID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductID) {
-				args = append(args, obj.ProductID)
-			}
+			args = append(args, obj.ProductID)
 
 		}
 	}
@@ -526,7 +522,7 @@ func (productTranslationL) LoadProduct(ctx context.Context, e boil.ContextExecut
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductID, foreign.ID) {
+			if local.ProductID == foreign.ID {
 				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
@@ -567,7 +563,7 @@ func (o *ProductTranslation) SetProduct(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductID, related.ID)
+	o.ProductID = related.ID
 	if o.R == nil {
 		o.R = &productTranslationR{
 			Product: related,
@@ -584,39 +580,6 @@ func (o *ProductTranslation) SetProduct(ctx context.Context, exec boil.ContextEx
 		related.R.ProductTranslations = append(related.R.ProductTranslations, o)
 	}
 
-	return nil
-}
-
-// RemoveProduct relationship.
-// Sets o.R.Product to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ProductTranslation) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
-	var err error
-
-	queries.SetScanner(&o.ProductID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Product = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ProductTranslations {
-		if queries.Equal(o.ProductID, ri.ProductID) {
-			continue
-		}
-
-		ln := len(related.R.ProductTranslations)
-		if ln > 1 && i < ln-1 {
-			related.R.ProductTranslations[i] = related.R.ProductTranslations[ln-1]
-		}
-		related.R.ProductTranslations = related.R.ProductTranslations[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -758,10 +721,6 @@ func (o *ProductTranslation) Update(ctx context.Context, exec boil.ContextExecut
 			productTranslationAllColumns,
 			productTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update product_translations, could not build whitelist")
 		}

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // GiftcardCheckout is an object representing the database table.
 type GiftcardCheckout struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	GiftcardID null.String `boil:"giftcard_id" json:"giftcard_id,omitempty" toml:"giftcard_id" yaml:"giftcard_id,omitempty"`
-	CheckoutID null.String `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
+	ID         string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	GiftcardID string `boil:"giftcard_id" json:"giftcard_id" toml:"giftcard_id" yaml:"giftcard_id"`
+	CheckoutID string `boil:"checkout_id" json:"checkout_id" toml:"checkout_id" yaml:"checkout_id"`
 
 	R *giftcardCheckoutR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardCheckoutL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var GiftcardCheckoutTableColumns = struct {
 
 var GiftcardCheckoutWhere = struct {
 	ID         whereHelperstring
-	GiftcardID whereHelpernull_String
-	CheckoutID whereHelpernull_String
+	GiftcardID whereHelperstring
+	CheckoutID whereHelperstring
 }{
 	ID:         whereHelperstring{field: "\"giftcard_checkouts\".\"id\""},
-	GiftcardID: whereHelpernull_String{field: "\"giftcard_checkouts\".\"giftcard_id\""},
-	CheckoutID: whereHelpernull_String{field: "\"giftcard_checkouts\".\"checkout_id\""},
+	GiftcardID: whereHelperstring{field: "\"giftcard_checkouts\".\"giftcard_id\""},
+	CheckoutID: whereHelperstring{field: "\"giftcard_checkouts\".\"checkout_id\""},
 }
 
 // GiftcardCheckoutRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type giftcardCheckoutL struct{}
 
 var (
 	giftcardCheckoutAllColumns            = []string{"id", "giftcard_id", "checkout_id"}
-	giftcardCheckoutColumnsWithoutDefault = []string{"id"}
-	giftcardCheckoutColumnsWithDefault    = []string{"giftcard_id", "checkout_id"}
+	giftcardCheckoutColumnsWithoutDefault = []string{"giftcard_id", "checkout_id"}
+	giftcardCheckoutColumnsWithDefault    = []string{"id"}
 	giftcardCheckoutPrimaryKeyColumns     = []string{"id"}
 	giftcardCheckoutGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (giftcardCheckoutL) LoadCheckout(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &giftcardCheckoutR{}
 		}
-		if !queries.IsNil(object.CheckoutID) {
-			args = append(args, object.CheckoutID)
-		}
+		args = append(args, object.CheckoutID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (giftcardCheckoutL) LoadCheckout(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CheckoutID) {
+				if a == obj.CheckoutID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CheckoutID) {
-				args = append(args, obj.CheckoutID)
-			}
+			args = append(args, obj.CheckoutID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (giftcardCheckoutL) LoadCheckout(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CheckoutID, foreign.Token) {
+			if local.CheckoutID == foreign.Token {
 				local.R.Checkout = foreign
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
@@ -566,9 +561,7 @@ func (giftcardCheckoutL) LoadGiftcard(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &giftcardCheckoutR{}
 		}
-		if !queries.IsNil(object.GiftcardID) {
-			args = append(args, object.GiftcardID)
-		}
+		args = append(args, object.GiftcardID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (giftcardCheckoutL) LoadGiftcard(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.GiftcardID) {
+				if a == obj.GiftcardID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.GiftcardID) {
-				args = append(args, obj.GiftcardID)
-			}
+			args = append(args, obj.GiftcardID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (giftcardCheckoutL) LoadGiftcard(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.GiftcardID, foreign.ID) {
+			if local.GiftcardID == foreign.ID {
 				local.R.Giftcard = foreign
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
@@ -684,7 +675,7 @@ func (o *GiftcardCheckout) SetCheckout(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CheckoutID, related.Token)
+	o.CheckoutID = related.Token
 	if o.R == nil {
 		o.R = &giftcardCheckoutR{
 			Checkout: related,
@@ -701,39 +692,6 @@ func (o *GiftcardCheckout) SetCheckout(ctx context.Context, exec boil.ContextExe
 		related.R.GiftcardCheckouts = append(related.R.GiftcardCheckouts, o)
 	}
 
-	return nil
-}
-
-// RemoveCheckout relationship.
-// Sets o.R.Checkout to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *GiftcardCheckout) RemoveCheckout(ctx context.Context, exec boil.ContextExecutor, related *Checkout) error {
-	var err error
-
-	queries.SetScanner(&o.CheckoutID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Checkout = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.GiftcardCheckouts {
-		if queries.Equal(o.CheckoutID, ri.CheckoutID) {
-			continue
-		}
-
-		ln := len(related.R.GiftcardCheckouts)
-		if ln > 1 && i < ln-1 {
-			related.R.GiftcardCheckouts[i] = related.R.GiftcardCheckouts[ln-1]
-		}
-		related.R.GiftcardCheckouts = related.R.GiftcardCheckouts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *GiftcardCheckout) SetGiftcard(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.GiftcardID, related.ID)
+	o.GiftcardID = related.ID
 	if o.R == nil {
 		o.R = &giftcardCheckoutR{
 			Giftcard: related,
@@ -781,39 +739,6 @@ func (o *GiftcardCheckout) SetGiftcard(ctx context.Context, exec boil.ContextExe
 		related.R.GiftcardCheckouts = append(related.R.GiftcardCheckouts, o)
 	}
 
-	return nil
-}
-
-// RemoveGiftcard relationship.
-// Sets o.R.Giftcard to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *GiftcardCheckout) RemoveGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
-	var err error
-
-	queries.SetScanner(&o.GiftcardID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Giftcard = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.GiftcardCheckouts {
-		if queries.Equal(o.GiftcardID, ri.GiftcardID) {
-			continue
-		}
-
-		ln := len(related.R.GiftcardCheckouts)
-		if ln > 1 && i < ln-1 {
-			related.R.GiftcardCheckouts[i] = related.R.GiftcardCheckouts[ln-1]
-		}
-		related.R.GiftcardCheckouts = related.R.GiftcardCheckouts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *GiftcardCheckout) Update(ctx context.Context, exec boil.ContextExecutor
 			giftcardCheckoutAllColumns,
 			giftcardCheckoutPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update giftcard_checkouts, could not build whitelist")
 		}

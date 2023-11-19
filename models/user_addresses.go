@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // UserAddress is an object representing the database table.
 type UserAddress struct {
-	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	AddressID null.String `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
+	ID        string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	AddressID string `boil:"address_id" json:"address_id" toml:"address_id" yaml:"address_id"`
 
 	R *userAddressR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userAddressL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var UserAddressTableColumns = struct {
 
 var UserAddressWhere = struct {
 	ID        whereHelperstring
-	UserID    whereHelpernull_String
-	AddressID whereHelpernull_String
+	UserID    whereHelperstring
+	AddressID whereHelperstring
 }{
 	ID:        whereHelperstring{field: "\"user_addresses\".\"id\""},
-	UserID:    whereHelpernull_String{field: "\"user_addresses\".\"user_id\""},
-	AddressID: whereHelpernull_String{field: "\"user_addresses\".\"address_id\""},
+	UserID:    whereHelperstring{field: "\"user_addresses\".\"user_id\""},
+	AddressID: whereHelperstring{field: "\"user_addresses\".\"address_id\""},
 }
 
 // UserAddressRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type userAddressL struct{}
 
 var (
 	userAddressAllColumns            = []string{"id", "user_id", "address_id"}
-	userAddressColumnsWithoutDefault = []string{"id"}
-	userAddressColumnsWithDefault    = []string{"user_id", "address_id"}
+	userAddressColumnsWithoutDefault = []string{"user_id", "address_id"}
+	userAddressColumnsWithDefault    = []string{"id"}
 	userAddressPrimaryKeyColumns     = []string{"id"}
 	userAddressGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (userAddressL) LoadAddress(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &userAddressR{}
 		}
-		if !queries.IsNil(object.AddressID) {
-			args = append(args, object.AddressID)
-		}
+		args = append(args, object.AddressID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (userAddressL) LoadAddress(ctx context.Context, e boil.ContextExecutor, sin
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.AddressID) {
+				if a == obj.AddressID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.AddressID) {
-				args = append(args, obj.AddressID)
-			}
+			args = append(args, obj.AddressID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (userAddressL) LoadAddress(ctx context.Context, e boil.ContextExecutor, sin
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.AddressID, foreign.ID) {
+			if local.AddressID == foreign.ID {
 				local.R.Address = foreign
 				if foreign.R == nil {
 					foreign.R = &addressR{}
@@ -566,9 +561,7 @@ func (userAddressL) LoadUser(ctx context.Context, e boil.ContextExecutor, singul
 		if object.R == nil {
 			object.R = &userAddressR{}
 		}
-		if !queries.IsNil(object.UserID) {
-			args = append(args, object.UserID)
-		}
+		args = append(args, object.UserID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (userAddressL) LoadUser(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.UserID) {
+				if a == obj.UserID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.UserID) {
-				args = append(args, obj.UserID)
-			}
+			args = append(args, obj.UserID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (userAddressL) LoadUser(ctx context.Context, e boil.ContextExecutor, singul
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.UserID, foreign.ID) {
+			if local.UserID == foreign.ID {
 				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -684,7 +675,7 @@ func (o *UserAddress) SetAddress(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.AddressID, related.ID)
+	o.AddressID = related.ID
 	if o.R == nil {
 		o.R = &userAddressR{
 			Address: related,
@@ -701,39 +692,6 @@ func (o *UserAddress) SetAddress(ctx context.Context, exec boil.ContextExecutor,
 		related.R.UserAddresses = append(related.R.UserAddresses, o)
 	}
 
-	return nil
-}
-
-// RemoveAddress relationship.
-// Sets o.R.Address to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *UserAddress) RemoveAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
-	var err error
-
-	queries.SetScanner(&o.AddressID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Address = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.UserAddresses {
-		if queries.Equal(o.AddressID, ri.AddressID) {
-			continue
-		}
-
-		ln := len(related.R.UserAddresses)
-		if ln > 1 && i < ln-1 {
-			related.R.UserAddresses[i] = related.R.UserAddresses[ln-1]
-		}
-		related.R.UserAddresses = related.R.UserAddresses[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *UserAddress) SetUser(ctx context.Context, exec boil.ContextExecutor, in
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.UserID, related.ID)
+	o.UserID = related.ID
 	if o.R == nil {
 		o.R = &userAddressR{
 			User: related,
@@ -781,39 +739,6 @@ func (o *UserAddress) SetUser(ctx context.Context, exec boil.ContextExecutor, in
 		related.R.UserAddresses = append(related.R.UserAddresses, o)
 	}
 
-	return nil
-}
-
-// RemoveUser relationship.
-// Sets o.R.User to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *UserAddress) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.User = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.UserAddresses {
-		if queries.Equal(o.UserID, ri.UserID) {
-			continue
-		}
-
-		ln := len(related.R.UserAddresses)
-		if ln > 1 && i < ln-1 {
-			related.R.UserAddresses[i] = related.R.UserAddresses[ln-1]
-		}
-		related.R.UserAddresses = related.R.UserAddresses[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *UserAddress) Update(ctx context.Context, exec boil.ContextExecutor, col
 			userAddressAllColumns,
 			userAddressPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update user_addresses, could not build whitelist")
 		}

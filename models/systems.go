@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,8 +23,8 @@ import (
 
 // System is an object representing the database table.
 type System struct {
-	Name  string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Value null.String `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
+	Name  string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Value string `boil:"value" json:"value" toml:"value" yaml:"value"`
 
 	R *systemR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L systemL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -51,10 +50,10 @@ var SystemTableColumns = struct {
 
 var SystemWhere = struct {
 	Name  whereHelperstring
-	Value whereHelpernull_String
+	Value whereHelperstring
 }{
 	Name:  whereHelperstring{field: "\"systems\".\"name\""},
-	Value: whereHelpernull_String{field: "\"systems\".\"value\""},
+	Value: whereHelperstring{field: "\"systems\".\"value\""},
 }
 
 // SystemRels is where relationship names are stored.
@@ -75,8 +74,8 @@ type systemL struct{}
 
 var (
 	systemAllColumns            = []string{"name", "value"}
-	systemColumnsWithoutDefault = []string{"name"}
-	systemColumnsWithDefault    = []string{"value"}
+	systemColumnsWithoutDefault = []string{"name", "value"}
+	systemColumnsWithDefault    = []string{}
 	systemPrimaryKeyColumns     = []string{"name"}
 	systemGeneratedColumns      = []string{}
 )
@@ -497,10 +496,6 @@ func (o *System) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 			systemAllColumns,
 			systemPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update systems, could not build whitelist")
 		}

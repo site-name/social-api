@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user_addresses (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid,
-  address_id character varying(36)
+  user_id uuid NOT NULL,
+  address_id uuid NOT NULL
 );
 
 ALTER TABLE ONLY user_addresses

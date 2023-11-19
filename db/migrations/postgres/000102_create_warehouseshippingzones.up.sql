@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS warehouse_shipping_zones (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  warehouse_id uuid,
-  shipping_zone_id character varying(36)
+  warehouse_id uuid NOT NULL,
+  shipping_zone_id uuid NOT NULL
 );
 
 ALTER TABLE ONLY warehouse_shipping_zones

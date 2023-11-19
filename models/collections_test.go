@@ -519,8 +519,9 @@ func testCollectionToManyCollectionChannelListings(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CollectionID, a.ID)
-	queries.Assign(&c.CollectionID, a.ID)
+	b.CollectionID = a.ID
+	c.CollectionID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testCollectionToManyCollectionChannelListings(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CollectionID, b.CollectionID) {
+		if v.CollectionID == b.CollectionID {
 			bFound = true
 		}
-		if queries.Equal(v.CollectionID, c.CollectionID) {
+		if v.CollectionID == c.CollectionID {
 			cFound = true
 		}
 	}
@@ -596,8 +597,9 @@ func testCollectionToManyCollectionTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CollectionID, a.ID)
-	queries.Assign(&c.CollectionID, a.ID)
+	b.CollectionID = a.ID
+	c.CollectionID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -612,10 +614,10 @@ func testCollectionToManyCollectionTranslations(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CollectionID, b.CollectionID) {
+		if v.CollectionID == b.CollectionID {
 			bFound = true
 		}
-		if queries.Equal(v.CollectionID, c.CollectionID) {
+		if v.CollectionID == c.CollectionID {
 			cFound = true
 		}
 	}
@@ -750,8 +752,9 @@ func testCollectionToManyProductCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CollectionID, a.ID)
-	queries.Assign(&c.CollectionID, a.ID)
+	b.CollectionID = a.ID
+	c.CollectionID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -766,10 +769,10 @@ func testCollectionToManyProductCollections(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CollectionID, b.CollectionID) {
+		if v.CollectionID == b.CollectionID {
 			bFound = true
 		}
-		if queries.Equal(v.CollectionID, c.CollectionID) {
+		if v.CollectionID == c.CollectionID {
 			cFound = true
 		}
 	}
@@ -827,8 +830,9 @@ func testCollectionToManySaleCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CollectionID, a.ID)
-	queries.Assign(&c.CollectionID, a.ID)
+	b.CollectionID = a.ID
+	c.CollectionID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -843,10 +847,10 @@ func testCollectionToManySaleCollections(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CollectionID, b.CollectionID) {
+		if v.CollectionID == b.CollectionID {
 			bFound = true
 		}
-		if queries.Equal(v.CollectionID, c.CollectionID) {
+		if v.CollectionID == c.CollectionID {
 			cFound = true
 		}
 	}
@@ -904,8 +908,9 @@ func testCollectionToManyVoucherCollections(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.CollectionID, a.ID)
-	queries.Assign(&c.CollectionID, a.ID)
+	b.CollectionID = a.ID
+	c.CollectionID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -920,10 +925,10 @@ func testCollectionToManyVoucherCollections(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.CollectionID, b.CollectionID) {
+		if v.CollectionID == b.CollectionID {
 			bFound = true
 		}
-		if queries.Equal(v.CollectionID, c.CollectionID) {
+		if v.CollectionID == c.CollectionID {
 			cFound = true
 		}
 	}
@@ -1001,10 +1006,10 @@ func testCollectionToManyAddOpCollectionChannelListings(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CollectionID) {
+		if a.ID != first.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, first.CollectionID)
 		}
-		if !queries.Equal(a.ID, second.CollectionID) {
+		if a.ID != second.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, second.CollectionID)
 		}
 
@@ -1031,182 +1036,6 @@ func testCollectionToManyAddOpCollectionChannelListings(t *testing.T) {
 		}
 	}
 }
-
-func testCollectionToManySetOpCollectionChannelListings(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e CollectionChannelListing
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*CollectionChannelListing{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, collectionChannelListingDBTypes, false, strmangle.SetComplement(collectionChannelListingPrimaryKeyColumns, collectionChannelListingColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetCollectionChannelListings(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.CollectionChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCollectionChannelListings(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CollectionChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, d.CollectionID)
-	}
-	if !queries.Equal(a.ID, e.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, e.CollectionID)
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.CollectionChannelListings[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.CollectionChannelListings[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCollectionToManyRemoveOpCollectionChannelListings(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e CollectionChannelListing
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*CollectionChannelListing{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, collectionChannelListingDBTypes, false, strmangle.SetComplement(collectionChannelListingPrimaryKeyColumns, collectionChannelListingColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddCollectionChannelListings(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.CollectionChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveCollectionChannelListings(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CollectionChannelListings().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.CollectionChannelListings) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CollectionChannelListings[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.CollectionChannelListings[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCollectionToManyAddOpCollectionTranslations(t *testing.T) {
 	var err error
 
@@ -1252,10 +1081,10 @@ func testCollectionToManyAddOpCollectionTranslations(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CollectionID) {
+		if a.ID != first.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, first.CollectionID)
 		}
-		if !queries.Equal(a.ID, second.CollectionID) {
+		if a.ID != second.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, second.CollectionID)
 		}
 
@@ -1282,182 +1111,6 @@ func testCollectionToManyAddOpCollectionTranslations(t *testing.T) {
 		}
 	}
 }
-
-func testCollectionToManySetOpCollectionTranslations(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e CollectionTranslation
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*CollectionTranslation{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, collectionTranslationDBTypes, false, strmangle.SetComplement(collectionTranslationPrimaryKeyColumns, collectionTranslationColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetCollectionTranslations(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.CollectionTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetCollectionTranslations(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CollectionTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, d.CollectionID)
-	}
-	if !queries.Equal(a.ID, e.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, e.CollectionID)
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.CollectionTranslations[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.CollectionTranslations[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCollectionToManyRemoveOpCollectionTranslations(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e CollectionTranslation
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*CollectionTranslation{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, collectionTranslationDBTypes, false, strmangle.SetComplement(collectionTranslationPrimaryKeyColumns, collectionTranslationColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddCollectionTranslations(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.CollectionTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveCollectionTranslations(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.CollectionTranslations().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.CollectionTranslations) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.CollectionTranslations[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.CollectionTranslations[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCollectionToManyAddOpMenuItems(t *testing.T) {
 	var err error
 
@@ -1754,10 +1407,10 @@ func testCollectionToManyAddOpProductCollections(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CollectionID) {
+		if a.ID != first.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, first.CollectionID)
 		}
-		if !queries.Equal(a.ID, second.CollectionID) {
+		if a.ID != second.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, second.CollectionID)
 		}
 
@@ -1784,182 +1437,6 @@ func testCollectionToManyAddOpProductCollections(t *testing.T) {
 		}
 	}
 }
-
-func testCollectionToManySetOpProductCollections(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e ProductCollection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*ProductCollection{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, productCollectionDBTypes, false, strmangle.SetComplement(productCollectionPrimaryKeyColumns, productCollectionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetProductCollections(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ProductCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetProductCollections(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, d.CollectionID)
-	}
-	if !queries.Equal(a.ID, e.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, e.CollectionID)
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.ProductCollections[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.ProductCollections[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCollectionToManyRemoveOpProductCollections(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e ProductCollection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*ProductCollection{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, productCollectionDBTypes, false, strmangle.SetComplement(productCollectionPrimaryKeyColumns, productCollectionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddProductCollections(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.ProductCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveProductCollections(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.ProductCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.ProductCollections) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.ProductCollections[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.ProductCollections[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCollectionToManyAddOpSaleCollections(t *testing.T) {
 	var err error
 
@@ -2005,10 +1482,10 @@ func testCollectionToManyAddOpSaleCollections(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CollectionID) {
+		if a.ID != first.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, first.CollectionID)
 		}
-		if !queries.Equal(a.ID, second.CollectionID) {
+		if a.ID != second.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, second.CollectionID)
 		}
 
@@ -2035,182 +1512,6 @@ func testCollectionToManyAddOpSaleCollections(t *testing.T) {
 		}
 	}
 }
-
-func testCollectionToManySetOpSaleCollections(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e SaleCollection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*SaleCollection{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, saleCollectionDBTypes, false, strmangle.SetComplement(saleCollectionPrimaryKeyColumns, saleCollectionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetSaleCollections(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.SaleCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetSaleCollections(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, d.CollectionID)
-	}
-	if !queries.Equal(a.ID, e.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, e.CollectionID)
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.SaleCollections[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.SaleCollections[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCollectionToManyRemoveOpSaleCollections(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e SaleCollection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*SaleCollection{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, saleCollectionDBTypes, false, strmangle.SetComplement(saleCollectionPrimaryKeyColumns, saleCollectionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddSaleCollections(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.SaleCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveSaleCollections(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.SaleCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.SaleCollections) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.SaleCollections[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.SaleCollections[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testCollectionToManyAddOpVoucherCollections(t *testing.T) {
 	var err error
 
@@ -2256,10 +1557,10 @@ func testCollectionToManyAddOpVoucherCollections(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.CollectionID) {
+		if a.ID != first.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, first.CollectionID)
 		}
-		if !queries.Equal(a.ID, second.CollectionID) {
+		if a.ID != second.CollectionID {
 			t.Error("foreign key was wrong value", a.ID, second.CollectionID)
 		}
 
@@ -2284,181 +1585,6 @@ func testCollectionToManyAddOpVoucherCollections(t *testing.T) {
 		if want := int64((i + 1) * 2); count != want {
 			t.Error("want", want, "got", count)
 		}
-	}
-}
-
-func testCollectionToManySetOpVoucherCollections(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e VoucherCollection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*VoucherCollection{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, voucherCollectionDBTypes, false, strmangle.SetComplement(voucherCollectionPrimaryKeyColumns, voucherCollectionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetVoucherCollections(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.VoucherCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetVoucherCollections(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.VoucherCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, d.CollectionID)
-	}
-	if !queries.Equal(a.ID, e.CollectionID) {
-		t.Error("foreign key was wrong value", a.ID, e.CollectionID)
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.VoucherCollections[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.VoucherCollections[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testCollectionToManyRemoveOpVoucherCollections(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Collection
-	var b, c, d, e VoucherCollection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*VoucherCollection{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, voucherCollectionDBTypes, false, strmangle.SetComplement(voucherCollectionPrimaryKeyColumns, voucherCollectionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddVoucherCollections(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.VoucherCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveVoucherCollections(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.VoucherCollections().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.CollectionID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.CollectionID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Collection != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Collection != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.VoucherCollections) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.VoucherCollections[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.VoucherCollections[0] != &e {
-		t.Error("relationship to e should have been preserved")
 	}
 }
 
@@ -2536,7 +1662,7 @@ func testCollectionsSelect(t *testing.T) {
 }
 
 var (
-	collectionDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `BackgroundImage`: `character varying`, `BackgroundImageAlt`: `character varying`, `Description`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
+	collectionDBTypes = map[string]string{`ID`: `uuid`, `Name`: `character varying`, `Slug`: `character varying`, `BackgroundImage`: `character varying`, `BackgroundImageAlt`: `character varying`, `Description`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
 	_                 = bytes.MinRead
 )
 

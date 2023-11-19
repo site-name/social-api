@@ -568,7 +568,7 @@ func testStatusesSelect(t *testing.T) {
 }
 
 var (
-	statusDBTypes = map[string]string{`UserID`: `character varying`, `Status`: `character varying`, `Manual`: `boolean`, `LastActivityAt`: `bigint`}
+	statusDBTypes = map[string]string{`UserID`: `uuid`, `Status`: `character varying`, `Manual`: `boolean`, `LastActivityAt`: `bigint`}
 	_             = bytes.MinRead
 )
 

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // VoucherCustomer is an object representing the database table.
 type VoucherCustomer struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VoucherID     null.String `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	CustomerEmail null.String `boil:"customer_email" json:"customer_email,omitempty" toml:"customer_email" yaml:"customer_email,omitempty"`
+	ID            string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VoucherID     string `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	CustomerEmail string `boil:"customer_email" json:"customer_email" toml:"customer_email" yaml:"customer_email"`
 
 	R *voucherCustomerR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherCustomerL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var VoucherCustomerTableColumns = struct {
 
 var VoucherCustomerWhere = struct {
 	ID            whereHelperstring
-	VoucherID     whereHelpernull_String
-	CustomerEmail whereHelpernull_String
+	VoucherID     whereHelperstring
+	CustomerEmail whereHelperstring
 }{
 	ID:            whereHelperstring{field: "\"voucher_customers\".\"id\""},
-	VoucherID:     whereHelpernull_String{field: "\"voucher_customers\".\"voucher_id\""},
-	CustomerEmail: whereHelpernull_String{field: "\"voucher_customers\".\"customer_email\""},
+	VoucherID:     whereHelperstring{field: "\"voucher_customers\".\"voucher_id\""},
+	CustomerEmail: whereHelperstring{field: "\"voucher_customers\".\"customer_email\""},
 }
 
 // VoucherCustomerRels is where relationship names are stored.
@@ -93,8 +92,8 @@ type voucherCustomerL struct{}
 
 var (
 	voucherCustomerAllColumns            = []string{"id", "voucher_id", "customer_email"}
-	voucherCustomerColumnsWithoutDefault = []string{"id"}
-	voucherCustomerColumnsWithDefault    = []string{"voucher_id", "customer_email"}
+	voucherCustomerColumnsWithoutDefault = []string{"voucher_id", "customer_email"}
+	voucherCustomerColumnsWithDefault    = []string{"id"}
 	voucherCustomerPrimaryKeyColumns     = []string{"id"}
 	voucherCustomerGeneratedColumns      = []string{}
 )
@@ -421,9 +420,7 @@ func (voucherCustomerL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &voucherCustomerR{}
 		}
-		if !queries.IsNil(object.VoucherID) {
-			args = append(args, object.VoucherID)
-		}
+		args = append(args, object.VoucherID)
 
 	} else {
 	Outer:
@@ -433,14 +430,12 @@ func (voucherCustomerL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.VoucherID) {
+				if a == obj.VoucherID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.VoucherID) {
-				args = append(args, obj.VoucherID)
-			}
+			args = append(args, obj.VoucherID)
 
 		}
 	}
@@ -498,7 +493,7 @@ func (voucherCustomerL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.VoucherID, foreign.ID) {
+			if local.VoucherID == foreign.ID {
 				local.R.Voucher = foreign
 				if foreign.R == nil {
 					foreign.R = &voucherR{}
@@ -539,7 +534,7 @@ func (o *VoucherCustomer) SetVoucher(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.VoucherID, related.ID)
+	o.VoucherID = related.ID
 	if o.R == nil {
 		o.R = &voucherCustomerR{
 			Voucher: related,
@@ -556,39 +551,6 @@ func (o *VoucherCustomer) SetVoucher(ctx context.Context, exec boil.ContextExecu
 		related.R.VoucherCustomers = append(related.R.VoucherCustomers, o)
 	}
 
-	return nil
-}
-
-// RemoveVoucher relationship.
-// Sets o.R.Voucher to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VoucherCustomer) RemoveVoucher(ctx context.Context, exec boil.ContextExecutor, related *Voucher) error {
-	var err error
-
-	queries.SetScanner(&o.VoucherID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Voucher = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VoucherCustomers {
-		if queries.Equal(o.VoucherID, ri.VoucherID) {
-			continue
-		}
-
-		ln := len(related.R.VoucherCustomers)
-		if ln > 1 && i < ln-1 {
-			related.R.VoucherCustomers[i] = related.R.VoucherCustomers[ln-1]
-		}
-		related.R.VoucherCustomers = related.R.VoucherCustomers[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -730,10 +692,6 @@ func (o *VoucherCustomer) Update(ctx context.Context, exec boil.ContextExecutor,
 			voucherCustomerAllColumns,
 			voucherCustomerPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update voucher_customers, could not build whitelist")
 		}

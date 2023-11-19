@@ -25,8 +25,8 @@ import (
 // CustomerEvent is an object representing the database table.
 type CustomerEvent struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Date       null.Int64  `boil:"date" json:"date,omitempty" toml:"date" yaml:"date,omitempty"`
-	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
+	Date       int64       `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Type       string      `boil:"type" json:"type" toml:"type" yaml:"type"`
 	OrderID    null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
 	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	Parameters null.JSON   `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
@@ -71,15 +71,15 @@ var CustomerEventTableColumns = struct {
 
 var CustomerEventWhere = struct {
 	ID         whereHelperstring
-	Date       whereHelpernull_Int64
-	Type       whereHelpernull_String
+	Date       whereHelperint64
+	Type       whereHelperstring
 	OrderID    whereHelpernull_String
 	UserID     whereHelpernull_String
 	Parameters whereHelpernull_JSON
 }{
 	ID:         whereHelperstring{field: "\"customer_events\".\"id\""},
-	Date:       whereHelpernull_Int64{field: "\"customer_events\".\"date\""},
-	Type:       whereHelpernull_String{field: "\"customer_events\".\"type\""},
+	Date:       whereHelperint64{field: "\"customer_events\".\"date\""},
+	Type:       whereHelperstring{field: "\"customer_events\".\"type\""},
 	OrderID:    whereHelpernull_String{field: "\"customer_events\".\"order_id\""},
 	UserID:     whereHelpernull_String{field: "\"customer_events\".\"user_id\""},
 	Parameters: whereHelpernull_JSON{field: "\"customer_events\".\"parameters\""},
@@ -124,8 +124,8 @@ type customerEventL struct{}
 
 var (
 	customerEventAllColumns            = []string{"id", "date", "type", "order_id", "user_id", "parameters"}
-	customerEventColumnsWithoutDefault = []string{"id"}
-	customerEventColumnsWithDefault    = []string{"date", "type", "order_id", "user_id", "parameters"}
+	customerEventColumnsWithoutDefault = []string{"date", "type"}
+	customerEventColumnsWithDefault    = []string{"id", "order_id", "user_id", "parameters"}
 	customerEventPrimaryKeyColumns     = []string{"id"}
 	customerEventGeneratedColumns      = []string{}
 )
@@ -976,10 +976,6 @@ func (o *CustomerEvent) Update(ctx context.Context, exec boil.ContextExecutor, c
 			customerEventAllColumns,
 			customerEventPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update customer_events, could not build whitelist")
 		}

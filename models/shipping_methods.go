@@ -25,15 +25,15 @@ import (
 // ShippingMethod is an object representing the database table.
 type ShippingMethod struct {
 	ID                  string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Type                null.String  `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	ShippingZoneID      null.String  `boil:"shipping_zone_id" json:"shipping_zone_id,omitempty" toml:"shipping_zone_id" yaml:"shipping_zone_id,omitempty"`
+	Name                string       `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Type                string       `boil:"type" json:"type" toml:"type" yaml:"type"`
+	ShippingZoneID      string       `boil:"shipping_zone_id" json:"shipping_zone_id" toml:"shipping_zone_id" yaml:"shipping_zone_id"`
 	MinimumOrderWeight  null.Float32 `boil:"minimum_order_weight" json:"minimum_order_weight,omitempty" toml:"minimum_order_weight" yaml:"minimum_order_weight,omitempty"`
 	MaximumOrderWeight  null.Float32 `boil:"maximum_order_weight" json:"maximum_order_weight,omitempty" toml:"maximum_order_weight" yaml:"maximum_order_weight,omitempty"`
-	WeightUnit          null.String  `boil:"weight_unit" json:"weight_unit,omitempty" toml:"weight_unit" yaml:"weight_unit,omitempty"`
+	WeightUnit          string       `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
 	MaximumDeliveryDays null.Int     `boil:"maximum_delivery_days" json:"maximum_delivery_days,omitempty" toml:"maximum_delivery_days" yaml:"maximum_delivery_days,omitempty"`
 	MinimumDeliveryDays null.Int     `boil:"minimum_delivery_days" json:"minimum_delivery_days,omitempty" toml:"minimum_delivery_days" yaml:"minimum_delivery_days,omitempty"`
-	Description         null.String  `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Description         null.JSON    `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Metadata            null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata     null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
@@ -101,28 +101,28 @@ var ShippingMethodTableColumns = struct {
 
 var ShippingMethodWhere = struct {
 	ID                  whereHelperstring
-	Name                whereHelpernull_String
-	Type                whereHelpernull_String
-	ShippingZoneID      whereHelpernull_String
+	Name                whereHelperstring
+	Type                whereHelperstring
+	ShippingZoneID      whereHelperstring
 	MinimumOrderWeight  whereHelpernull_Float32
 	MaximumOrderWeight  whereHelpernull_Float32
-	WeightUnit          whereHelpernull_String
+	WeightUnit          whereHelperstring
 	MaximumDeliveryDays whereHelpernull_Int
 	MinimumDeliveryDays whereHelpernull_Int
-	Description         whereHelpernull_String
+	Description         whereHelpernull_JSON
 	Metadata            whereHelpernull_JSON
 	PrivateMetadata     whereHelpernull_JSON
 }{
 	ID:                  whereHelperstring{field: "\"shipping_methods\".\"id\""},
-	Name:                whereHelpernull_String{field: "\"shipping_methods\".\"name\""},
-	Type:                whereHelpernull_String{field: "\"shipping_methods\".\"type\""},
-	ShippingZoneID:      whereHelpernull_String{field: "\"shipping_methods\".\"shipping_zone_id\""},
+	Name:                whereHelperstring{field: "\"shipping_methods\".\"name\""},
+	Type:                whereHelperstring{field: "\"shipping_methods\".\"type\""},
+	ShippingZoneID:      whereHelperstring{field: "\"shipping_methods\".\"shipping_zone_id\""},
 	MinimumOrderWeight:  whereHelpernull_Float32{field: "\"shipping_methods\".\"minimum_order_weight\""},
 	MaximumOrderWeight:  whereHelpernull_Float32{field: "\"shipping_methods\".\"maximum_order_weight\""},
-	WeightUnit:          whereHelpernull_String{field: "\"shipping_methods\".\"weight_unit\""},
+	WeightUnit:          whereHelperstring{field: "\"shipping_methods\".\"weight_unit\""},
 	MaximumDeliveryDays: whereHelpernull_Int{field: "\"shipping_methods\".\"maximum_delivery_days\""},
 	MinimumDeliveryDays: whereHelpernull_Int{field: "\"shipping_methods\".\"minimum_delivery_days\""},
-	Description:         whereHelpernull_String{field: "\"shipping_methods\".\"description\""},
+	Description:         whereHelpernull_JSON{field: "\"shipping_methods\".\"description\""},
 	Metadata:            whereHelpernull_JSON{field: "\"shipping_methods\".\"metadata\""},
 	PrivateMetadata:     whereHelpernull_JSON{field: "\"shipping_methods\".\"private_metadata\""},
 }
@@ -206,8 +206,8 @@ type shippingMethodL struct{}
 
 var (
 	shippingMethodAllColumns            = []string{"id", "name", "type", "shipping_zone_id", "minimum_order_weight", "maximum_order_weight", "weight_unit", "maximum_delivery_days", "minimum_delivery_days", "description", "metadata", "private_metadata"}
-	shippingMethodColumnsWithoutDefault = []string{"id"}
-	shippingMethodColumnsWithDefault    = []string{"name", "type", "shipping_zone_id", "minimum_order_weight", "maximum_order_weight", "weight_unit", "maximum_delivery_days", "minimum_delivery_days", "description", "metadata", "private_metadata"}
+	shippingMethodColumnsWithoutDefault = []string{"name", "type", "shipping_zone_id", "weight_unit"}
+	shippingMethodColumnsWithDefault    = []string{"id", "minimum_order_weight", "maximum_order_weight", "maximum_delivery_days", "minimum_delivery_days", "description", "metadata", "private_metadata"}
 	shippingMethodPrimaryKeyColumns     = []string{"id"}
 	shippingMethodGeneratedColumns      = []string{}
 )
@@ -604,9 +604,7 @@ func (shippingMethodL) LoadShippingZone(ctx context.Context, e boil.ContextExecu
 		if object.R == nil {
 			object.R = &shippingMethodR{}
 		}
-		if !queries.IsNil(object.ShippingZoneID) {
-			args = append(args, object.ShippingZoneID)
-		}
+		args = append(args, object.ShippingZoneID)
 
 	} else {
 	Outer:
@@ -616,14 +614,12 @@ func (shippingMethodL) LoadShippingZone(ctx context.Context, e boil.ContextExecu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ShippingZoneID) {
+				if a == obj.ShippingZoneID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ShippingZoneID) {
-				args = append(args, obj.ShippingZoneID)
-			}
+			args = append(args, obj.ShippingZoneID)
 
 		}
 	}
@@ -681,7 +677,7 @@ func (shippingMethodL) LoadShippingZone(ctx context.Context, e boil.ContextExecu
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ShippingZoneID, foreign.ID) {
+			if local.ShippingZoneID == foreign.ID {
 				local.R.ShippingZone = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingZoneR{}
@@ -965,7 +961,7 @@ func (shippingMethodL) LoadShippingMethodChannelListings(ctx context.Context, e 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1023,7 +1019,7 @@ func (shippingMethodL) LoadShippingMethodChannelListings(ctx context.Context, e 
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ShippingMethodID) {
+			if local.ID == foreign.ShippingMethodID {
 				local.R.ShippingMethodChannelListings = append(local.R.ShippingMethodChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingMethodChannelListingR{}
@@ -1079,7 +1075,7 @@ func (shippingMethodL) LoadShippingMethodExcludedProducts(ctx context.Context, e
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1137,7 +1133,7 @@ func (shippingMethodL) LoadShippingMethodExcludedProducts(ctx context.Context, e
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ShippingMethodID) {
+			if local.ID == foreign.ShippingMethodID {
 				local.R.ShippingMethodExcludedProducts = append(local.R.ShippingMethodExcludedProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingMethodExcludedProductR{}
@@ -1193,7 +1189,7 @@ func (shippingMethodL) LoadShippingMethodPostalCodeRules(ctx context.Context, e 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1251,7 +1247,7 @@ func (shippingMethodL) LoadShippingMethodPostalCodeRules(ctx context.Context, e 
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ShippingMethodID) {
+			if local.ID == foreign.ShippingMethodID {
 				local.R.ShippingMethodPostalCodeRules = append(local.R.ShippingMethodPostalCodeRules, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingMethodPostalCodeRuleR{}
@@ -1292,7 +1288,7 @@ func (o *ShippingMethod) SetShippingZone(ctx context.Context, exec boil.ContextE
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ShippingZoneID, related.ID)
+	o.ShippingZoneID = related.ID
 	if o.R == nil {
 		o.R = &shippingMethodR{
 			ShippingZone: related,
@@ -1309,39 +1305,6 @@ func (o *ShippingMethod) SetShippingZone(ctx context.Context, exec boil.ContextE
 		related.R.ShippingMethods = append(related.R.ShippingMethods, o)
 	}
 
-	return nil
-}
-
-// RemoveShippingZone relationship.
-// Sets o.R.ShippingZone to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ShippingMethod) RemoveShippingZone(ctx context.Context, exec boil.ContextExecutor, related *ShippingZone) error {
-	var err error
-
-	queries.SetScanner(&o.ShippingZoneID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_zone_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ShippingZone = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ShippingMethods {
-		if queries.Equal(o.ShippingZoneID, ri.ShippingZoneID) {
-			continue
-		}
-
-		ln := len(related.R.ShippingMethods)
-		if ln > 1 && i < ln-1 {
-			related.R.ShippingMethods[i] = related.R.ShippingMethods[ln-1]
-		}
-		related.R.ShippingMethods = related.R.ShippingMethods[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1607,7 +1570,7 @@ func (o *ShippingMethod) AddShippingMethodChannelListings(ctx context.Context, e
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ShippingMethodID, o.ID)
+			rel.ShippingMethodID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1628,7 +1591,7 @@ func (o *ShippingMethod) AddShippingMethodChannelListings(ctx context.Context, e
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ShippingMethodID, o.ID)
+			rel.ShippingMethodID = o.ID
 		}
 	}
 
@@ -1652,80 +1615,6 @@ func (o *ShippingMethod) AddShippingMethodChannelListings(ctx context.Context, e
 	return nil
 }
 
-// SetShippingMethodChannelListings removes all previously related items of the
-// shipping_method replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ShippingMethod's ShippingMethodChannelListings accordingly.
-// Replaces o.R.ShippingMethodChannelListings with related.
-// Sets related.R.ShippingMethod's ShippingMethodChannelListings accordingly.
-func (o *ShippingMethod) SetShippingMethodChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethodChannelListing) error {
-	query := "update \"shipping_method_channel_listings\" set \"shipping_method_id\" = null where \"shipping_method_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingMethodChannelListings {
-			queries.SetScanner(&rel.ShippingMethodID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ShippingMethod = nil
-		}
-		o.R.ShippingMethodChannelListings = nil
-	}
-
-	return o.AddShippingMethodChannelListings(ctx, exec, insert, related...)
-}
-
-// RemoveShippingMethodChannelListings relationships from objects passed in.
-// Removes related items from R.ShippingMethodChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.ShippingMethod.
-func (o *ShippingMethod) RemoveShippingMethodChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingMethodChannelListing) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ShippingMethodID, nil)
-		if rel.R != nil {
-			rel.R.ShippingMethod = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingMethodChannelListings {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingMethodChannelListings)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingMethodChannelListings[i] = o.R.ShippingMethodChannelListings[ln-1]
-			}
-			o.R.ShippingMethodChannelListings = o.R.ShippingMethodChannelListings[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddShippingMethodExcludedProducts adds the given related objects to the existing relationships
 // of the shipping_method, optionally inserting them as new records.
 // Appends related to o.R.ShippingMethodExcludedProducts.
@@ -1734,7 +1623,7 @@ func (o *ShippingMethod) AddShippingMethodExcludedProducts(ctx context.Context, 
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ShippingMethodID, o.ID)
+			rel.ShippingMethodID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1755,7 +1644,7 @@ func (o *ShippingMethod) AddShippingMethodExcludedProducts(ctx context.Context, 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ShippingMethodID, o.ID)
+			rel.ShippingMethodID = o.ID
 		}
 	}
 
@@ -1779,80 +1668,6 @@ func (o *ShippingMethod) AddShippingMethodExcludedProducts(ctx context.Context, 
 	return nil
 }
 
-// SetShippingMethodExcludedProducts removes all previously related items of the
-// shipping_method replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ShippingMethod's ShippingMethodExcludedProducts accordingly.
-// Replaces o.R.ShippingMethodExcludedProducts with related.
-// Sets related.R.ShippingMethod's ShippingMethodExcludedProducts accordingly.
-func (o *ShippingMethod) SetShippingMethodExcludedProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethodExcludedProduct) error {
-	query := "update \"shipping_method_excluded_products\" set \"shipping_method_id\" = null where \"shipping_method_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingMethodExcludedProducts {
-			queries.SetScanner(&rel.ShippingMethodID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ShippingMethod = nil
-		}
-		o.R.ShippingMethodExcludedProducts = nil
-	}
-
-	return o.AddShippingMethodExcludedProducts(ctx, exec, insert, related...)
-}
-
-// RemoveShippingMethodExcludedProducts relationships from objects passed in.
-// Removes related items from R.ShippingMethodExcludedProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.ShippingMethod.
-func (o *ShippingMethod) RemoveShippingMethodExcludedProducts(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingMethodExcludedProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ShippingMethodID, nil)
-		if rel.R != nil {
-			rel.R.ShippingMethod = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingMethodExcludedProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingMethodExcludedProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingMethodExcludedProducts[i] = o.R.ShippingMethodExcludedProducts[ln-1]
-			}
-			o.R.ShippingMethodExcludedProducts = o.R.ShippingMethodExcludedProducts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddShippingMethodPostalCodeRules adds the given related objects to the existing relationships
 // of the shipping_method, optionally inserting them as new records.
 // Appends related to o.R.ShippingMethodPostalCodeRules.
@@ -1861,7 +1676,7 @@ func (o *ShippingMethod) AddShippingMethodPostalCodeRules(ctx context.Context, e
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ShippingMethodID, o.ID)
+			rel.ShippingMethodID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1882,7 +1697,7 @@ func (o *ShippingMethod) AddShippingMethodPostalCodeRules(ctx context.Context, e
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ShippingMethodID, o.ID)
+			rel.ShippingMethodID = o.ID
 		}
 	}
 
@@ -1903,80 +1718,6 @@ func (o *ShippingMethod) AddShippingMethodPostalCodeRules(ctx context.Context, e
 			rel.R.ShippingMethod = o
 		}
 	}
-	return nil
-}
-
-// SetShippingMethodPostalCodeRules removes all previously related items of the
-// shipping_method replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ShippingMethod's ShippingMethodPostalCodeRules accordingly.
-// Replaces o.R.ShippingMethodPostalCodeRules with related.
-// Sets related.R.ShippingMethod's ShippingMethodPostalCodeRules accordingly.
-func (o *ShippingMethod) SetShippingMethodPostalCodeRules(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethodPostalCodeRule) error {
-	query := "update \"shipping_method_postal_code_rules\" set \"shipping_method_id\" = null where \"shipping_method_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingMethodPostalCodeRules {
-			queries.SetScanner(&rel.ShippingMethodID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ShippingMethod = nil
-		}
-		o.R.ShippingMethodPostalCodeRules = nil
-	}
-
-	return o.AddShippingMethodPostalCodeRules(ctx, exec, insert, related...)
-}
-
-// RemoveShippingMethodPostalCodeRules relationships from objects passed in.
-// Removes related items from R.ShippingMethodPostalCodeRules (uses pointer comparison, removal does not keep order)
-// Sets related.R.ShippingMethod.
-func (o *ShippingMethod) RemoveShippingMethodPostalCodeRules(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingMethodPostalCodeRule) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ShippingMethodID, nil)
-		if rel.R != nil {
-			rel.R.ShippingMethod = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingMethodPostalCodeRules {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingMethodPostalCodeRules)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingMethodPostalCodeRules[i] = o.R.ShippingMethodPostalCodeRules[ln-1]
-			}
-			o.R.ShippingMethodPostalCodeRules = o.R.ShippingMethodPostalCodeRules[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2118,10 +1859,6 @@ func (o *ShippingMethod) Update(ctx context.Context, exec boil.ContextExecutor, 
 			shippingMethodAllColumns,
 			shippingMethodPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shipping_methods, could not build whitelist")
 		}

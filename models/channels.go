@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +23,12 @@ import (
 
 // Channel is an object representing the database table.
 type Channel struct {
-	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	IsActive       null.Bool   `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
-	Slug           null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Currency       null.String `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	DefaultCountry null.String `boil:"default_country" json:"default_country,omitempty" toml:"default_country" yaml:"default_country,omitempty"`
+	ID             string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name           string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	IsActive       bool   `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
+	Slug           string `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Currency       string `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	DefaultCountry string `boil:"default_country" json:"default_country" toml:"default_country" yaml:"default_country"`
 
 	R *channelR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L channelL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -71,23 +70,22 @@ var ChannelTableColumns = struct {
 
 var ChannelWhere = struct {
 	ID             whereHelperstring
-	Name           whereHelpernull_String
-	IsActive       whereHelpernull_Bool
-	Slug           whereHelpernull_String
-	Currency       whereHelpernull_String
-	DefaultCountry whereHelpernull_String
+	Name           whereHelperstring
+	IsActive       whereHelperbool
+	Slug           whereHelperstring
+	Currency       whereHelperstring
+	DefaultCountry whereHelperstring
 }{
 	ID:             whereHelperstring{field: "\"channels\".\"id\""},
-	Name:           whereHelpernull_String{field: "\"channels\".\"name\""},
-	IsActive:       whereHelpernull_Bool{field: "\"channels\".\"is_active\""},
-	Slug:           whereHelpernull_String{field: "\"channels\".\"slug\""},
-	Currency:       whereHelpernull_String{field: "\"channels\".\"currency\""},
-	DefaultCountry: whereHelpernull_String{field: "\"channels\".\"default_country\""},
+	Name:           whereHelperstring{field: "\"channels\".\"name\""},
+	IsActive:       whereHelperbool{field: "\"channels\".\"is_active\""},
+	Slug:           whereHelperstring{field: "\"channels\".\"slug\""},
+	Currency:       whereHelperstring{field: "\"channels\".\"currency\""},
+	DefaultCountry: whereHelperstring{field: "\"channels\".\"default_country\""},
 }
 
 // ChannelRels is where relationship names are stored.
 var ChannelRels = struct {
-	ChannelShops                  string
 	Checkouts                     string
 	CollectionChannelListings     string
 	Orders                        string
@@ -98,7 +96,6 @@ var ChannelRels = struct {
 	ShippingZoneChannels          string
 	VoucherChannelListings        string
 }{
-	ChannelShops:                  "ChannelShops",
 	Checkouts:                     "Checkouts",
 	CollectionChannelListings:     "CollectionChannelListings",
 	Orders:                        "Orders",
@@ -112,7 +109,6 @@ var ChannelRels = struct {
 
 // channelR is where relationships are stored.
 type channelR struct {
-	ChannelShops                  ChannelShopSlice                  `boil:"ChannelShops" json:"ChannelShops" toml:"ChannelShops" yaml:"ChannelShops"`
 	Checkouts                     CheckoutSlice                     `boil:"Checkouts" json:"Checkouts" toml:"Checkouts" yaml:"Checkouts"`
 	CollectionChannelListings     CollectionChannelListingSlice     `boil:"CollectionChannelListings" json:"CollectionChannelListings" toml:"CollectionChannelListings" yaml:"CollectionChannelListings"`
 	Orders                        OrderSlice                        `boil:"Orders" json:"Orders" toml:"Orders" yaml:"Orders"`
@@ -127,13 +123,6 @@ type channelR struct {
 // NewStruct creates a new relationship struct
 func (*channelR) NewStruct() *channelR {
 	return &channelR{}
-}
-
-func (r *channelR) GetChannelShops() ChannelShopSlice {
-	if r == nil {
-		return nil
-	}
-	return r.ChannelShops
 }
 
 func (r *channelR) GetCheckouts() CheckoutSlice {
@@ -204,8 +193,8 @@ type channelL struct{}
 
 var (
 	channelAllColumns            = []string{"id", "name", "is_active", "slug", "currency", "default_country"}
-	channelColumnsWithoutDefault = []string{"id"}
-	channelColumnsWithDefault    = []string{"name", "is_active", "slug", "currency", "default_country"}
+	channelColumnsWithoutDefault = []string{"name", "is_active", "slug", "currency", "default_country"}
+	channelColumnsWithDefault    = []string{"id"}
 	channelPrimaryKeyColumns     = []string{"id"}
 	channelGeneratedColumns      = []string{}
 )
@@ -488,20 +477,6 @@ func (q channelQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// ChannelShops retrieves all the channel_shop's ChannelShops with an executor.
-func (o *Channel) ChannelShops(mods ...qm.QueryMod) channelShopQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"channel_shops\".\"channel_id\"=?", o.ID),
-	)
-
-	return ChannelShops(queryMods...)
-}
-
 // Checkouts retrieves all the checkout's Checkouts with an executor.
 func (o *Channel) Checkouts(mods ...qm.QueryMod) checkoutQuery {
 	var queryMods []qm.QueryMod
@@ -628,120 +603,6 @@ func (o *Channel) VoucherChannelListings(mods ...qm.QueryMod) voucherChannelList
 	return VoucherChannelListings(queryMods...)
 }
 
-// LoadChannelShops allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadChannelShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
-	var slice []*Channel
-	var object *Channel
-
-	if singular {
-		var ok bool
-		object, ok = maybeChannel.(*Channel)
-		if !ok {
-			object = new(Channel)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeChannel)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeChannel))
-			}
-		}
-	} else {
-		s, ok := maybeChannel.(*[]*Channel)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeChannel)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeChannel))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &channelR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &channelR{}
-			}
-
-			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`channel_shops`),
-		qm.WhereIn(`channel_shops.channel_id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load channel_shops")
-	}
-
-	var resultSlice []*ChannelShop
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice channel_shops")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on channel_shops")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channel_shops")
-	}
-
-	if len(channelShopAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.ChannelShops = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &channelShopR{}
-			}
-			foreign.R.Channel = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChannelID) {
-				local.R.ChannelShops = append(local.R.ChannelShops, foreign)
-				if foreign.R == nil {
-					foreign.R = &channelShopR{}
-				}
-				foreign.R.Channel = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
@@ -784,7 +645,7 @@ func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -842,7 +703,7 @@ func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChannelID) {
+			if local.ID == foreign.ChannelID {
 				local.R.Checkouts = append(local.R.Checkouts, foreign)
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
@@ -1012,7 +873,7 @@ func (channelL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1070,7 +931,7 @@ func (channelL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChannelID) {
+			if local.ID == foreign.ChannelID {
 				local.R.Orders = append(local.R.Orders, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderR{}
@@ -1126,7 +987,7 @@ func (channelL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1184,7 +1045,7 @@ func (channelL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChannelID) {
+			if local.ID == foreign.ChannelID {
 				local.R.ProductChannelListings = append(local.R.ProductChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &productChannelListingR{}
@@ -1468,7 +1329,7 @@ func (channelL) LoadShippingMethodChannelListings(ctx context.Context, e boil.Co
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1526,7 +1387,7 @@ func (channelL) LoadShippingMethodChannelListings(ctx context.Context, e boil.Co
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChannelID) {
+			if local.ID == foreign.ChannelID {
 				local.R.ShippingMethodChannelListings = append(local.R.ShippingMethodChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingMethodChannelListingR{}
@@ -1582,7 +1443,7 @@ func (channelL) LoadShippingZoneChannels(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1640,7 +1501,7 @@ func (channelL) LoadShippingZoneChannels(ctx context.Context, e boil.ContextExec
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChannelID) {
+			if local.ID == foreign.ChannelID {
 				local.R.ShippingZoneChannels = append(local.R.ShippingZoneChannels, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingZoneChannelR{}
@@ -1768,133 +1629,6 @@ func (channelL) LoadVoucherChannelListings(ctx context.Context, e boil.ContextEx
 	return nil
 }
 
-// AddChannelShops adds the given related objects to the existing relationships
-// of the channel, optionally inserting them as new records.
-// Appends related to o.R.ChannelShops.
-// Sets related.R.Channel appropriately.
-func (o *Channel) AddChannelShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ChannelShop) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			queries.Assign(&rel.ChannelID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"channel_shops\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"channel_id"}),
-				strmangle.WhereClause("\"", "\"", 2, channelShopPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.ChannelID, o.ID)
-		}
-	}
-
-	if o.R == nil {
-		o.R = &channelR{
-			ChannelShops: related,
-		}
-	} else {
-		o.R.ChannelShops = append(o.R.ChannelShops, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &channelShopR{
-				Channel: o,
-			}
-		} else {
-			rel.R.Channel = o
-		}
-	}
-	return nil
-}
-
-// SetChannelShops removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ChannelShops accordingly.
-// Replaces o.R.ChannelShops with related.
-// Sets related.R.Channel's ChannelShops accordingly.
-func (o *Channel) SetChannelShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ChannelShop) error {
-	query := "update \"channel_shops\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ChannelShops {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-		o.R.ChannelShops = nil
-	}
-
-	return o.AddChannelShops(ctx, exec, insert, related...)
-}
-
-// RemoveChannelShops relationships from objects passed in.
-// Removes related items from R.ChannelShops (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveChannelShops(ctx context.Context, exec boil.ContextExecutor, related ...*ChannelShop) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ChannelShops {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ChannelShops)
-			if ln > 1 && i < ln-1 {
-				o.R.ChannelShops[i] = o.R.ChannelShops[ln-1]
-			}
-			o.R.ChannelShops = o.R.ChannelShops[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddCheckouts adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.Checkouts.
@@ -1903,7 +1637,7 @@ func (o *Channel) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, i
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1924,7 +1658,7 @@ func (o *Channel) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, i
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 		}
 	}
 
@@ -1945,80 +1679,6 @@ func (o *Channel) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, i
 			rel.R.Channel = o
 		}
 	}
-	return nil
-}
-
-// SetCheckouts removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Checkouts accordingly.
-// Replaces o.R.Checkouts with related.
-// Sets related.R.Channel's Checkouts accordingly.
-func (o *Channel) SetCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
-	query := "update \"checkouts\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Checkouts {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-		o.R.Checkouts = nil
-	}
-
-	return o.AddCheckouts(ctx, exec, insert, related...)
-}
-
-// RemoveCheckouts relationships from objects passed in.
-// Removes related items from R.Checkouts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Checkouts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Checkouts)
-			if ln > 1 && i < ln-1 {
-				o.R.Checkouts[i] = o.R.Checkouts[ln-1]
-			}
-			o.R.Checkouts = o.R.Checkouts[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2157,7 +1817,7 @@ func (o *Channel) AddOrders(ctx context.Context, exec boil.ContextExecutor, inse
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2178,7 +1838,7 @@ func (o *Channel) AddOrders(ctx context.Context, exec boil.ContextExecutor, inse
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 		}
 	}
 
@@ -2202,80 +1862,6 @@ func (o *Channel) AddOrders(ctx context.Context, exec boil.ContextExecutor, inse
 	return nil
 }
 
-// SetOrders removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's Orders accordingly.
-// Replaces o.R.Orders with related.
-// Sets related.R.Channel's Orders accordingly.
-func (o *Channel) SetOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
-	query := "update \"orders\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Orders {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-		o.R.Orders = nil
-	}
-
-	return o.AddOrders(ctx, exec, insert, related...)
-}
-
-// RemoveOrders relationships from objects passed in.
-// Removes related items from R.Orders (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Orders {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Orders)
-			if ln > 1 && i < ln-1 {
-				o.R.Orders[i] = o.R.Orders[ln-1]
-			}
-			o.R.Orders = o.R.Orders[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddProductChannelListings adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ProductChannelListings.
@@ -2284,7 +1870,7 @@ func (o *Channel) AddProductChannelListings(ctx context.Context, exec boil.Conte
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2305,7 +1891,7 @@ func (o *Channel) AddProductChannelListings(ctx context.Context, exec boil.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 		}
 	}
 
@@ -2326,80 +1912,6 @@ func (o *Channel) AddProductChannelListings(ctx context.Context, exec boil.Conte
 			rel.R.Channel = o
 		}
 	}
-	return nil
-}
-
-// SetProductChannelListings removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ProductChannelListings accordingly.
-// Replaces o.R.ProductChannelListings with related.
-// Sets related.R.Channel's ProductChannelListings accordingly.
-func (o *Channel) SetProductChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductChannelListing) error {
-	query := "update \"product_channel_listings\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductChannelListings {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-		o.R.ProductChannelListings = nil
-	}
-
-	return o.AddProductChannelListings(ctx, exec, insert, related...)
-}
-
-// RemoveProductChannelListings relationships from objects passed in.
-// Removes related items from R.ProductChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveProductChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*ProductChannelListing) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductChannelListings {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductChannelListings)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductChannelListings[i] = o.R.ProductChannelListings[ln-1]
-			}
-			o.R.ProductChannelListings = o.R.ProductChannelListings[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2517,7 +2029,7 @@ func (o *Channel) AddShippingMethodChannelListings(ctx context.Context, exec boi
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2538,7 +2050,7 @@ func (o *Channel) AddShippingMethodChannelListings(ctx context.Context, exec boi
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 		}
 	}
 
@@ -2562,80 +2074,6 @@ func (o *Channel) AddShippingMethodChannelListings(ctx context.Context, exec boi
 	return nil
 }
 
-// SetShippingMethodChannelListings removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ShippingMethodChannelListings accordingly.
-// Replaces o.R.ShippingMethodChannelListings with related.
-// Sets related.R.Channel's ShippingMethodChannelListings accordingly.
-func (o *Channel) SetShippingMethodChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethodChannelListing) error {
-	query := "update \"shipping_method_channel_listings\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingMethodChannelListings {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-		o.R.ShippingMethodChannelListings = nil
-	}
-
-	return o.AddShippingMethodChannelListings(ctx, exec, insert, related...)
-}
-
-// RemoveShippingMethodChannelListings relationships from objects passed in.
-// Removes related items from R.ShippingMethodChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveShippingMethodChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingMethodChannelListing) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingMethodChannelListings {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingMethodChannelListings)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingMethodChannelListings[i] = o.R.ShippingMethodChannelListings[ln-1]
-			}
-			o.R.ShippingMethodChannelListings = o.R.ShippingMethodChannelListings[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddShippingZoneChannels adds the given related objects to the existing relationships
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ShippingZoneChannels.
@@ -2644,7 +2082,7 @@ func (o *Channel) AddShippingZoneChannels(ctx context.Context, exec boil.Context
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2665,7 +2103,7 @@ func (o *Channel) AddShippingZoneChannels(ctx context.Context, exec boil.Context
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ChannelID, o.ID)
+			rel.ChannelID = o.ID
 		}
 	}
 
@@ -2686,80 +2124,6 @@ func (o *Channel) AddShippingZoneChannels(ctx context.Context, exec boil.Context
 			rel.R.Channel = o
 		}
 	}
-	return nil
-}
-
-// SetShippingZoneChannels removes all previously related items of the
-// channel replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Channel's ShippingZoneChannels accordingly.
-// Replaces o.R.ShippingZoneChannels with related.
-// Sets related.R.Channel's ShippingZoneChannels accordingly.
-func (o *Channel) SetShippingZoneChannels(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingZoneChannel) error {
-	query := "update \"shipping_zone_channels\" set \"channel_id\" = null where \"channel_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingZoneChannels {
-			queries.SetScanner(&rel.ChannelID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Channel = nil
-		}
-		o.R.ShippingZoneChannels = nil
-	}
-
-	return o.AddShippingZoneChannels(ctx, exec, insert, related...)
-}
-
-// RemoveShippingZoneChannels relationships from objects passed in.
-// Removes related items from R.ShippingZoneChannels (uses pointer comparison, removal does not keep order)
-// Sets related.R.Channel.
-func (o *Channel) RemoveShippingZoneChannels(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingZoneChannel) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChannelID, nil)
-		if rel.R != nil {
-			rel.R.Channel = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingZoneChannels {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingZoneChannels)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingZoneChannels[i] = o.R.ShippingZoneChannels[ln-1]
-			}
-			o.R.ShippingZoneChannels = o.R.ShippingZoneChannels[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2954,10 +2318,6 @@ func (o *Channel) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			channelAllColumns,
 			channelPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update channels, could not build whitelist")
 		}

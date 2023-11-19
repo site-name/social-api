@@ -25,10 +25,10 @@ import (
 // DigitalContentURL is an object representing the database table.
 type DigitalContentURL struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Token       null.String `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	ContentID   null.String `boil:"content_id" json:"content_id,omitempty" toml:"content_id" yaml:"content_id,omitempty"`
-	CreateAt    null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	DownloadNum null.Int    `boil:"download_num" json:"download_num,omitempty" toml:"download_num" yaml:"download_num,omitempty"`
+	Token       string      `boil:"token" json:"token" toml:"token" yaml:"token"`
+	ContentID   string      `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
+	CreatedAt   int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	DownloadNum int         `boil:"download_num" json:"download_num" toml:"download_num" yaml:"download_num"`
 	LineID      null.String `boil:"line_id" json:"line_id,omitempty" toml:"line_id" yaml:"line_id,omitempty"`
 
 	R *digitalContentURLR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,14 +39,14 @@ var DigitalContentURLColumns = struct {
 	ID          string
 	Token       string
 	ContentID   string
-	CreateAt    string
+	CreatedAt   string
 	DownloadNum string
 	LineID      string
 }{
 	ID:          "id",
 	Token:       "token",
 	ContentID:   "content_id",
-	CreateAt:    "create_at",
+	CreatedAt:   "created_at",
 	DownloadNum: "download_num",
 	LineID:      "line_id",
 }
@@ -55,14 +55,14 @@ var DigitalContentURLTableColumns = struct {
 	ID          string
 	Token       string
 	ContentID   string
-	CreateAt    string
+	CreatedAt   string
 	DownloadNum string
 	LineID      string
 }{
 	ID:          "digital_content_urls.id",
 	Token:       "digital_content_urls.token",
 	ContentID:   "digital_content_urls.content_id",
-	CreateAt:    "digital_content_urls.create_at",
+	CreatedAt:   "digital_content_urls.created_at",
 	DownloadNum: "digital_content_urls.download_num",
 	LineID:      "digital_content_urls.line_id",
 }
@@ -71,17 +71,17 @@ var DigitalContentURLTableColumns = struct {
 
 var DigitalContentURLWhere = struct {
 	ID          whereHelperstring
-	Token       whereHelpernull_String
-	ContentID   whereHelpernull_String
-	CreateAt    whereHelpernull_Int64
-	DownloadNum whereHelpernull_Int
+	Token       whereHelperstring
+	ContentID   whereHelperstring
+	CreatedAt   whereHelperint64
+	DownloadNum whereHelperint
 	LineID      whereHelpernull_String
 }{
 	ID:          whereHelperstring{field: "\"digital_content_urls\".\"id\""},
-	Token:       whereHelpernull_String{field: "\"digital_content_urls\".\"token\""},
-	ContentID:   whereHelpernull_String{field: "\"digital_content_urls\".\"content_id\""},
-	CreateAt:    whereHelpernull_Int64{field: "\"digital_content_urls\".\"create_at\""},
-	DownloadNum: whereHelpernull_Int{field: "\"digital_content_urls\".\"download_num\""},
+	Token:       whereHelperstring{field: "\"digital_content_urls\".\"token\""},
+	ContentID:   whereHelperstring{field: "\"digital_content_urls\".\"content_id\""},
+	CreatedAt:   whereHelperint64{field: "\"digital_content_urls\".\"created_at\""},
+	DownloadNum: whereHelperint{field: "\"digital_content_urls\".\"download_num\""},
 	LineID:      whereHelpernull_String{field: "\"digital_content_urls\".\"line_id\""},
 }
 
@@ -123,9 +123,9 @@ func (r *digitalContentURLR) GetLine() *OrderLine {
 type digitalContentURLL struct{}
 
 var (
-	digitalContentURLAllColumns            = []string{"id", "token", "content_id", "create_at", "download_num", "line_id"}
-	digitalContentURLColumnsWithoutDefault = []string{"id"}
-	digitalContentURLColumnsWithDefault    = []string{"token", "content_id", "create_at", "download_num", "line_id"}
+	digitalContentURLAllColumns            = []string{"id", "token", "content_id", "created_at", "download_num", "line_id"}
+	digitalContentURLColumnsWithoutDefault = []string{"token", "content_id", "created_at", "download_num"}
+	digitalContentURLColumnsWithDefault    = []string{"id", "line_id"}
 	digitalContentURLPrimaryKeyColumns     = []string{"id"}
 	digitalContentURLGeneratedColumns      = []string{}
 )
@@ -463,9 +463,7 @@ func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &digitalContentURLR{}
 		}
-		if !queries.IsNil(object.ContentID) {
-			args = append(args, object.ContentID)
-		}
+		args = append(args, object.ContentID)
 
 	} else {
 	Outer:
@@ -475,14 +473,12 @@ func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ContentID) {
+				if a == obj.ContentID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ContentID) {
-				args = append(args, obj.ContentID)
-			}
+			args = append(args, obj.ContentID)
 
 		}
 	}
@@ -540,7 +536,7 @@ func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ContentID, foreign.ID) {
+			if local.ContentID == foreign.ID {
 				local.R.Content = foreign
 				if foreign.R == nil {
 					foreign.R = &digitalContentR{}
@@ -705,7 +701,7 @@ func (o *DigitalContentURL) SetContent(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ContentID, related.ID)
+	o.ContentID = related.ID
 	if o.R == nil {
 		o.R = &digitalContentURLR{
 			Content: related,
@@ -722,39 +718,6 @@ func (o *DigitalContentURL) SetContent(ctx context.Context, exec boil.ContextExe
 		related.R.ContentDigitalContentUrls = append(related.R.ContentDigitalContentUrls, o)
 	}
 
-	return nil
-}
-
-// RemoveContent relationship.
-// Sets o.R.Content to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *DigitalContentURL) RemoveContent(ctx context.Context, exec boil.ContextExecutor, related *DigitalContent) error {
-	var err error
-
-	queries.SetScanner(&o.ContentID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("content_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Content = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ContentDigitalContentUrls {
-		if queries.Equal(o.ContentID, ri.ContentID) {
-			continue
-		}
-
-		ln := len(related.R.ContentDigitalContentUrls)
-		if ln > 1 && i < ln-1 {
-			related.R.ContentDigitalContentUrls[i] = related.R.ContentDigitalContentUrls[ln-1]
-		}
-		related.R.ContentDigitalContentUrls = related.R.ContentDigitalContentUrls[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -965,10 +928,6 @@ func (o *DigitalContentURL) Update(ctx context.Context, exec boil.ContextExecuto
 			digitalContentURLAllColumns,
 			digitalContentURLPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update digital_content_urls, could not build whitelist")
 		}

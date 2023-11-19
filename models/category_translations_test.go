@@ -568,7 +568,7 @@ func testCategoryTranslationsSelect(t *testing.T) {
 }
 
 var (
-	categoryTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `CategoryID`: `character varying`, `Name`: `character varying`, `Description`: `text`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
+	categoryTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `CategoryID`: `uuid`, `Name`: `character varying`, `Description`: `text`, `SeoTitle`: `character varying`, `SeoDescription`: `character varying`}
 	_                          = bytes.MinRead
 )
 

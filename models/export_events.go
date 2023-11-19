@@ -25,10 +25,10 @@ import (
 // ExportEvent is an object representing the database table.
 type ExportEvent struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Date         null.Int64  `boil:"date" json:"date,omitempty" toml:"date" yaml:"date,omitempty"`
-	Type         null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
+	Date         int64       `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Type         string      `boil:"type" json:"type" toml:"type" yaml:"type"`
 	Parameters   null.String `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
-	ExportFileID null.String `boil:"export_file_id" json:"export_file_id,omitempty" toml:"export_file_id" yaml:"export_file_id,omitempty"`
+	ExportFileID string      `boil:"export_file_id" json:"export_file_id" toml:"export_file_id" yaml:"export_file_id"`
 	UserID       null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 
 	R *exportEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -71,17 +71,17 @@ var ExportEventTableColumns = struct {
 
 var ExportEventWhere = struct {
 	ID           whereHelperstring
-	Date         whereHelpernull_Int64
-	Type         whereHelpernull_String
+	Date         whereHelperint64
+	Type         whereHelperstring
 	Parameters   whereHelpernull_String
-	ExportFileID whereHelpernull_String
+	ExportFileID whereHelperstring
 	UserID       whereHelpernull_String
 }{
 	ID:           whereHelperstring{field: "\"export_events\".\"id\""},
-	Date:         whereHelpernull_Int64{field: "\"export_events\".\"date\""},
-	Type:         whereHelpernull_String{field: "\"export_events\".\"type\""},
+	Date:         whereHelperint64{field: "\"export_events\".\"date\""},
+	Type:         whereHelperstring{field: "\"export_events\".\"type\""},
 	Parameters:   whereHelpernull_String{field: "\"export_events\".\"parameters\""},
-	ExportFileID: whereHelpernull_String{field: "\"export_events\".\"export_file_id\""},
+	ExportFileID: whereHelperstring{field: "\"export_events\".\"export_file_id\""},
 	UserID:       whereHelpernull_String{field: "\"export_events\".\"user_id\""},
 }
 
@@ -124,8 +124,8 @@ type exportEventL struct{}
 
 var (
 	exportEventAllColumns            = []string{"id", "date", "type", "parameters", "export_file_id", "user_id"}
-	exportEventColumnsWithoutDefault = []string{"id"}
-	exportEventColumnsWithDefault    = []string{"date", "type", "parameters", "export_file_id", "user_id"}
+	exportEventColumnsWithoutDefault = []string{"date", "type", "export_file_id"}
+	exportEventColumnsWithDefault    = []string{"id", "parameters", "user_id"}
 	exportEventPrimaryKeyColumns     = []string{"id"}
 	exportEventGeneratedColumns      = []string{}
 )
@@ -463,9 +463,7 @@ func (exportEventL) LoadExportFile(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &exportEventR{}
 		}
-		if !queries.IsNil(object.ExportFileID) {
-			args = append(args, object.ExportFileID)
-		}
+		args = append(args, object.ExportFileID)
 
 	} else {
 	Outer:
@@ -475,14 +473,12 @@ func (exportEventL) LoadExportFile(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ExportFileID) {
+				if a == obj.ExportFileID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ExportFileID) {
-				args = append(args, obj.ExportFileID)
-			}
+			args = append(args, obj.ExportFileID)
 
 		}
 	}
@@ -540,7 +536,7 @@ func (exportEventL) LoadExportFile(ctx context.Context, e boil.ContextExecutor, 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ExportFileID, foreign.ID) {
+			if local.ExportFileID == foreign.ID {
 				local.R.ExportFile = foreign
 				if foreign.R == nil {
 					foreign.R = &exportFileR{}
@@ -705,7 +701,7 @@ func (o *ExportEvent) SetExportFile(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ExportFileID, related.ID)
+	o.ExportFileID = related.ID
 	if o.R == nil {
 		o.R = &exportEventR{
 			ExportFile: related,
@@ -722,39 +718,6 @@ func (o *ExportEvent) SetExportFile(ctx context.Context, exec boil.ContextExecut
 		related.R.ExportEvents = append(related.R.ExportEvents, o)
 	}
 
-	return nil
-}
-
-// RemoveExportFile relationship.
-// Sets o.R.ExportFile to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ExportEvent) RemoveExportFile(ctx context.Context, exec boil.ContextExecutor, related *ExportFile) error {
-	var err error
-
-	queries.SetScanner(&o.ExportFileID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("export_file_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ExportFile = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.ExportEvents {
-		if queries.Equal(o.ExportFileID, ri.ExportFileID) {
-			continue
-		}
-
-		ln := len(related.R.ExportEvents)
-		if ln > 1 && i < ln-1 {
-			related.R.ExportEvents[i] = related.R.ExportEvents[ln-1]
-		}
-		related.R.ExportEvents = related.R.ExportEvents[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -976,10 +939,6 @@ func (o *ExportEvent) Update(ctx context.Context, exec boil.ContextExecutor, col
 			exportEventAllColumns,
 			exportEventPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update export_events, could not build whitelist")
 		}

@@ -24,13 +24,13 @@ import (
 
 // PluginConfiguration is an object representing the database table.
 type PluginConfiguration struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Identifier    null.String `boil:"identifier" json:"identifier,omitempty" toml:"identifier" yaml:"identifier,omitempty"`
-	Name          null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	ChannelID     null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
-	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Active        null.Bool   `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
-	Configuration null.String `boil:"configuration" json:"configuration,omitempty" toml:"configuration" yaml:"configuration,omitempty"`
+	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Identifier    string    `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
+	Name          string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ChannelID     string    `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	Description   string    `boil:"description" json:"description" toml:"description" yaml:"description"`
+	Active        bool      `boil:"active" json:"active" toml:"active" yaml:"active"`
+	Configuration null.JSON `boil:"configuration" json:"configuration,omitempty" toml:"configuration" yaml:"configuration,omitempty"`
 
 	R *pluginConfigurationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pluginConfigurationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -76,20 +76,20 @@ var PluginConfigurationTableColumns = struct {
 
 var PluginConfigurationWhere = struct {
 	ID            whereHelperstring
-	Identifier    whereHelpernull_String
-	Name          whereHelpernull_String
-	ChannelID     whereHelpernull_String
-	Description   whereHelpernull_String
-	Active        whereHelpernull_Bool
-	Configuration whereHelpernull_String
+	Identifier    whereHelperstring
+	Name          whereHelperstring
+	ChannelID     whereHelperstring
+	Description   whereHelperstring
+	Active        whereHelperbool
+	Configuration whereHelpernull_JSON
 }{
 	ID:            whereHelperstring{field: "\"plugin_configurations\".\"id\""},
-	Identifier:    whereHelpernull_String{field: "\"plugin_configurations\".\"identifier\""},
-	Name:          whereHelpernull_String{field: "\"plugin_configurations\".\"name\""},
-	ChannelID:     whereHelpernull_String{field: "\"plugin_configurations\".\"channel_id\""},
-	Description:   whereHelpernull_String{field: "\"plugin_configurations\".\"description\""},
-	Active:        whereHelpernull_Bool{field: "\"plugin_configurations\".\"active\""},
-	Configuration: whereHelpernull_String{field: "\"plugin_configurations\".\"configuration\""},
+	Identifier:    whereHelperstring{field: "\"plugin_configurations\".\"identifier\""},
+	Name:          whereHelperstring{field: "\"plugin_configurations\".\"name\""},
+	ChannelID:     whereHelperstring{field: "\"plugin_configurations\".\"channel_id\""},
+	Description:   whereHelperstring{field: "\"plugin_configurations\".\"description\""},
+	Active:        whereHelperbool{field: "\"plugin_configurations\".\"active\""},
+	Configuration: whereHelpernull_JSON{field: "\"plugin_configurations\".\"configuration\""},
 }
 
 // PluginConfigurationRels is where relationship names are stored.
@@ -110,8 +110,8 @@ type pluginConfigurationL struct{}
 
 var (
 	pluginConfigurationAllColumns            = []string{"id", "identifier", "name", "channel_id", "description", "active", "configuration"}
-	pluginConfigurationColumnsWithoutDefault = []string{"id"}
-	pluginConfigurationColumnsWithDefault    = []string{"identifier", "name", "channel_id", "description", "active", "configuration"}
+	pluginConfigurationColumnsWithoutDefault = []string{"identifier", "name", "channel_id", "description", "active"}
+	pluginConfigurationColumnsWithDefault    = []string{"id", "configuration"}
 	pluginConfigurationPrimaryKeyColumns     = []string{"id"}
 	pluginConfigurationGeneratedColumns      = []string{}
 )
@@ -532,10 +532,6 @@ func (o *PluginConfiguration) Update(ctx context.Context, exec boil.ContextExecu
 			pluginConfigurationAllColumns,
 			pluginConfigurationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update plugin_configurations, could not build whitelist")
 		}

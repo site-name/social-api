@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS product_variant_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  language_code character varying(5),
-  product_variant_id uuid,
-  name character varying(255)
+  language_code character varying(5) NOT NULL,
+  product_variant_id uuid NOT NULL,
+  name character varying(255) NOT NULL
 );
 
 ALTER TABLE ONLY product_variant_translations

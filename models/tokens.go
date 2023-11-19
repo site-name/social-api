@@ -24,51 +24,51 @@ import (
 
 // Token is an object representing the database table.
 type Token struct {
-	Token    string      `boil:"token" json:"token" toml:"token" yaml:"token"`
-	CreateAt null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Type     null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Extra    null.String `boil:"extra" json:"extra,omitempty" toml:"extra" yaml:"extra,omitempty"`
+	Token     string      `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CreatedAt int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Type      string      `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Extra     null.String `boil:"extra" json:"extra,omitempty" toml:"extra" yaml:"extra,omitempty"`
 
 	R *tokenR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tokenL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var TokenColumns = struct {
-	Token    string
-	CreateAt string
-	Type     string
-	Extra    string
+	Token     string
+	CreatedAt string
+	Type      string
+	Extra     string
 }{
-	Token:    "token",
-	CreateAt: "create_at",
-	Type:     "type",
-	Extra:    "extra",
+	Token:     "token",
+	CreatedAt: "created_at",
+	Type:      "type",
+	Extra:     "extra",
 }
 
 var TokenTableColumns = struct {
-	Token    string
-	CreateAt string
-	Type     string
-	Extra    string
+	Token     string
+	CreatedAt string
+	Type      string
+	Extra     string
 }{
-	Token:    "tokens.token",
-	CreateAt: "tokens.create_at",
-	Type:     "tokens.type",
-	Extra:    "tokens.extra",
+	Token:     "tokens.token",
+	CreatedAt: "tokens.created_at",
+	Type:      "tokens.type",
+	Extra:     "tokens.extra",
 }
 
 // Generated where
 
 var TokenWhere = struct {
-	Token    whereHelperstring
-	CreateAt whereHelpernull_Int64
-	Type     whereHelpernull_String
-	Extra    whereHelpernull_String
+	Token     whereHelperstring
+	CreatedAt whereHelperint64
+	Type      whereHelperstring
+	Extra     whereHelpernull_String
 }{
-	Token:    whereHelperstring{field: "\"tokens\".\"token\""},
-	CreateAt: whereHelpernull_Int64{field: "\"tokens\".\"create_at\""},
-	Type:     whereHelpernull_String{field: "\"tokens\".\"type\""},
-	Extra:    whereHelpernull_String{field: "\"tokens\".\"extra\""},
+	Token:     whereHelperstring{field: "\"tokens\".\"token\""},
+	CreatedAt: whereHelperint64{field: "\"tokens\".\"created_at\""},
+	Type:      whereHelperstring{field: "\"tokens\".\"type\""},
+	Extra:     whereHelpernull_String{field: "\"tokens\".\"extra\""},
 }
 
 // TokenRels is where relationship names are stored.
@@ -88,9 +88,9 @@ func (*tokenR) NewStruct() *tokenR {
 type tokenL struct{}
 
 var (
-	tokenAllColumns            = []string{"token", "create_at", "type", "extra"}
-	tokenColumnsWithoutDefault = []string{"token"}
-	tokenColumnsWithDefault    = []string{"create_at", "type", "extra"}
+	tokenAllColumns            = []string{"token", "created_at", "type", "extra"}
+	tokenColumnsWithoutDefault = []string{"token", "created_at", "type"}
+	tokenColumnsWithDefault    = []string{"extra"}
 	tokenPrimaryKeyColumns     = []string{"token"}
 	tokenGeneratedColumns      = []string{}
 )
@@ -511,10 +511,6 @@ func (o *Token) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 			tokenAllColumns,
 			tokenPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update tokens, could not build whitelist")
 		}

@@ -568,7 +568,7 @@ func testShippingMethodTranslationsSelect(t *testing.T) {
 }
 
 var (
-	shippingMethodTranslationDBTypes = map[string]string{`ID`: `character varying`, `ShippingMethodID`: `character varying`, `LanguageCode`: `character varying`, `Name`: `character varying`, `Description`: `text`}
+	shippingMethodTranslationDBTypes = map[string]string{`ID`: `uuid`, `ShippingMethodID`: `uuid`, `LanguageCode`: `character varying`, `Name`: `character varying`, `Description`: `text`}
 	_                                = bytes.MinRead
 )
 

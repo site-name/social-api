@@ -503,7 +503,7 @@ func testSaleCollectionToOneCollectionUsingCollection(t *testing.T) {
 	var foreign Collection
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, saleCollectionDBTypes, true, saleCollectionColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, saleCollectionDBTypes, false, saleCollectionColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize SaleCollection struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, collectionDBTypes, false, collectionColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testSaleCollectionToOneCollectionUsingCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.CollectionID, foreign.ID)
+	local.CollectionID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testSaleCollectionToOneCollectionUsingCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testSaleCollectionToOneSaleUsingSale(t *testing.T) {
 	var foreign Sale
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, saleCollectionDBTypes, true, saleCollectionColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, saleCollectionDBTypes, false, saleCollectionColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize SaleCollection struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, saleDBTypes, false, saleColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testSaleCollectionToOneSaleUsingSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.SaleID, foreign.ID)
+	local.SaleID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testSaleCollectionToOneSaleUsingSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testSaleCollectionToOneSetOpCollectionUsingCollection(t *testing.T) {
 		if x.R.SaleCollections[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.CollectionID, x.ID) {
+		if a.CollectionID != x.ID {
 			t.Error("foreign key was wrong value", a.CollectionID)
 		}
 
@@ -668,63 +668,11 @@ func testSaleCollectionToOneSetOpCollectionUsingCollection(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.CollectionID, x.ID) {
+		if a.CollectionID != x.ID {
 			t.Error("foreign key was wrong value", a.CollectionID, x.ID)
 		}
 	}
 }
-
-func testSaleCollectionToOneRemoveOpCollectionUsingCollection(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a SaleCollection
-	var b Collection
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, saleCollectionDBTypes, false, strmangle.SetComplement(saleCollectionPrimaryKeyColumns, saleCollectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, collectionDBTypes, false, strmangle.SetComplement(collectionPrimaryKeyColumns, collectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetCollection(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveCollection(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Collection().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Collection != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.CollectionID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.SaleCollections) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testSaleCollectionToOneSetOpSaleUsingSale(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testSaleCollectionToOneSetOpSaleUsingSale(t *testing.T) {
 		if x.R.SaleCollections[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.SaleID, x.ID) {
+		if a.SaleID != x.ID {
 			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
@@ -777,60 +725,9 @@ func testSaleCollectionToOneSetOpSaleUsingSale(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.SaleID, x.ID) {
+		if a.SaleID != x.ID {
 			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
-	}
-}
-
-func testSaleCollectionToOneRemoveOpSaleUsingSale(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a SaleCollection
-	var b Sale
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, saleCollectionDBTypes, false, strmangle.SetComplement(saleCollectionPrimaryKeyColumns, saleCollectionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, saleDBTypes, false, strmangle.SetComplement(salePrimaryKeyColumns, saleColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetSale(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveSale(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Sale().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Sale != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.SaleID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.SaleCollections) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testSaleCollectionsSelect(t *testing.T) {
 }
 
 var (
-	saleCollectionDBTypes = map[string]string{`ID`: `character varying`, `SaleID`: `character varying`, `CollectionID`: `character varying`, `CreateAt`: `bigint`}
+	saleCollectionDBTypes = map[string]string{`ID`: `uuid`, `SaleID`: `uuid`, `CollectionID`: `uuid`, `CreatedAt`: `bigint`}
 	_                     = bytes.MinRead
 )
 

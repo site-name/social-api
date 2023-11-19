@@ -19,19 +19,20 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ProductVariantChannelListing is an object representing the database table.
 type ProductVariantChannelListing struct {
-	ID                        string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VariantID                 string       `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
-	ChannelID                 string       `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	Currency                  null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	PriceAmount               null.Float64 `boil:"price_amount" json:"price_amount,omitempty" toml:"price_amount" yaml:"price_amount,omitempty"`
-	CostPriceAmount           null.Float64 `boil:"cost_price_amount" json:"cost_price_amount,omitempty" toml:"cost_price_amount" yaml:"cost_price_amount,omitempty"`
-	PreorderQuantityThreshold null.Int     `boil:"preorder_quantity_threshold" json:"preorder_quantity_threshold,omitempty" toml:"preorder_quantity_threshold" yaml:"preorder_quantity_threshold,omitempty"`
-	CreateAt                  null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID                        string            `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VariantID                 string            `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
+	ChannelID                 string            `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	Currency                  null.String       `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
+	PriceAmount               types.NullDecimal `boil:"price_amount" json:"price_amount,omitempty" toml:"price_amount" yaml:"price_amount,omitempty"`
+	CostPriceAmount           types.NullDecimal `boil:"cost_price_amount" json:"cost_price_amount,omitempty" toml:"cost_price_amount" yaml:"cost_price_amount,omitempty"`
+	PreorderQuantityThreshold null.Int          `boil:"preorder_quantity_threshold" json:"preorder_quantity_threshold,omitempty" toml:"preorder_quantity_threshold" yaml:"preorder_quantity_threshold,omitempty"`
+	CreatedAt                 int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *productVariantChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productVariantChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,7 +46,7 @@ var ProductVariantChannelListingColumns = struct {
 	PriceAmount               string
 	CostPriceAmount           string
 	PreorderQuantityThreshold string
-	CreateAt                  string
+	CreatedAt                 string
 }{
 	ID:                        "id",
 	VariantID:                 "variant_id",
@@ -54,7 +55,7 @@ var ProductVariantChannelListingColumns = struct {
 	PriceAmount:               "price_amount",
 	CostPriceAmount:           "cost_price_amount",
 	PreorderQuantityThreshold: "preorder_quantity_threshold",
-	CreateAt:                  "create_at",
+	CreatedAt:                 "created_at",
 }
 
 var ProductVariantChannelListingTableColumns = struct {
@@ -65,7 +66,7 @@ var ProductVariantChannelListingTableColumns = struct {
 	PriceAmount               string
 	CostPriceAmount           string
 	PreorderQuantityThreshold string
-	CreateAt                  string
+	CreatedAt                 string
 }{
 	ID:                        "product_variant_channel_listings.id",
 	VariantID:                 "product_variant_channel_listings.variant_id",
@@ -74,7 +75,7 @@ var ProductVariantChannelListingTableColumns = struct {
 	PriceAmount:               "product_variant_channel_listings.price_amount",
 	CostPriceAmount:           "product_variant_channel_listings.cost_price_amount",
 	PreorderQuantityThreshold: "product_variant_channel_listings.preorder_quantity_threshold",
-	CreateAt:                  "product_variant_channel_listings.create_at",
+	CreatedAt:                 "product_variant_channel_listings.created_at",
 }
 
 // Generated where
@@ -84,19 +85,19 @@ var ProductVariantChannelListingWhere = struct {
 	VariantID                 whereHelperstring
 	ChannelID                 whereHelperstring
 	Currency                  whereHelpernull_String
-	PriceAmount               whereHelpernull_Float64
-	CostPriceAmount           whereHelpernull_Float64
+	PriceAmount               whereHelpertypes_NullDecimal
+	CostPriceAmount           whereHelpertypes_NullDecimal
 	PreorderQuantityThreshold whereHelpernull_Int
-	CreateAt                  whereHelpernull_Int64
+	CreatedAt                 whereHelperint64
 }{
 	ID:                        whereHelperstring{field: "\"product_variant_channel_listings\".\"id\""},
 	VariantID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"variant_id\""},
 	ChannelID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"channel_id\""},
 	Currency:                  whereHelpernull_String{field: "\"product_variant_channel_listings\".\"currency\""},
-	PriceAmount:               whereHelpernull_Float64{field: "\"product_variant_channel_listings\".\"price_amount\""},
-	CostPriceAmount:           whereHelpernull_Float64{field: "\"product_variant_channel_listings\".\"cost_price_amount\""},
+	PriceAmount:               whereHelpertypes_NullDecimal{field: "\"product_variant_channel_listings\".\"price_amount\""},
+	CostPriceAmount:           whereHelpertypes_NullDecimal{field: "\"product_variant_channel_listings\".\"cost_price_amount\""},
 	PreorderQuantityThreshold: whereHelpernull_Int{field: "\"product_variant_channel_listings\".\"preorder_quantity_threshold\""},
-	CreateAt:                  whereHelpernull_Int64{field: "\"product_variant_channel_listings\".\"create_at\""},
+	CreatedAt:                 whereHelperint64{field: "\"product_variant_channel_listings\".\"created_at\""},
 }
 
 // ProductVariantChannelListingRels is where relationship names are stored.
@@ -137,9 +138,9 @@ func (r *productVariantChannelListingR) GetVariant() *ProductVariant {
 type productVariantChannelListingL struct{}
 
 var (
-	productVariantChannelListingAllColumns            = []string{"id", "variant_id", "channel_id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "create_at"}
-	productVariantChannelListingColumnsWithoutDefault = []string{"id", "variant_id", "channel_id"}
-	productVariantChannelListingColumnsWithDefault    = []string{"currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "create_at"}
+	productVariantChannelListingAllColumns            = []string{"id", "variant_id", "channel_id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold", "created_at"}
+	productVariantChannelListingColumnsWithoutDefault = []string{"variant_id", "channel_id", "created_at"}
+	productVariantChannelListingColumnsWithDefault    = []string{"id", "currency", "price_amount", "cost_price_amount", "preorder_quantity_threshold"}
 	productVariantChannelListingPrimaryKeyColumns     = []string{"id"}
 	productVariantChannelListingGeneratedColumns      = []string{}
 )
@@ -916,10 +917,6 @@ func (o *ProductVariantChannelListing) Update(ctx context.Context, exec boil.Con
 			productVariantChannelListingAllColumns,
 			productVariantChannelListingPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update product_variant_channel_listings, could not build whitelist")
 		}

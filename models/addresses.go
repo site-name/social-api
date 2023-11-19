@@ -269,8 +269,8 @@ type addressL struct{}
 
 var (
 	addressAllColumns            = []string{"id", "first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "created_at", "updated_at"}
-	addressColumnsWithoutDefault = []string{"id", "first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "created_at", "updated_at"}
-	addressColumnsWithDefault    = []string{}
+	addressColumnsWithoutDefault = []string{"first_name", "last_name", "company_name", "street_address1", "street_address2", "city", "city_area", "postal_code", "country", "country_area", "phone", "created_at", "updated_at"}
+	addressColumnsWithDefault    = []string{"id"}
 	addressPrimaryKeyColumns     = []string{"id"}
 	addressGeneratedColumns      = []string{}
 )
@@ -1021,7 +1021,7 @@ func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1079,7 +1079,7 @@ func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, s
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.AddressID) {
+			if local.ID == foreign.AddressID {
 				local.R.UserAddresses = append(local.R.UserAddresses, foreign)
 				if foreign.R == nil {
 					foreign.R = &userAddressR{}
@@ -1710,7 +1710,7 @@ func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecuto
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.AddressID, o.ID)
+			rel.AddressID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1731,7 +1731,7 @@ func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecuto
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.AddressID, o.ID)
+			rel.AddressID = o.ID
 		}
 	}
 
@@ -1752,80 +1752,6 @@ func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecuto
 			rel.R.Address = o
 		}
 	}
-	return nil
-}
-
-// SetUserAddresses removes all previously related items of the
-// address replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Address's UserAddresses accordingly.
-// Replaces o.R.UserAddresses with related.
-// Sets related.R.Address's UserAddresses accordingly.
-func (o *Address) SetUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
-	query := "update \"user_addresses\" set \"address_id\" = null where \"address_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.UserAddresses {
-			queries.SetScanner(&rel.AddressID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Address = nil
-		}
-		o.R.UserAddresses = nil
-	}
-
-	return o.AddUserAddresses(ctx, exec, insert, related...)
-}
-
-// RemoveUserAddresses relationships from objects passed in.
-// Removes related items from R.UserAddresses (uses pointer comparison, removal does not keep order)
-// Sets related.R.Address.
-func (o *Address) RemoveUserAddresses(ctx context.Context, exec boil.ContextExecutor, related ...*UserAddress) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.AddressID, nil)
-		if rel.R != nil {
-			rel.R.Address = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.UserAddresses {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.UserAddresses)
-			if ln > 1 && i < ln-1 {
-				o.R.UserAddresses[i] = o.R.UserAddresses[ln-1]
-			}
-			o.R.UserAddresses = o.R.UserAddresses[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2132,16 +2058,6 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
-		}
-		if queries.MustTime(o.UpdatedAt).IsZero() {
-			queries.SetScanner(&o.UpdatedAt, currTime)
-		}
-	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -2217,12 +2133,6 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		queries.SetScanner(&o.UpdatedAt, currTime)
-	}
-
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -2237,10 +2147,6 @@ func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			addressAllColumns,
 			addressPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update addresses, could not build whitelist")
 		}
@@ -2352,14 +2258,6 @@ func (o AddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no addresses provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
-		}
-		queries.SetScanner(&o.UpdatedAt, currTime)
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // SaleProductVariant is an object representing the database table.
 type SaleProductVariant struct {
-	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SaleID           null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
-	ProductVariantID null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
-	CreateAt         null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID               string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SaleID           string `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
+	ProductVariantID string `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
+	CreatedAt        int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *saleProductVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleProductVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,38 +36,38 @@ var SaleProductVariantColumns = struct {
 	ID               string
 	SaleID           string
 	ProductVariantID string
-	CreateAt         string
+	CreatedAt        string
 }{
 	ID:               "id",
 	SaleID:           "sale_id",
 	ProductVariantID: "product_variant_id",
-	CreateAt:         "create_at",
+	CreatedAt:        "created_at",
 }
 
 var SaleProductVariantTableColumns = struct {
 	ID               string
 	SaleID           string
 	ProductVariantID string
-	CreateAt         string
+	CreatedAt        string
 }{
 	ID:               "sale_product_variants.id",
 	SaleID:           "sale_product_variants.sale_id",
 	ProductVariantID: "sale_product_variants.product_variant_id",
-	CreateAt:         "sale_product_variants.create_at",
+	CreatedAt:        "sale_product_variants.created_at",
 }
 
 // Generated where
 
 var SaleProductVariantWhere = struct {
 	ID               whereHelperstring
-	SaleID           whereHelpernull_String
-	ProductVariantID whereHelpernull_String
-	CreateAt         whereHelpernull_Int64
+	SaleID           whereHelperstring
+	ProductVariantID whereHelperstring
+	CreatedAt        whereHelperint64
 }{
 	ID:               whereHelperstring{field: "\"sale_product_variants\".\"id\""},
-	SaleID:           whereHelpernull_String{field: "\"sale_product_variants\".\"sale_id\""},
-	ProductVariantID: whereHelpernull_String{field: "\"sale_product_variants\".\"product_variant_id\""},
-	CreateAt:         whereHelpernull_Int64{field: "\"sale_product_variants\".\"create_at\""},
+	SaleID:           whereHelperstring{field: "\"sale_product_variants\".\"sale_id\""},
+	ProductVariantID: whereHelperstring{field: "\"sale_product_variants\".\"product_variant_id\""},
+	CreatedAt:        whereHelperint64{field: "\"sale_product_variants\".\"created_at\""},
 }
 
 // SaleProductVariantRels is where relationship names are stored.
@@ -88,9 +87,9 @@ func (*saleProductVariantR) NewStruct() *saleProductVariantR {
 type saleProductVariantL struct{}
 
 var (
-	saleProductVariantAllColumns            = []string{"id", "sale_id", "product_variant_id", "create_at"}
-	saleProductVariantColumnsWithoutDefault = []string{"id"}
-	saleProductVariantColumnsWithDefault    = []string{"sale_id", "product_variant_id", "create_at"}
+	saleProductVariantAllColumns            = []string{"id", "sale_id", "product_variant_id", "created_at"}
+	saleProductVariantColumnsWithoutDefault = []string{"sale_id", "product_variant_id", "created_at"}
+	saleProductVariantColumnsWithDefault    = []string{"id"}
 	saleProductVariantPrimaryKeyColumns     = []string{"id"}
 	saleProductVariantGeneratedColumns      = []string{}
 )
@@ -511,10 +510,6 @@ func (o *SaleProductVariant) Update(ctx context.Context, exec boil.ContextExecut
 			saleProductVariantAllColumns,
 			saleProductVariantPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update sale_product_variants, could not build whitelist")
 		}

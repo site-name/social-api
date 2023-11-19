@@ -24,18 +24,18 @@ import (
 
 // Session is an object representing the database table.
 type Session struct {
-	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Token          null.String `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	CreateAt       null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	ExpiresAt      null.Int64  `boil:"expires_at" json:"expires_at,omitempty" toml:"expires_at" yaml:"expires_at,omitempty"`
-	LastActivityAt null.Int64  `boil:"last_activity_at" json:"last_activity_at,omitempty" toml:"last_activity_at" yaml:"last_activity_at,omitempty"`
-	UserID         null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	DeviceID       null.String `boil:"device_id" json:"device_id,omitempty" toml:"device_id" yaml:"device_id,omitempty"`
-	Roles          null.String `boil:"roles" json:"roles,omitempty" toml:"roles" yaml:"roles,omitempty"`
-	IsOauth        null.Bool   `boil:"is_oauth" json:"is_oauth,omitempty" toml:"is_oauth" yaml:"is_oauth,omitempty"`
-	ExpiredNotify  null.Bool   `boil:"expired_notify" json:"expired_notify,omitempty" toml:"expired_notify" yaml:"expired_notify,omitempty"`
-	Props          null.JSON   `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
-	Local          null.Bool   `boil:"local" json:"local,omitempty" toml:"local" yaml:"local,omitempty"`
+	ID             string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Token          string    `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CreatedAt      int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ExpiresAt      int64     `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
+	LastActivityAt int64     `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
+	UserID         string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	DeviceID       string    `boil:"device_id" json:"device_id" toml:"device_id" yaml:"device_id"`
+	Roles          string    `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
+	IsOauth        bool      `boil:"is_oauth" json:"is_oauth" toml:"is_oauth" yaml:"is_oauth"`
+	ExpiredNotify  bool      `boil:"expired_notify" json:"expired_notify" toml:"expired_notify" yaml:"expired_notify"`
+	Props          null.JSON `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
+	Local          bool      `boil:"local" json:"local" toml:"local" yaml:"local"`
 
 	R *sessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L sessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,7 +44,7 @@ type Session struct {
 var SessionColumns = struct {
 	ID             string
 	Token          string
-	CreateAt       string
+	CreatedAt      string
 	ExpiresAt      string
 	LastActivityAt string
 	UserID         string
@@ -57,7 +57,7 @@ var SessionColumns = struct {
 }{
 	ID:             "id",
 	Token:          "token",
-	CreateAt:       "create_at",
+	CreatedAt:      "created_at",
 	ExpiresAt:      "expires_at",
 	LastActivityAt: "last_activity_at",
 	UserID:         "user_id",
@@ -72,7 +72,7 @@ var SessionColumns = struct {
 var SessionTableColumns = struct {
 	ID             string
 	Token          string
-	CreateAt       string
+	CreatedAt      string
 	ExpiresAt      string
 	LastActivityAt string
 	UserID         string
@@ -85,7 +85,7 @@ var SessionTableColumns = struct {
 }{
 	ID:             "sessions.id",
 	Token:          "sessions.token",
-	CreateAt:       "sessions.create_at",
+	CreatedAt:      "sessions.created_at",
 	ExpiresAt:      "sessions.expires_at",
 	LastActivityAt: "sessions.last_activity_at",
 	UserID:         "sessions.user_id",
@@ -101,30 +101,30 @@ var SessionTableColumns = struct {
 
 var SessionWhere = struct {
 	ID             whereHelperstring
-	Token          whereHelpernull_String
-	CreateAt       whereHelpernull_Int64
-	ExpiresAt      whereHelpernull_Int64
-	LastActivityAt whereHelpernull_Int64
-	UserID         whereHelpernull_String
-	DeviceID       whereHelpernull_String
-	Roles          whereHelpernull_String
-	IsOauth        whereHelpernull_Bool
-	ExpiredNotify  whereHelpernull_Bool
+	Token          whereHelperstring
+	CreatedAt      whereHelperint64
+	ExpiresAt      whereHelperint64
+	LastActivityAt whereHelperint64
+	UserID         whereHelperstring
+	DeviceID       whereHelperstring
+	Roles          whereHelperstring
+	IsOauth        whereHelperbool
+	ExpiredNotify  whereHelperbool
 	Props          whereHelpernull_JSON
-	Local          whereHelpernull_Bool
+	Local          whereHelperbool
 }{
 	ID:             whereHelperstring{field: "\"sessions\".\"id\""},
-	Token:          whereHelpernull_String{field: "\"sessions\".\"token\""},
-	CreateAt:       whereHelpernull_Int64{field: "\"sessions\".\"create_at\""},
-	ExpiresAt:      whereHelpernull_Int64{field: "\"sessions\".\"expires_at\""},
-	LastActivityAt: whereHelpernull_Int64{field: "\"sessions\".\"last_activity_at\""},
-	UserID:         whereHelpernull_String{field: "\"sessions\".\"user_id\""},
-	DeviceID:       whereHelpernull_String{field: "\"sessions\".\"device_id\""},
-	Roles:          whereHelpernull_String{field: "\"sessions\".\"roles\""},
-	IsOauth:        whereHelpernull_Bool{field: "\"sessions\".\"is_oauth\""},
-	ExpiredNotify:  whereHelpernull_Bool{field: "\"sessions\".\"expired_notify\""},
+	Token:          whereHelperstring{field: "\"sessions\".\"token\""},
+	CreatedAt:      whereHelperint64{field: "\"sessions\".\"created_at\""},
+	ExpiresAt:      whereHelperint64{field: "\"sessions\".\"expires_at\""},
+	LastActivityAt: whereHelperint64{field: "\"sessions\".\"last_activity_at\""},
+	UserID:         whereHelperstring{field: "\"sessions\".\"user_id\""},
+	DeviceID:       whereHelperstring{field: "\"sessions\".\"device_id\""},
+	Roles:          whereHelperstring{field: "\"sessions\".\"roles\""},
+	IsOauth:        whereHelperbool{field: "\"sessions\".\"is_oauth\""},
+	ExpiredNotify:  whereHelperbool{field: "\"sessions\".\"expired_notify\""},
 	Props:          whereHelpernull_JSON{field: "\"sessions\".\"props\""},
-	Local:          whereHelpernull_Bool{field: "\"sessions\".\"local\""},
+	Local:          whereHelperbool{field: "\"sessions\".\"local\""},
 }
 
 // SessionRels is where relationship names are stored.
@@ -144,9 +144,9 @@ func (*sessionR) NewStruct() *sessionR {
 type sessionL struct{}
 
 var (
-	sessionAllColumns            = []string{"id", "token", "create_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "props", "local"}
-	sessionColumnsWithoutDefault = []string{"id"}
-	sessionColumnsWithDefault    = []string{"token", "create_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "props", "local"}
+	sessionAllColumns            = []string{"id", "token", "created_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "props", "local"}
+	sessionColumnsWithoutDefault = []string{"created_at", "expires_at", "last_activity_at", "user_id", "device_id", "roles", "is_oauth", "expired_notify", "local"}
+	sessionColumnsWithDefault    = []string{"id", "token", "props"}
 	sessionPrimaryKeyColumns     = []string{"id"}
 	sessionGeneratedColumns      = []string{}
 )
@@ -567,10 +567,6 @@ func (o *Session) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			sessionAllColumns,
 			sessionPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update sessions, could not build whitelist")
 		}

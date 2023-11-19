@@ -25,11 +25,11 @@ import (
 // Fulfillment is an object representing the database table.
 type Fulfillment struct {
 	ID                   string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FulfillmentOrder     null.Int     `boil:"fulfillment_order" json:"fulfillment_order,omitempty" toml:"fulfillment_order" yaml:"fulfillment_order,omitempty"`
-	OrderID              null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	Status               null.String  `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	TrackingNumber       null.String  `boil:"tracking_number" json:"tracking_number,omitempty" toml:"tracking_number" yaml:"tracking_number,omitempty"`
-	CreateAt             null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	FulfillmentOrder     int          `boil:"fulfillment_order" json:"fulfillment_order" toml:"fulfillment_order" yaml:"fulfillment_order"`
+	OrderID              string       `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
+	Status               string       `boil:"status" json:"status" toml:"status" yaml:"status"`
+	TrackingNumber       string       `boil:"tracking_number" json:"tracking_number" toml:"tracking_number" yaml:"tracking_number"`
+	CreatedAt            int64        `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	ShippingRefundAmount null.Float64 `boil:"shipping_refund_amount" json:"shipping_refund_amount,omitempty" toml:"shipping_refund_amount" yaml:"shipping_refund_amount,omitempty"`
 	TotalRefundAmount    null.Float64 `boil:"total_refund_amount" json:"total_refund_amount,omitempty" toml:"total_refund_amount" yaml:"total_refund_amount,omitempty"`
 	Metadata             null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
@@ -45,7 +45,7 @@ var FulfillmentColumns = struct {
 	OrderID              string
 	Status               string
 	TrackingNumber       string
-	CreateAt             string
+	CreatedAt            string
 	ShippingRefundAmount string
 	TotalRefundAmount    string
 	Metadata             string
@@ -56,7 +56,7 @@ var FulfillmentColumns = struct {
 	OrderID:              "order_id",
 	Status:               "status",
 	TrackingNumber:       "tracking_number",
-	CreateAt:             "create_at",
+	CreatedAt:            "created_at",
 	ShippingRefundAmount: "shipping_refund_amount",
 	TotalRefundAmount:    "total_refund_amount",
 	Metadata:             "metadata",
@@ -69,7 +69,7 @@ var FulfillmentTableColumns = struct {
 	OrderID              string
 	Status               string
 	TrackingNumber       string
-	CreateAt             string
+	CreatedAt            string
 	ShippingRefundAmount string
 	TotalRefundAmount    string
 	Metadata             string
@@ -80,7 +80,7 @@ var FulfillmentTableColumns = struct {
 	OrderID:              "fulfillments.order_id",
 	Status:               "fulfillments.status",
 	TrackingNumber:       "fulfillments.tracking_number",
-	CreateAt:             "fulfillments.create_at",
+	CreatedAt:            "fulfillments.created_at",
 	ShippingRefundAmount: "fulfillments.shipping_refund_amount",
 	TotalRefundAmount:    "fulfillments.total_refund_amount",
 	Metadata:             "fulfillments.metadata",
@@ -91,22 +91,22 @@ var FulfillmentTableColumns = struct {
 
 var FulfillmentWhere = struct {
 	ID                   whereHelperstring
-	FulfillmentOrder     whereHelpernull_Int
-	OrderID              whereHelpernull_String
-	Status               whereHelpernull_String
-	TrackingNumber       whereHelpernull_String
-	CreateAt             whereHelpernull_Int64
+	FulfillmentOrder     whereHelperint
+	OrderID              whereHelperstring
+	Status               whereHelperstring
+	TrackingNumber       whereHelperstring
+	CreatedAt            whereHelperint64
 	ShippingRefundAmount whereHelpernull_Float64
 	TotalRefundAmount    whereHelpernull_Float64
 	Metadata             whereHelpernull_JSON
 	PrivateMetadata      whereHelpernull_JSON
 }{
 	ID:                   whereHelperstring{field: "\"fulfillments\".\"id\""},
-	FulfillmentOrder:     whereHelpernull_Int{field: "\"fulfillments\".\"fulfillment_order\""},
-	OrderID:              whereHelpernull_String{field: "\"fulfillments\".\"order_id\""},
-	Status:               whereHelpernull_String{field: "\"fulfillments\".\"status\""},
-	TrackingNumber:       whereHelpernull_String{field: "\"fulfillments\".\"tracking_number\""},
-	CreateAt:             whereHelpernull_Int64{field: "\"fulfillments\".\"create_at\""},
+	FulfillmentOrder:     whereHelperint{field: "\"fulfillments\".\"fulfillment_order\""},
+	OrderID:              whereHelperstring{field: "\"fulfillments\".\"order_id\""},
+	Status:               whereHelperstring{field: "\"fulfillments\".\"status\""},
+	TrackingNumber:       whereHelperstring{field: "\"fulfillments\".\"tracking_number\""},
+	CreatedAt:            whereHelperint64{field: "\"fulfillments\".\"created_at\""},
 	ShippingRefundAmount: whereHelpernull_Float64{field: "\"fulfillments\".\"shipping_refund_amount\""},
 	TotalRefundAmount:    whereHelpernull_Float64{field: "\"fulfillments\".\"total_refund_amount\""},
 	Metadata:             whereHelpernull_JSON{field: "\"fulfillments\".\"metadata\""},
@@ -141,9 +141,9 @@ func (r *fulfillmentR) GetOrder() *Order {
 type fulfillmentL struct{}
 
 var (
-	fulfillmentAllColumns            = []string{"id", "fulfillment_order", "order_id", "status", "tracking_number", "create_at", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
-	fulfillmentColumnsWithoutDefault = []string{"id"}
-	fulfillmentColumnsWithDefault    = []string{"fulfillment_order", "order_id", "status", "tracking_number", "create_at", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
+	fulfillmentAllColumns            = []string{"id", "fulfillment_order", "order_id", "status", "tracking_number", "created_at", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
+	fulfillmentColumnsWithoutDefault = []string{"fulfillment_order", "order_id", "status", "tracking_number", "created_at"}
+	fulfillmentColumnsWithDefault    = []string{"id", "shipping_refund_amount", "total_refund_amount", "metadata", "private_metadata"}
 	fulfillmentPrimaryKeyColumns     = []string{"id"}
 	fulfillmentGeneratedColumns      = []string{}
 )
@@ -470,9 +470,7 @@ func (fulfillmentL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singu
 		if object.R == nil {
 			object.R = &fulfillmentR{}
 		}
-		if !queries.IsNil(object.OrderID) {
-			args = append(args, object.OrderID)
-		}
+		args = append(args, object.OrderID)
 
 	} else {
 	Outer:
@@ -482,14 +480,12 @@ func (fulfillmentL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.OrderID) {
+				if a == obj.OrderID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.OrderID) {
-				args = append(args, obj.OrderID)
-			}
+			args = append(args, obj.OrderID)
 
 		}
 	}
@@ -547,7 +543,7 @@ func (fulfillmentL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singu
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.OrderID, foreign.ID) {
+			if local.OrderID == foreign.ID {
 				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
@@ -588,7 +584,7 @@ func (o *Fulfillment) SetOrder(ctx context.Context, exec boil.ContextExecutor, i
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.OrderID, related.ID)
+	o.OrderID = related.ID
 	if o.R == nil {
 		o.R = &fulfillmentR{
 			Order: related,
@@ -605,39 +601,6 @@ func (o *Fulfillment) SetOrder(ctx context.Context, exec boil.ContextExecutor, i
 		related.R.Fulfillments = append(related.R.Fulfillments, o)
 	}
 
-	return nil
-}
-
-// RemoveOrder relationship.
-// Sets o.R.Order to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Fulfillment) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
-	var err error
-
-	queries.SetScanner(&o.OrderID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Order = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Fulfillments {
-		if queries.Equal(o.OrderID, ri.OrderID) {
-			continue
-		}
-
-		ln := len(related.R.Fulfillments)
-		if ln > 1 && i < ln-1 {
-			related.R.Fulfillments[i] = related.R.Fulfillments[ln-1]
-		}
-		related.R.Fulfillments = related.R.Fulfillments[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -779,10 +742,6 @@ func (o *Fulfillment) Update(ctx context.Context, exec boil.ContextExecutor, col
 			fulfillmentAllColumns,
 			fulfillmentPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update fulfillments, could not build whitelist")
 		}

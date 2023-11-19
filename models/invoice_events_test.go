@@ -1078,7 +1078,7 @@ func testInvoiceEventsSelect(t *testing.T) {
 }
 
 var (
-	invoiceEventDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `Type`: `character varying`, `InvoiceID`: `character varying`, `OrderID`: `character varying`, `UserID`: `character varying`, `Parameters`: `text`}
+	invoiceEventDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `Type`: `character varying`, `InvoiceID`: `uuid`, `OrderID`: `uuid`, `UserID`: `uuid`, `Parameters`: `jsonb`}
 	_                   = bytes.MinRead
 )
 

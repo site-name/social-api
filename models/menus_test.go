@@ -519,8 +519,9 @@ func testMenuToManyMenuItems(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.MenuID, a.ID)
-	queries.Assign(&c.MenuID, a.ID)
+	b.MenuID = a.ID
+	c.MenuID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testMenuToManyMenuItems(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.MenuID, b.MenuID) {
+		if v.MenuID == b.MenuID {
 			bFound = true
 		}
-		if queries.Equal(v.MenuID, c.MenuID) {
+		if v.MenuID == c.MenuID {
 			cFound = true
 		}
 	}
@@ -693,10 +694,10 @@ func testMenuToManyAddOpMenuItems(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.MenuID) {
+		if a.ID != first.MenuID {
 			t.Error("foreign key was wrong value", a.ID, first.MenuID)
 		}
-		if !queries.Equal(a.ID, second.MenuID) {
+		if a.ID != second.MenuID {
 			t.Error("foreign key was wrong value", a.ID, second.MenuID)
 		}
 
@@ -723,182 +724,6 @@ func testMenuToManyAddOpMenuItems(t *testing.T) {
 		}
 	}
 }
-
-func testMenuToManySetOpMenuItems(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Menu
-	var b, c, d, e MenuItem
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, menuDBTypes, false, strmangle.SetComplement(menuPrimaryKeyColumns, menuColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*MenuItem{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, menuItemDBTypes, false, strmangle.SetComplement(menuItemPrimaryKeyColumns, menuItemColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetMenuItems(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.MenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetMenuItems(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.MenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.MenuID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.MenuID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.MenuID) {
-		t.Error("foreign key was wrong value", a.ID, d.MenuID)
-	}
-	if !queries.Equal(a.ID, e.MenuID) {
-		t.Error("foreign key was wrong value", a.ID, e.MenuID)
-	}
-
-	if b.R.Menu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Menu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Menu != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Menu != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.MenuItems[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.MenuItems[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testMenuToManyRemoveOpMenuItems(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Menu
-	var b, c, d, e MenuItem
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, menuDBTypes, false, strmangle.SetComplement(menuPrimaryKeyColumns, menuColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*MenuItem{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, menuItemDBTypes, false, strmangle.SetComplement(menuItemPrimaryKeyColumns, menuItemColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddMenuItems(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.MenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveMenuItems(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.MenuItems().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.MenuID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.MenuID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Menu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Menu != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Menu != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Menu != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.MenuItems) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.MenuItems[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.MenuItems[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testMenuToManyAddOpTopMenuShops(t *testing.T) {
 	var err error
 
@@ -1224,7 +1049,7 @@ func testMenusSelect(t *testing.T) {
 }
 
 var (
-	menuDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `CreateAt`: `bigint`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	menuDBTypes = map[string]string{`ID`: `uuid`, `Name`: `character varying`, `Slug`: `character varying`, `CreatedAt`: `bigint`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_           = bytes.MinRead
 )
 

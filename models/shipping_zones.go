@@ -24,14 +24,14 @@ import (
 
 // ShippingZone is an object representing the database table.
 type ShippingZone struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Countries       null.String `boil:"countries" json:"countries,omitempty" toml:"countries" yaml:"countries,omitempty"`
-	DefaultFlag     null.Bool   `boil:"default_flag" json:"default_flag,omitempty" toml:"default_flag" yaml:"default_flag,omitempty"`
-	Description     null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Countries       string    `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
+	DefaultFlag     null.Bool `boil:"default_flag" json:"default_flag,omitempty" toml:"default_flag" yaml:"default_flag,omitempty"`
+	Description     string    `boil:"description" json:"description" toml:"description" yaml:"description"`
+	CreatedAt       int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *shippingZoneR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingZoneL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,7 +43,7 @@ var ShippingZoneColumns = struct {
 	Countries       string
 	DefaultFlag     string
 	Description     string
-	CreateAt        string
+	CreatedAt       string
 	Metadata        string
 	PrivateMetadata string
 }{
@@ -52,7 +52,7 @@ var ShippingZoneColumns = struct {
 	Countries:       "countries",
 	DefaultFlag:     "default_flag",
 	Description:     "description",
-	CreateAt:        "create_at",
+	CreatedAt:       "created_at",
 	Metadata:        "metadata",
 	PrivateMetadata: "private_metadata",
 }
@@ -63,7 +63,7 @@ var ShippingZoneTableColumns = struct {
 	Countries       string
 	DefaultFlag     string
 	Description     string
-	CreateAt        string
+	CreatedAt       string
 	Metadata        string
 	PrivateMetadata string
 }{
@@ -72,7 +72,7 @@ var ShippingZoneTableColumns = struct {
 	Countries:       "shipping_zones.countries",
 	DefaultFlag:     "shipping_zones.default_flag",
 	Description:     "shipping_zones.description",
-	CreateAt:        "shipping_zones.create_at",
+	CreatedAt:       "shipping_zones.created_at",
 	Metadata:        "shipping_zones.metadata",
 	PrivateMetadata: "shipping_zones.private_metadata",
 }
@@ -81,20 +81,20 @@ var ShippingZoneTableColumns = struct {
 
 var ShippingZoneWhere = struct {
 	ID              whereHelperstring
-	Name            whereHelpernull_String
-	Countries       whereHelpernull_String
+	Name            whereHelperstring
+	Countries       whereHelperstring
 	DefaultFlag     whereHelpernull_Bool
-	Description     whereHelpernull_String
-	CreateAt        whereHelpernull_Int64
+	Description     whereHelperstring
+	CreatedAt       whereHelperint64
 	Metadata        whereHelpernull_JSON
 	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"shipping_zones\".\"id\""},
-	Name:            whereHelpernull_String{field: "\"shipping_zones\".\"name\""},
-	Countries:       whereHelpernull_String{field: "\"shipping_zones\".\"countries\""},
+	Name:            whereHelperstring{field: "\"shipping_zones\".\"name\""},
+	Countries:       whereHelperstring{field: "\"shipping_zones\".\"countries\""},
 	DefaultFlag:     whereHelpernull_Bool{field: "\"shipping_zones\".\"default_flag\""},
-	Description:     whereHelpernull_String{field: "\"shipping_zones\".\"description\""},
-	CreateAt:        whereHelpernull_Int64{field: "\"shipping_zones\".\"create_at\""},
+	Description:     whereHelperstring{field: "\"shipping_zones\".\"description\""},
+	CreatedAt:       whereHelperint64{field: "\"shipping_zones\".\"created_at\""},
 	Metadata:        whereHelpernull_JSON{field: "\"shipping_zones\".\"metadata\""},
 	PrivateMetadata: whereHelpernull_JSON{field: "\"shipping_zones\".\"private_metadata\""},
 }
@@ -147,9 +147,9 @@ func (r *shippingZoneR) GetWarehouseShippingZones() WarehouseShippingZoneSlice {
 type shippingZoneL struct{}
 
 var (
-	shippingZoneAllColumns            = []string{"id", "name", "countries", "default_flag", "description", "create_at", "metadata", "private_metadata"}
-	shippingZoneColumnsWithoutDefault = []string{"id"}
-	shippingZoneColumnsWithDefault    = []string{"name", "countries", "default_flag", "description", "create_at", "metadata", "private_metadata"}
+	shippingZoneAllColumns            = []string{"id", "name", "countries", "default_flag", "description", "created_at", "metadata", "private_metadata"}
+	shippingZoneColumnsWithoutDefault = []string{"name", "countries", "description", "created_at"}
+	shippingZoneColumnsWithDefault    = []string{"id", "default_flag", "metadata", "private_metadata"}
 	shippingZonePrimaryKeyColumns     = []string{"id"}
 	shippingZoneGeneratedColumns      = []string{}
 )
@@ -516,7 +516,7 @@ func (shippingZoneL) LoadShippingMethods(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -574,7 +574,7 @@ func (shippingZoneL) LoadShippingMethods(ctx context.Context, e boil.ContextExec
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ShippingZoneID) {
+			if local.ID == foreign.ShippingZoneID {
 				local.R.ShippingMethods = append(local.R.ShippingMethods, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingMethodR{}
@@ -630,7 +630,7 @@ func (shippingZoneL) LoadShippingZoneChannels(ctx context.Context, e boil.Contex
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -688,7 +688,7 @@ func (shippingZoneL) LoadShippingZoneChannels(ctx context.Context, e boil.Contex
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ShippingZoneID) {
+			if local.ID == foreign.ShippingZoneID {
 				local.R.ShippingZoneChannels = append(local.R.ShippingZoneChannels, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingZoneChannelR{}
@@ -744,7 +744,7 @@ func (shippingZoneL) LoadWarehouseShippingZones(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -802,7 +802,7 @@ func (shippingZoneL) LoadWarehouseShippingZones(ctx context.Context, e boil.Cont
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ShippingZoneID) {
+			if local.ID == foreign.ShippingZoneID {
 				local.R.WarehouseShippingZones = append(local.R.WarehouseShippingZones, foreign)
 				if foreign.R == nil {
 					foreign.R = &warehouseShippingZoneR{}
@@ -824,7 +824,7 @@ func (o *ShippingZone) AddShippingMethods(ctx context.Context, exec boil.Context
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ShippingZoneID, o.ID)
+			rel.ShippingZoneID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -845,7 +845,7 @@ func (o *ShippingZone) AddShippingMethods(ctx context.Context, exec boil.Context
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ShippingZoneID, o.ID)
+			rel.ShippingZoneID = o.ID
 		}
 	}
 
@@ -869,80 +869,6 @@ func (o *ShippingZone) AddShippingMethods(ctx context.Context, exec boil.Context
 	return nil
 }
 
-// SetShippingMethods removes all previously related items of the
-// shipping_zone replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ShippingZone's ShippingMethods accordingly.
-// Replaces o.R.ShippingMethods with related.
-// Sets related.R.ShippingZone's ShippingMethods accordingly.
-func (o *ShippingZone) SetShippingMethods(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethod) error {
-	query := "update \"shipping_methods\" set \"shipping_zone_id\" = null where \"shipping_zone_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingMethods {
-			queries.SetScanner(&rel.ShippingZoneID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ShippingZone = nil
-		}
-		o.R.ShippingMethods = nil
-	}
-
-	return o.AddShippingMethods(ctx, exec, insert, related...)
-}
-
-// RemoveShippingMethods relationships from objects passed in.
-// Removes related items from R.ShippingMethods (uses pointer comparison, removal does not keep order)
-// Sets related.R.ShippingZone.
-func (o *ShippingZone) RemoveShippingMethods(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingMethod) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ShippingZoneID, nil)
-		if rel.R != nil {
-			rel.R.ShippingZone = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("shipping_zone_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingMethods {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingMethods)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingMethods[i] = o.R.ShippingMethods[ln-1]
-			}
-			o.R.ShippingMethods = o.R.ShippingMethods[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddShippingZoneChannels adds the given related objects to the existing relationships
 // of the shipping_zone, optionally inserting them as new records.
 // Appends related to o.R.ShippingZoneChannels.
@@ -951,7 +877,7 @@ func (o *ShippingZone) AddShippingZoneChannels(ctx context.Context, exec boil.Co
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ShippingZoneID, o.ID)
+			rel.ShippingZoneID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -972,7 +898,7 @@ func (o *ShippingZone) AddShippingZoneChannels(ctx context.Context, exec boil.Co
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ShippingZoneID, o.ID)
+			rel.ShippingZoneID = o.ID
 		}
 	}
 
@@ -996,80 +922,6 @@ func (o *ShippingZone) AddShippingZoneChannels(ctx context.Context, exec boil.Co
 	return nil
 }
 
-// SetShippingZoneChannels removes all previously related items of the
-// shipping_zone replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ShippingZone's ShippingZoneChannels accordingly.
-// Replaces o.R.ShippingZoneChannels with related.
-// Sets related.R.ShippingZone's ShippingZoneChannels accordingly.
-func (o *ShippingZone) SetShippingZoneChannels(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingZoneChannel) error {
-	query := "update \"shipping_zone_channels\" set \"shipping_zone_id\" = null where \"shipping_zone_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingZoneChannels {
-			queries.SetScanner(&rel.ShippingZoneID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ShippingZone = nil
-		}
-		o.R.ShippingZoneChannels = nil
-	}
-
-	return o.AddShippingZoneChannels(ctx, exec, insert, related...)
-}
-
-// RemoveShippingZoneChannels relationships from objects passed in.
-// Removes related items from R.ShippingZoneChannels (uses pointer comparison, removal does not keep order)
-// Sets related.R.ShippingZone.
-func (o *ShippingZone) RemoveShippingZoneChannels(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingZoneChannel) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ShippingZoneID, nil)
-		if rel.R != nil {
-			rel.R.ShippingZone = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("shipping_zone_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingZoneChannels {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingZoneChannels)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingZoneChannels[i] = o.R.ShippingZoneChannels[ln-1]
-			}
-			o.R.ShippingZoneChannels = o.R.ShippingZoneChannels[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddWarehouseShippingZones adds the given related objects to the existing relationships
 // of the shipping_zone, optionally inserting them as new records.
 // Appends related to o.R.WarehouseShippingZones.
@@ -1078,7 +930,7 @@ func (o *ShippingZone) AddWarehouseShippingZones(ctx context.Context, exec boil.
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ShippingZoneID, o.ID)
+			rel.ShippingZoneID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1099,7 +951,7 @@ func (o *ShippingZone) AddWarehouseShippingZones(ctx context.Context, exec boil.
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ShippingZoneID, o.ID)
+			rel.ShippingZoneID = o.ID
 		}
 	}
 
@@ -1120,80 +972,6 @@ func (o *ShippingZone) AddWarehouseShippingZones(ctx context.Context, exec boil.
 			rel.R.ShippingZone = o
 		}
 	}
-	return nil
-}
-
-// SetWarehouseShippingZones removes all previously related items of the
-// shipping_zone replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ShippingZone's WarehouseShippingZones accordingly.
-// Replaces o.R.WarehouseShippingZones with related.
-// Sets related.R.ShippingZone's WarehouseShippingZones accordingly.
-func (o *ShippingZone) SetWarehouseShippingZones(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*WarehouseShippingZone) error {
-	query := "update \"warehouse_shipping_zones\" set \"shipping_zone_id\" = null where \"shipping_zone_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.WarehouseShippingZones {
-			queries.SetScanner(&rel.ShippingZoneID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ShippingZone = nil
-		}
-		o.R.WarehouseShippingZones = nil
-	}
-
-	return o.AddWarehouseShippingZones(ctx, exec, insert, related...)
-}
-
-// RemoveWarehouseShippingZones relationships from objects passed in.
-// Removes related items from R.WarehouseShippingZones (uses pointer comparison, removal does not keep order)
-// Sets related.R.ShippingZone.
-func (o *ShippingZone) RemoveWarehouseShippingZones(ctx context.Context, exec boil.ContextExecutor, related ...*WarehouseShippingZone) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ShippingZoneID, nil)
-		if rel.R != nil {
-			rel.R.ShippingZone = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("shipping_zone_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.WarehouseShippingZones {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.WarehouseShippingZones)
-			if ln > 1 && i < ln-1 {
-				o.R.WarehouseShippingZones[i] = o.R.WarehouseShippingZones[ln-1]
-			}
-			o.R.WarehouseShippingZones = o.R.WarehouseShippingZones[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1335,10 +1113,6 @@ func (o *ShippingZone) Update(ctx context.Context, exec boil.ContextExecutor, co
 			shippingZoneAllColumns,
 			shippingZonePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shipping_zones, could not build whitelist")
 		}

@@ -568,7 +568,7 @@ func testTokensSelect(t *testing.T) {
 }
 
 var (
-	tokenDBTypes = map[string]string{`Token`: `character varying`, `CreateAt`: `bigint`, `Type`: `character varying`, `Extra`: `character varying`}
+	tokenDBTypes = map[string]string{`Token`: `character varying`, `CreatedAt`: `bigint`, `Type`: `character varying`, `Extra`: `character varying`}
 	_            = bytes.MinRead
 )
 

@@ -112,8 +112,8 @@ type assignedProductAttributeL struct{}
 
 var (
 	assignedProductAttributeAllColumns            = []string{"id", "product_id", "assignment_id"}
-	assignedProductAttributeColumnsWithoutDefault = []string{"id", "product_id", "assignment_id"}
-	assignedProductAttributeColumnsWithDefault    = []string{}
+	assignedProductAttributeColumnsWithoutDefault = []string{"product_id", "assignment_id"}
+	assignedProductAttributeColumnsWithDefault    = []string{"id"}
 	assignedProductAttributePrimaryKeyColumns     = []string{"id"}
 	assignedProductAttributeGeneratedColumns      = []string{}
 )
@@ -1071,10 +1071,6 @@ func (o *AssignedProductAttribute) Update(ctx context.Context, exec boil.Context
 			assignedProductAttributeAllColumns,
 			assignedProductAttributePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update assigned_product_attributes, could not build whitelist")
 		}

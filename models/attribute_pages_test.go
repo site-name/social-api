@@ -656,7 +656,7 @@ func testAttributePageToOnePageTypeUsingPageType(t *testing.T) {
 	var foreign PageType
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, attributePageDBTypes, true, attributePageColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, attributePageDBTypes, false, attributePageColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize AttributePage struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, pageTypeDBTypes, false, pageTypeColumnsWithDefault...); err != nil {
@@ -667,7 +667,7 @@ func testAttributePageToOnePageTypeUsingPageType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.PageTypeID, foreign.ID)
+	local.PageTypeID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -677,7 +677,7 @@ func testAttributePageToOnePageTypeUsingPageType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -749,7 +749,7 @@ func testAttributePageToOneSetOpPageTypeUsingPageType(t *testing.T) {
 		if x.R.AttributePages[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.PageTypeID, x.ID) {
+		if a.PageTypeID != x.ID {
 			t.Error("foreign key was wrong value", a.PageTypeID)
 		}
 
@@ -760,60 +760,9 @@ func testAttributePageToOneSetOpPageTypeUsingPageType(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.PageTypeID, x.ID) {
+		if a.PageTypeID != x.ID {
 			t.Error("foreign key was wrong value", a.PageTypeID, x.ID)
 		}
-	}
-}
-
-func testAttributePageToOneRemoveOpPageTypeUsingPageType(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributePage
-	var b PageType
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributePageDBTypes, false, strmangle.SetComplement(attributePagePrimaryKeyColumns, attributePageColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, pageTypeDBTypes, false, strmangle.SetComplement(pageTypePrimaryKeyColumns, pageTypeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetPageType(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemovePageType(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.PageType().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.PageType != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.PageTypeID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.AttributePages) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -891,7 +840,7 @@ func testAttributePagesSelect(t *testing.T) {
 }
 
 var (
-	attributePageDBTypes = map[string]string{`ID`: `character varying`, `AttributeID`: `character varying`, `PageTypeID`: `character varying`, `SortOrder`: `integer`}
+	attributePageDBTypes = map[string]string{`ID`: `uuid`, `AttributeID`: `uuid`, `PageTypeID`: `uuid`, `SortOrder`: `integer`}
 	_                    = bytes.MinRead
 )
 

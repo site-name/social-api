@@ -24,16 +24,16 @@ import (
 
 // DigitalContent is an object representing the database table.
 type DigitalContent struct {
-	ID                   string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UseDefaultSettings   null.Bool   `boil:"use_default_settings" json:"use_default_settings,omitempty" toml:"use_default_settings" yaml:"use_default_settings,omitempty"`
-	AutomaticFulfillment null.Bool   `boil:"automatic_fulfillment" json:"automatic_fulfillment,omitempty" toml:"automatic_fulfillment" yaml:"automatic_fulfillment,omitempty"`
-	ContentType          null.String `boil:"content_type" json:"content_type,omitempty" toml:"content_type" yaml:"content_type,omitempty"`
-	ProductVariantID     null.String `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
-	ContentFile          null.String `boil:"content_file" json:"content_file,omitempty" toml:"content_file" yaml:"content_file,omitempty"`
-	MaxDownloads         null.Int    `boil:"max_downloads" json:"max_downloads,omitempty" toml:"max_downloads" yaml:"max_downloads,omitempty"`
-	URLValidDays         null.Int    `boil:"url_valid_days" json:"url_valid_days,omitempty" toml:"url_valid_days" yaml:"url_valid_days,omitempty"`
-	Metadata             null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                   string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UseDefaultSettings   null.Bool `boil:"use_default_settings" json:"use_default_settings,omitempty" toml:"use_default_settings" yaml:"use_default_settings,omitempty"`
+	AutomaticFulfillment null.Bool `boil:"automatic_fulfillment" json:"automatic_fulfillment,omitempty" toml:"automatic_fulfillment" yaml:"automatic_fulfillment,omitempty"`
+	ContentType          string    `boil:"content_type" json:"content_type" toml:"content_type" yaml:"content_type"`
+	ProductVariantID     string    `boil:"product_variant_id" json:"product_variant_id" toml:"product_variant_id" yaml:"product_variant_id"`
+	ContentFile          string    `boil:"content_file" json:"content_file" toml:"content_file" yaml:"content_file"`
+	MaxDownloads         null.Int  `boil:"max_downloads" json:"max_downloads,omitempty" toml:"max_downloads" yaml:"max_downloads,omitempty"`
+	URLValidDays         null.Int  `boil:"url_valid_days" json:"url_valid_days,omitempty" toml:"url_valid_days" yaml:"url_valid_days,omitempty"`
+	Metadata             null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *digitalContentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L digitalContentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -93,9 +93,9 @@ var DigitalContentWhere = struct {
 	ID                   whereHelperstring
 	UseDefaultSettings   whereHelpernull_Bool
 	AutomaticFulfillment whereHelpernull_Bool
-	ContentType          whereHelpernull_String
-	ProductVariantID     whereHelpernull_String
-	ContentFile          whereHelpernull_String
+	ContentType          whereHelperstring
+	ProductVariantID     whereHelperstring
+	ContentFile          whereHelperstring
 	MaxDownloads         whereHelpernull_Int
 	URLValidDays         whereHelpernull_Int
 	Metadata             whereHelpernull_JSON
@@ -104,9 +104,9 @@ var DigitalContentWhere = struct {
 	ID:                   whereHelperstring{field: "\"digital_contents\".\"id\""},
 	UseDefaultSettings:   whereHelpernull_Bool{field: "\"digital_contents\".\"use_default_settings\""},
 	AutomaticFulfillment: whereHelpernull_Bool{field: "\"digital_contents\".\"automatic_fulfillment\""},
-	ContentType:          whereHelpernull_String{field: "\"digital_contents\".\"content_type\""},
-	ProductVariantID:     whereHelpernull_String{field: "\"digital_contents\".\"product_variant_id\""},
-	ContentFile:          whereHelpernull_String{field: "\"digital_contents\".\"content_file\""},
+	ContentType:          whereHelperstring{field: "\"digital_contents\".\"content_type\""},
+	ProductVariantID:     whereHelperstring{field: "\"digital_contents\".\"product_variant_id\""},
+	ContentFile:          whereHelperstring{field: "\"digital_contents\".\"content_file\""},
 	MaxDownloads:         whereHelpernull_Int{field: "\"digital_contents\".\"max_downloads\""},
 	URLValidDays:         whereHelpernull_Int{field: "\"digital_contents\".\"url_valid_days\""},
 	Metadata:             whereHelpernull_JSON{field: "\"digital_contents\".\"metadata\""},
@@ -152,8 +152,8 @@ type digitalContentL struct{}
 
 var (
 	digitalContentAllColumns            = []string{"id", "use_default_settings", "automatic_fulfillment", "content_type", "product_variant_id", "content_file", "max_downloads", "url_valid_days", "metadata", "private_metadata"}
-	digitalContentColumnsWithoutDefault = []string{"id"}
-	digitalContentColumnsWithDefault    = []string{"use_default_settings", "automatic_fulfillment", "content_type", "product_variant_id", "content_file", "max_downloads", "url_valid_days", "metadata", "private_metadata"}
+	digitalContentColumnsWithoutDefault = []string{"content_type", "product_variant_id", "content_file"}
+	digitalContentColumnsWithDefault    = []string{"id", "use_default_settings", "automatic_fulfillment", "max_downloads", "url_valid_days", "metadata", "private_metadata"}
 	digitalContentPrimaryKeyColumns     = []string{"id"}
 	digitalContentGeneratedColumns      = []string{}
 )
@@ -494,9 +494,7 @@ func (digitalContentL) LoadProductVariant(ctx context.Context, e boil.ContextExe
 		if object.R == nil {
 			object.R = &digitalContentR{}
 		}
-		if !queries.IsNil(object.ProductVariantID) {
-			args = append(args, object.ProductVariantID)
-		}
+		args = append(args, object.ProductVariantID)
 
 	} else {
 	Outer:
@@ -506,14 +504,12 @@ func (digitalContentL) LoadProductVariant(ctx context.Context, e boil.ContextExe
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductVariantID) {
+				if a == obj.ProductVariantID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductVariantID) {
-				args = append(args, obj.ProductVariantID)
-			}
+			args = append(args, obj.ProductVariantID)
 
 		}
 	}
@@ -571,7 +567,7 @@ func (digitalContentL) LoadProductVariant(ctx context.Context, e boil.ContextExe
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductVariantID, foreign.ID) {
+			if local.ProductVariantID == foreign.ID {
 				local.R.ProductVariant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
@@ -627,7 +623,7 @@ func (digitalContentL) LoadContentDigitalContentUrls(ctx context.Context, e boil
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -685,7 +681,7 @@ func (digitalContentL) LoadContentDigitalContentUrls(ctx context.Context, e boil
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ContentID) {
+			if local.ID == foreign.ContentID {
 				local.R.ContentDigitalContentUrls = append(local.R.ContentDigitalContentUrls, foreign)
 				if foreign.R == nil {
 					foreign.R = &digitalContentURLR{}
@@ -726,7 +722,7 @@ func (o *DigitalContent) SetProductVariant(ctx context.Context, exec boil.Contex
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductVariantID, related.ID)
+	o.ProductVariantID = related.ID
 	if o.R == nil {
 		o.R = &digitalContentR{
 			ProductVariant: related,
@@ -746,39 +742,6 @@ func (o *DigitalContent) SetProductVariant(ctx context.Context, exec boil.Contex
 	return nil
 }
 
-// RemoveProductVariant relationship.
-// Sets o.R.ProductVariant to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *DigitalContent) RemoveProductVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
-	var err error
-
-	queries.SetScanner(&o.ProductVariantID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_variant_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ProductVariant = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.DigitalContents {
-		if queries.Equal(o.ProductVariantID, ri.ProductVariantID) {
-			continue
-		}
-
-		ln := len(related.R.DigitalContents)
-		if ln > 1 && i < ln-1 {
-			related.R.DigitalContents[i] = related.R.DigitalContents[ln-1]
-		}
-		related.R.DigitalContents = related.R.DigitalContents[:ln-1]
-		break
-	}
-	return nil
-}
-
 // AddContentDigitalContentUrls adds the given related objects to the existing relationships
 // of the digital_content, optionally inserting them as new records.
 // Appends related to o.R.ContentDigitalContentUrls.
@@ -787,7 +750,7 @@ func (o *DigitalContent) AddContentDigitalContentUrls(ctx context.Context, exec 
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ContentID, o.ID)
+			rel.ContentID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -808,7 +771,7 @@ func (o *DigitalContent) AddContentDigitalContentUrls(ctx context.Context, exec 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ContentID, o.ID)
+			rel.ContentID = o.ID
 		}
 	}
 
@@ -829,80 +792,6 @@ func (o *DigitalContent) AddContentDigitalContentUrls(ctx context.Context, exec 
 			rel.R.Content = o
 		}
 	}
-	return nil
-}
-
-// SetContentDigitalContentUrls removes all previously related items of the
-// digital_content replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Content's ContentDigitalContentUrls accordingly.
-// Replaces o.R.ContentDigitalContentUrls with related.
-// Sets related.R.Content's ContentDigitalContentUrls accordingly.
-func (o *DigitalContent) SetContentDigitalContentUrls(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*DigitalContentURL) error {
-	query := "update \"digital_content_urls\" set \"content_id\" = null where \"content_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ContentDigitalContentUrls {
-			queries.SetScanner(&rel.ContentID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Content = nil
-		}
-		o.R.ContentDigitalContentUrls = nil
-	}
-
-	return o.AddContentDigitalContentUrls(ctx, exec, insert, related...)
-}
-
-// RemoveContentDigitalContentUrls relationships from objects passed in.
-// Removes related items from R.ContentDigitalContentUrls (uses pointer comparison, removal does not keep order)
-// Sets related.R.Content.
-func (o *DigitalContent) RemoveContentDigitalContentUrls(ctx context.Context, exec boil.ContextExecutor, related ...*DigitalContentURL) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ContentID, nil)
-		if rel.R != nil {
-			rel.R.Content = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("content_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ContentDigitalContentUrls {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ContentDigitalContentUrls)
-			if ln > 1 && i < ln-1 {
-				o.R.ContentDigitalContentUrls[i] = o.R.ContentDigitalContentUrls[ln-1]
-			}
-			o.R.ContentDigitalContentUrls = o.R.ContentDigitalContentUrls[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1044,10 +933,6 @@ func (o *DigitalContent) Update(ctx context.Context, exec boil.ContextExecutor, 
 			digitalContentAllColumns,
 			digitalContentPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update digital_contents, could not build whitelist")
 		}

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS product_collections (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  collection_id uuid,
-  product_id character varying(36)
+  collection_id uuid NOT NULL,
+  product_id uuid NOT NULL
 );
 
 ALTER TABLE ONLY product_collections

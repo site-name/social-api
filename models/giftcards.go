@@ -25,19 +25,19 @@ import (
 // Giftcard is an object representing the database table.
 type Giftcard struct {
 	ID                   string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Code                 null.String  `boil:"code" json:"code,omitempty" toml:"code" yaml:"code,omitempty"`
+	Code                 string       `boil:"code" json:"code" toml:"code" yaml:"code"`
 	CreatedByID          null.String  `boil:"created_by_id" json:"created_by_id,omitempty" toml:"created_by_id" yaml:"created_by_id,omitempty"`
 	UsedByID             null.String  `boil:"used_by_id" json:"used_by_id,omitempty" toml:"used_by_id" yaml:"used_by_id,omitempty"`
 	CreatedByEmail       null.String  `boil:"created_by_email" json:"created_by_email,omitempty" toml:"created_by_email" yaml:"created_by_email,omitempty"`
 	UsedByEmail          null.String  `boil:"used_by_email" json:"used_by_email,omitempty" toml:"used_by_email" yaml:"used_by_email,omitempty"`
-	CreateAt             null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	CreatedAt            int64        `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	StartDate            null.Time    `boil:"start_date" json:"start_date,omitempty" toml:"start_date" yaml:"start_date,omitempty"`
 	ExpiryDate           null.Time    `boil:"expiry_date" json:"expiry_date,omitempty" toml:"expiry_date" yaml:"expiry_date,omitempty"`
 	Tag                  null.String  `boil:"tag" json:"tag,omitempty" toml:"tag" yaml:"tag,omitempty"`
 	ProductID            null.String  `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
 	LastUsedOn           null.Int64   `boil:"last_used_on" json:"last_used_on,omitempty" toml:"last_used_on" yaml:"last_used_on,omitempty"`
 	IsActive             null.Bool    `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
-	Currency             null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
+	Currency             string       `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
 	InitialBalanceAmount null.Float64 `boil:"initial_balance_amount" json:"initial_balance_amount,omitempty" toml:"initial_balance_amount" yaml:"initial_balance_amount,omitempty"`
 	CurrentBalanceAmount null.Float64 `boil:"current_balance_amount" json:"current_balance_amount,omitempty" toml:"current_balance_amount" yaml:"current_balance_amount,omitempty"`
 	Metadata             null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
@@ -54,7 +54,7 @@ var GiftcardColumns = struct {
 	UsedByID             string
 	CreatedByEmail       string
 	UsedByEmail          string
-	CreateAt             string
+	CreatedAt            string
 	StartDate            string
 	ExpiryDate           string
 	Tag                  string
@@ -73,7 +73,7 @@ var GiftcardColumns = struct {
 	UsedByID:             "used_by_id",
 	CreatedByEmail:       "created_by_email",
 	UsedByEmail:          "used_by_email",
-	CreateAt:             "create_at",
+	CreatedAt:            "created_at",
 	StartDate:            "start_date",
 	ExpiryDate:           "expiry_date",
 	Tag:                  "tag",
@@ -94,7 +94,7 @@ var GiftcardTableColumns = struct {
 	UsedByID             string
 	CreatedByEmail       string
 	UsedByEmail          string
-	CreateAt             string
+	CreatedAt            string
 	StartDate            string
 	ExpiryDate           string
 	Tag                  string
@@ -113,7 +113,7 @@ var GiftcardTableColumns = struct {
 	UsedByID:             "giftcards.used_by_id",
 	CreatedByEmail:       "giftcards.created_by_email",
 	UsedByEmail:          "giftcards.used_by_email",
-	CreateAt:             "giftcards.create_at",
+	CreatedAt:            "giftcards.created_at",
 	StartDate:            "giftcards.start_date",
 	ExpiryDate:           "giftcards.expiry_date",
 	Tag:                  "giftcards.tag",
@@ -131,38 +131,38 @@ var GiftcardTableColumns = struct {
 
 var GiftcardWhere = struct {
 	ID                   whereHelperstring
-	Code                 whereHelpernull_String
+	Code                 whereHelperstring
 	CreatedByID          whereHelpernull_String
 	UsedByID             whereHelpernull_String
 	CreatedByEmail       whereHelpernull_String
 	UsedByEmail          whereHelpernull_String
-	CreateAt             whereHelpernull_Int64
+	CreatedAt            whereHelperint64
 	StartDate            whereHelpernull_Time
 	ExpiryDate           whereHelpernull_Time
 	Tag                  whereHelpernull_String
 	ProductID            whereHelpernull_String
 	LastUsedOn           whereHelpernull_Int64
 	IsActive             whereHelpernull_Bool
-	Currency             whereHelpernull_String
+	Currency             whereHelperstring
 	InitialBalanceAmount whereHelpernull_Float64
 	CurrentBalanceAmount whereHelpernull_Float64
 	Metadata             whereHelpernull_JSON
 	PrivateMetadata      whereHelpernull_JSON
 }{
 	ID:                   whereHelperstring{field: "\"giftcards\".\"id\""},
-	Code:                 whereHelpernull_String{field: "\"giftcards\".\"code\""},
+	Code:                 whereHelperstring{field: "\"giftcards\".\"code\""},
 	CreatedByID:          whereHelpernull_String{field: "\"giftcards\".\"created_by_id\""},
 	UsedByID:             whereHelpernull_String{field: "\"giftcards\".\"used_by_id\""},
 	CreatedByEmail:       whereHelpernull_String{field: "\"giftcards\".\"created_by_email\""},
 	UsedByEmail:          whereHelpernull_String{field: "\"giftcards\".\"used_by_email\""},
-	CreateAt:             whereHelpernull_Int64{field: "\"giftcards\".\"create_at\""},
+	CreatedAt:            whereHelperint64{field: "\"giftcards\".\"created_at\""},
 	StartDate:            whereHelpernull_Time{field: "\"giftcards\".\"start_date\""},
 	ExpiryDate:           whereHelpernull_Time{field: "\"giftcards\".\"expiry_date\""},
 	Tag:                  whereHelpernull_String{field: "\"giftcards\".\"tag\""},
 	ProductID:            whereHelpernull_String{field: "\"giftcards\".\"product_id\""},
 	LastUsedOn:           whereHelpernull_Int64{field: "\"giftcards\".\"last_used_on\""},
 	IsActive:             whereHelpernull_Bool{field: "\"giftcards\".\"is_active\""},
-	Currency:             whereHelpernull_String{field: "\"giftcards\".\"currency\""},
+	Currency:             whereHelperstring{field: "\"giftcards\".\"currency\""},
 	InitialBalanceAmount: whereHelpernull_Float64{field: "\"giftcards\".\"initial_balance_amount\""},
 	CurrentBalanceAmount: whereHelpernull_Float64{field: "\"giftcards\".\"current_balance_amount\""},
 	Metadata:             whereHelpernull_JSON{field: "\"giftcards\".\"metadata\""},
@@ -247,9 +247,9 @@ func (r *giftcardR) GetOrderGiftcards() OrderGiftcardSlice {
 type giftcardL struct{}
 
 var (
-	giftcardAllColumns            = []string{"id", "code", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "create_at", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "currency", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
-	giftcardColumnsWithoutDefault = []string{"id"}
-	giftcardColumnsWithDefault    = []string{"code", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "create_at", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "currency", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
+	giftcardAllColumns            = []string{"id", "code", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "created_at", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "currency", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
+	giftcardColumnsWithoutDefault = []string{"code", "created_at", "currency"}
+	giftcardColumnsWithDefault    = []string{"id", "created_by_id", "used_by_id", "created_by_email", "used_by_email", "start_date", "expiry_date", "tag", "product_id", "last_used_on", "is_active", "initial_balance_amount", "current_balance_amount", "metadata", "private_metadata"}
 	giftcardPrimaryKeyColumns     = []string{"id"}
 	giftcardGeneratedColumns      = []string{}
 )
@@ -1021,7 +1021,7 @@ func (giftcardL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1079,7 +1079,7 @@ func (giftcardL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.GiftcardID) {
+			if local.ID == foreign.GiftcardID {
 				local.R.GiftcardCheckouts = append(local.R.GiftcardCheckouts, foreign)
 				if foreign.R == nil {
 					foreign.R = &giftcardCheckoutR{}
@@ -1135,7 +1135,7 @@ func (giftcardL) LoadGiftcardEvents(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1193,7 +1193,7 @@ func (giftcardL) LoadGiftcardEvents(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.GiftcardID) {
+			if local.ID == foreign.GiftcardID {
 				local.R.GiftcardEvents = append(local.R.GiftcardEvents, foreign)
 				if foreign.R == nil {
 					foreign.R = &giftcardEventR{}
@@ -1249,7 +1249,7 @@ func (giftcardL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1307,7 +1307,7 @@ func (giftcardL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.GiftcardID) {
+			if local.ID == foreign.GiftcardID {
 				local.R.OrderGiftcards = append(local.R.OrderGiftcards, foreign)
 				if foreign.R == nil {
 					foreign.R = &orderGiftcardR{}
@@ -1569,7 +1569,7 @@ func (o *Giftcard) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.GiftcardID, o.ID)
+			rel.GiftcardID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1590,7 +1590,7 @@ func (o *Giftcard) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.GiftcardID, o.ID)
+			rel.GiftcardID = o.ID
 		}
 	}
 
@@ -1614,80 +1614,6 @@ func (o *Giftcard) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// SetGiftcardCheckouts removes all previously related items of the
-// giftcard replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Giftcard's GiftcardCheckouts accordingly.
-// Replaces o.R.GiftcardCheckouts with related.
-// Sets related.R.Giftcard's GiftcardCheckouts accordingly.
-func (o *Giftcard) SetGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
-	query := "update \"giftcard_checkouts\" set \"giftcard_id\" = null where \"giftcard_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.GiftcardCheckouts {
-			queries.SetScanner(&rel.GiftcardID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Giftcard = nil
-		}
-		o.R.GiftcardCheckouts = nil
-	}
-
-	return o.AddGiftcardCheckouts(ctx, exec, insert, related...)
-}
-
-// RemoveGiftcardCheckouts relationships from objects passed in.
-// Removes related items from R.GiftcardCheckouts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Giftcard.
-func (o *Giftcard) RemoveGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*GiftcardCheckout) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.GiftcardID, nil)
-		if rel.R != nil {
-			rel.R.Giftcard = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.GiftcardCheckouts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.GiftcardCheckouts)
-			if ln > 1 && i < ln-1 {
-				o.R.GiftcardCheckouts[i] = o.R.GiftcardCheckouts[ln-1]
-			}
-			o.R.GiftcardCheckouts = o.R.GiftcardCheckouts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddGiftcardEvents adds the given related objects to the existing relationships
 // of the giftcard, optionally inserting them as new records.
 // Appends related to o.R.GiftcardEvents.
@@ -1696,7 +1622,7 @@ func (o *Giftcard) AddGiftcardEvents(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.GiftcardID, o.ID)
+			rel.GiftcardID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1717,7 +1643,7 @@ func (o *Giftcard) AddGiftcardEvents(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.GiftcardID, o.ID)
+			rel.GiftcardID = o.ID
 		}
 	}
 
@@ -1741,80 +1667,6 @@ func (o *Giftcard) AddGiftcardEvents(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// SetGiftcardEvents removes all previously related items of the
-// giftcard replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Giftcard's GiftcardEvents accordingly.
-// Replaces o.R.GiftcardEvents with related.
-// Sets related.R.Giftcard's GiftcardEvents accordingly.
-func (o *Giftcard) SetGiftcardEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardEvent) error {
-	query := "update \"giftcard_events\" set \"giftcard_id\" = null where \"giftcard_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.GiftcardEvents {
-			queries.SetScanner(&rel.GiftcardID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Giftcard = nil
-		}
-		o.R.GiftcardEvents = nil
-	}
-
-	return o.AddGiftcardEvents(ctx, exec, insert, related...)
-}
-
-// RemoveGiftcardEvents relationships from objects passed in.
-// Removes related items from R.GiftcardEvents (uses pointer comparison, removal does not keep order)
-// Sets related.R.Giftcard.
-func (o *Giftcard) RemoveGiftcardEvents(ctx context.Context, exec boil.ContextExecutor, related ...*GiftcardEvent) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.GiftcardID, nil)
-		if rel.R != nil {
-			rel.R.Giftcard = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.GiftcardEvents {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.GiftcardEvents)
-			if ln > 1 && i < ln-1 {
-				o.R.GiftcardEvents[i] = o.R.GiftcardEvents[ln-1]
-			}
-			o.R.GiftcardEvents = o.R.GiftcardEvents[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddOrderGiftcards adds the given related objects to the existing relationships
 // of the giftcard, optionally inserting them as new records.
 // Appends related to o.R.OrderGiftcards.
@@ -1823,7 +1675,7 @@ func (o *Giftcard) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.GiftcardID, o.ID)
+			rel.GiftcardID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1844,7 +1696,7 @@ func (o *Giftcard) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.GiftcardID, o.ID)
+			rel.GiftcardID = o.ID
 		}
 	}
 
@@ -1865,80 +1717,6 @@ func (o *Giftcard) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecu
 			rel.R.Giftcard = o
 		}
 	}
-	return nil
-}
-
-// SetOrderGiftcards removes all previously related items of the
-// giftcard replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Giftcard's OrderGiftcards accordingly.
-// Replaces o.R.OrderGiftcards with related.
-// Sets related.R.Giftcard's OrderGiftcards accordingly.
-func (o *Giftcard) SetOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
-	query := "update \"order_giftcards\" set \"giftcard_id\" = null where \"giftcard_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.OrderGiftcards {
-			queries.SetScanner(&rel.GiftcardID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Giftcard = nil
-		}
-		o.R.OrderGiftcards = nil
-	}
-
-	return o.AddOrderGiftcards(ctx, exec, insert, related...)
-}
-
-// RemoveOrderGiftcards relationships from objects passed in.
-// Removes related items from R.OrderGiftcards (uses pointer comparison, removal does not keep order)
-// Sets related.R.Giftcard.
-func (o *Giftcard) RemoveOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*OrderGiftcard) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.GiftcardID, nil)
-		if rel.R != nil {
-			rel.R.Giftcard = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.OrderGiftcards {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.OrderGiftcards)
-			if ln > 1 && i < ln-1 {
-				o.R.OrderGiftcards[i] = o.R.OrderGiftcards[ln-1]
-			}
-			o.R.OrderGiftcards = o.R.OrderGiftcards[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -2080,10 +1858,6 @@ func (o *Giftcard) Update(ctx context.Context, exec boil.ContextExecutor, column
 			giftcardAllColumns,
 			giftcardPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update giftcards, could not build whitelist")
 		}

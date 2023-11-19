@@ -25,8 +25,8 @@ import (
 // CollectionChannelListing is an object representing the database table.
 type CollectionChannelListing struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	CollectionID    null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
+	CreatedAt       int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	CollectionID    string      `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
 	ChannelID       null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
 	PublicationDate null.Time   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
 	IsPublished     null.Bool   `boil:"is_published" json:"is_published,omitempty" toml:"is_published" yaml:"is_published,omitempty"`
@@ -37,14 +37,14 @@ type CollectionChannelListing struct {
 
 var CollectionChannelListingColumns = struct {
 	ID              string
-	CreateAt        string
+	CreatedAt       string
 	CollectionID    string
 	ChannelID       string
 	PublicationDate string
 	IsPublished     string
 }{
 	ID:              "id",
-	CreateAt:        "create_at",
+	CreatedAt:       "created_at",
 	CollectionID:    "collection_id",
 	ChannelID:       "channel_id",
 	PublicationDate: "publication_date",
@@ -53,14 +53,14 @@ var CollectionChannelListingColumns = struct {
 
 var CollectionChannelListingTableColumns = struct {
 	ID              string
-	CreateAt        string
+	CreatedAt       string
 	CollectionID    string
 	ChannelID       string
 	PublicationDate string
 	IsPublished     string
 }{
 	ID:              "collection_channel_listings.id",
-	CreateAt:        "collection_channel_listings.create_at",
+	CreatedAt:       "collection_channel_listings.created_at",
 	CollectionID:    "collection_channel_listings.collection_id",
 	ChannelID:       "collection_channel_listings.channel_id",
 	PublicationDate: "collection_channel_listings.publication_date",
@@ -71,15 +71,15 @@ var CollectionChannelListingTableColumns = struct {
 
 var CollectionChannelListingWhere = struct {
 	ID              whereHelperstring
-	CreateAt        whereHelpernull_Int64
-	CollectionID    whereHelpernull_String
+	CreatedAt       whereHelperint64
+	CollectionID    whereHelperstring
 	ChannelID       whereHelpernull_String
 	PublicationDate whereHelpernull_Time
 	IsPublished     whereHelpernull_Bool
 }{
 	ID:              whereHelperstring{field: "\"collection_channel_listings\".\"id\""},
-	CreateAt:        whereHelpernull_Int64{field: "\"collection_channel_listings\".\"create_at\""},
-	CollectionID:    whereHelpernull_String{field: "\"collection_channel_listings\".\"collection_id\""},
+	CreatedAt:       whereHelperint64{field: "\"collection_channel_listings\".\"created_at\""},
+	CollectionID:    whereHelperstring{field: "\"collection_channel_listings\".\"collection_id\""},
 	ChannelID:       whereHelpernull_String{field: "\"collection_channel_listings\".\"channel_id\""},
 	PublicationDate: whereHelpernull_Time{field: "\"collection_channel_listings\".\"publication_date\""},
 	IsPublished:     whereHelpernull_Bool{field: "\"collection_channel_listings\".\"is_published\""},
@@ -123,9 +123,9 @@ func (r *collectionChannelListingR) GetCollection() *Collection {
 type collectionChannelListingL struct{}
 
 var (
-	collectionChannelListingAllColumns            = []string{"id", "create_at", "collection_id", "channel_id", "publication_date", "is_published"}
-	collectionChannelListingColumnsWithoutDefault = []string{"id"}
-	collectionChannelListingColumnsWithDefault    = []string{"create_at", "collection_id", "channel_id", "publication_date", "is_published"}
+	collectionChannelListingAllColumns            = []string{"id", "created_at", "collection_id", "channel_id", "publication_date", "is_published"}
+	collectionChannelListingColumnsWithoutDefault = []string{"created_at", "collection_id"}
+	collectionChannelListingColumnsWithDefault    = []string{"id", "channel_id", "publication_date", "is_published"}
 	collectionChannelListingPrimaryKeyColumns     = []string{"id"}
 	collectionChannelListingGeneratedColumns      = []string{}
 )
@@ -587,9 +587,7 @@ func (collectionChannelListingL) LoadCollection(ctx context.Context, e boil.Cont
 		if object.R == nil {
 			object.R = &collectionChannelListingR{}
 		}
-		if !queries.IsNil(object.CollectionID) {
-			args = append(args, object.CollectionID)
-		}
+		args = append(args, object.CollectionID)
 
 	} else {
 	Outer:
@@ -599,14 +597,12 @@ func (collectionChannelListingL) LoadCollection(ctx context.Context, e boil.Cont
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CollectionID) {
+				if a == obj.CollectionID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CollectionID) {
-				args = append(args, obj.CollectionID)
-			}
+			args = append(args, obj.CollectionID)
 
 		}
 	}
@@ -664,7 +660,7 @@ func (collectionChannelListingL) LoadCollection(ctx context.Context, e boil.Cont
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CollectionID, foreign.ID) {
+			if local.CollectionID == foreign.ID {
 				local.R.Collection = foreign
 				if foreign.R == nil {
 					foreign.R = &collectionR{}
@@ -785,7 +781,7 @@ func (o *CollectionChannelListing) SetCollection(ctx context.Context, exec boil.
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CollectionID, related.ID)
+	o.CollectionID = related.ID
 	if o.R == nil {
 		o.R = &collectionChannelListingR{
 			Collection: related,
@@ -802,39 +798,6 @@ func (o *CollectionChannelListing) SetCollection(ctx context.Context, exec boil.
 		related.R.CollectionChannelListings = append(related.R.CollectionChannelListings, o)
 	}
 
-	return nil
-}
-
-// RemoveCollection relationship.
-// Sets o.R.Collection to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *CollectionChannelListing) RemoveCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
-	var err error
-
-	queries.SetScanner(&o.CollectionID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Collection = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.CollectionChannelListings {
-		if queries.Equal(o.CollectionID, ri.CollectionID) {
-			continue
-		}
-
-		ln := len(related.R.CollectionChannelListings)
-		if ln > 1 && i < ln-1 {
-			related.R.CollectionChannelListings[i] = related.R.CollectionChannelListings[ln-1]
-		}
-		related.R.CollectionChannelListings = related.R.CollectionChannelListings[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -976,10 +939,6 @@ func (o *CollectionChannelListing) Update(ctx context.Context, exec boil.Context
 			collectionChannelListingAllColumns,
 			collectionChannelListingPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update collection_channel_listings, could not build whitelist")
 		}

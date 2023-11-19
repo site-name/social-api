@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // VoucherCollection is an object representing the database table.
 type VoucherCollection struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VoucherID    null.String `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	CollectionID null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VoucherID    string `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	CollectionID string `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
 
 	R *voucherCollectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherCollectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var VoucherCollectionTableColumns = struct {
 
 var VoucherCollectionWhere = struct {
 	ID           whereHelperstring
-	VoucherID    whereHelpernull_String
-	CollectionID whereHelpernull_String
+	VoucherID    whereHelperstring
+	CollectionID whereHelperstring
 }{
 	ID:           whereHelperstring{field: "\"voucher_collections\".\"id\""},
-	VoucherID:    whereHelpernull_String{field: "\"voucher_collections\".\"voucher_id\""},
-	CollectionID: whereHelpernull_String{field: "\"voucher_collections\".\"collection_id\""},
+	VoucherID:    whereHelperstring{field: "\"voucher_collections\".\"voucher_id\""},
+	CollectionID: whereHelperstring{field: "\"voucher_collections\".\"collection_id\""},
 }
 
 // VoucherCollectionRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type voucherCollectionL struct{}
 
 var (
 	voucherCollectionAllColumns            = []string{"id", "voucher_id", "collection_id"}
-	voucherCollectionColumnsWithoutDefault = []string{"id"}
-	voucherCollectionColumnsWithDefault    = []string{"voucher_id", "collection_id"}
+	voucherCollectionColumnsWithoutDefault = []string{"voucher_id", "collection_id"}
+	voucherCollectionColumnsWithDefault    = []string{"id"}
 	voucherCollectionPrimaryKeyColumns     = []string{"id"}
 	voucherCollectionGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (voucherCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 		if object.R == nil {
 			object.R = &voucherCollectionR{}
 		}
-		if !queries.IsNil(object.CollectionID) {
-			args = append(args, object.CollectionID)
-		}
+		args = append(args, object.CollectionID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (voucherCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CollectionID) {
+				if a == obj.CollectionID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CollectionID) {
-				args = append(args, obj.CollectionID)
-			}
+			args = append(args, obj.CollectionID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (voucherCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CollectionID, foreign.ID) {
+			if local.CollectionID == foreign.ID {
 				local.R.Collection = foreign
 				if foreign.R == nil {
 					foreign.R = &collectionR{}
@@ -566,9 +561,7 @@ func (voucherCollectionL) LoadVoucher(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &voucherCollectionR{}
 		}
-		if !queries.IsNil(object.VoucherID) {
-			args = append(args, object.VoucherID)
-		}
+		args = append(args, object.VoucherID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (voucherCollectionL) LoadVoucher(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.VoucherID) {
+				if a == obj.VoucherID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.VoucherID) {
-				args = append(args, obj.VoucherID)
-			}
+			args = append(args, obj.VoucherID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (voucherCollectionL) LoadVoucher(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.VoucherID, foreign.ID) {
+			if local.VoucherID == foreign.ID {
 				local.R.Voucher = foreign
 				if foreign.R == nil {
 					foreign.R = &voucherR{}
@@ -684,7 +675,7 @@ func (o *VoucherCollection) SetCollection(ctx context.Context, exec boil.Context
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CollectionID, related.ID)
+	o.CollectionID = related.ID
 	if o.R == nil {
 		o.R = &voucherCollectionR{
 			Collection: related,
@@ -701,39 +692,6 @@ func (o *VoucherCollection) SetCollection(ctx context.Context, exec boil.Context
 		related.R.VoucherCollections = append(related.R.VoucherCollections, o)
 	}
 
-	return nil
-}
-
-// RemoveCollection relationship.
-// Sets o.R.Collection to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VoucherCollection) RemoveCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
-	var err error
-
-	queries.SetScanner(&o.CollectionID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Collection = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VoucherCollections {
-		if queries.Equal(o.CollectionID, ri.CollectionID) {
-			continue
-		}
-
-		ln := len(related.R.VoucherCollections)
-		if ln > 1 && i < ln-1 {
-			related.R.VoucherCollections[i] = related.R.VoucherCollections[ln-1]
-		}
-		related.R.VoucherCollections = related.R.VoucherCollections[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *VoucherCollection) SetVoucher(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.VoucherID, related.ID)
+	o.VoucherID = related.ID
 	if o.R == nil {
 		o.R = &voucherCollectionR{
 			Voucher: related,
@@ -781,39 +739,6 @@ func (o *VoucherCollection) SetVoucher(ctx context.Context, exec boil.ContextExe
 		related.R.VoucherCollections = append(related.R.VoucherCollections, o)
 	}
 
-	return nil
-}
-
-// RemoveVoucher relationship.
-// Sets o.R.Voucher to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VoucherCollection) RemoveVoucher(ctx context.Context, exec boil.ContextExecutor, related *Voucher) error {
-	var err error
-
-	queries.SetScanner(&o.VoucherID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Voucher = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VoucherCollections {
-		if queries.Equal(o.VoucherID, ri.VoucherID) {
-			continue
-		}
-
-		ln := len(related.R.VoucherCollections)
-		if ln > 1 && i < ln-1 {
-			related.R.VoucherCollections[i] = related.R.VoucherCollections[ln-1]
-		}
-		related.R.VoucherCollections = related.R.VoucherCollections[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *VoucherCollection) Update(ctx context.Context, exec boil.ContextExecuto
 			voucherCollectionAllColumns,
 			voucherCollectionPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update voucher_collections, could not build whitelist")
 		}

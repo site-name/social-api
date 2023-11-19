@@ -503,7 +503,7 @@ func testMenuItemTranslationToOneMenuItemUsingMenuItem(t *testing.T) {
 	var foreign MenuItem
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, menuItemTranslationDBTypes, true, menuItemTranslationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, menuItemTranslationDBTypes, false, menuItemTranslationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize MenuItemTranslation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, menuItemDBTypes, false, menuItemColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testMenuItemTranslationToOneMenuItemUsingMenuItem(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.MenuItemID, foreign.ID)
+	local.MenuItemID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testMenuItemTranslationToOneMenuItemUsingMenuItem(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testMenuItemTranslationToOneSetOpMenuItemUsingMenuItem(t *testing.T) {
 		if x.R.MenuItemTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.MenuItemID, x.ID) {
+		if a.MenuItemID != x.ID {
 			t.Error("foreign key was wrong value", a.MenuItemID)
 		}
 
@@ -607,60 +607,9 @@ func testMenuItemTranslationToOneSetOpMenuItemUsingMenuItem(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.MenuItemID, x.ID) {
+		if a.MenuItemID != x.ID {
 			t.Error("foreign key was wrong value", a.MenuItemID, x.ID)
 		}
-	}
-}
-
-func testMenuItemTranslationToOneRemoveOpMenuItemUsingMenuItem(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a MenuItemTranslation
-	var b MenuItem
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, menuItemTranslationDBTypes, false, strmangle.SetComplement(menuItemTranslationPrimaryKeyColumns, menuItemTranslationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, menuItemDBTypes, false, strmangle.SetComplement(menuItemPrimaryKeyColumns, menuItemColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetMenuItem(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveMenuItem(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.MenuItem().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.MenuItem != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.MenuItemID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.MenuItemTranslations) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testMenuItemTranslationsSelect(t *testing.T) {
 }
 
 var (
-	menuItemTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `MenuItemID`: `character varying`, `Name`: `character varying`}
+	menuItemTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `MenuItemID`: `uuid`, `Name`: `character varying`}
 	_                          = bytes.MinRead
 )
 

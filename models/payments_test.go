@@ -519,8 +519,9 @@ func testPaymentToManyTransactions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.PaymentID, a.ID)
-	queries.Assign(&c.PaymentID, a.ID)
+	b.PaymentID = a.ID
+	c.PaymentID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testPaymentToManyTransactions(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.PaymentID, b.PaymentID) {
+		if v.PaymentID == b.PaymentID {
 			bFound = true
 		}
-		if queries.Equal(v.PaymentID, c.PaymentID) {
+		if v.PaymentID == c.PaymentID {
 			cFound = true
 		}
 	}
@@ -616,10 +617,10 @@ func testPaymentToManyAddOpTransactions(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.PaymentID) {
+		if a.ID != first.PaymentID {
 			t.Error("foreign key was wrong value", a.ID, first.PaymentID)
 		}
-		if !queries.Equal(a.ID, second.PaymentID) {
+		if a.ID != second.PaymentID {
 			t.Error("foreign key was wrong value", a.ID, second.PaymentID)
 		}
 
@@ -646,182 +647,6 @@ func testPaymentToManyAddOpTransactions(t *testing.T) {
 		}
 	}
 }
-
-func testPaymentToManySetOpTransactions(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Payment
-	var b, c, d, e Transaction
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, paymentDBTypes, false, strmangle.SetComplement(paymentPrimaryKeyColumns, paymentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Transaction{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, transactionDBTypes, false, strmangle.SetComplement(transactionPrimaryKeyColumns, transactionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetTransactions(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.Transactions().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetTransactions(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.Transactions().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.PaymentID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.PaymentID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.PaymentID) {
-		t.Error("foreign key was wrong value", a.ID, d.PaymentID)
-	}
-	if !queries.Equal(a.ID, e.PaymentID) {
-		t.Error("foreign key was wrong value", a.ID, e.PaymentID)
-	}
-
-	if b.R.Payment != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Payment != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Payment != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Payment != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.Transactions[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.Transactions[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testPaymentToManyRemoveOpTransactions(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Payment
-	var b, c, d, e Transaction
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, paymentDBTypes, false, strmangle.SetComplement(paymentPrimaryKeyColumns, paymentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Transaction{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, transactionDBTypes, false, strmangle.SetComplement(transactionPrimaryKeyColumns, transactionColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddTransactions(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.Transactions().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveTransactions(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.Transactions().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.PaymentID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.PaymentID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Payment != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Payment != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Payment != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Payment != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.Transactions) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.Transactions[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.Transactions[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testPaymentToOneCheckoutUsingCheckout(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1236,7 +1061,7 @@ func testPaymentsSelect(t *testing.T) {
 }
 
 var (
-	paymentDBTypes = map[string]string{`ID`: `character varying`, `Gateway`: `character varying`, `IsActive`: `boolean`, `ToConfirm`: `boolean`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `ChargeStatus`: `character varying`, `Token`: `character varying`, `Total`: `double precision`, `CapturedAmount`: `double precision`, `Currency`: `character varying`, `CheckoutID`: `character varying`, `OrderID`: `character varying`, `BillingEmail`: `character varying`, `BillingFirstName`: `character varying`, `BillingLastName`: `character varying`, `BillingCompanyName`: `character varying`, `BillingAddress1`: `character varying`, `BillingAddress2`: `character varying`, `BillingCity`: `character varying`, `BillingCityArea`: `character varying`, `BillingPostalCode`: `character varying`, `BillingCountryCode`: `character varying`, `BillingCountryArea`: `character varying`, `CCFirstDigits`: `character varying`, `CCLastDigits`: `character varying`, `CCBrand`: `character varying`, `CCExpMonth`: `integer`, `CCExpYear`: `integer`, `PaymentMethodType`: `character varying`, `CustomerIPAddress`: `character varying`, `ExtraData`: `text`, `ReturnURL`: `character varying`, `PSPReference`: `character varying`, `StorePaymentMethod`: `character varying`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	paymentDBTypes = map[string]string{`ID`: `uuid`, `Gateway`: `character varying`, `IsActive`: `boolean`, `ToConfirm`: `boolean`, `CreatedAt`: `bigint`, `UpdatedAt`: `bigint`, `ChargeStatus`: `character varying`, `Token`: `character varying`, `Total`: `numeric`, `CapturedAmount`: `numeric`, `Currency`: `character varying`, `CheckoutID`: `uuid`, `OrderID`: `uuid`, `BillingEmail`: `character varying`, `BillingFirstName`: `character varying`, `BillingLastName`: `character varying`, `BillingCompanyName`: `character varying`, `BillingAddress1`: `character varying`, `BillingAddress2`: `character varying`, `BillingCity`: `character varying`, `BillingCityArea`: `character varying`, `BillingPostalCode`: `character varying`, `BillingCountryCode`: `character varying`, `BillingCountryArea`: `character varying`, `CCFirstDigits`: `character varying`, `CCLastDigits`: `character varying`, `CCBrand`: `character varying`, `CCExpMonth`: `integer`, `CCExpYear`: `integer`, `PaymentMethodType`: `character varying`, `CustomerIPAddress`: `character varying`, `ExtraData`: `text`, `ReturnURL`: `character varying`, `PSPReference`: `character varying`, `StorePaymentMethod`: `character varying`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_              = bytes.MinRead
 )
 

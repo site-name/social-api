@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,51 +23,51 @@ import (
 
 // TermsOfService is an object representing the database table.
 type TermsOfService struct {
-	ID       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UserID   null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Text     null.String `boil:"text" json:"text,omitempty" toml:"text" yaml:"text,omitempty"`
+	ID        string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UserID    string `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Text      string `boil:"text" json:"text" toml:"text" yaml:"text"`
 
 	R *termsOfServiceR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L termsOfServiceL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var TermsOfServiceColumns = struct {
-	ID       string
-	CreateAt string
-	UserID   string
-	Text     string
+	ID        string
+	CreatedAt string
+	UserID    string
+	Text      string
 }{
-	ID:       "id",
-	CreateAt: "create_at",
-	UserID:   "user_id",
-	Text:     "text",
+	ID:        "id",
+	CreatedAt: "created_at",
+	UserID:    "user_id",
+	Text:      "text",
 }
 
 var TermsOfServiceTableColumns = struct {
-	ID       string
-	CreateAt string
-	UserID   string
-	Text     string
+	ID        string
+	CreatedAt string
+	UserID    string
+	Text      string
 }{
-	ID:       "terms_of_services.id",
-	CreateAt: "terms_of_services.create_at",
-	UserID:   "terms_of_services.user_id",
-	Text:     "terms_of_services.text",
+	ID:        "terms_of_services.id",
+	CreatedAt: "terms_of_services.created_at",
+	UserID:    "terms_of_services.user_id",
+	Text:      "terms_of_services.text",
 }
 
 // Generated where
 
 var TermsOfServiceWhere = struct {
-	ID       whereHelperstring
-	CreateAt whereHelpernull_Int64
-	UserID   whereHelpernull_String
-	Text     whereHelpernull_String
+	ID        whereHelperstring
+	CreatedAt whereHelperint64
+	UserID    whereHelperstring
+	Text      whereHelperstring
 }{
-	ID:       whereHelperstring{field: "\"terms_of_services\".\"id\""},
-	CreateAt: whereHelpernull_Int64{field: "\"terms_of_services\".\"create_at\""},
-	UserID:   whereHelpernull_String{field: "\"terms_of_services\".\"user_id\""},
-	Text:     whereHelpernull_String{field: "\"terms_of_services\".\"text\""},
+	ID:        whereHelperstring{field: "\"terms_of_services\".\"id\""},
+	CreatedAt: whereHelperint64{field: "\"terms_of_services\".\"created_at\""},
+	UserID:    whereHelperstring{field: "\"terms_of_services\".\"user_id\""},
+	Text:      whereHelperstring{field: "\"terms_of_services\".\"text\""},
 }
 
 // TermsOfServiceRels is where relationship names are stored.
@@ -88,9 +87,9 @@ func (*termsOfServiceR) NewStruct() *termsOfServiceR {
 type termsOfServiceL struct{}
 
 var (
-	termsOfServiceAllColumns            = []string{"id", "create_at", "user_id", "text"}
-	termsOfServiceColumnsWithoutDefault = []string{"id"}
-	termsOfServiceColumnsWithDefault    = []string{"create_at", "user_id", "text"}
+	termsOfServiceAllColumns            = []string{"id", "created_at", "user_id", "text"}
+	termsOfServiceColumnsWithoutDefault = []string{"created_at", "user_id", "text"}
+	termsOfServiceColumnsWithDefault    = []string{"id"}
 	termsOfServicePrimaryKeyColumns     = []string{"id"}
 	termsOfServiceGeneratedColumns      = []string{}
 )
@@ -511,10 +510,6 @@ func (o *TermsOfService) Update(ctx context.Context, exec boil.ContextExecutor, 
 			termsOfServiceAllColumns,
 			termsOfServicePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update terms_of_services, could not build whitelist")
 		}

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // VoucherCategory is an object representing the database table.
 type VoucherCategory struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VoucherID  null.String `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	CategoryID null.String `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
-	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID         string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VoucherID  string `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	CategoryID string `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
+	CreatedAt  int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *voucherCategoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherCategoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,38 +36,38 @@ var VoucherCategoryColumns = struct {
 	ID         string
 	VoucherID  string
 	CategoryID string
-	CreateAt   string
+	CreatedAt  string
 }{
 	ID:         "id",
 	VoucherID:  "voucher_id",
 	CategoryID: "category_id",
-	CreateAt:   "create_at",
+	CreatedAt:  "created_at",
 }
 
 var VoucherCategoryTableColumns = struct {
 	ID         string
 	VoucherID  string
 	CategoryID string
-	CreateAt   string
+	CreatedAt  string
 }{
 	ID:         "voucher_categories.id",
 	VoucherID:  "voucher_categories.voucher_id",
 	CategoryID: "voucher_categories.category_id",
-	CreateAt:   "voucher_categories.create_at",
+	CreatedAt:  "voucher_categories.created_at",
 }
 
 // Generated where
 
 var VoucherCategoryWhere = struct {
 	ID         whereHelperstring
-	VoucherID  whereHelpernull_String
-	CategoryID whereHelpernull_String
-	CreateAt   whereHelpernull_Int64
+	VoucherID  whereHelperstring
+	CategoryID whereHelperstring
+	CreatedAt  whereHelperint64
 }{
 	ID:         whereHelperstring{field: "\"voucher_categories\".\"id\""},
-	VoucherID:  whereHelpernull_String{field: "\"voucher_categories\".\"voucher_id\""},
-	CategoryID: whereHelpernull_String{field: "\"voucher_categories\".\"category_id\""},
-	CreateAt:   whereHelpernull_Int64{field: "\"voucher_categories\".\"create_at\""},
+	VoucherID:  whereHelperstring{field: "\"voucher_categories\".\"voucher_id\""},
+	CategoryID: whereHelperstring{field: "\"voucher_categories\".\"category_id\""},
+	CreatedAt:  whereHelperint64{field: "\"voucher_categories\".\"created_at\""},
 }
 
 // VoucherCategoryRels is where relationship names are stored.
@@ -109,9 +108,9 @@ func (r *voucherCategoryR) GetVoucher() *Voucher {
 type voucherCategoryL struct{}
 
 var (
-	voucherCategoryAllColumns            = []string{"id", "voucher_id", "category_id", "create_at"}
-	voucherCategoryColumnsWithoutDefault = []string{"id"}
-	voucherCategoryColumnsWithDefault    = []string{"voucher_id", "category_id", "create_at"}
+	voucherCategoryAllColumns            = []string{"id", "voucher_id", "category_id", "created_at"}
+	voucherCategoryColumnsWithoutDefault = []string{"voucher_id", "category_id", "created_at"}
+	voucherCategoryColumnsWithDefault    = []string{"id"}
 	voucherCategoryPrimaryKeyColumns     = []string{"id"}
 	voucherCategoryGeneratedColumns      = []string{}
 )
@@ -449,9 +448,7 @@ func (voucherCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor
 		if object.R == nil {
 			object.R = &voucherCategoryR{}
 		}
-		if !queries.IsNil(object.CategoryID) {
-			args = append(args, object.CategoryID)
-		}
+		args = append(args, object.CategoryID)
 
 	} else {
 	Outer:
@@ -461,14 +458,12 @@ func (voucherCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CategoryID) {
+				if a == obj.CategoryID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CategoryID) {
-				args = append(args, obj.CategoryID)
-			}
+			args = append(args, obj.CategoryID)
 
 		}
 	}
@@ -526,7 +521,7 @@ func (voucherCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CategoryID, foreign.ID) {
+			if local.CategoryID == foreign.ID {
 				local.R.Category = foreign
 				if foreign.R == nil {
 					foreign.R = &categoryR{}
@@ -573,9 +568,7 @@ func (voucherCategoryL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &voucherCategoryR{}
 		}
-		if !queries.IsNil(object.VoucherID) {
-			args = append(args, object.VoucherID)
-		}
+		args = append(args, object.VoucherID)
 
 	} else {
 	Outer:
@@ -585,14 +578,12 @@ func (voucherCategoryL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.VoucherID) {
+				if a == obj.VoucherID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.VoucherID) {
-				args = append(args, obj.VoucherID)
-			}
+			args = append(args, obj.VoucherID)
 
 		}
 	}
@@ -650,7 +641,7 @@ func (voucherCategoryL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.VoucherID, foreign.ID) {
+			if local.VoucherID == foreign.ID {
 				local.R.Voucher = foreign
 				if foreign.R == nil {
 					foreign.R = &voucherR{}
@@ -691,7 +682,7 @@ func (o *VoucherCategory) SetCategory(ctx context.Context, exec boil.ContextExec
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CategoryID, related.ID)
+	o.CategoryID = related.ID
 	if o.R == nil {
 		o.R = &voucherCategoryR{
 			Category: related,
@@ -708,39 +699,6 @@ func (o *VoucherCategory) SetCategory(ctx context.Context, exec boil.ContextExec
 		related.R.VoucherCategories = append(related.R.VoucherCategories, o)
 	}
 
-	return nil
-}
-
-// RemoveCategory relationship.
-// Sets o.R.Category to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VoucherCategory) RemoveCategory(ctx context.Context, exec boil.ContextExecutor, related *Category) error {
-	var err error
-
-	queries.SetScanner(&o.CategoryID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("category_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Category = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VoucherCategories {
-		if queries.Equal(o.CategoryID, ri.CategoryID) {
-			continue
-		}
-
-		ln := len(related.R.VoucherCategories)
-		if ln > 1 && i < ln-1 {
-			related.R.VoucherCategories[i] = related.R.VoucherCategories[ln-1]
-		}
-		related.R.VoucherCategories = related.R.VoucherCategories[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -771,7 +729,7 @@ func (o *VoucherCategory) SetVoucher(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.VoucherID, related.ID)
+	o.VoucherID = related.ID
 	if o.R == nil {
 		o.R = &voucherCategoryR{
 			Voucher: related,
@@ -788,39 +746,6 @@ func (o *VoucherCategory) SetVoucher(ctx context.Context, exec boil.ContextExecu
 		related.R.VoucherCategories = append(related.R.VoucherCategories, o)
 	}
 
-	return nil
-}
-
-// RemoveVoucher relationship.
-// Sets o.R.Voucher to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VoucherCategory) RemoveVoucher(ctx context.Context, exec boil.ContextExecutor, related *Voucher) error {
-	var err error
-
-	queries.SetScanner(&o.VoucherID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Voucher = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VoucherCategories {
-		if queries.Equal(o.VoucherID, ri.VoucherID) {
-			continue
-		}
-
-		ln := len(related.R.VoucherCategories)
-		if ln > 1 && i < ln-1 {
-			related.R.VoucherCategories[i] = related.R.VoucherCategories[ln-1]
-		}
-		related.R.VoucherCategories = related.R.VoucherCategories[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -962,10 +887,6 @@ func (o *VoucherCategory) Update(ctx context.Context, exec boil.ContextExecutor,
 			voucherCategoryAllColumns,
 			voucherCategoryPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update voucher_categories, could not build whitelist")
 		}

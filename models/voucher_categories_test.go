@@ -503,7 +503,7 @@ func testVoucherCategoryToOneCategoryUsingCategory(t *testing.T) {
 	var foreign Category
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, voucherCategoryDBTypes, true, voucherCategoryColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, voucherCategoryDBTypes, false, voucherCategoryColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize VoucherCategory struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, categoryDBTypes, false, categoryColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testVoucherCategoryToOneCategoryUsingCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.CategoryID, foreign.ID)
+	local.CategoryID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testVoucherCategoryToOneCategoryUsingCategory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -564,7 +564,7 @@ func testVoucherCategoryToOneVoucherUsingVoucher(t *testing.T) {
 	var foreign Voucher
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, voucherCategoryDBTypes, true, voucherCategoryColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, voucherCategoryDBTypes, false, voucherCategoryColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize VoucherCategory struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, voucherDBTypes, false, voucherColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testVoucherCategoryToOneVoucherUsingVoucher(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.VoucherID, foreign.ID)
+	local.VoucherID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testVoucherCategoryToOneVoucherUsingVoucher(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testVoucherCategoryToOneSetOpCategoryUsingCategory(t *testing.T) {
 		if x.R.VoucherCategories[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.CategoryID, x.ID) {
+		if a.CategoryID != x.ID {
 			t.Error("foreign key was wrong value", a.CategoryID)
 		}
 
@@ -668,63 +668,11 @@ func testVoucherCategoryToOneSetOpCategoryUsingCategory(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.CategoryID, x.ID) {
+		if a.CategoryID != x.ID {
 			t.Error("foreign key was wrong value", a.CategoryID, x.ID)
 		}
 	}
 }
-
-func testVoucherCategoryToOneRemoveOpCategoryUsingCategory(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a VoucherCategory
-	var b Category
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, voucherCategoryDBTypes, false, strmangle.SetComplement(voucherCategoryPrimaryKeyColumns, voucherCategoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, categoryDBTypes, false, strmangle.SetComplement(categoryPrimaryKeyColumns, categoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetCategory(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveCategory(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Category().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Category != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.CategoryID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.VoucherCategories) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testVoucherCategoryToOneSetOpVoucherUsingVoucher(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testVoucherCategoryToOneSetOpVoucherUsingVoucher(t *testing.T) {
 		if x.R.VoucherCategories[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.VoucherID, x.ID) {
+		if a.VoucherID != x.ID {
 			t.Error("foreign key was wrong value", a.VoucherID)
 		}
 
@@ -777,60 +725,9 @@ func testVoucherCategoryToOneSetOpVoucherUsingVoucher(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.VoucherID, x.ID) {
+		if a.VoucherID != x.ID {
 			t.Error("foreign key was wrong value", a.VoucherID, x.ID)
 		}
-	}
-}
-
-func testVoucherCategoryToOneRemoveOpVoucherUsingVoucher(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a VoucherCategory
-	var b Voucher
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, voucherCategoryDBTypes, false, strmangle.SetComplement(voucherCategoryPrimaryKeyColumns, voucherCategoryColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, voucherDBTypes, false, strmangle.SetComplement(voucherPrimaryKeyColumns, voucherColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetVoucher(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveVoucher(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Voucher().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Voucher != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.VoucherID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.VoucherCategories) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testVoucherCategoriesSelect(t *testing.T) {
 }
 
 var (
-	voucherCategoryDBTypes = map[string]string{`ID`: `character varying`, `VoucherID`: `character varying`, `CategoryID`: `character varying`, `CreateAt`: `bigint`}
+	voucherCategoryDBTypes = map[string]string{`ID`: `uuid`, `VoucherID`: `uuid`, `CategoryID`: `uuid`, `CreatedAt`: `bigint`}
 	_                      = bytes.MinRead
 )
 

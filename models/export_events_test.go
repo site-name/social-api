@@ -503,7 +503,7 @@ func testExportEventToOneExportFileUsingExportFile(t *testing.T) {
 	var foreign ExportFile
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, exportEventDBTypes, true, exportEventColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, exportEventDBTypes, false, exportEventColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ExportEvent struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, exportFileDBTypes, false, exportFileColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testExportEventToOneExportFileUsingExportFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ExportFileID, foreign.ID)
+	local.ExportFileID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testExportEventToOneExportFileUsingExportFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testExportEventToOneSetOpExportFileUsingExportFile(t *testing.T) {
 		if x.R.ExportEvents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ExportFileID, x.ID) {
+		if a.ExportFileID != x.ID {
 			t.Error("foreign key was wrong value", a.ExportFileID)
 		}
 
@@ -668,63 +668,11 @@ func testExportEventToOneSetOpExportFileUsingExportFile(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ExportFileID, x.ID) {
+		if a.ExportFileID != x.ID {
 			t.Error("foreign key was wrong value", a.ExportFileID, x.ID)
 		}
 	}
 }
-
-func testExportEventToOneRemoveOpExportFileUsingExportFile(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ExportEvent
-	var b ExportFile
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, exportEventDBTypes, false, strmangle.SetComplement(exportEventPrimaryKeyColumns, exportEventColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, exportFileDBTypes, false, strmangle.SetComplement(exportFilePrimaryKeyColumns, exportFileColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetExportFile(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveExportFile(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ExportFile().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ExportFile != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ExportFileID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ExportEvents) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testExportEventToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
@@ -908,7 +856,7 @@ func testExportEventsSelect(t *testing.T) {
 }
 
 var (
-	exportEventDBTypes = map[string]string{`ID`: `character varying`, `Date`: `bigint`, `Type`: `character varying`, `Parameters`: `text`, `ExportFileID`: `character varying`, `UserID`: `character varying`}
+	exportEventDBTypes = map[string]string{`ID`: `uuid`, `Date`: `bigint`, `Type`: `character varying`, `Parameters`: `text`, `ExportFileID`: `uuid`, `UserID`: `uuid`}
 	_                  = bytes.MinRead
 )
 

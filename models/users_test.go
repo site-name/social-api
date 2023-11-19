@@ -514,7 +514,7 @@ func testUserOneToOneWishlistUsingWishlist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&foreign.UserID, local.ID)
+	foreign.UserID = local.ID
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testUserOneToOneWishlistUsingWishlist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.UserID, foreign.UserID) {
+	if check.UserID != foreign.UserID {
 		t.Errorf("want: %v, got %v", foreign.UserID, check.UserID)
 	}
 
@@ -596,7 +596,7 @@ func testUserOneToOneSetOpWishlistUsingWishlist(t *testing.T) {
 			t.Error("failed to append to foreign relationship struct")
 		}
 
-		if !queries.Equal(a.ID, x.UserID) {
+		if a.ID != x.UserID {
 			t.Error("foreign key was wrong value", a.ID)
 		}
 
@@ -607,64 +607,13 @@ func testUserOneToOneSetOpWishlistUsingWishlist(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ID, x.UserID) {
+		if a.ID != x.UserID {
 			t.Error("foreign key was wrong value", a.ID, x.UserID)
 		}
 
 		if _, err = x.Delete(ctx, tx); err != nil {
 			t.Fatal("failed to delete x", err)
 		}
-	}
-}
-
-func testUserOneToOneRemoveOpWishlistUsingWishlist(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b Wishlist
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, wishlistDBTypes, false, strmangle.SetComplement(wishlistPrimaryKeyColumns, wishlistColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetWishlist(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveWishlist(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Wishlist().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Wishlist != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("foreign key column should be nil")
-	}
-
-	if b.R.User != nil {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1463,8 +1412,9 @@ func testUserToManyStaffShopStaffs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.StaffID, a.ID)
-	queries.Assign(&c.StaffID, a.ID)
+	b.StaffID = a.ID
+	c.StaffID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1479,10 +1429,10 @@ func testUserToManyStaffShopStaffs(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.StaffID, b.StaffID) {
+		if v.StaffID == b.StaffID {
 			bFound = true
 		}
-		if queries.Equal(v.StaffID, c.StaffID) {
+		if v.StaffID == c.StaffID {
 			cFound = true
 		}
 	}
@@ -1617,8 +1567,9 @@ func testUserToManyUserAddresses(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.UserID, a.ID)
-	queries.Assign(&c.UserID, a.ID)
+	b.UserID = a.ID
+	c.UserID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1633,10 +1584,10 @@ func testUserToManyUserAddresses(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.UserID, b.UserID) {
+		if v.UserID == b.UserID {
 			bFound = true
 		}
-		if queries.Equal(v.UserID, c.UserID) {
+		if v.UserID == c.UserID {
 			cFound = true
 		}
 	}
@@ -4224,10 +4175,10 @@ func testUserToManyAddOpStaffShopStaffs(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.StaffID) {
+		if a.ID != first.StaffID {
 			t.Error("foreign key was wrong value", a.ID, first.StaffID)
 		}
-		if !queries.Equal(a.ID, second.StaffID) {
+		if a.ID != second.StaffID {
 			t.Error("foreign key was wrong value", a.ID, second.StaffID)
 		}
 
@@ -4254,182 +4205,6 @@ func testUserToManyAddOpStaffShopStaffs(t *testing.T) {
 		}
 	}
 }
-
-func testUserToManySetOpStaffShopStaffs(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e ShopStaff
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*ShopStaff{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, shopStaffDBTypes, false, strmangle.SetComplement(shopStaffPrimaryKeyColumns, shopStaffColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetStaffShopStaffs(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.StaffShopStaffs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetStaffShopStaffs(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.StaffShopStaffs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.StaffID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.StaffID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.StaffID) {
-		t.Error("foreign key was wrong value", a.ID, d.StaffID)
-	}
-	if !queries.Equal(a.ID, e.StaffID) {
-		t.Error("foreign key was wrong value", a.ID, e.StaffID)
-	}
-
-	if b.R.Staff != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Staff != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Staff != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Staff != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.StaffShopStaffs[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.StaffShopStaffs[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testUserToManyRemoveOpStaffShopStaffs(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e ShopStaff
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*ShopStaff{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, shopStaffDBTypes, false, strmangle.SetComplement(shopStaffPrimaryKeyColumns, shopStaffColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddStaffShopStaffs(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.StaffShopStaffs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveStaffShopStaffs(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.StaffShopStaffs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.StaffID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.StaffID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Staff != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Staff != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Staff != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Staff != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.StaffShopStaffs) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.StaffShopStaffs[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.StaffShopStaffs[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testUserToManyAddOpStaffNotificationRecipients(t *testing.T) {
 	var err error
 
@@ -4726,10 +4501,10 @@ func testUserToManyAddOpUserAddresses(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.UserID) {
+		if a.ID != first.UserID {
 			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.UserID) {
+		if a.ID != second.UserID {
 			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
@@ -4756,182 +4531,6 @@ func testUserToManyAddOpUserAddresses(t *testing.T) {
 		}
 	}
 }
-
-func testUserToManySetOpUserAddresses(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e UserAddress
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*UserAddress{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, userAddressDBTypes, false, strmangle.SetComplement(userAddressPrimaryKeyColumns, userAddressColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetUserAddresses(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetUserAddresses(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.UserID) {
-		t.Error("foreign key was wrong value", a.ID, d.UserID)
-	}
-	if !queries.Equal(a.ID, e.UserID) {
-		t.Error("foreign key was wrong value", a.ID, e.UserID)
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.UserAddresses[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.UserAddresses[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testUserToManyRemoveOpUserAddresses(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e UserAddress
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*UserAddress{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, userAddressDBTypes, false, strmangle.SetComplement(userAddressPrimaryKeyColumns, userAddressColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddUserAddresses(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveUserAddresses(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.UserAddresses().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.UserAddresses) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.UserAddresses[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.UserAddresses[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testUserToOneAddressUsingDefaultShippingAddress(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -5176,7 +4775,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-	userDBTypes = map[string]string{`ID`: `character varying`, `Email`: `character varying`, `Username`: `character varying`, `FirstName`: `character varying`, `LastName`: `character varying`, `DefaultShippingAddressID`: `character varying`, `DefaultBillingAddressID`: `character varying`, `Password`: `character varying`, `AuthData`: `character varying`, `AuthService`: `character varying`, `EmailVerified`: `boolean`, `Nickname`: `character varying`, `Roles`: `character varying`, `Props`: `jsonb`, `NotifyProps`: `jsonb`, `LastPasswordUpdate`: `bigint`, `LastPictureUpdate`: `bigint`, `FailedAttempts`: `integer`, `Locale`: `character varying`, `Timezone`: `jsonb`, `MfaActive`: `boolean`, `MfaSecret`: `character varying`, `CreateAt`: `bigint`, `UpdateAt`: `bigint`, `DeleteAt`: `bigint`, `IsActive`: `boolean`, `Note`: `text`, `JWTTokenKey`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	userDBTypes = map[string]string{`ID`: `uuid`, `Email`: `character varying`, `Username`: `character varying`, `FirstName`: `character varying`, `LastName`: `character varying`, `DefaultShippingAddressID`: `uuid`, `DefaultBillingAddressID`: `uuid`, `Password`: `character varying`, `AuthData`: `character varying`, `AuthService`: `character varying`, `EmailVerified`: `boolean`, `Nickname`: `character varying`, `Roles`: `character varying`, `Props`: `jsonb`, `NotifyProps`: `jsonb`, `LastPasswordUpdate`: `bigint`, `LastPictureUpdate`: `bigint`, `FailedAttempts`: `integer`, `Locale`: `character varying`, `Timezone`: `jsonb`, `MfaActive`: `boolean`, `MfaSecret`: `character varying`, `CreatedAt`: `bigint`, `UpdatedAt`: `bigint`, `DeleteAt`: `bigint`, `IsActive`: `boolean`, `Note`: `text`, `JWTTokenKey`: `text`, `LastActivityAt`: `bigint`, `TermsOfServiceID`: `uuid`, `TermsIfServiceCreatedAt`: `bigint`, `DisableWelcomeEmail`: `boolean`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_           = bytes.MinRead
 )
 

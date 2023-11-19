@@ -14,23 +14,23 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // VoucherChannelListing is an object representing the database table.
 type VoucherChannelListing struct {
-	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt       null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	VoucherID      string       `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
-	ChannelID      string       `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	DiscountValue  null.Float64 `boil:"discount_value" json:"discount_value,omitempty" toml:"discount_value" yaml:"discount_value,omitempty"`
-	Currency       null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	MinSpendAmount null.Float64 `boil:"min_spend_amount" json:"min_spend_amount,omitempty" toml:"min_spend_amount" yaml:"min_spend_amount,omitempty"`
+	ID             string        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt      int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	VoucherID      string        `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	ChannelID      string        `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	DiscountValue  types.Decimal `boil:"discount_value" json:"discount_value" toml:"discount_value" yaml:"discount_value"`
+	Currency       string        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	MinSpendAmount types.Decimal `boil:"min_spend_amount" json:"min_spend_amount" toml:"min_spend_amount" yaml:"min_spend_amount"`
 
 	R *voucherChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,7 +38,7 @@ type VoucherChannelListing struct {
 
 var VoucherChannelListingColumns = struct {
 	ID             string
-	CreateAt       string
+	CreatedAt      string
 	VoucherID      string
 	ChannelID      string
 	DiscountValue  string
@@ -46,7 +46,7 @@ var VoucherChannelListingColumns = struct {
 	MinSpendAmount string
 }{
 	ID:             "id",
-	CreateAt:       "create_at",
+	CreatedAt:      "created_at",
 	VoucherID:      "voucher_id",
 	ChannelID:      "channel_id",
 	DiscountValue:  "discount_value",
@@ -56,7 +56,7 @@ var VoucherChannelListingColumns = struct {
 
 var VoucherChannelListingTableColumns = struct {
 	ID             string
-	CreateAt       string
+	CreatedAt      string
 	VoucherID      string
 	ChannelID      string
 	DiscountValue  string
@@ -64,7 +64,7 @@ var VoucherChannelListingTableColumns = struct {
 	MinSpendAmount string
 }{
 	ID:             "voucher_channel_listings.id",
-	CreateAt:       "voucher_channel_listings.create_at",
+	CreatedAt:      "voucher_channel_listings.created_at",
 	VoucherID:      "voucher_channel_listings.voucher_id",
 	ChannelID:      "voucher_channel_listings.channel_id",
 	DiscountValue:  "voucher_channel_listings.discount_value",
@@ -76,20 +76,20 @@ var VoucherChannelListingTableColumns = struct {
 
 var VoucherChannelListingWhere = struct {
 	ID             whereHelperstring
-	CreateAt       whereHelpernull_Int64
+	CreatedAt      whereHelperint64
 	VoucherID      whereHelperstring
 	ChannelID      whereHelperstring
-	DiscountValue  whereHelpernull_Float64
-	Currency       whereHelpernull_String
-	MinSpendAmount whereHelpernull_Float64
+	DiscountValue  whereHelpertypes_Decimal
+	Currency       whereHelperstring
+	MinSpendAmount whereHelpertypes_Decimal
 }{
 	ID:             whereHelperstring{field: "\"voucher_channel_listings\".\"id\""},
-	CreateAt:       whereHelpernull_Int64{field: "\"voucher_channel_listings\".\"create_at\""},
+	CreatedAt:      whereHelperint64{field: "\"voucher_channel_listings\".\"created_at\""},
 	VoucherID:      whereHelperstring{field: "\"voucher_channel_listings\".\"voucher_id\""},
 	ChannelID:      whereHelperstring{field: "\"voucher_channel_listings\".\"channel_id\""},
-	DiscountValue:  whereHelpernull_Float64{field: "\"voucher_channel_listings\".\"discount_value\""},
-	Currency:       whereHelpernull_String{field: "\"voucher_channel_listings\".\"currency\""},
-	MinSpendAmount: whereHelpernull_Float64{field: "\"voucher_channel_listings\".\"min_spend_amount\""},
+	DiscountValue:  whereHelpertypes_Decimal{field: "\"voucher_channel_listings\".\"discount_value\""},
+	Currency:       whereHelperstring{field: "\"voucher_channel_listings\".\"currency\""},
+	MinSpendAmount: whereHelpertypes_Decimal{field: "\"voucher_channel_listings\".\"min_spend_amount\""},
 }
 
 // VoucherChannelListingRels is where relationship names are stored.
@@ -130,9 +130,9 @@ func (r *voucherChannelListingR) GetVoucher() *Voucher {
 type voucherChannelListingL struct{}
 
 var (
-	voucherChannelListingAllColumns            = []string{"id", "create_at", "voucher_id", "channel_id", "discount_value", "currency", "min_spend_amount"}
-	voucherChannelListingColumnsWithoutDefault = []string{"id", "voucher_id", "channel_id"}
-	voucherChannelListingColumnsWithDefault    = []string{"create_at", "discount_value", "currency", "min_spend_amount"}
+	voucherChannelListingAllColumns            = []string{"id", "created_at", "voucher_id", "channel_id", "discount_value", "currency", "min_spend_amount"}
+	voucherChannelListingColumnsWithoutDefault = []string{"created_at", "voucher_id", "channel_id", "currency"}
+	voucherChannelListingColumnsWithDefault    = []string{"id", "discount_value", "min_spend_amount"}
 	voucherChannelListingPrimaryKeyColumns     = []string{"id"}
 	voucherChannelListingGeneratedColumns      = []string{}
 )
@@ -909,10 +909,6 @@ func (o *VoucherChannelListing) Update(ctx context.Context, exec boil.ContextExe
 			voucherChannelListingAllColumns,
 			voucherChannelListingPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update voucher_channel_listings, could not build whitelist")
 		}

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // VariantMedium is an object representing the database table.
 type VariantMedium struct {
-	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VariantID null.String `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
-	MediaID   null.String `boil:"media_id" json:"media_id,omitempty" toml:"media_id" yaml:"media_id,omitempty"`
+	ID        string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VariantID string `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
+	MediaID   string `boil:"media_id" json:"media_id" toml:"media_id" yaml:"media_id"`
 
 	R *variantMediumR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L variantMediumL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var VariantMediumTableColumns = struct {
 
 var VariantMediumWhere = struct {
 	ID        whereHelperstring
-	VariantID whereHelpernull_String
-	MediaID   whereHelpernull_String
+	VariantID whereHelperstring
+	MediaID   whereHelperstring
 }{
 	ID:        whereHelperstring{field: "\"variant_media\".\"id\""},
-	VariantID: whereHelpernull_String{field: "\"variant_media\".\"variant_id\""},
-	MediaID:   whereHelpernull_String{field: "\"variant_media\".\"media_id\""},
+	VariantID: whereHelperstring{field: "\"variant_media\".\"variant_id\""},
+	MediaID:   whereHelperstring{field: "\"variant_media\".\"media_id\""},
 }
 
 // VariantMediumRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type variantMediumL struct{}
 
 var (
 	variantMediumAllColumns            = []string{"id", "variant_id", "media_id"}
-	variantMediumColumnsWithoutDefault = []string{"id"}
-	variantMediumColumnsWithDefault    = []string{"variant_id", "media_id"}
+	variantMediumColumnsWithoutDefault = []string{"variant_id", "media_id"}
+	variantMediumColumnsWithDefault    = []string{"id"}
 	variantMediumPrimaryKeyColumns     = []string{"id"}
 	variantMediumGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &variantMediumR{}
 		}
-		if !queries.IsNil(object.MediaID) {
-			args = append(args, object.MediaID)
-		}
+		args = append(args, object.MediaID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.MediaID) {
+				if a == obj.MediaID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.MediaID) {
-				args = append(args, obj.MediaID)
-			}
+			args = append(args, obj.MediaID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.MediaID, foreign.ID) {
+			if local.MediaID == foreign.ID {
 				local.R.Medium = foreign
 				if foreign.R == nil {
 					foreign.R = &productMediumR{}
@@ -566,9 +561,7 @@ func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &variantMediumR{}
 		}
-		if !queries.IsNil(object.VariantID) {
-			args = append(args, object.VariantID)
-		}
+		args = append(args, object.VariantID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.VariantID) {
+				if a == obj.VariantID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.VariantID) {
-				args = append(args, obj.VariantID)
-			}
+			args = append(args, obj.VariantID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, s
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.VariantID, foreign.ID) {
+			if local.VariantID == foreign.ID {
 				local.R.Variant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
@@ -684,7 +675,7 @@ func (o *VariantMedium) SetMedium(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.MediaID, related.ID)
+	o.MediaID = related.ID
 	if o.R == nil {
 		o.R = &variantMediumR{
 			Medium: related,
@@ -701,39 +692,6 @@ func (o *VariantMedium) SetMedium(ctx context.Context, exec boil.ContextExecutor
 		related.R.MediumVariantMedia = append(related.R.MediumVariantMedia, o)
 	}
 
-	return nil
-}
-
-// RemoveMedium relationship.
-// Sets o.R.Medium to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VariantMedium) RemoveMedium(ctx context.Context, exec boil.ContextExecutor, related *ProductMedium) error {
-	var err error
-
-	queries.SetScanner(&o.MediaID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("media_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Medium = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.MediumVariantMedia {
-		if queries.Equal(o.MediaID, ri.MediaID) {
-			continue
-		}
-
-		ln := len(related.R.MediumVariantMedia)
-		if ln > 1 && i < ln-1 {
-			related.R.MediumVariantMedia[i] = related.R.MediumVariantMedia[ln-1]
-		}
-		related.R.MediumVariantMedia = related.R.MediumVariantMedia[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *VariantMedium) SetVariant(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.VariantID, related.ID)
+	o.VariantID = related.ID
 	if o.R == nil {
 		o.R = &variantMediumR{
 			Variant: related,
@@ -781,39 +739,6 @@ func (o *VariantMedium) SetVariant(ctx context.Context, exec boil.ContextExecuto
 		related.R.VariantVariantMedia = append(related.R.VariantVariantMedia, o)
 	}
 
-	return nil
-}
-
-// RemoveVariant relationship.
-// Sets o.R.Variant to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VariantMedium) RemoveVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
-	var err error
-
-	queries.SetScanner(&o.VariantID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("variant_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Variant = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VariantVariantMedia {
-		if queries.Equal(o.VariantID, ri.VariantID) {
-			continue
-		}
-
-		ln := len(related.R.VariantVariantMedia)
-		if ln > 1 && i < ln-1 {
-			related.R.VariantVariantMedia[i] = related.R.VariantVariantMedia[ln-1]
-		}
-		related.R.VariantVariantMedia = related.R.VariantVariantMedia[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *VariantMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 			variantMediumAllColumns,
 			variantMediumPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update variant_media, could not build whitelist")
 		}

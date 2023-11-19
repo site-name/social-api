@@ -503,7 +503,7 @@ func testCheckoutLineToOneCheckoutUsingCheckout(t *testing.T) {
 	var foreign Checkout
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, checkoutLineDBTypes, true, checkoutLineColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, checkoutLineDBTypes, false, checkoutLineColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize CheckoutLine struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, checkoutDBTypes, false, checkoutColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testCheckoutLineToOneCheckoutUsingCheckout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.CheckoutID, foreign.Token)
+	local.CheckoutID = foreign.Token
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testCheckoutLineToOneCheckoutUsingCheckout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.Token, foreign.Token) {
+	if check.Token != foreign.Token {
 		t.Errorf("want: %v, got %v", foreign.Token, check.Token)
 	}
 
@@ -564,7 +564,7 @@ func testCheckoutLineToOneProductVariantUsingVariant(t *testing.T) {
 	var foreign ProductVariant
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, checkoutLineDBTypes, true, checkoutLineColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, checkoutLineDBTypes, false, checkoutLineColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize CheckoutLine struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productVariantDBTypes, false, productVariantColumnsWithDefault...); err != nil {
@@ -575,7 +575,7 @@ func testCheckoutLineToOneProductVariantUsingVariant(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.VariantID, foreign.ID)
+	local.VariantID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +585,7 @@ func testCheckoutLineToOneProductVariantUsingVariant(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testCheckoutLineToOneSetOpCheckoutUsingCheckout(t *testing.T) {
 		if x.R.CheckoutLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.CheckoutID, x.Token) {
+		if a.CheckoutID != x.Token {
 			t.Error("foreign key was wrong value", a.CheckoutID)
 		}
 
@@ -668,63 +668,11 @@ func testCheckoutLineToOneSetOpCheckoutUsingCheckout(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.CheckoutID, x.Token) {
+		if a.CheckoutID != x.Token {
 			t.Error("foreign key was wrong value", a.CheckoutID, x.Token)
 		}
 	}
 }
-
-func testCheckoutLineToOneRemoveOpCheckoutUsingCheckout(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a CheckoutLine
-	var b Checkout
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutLineDBTypes, false, strmangle.SetComplement(checkoutLinePrimaryKeyColumns, checkoutLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, checkoutDBTypes, false, strmangle.SetComplement(checkoutPrimaryKeyColumns, checkoutColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetCheckout(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveCheckout(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Checkout().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Checkout != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.CheckoutID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.CheckoutLines) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testCheckoutLineToOneSetOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
@@ -766,7 +714,7 @@ func testCheckoutLineToOneSetOpProductVariantUsingVariant(t *testing.T) {
 		if x.R.VariantCheckoutLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.VariantID, x.ID) {
+		if a.VariantID != x.ID {
 			t.Error("foreign key was wrong value", a.VariantID)
 		}
 
@@ -777,60 +725,9 @@ func testCheckoutLineToOneSetOpProductVariantUsingVariant(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.VariantID, x.ID) {
+		if a.VariantID != x.ID {
 			t.Error("foreign key was wrong value", a.VariantID, x.ID)
 		}
-	}
-}
-
-func testCheckoutLineToOneRemoveOpProductVariantUsingVariant(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a CheckoutLine
-	var b ProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, checkoutLineDBTypes, false, strmangle.SetComplement(checkoutLinePrimaryKeyColumns, checkoutLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productVariantDBTypes, false, strmangle.SetComplement(productVariantPrimaryKeyColumns, productVariantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetVariant(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveVariant(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Variant().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Variant != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.VariantID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.VariantCheckoutLines) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -908,7 +805,7 @@ func testCheckoutLinesSelect(t *testing.T) {
 }
 
 var (
-	checkoutLineDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `CheckoutID`: `character varying`, `VariantID`: `character varying`, `Quantity`: `integer`}
+	checkoutLineDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `CheckoutID`: `uuid`, `VariantID`: `uuid`, `Quantity`: `integer`}
 	_                   = bytes.MinRead
 )
 

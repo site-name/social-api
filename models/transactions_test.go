@@ -503,7 +503,7 @@ func testTransactionToOnePaymentUsingPayment(t *testing.T) {
 	var foreign Payment
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, transactionDBTypes, true, transactionColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, transactionDBTypes, false, transactionColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Transaction struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, paymentDBTypes, false, paymentColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testTransactionToOnePaymentUsingPayment(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.PaymentID, foreign.ID)
+	local.PaymentID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testTransactionToOnePaymentUsingPayment(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testTransactionToOneSetOpPaymentUsingPayment(t *testing.T) {
 		if x.R.Transactions[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.PaymentID, x.ID) {
+		if a.PaymentID != x.ID {
 			t.Error("foreign key was wrong value", a.PaymentID)
 		}
 
@@ -607,60 +607,9 @@ func testTransactionToOneSetOpPaymentUsingPayment(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.PaymentID, x.ID) {
+		if a.PaymentID != x.ID {
 			t.Error("foreign key was wrong value", a.PaymentID, x.ID)
 		}
-	}
-}
-
-func testTransactionToOneRemoveOpPaymentUsingPayment(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Transaction
-	var b Payment
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, transactionDBTypes, false, strmangle.SetComplement(transactionPrimaryKeyColumns, transactionColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, paymentDBTypes, false, strmangle.SetComplement(paymentPrimaryKeyColumns, paymentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetPayment(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemovePayment(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Payment().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Payment != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.PaymentID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.Transactions) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testTransactionsSelect(t *testing.T) {
 }
 
 var (
-	transactionDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `PaymentID`: `character varying`, `Token`: `character varying`, `Kind`: `character varying`, `IsSuccess`: `boolean`, `ActionRequired`: `boolean`, `ActionRequiredData`: `text`, `Currency`: `character varying`, `Amount`: `double precision`, `Error`: `character varying`, `CustomerID`: `character varying`, `GatewayResponse`: `text`, `AlreadyProcessed`: `boolean`}
+	transactionDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `PaymentID`: `uuid`, `Token`: `character varying`, `Kind`: `character varying`, `IsSuccess`: `boolean`, `ActionRequired`: `boolean`, `ActionRequiredData`: `text`, `Currency`: `character varying`, `Amount`: `double precision`, `Error`: `character varying`, `CustomerID`: `character varying`, `GatewayResponse`: `text`, `AlreadyProcessed`: `boolean`}
 	_                  = bytes.MinRead
 )
 

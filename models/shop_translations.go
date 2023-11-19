@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +23,12 @@ import (
 
 // ShopTranslation is an object representing the database table.
 type ShopTranslation struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Description  null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	CreateAt     null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt     null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode string `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Name         string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description  string `boil:"description" json:"description" toml:"description" yaml:"description"`
+	CreatedAt    int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt    int64  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *shopTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,15 +39,15 @@ var ShopTranslationColumns = struct {
 	LanguageCode string
 	Name         string
 	Description  string
-	CreateAt     string
-	UpdateAt     string
+	CreatedAt    string
+	UpdatedAt    string
 }{
 	ID:           "id",
 	LanguageCode: "language_code",
 	Name:         "name",
 	Description:  "description",
-	CreateAt:     "create_at",
-	UpdateAt:     "update_at",
+	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
 }
 
 var ShopTranslationTableColumns = struct {
@@ -56,33 +55,33 @@ var ShopTranslationTableColumns = struct {
 	LanguageCode string
 	Name         string
 	Description  string
-	CreateAt     string
-	UpdateAt     string
+	CreatedAt    string
+	UpdatedAt    string
 }{
 	ID:           "shop_translations.id",
 	LanguageCode: "shop_translations.language_code",
 	Name:         "shop_translations.name",
 	Description:  "shop_translations.description",
-	CreateAt:     "shop_translations.create_at",
-	UpdateAt:     "shop_translations.update_at",
+	CreatedAt:    "shop_translations.created_at",
+	UpdatedAt:    "shop_translations.updated_at",
 }
 
 // Generated where
 
 var ShopTranslationWhere = struct {
 	ID           whereHelperstring
-	LanguageCode whereHelpernull_String
-	Name         whereHelpernull_String
-	Description  whereHelpernull_String
-	CreateAt     whereHelpernull_Int64
-	UpdateAt     whereHelpernull_Int64
+	LanguageCode whereHelperstring
+	Name         whereHelperstring
+	Description  whereHelperstring
+	CreatedAt    whereHelperint64
+	UpdatedAt    whereHelperint64
 }{
 	ID:           whereHelperstring{field: "\"shop_translations\".\"id\""},
-	LanguageCode: whereHelpernull_String{field: "\"shop_translations\".\"language_code\""},
-	Name:         whereHelpernull_String{field: "\"shop_translations\".\"name\""},
-	Description:  whereHelpernull_String{field: "\"shop_translations\".\"description\""},
-	CreateAt:     whereHelpernull_Int64{field: "\"shop_translations\".\"create_at\""},
-	UpdateAt:     whereHelpernull_Int64{field: "\"shop_translations\".\"update_at\""},
+	LanguageCode: whereHelperstring{field: "\"shop_translations\".\"language_code\""},
+	Name:         whereHelperstring{field: "\"shop_translations\".\"name\""},
+	Description:  whereHelperstring{field: "\"shop_translations\".\"description\""},
+	CreatedAt:    whereHelperint64{field: "\"shop_translations\".\"created_at\""},
+	UpdatedAt:    whereHelperint64{field: "\"shop_translations\".\"updated_at\""},
 }
 
 // ShopTranslationRels is where relationship names are stored.
@@ -102,9 +101,9 @@ func (*shopTranslationR) NewStruct() *shopTranslationR {
 type shopTranslationL struct{}
 
 var (
-	shopTranslationAllColumns            = []string{"id", "language_code", "name", "description", "create_at", "update_at"}
-	shopTranslationColumnsWithoutDefault = []string{"id"}
-	shopTranslationColumnsWithDefault    = []string{"language_code", "name", "description", "create_at", "update_at"}
+	shopTranslationAllColumns            = []string{"id", "language_code", "name", "description", "created_at", "updated_at"}
+	shopTranslationColumnsWithoutDefault = []string{"language_code", "name", "description", "created_at", "updated_at"}
+	shopTranslationColumnsWithDefault    = []string{"id"}
 	shopTranslationPrimaryKeyColumns     = []string{"id"}
 	shopTranslationGeneratedColumns      = []string{}
 )
@@ -525,10 +524,6 @@ func (o *ShopTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 			shopTranslationAllColumns,
 			shopTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shop_translations, could not build whitelist")
 		}

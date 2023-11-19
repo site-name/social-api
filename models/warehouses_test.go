@@ -673,8 +673,9 @@ func testWarehouseToManyStocks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.WarehouseID, a.ID)
-	queries.Assign(&c.WarehouseID, a.ID)
+	b.WarehouseID = a.ID
+	c.WarehouseID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -689,10 +690,10 @@ func testWarehouseToManyStocks(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.WarehouseID, b.WarehouseID) {
+		if v.WarehouseID == b.WarehouseID {
 			bFound = true
 		}
-		if queries.Equal(v.WarehouseID, c.WarehouseID) {
+		if v.WarehouseID == c.WarehouseID {
 			cFound = true
 		}
 	}
@@ -750,8 +751,9 @@ func testWarehouseToManyWarehouseShippingZones(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.WarehouseID, a.ID)
-	queries.Assign(&c.WarehouseID, a.ID)
+	b.WarehouseID = a.ID
+	c.WarehouseID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -766,10 +768,10 @@ func testWarehouseToManyWarehouseShippingZones(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.WarehouseID, b.WarehouseID) {
+		if v.WarehouseID == b.WarehouseID {
 			bFound = true
 		}
-		if queries.Equal(v.WarehouseID, c.WarehouseID) {
+		if v.WarehouseID == c.WarehouseID {
 			cFound = true
 		}
 	}
@@ -1349,10 +1351,10 @@ func testWarehouseToManyAddOpStocks(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.WarehouseID) {
+		if a.ID != first.WarehouseID {
 			t.Error("foreign key was wrong value", a.ID, first.WarehouseID)
 		}
-		if !queries.Equal(a.ID, second.WarehouseID) {
+		if a.ID != second.WarehouseID {
 			t.Error("foreign key was wrong value", a.ID, second.WarehouseID)
 		}
 
@@ -1379,182 +1381,6 @@ func testWarehouseToManyAddOpStocks(t *testing.T) {
 		}
 	}
 }
-
-func testWarehouseToManySetOpStocks(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Warehouse
-	var b, c, d, e Stock
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, warehouseDBTypes, false, strmangle.SetComplement(warehousePrimaryKeyColumns, warehouseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Stock{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetStocks(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.Stocks().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetStocks(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.Stocks().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.WarehouseID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.WarehouseID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.WarehouseID) {
-		t.Error("foreign key was wrong value", a.ID, d.WarehouseID)
-	}
-	if !queries.Equal(a.ID, e.WarehouseID) {
-		t.Error("foreign key was wrong value", a.ID, e.WarehouseID)
-	}
-
-	if b.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Warehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Warehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.Stocks[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.Stocks[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testWarehouseToManyRemoveOpStocks(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Warehouse
-	var b, c, d, e Stock
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, warehouseDBTypes, false, strmangle.SetComplement(warehousePrimaryKeyColumns, warehouseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Stock{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, stockDBTypes, false, strmangle.SetComplement(stockPrimaryKeyColumns, stockColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddStocks(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.Stocks().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveStocks(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.Stocks().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.WarehouseID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.WarehouseID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Warehouse != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Warehouse != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.Stocks) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.Stocks[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.Stocks[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testWarehouseToManyAddOpWarehouseShippingZones(t *testing.T) {
 	var err error
 
@@ -1600,10 +1426,10 @@ func testWarehouseToManyAddOpWarehouseShippingZones(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.WarehouseID) {
+		if a.ID != first.WarehouseID {
 			t.Error("foreign key was wrong value", a.ID, first.WarehouseID)
 		}
-		if !queries.Equal(a.ID, second.WarehouseID) {
+		if a.ID != second.WarehouseID {
 			t.Error("foreign key was wrong value", a.ID, second.WarehouseID)
 		}
 
@@ -1630,182 +1456,6 @@ func testWarehouseToManyAddOpWarehouseShippingZones(t *testing.T) {
 		}
 	}
 }
-
-func testWarehouseToManySetOpWarehouseShippingZones(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Warehouse
-	var b, c, d, e WarehouseShippingZone
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, warehouseDBTypes, false, strmangle.SetComplement(warehousePrimaryKeyColumns, warehouseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*WarehouseShippingZone{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, warehouseShippingZoneDBTypes, false, strmangle.SetComplement(warehouseShippingZonePrimaryKeyColumns, warehouseShippingZoneColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetWarehouseShippingZones(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.WarehouseShippingZones().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetWarehouseShippingZones(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WarehouseShippingZones().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.WarehouseID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.WarehouseID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.WarehouseID) {
-		t.Error("foreign key was wrong value", a.ID, d.WarehouseID)
-	}
-	if !queries.Equal(a.ID, e.WarehouseID) {
-		t.Error("foreign key was wrong value", a.ID, e.WarehouseID)
-	}
-
-	if b.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Warehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Warehouse != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.WarehouseShippingZones[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.WarehouseShippingZones[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testWarehouseToManyRemoveOpWarehouseShippingZones(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Warehouse
-	var b, c, d, e WarehouseShippingZone
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, warehouseDBTypes, false, strmangle.SetComplement(warehousePrimaryKeyColumns, warehouseColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*WarehouseShippingZone{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, warehouseShippingZoneDBTypes, false, strmangle.SetComplement(warehouseShippingZonePrimaryKeyColumns, warehouseShippingZoneColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddWarehouseShippingZones(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.WarehouseShippingZones().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveWarehouseShippingZones(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WarehouseShippingZones().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.WarehouseID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.WarehouseID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Warehouse != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Warehouse != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Warehouse != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.WarehouseShippingZones) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.WarehouseShippingZones[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.WarehouseShippingZones[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testWarehouseToOneAddressUsingAddress(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -2050,7 +1700,7 @@ func testWarehousesSelect(t *testing.T) {
 }
 
 var (
-	warehouseDBTypes = map[string]string{`ID`: `character varying`, `Name`: `character varying`, `Slug`: `character varying`, `AddressID`: `character varying`, `Email`: `character varying`, `ClickAndCollectOption`: `character varying`, `IsPrivate`: `boolean`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	warehouseDBTypes = map[string]string{`ID`: `uuid`, `Name`: `character varying`, `Slug`: `character varying`, `AddressID`: `uuid`, `Email`: `character varying`, `ClickAndCollectOption`: `character varying`, `IsPrivate`: `boolean`, `CreatedAt`: `bigint`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_                = bytes.MinRead
 )
 

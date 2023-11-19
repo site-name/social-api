@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS product_variant_channel_listings (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  variant_id character varying(36) NOT NULL,
-  channel_id character varying(36) NOT NULL,
+  variant_id uuid NOT NULL,
+  channel_id uuid NOT NULL,
   currency character varying(3),
-  price_amount double precision,
-  cost_price_amount double precision,
+  price_amount decimal(12,3),
+  cost_price_amount decimal(12,3),
   preorder_quantity_threshold integer,
-  created_at bigint
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY product_variant_channel_listings

@@ -25,10 +25,10 @@ import (
 // CategoryTranslation is an object representing the database table.
 type CategoryTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	CategoryID     null.String `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
-	Name           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Description    null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	LanguageCode   string      `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	CategoryID     string      `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
+	Name           string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description    string      `boil:"description" json:"description" toml:"description" yaml:"description"`
 	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
 	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
@@ -76,18 +76,18 @@ var CategoryTranslationTableColumns = struct {
 
 var CategoryTranslationWhere = struct {
 	ID             whereHelperstring
-	LanguageCode   whereHelpernull_String
-	CategoryID     whereHelpernull_String
-	Name           whereHelpernull_String
-	Description    whereHelpernull_String
+	LanguageCode   whereHelperstring
+	CategoryID     whereHelperstring
+	Name           whereHelperstring
+	Description    whereHelperstring
 	SeoTitle       whereHelpernull_String
 	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"category_translations\".\"id\""},
-	LanguageCode:   whereHelpernull_String{field: "\"category_translations\".\"language_code\""},
-	CategoryID:     whereHelpernull_String{field: "\"category_translations\".\"category_id\""},
-	Name:           whereHelpernull_String{field: "\"category_translations\".\"name\""},
-	Description:    whereHelpernull_String{field: "\"category_translations\".\"description\""},
+	LanguageCode:   whereHelperstring{field: "\"category_translations\".\"language_code\""},
+	CategoryID:     whereHelperstring{field: "\"category_translations\".\"category_id\""},
+	Name:           whereHelperstring{field: "\"category_translations\".\"name\""},
+	Description:    whereHelperstring{field: "\"category_translations\".\"description\""},
 	SeoTitle:       whereHelpernull_String{field: "\"category_translations\".\"seo_title\""},
 	SeoDescription: whereHelpernull_String{field: "\"category_translations\".\"seo_description\""},
 }
@@ -110,8 +110,8 @@ type categoryTranslationL struct{}
 
 var (
 	categoryTranslationAllColumns            = []string{"id", "language_code", "category_id", "name", "description", "seo_title", "seo_description"}
-	categoryTranslationColumnsWithoutDefault = []string{"id"}
-	categoryTranslationColumnsWithDefault    = []string{"language_code", "category_id", "name", "description", "seo_title", "seo_description"}
+	categoryTranslationColumnsWithoutDefault = []string{"language_code", "category_id", "name", "description"}
+	categoryTranslationColumnsWithDefault    = []string{"id", "seo_title", "seo_description"}
 	categoryTranslationPrimaryKeyColumns     = []string{"id"}
 	categoryTranslationGeneratedColumns      = []string{}
 )
@@ -532,10 +532,6 @@ func (o *CategoryTranslation) Update(ctx context.Context, exec boil.ContextExecu
 			categoryTranslationAllColumns,
 			categoryTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update category_translations, could not build whitelist")
 		}

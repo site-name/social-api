@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS shipping_method_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipping_method_id uuid,
-  language_code character varying(5),
-  name character varying(100),
-  description text
+  shipping_method_id uuid NOT NULL,
+  language_code character varying(5) NOT NULL,
+  name character varying(100) NOT NULL,
+  description text NOT NULL
 );
 
 ALTER TABLE ONLY shipping_method_translations

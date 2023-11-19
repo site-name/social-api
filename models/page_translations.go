@@ -25,9 +25,9 @@ import (
 // PageTranslation is an object representing the database table.
 type PageTranslation struct {
 	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode   null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	PageID         null.String `boil:"page_id" json:"page_id,omitempty" toml:"page_id" yaml:"page_id,omitempty"`
-	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
+	LanguageCode   string      `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	PageID         string      `boil:"page_id" json:"page_id" toml:"page_id" yaml:"page_id"`
+	Title          string      `boil:"title" json:"title" toml:"title" yaml:"title"`
 	Content        null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
 	SeoTitle       null.String `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
 	SeoDescription null.String `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
@@ -76,17 +76,17 @@ var PageTranslationTableColumns = struct {
 
 var PageTranslationWhere = struct {
 	ID             whereHelperstring
-	LanguageCode   whereHelpernull_String
-	PageID         whereHelpernull_String
-	Title          whereHelpernull_String
+	LanguageCode   whereHelperstring
+	PageID         whereHelperstring
+	Title          whereHelperstring
 	Content        whereHelpernull_String
 	SeoTitle       whereHelpernull_String
 	SeoDescription whereHelpernull_String
 }{
 	ID:             whereHelperstring{field: "\"page_translations\".\"id\""},
-	LanguageCode:   whereHelpernull_String{field: "\"page_translations\".\"language_code\""},
-	PageID:         whereHelpernull_String{field: "\"page_translations\".\"page_id\""},
-	Title:          whereHelpernull_String{field: "\"page_translations\".\"title\""},
+	LanguageCode:   whereHelperstring{field: "\"page_translations\".\"language_code\""},
+	PageID:         whereHelperstring{field: "\"page_translations\".\"page_id\""},
+	Title:          whereHelperstring{field: "\"page_translations\".\"title\""},
 	Content:        whereHelpernull_String{field: "\"page_translations\".\"content\""},
 	SeoTitle:       whereHelpernull_String{field: "\"page_translations\".\"seo_title\""},
 	SeoDescription: whereHelpernull_String{field: "\"page_translations\".\"seo_description\""},
@@ -121,8 +121,8 @@ type pageTranslationL struct{}
 
 var (
 	pageTranslationAllColumns            = []string{"id", "language_code", "page_id", "title", "content", "seo_title", "seo_description"}
-	pageTranslationColumnsWithoutDefault = []string{"id"}
-	pageTranslationColumnsWithDefault    = []string{"language_code", "page_id", "title", "content", "seo_title", "seo_description"}
+	pageTranslationColumnsWithoutDefault = []string{"language_code", "page_id", "title"}
+	pageTranslationColumnsWithDefault    = []string{"id", "content", "seo_title", "seo_description"}
 	pageTranslationPrimaryKeyColumns     = []string{"id"}
 	pageTranslationGeneratedColumns      = []string{}
 )
@@ -449,9 +449,7 @@ func (pageTranslationL) LoadPage(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &pageTranslationR{}
 		}
-		if !queries.IsNil(object.PageID) {
-			args = append(args, object.PageID)
-		}
+		args = append(args, object.PageID)
 
 	} else {
 	Outer:
@@ -461,14 +459,12 @@ func (pageTranslationL) LoadPage(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.PageID) {
+				if a == obj.PageID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.PageID) {
-				args = append(args, obj.PageID)
-			}
+			args = append(args, obj.PageID)
 
 		}
 	}
@@ -526,7 +522,7 @@ func (pageTranslationL) LoadPage(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.PageID, foreign.ID) {
+			if local.PageID == foreign.ID {
 				local.R.Page = foreign
 				if foreign.R == nil {
 					foreign.R = &pageR{}
@@ -567,7 +563,7 @@ func (o *PageTranslation) SetPage(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.PageID, related.ID)
+	o.PageID = related.ID
 	if o.R == nil {
 		o.R = &pageTranslationR{
 			Page: related,
@@ -584,39 +580,6 @@ func (o *PageTranslation) SetPage(ctx context.Context, exec boil.ContextExecutor
 		related.R.PageTranslations = append(related.R.PageTranslations, o)
 	}
 
-	return nil
-}
-
-// RemovePage relationship.
-// Sets o.R.Page to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *PageTranslation) RemovePage(ctx context.Context, exec boil.ContextExecutor, related *Page) error {
-	var err error
-
-	queries.SetScanner(&o.PageID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("page_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Page = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.PageTranslations {
-		if queries.Equal(o.PageID, ri.PageID) {
-			continue
-		}
-
-		ln := len(related.R.PageTranslations)
-		if ln > 1 && i < ln-1 {
-			related.R.PageTranslations[i] = related.R.PageTranslations[ln-1]
-		}
-		related.R.PageTranslations = related.R.PageTranslations[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -758,10 +721,6 @@ func (o *PageTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 			pageTranslationAllColumns,
 			pageTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update page_translations, could not build whitelist")
 		}

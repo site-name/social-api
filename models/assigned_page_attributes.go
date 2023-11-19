@@ -112,8 +112,8 @@ type assignedPageAttributeL struct{}
 
 var (
 	assignedPageAttributeAllColumns            = []string{"id", "page_id", "assignment_id"}
-	assignedPageAttributeColumnsWithoutDefault = []string{"id", "page_id", "assignment_id"}
-	assignedPageAttributeColumnsWithDefault    = []string{}
+	assignedPageAttributeColumnsWithoutDefault = []string{"page_id", "assignment_id"}
+	assignedPageAttributeColumnsWithDefault    = []string{"id"}
 	assignedPageAttributePrimaryKeyColumns     = []string{"id"}
 	assignedPageAttributeGeneratedColumns      = []string{}
 )
@@ -1071,10 +1071,6 @@ func (o *AssignedPageAttribute) Update(ctx context.Context, exec boil.ContextExe
 			assignedPageAttributeAllColumns,
 			assignedPageAttributePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update assigned_page_attributes, could not build whitelist")
 		}

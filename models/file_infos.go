@@ -25,23 +25,23 @@ import (
 // FileInfo is an object representing the database table.
 type FileInfo struct {
 	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatorID       null.String `boil:"creator_id" json:"creator_id,omitempty" toml:"creator_id" yaml:"creator_id,omitempty"`
-	ParentID        null.String `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
-	CreateAt        null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt        null.Int64  `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	CreatorID       string      `boil:"creator_id" json:"creator_id" toml:"creator_id" yaml:"creator_id"`
+	ParentID        string      `boil:"parent_id" json:"parent_id" toml:"parent_id" yaml:"parent_id"`
+	CreatedAt       int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt       int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeleteAt        null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
-	Path            null.String `boil:"path" json:"path,omitempty" toml:"path" yaml:"path,omitempty"`
-	ThumbnailPath   null.String `boil:"thumbnail_path" json:"thumbnail_path,omitempty" toml:"thumbnail_path" yaml:"thumbnail_path,omitempty"`
-	PreviewPath     null.String `boil:"preview_path" json:"preview_path,omitempty" toml:"preview_path" yaml:"preview_path,omitempty"`
-	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Extension       null.String `boil:"extension" json:"extension,omitempty" toml:"extension" yaml:"extension,omitempty"`
-	Size            null.Int64  `boil:"size" json:"size,omitempty" toml:"size" yaml:"size,omitempty"`
-	MimeType        null.String `boil:"mime_type" json:"mime_type,omitempty" toml:"mime_type" yaml:"mime_type,omitempty"`
+	Path            string      `boil:"path" json:"path" toml:"path" yaml:"path"`
+	ThumbnailPath   string      `boil:"thumbnail_path" json:"thumbnail_path" toml:"thumbnail_path" yaml:"thumbnail_path"`
+	PreviewPath     string      `boil:"preview_path" json:"preview_path" toml:"preview_path" yaml:"preview_path"`
+	Name            string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Extension       string      `boil:"extension" json:"extension" toml:"extension" yaml:"extension"`
+	Size            int64       `boil:"size" json:"size" toml:"size" yaml:"size"`
+	MimeType        string      `boil:"mime_type" json:"mime_type" toml:"mime_type" yaml:"mime_type"`
 	Width           null.Int    `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
 	Height          null.Int    `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
-	HasPreviewImage null.Bool   `boil:"has_preview_image" json:"has_preview_image,omitempty" toml:"has_preview_image" yaml:"has_preview_image,omitempty"`
+	HasPreviewImage bool        `boil:"has_preview_image" json:"has_preview_image" toml:"has_preview_image" yaml:"has_preview_image"`
 	MiniPreview     null.Bytes  `boil:"mini_preview" json:"mini_preview,omitempty" toml:"mini_preview" yaml:"mini_preview,omitempty"`
-	Content         null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
+	Content         string      `boil:"content" json:"content" toml:"content" yaml:"content"`
 	RemoteID        null.String `boil:"remote_id" json:"remote_id,omitempty" toml:"remote_id" yaml:"remote_id,omitempty"`
 
 	R *fileInfoR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -52,8 +52,8 @@ var FileInfoColumns = struct {
 	ID              string
 	CreatorID       string
 	ParentID        string
-	CreateAt        string
-	UpdateAt        string
+	CreatedAt       string
+	UpdatedAt       string
 	DeleteAt        string
 	Path            string
 	ThumbnailPath   string
@@ -72,8 +72,8 @@ var FileInfoColumns = struct {
 	ID:              "id",
 	CreatorID:       "creator_id",
 	ParentID:        "parent_id",
-	CreateAt:        "create_at",
-	UpdateAt:        "update_at",
+	CreatedAt:       "created_at",
+	UpdatedAt:       "updated_at",
 	DeleteAt:        "delete_at",
 	Path:            "path",
 	ThumbnailPath:   "thumbnail_path",
@@ -94,8 +94,8 @@ var FileInfoTableColumns = struct {
 	ID              string
 	CreatorID       string
 	ParentID        string
-	CreateAt        string
-	UpdateAt        string
+	CreatedAt       string
+	UpdatedAt       string
 	DeleteAt        string
 	Path            string
 	ThumbnailPath   string
@@ -114,8 +114,8 @@ var FileInfoTableColumns = struct {
 	ID:              "file_infos.id",
 	CreatorID:       "file_infos.creator_id",
 	ParentID:        "file_infos.parent_id",
-	CreateAt:        "file_infos.create_at",
-	UpdateAt:        "file_infos.update_at",
+	CreatedAt:       "file_infos.created_at",
+	UpdatedAt:       "file_infos.updated_at",
 	DeleteAt:        "file_infos.delete_at",
 	Path:            "file_infos.path",
 	ThumbnailPath:   "file_infos.thumbnail_path",
@@ -133,6 +133,44 @@ var FileInfoTableColumns = struct {
 }
 
 // Generated where
+
+type whereHelpernull_Int64 struct{ field string }
+
+func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Int64) NEQ(x null.Int64) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Int64) LT(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Int64) LTE(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Int64) GT(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Int64) GTE(x null.Int64) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_Int64) IN(slice []int64) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_Int64) NIN(slice []int64) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 type whereHelpernull_Bytes struct{ field string }
 
@@ -160,43 +198,43 @@ func (w whereHelpernull_Bytes) IsNotNull() qm.QueryMod { return qmhelper.WhereIs
 
 var FileInfoWhere = struct {
 	ID              whereHelperstring
-	CreatorID       whereHelpernull_String
-	ParentID        whereHelpernull_String
-	CreateAt        whereHelpernull_Int64
-	UpdateAt        whereHelpernull_Int64
+	CreatorID       whereHelperstring
+	ParentID        whereHelperstring
+	CreatedAt       whereHelperint64
+	UpdatedAt       whereHelperint64
 	DeleteAt        whereHelpernull_Int64
-	Path            whereHelpernull_String
-	ThumbnailPath   whereHelpernull_String
-	PreviewPath     whereHelpernull_String
-	Name            whereHelpernull_String
-	Extension       whereHelpernull_String
-	Size            whereHelpernull_Int64
-	MimeType        whereHelpernull_String
+	Path            whereHelperstring
+	ThumbnailPath   whereHelperstring
+	PreviewPath     whereHelperstring
+	Name            whereHelperstring
+	Extension       whereHelperstring
+	Size            whereHelperint64
+	MimeType        whereHelperstring
 	Width           whereHelpernull_Int
 	Height          whereHelpernull_Int
-	HasPreviewImage whereHelpernull_Bool
+	HasPreviewImage whereHelperbool
 	MiniPreview     whereHelpernull_Bytes
-	Content         whereHelpernull_String
+	Content         whereHelperstring
 	RemoteID        whereHelpernull_String
 }{
 	ID:              whereHelperstring{field: "\"file_infos\".\"id\""},
-	CreatorID:       whereHelpernull_String{field: "\"file_infos\".\"creator_id\""},
-	ParentID:        whereHelpernull_String{field: "\"file_infos\".\"parent_id\""},
-	CreateAt:        whereHelpernull_Int64{field: "\"file_infos\".\"create_at\""},
-	UpdateAt:        whereHelpernull_Int64{field: "\"file_infos\".\"update_at\""},
+	CreatorID:       whereHelperstring{field: "\"file_infos\".\"creator_id\""},
+	ParentID:        whereHelperstring{field: "\"file_infos\".\"parent_id\""},
+	CreatedAt:       whereHelperint64{field: "\"file_infos\".\"created_at\""},
+	UpdatedAt:       whereHelperint64{field: "\"file_infos\".\"updated_at\""},
 	DeleteAt:        whereHelpernull_Int64{field: "\"file_infos\".\"delete_at\""},
-	Path:            whereHelpernull_String{field: "\"file_infos\".\"path\""},
-	ThumbnailPath:   whereHelpernull_String{field: "\"file_infos\".\"thumbnail_path\""},
-	PreviewPath:     whereHelpernull_String{field: "\"file_infos\".\"preview_path\""},
-	Name:            whereHelpernull_String{field: "\"file_infos\".\"name\""},
-	Extension:       whereHelpernull_String{field: "\"file_infos\".\"extension\""},
-	Size:            whereHelpernull_Int64{field: "\"file_infos\".\"size\""},
-	MimeType:        whereHelpernull_String{field: "\"file_infos\".\"mime_type\""},
+	Path:            whereHelperstring{field: "\"file_infos\".\"path\""},
+	ThumbnailPath:   whereHelperstring{field: "\"file_infos\".\"thumbnail_path\""},
+	PreviewPath:     whereHelperstring{field: "\"file_infos\".\"preview_path\""},
+	Name:            whereHelperstring{field: "\"file_infos\".\"name\""},
+	Extension:       whereHelperstring{field: "\"file_infos\".\"extension\""},
+	Size:            whereHelperint64{field: "\"file_infos\".\"size\""},
+	MimeType:        whereHelperstring{field: "\"file_infos\".\"mime_type\""},
 	Width:           whereHelpernull_Int{field: "\"file_infos\".\"width\""},
 	Height:          whereHelpernull_Int{field: "\"file_infos\".\"height\""},
-	HasPreviewImage: whereHelpernull_Bool{field: "\"file_infos\".\"has_preview_image\""},
+	HasPreviewImage: whereHelperbool{field: "\"file_infos\".\"has_preview_image\""},
 	MiniPreview:     whereHelpernull_Bytes{field: "\"file_infos\".\"mini_preview\""},
-	Content:         whereHelpernull_String{field: "\"file_infos\".\"content\""},
+	Content:         whereHelperstring{field: "\"file_infos\".\"content\""},
 	RemoteID:        whereHelpernull_String{field: "\"file_infos\".\"remote_id\""},
 }
 
@@ -217,9 +255,9 @@ func (*fileInfoR) NewStruct() *fileInfoR {
 type fileInfoL struct{}
 
 var (
-	fileInfoAllColumns            = []string{"id", "creator_id", "parent_id", "create_at", "update_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
-	fileInfoColumnsWithoutDefault = []string{"id"}
-	fileInfoColumnsWithDefault    = []string{"creator_id", "parent_id", "create_at", "update_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
+	fileInfoAllColumns            = []string{"id", "creator_id", "parent_id", "created_at", "updated_at", "delete_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "width", "height", "has_preview_image", "mini_preview", "content", "remote_id"}
+	fileInfoColumnsWithoutDefault = []string{"creator_id", "parent_id", "created_at", "updated_at", "path", "thumbnail_path", "preview_path", "name", "extension", "size", "mime_type", "has_preview_image", "content"}
+	fileInfoColumnsWithDefault    = []string{"id", "delete_at", "width", "height", "mini_preview", "remote_id"}
 	fileInfoPrimaryKeyColumns     = []string{"id"}
 	fileInfoGeneratedColumns      = []string{}
 )
@@ -640,10 +678,6 @@ func (o *FileInfo) Update(ctx context.Context, exec boil.ContextExecutor, column
 			fileInfoAllColumns,
 			fileInfoPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update file_infos, could not build whitelist")
 		}

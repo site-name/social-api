@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS categories (
   slug character varying(255) NOT NULL,
   description jsonb,
   parent_id uuid,
-  level smallint, NOT NULL
+  level smallint NOT NULL,
   background_image character varying(200),
   background_image_alt character varying(128) NOT NULL,
   images character varying(1000),

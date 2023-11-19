@@ -503,7 +503,7 @@ func testGiftcardEventToOneGiftcardUsingGiftcard(t *testing.T) {
 	var foreign Giftcard
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, giftcardEventDBTypes, true, giftcardEventColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, giftcardEventDBTypes, false, giftcardEventColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize GiftcardEvent struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, giftcardDBTypes, false, giftcardColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testGiftcardEventToOneGiftcardUsingGiftcard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.GiftcardID, foreign.ID)
+	local.GiftcardID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testGiftcardEventToOneGiftcardUsingGiftcard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testGiftcardEventToOneSetOpGiftcardUsingGiftcard(t *testing.T) {
 		if x.R.GiftcardEvents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.GiftcardID, x.ID) {
+		if a.GiftcardID != x.ID {
 			t.Error("foreign key was wrong value", a.GiftcardID)
 		}
 
@@ -607,60 +607,9 @@ func testGiftcardEventToOneSetOpGiftcardUsingGiftcard(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.GiftcardID, x.ID) {
+		if a.GiftcardID != x.ID {
 			t.Error("foreign key was wrong value", a.GiftcardID, x.ID)
 		}
-	}
-}
-
-func testGiftcardEventToOneRemoveOpGiftcardUsingGiftcard(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a GiftcardEvent
-	var b Giftcard
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, giftcardEventDBTypes, false, strmangle.SetComplement(giftcardEventPrimaryKeyColumns, giftcardEventColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, giftcardDBTypes, false, strmangle.SetComplement(giftcardPrimaryKeyColumns, giftcardColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetGiftcard(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveGiftcard(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Giftcard().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Giftcard != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.GiftcardID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.GiftcardEvents) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testGiftcardEventsSelect(t *testing.T) {
 }
 
 var (
-	giftcardEventDBTypes = map[string]string{`ID`: `character varying`, `Date`: `bigint`, `Type`: `character varying`, `Parameters`: `jsonb`, `UserID`: `character varying`, `GiftcardID`: `character varying`}
+	giftcardEventDBTypes = map[string]string{`ID`: `uuid`, `Date`: `bigint`, `Type`: `character varying`, `Parameters`: `jsonb`, `UserID`: `uuid`, `GiftcardID`: `uuid`}
 	_                    = bytes.MinRead
 )
 

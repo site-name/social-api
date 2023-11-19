@@ -24,15 +24,15 @@ import (
 
 // Job is an object representing the database table.
 type Job struct {
-	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Type           null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	Priority       null.Int64  `boil:"priority" json:"priority,omitempty" toml:"priority" yaml:"priority,omitempty"`
-	CreateAt       null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	StartAt        null.Int64  `boil:"start_at" json:"start_at,omitempty" toml:"start_at" yaml:"start_at,omitempty"`
-	LastActivityAt null.Int64  `boil:"last_activity_at" json:"last_activity_at,omitempty" toml:"last_activity_at" yaml:"last_activity_at,omitempty"`
-	Status         null.String `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	Progress       null.Int64  `boil:"progress" json:"progress,omitempty" toml:"progress" yaml:"progress,omitempty"`
-	Data           null.JSON   `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
+	ID             string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Type           string    `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Priority       int64     `boil:"priority" json:"priority" toml:"priority" yaml:"priority"`
+	CreatedAt      int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	StartAt        int64     `boil:"start_at" json:"start_at" toml:"start_at" yaml:"start_at"`
+	LastActivityAt int64     `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
+	Status         string    `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Progress       int64     `boil:"progress" json:"progress" toml:"progress" yaml:"progress"`
+	Data           null.JSON `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
 
 	R *jobR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L jobL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,7 +42,7 @@ var JobColumns = struct {
 	ID             string
 	Type           string
 	Priority       string
-	CreateAt       string
+	CreatedAt      string
 	StartAt        string
 	LastActivityAt string
 	Status         string
@@ -52,7 +52,7 @@ var JobColumns = struct {
 	ID:             "id",
 	Type:           "type",
 	Priority:       "priority",
-	CreateAt:       "create_at",
+	CreatedAt:      "created_at",
 	StartAt:        "start_at",
 	LastActivityAt: "last_activity_at",
 	Status:         "status",
@@ -64,7 +64,7 @@ var JobTableColumns = struct {
 	ID             string
 	Type           string
 	Priority       string
-	CreateAt       string
+	CreatedAt      string
 	StartAt        string
 	LastActivityAt string
 	Status         string
@@ -74,7 +74,7 @@ var JobTableColumns = struct {
 	ID:             "jobs.id",
 	Type:           "jobs.type",
 	Priority:       "jobs.priority",
-	CreateAt:       "jobs.create_at",
+	CreatedAt:      "jobs.created_at",
 	StartAt:        "jobs.start_at",
 	LastActivityAt: "jobs.last_activity_at",
 	Status:         "jobs.status",
@@ -86,23 +86,23 @@ var JobTableColumns = struct {
 
 var JobWhere = struct {
 	ID             whereHelperstring
-	Type           whereHelpernull_String
-	Priority       whereHelpernull_Int64
-	CreateAt       whereHelpernull_Int64
-	StartAt        whereHelpernull_Int64
-	LastActivityAt whereHelpernull_Int64
-	Status         whereHelpernull_String
-	Progress       whereHelpernull_Int64
+	Type           whereHelperstring
+	Priority       whereHelperint64
+	CreatedAt      whereHelperint64
+	StartAt        whereHelperint64
+	LastActivityAt whereHelperint64
+	Status         whereHelperstring
+	Progress       whereHelperint64
 	Data           whereHelpernull_JSON
 }{
 	ID:             whereHelperstring{field: "\"jobs\".\"id\""},
-	Type:           whereHelpernull_String{field: "\"jobs\".\"type\""},
-	Priority:       whereHelpernull_Int64{field: "\"jobs\".\"priority\""},
-	CreateAt:       whereHelpernull_Int64{field: "\"jobs\".\"create_at\""},
-	StartAt:        whereHelpernull_Int64{field: "\"jobs\".\"start_at\""},
-	LastActivityAt: whereHelpernull_Int64{field: "\"jobs\".\"last_activity_at\""},
-	Status:         whereHelpernull_String{field: "\"jobs\".\"status\""},
-	Progress:       whereHelpernull_Int64{field: "\"jobs\".\"progress\""},
+	Type:           whereHelperstring{field: "\"jobs\".\"type\""},
+	Priority:       whereHelperint64{field: "\"jobs\".\"priority\""},
+	CreatedAt:      whereHelperint64{field: "\"jobs\".\"created_at\""},
+	StartAt:        whereHelperint64{field: "\"jobs\".\"start_at\""},
+	LastActivityAt: whereHelperint64{field: "\"jobs\".\"last_activity_at\""},
+	Status:         whereHelperstring{field: "\"jobs\".\"status\""},
+	Progress:       whereHelperint64{field: "\"jobs\".\"progress\""},
 	Data:           whereHelpernull_JSON{field: "\"jobs\".\"data\""},
 }
 
@@ -123,9 +123,9 @@ func (*jobR) NewStruct() *jobR {
 type jobL struct{}
 
 var (
-	jobAllColumns            = []string{"id", "type", "priority", "create_at", "start_at", "last_activity_at", "status", "progress", "data"}
-	jobColumnsWithoutDefault = []string{"id"}
-	jobColumnsWithDefault    = []string{"type", "priority", "create_at", "start_at", "last_activity_at", "status", "progress", "data"}
+	jobAllColumns            = []string{"id", "type", "priority", "created_at", "start_at", "last_activity_at", "status", "progress", "data"}
+	jobColumnsWithoutDefault = []string{"type", "priority", "created_at", "start_at", "last_activity_at", "status", "progress"}
+	jobColumnsWithDefault    = []string{"id", "data"}
 	jobPrimaryKeyColumns     = []string{"id"}
 	jobGeneratedColumns      = []string{}
 )
@@ -546,10 +546,6 @@ func (o *Job) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 			jobAllColumns,
 			jobPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update jobs, could not build whitelist")
 		}

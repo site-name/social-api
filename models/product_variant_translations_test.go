@@ -503,7 +503,7 @@ func testProductVariantTranslationToOneProductVariantUsingProductVariant(t *test
 	var foreign ProductVariant
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, productVariantTranslationDBTypes, true, productVariantTranslationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, productVariantTranslationDBTypes, false, productVariantTranslationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize ProductVariantTranslation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productVariantDBTypes, false, productVariantColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testProductVariantTranslationToOneProductVariantUsingProductVariant(t *test
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductVariantID, foreign.ID)
+	local.ProductVariantID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testProductVariantTranslationToOneProductVariantUsingProductVariant(t *test
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testProductVariantTranslationToOneSetOpProductVariantUsingProductVariant(t 
 		if x.R.ProductVariantTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductVariantID, x.ID) {
+		if a.ProductVariantID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductVariantID)
 		}
 
@@ -607,60 +607,9 @@ func testProductVariantTranslationToOneSetOpProductVariantUsingProductVariant(t 
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductVariantID, x.ID) {
+		if a.ProductVariantID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductVariantID, x.ID)
 		}
-	}
-}
-
-func testProductVariantTranslationToOneRemoveOpProductVariantUsingProductVariant(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a ProductVariantTranslation
-	var b ProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, productVariantTranslationDBTypes, false, strmangle.SetComplement(productVariantTranslationPrimaryKeyColumns, productVariantTranslationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productVariantDBTypes, false, strmangle.SetComplement(productVariantPrimaryKeyColumns, productVariantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProductVariant(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProductVariant(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ProductVariant().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ProductVariant != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductVariantID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ProductVariantTranslations) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testProductVariantTranslationsSelect(t *testing.T) {
 }
 
 var (
-	productVariantTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `ProductVariantID`: `character varying`, `Name`: `character varying`}
+	productVariantTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `ProductVariantID`: `uuid`, `Name`: `character varying`}
 	_                                = bytes.MinRead
 )
 

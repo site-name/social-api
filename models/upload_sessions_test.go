@@ -568,7 +568,7 @@ func testUploadSessionsSelect(t *testing.T) {
 }
 
 var (
-	uploadSessionDBTypes = map[string]string{`ID`: `character varying`, `Type`: `character varying`, `CreateAt`: `bigint`, `UserID`: `character varying`, `FileName`: `character varying`, `Path`: `character varying`, `FileSize`: `bigint`, `FileOffset`: `bigint`}
+	uploadSessionDBTypes = map[string]string{`ID`: `uuid`, `Type`: `character varying`, `CreatedAt`: `bigint`, `UserID`: `uuid`, `FileName`: `character varying`, `Path`: `character varying`, `FileSize`: `bigint`, `FileOffset`: `bigint`}
 	_                    = bytes.MinRead
 )
 

@@ -958,7 +958,7 @@ func testAssignedProductAttributesSelect(t *testing.T) {
 }
 
 var (
-	assignedProductAttributeDBTypes = map[string]string{`ID`: `character varying`, `ProductID`: `character varying`, `AssignmentID`: `character varying`}
+	assignedProductAttributeDBTypes = map[string]string{`ID`: `uuid`, `ProductID`: `uuid`, `AssignmentID`: `uuid`}
 	_                               = bytes.MinRead
 )
 

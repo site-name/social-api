@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // Status is an object representing the database table.
 type Status struct {
-	UserID         string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Status         null.String `boil:"status" json:"status,omitempty" toml:"status" yaml:"status,omitempty"`
-	Manual         null.Bool   `boil:"manual" json:"manual,omitempty" toml:"manual" yaml:"manual,omitempty"`
-	LastActivityAt null.Int64  `boil:"last_activity_at" json:"last_activity_at,omitempty" toml:"last_activity_at" yaml:"last_activity_at,omitempty"`
+	UserID         string `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Status         string `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Manual         bool   `boil:"manual" json:"manual" toml:"manual" yaml:"manual"`
+	LastActivityAt int64  `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
 
 	R *statusR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L statusL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,14 +60,14 @@ var StatusTableColumns = struct {
 
 var StatusWhere = struct {
 	UserID         whereHelperstring
-	Status         whereHelpernull_String
-	Manual         whereHelpernull_Bool
-	LastActivityAt whereHelpernull_Int64
+	Status         whereHelperstring
+	Manual         whereHelperbool
+	LastActivityAt whereHelperint64
 }{
 	UserID:         whereHelperstring{field: "\"status\".\"user_id\""},
-	Status:         whereHelpernull_String{field: "\"status\".\"status\""},
-	Manual:         whereHelpernull_Bool{field: "\"status\".\"manual\""},
-	LastActivityAt: whereHelpernull_Int64{field: "\"status\".\"last_activity_at\""},
+	Status:         whereHelperstring{field: "\"status\".\"status\""},
+	Manual:         whereHelperbool{field: "\"status\".\"manual\""},
+	LastActivityAt: whereHelperint64{field: "\"status\".\"last_activity_at\""},
 }
 
 // StatusRels is where relationship names are stored.
@@ -89,8 +88,8 @@ type statusL struct{}
 
 var (
 	statusAllColumns            = []string{"user_id", "status", "manual", "last_activity_at"}
-	statusColumnsWithoutDefault = []string{"user_id"}
-	statusColumnsWithDefault    = []string{"status", "manual", "last_activity_at"}
+	statusColumnsWithoutDefault = []string{"user_id", "status", "manual", "last_activity_at"}
+	statusColumnsWithDefault    = []string{}
 	statusPrimaryKeyColumns     = []string{"user_id"}
 	statusGeneratedColumns      = []string{}
 )
@@ -511,10 +510,6 @@ func (o *Status) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 			statusAllColumns,
 			statusPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update status, could not build whitelist")
 		}

@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS voucher_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  language_code character varying(10),
-  name character varying(255),
-  voucher_id uuid,
-  created_at bigint
+  language_code character varying(5) NOT NULL,
+  name character varying(255) NOT NULL,
+  voucher_id uuid NOT NULL,
+  created_at bigint NOT NULL
 );
 
 ALTER TABLE ONLY voucher_translations

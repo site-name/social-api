@@ -511,10 +511,6 @@ func (o *PluginKeyValueStore) Update(ctx context.Context, exec boil.ContextExecu
 			pluginKeyValueStoreAllColumns,
 			pluginKeyValueStorePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update plugin_key_value_store, could not build whitelist")
 		}

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // VoucherTranslation is an object representing the database table.
 type VoucherTranslation struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	VoucherID    null.String `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	CreateAt     null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode string `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Name         string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	VoucherID    string `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	CreatedAt    int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *voucherTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,13 +38,13 @@ var VoucherTranslationColumns = struct {
 	LanguageCode string
 	Name         string
 	VoucherID    string
-	CreateAt     string
+	CreatedAt    string
 }{
 	ID:           "id",
 	LanguageCode: "language_code",
 	Name:         "name",
 	VoucherID:    "voucher_id",
-	CreateAt:     "create_at",
+	CreatedAt:    "created_at",
 }
 
 var VoucherTranslationTableColumns = struct {
@@ -53,29 +52,29 @@ var VoucherTranslationTableColumns = struct {
 	LanguageCode string
 	Name         string
 	VoucherID    string
-	CreateAt     string
+	CreatedAt    string
 }{
 	ID:           "voucher_translations.id",
 	LanguageCode: "voucher_translations.language_code",
 	Name:         "voucher_translations.name",
 	VoucherID:    "voucher_translations.voucher_id",
-	CreateAt:     "voucher_translations.create_at",
+	CreatedAt:    "voucher_translations.created_at",
 }
 
 // Generated where
 
 var VoucherTranslationWhere = struct {
 	ID           whereHelperstring
-	LanguageCode whereHelpernull_String
-	Name         whereHelpernull_String
-	VoucherID    whereHelpernull_String
-	CreateAt     whereHelpernull_Int64
+	LanguageCode whereHelperstring
+	Name         whereHelperstring
+	VoucherID    whereHelperstring
+	CreatedAt    whereHelperint64
 }{
 	ID:           whereHelperstring{field: "\"voucher_translations\".\"id\""},
-	LanguageCode: whereHelpernull_String{field: "\"voucher_translations\".\"language_code\""},
-	Name:         whereHelpernull_String{field: "\"voucher_translations\".\"name\""},
-	VoucherID:    whereHelpernull_String{field: "\"voucher_translations\".\"voucher_id\""},
-	CreateAt:     whereHelpernull_Int64{field: "\"voucher_translations\".\"create_at\""},
+	LanguageCode: whereHelperstring{field: "\"voucher_translations\".\"language_code\""},
+	Name:         whereHelperstring{field: "\"voucher_translations\".\"name\""},
+	VoucherID:    whereHelperstring{field: "\"voucher_translations\".\"voucher_id\""},
+	CreatedAt:    whereHelperint64{field: "\"voucher_translations\".\"created_at\""},
 }
 
 // VoucherTranslationRels is where relationship names are stored.
@@ -106,9 +105,9 @@ func (r *voucherTranslationR) GetVoucher() *Voucher {
 type voucherTranslationL struct{}
 
 var (
-	voucherTranslationAllColumns            = []string{"id", "language_code", "name", "voucher_id", "create_at"}
-	voucherTranslationColumnsWithoutDefault = []string{"id"}
-	voucherTranslationColumnsWithDefault    = []string{"language_code", "name", "voucher_id", "create_at"}
+	voucherTranslationAllColumns            = []string{"id", "language_code", "name", "voucher_id", "created_at"}
+	voucherTranslationColumnsWithoutDefault = []string{"language_code", "name", "voucher_id", "created_at"}
+	voucherTranslationColumnsWithDefault    = []string{"id"}
 	voucherTranslationPrimaryKeyColumns     = []string{"id"}
 	voucherTranslationGeneratedColumns      = []string{}
 )
@@ -435,9 +434,7 @@ func (voucherTranslationL) LoadVoucher(ctx context.Context, e boil.ContextExecut
 		if object.R == nil {
 			object.R = &voucherTranslationR{}
 		}
-		if !queries.IsNil(object.VoucherID) {
-			args = append(args, object.VoucherID)
-		}
+		args = append(args, object.VoucherID)
 
 	} else {
 	Outer:
@@ -447,14 +444,12 @@ func (voucherTranslationL) LoadVoucher(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.VoucherID) {
+				if a == obj.VoucherID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.VoucherID) {
-				args = append(args, obj.VoucherID)
-			}
+			args = append(args, obj.VoucherID)
 
 		}
 	}
@@ -512,7 +507,7 @@ func (voucherTranslationL) LoadVoucher(ctx context.Context, e boil.ContextExecut
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.VoucherID, foreign.ID) {
+			if local.VoucherID == foreign.ID {
 				local.R.Voucher = foreign
 				if foreign.R == nil {
 					foreign.R = &voucherR{}
@@ -553,7 +548,7 @@ func (o *VoucherTranslation) SetVoucher(ctx context.Context, exec boil.ContextEx
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.VoucherID, related.ID)
+	o.VoucherID = related.ID
 	if o.R == nil {
 		o.R = &voucherTranslationR{
 			Voucher: related,
@@ -570,39 +565,6 @@ func (o *VoucherTranslation) SetVoucher(ctx context.Context, exec boil.ContextEx
 		related.R.VoucherTranslations = append(related.R.VoucherTranslations, o)
 	}
 
-	return nil
-}
-
-// RemoveVoucher relationship.
-// Sets o.R.Voucher to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *VoucherTranslation) RemoveVoucher(ctx context.Context, exec boil.ContextExecutor, related *Voucher) error {
-	var err error
-
-	queries.SetScanner(&o.VoucherID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("voucher_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Voucher = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VoucherTranslations {
-		if queries.Equal(o.VoucherID, ri.VoucherID) {
-			continue
-		}
-
-		ln := len(related.R.VoucherTranslations)
-		if ln > 1 && i < ln-1 {
-			related.R.VoucherTranslations[i] = related.R.VoucherTranslations[ln-1]
-		}
-		related.R.VoucherTranslations = related.R.VoucherTranslations[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -744,10 +706,6 @@ func (o *VoucherTranslation) Update(ctx context.Context, exec boil.ContextExecut
 			voucherTranslationAllColumns,
 			voucherTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update voucher_translations, could not build whitelist")
 		}

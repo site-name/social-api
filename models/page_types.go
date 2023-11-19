@@ -24,11 +24,11 @@ import (
 
 // PageType is an object representing the database table.
 type PageType struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug            null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug            string    `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Metadata        null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *pageTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -66,14 +66,14 @@ var PageTypeTableColumns = struct {
 
 var PageTypeWhere = struct {
 	ID              whereHelperstring
-	Name            whereHelpernull_String
-	Slug            whereHelpernull_String
+	Name            whereHelperstring
+	Slug            whereHelperstring
 	Metadata        whereHelpernull_JSON
 	PrivateMetadata whereHelpernull_JSON
 }{
 	ID:              whereHelperstring{field: "\"page_types\".\"id\""},
-	Name:            whereHelpernull_String{field: "\"page_types\".\"name\""},
-	Slug:            whereHelpernull_String{field: "\"page_types\".\"slug\""},
+	Name:            whereHelperstring{field: "\"page_types\".\"name\""},
+	Slug:            whereHelperstring{field: "\"page_types\".\"slug\""},
 	Metadata:        whereHelpernull_JSON{field: "\"page_types\".\"metadata\""},
 	PrivateMetadata: whereHelpernull_JSON{field: "\"page_types\".\"private_metadata\""},
 }
@@ -117,8 +117,8 @@ type pageTypeL struct{}
 
 var (
 	pageTypeAllColumns            = []string{"id", "name", "slug", "metadata", "private_metadata"}
-	pageTypeColumnsWithoutDefault = []string{"id"}
-	pageTypeColumnsWithDefault    = []string{"name", "slug", "metadata", "private_metadata"}
+	pageTypeColumnsWithoutDefault = []string{"name", "slug"}
+	pageTypeColumnsWithDefault    = []string{"id", "metadata", "private_metadata"}
 	pageTypePrimaryKeyColumns     = []string{"id"}
 	pageTypeGeneratedColumns      = []string{}
 )
@@ -471,7 +471,7 @@ func (pageTypeL) LoadAttributePages(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -529,7 +529,7 @@ func (pageTypeL) LoadAttributePages(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.PageTypeID) {
+			if local.ID == foreign.PageTypeID {
 				local.R.AttributePages = append(local.R.AttributePages, foreign)
 				if foreign.R == nil {
 					foreign.R = &attributePageR{}
@@ -585,7 +585,7 @@ func (pageTypeL) LoadPages(ctx context.Context, e boil.ContextExecutor, singular
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -643,7 +643,7 @@ func (pageTypeL) LoadPages(ctx context.Context, e boil.ContextExecutor, singular
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.PageTypeID) {
+			if local.ID == foreign.PageTypeID {
 				local.R.Pages = append(local.R.Pages, foreign)
 				if foreign.R == nil {
 					foreign.R = &pageR{}
@@ -665,7 +665,7 @@ func (o *PageType) AddAttributePages(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.PageTypeID, o.ID)
+			rel.PageTypeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -686,7 +686,7 @@ func (o *PageType) AddAttributePages(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.PageTypeID, o.ID)
+			rel.PageTypeID = o.ID
 		}
 	}
 
@@ -710,80 +710,6 @@ func (o *PageType) AddAttributePages(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// SetAttributePages removes all previously related items of the
-// page_type replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.PageType's AttributePages accordingly.
-// Replaces o.R.AttributePages with related.
-// Sets related.R.PageType's AttributePages accordingly.
-func (o *PageType) SetAttributePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributePage) error {
-	query := "update \"attribute_pages\" set \"page_type_id\" = null where \"page_type_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AttributePages {
-			queries.SetScanner(&rel.PageTypeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.PageType = nil
-		}
-		o.R.AttributePages = nil
-	}
-
-	return o.AddAttributePages(ctx, exec, insert, related...)
-}
-
-// RemoveAttributePages relationships from objects passed in.
-// Removes related items from R.AttributePages (uses pointer comparison, removal does not keep order)
-// Sets related.R.PageType.
-func (o *PageType) RemoveAttributePages(ctx context.Context, exec boil.ContextExecutor, related ...*AttributePage) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.PageTypeID, nil)
-		if rel.R != nil {
-			rel.R.PageType = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("page_type_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AttributePages {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AttributePages)
-			if ln > 1 && i < ln-1 {
-				o.R.AttributePages[i] = o.R.AttributePages[ln-1]
-			}
-			o.R.AttributePages = o.R.AttributePages[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddPages adds the given related objects to the existing relationships
 // of the page_type, optionally inserting them as new records.
 // Appends related to o.R.Pages.
@@ -792,7 +718,7 @@ func (o *PageType) AddPages(ctx context.Context, exec boil.ContextExecutor, inse
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.PageTypeID, o.ID)
+			rel.PageTypeID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -813,7 +739,7 @@ func (o *PageType) AddPages(ctx context.Context, exec boil.ContextExecutor, inse
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.PageTypeID, o.ID)
+			rel.PageTypeID = o.ID
 		}
 	}
 
@@ -834,80 +760,6 @@ func (o *PageType) AddPages(ctx context.Context, exec boil.ContextExecutor, inse
 			rel.R.PageType = o
 		}
 	}
-	return nil
-}
-
-// SetPages removes all previously related items of the
-// page_type replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.PageType's Pages accordingly.
-// Replaces o.R.Pages with related.
-// Sets related.R.PageType's Pages accordingly.
-func (o *PageType) SetPages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Page) error {
-	query := "update \"pages\" set \"page_type_id\" = null where \"page_type_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Pages {
-			queries.SetScanner(&rel.PageTypeID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.PageType = nil
-		}
-		o.R.Pages = nil
-	}
-
-	return o.AddPages(ctx, exec, insert, related...)
-}
-
-// RemovePages relationships from objects passed in.
-// Removes related items from R.Pages (uses pointer comparison, removal does not keep order)
-// Sets related.R.PageType.
-func (o *PageType) RemovePages(ctx context.Context, exec boil.ContextExecutor, related ...*Page) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.PageTypeID, nil)
-		if rel.R != nil {
-			rel.R.PageType = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("page_type_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Pages {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Pages)
-			if ln > 1 && i < ln-1 {
-				o.R.Pages[i] = o.R.Pages[ln-1]
-			}
-			o.R.Pages = o.R.Pages[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1049,10 +901,6 @@ func (o *PageType) Update(ctx context.Context, exec boil.ContextExecutor, column
 			pageTypeAllColumns,
 			pageTypePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update page_types, could not build whitelist")
 		}

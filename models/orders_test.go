@@ -596,8 +596,9 @@ func testOrderToManyFulfillments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.OrderID, a.ID)
-	queries.Assign(&c.OrderID, a.ID)
+	b.OrderID = a.ID
+	c.OrderID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -612,10 +613,10 @@ func testOrderToManyFulfillments(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.OrderID, b.OrderID) {
+		if v.OrderID == b.OrderID {
 			bFound = true
 		}
-		if queries.Equal(v.OrderID, c.OrderID) {
+		if v.OrderID == c.OrderID {
 			cFound = true
 		}
 	}
@@ -904,8 +905,9 @@ func testOrderToManyOrderEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.OrderID, a.ID)
-	queries.Assign(&c.OrderID, a.ID)
+	b.OrderID = a.ID
+	c.OrderID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -920,10 +922,10 @@ func testOrderToManyOrderEvents(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.OrderID, b.OrderID) {
+		if v.OrderID == b.OrderID {
 			bFound = true
 		}
-		if queries.Equal(v.OrderID, c.OrderID) {
+		if v.OrderID == c.OrderID {
 			cFound = true
 		}
 	}
@@ -981,8 +983,9 @@ func testOrderToManyOrderGiftcards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.OrderID, a.ID)
-	queries.Assign(&c.OrderID, a.ID)
+	b.OrderID = a.ID
+	c.OrderID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -997,10 +1000,10 @@ func testOrderToManyOrderGiftcards(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.OrderID, b.OrderID) {
+		if v.OrderID == b.OrderID {
 			bFound = true
 		}
-		if queries.Equal(v.OrderID, c.OrderID) {
+		if v.OrderID == c.OrderID {
 			cFound = true
 		}
 	}
@@ -1058,8 +1061,9 @@ func testOrderToManyOrderLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.OrderID, a.ID)
-	queries.Assign(&c.OrderID, a.ID)
+	b.OrderID = a.ID
+	c.OrderID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1074,10 +1078,10 @@ func testOrderToManyOrderLines(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.OrderID, b.OrderID) {
+		if v.OrderID == b.OrderID {
 			bFound = true
 		}
-		if queries.Equal(v.OrderID, c.OrderID) {
+		if v.OrderID == c.OrderID {
 			cFound = true
 		}
 	}
@@ -1560,10 +1564,10 @@ func testOrderToManyAddOpFulfillments(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.OrderID) {
+		if a.ID != first.OrderID {
 			t.Error("foreign key was wrong value", a.ID, first.OrderID)
 		}
-		if !queries.Equal(a.ID, second.OrderID) {
+		if a.ID != second.OrderID {
 			t.Error("foreign key was wrong value", a.ID, second.OrderID)
 		}
 
@@ -1590,182 +1594,6 @@ func testOrderToManyAddOpFulfillments(t *testing.T) {
 		}
 	}
 }
-
-func testOrderToManySetOpFulfillments(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e Fulfillment
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Fulfillment{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, fulfillmentDBTypes, false, strmangle.SetComplement(fulfillmentPrimaryKeyColumns, fulfillmentColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetFulfillments(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.Fulfillments().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetFulfillments(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.Fulfillments().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, d.OrderID)
-	}
-	if !queries.Equal(a.ID, e.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, e.OrderID)
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.Fulfillments[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.Fulfillments[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testOrderToManyRemoveOpFulfillments(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e Fulfillment
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*Fulfillment{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, fulfillmentDBTypes, false, strmangle.SetComplement(fulfillmentPrimaryKeyColumns, fulfillmentColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddFulfillments(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.Fulfillments().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveFulfillments(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.Fulfillments().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.Fulfillments) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.Fulfillments[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.Fulfillments[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testOrderToManyAddOpInvoiceEvents(t *testing.T) {
 	var err error
 
@@ -2564,10 +2392,10 @@ func testOrderToManyAddOpOrderEvents(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.OrderID) {
+		if a.ID != first.OrderID {
 			t.Error("foreign key was wrong value", a.ID, first.OrderID)
 		}
-		if !queries.Equal(a.ID, second.OrderID) {
+		if a.ID != second.OrderID {
 			t.Error("foreign key was wrong value", a.ID, second.OrderID)
 		}
 
@@ -2594,182 +2422,6 @@ func testOrderToManyAddOpOrderEvents(t *testing.T) {
 		}
 	}
 }
-
-func testOrderToManySetOpOrderEvents(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e OrderEvent
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*OrderEvent{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, orderEventDBTypes, false, strmangle.SetComplement(orderEventPrimaryKeyColumns, orderEventColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetOrderEvents(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetOrderEvents(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, d.OrderID)
-	}
-	if !queries.Equal(a.ID, e.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, e.OrderID)
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.OrderEvents[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.OrderEvents[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testOrderToManyRemoveOpOrderEvents(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e OrderEvent
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*OrderEvent{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, orderEventDBTypes, false, strmangle.SetComplement(orderEventPrimaryKeyColumns, orderEventColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddOrderEvents(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveOrderEvents(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderEvents().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.OrderEvents) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.OrderEvents[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.OrderEvents[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testOrderToManyAddOpOrderGiftcards(t *testing.T) {
 	var err error
 
@@ -2815,10 +2467,10 @@ func testOrderToManyAddOpOrderGiftcards(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.OrderID) {
+		if a.ID != first.OrderID {
 			t.Error("foreign key was wrong value", a.ID, first.OrderID)
 		}
-		if !queries.Equal(a.ID, second.OrderID) {
+		if a.ID != second.OrderID {
 			t.Error("foreign key was wrong value", a.ID, second.OrderID)
 		}
 
@@ -2845,182 +2497,6 @@ func testOrderToManyAddOpOrderGiftcards(t *testing.T) {
 		}
 	}
 }
-
-func testOrderToManySetOpOrderGiftcards(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e OrderGiftcard
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*OrderGiftcard{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, orderGiftcardDBTypes, false, strmangle.SetComplement(orderGiftcardPrimaryKeyColumns, orderGiftcardColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetOrderGiftcards(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetOrderGiftcards(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, d.OrderID)
-	}
-	if !queries.Equal(a.ID, e.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, e.OrderID)
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.OrderGiftcards[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.OrderGiftcards[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testOrderToManyRemoveOpOrderGiftcards(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e OrderGiftcard
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*OrderGiftcard{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, orderGiftcardDBTypes, false, strmangle.SetComplement(orderGiftcardPrimaryKeyColumns, orderGiftcardColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddOrderGiftcards(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveOrderGiftcards(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderGiftcards().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.OrderGiftcards) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.OrderGiftcards[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.OrderGiftcards[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testOrderToManyAddOpOrderLines(t *testing.T) {
 	var err error
 
@@ -3066,10 +2542,10 @@ func testOrderToManyAddOpOrderLines(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.OrderID) {
+		if a.ID != first.OrderID {
 			t.Error("foreign key was wrong value", a.ID, first.OrderID)
 		}
-		if !queries.Equal(a.ID, second.OrderID) {
+		if a.ID != second.OrderID {
 			t.Error("foreign key was wrong value", a.ID, second.OrderID)
 		}
 
@@ -3096,182 +2572,6 @@ func testOrderToManyAddOpOrderLines(t *testing.T) {
 		}
 	}
 }
-
-func testOrderToManySetOpOrderLines(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e OrderLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*OrderLine{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetOrderLines(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetOrderLines(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, d.OrderID)
-	}
-	if !queries.Equal(a.ID, e.OrderID) {
-		t.Error("foreign key was wrong value", a.ID, e.OrderID)
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.OrderLines[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.OrderLines[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testOrderToManyRemoveOpOrderLines(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b, c, d, e OrderLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*OrderLine{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddOrderLines(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.OrderLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveOrderLines(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.OrderLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Order != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Order != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.OrderLines) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.OrderLines[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.OrderLines[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testOrderToManyAddOpOriginalOrders(t *testing.T) {
 	var err error
 
@@ -3844,7 +3144,7 @@ func testOrderToOneChannelUsingChannel(t *testing.T) {
 	var foreign Channel
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, orderDBTypes, true, orderColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, orderDBTypes, false, orderColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Order struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, channelDBTypes, false, channelColumnsWithDefault...); err != nil {
@@ -3855,7 +3155,7 @@ func testOrderToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ChannelID, foreign.ID)
+	local.ChannelID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -3865,7 +3165,7 @@ func testOrderToOneChannelUsingChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -4351,7 +3651,7 @@ func testOrderToOneSetOpChannelUsingChannel(t *testing.T) {
 		if x.R.Orders[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID)
 		}
 
@@ -4362,63 +3662,11 @@ func testOrderToOneSetOpChannelUsingChannel(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ChannelID, x.ID) {
+		if a.ChannelID != x.ID {
 			t.Error("foreign key was wrong value", a.ChannelID, x.ID)
 		}
 	}
 }
-
-func testOrderToOneRemoveOpChannelUsingChannel(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Order
-	var b Channel
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, channelDBTypes, false, strmangle.SetComplement(channelPrimaryKeyColumns, channelColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetChannel(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveChannel(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Channel().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Channel != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ChannelID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.Orders) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testOrderToOneSetOpOrderUsingOriginal(t *testing.T) {
 	var err error
 
@@ -5038,7 +4286,7 @@ func testOrdersSelect(t *testing.T) {
 }
 
 var (
-	orderDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `Status`: `character varying`, `UserID`: `character varying`, `LanguageCode`: `character varying`, `TrackingClientID`: `character varying`, `BillingAddressID`: `character varying`, `ShippingAddressID`: `character varying`, `UserEmail`: `character varying`, `OriginalID`: `character varying`, `Origin`: `character varying`, `Currency`: `character varying`, `ShippingMethodID`: `character varying`, `CollectionPointID`: `character varying`, `ShippingMethodName`: `character varying`, `CollectionPointName`: `character varying`, `ChannelID`: `character varying`, `ShippingPriceNetAmount`: `double precision`, `ShippingPriceGrossAmount`: `double precision`, `ShippingTaxRate`: `double precision`, `Token`: `character varying`, `CheckoutToken`: `character varying`, `TotalNetAmount`: `double precision`, `UndiscountedTotalNetAmount`: `double precision`, `TotalGrossAmount`: `double precision`, `UndiscountedTotalGrossAmount`: `double precision`, `TotalPaidAmount`: `double precision`, `VoucherID`: `character varying`, `DisplayGrossPrices`: `boolean`, `CustomerNote`: `text`, `WeightAmount`: `real`, `WeightUnit`: `text`, `RedirectURL`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	orderDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `Status`: `character varying`, `UserID`: `uuid`, `LanguageCode`: `character varying`, `TrackingClientID`: `uuid`, `BillingAddressID`: `uuid`, `ShippingAddressID`: `uuid`, `UserEmail`: `character varying`, `OriginalID`: `uuid`, `Origin`: `character varying`, `Currency`: `character varying`, `ShippingMethodID`: `uuid`, `CollectionPointID`: `uuid`, `ShippingMethodName`: `character varying`, `CollectionPointName`: `character varying`, `ChannelID`: `uuid`, `ShippingPriceNetAmount`: `numeric`, `ShippingPriceGrossAmount`: `numeric`, `ShippingTaxRate`: `numeric`, `Token`: `uuid`, `CheckoutToken`: `uuid`, `TotalNetAmount`: `numeric`, `UndiscountedTotalNetAmount`: `numeric`, `TotalGrossAmount`: `numeric`, `UndiscountedTotalGrossAmount`: `numeric`, `TotalPaidAmount`: `numeric`, `VoucherID`: `uuid`, `DisplayGrossPrices`: `boolean`, `CustomerNote`: `text`, `WeightAmount`: `real`, `WeightUnit`: `character varying`, `RedirectURL`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_            = bytes.MinRead
 )
 

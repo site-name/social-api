@@ -738,7 +738,7 @@ func testStaffNotificationRecipientsSelect(t *testing.T) {
 }
 
 var (
-	staffNotificationRecipientDBTypes = map[string]string{`ID`: `character varying`, `UserID`: `character varying`, `StaffEmail`: `character varying`, `Active`: `boolean`}
+	staffNotificationRecipientDBTypes = map[string]string{`ID`: `uuid`, `UserID`: `uuid`, `StaffEmail`: `character varying`, `Active`: `boolean`}
 	_                                 = bytes.MinRead
 )
 

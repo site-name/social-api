@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // SaleTranslation is an object representing the database table.
 type SaleTranslation struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	SaleID       null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode string `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Name         string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	SaleID       string `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
 
 	R *saleTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,14 +60,14 @@ var SaleTranslationTableColumns = struct {
 
 var SaleTranslationWhere = struct {
 	ID           whereHelperstring
-	LanguageCode whereHelpernull_String
-	Name         whereHelpernull_String
-	SaleID       whereHelpernull_String
+	LanguageCode whereHelperstring
+	Name         whereHelperstring
+	SaleID       whereHelperstring
 }{
 	ID:           whereHelperstring{field: "\"sale_translations\".\"id\""},
-	LanguageCode: whereHelpernull_String{field: "\"sale_translations\".\"language_code\""},
-	Name:         whereHelpernull_String{field: "\"sale_translations\".\"name\""},
-	SaleID:       whereHelpernull_String{field: "\"sale_translations\".\"sale_id\""},
+	LanguageCode: whereHelperstring{field: "\"sale_translations\".\"language_code\""},
+	Name:         whereHelperstring{field: "\"sale_translations\".\"name\""},
+	SaleID:       whereHelperstring{field: "\"sale_translations\".\"sale_id\""},
 }
 
 // SaleTranslationRels is where relationship names are stored.
@@ -100,8 +99,8 @@ type saleTranslationL struct{}
 
 var (
 	saleTranslationAllColumns            = []string{"id", "language_code", "name", "sale_id"}
-	saleTranslationColumnsWithoutDefault = []string{"id"}
-	saleTranslationColumnsWithDefault    = []string{"language_code", "name", "sale_id"}
+	saleTranslationColumnsWithoutDefault = []string{"language_code", "name", "sale_id"}
+	saleTranslationColumnsWithDefault    = []string{"id"}
 	saleTranslationPrimaryKeyColumns     = []string{"id"}
 	saleTranslationGeneratedColumns      = []string{}
 )
@@ -428,9 +427,7 @@ func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &saleTranslationR{}
 		}
-		if !queries.IsNil(object.SaleID) {
-			args = append(args, object.SaleID)
-		}
+		args = append(args, object.SaleID)
 
 	} else {
 	Outer:
@@ -440,14 +437,12 @@ func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.SaleID) {
+				if a == obj.SaleID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.SaleID) {
-				args = append(args, obj.SaleID)
-			}
+			args = append(args, obj.SaleID)
 
 		}
 	}
@@ -505,7 +500,7 @@ func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.SaleID, foreign.ID) {
+			if local.SaleID == foreign.ID {
 				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
@@ -546,7 +541,7 @@ func (o *SaleTranslation) SetSale(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.SaleID, related.ID)
+	o.SaleID = related.ID
 	if o.R == nil {
 		o.R = &saleTranslationR{
 			Sale: related,
@@ -563,39 +558,6 @@ func (o *SaleTranslation) SetSale(ctx context.Context, exec boil.ContextExecutor
 		related.R.SaleTranslations = append(related.R.SaleTranslations, o)
 	}
 
-	return nil
-}
-
-// RemoveSale relationship.
-// Sets o.R.Sale to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleTranslation) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
-	var err error
-
-	queries.SetScanner(&o.SaleID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Sale = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleTranslations {
-		if queries.Equal(o.SaleID, ri.SaleID) {
-			continue
-		}
-
-		ln := len(related.R.SaleTranslations)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleTranslations[i] = related.R.SaleTranslations[ln-1]
-		}
-		related.R.SaleTranslations = related.R.SaleTranslations[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -737,10 +699,6 @@ func (o *SaleTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 			saleTranslationAllColumns,
 			saleTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update sale_translations, could not build whitelist")
 		}

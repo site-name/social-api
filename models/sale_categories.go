@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // SaleCategory is an object representing the database table.
 type SaleCategory struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SaleID     null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
-	CategoryID null.String `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
-	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID         string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SaleID     string `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
+	CategoryID string `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
+	CreatedAt  int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *saleCategoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleCategoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,38 +36,38 @@ var SaleCategoryColumns = struct {
 	ID         string
 	SaleID     string
 	CategoryID string
-	CreateAt   string
+	CreatedAt  string
 }{
 	ID:         "id",
 	SaleID:     "sale_id",
 	CategoryID: "category_id",
-	CreateAt:   "create_at",
+	CreatedAt:  "created_at",
 }
 
 var SaleCategoryTableColumns = struct {
 	ID         string
 	SaleID     string
 	CategoryID string
-	CreateAt   string
+	CreatedAt  string
 }{
 	ID:         "sale_categories.id",
 	SaleID:     "sale_categories.sale_id",
 	CategoryID: "sale_categories.category_id",
-	CreateAt:   "sale_categories.create_at",
+	CreatedAt:  "sale_categories.created_at",
 }
 
 // Generated where
 
 var SaleCategoryWhere = struct {
 	ID         whereHelperstring
-	SaleID     whereHelpernull_String
-	CategoryID whereHelpernull_String
-	CreateAt   whereHelpernull_Int64
+	SaleID     whereHelperstring
+	CategoryID whereHelperstring
+	CreatedAt  whereHelperint64
 }{
 	ID:         whereHelperstring{field: "\"sale_categories\".\"id\""},
-	SaleID:     whereHelpernull_String{field: "\"sale_categories\".\"sale_id\""},
-	CategoryID: whereHelpernull_String{field: "\"sale_categories\".\"category_id\""},
-	CreateAt:   whereHelpernull_Int64{field: "\"sale_categories\".\"create_at\""},
+	SaleID:     whereHelperstring{field: "\"sale_categories\".\"sale_id\""},
+	CategoryID: whereHelperstring{field: "\"sale_categories\".\"category_id\""},
+	CreatedAt:  whereHelperint64{field: "\"sale_categories\".\"created_at\""},
 }
 
 // SaleCategoryRels is where relationship names are stored.
@@ -109,9 +108,9 @@ func (r *saleCategoryR) GetSale() *Sale {
 type saleCategoryL struct{}
 
 var (
-	saleCategoryAllColumns            = []string{"id", "sale_id", "category_id", "create_at"}
-	saleCategoryColumnsWithoutDefault = []string{"id"}
-	saleCategoryColumnsWithDefault    = []string{"sale_id", "category_id", "create_at"}
+	saleCategoryAllColumns            = []string{"id", "sale_id", "category_id", "created_at"}
+	saleCategoryColumnsWithoutDefault = []string{"sale_id", "category_id", "created_at"}
+	saleCategoryColumnsWithDefault    = []string{"id"}
 	saleCategoryPrimaryKeyColumns     = []string{"id"}
 	saleCategoryGeneratedColumns      = []string{}
 )
@@ -449,9 +448,7 @@ func (saleCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &saleCategoryR{}
 		}
-		if !queries.IsNil(object.CategoryID) {
-			args = append(args, object.CategoryID)
-		}
+		args = append(args, object.CategoryID)
 
 	} else {
 	Outer:
@@ -461,14 +458,12 @@ func (saleCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CategoryID) {
+				if a == obj.CategoryID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CategoryID) {
-				args = append(args, obj.CategoryID)
-			}
+			args = append(args, obj.CategoryID)
 
 		}
 	}
@@ -526,7 +521,7 @@ func (saleCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor, s
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CategoryID, foreign.ID) {
+			if local.CategoryID == foreign.ID {
 				local.R.Category = foreign
 				if foreign.R == nil {
 					foreign.R = &categoryR{}
@@ -573,9 +568,7 @@ func (saleCategoryL) LoadSale(ctx context.Context, e boil.ContextExecutor, singu
 		if object.R == nil {
 			object.R = &saleCategoryR{}
 		}
-		if !queries.IsNil(object.SaleID) {
-			args = append(args, object.SaleID)
-		}
+		args = append(args, object.SaleID)
 
 	} else {
 	Outer:
@@ -585,14 +578,12 @@ func (saleCategoryL) LoadSale(ctx context.Context, e boil.ContextExecutor, singu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.SaleID) {
+				if a == obj.SaleID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.SaleID) {
-				args = append(args, obj.SaleID)
-			}
+			args = append(args, obj.SaleID)
 
 		}
 	}
@@ -650,7 +641,7 @@ func (saleCategoryL) LoadSale(ctx context.Context, e boil.ContextExecutor, singu
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.SaleID, foreign.ID) {
+			if local.SaleID == foreign.ID {
 				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
@@ -691,7 +682,7 @@ func (o *SaleCategory) SetCategory(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CategoryID, related.ID)
+	o.CategoryID = related.ID
 	if o.R == nil {
 		o.R = &saleCategoryR{
 			Category: related,
@@ -708,39 +699,6 @@ func (o *SaleCategory) SetCategory(ctx context.Context, exec boil.ContextExecuto
 		related.R.SaleCategories = append(related.R.SaleCategories, o)
 	}
 
-	return nil
-}
-
-// RemoveCategory relationship.
-// Sets o.R.Category to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleCategory) RemoveCategory(ctx context.Context, exec boil.ContextExecutor, related *Category) error {
-	var err error
-
-	queries.SetScanner(&o.CategoryID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("category_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Category = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleCategories {
-		if queries.Equal(o.CategoryID, ri.CategoryID) {
-			continue
-		}
-
-		ln := len(related.R.SaleCategories)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleCategories[i] = related.R.SaleCategories[ln-1]
-		}
-		related.R.SaleCategories = related.R.SaleCategories[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -771,7 +729,7 @@ func (o *SaleCategory) SetSale(ctx context.Context, exec boil.ContextExecutor, i
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.SaleID, related.ID)
+	o.SaleID = related.ID
 	if o.R == nil {
 		o.R = &saleCategoryR{
 			Sale: related,
@@ -788,39 +746,6 @@ func (o *SaleCategory) SetSale(ctx context.Context, exec boil.ContextExecutor, i
 		related.R.SaleCategories = append(related.R.SaleCategories, o)
 	}
 
-	return nil
-}
-
-// RemoveSale relationship.
-// Sets o.R.Sale to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleCategory) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
-	var err error
-
-	queries.SetScanner(&o.SaleID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Sale = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleCategories {
-		if queries.Equal(o.SaleID, ri.SaleID) {
-			continue
-		}
-
-		ln := len(related.R.SaleCategories)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleCategories[i] = related.R.SaleCategories[ln-1]
-		}
-		related.R.SaleCategories = related.R.SaleCategories[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -962,10 +887,6 @@ func (o *SaleCategory) Update(ctx context.Context, exec boil.ContextExecutor, co
 			saleCategoryAllColumns,
 			saleCategoryPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update sale_categories, could not build whitelist")
 		}

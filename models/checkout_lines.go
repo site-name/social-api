@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // CheckoutLine is an object representing the database table.
 type CheckoutLine struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	CheckoutID null.String `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
-	VariantID  null.String `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
-	Quantity   null.Int    `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
+	ID         string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt  int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	CheckoutID string `boil:"checkout_id" json:"checkout_id" toml:"checkout_id" yaml:"checkout_id"`
+	VariantID  string `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
+	Quantity   int    `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
 
 	R *checkoutLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L checkoutLineL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,13 +35,13 @@ type CheckoutLine struct {
 
 var CheckoutLineColumns = struct {
 	ID         string
-	CreateAt   string
+	CreatedAt  string
 	CheckoutID string
 	VariantID  string
 	Quantity   string
 }{
 	ID:         "id",
-	CreateAt:   "create_at",
+	CreatedAt:  "created_at",
 	CheckoutID: "checkout_id",
 	VariantID:  "variant_id",
 	Quantity:   "quantity",
@@ -50,13 +49,13 @@ var CheckoutLineColumns = struct {
 
 var CheckoutLineTableColumns = struct {
 	ID         string
-	CreateAt   string
+	CreatedAt  string
 	CheckoutID string
 	VariantID  string
 	Quantity   string
 }{
 	ID:         "checkout_lines.id",
-	CreateAt:   "checkout_lines.create_at",
+	CreatedAt:  "checkout_lines.created_at",
 	CheckoutID: "checkout_lines.checkout_id",
 	VariantID:  "checkout_lines.variant_id",
 	Quantity:   "checkout_lines.quantity",
@@ -66,16 +65,16 @@ var CheckoutLineTableColumns = struct {
 
 var CheckoutLineWhere = struct {
 	ID         whereHelperstring
-	CreateAt   whereHelpernull_Int64
-	CheckoutID whereHelpernull_String
-	VariantID  whereHelpernull_String
-	Quantity   whereHelpernull_Int
+	CreatedAt  whereHelperint64
+	CheckoutID whereHelperstring
+	VariantID  whereHelperstring
+	Quantity   whereHelperint
 }{
 	ID:         whereHelperstring{field: "\"checkout_lines\".\"id\""},
-	CreateAt:   whereHelpernull_Int64{field: "\"checkout_lines\".\"create_at\""},
-	CheckoutID: whereHelpernull_String{field: "\"checkout_lines\".\"checkout_id\""},
-	VariantID:  whereHelpernull_String{field: "\"checkout_lines\".\"variant_id\""},
-	Quantity:   whereHelpernull_Int{field: "\"checkout_lines\".\"quantity\""},
+	CreatedAt:  whereHelperint64{field: "\"checkout_lines\".\"created_at\""},
+	CheckoutID: whereHelperstring{field: "\"checkout_lines\".\"checkout_id\""},
+	VariantID:  whereHelperstring{field: "\"checkout_lines\".\"variant_id\""},
+	Quantity:   whereHelperint{field: "\"checkout_lines\".\"quantity\""},
 }
 
 // CheckoutLineRels is where relationship names are stored.
@@ -116,9 +115,9 @@ func (r *checkoutLineR) GetVariant() *ProductVariant {
 type checkoutLineL struct{}
 
 var (
-	checkoutLineAllColumns            = []string{"id", "create_at", "checkout_id", "variant_id", "quantity"}
-	checkoutLineColumnsWithoutDefault = []string{"id"}
-	checkoutLineColumnsWithDefault    = []string{"create_at", "checkout_id", "variant_id", "quantity"}
+	checkoutLineAllColumns            = []string{"id", "created_at", "checkout_id", "variant_id", "quantity"}
+	checkoutLineColumnsWithoutDefault = []string{"created_at", "checkout_id", "variant_id", "quantity"}
+	checkoutLineColumnsWithDefault    = []string{"id"}
 	checkoutLinePrimaryKeyColumns     = []string{"id"}
 	checkoutLineGeneratedColumns      = []string{}
 )
@@ -456,9 +455,7 @@ func (checkoutLineL) LoadCheckout(ctx context.Context, e boil.ContextExecutor, s
 		if object.R == nil {
 			object.R = &checkoutLineR{}
 		}
-		if !queries.IsNil(object.CheckoutID) {
-			args = append(args, object.CheckoutID)
-		}
+		args = append(args, object.CheckoutID)
 
 	} else {
 	Outer:
@@ -468,14 +465,12 @@ func (checkoutLineL) LoadCheckout(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CheckoutID) {
+				if a == obj.CheckoutID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CheckoutID) {
-				args = append(args, obj.CheckoutID)
-			}
+			args = append(args, obj.CheckoutID)
 
 		}
 	}
@@ -533,7 +528,7 @@ func (checkoutLineL) LoadCheckout(ctx context.Context, e boil.ContextExecutor, s
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CheckoutID, foreign.Token) {
+			if local.CheckoutID == foreign.Token {
 				local.R.Checkout = foreign
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
@@ -580,9 +575,7 @@ func (checkoutLineL) LoadVariant(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &checkoutLineR{}
 		}
-		if !queries.IsNil(object.VariantID) {
-			args = append(args, object.VariantID)
-		}
+		args = append(args, object.VariantID)
 
 	} else {
 	Outer:
@@ -592,14 +585,12 @@ func (checkoutLineL) LoadVariant(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.VariantID) {
+				if a == obj.VariantID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.VariantID) {
-				args = append(args, obj.VariantID)
-			}
+			args = append(args, obj.VariantID)
 
 		}
 	}
@@ -657,7 +648,7 @@ func (checkoutLineL) LoadVariant(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.VariantID, foreign.ID) {
+			if local.VariantID == foreign.ID {
 				local.R.Variant = foreign
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
@@ -698,7 +689,7 @@ func (o *CheckoutLine) SetCheckout(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CheckoutID, related.Token)
+	o.CheckoutID = related.Token
 	if o.R == nil {
 		o.R = &checkoutLineR{
 			Checkout: related,
@@ -715,39 +706,6 @@ func (o *CheckoutLine) SetCheckout(ctx context.Context, exec boil.ContextExecuto
 		related.R.CheckoutLines = append(related.R.CheckoutLines, o)
 	}
 
-	return nil
-}
-
-// RemoveCheckout relationship.
-// Sets o.R.Checkout to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *CheckoutLine) RemoveCheckout(ctx context.Context, exec boil.ContextExecutor, related *Checkout) error {
-	var err error
-
-	queries.SetScanner(&o.CheckoutID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Checkout = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.CheckoutLines {
-		if queries.Equal(o.CheckoutID, ri.CheckoutID) {
-			continue
-		}
-
-		ln := len(related.R.CheckoutLines)
-		if ln > 1 && i < ln-1 {
-			related.R.CheckoutLines[i] = related.R.CheckoutLines[ln-1]
-		}
-		related.R.CheckoutLines = related.R.CheckoutLines[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -778,7 +736,7 @@ func (o *CheckoutLine) SetVariant(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.VariantID, related.ID)
+	o.VariantID = related.ID
 	if o.R == nil {
 		o.R = &checkoutLineR{
 			Variant: related,
@@ -795,39 +753,6 @@ func (o *CheckoutLine) SetVariant(ctx context.Context, exec boil.ContextExecutor
 		related.R.VariantCheckoutLines = append(related.R.VariantCheckoutLines, o)
 	}
 
-	return nil
-}
-
-// RemoveVariant relationship.
-// Sets o.R.Variant to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *CheckoutLine) RemoveVariant(ctx context.Context, exec boil.ContextExecutor, related *ProductVariant) error {
-	var err error
-
-	queries.SetScanner(&o.VariantID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("variant_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Variant = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.VariantCheckoutLines {
-		if queries.Equal(o.VariantID, ri.VariantID) {
-			continue
-		}
-
-		ln := len(related.R.VariantCheckoutLines)
-		if ln > 1 && i < ln-1 {
-			related.R.VariantCheckoutLines[i] = related.R.VariantCheckoutLines[ln-1]
-		}
-		related.R.VariantCheckoutLines = related.R.VariantCheckoutLines[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -969,10 +894,6 @@ func (o *CheckoutLine) Update(ctx context.Context, exec boil.ContextExecutor, co
 			checkoutLineAllColumns,
 			checkoutLinePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update checkout_lines, could not build whitelist")
 		}

@@ -19,48 +19,49 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Payment is an object representing the database table.
 type Payment struct {
-	ID                 string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Gateway            null.String  `boil:"gateway" json:"gateway,omitempty" toml:"gateway" yaml:"gateway,omitempty"`
-	IsActive           null.Bool    `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
-	ToConfirm          null.Bool    `boil:"to_confirm" json:"to_confirm,omitempty" toml:"to_confirm" yaml:"to_confirm,omitempty"`
-	CreateAt           null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt           null.Int64   `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
-	ChargeStatus       null.String  `boil:"charge_status" json:"charge_status,omitempty" toml:"charge_status" yaml:"charge_status,omitempty"`
-	Token              null.String  `boil:"token" json:"token,omitempty" toml:"token" yaml:"token,omitempty"`
-	Total              null.Float64 `boil:"total" json:"total,omitempty" toml:"total" yaml:"total,omitempty"`
-	CapturedAmount     null.Float64 `boil:"captured_amount" json:"captured_amount,omitempty" toml:"captured_amount" yaml:"captured_amount,omitempty"`
-	Currency           null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	CheckoutID         null.String  `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
-	OrderID            null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	BillingEmail       null.String  `boil:"billing_email" json:"billing_email,omitempty" toml:"billing_email" yaml:"billing_email,omitempty"`
-	BillingFirstName   null.String  `boil:"billing_first_name" json:"billing_first_name,omitempty" toml:"billing_first_name" yaml:"billing_first_name,omitempty"`
-	BillingLastName    null.String  `boil:"billing_last_name" json:"billing_last_name,omitempty" toml:"billing_last_name" yaml:"billing_last_name,omitempty"`
-	BillingCompanyName null.String  `boil:"billing_company_name" json:"billing_company_name,omitempty" toml:"billing_company_name" yaml:"billing_company_name,omitempty"`
-	BillingAddress1    null.String  `boil:"billing_address1" json:"billing_address1,omitempty" toml:"billing_address1" yaml:"billing_address1,omitempty"`
-	BillingAddress2    null.String  `boil:"billing_address2" json:"billing_address2,omitempty" toml:"billing_address2" yaml:"billing_address2,omitempty"`
-	BillingCity        null.String  `boil:"billing_city" json:"billing_city,omitempty" toml:"billing_city" yaml:"billing_city,omitempty"`
-	BillingCityArea    null.String  `boil:"billing_city_area" json:"billing_city_area,omitempty" toml:"billing_city_area" yaml:"billing_city_area,omitempty"`
-	BillingPostalCode  null.String  `boil:"billing_postal_code" json:"billing_postal_code,omitempty" toml:"billing_postal_code" yaml:"billing_postal_code,omitempty"`
-	BillingCountryCode null.String  `boil:"billing_country_code" json:"billing_country_code,omitempty" toml:"billing_country_code" yaml:"billing_country_code,omitempty"`
-	BillingCountryArea null.String  `boil:"billing_country_area" json:"billing_country_area,omitempty" toml:"billing_country_area" yaml:"billing_country_area,omitempty"`
-	CCFirstDigits      null.String  `boil:"cc_first_digits" json:"cc_first_digits,omitempty" toml:"cc_first_digits" yaml:"cc_first_digits,omitempty"`
-	CCLastDigits       null.String  `boil:"cc_last_digits" json:"cc_last_digits,omitempty" toml:"cc_last_digits" yaml:"cc_last_digits,omitempty"`
-	CCBrand            null.String  `boil:"cc_brand" json:"cc_brand,omitempty" toml:"cc_brand" yaml:"cc_brand,omitempty"`
-	CCExpMonth         null.Int     `boil:"cc_exp_month" json:"cc_exp_month,omitempty" toml:"cc_exp_month" yaml:"cc_exp_month,omitempty"`
-	CCExpYear          null.Int     `boil:"cc_exp_year" json:"cc_exp_year,omitempty" toml:"cc_exp_year" yaml:"cc_exp_year,omitempty"`
-	PaymentMethodType  null.String  `boil:"payment_method_type" json:"payment_method_type,omitempty" toml:"payment_method_type" yaml:"payment_method_type,omitempty"`
-	CustomerIPAddress  null.String  `boil:"customer_ip_address" json:"customer_ip_address,omitempty" toml:"customer_ip_address" yaml:"customer_ip_address,omitempty"`
-	ExtraData          null.String  `boil:"extra_data" json:"extra_data,omitempty" toml:"extra_data" yaml:"extra_data,omitempty"`
-	ReturnURL          null.String  `boil:"return_url" json:"return_url,omitempty" toml:"return_url" yaml:"return_url,omitempty"`
-	PSPReference       null.String  `boil:"psp_reference" json:"psp_reference,omitempty" toml:"psp_reference" yaml:"psp_reference,omitempty"`
-	StorePaymentMethod null.String  `boil:"store_payment_method" json:"store_payment_method,omitempty" toml:"store_payment_method" yaml:"store_payment_method,omitempty"`
-	Metadata           null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                 string        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Gateway            string        `boil:"gateway" json:"gateway" toml:"gateway" yaml:"gateway"`
+	IsActive           null.Bool     `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
+	ToConfirm          bool          `boil:"to_confirm" json:"to_confirm" toml:"to_confirm" yaml:"to_confirm"`
+	CreatedAt          int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt          int64         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ChargeStatus       string        `boil:"charge_status" json:"charge_status" toml:"charge_status" yaml:"charge_status"`
+	Token              string        `boil:"token" json:"token" toml:"token" yaml:"token"`
+	Total              types.Decimal `boil:"total" json:"total" toml:"total" yaml:"total"`
+	CapturedAmount     types.Decimal `boil:"captured_amount" json:"captured_amount" toml:"captured_amount" yaml:"captured_amount"`
+	Currency           string        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	CheckoutID         null.String   `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
+	OrderID            null.String   `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	BillingEmail       string        `boil:"billing_email" json:"billing_email" toml:"billing_email" yaml:"billing_email"`
+	BillingFirstName   string        `boil:"billing_first_name" json:"billing_first_name" toml:"billing_first_name" yaml:"billing_first_name"`
+	BillingLastName    string        `boil:"billing_last_name" json:"billing_last_name" toml:"billing_last_name" yaml:"billing_last_name"`
+	BillingCompanyName string        `boil:"billing_company_name" json:"billing_company_name" toml:"billing_company_name" yaml:"billing_company_name"`
+	BillingAddress1    string        `boil:"billing_address1" json:"billing_address1" toml:"billing_address1" yaml:"billing_address1"`
+	BillingAddress2    string        `boil:"billing_address2" json:"billing_address2" toml:"billing_address2" yaml:"billing_address2"`
+	BillingCity        string        `boil:"billing_city" json:"billing_city" toml:"billing_city" yaml:"billing_city"`
+	BillingCityArea    string        `boil:"billing_city_area" json:"billing_city_area" toml:"billing_city_area" yaml:"billing_city_area"`
+	BillingPostalCode  string        `boil:"billing_postal_code" json:"billing_postal_code" toml:"billing_postal_code" yaml:"billing_postal_code"`
+	BillingCountryCode string        `boil:"billing_country_code" json:"billing_country_code" toml:"billing_country_code" yaml:"billing_country_code"`
+	BillingCountryArea string        `boil:"billing_country_area" json:"billing_country_area" toml:"billing_country_area" yaml:"billing_country_area"`
+	CCFirstDigits      string        `boil:"cc_first_digits" json:"cc_first_digits" toml:"cc_first_digits" yaml:"cc_first_digits"`
+	CCLastDigits       string        `boil:"cc_last_digits" json:"cc_last_digits" toml:"cc_last_digits" yaml:"cc_last_digits"`
+	CCBrand            string        `boil:"cc_brand" json:"cc_brand" toml:"cc_brand" yaml:"cc_brand"`
+	CCExpMonth         null.Int      `boil:"cc_exp_month" json:"cc_exp_month,omitempty" toml:"cc_exp_month" yaml:"cc_exp_month,omitempty"`
+	CCExpYear          null.Int      `boil:"cc_exp_year" json:"cc_exp_year,omitempty" toml:"cc_exp_year" yaml:"cc_exp_year,omitempty"`
+	PaymentMethodType  string        `boil:"payment_method_type" json:"payment_method_type" toml:"payment_method_type" yaml:"payment_method_type"`
+	CustomerIPAddress  null.String   `boil:"customer_ip_address" json:"customer_ip_address,omitempty" toml:"customer_ip_address" yaml:"customer_ip_address,omitempty"`
+	ExtraData          string        `boil:"extra_data" json:"extra_data" toml:"extra_data" yaml:"extra_data"`
+	ReturnURL          null.String   `boil:"return_url" json:"return_url,omitempty" toml:"return_url" yaml:"return_url,omitempty"`
+	PSPReference       null.String   `boil:"psp_reference" json:"psp_reference,omitempty" toml:"psp_reference" yaml:"psp_reference,omitempty"`
+	StorePaymentMethod string        `boil:"store_payment_method" json:"store_payment_method" toml:"store_payment_method" yaml:"store_payment_method"`
+	Metadata           null.JSON     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    null.JSON     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *paymentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L paymentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -71,8 +72,8 @@ var PaymentColumns = struct {
 	Gateway            string
 	IsActive           string
 	ToConfirm          string
-	CreateAt           string
-	UpdateAt           string
+	CreatedAt          string
+	UpdatedAt          string
 	ChargeStatus       string
 	Token              string
 	Total              string
@@ -109,8 +110,8 @@ var PaymentColumns = struct {
 	Gateway:            "gateway",
 	IsActive:           "is_active",
 	ToConfirm:          "to_confirm",
-	CreateAt:           "create_at",
-	UpdateAt:           "update_at",
+	CreatedAt:          "created_at",
+	UpdatedAt:          "updated_at",
 	ChargeStatus:       "charge_status",
 	Token:              "token",
 	Total:              "total",
@@ -149,8 +150,8 @@ var PaymentTableColumns = struct {
 	Gateway            string
 	IsActive           string
 	ToConfirm          string
-	CreateAt           string
-	UpdateAt           string
+	CreatedAt          string
+	UpdatedAt          string
 	ChargeStatus       string
 	Token              string
 	Total              string
@@ -187,8 +188,8 @@ var PaymentTableColumns = struct {
 	Gateway:            "payments.gateway",
 	IsActive:           "payments.is_active",
 	ToConfirm:          "payments.to_confirm",
-	CreateAt:           "payments.create_at",
-	UpdateAt:           "payments.update_at",
+	CreatedAt:          "payments.created_at",
+	UpdatedAt:          "payments.updated_at",
 	ChargeStatus:       "payments.charge_status",
 	Token:              "payments.token",
 	Total:              "payments.total",
@@ -226,78 +227,78 @@ var PaymentTableColumns = struct {
 
 var PaymentWhere = struct {
 	ID                 whereHelperstring
-	Gateway            whereHelpernull_String
+	Gateway            whereHelperstring
 	IsActive           whereHelpernull_Bool
-	ToConfirm          whereHelpernull_Bool
-	CreateAt           whereHelpernull_Int64
-	UpdateAt           whereHelpernull_Int64
-	ChargeStatus       whereHelpernull_String
-	Token              whereHelpernull_String
-	Total              whereHelpernull_Float64
-	CapturedAmount     whereHelpernull_Float64
-	Currency           whereHelpernull_String
+	ToConfirm          whereHelperbool
+	CreatedAt          whereHelperint64
+	UpdatedAt          whereHelperint64
+	ChargeStatus       whereHelperstring
+	Token              whereHelperstring
+	Total              whereHelpertypes_Decimal
+	CapturedAmount     whereHelpertypes_Decimal
+	Currency           whereHelperstring
 	CheckoutID         whereHelpernull_String
 	OrderID            whereHelpernull_String
-	BillingEmail       whereHelpernull_String
-	BillingFirstName   whereHelpernull_String
-	BillingLastName    whereHelpernull_String
-	BillingCompanyName whereHelpernull_String
-	BillingAddress1    whereHelpernull_String
-	BillingAddress2    whereHelpernull_String
-	BillingCity        whereHelpernull_String
-	BillingCityArea    whereHelpernull_String
-	BillingPostalCode  whereHelpernull_String
-	BillingCountryCode whereHelpernull_String
-	BillingCountryArea whereHelpernull_String
-	CCFirstDigits      whereHelpernull_String
-	CCLastDigits       whereHelpernull_String
-	CCBrand            whereHelpernull_String
+	BillingEmail       whereHelperstring
+	BillingFirstName   whereHelperstring
+	BillingLastName    whereHelperstring
+	BillingCompanyName whereHelperstring
+	BillingAddress1    whereHelperstring
+	BillingAddress2    whereHelperstring
+	BillingCity        whereHelperstring
+	BillingCityArea    whereHelperstring
+	BillingPostalCode  whereHelperstring
+	BillingCountryCode whereHelperstring
+	BillingCountryArea whereHelperstring
+	CCFirstDigits      whereHelperstring
+	CCLastDigits       whereHelperstring
+	CCBrand            whereHelperstring
 	CCExpMonth         whereHelpernull_Int
 	CCExpYear          whereHelpernull_Int
-	PaymentMethodType  whereHelpernull_String
+	PaymentMethodType  whereHelperstring
 	CustomerIPAddress  whereHelpernull_String
-	ExtraData          whereHelpernull_String
+	ExtraData          whereHelperstring
 	ReturnURL          whereHelpernull_String
 	PSPReference       whereHelpernull_String
-	StorePaymentMethod whereHelpernull_String
+	StorePaymentMethod whereHelperstring
 	Metadata           whereHelpernull_JSON
 	PrivateMetadata    whereHelpernull_JSON
 }{
 	ID:                 whereHelperstring{field: "\"payments\".\"id\""},
-	Gateway:            whereHelpernull_String{field: "\"payments\".\"gateway\""},
+	Gateway:            whereHelperstring{field: "\"payments\".\"gateway\""},
 	IsActive:           whereHelpernull_Bool{field: "\"payments\".\"is_active\""},
-	ToConfirm:          whereHelpernull_Bool{field: "\"payments\".\"to_confirm\""},
-	CreateAt:           whereHelpernull_Int64{field: "\"payments\".\"create_at\""},
-	UpdateAt:           whereHelpernull_Int64{field: "\"payments\".\"update_at\""},
-	ChargeStatus:       whereHelpernull_String{field: "\"payments\".\"charge_status\""},
-	Token:              whereHelpernull_String{field: "\"payments\".\"token\""},
-	Total:              whereHelpernull_Float64{field: "\"payments\".\"total\""},
-	CapturedAmount:     whereHelpernull_Float64{field: "\"payments\".\"captured_amount\""},
-	Currency:           whereHelpernull_String{field: "\"payments\".\"currency\""},
+	ToConfirm:          whereHelperbool{field: "\"payments\".\"to_confirm\""},
+	CreatedAt:          whereHelperint64{field: "\"payments\".\"created_at\""},
+	UpdatedAt:          whereHelperint64{field: "\"payments\".\"updated_at\""},
+	ChargeStatus:       whereHelperstring{field: "\"payments\".\"charge_status\""},
+	Token:              whereHelperstring{field: "\"payments\".\"token\""},
+	Total:              whereHelpertypes_Decimal{field: "\"payments\".\"total\""},
+	CapturedAmount:     whereHelpertypes_Decimal{field: "\"payments\".\"captured_amount\""},
+	Currency:           whereHelperstring{field: "\"payments\".\"currency\""},
 	CheckoutID:         whereHelpernull_String{field: "\"payments\".\"checkout_id\""},
 	OrderID:            whereHelpernull_String{field: "\"payments\".\"order_id\""},
-	BillingEmail:       whereHelpernull_String{field: "\"payments\".\"billing_email\""},
-	BillingFirstName:   whereHelpernull_String{field: "\"payments\".\"billing_first_name\""},
-	BillingLastName:    whereHelpernull_String{field: "\"payments\".\"billing_last_name\""},
-	BillingCompanyName: whereHelpernull_String{field: "\"payments\".\"billing_company_name\""},
-	BillingAddress1:    whereHelpernull_String{field: "\"payments\".\"billing_address1\""},
-	BillingAddress2:    whereHelpernull_String{field: "\"payments\".\"billing_address2\""},
-	BillingCity:        whereHelpernull_String{field: "\"payments\".\"billing_city\""},
-	BillingCityArea:    whereHelpernull_String{field: "\"payments\".\"billing_city_area\""},
-	BillingPostalCode:  whereHelpernull_String{field: "\"payments\".\"billing_postal_code\""},
-	BillingCountryCode: whereHelpernull_String{field: "\"payments\".\"billing_country_code\""},
-	BillingCountryArea: whereHelpernull_String{field: "\"payments\".\"billing_country_area\""},
-	CCFirstDigits:      whereHelpernull_String{field: "\"payments\".\"cc_first_digits\""},
-	CCLastDigits:       whereHelpernull_String{field: "\"payments\".\"cc_last_digits\""},
-	CCBrand:            whereHelpernull_String{field: "\"payments\".\"cc_brand\""},
+	BillingEmail:       whereHelperstring{field: "\"payments\".\"billing_email\""},
+	BillingFirstName:   whereHelperstring{field: "\"payments\".\"billing_first_name\""},
+	BillingLastName:    whereHelperstring{field: "\"payments\".\"billing_last_name\""},
+	BillingCompanyName: whereHelperstring{field: "\"payments\".\"billing_company_name\""},
+	BillingAddress1:    whereHelperstring{field: "\"payments\".\"billing_address1\""},
+	BillingAddress2:    whereHelperstring{field: "\"payments\".\"billing_address2\""},
+	BillingCity:        whereHelperstring{field: "\"payments\".\"billing_city\""},
+	BillingCityArea:    whereHelperstring{field: "\"payments\".\"billing_city_area\""},
+	BillingPostalCode:  whereHelperstring{field: "\"payments\".\"billing_postal_code\""},
+	BillingCountryCode: whereHelperstring{field: "\"payments\".\"billing_country_code\""},
+	BillingCountryArea: whereHelperstring{field: "\"payments\".\"billing_country_area\""},
+	CCFirstDigits:      whereHelperstring{field: "\"payments\".\"cc_first_digits\""},
+	CCLastDigits:       whereHelperstring{field: "\"payments\".\"cc_last_digits\""},
+	CCBrand:            whereHelperstring{field: "\"payments\".\"cc_brand\""},
 	CCExpMonth:         whereHelpernull_Int{field: "\"payments\".\"cc_exp_month\""},
 	CCExpYear:          whereHelpernull_Int{field: "\"payments\".\"cc_exp_year\""},
-	PaymentMethodType:  whereHelpernull_String{field: "\"payments\".\"payment_method_type\""},
+	PaymentMethodType:  whereHelperstring{field: "\"payments\".\"payment_method_type\""},
 	CustomerIPAddress:  whereHelpernull_String{field: "\"payments\".\"customer_ip_address\""},
-	ExtraData:          whereHelpernull_String{field: "\"payments\".\"extra_data\""},
+	ExtraData:          whereHelperstring{field: "\"payments\".\"extra_data\""},
 	ReturnURL:          whereHelpernull_String{field: "\"payments\".\"return_url\""},
 	PSPReference:       whereHelpernull_String{field: "\"payments\".\"psp_reference\""},
-	StorePaymentMethod: whereHelpernull_String{field: "\"payments\".\"store_payment_method\""},
+	StorePaymentMethod: whereHelperstring{field: "\"payments\".\"store_payment_method\""},
 	Metadata:           whereHelpernull_JSON{field: "\"payments\".\"metadata\""},
 	PrivateMetadata:    whereHelpernull_JSON{field: "\"payments\".\"private_metadata\""},
 }
@@ -350,9 +351,9 @@ func (r *paymentR) GetTransactions() TransactionSlice {
 type paymentL struct{}
 
 var (
-	paymentAllColumns            = []string{"id", "gateway", "is_active", "to_confirm", "create_at", "update_at", "charge_status", "token", "total", "captured_amount", "currency", "checkout_id", "order_id", "billing_email", "billing_first_name", "billing_last_name", "billing_company_name", "billing_address1", "billing_address2", "billing_city", "billing_city_area", "billing_postal_code", "billing_country_code", "billing_country_area", "cc_first_digits", "cc_last_digits", "cc_brand", "cc_exp_month", "cc_exp_year", "payment_method_type", "customer_ip_address", "extra_data", "return_url", "psp_reference", "store_payment_method", "metadata", "private_metadata"}
-	paymentColumnsWithoutDefault = []string{"id"}
-	paymentColumnsWithDefault    = []string{"gateway", "is_active", "to_confirm", "create_at", "update_at", "charge_status", "token", "total", "captured_amount", "currency", "checkout_id", "order_id", "billing_email", "billing_first_name", "billing_last_name", "billing_company_name", "billing_address1", "billing_address2", "billing_city", "billing_city_area", "billing_postal_code", "billing_country_code", "billing_country_area", "cc_first_digits", "cc_last_digits", "cc_brand", "cc_exp_month", "cc_exp_year", "payment_method_type", "customer_ip_address", "extra_data", "return_url", "psp_reference", "store_payment_method", "metadata", "private_metadata"}
+	paymentAllColumns            = []string{"id", "gateway", "is_active", "to_confirm", "created_at", "updated_at", "charge_status", "token", "total", "captured_amount", "currency", "checkout_id", "order_id", "billing_email", "billing_first_name", "billing_last_name", "billing_company_name", "billing_address1", "billing_address2", "billing_city", "billing_city_area", "billing_postal_code", "billing_country_code", "billing_country_area", "cc_first_digits", "cc_last_digits", "cc_brand", "cc_exp_month", "cc_exp_year", "payment_method_type", "customer_ip_address", "extra_data", "return_url", "psp_reference", "store_payment_method", "metadata", "private_metadata"}
+	paymentColumnsWithoutDefault = []string{"gateway", "to_confirm", "created_at", "updated_at", "charge_status", "token", "currency", "billing_email", "billing_first_name", "billing_last_name", "billing_company_name", "billing_address1", "billing_address2", "billing_city", "billing_city_area", "billing_postal_code", "billing_country_code", "billing_country_area", "cc_first_digits", "cc_last_digits", "cc_brand", "payment_method_type", "extra_data", "store_payment_method"}
+	paymentColumnsWithDefault    = []string{"id", "is_active", "total", "captured_amount", "checkout_id", "order_id", "cc_exp_month", "cc_exp_year", "customer_ip_address", "return_url", "psp_reference", "metadata", "private_metadata"}
 	paymentPrimaryKeyColumns     = []string{"id"}
 	paymentGeneratedColumns      = []string{}
 )
@@ -961,7 +962,7 @@ func (paymentL) LoadTransactions(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1019,7 +1020,7 @@ func (paymentL) LoadTransactions(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.PaymentID) {
+			if local.ID == foreign.PaymentID {
 				local.R.Transactions = append(local.R.Transactions, foreign)
 				if foreign.R == nil {
 					foreign.R = &transactionR{}
@@ -1201,7 +1202,7 @@ func (o *Payment) AddTransactions(ctx context.Context, exec boil.ContextExecutor
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.PaymentID, o.ID)
+			rel.PaymentID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1222,7 +1223,7 @@ func (o *Payment) AddTransactions(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.PaymentID, o.ID)
+			rel.PaymentID = o.ID
 		}
 	}
 
@@ -1243,80 +1244,6 @@ func (o *Payment) AddTransactions(ctx context.Context, exec boil.ContextExecutor
 			rel.R.Payment = o
 		}
 	}
-	return nil
-}
-
-// SetTransactions removes all previously related items of the
-// payment replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Payment's Transactions accordingly.
-// Replaces o.R.Transactions with related.
-// Sets related.R.Payment's Transactions accordingly.
-func (o *Payment) SetTransactions(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Transaction) error {
-	query := "update \"transactions\" set \"payment_id\" = null where \"payment_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Transactions {
-			queries.SetScanner(&rel.PaymentID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Payment = nil
-		}
-		o.R.Transactions = nil
-	}
-
-	return o.AddTransactions(ctx, exec, insert, related...)
-}
-
-// RemoveTransactions relationships from objects passed in.
-// Removes related items from R.Transactions (uses pointer comparison, removal does not keep order)
-// Sets related.R.Payment.
-func (o *Payment) RemoveTransactions(ctx context.Context, exec boil.ContextExecutor, related ...*Transaction) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.PaymentID, nil)
-		if rel.R != nil {
-			rel.R.Payment = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("payment_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Transactions {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Transactions)
-			if ln > 1 && i < ln-1 {
-				o.R.Transactions[i] = o.R.Transactions[ln-1]
-			}
-			o.R.Transactions = o.R.Transactions[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1458,10 +1385,6 @@ func (o *Payment) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			paymentAllColumns,
 			paymentPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update payments, could not build whitelist")
 		}

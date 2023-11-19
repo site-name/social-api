@@ -1066,7 +1066,7 @@ func testInvoicesSelect(t *testing.T) {
 }
 
 var (
-	invoiceDBTypes = map[string]string{`ID`: `character varying`, `OrderID`: `character varying`, `Number`: `character varying`, `CreateAt`: `bigint`, `ExternalURL`: `character varying`, `Status`: `character varying`, `Message`: `character varying`, `UpdateAt`: `bigint`, `InvoiceFile`: `text`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
+	invoiceDBTypes = map[string]string{`ID`: `uuid`, `OrderID`: `uuid`, `Number`: `character varying`, `CreatedAt`: `bigint`, `ExternalURL`: `character varying`, `Status`: `character varying`, `Message`: `character varying`, `UpdatedAt`: `bigint`, `InvoiceFile`: `uuid`, `Metadata`: `jsonb`, `PrivateMetadata`: `jsonb`}
 	_              = bytes.MinRead
 )
 

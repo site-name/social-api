@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // AttributeTranslation is an object representing the database table.
 type AttributeTranslation struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID  null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
-	LanguageCode null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	Name         null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID  string `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	LanguageCode string `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Name         string `boil:"name" json:"name" toml:"name" yaml:"name"`
 
 	R *attributeTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,14 +60,14 @@ var AttributeTranslationTableColumns = struct {
 
 var AttributeTranslationWhere = struct {
 	ID           whereHelperstring
-	AttributeID  whereHelpernull_String
-	LanguageCode whereHelpernull_String
-	Name         whereHelpernull_String
+	AttributeID  whereHelperstring
+	LanguageCode whereHelperstring
+	Name         whereHelperstring
 }{
 	ID:           whereHelperstring{field: "\"attribute_translations\".\"id\""},
-	AttributeID:  whereHelpernull_String{field: "\"attribute_translations\".\"attribute_id\""},
-	LanguageCode: whereHelpernull_String{field: "\"attribute_translations\".\"language_code\""},
-	Name:         whereHelpernull_String{field: "\"attribute_translations\".\"name\""},
+	AttributeID:  whereHelperstring{field: "\"attribute_translations\".\"attribute_id\""},
+	LanguageCode: whereHelperstring{field: "\"attribute_translations\".\"language_code\""},
+	Name:         whereHelperstring{field: "\"attribute_translations\".\"name\""},
 }
 
 // AttributeTranslationRels is where relationship names are stored.
@@ -89,8 +88,8 @@ type attributeTranslationL struct{}
 
 var (
 	attributeTranslationAllColumns            = []string{"id", "attribute_id", "language_code", "name"}
-	attributeTranslationColumnsWithoutDefault = []string{"id"}
-	attributeTranslationColumnsWithDefault    = []string{"attribute_id", "language_code", "name"}
+	attributeTranslationColumnsWithoutDefault = []string{"attribute_id", "language_code", "name"}
+	attributeTranslationColumnsWithDefault    = []string{"id"}
 	attributeTranslationPrimaryKeyColumns     = []string{"id"}
 	attributeTranslationGeneratedColumns      = []string{}
 )
@@ -511,10 +510,6 @@ func (o *AttributeTranslation) Update(ctx context.Context, exec boil.ContextExec
 			attributeTranslationAllColumns,
 			attributeTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attribute_translations, could not build whitelist")
 		}

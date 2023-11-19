@@ -24,10 +24,10 @@ import (
 
 // AttributePage is an object representing the database table.
 type AttributePage struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID null.String `boil:"attribute_id" json:"attribute_id,omitempty" toml:"attribute_id" yaml:"attribute_id,omitempty"`
-	PageTypeID  null.String `boil:"page_type_id" json:"page_type_id,omitempty" toml:"page_type_id" yaml:"page_type_id,omitempty"`
-	SortOrder   null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID          string   `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID string   `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	PageTypeID  string   `boil:"page_type_id" json:"page_type_id" toml:"page_type_id" yaml:"page_type_id"`
+	SortOrder   null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributePageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributePageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,13 +61,13 @@ var AttributePageTableColumns = struct {
 
 var AttributePageWhere = struct {
 	ID          whereHelperstring
-	AttributeID whereHelpernull_String
-	PageTypeID  whereHelpernull_String
+	AttributeID whereHelperstring
+	PageTypeID  whereHelperstring
 	SortOrder   whereHelpernull_Int
 }{
 	ID:          whereHelperstring{field: "\"attribute_pages\".\"id\""},
-	AttributeID: whereHelpernull_String{field: "\"attribute_pages\".\"attribute_id\""},
-	PageTypeID:  whereHelpernull_String{field: "\"attribute_pages\".\"page_type_id\""},
+	AttributeID: whereHelperstring{field: "\"attribute_pages\".\"attribute_id\""},
+	PageTypeID:  whereHelperstring{field: "\"attribute_pages\".\"page_type_id\""},
 	SortOrder:   whereHelpernull_Int{field: "\"attribute_pages\".\"sort_order\""},
 }
 
@@ -110,8 +110,8 @@ type attributePageL struct{}
 
 var (
 	attributePageAllColumns            = []string{"id", "attribute_id", "page_type_id", "sort_order"}
-	attributePageColumnsWithoutDefault = []string{"id"}
-	attributePageColumnsWithDefault    = []string{"attribute_id", "page_type_id", "sort_order"}
+	attributePageColumnsWithoutDefault = []string{"attribute_id", "page_type_id"}
+	attributePageColumnsWithDefault    = []string{"id", "sort_order"}
 	attributePagePrimaryKeyColumns     = []string{"id"}
 	attributePageGeneratedColumns      = []string{}
 )
@@ -452,9 +452,7 @@ func (attributePageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &attributePageR{}
 		}
-		if !queries.IsNil(object.PageTypeID) {
-			args = append(args, object.PageTypeID)
-		}
+		args = append(args, object.PageTypeID)
 
 	} else {
 	Outer:
@@ -464,14 +462,12 @@ func (attributePageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.PageTypeID) {
+				if a == obj.PageTypeID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.PageTypeID) {
-				args = append(args, obj.PageTypeID)
-			}
+			args = append(args, obj.PageTypeID)
 
 		}
 	}
@@ -529,7 +525,7 @@ func (attributePageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.PageTypeID, foreign.ID) {
+			if local.PageTypeID == foreign.ID {
 				local.R.PageType = foreign
 				if foreign.R == nil {
 					foreign.R = &pageTypeR{}
@@ -684,7 +680,7 @@ func (o *AttributePage) SetPageType(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.PageTypeID, related.ID)
+	o.PageTypeID = related.ID
 	if o.R == nil {
 		o.R = &attributePageR{
 			PageType: related,
@@ -701,39 +697,6 @@ func (o *AttributePage) SetPageType(ctx context.Context, exec boil.ContextExecut
 		related.R.AttributePages = append(related.R.AttributePages, o)
 	}
 
-	return nil
-}
-
-// RemovePageType relationship.
-// Sets o.R.PageType to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *AttributePage) RemovePageType(ctx context.Context, exec boil.ContextExecutor, related *PageType) error {
-	var err error
-
-	queries.SetScanner(&o.PageTypeID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("page_type_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.PageType = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.AttributePages {
-		if queries.Equal(o.PageTypeID, ri.PageTypeID) {
-			continue
-		}
-
-		ln := len(related.R.AttributePages)
-		if ln > 1 && i < ln-1 {
-			related.R.AttributePages[i] = related.R.AttributePages[ln-1]
-		}
-		related.R.AttributePages = related.R.AttributePages[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -928,10 +891,6 @@ func (o *AttributePage) Update(ctx context.Context, exec boil.ContextExecutor, c
 			attributePageAllColumns,
 			attributePagePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attribute_pages, could not build whitelist")
 		}

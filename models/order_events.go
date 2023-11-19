@@ -25,9 +25,9 @@ import (
 // OrderEvent is an object representing the database table.
 type OrderEvent struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt   null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
-	OrderID    null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	CreatedAt  int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Type       string      `boil:"type" json:"type" toml:"type" yaml:"type"`
+	OrderID    string      `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
 	Parameters null.String `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 
@@ -37,14 +37,14 @@ type OrderEvent struct {
 
 var OrderEventColumns = struct {
 	ID         string
-	CreateAt   string
+	CreatedAt  string
 	Type       string
 	OrderID    string
 	Parameters string
 	UserID     string
 }{
 	ID:         "id",
-	CreateAt:   "create_at",
+	CreatedAt:  "created_at",
 	Type:       "type",
 	OrderID:    "order_id",
 	Parameters: "parameters",
@@ -53,14 +53,14 @@ var OrderEventColumns = struct {
 
 var OrderEventTableColumns = struct {
 	ID         string
-	CreateAt   string
+	CreatedAt  string
 	Type       string
 	OrderID    string
 	Parameters string
 	UserID     string
 }{
 	ID:         "order_events.id",
-	CreateAt:   "order_events.create_at",
+	CreatedAt:  "order_events.created_at",
 	Type:       "order_events.type",
 	OrderID:    "order_events.order_id",
 	Parameters: "order_events.parameters",
@@ -71,16 +71,16 @@ var OrderEventTableColumns = struct {
 
 var OrderEventWhere = struct {
 	ID         whereHelperstring
-	CreateAt   whereHelpernull_Int64
-	Type       whereHelpernull_String
-	OrderID    whereHelpernull_String
+	CreatedAt  whereHelperint64
+	Type       whereHelperstring
+	OrderID    whereHelperstring
 	Parameters whereHelpernull_String
 	UserID     whereHelpernull_String
 }{
 	ID:         whereHelperstring{field: "\"order_events\".\"id\""},
-	CreateAt:   whereHelpernull_Int64{field: "\"order_events\".\"create_at\""},
-	Type:       whereHelpernull_String{field: "\"order_events\".\"type\""},
-	OrderID:    whereHelpernull_String{field: "\"order_events\".\"order_id\""},
+	CreatedAt:  whereHelperint64{field: "\"order_events\".\"created_at\""},
+	Type:       whereHelperstring{field: "\"order_events\".\"type\""},
+	OrderID:    whereHelperstring{field: "\"order_events\".\"order_id\""},
 	Parameters: whereHelpernull_String{field: "\"order_events\".\"parameters\""},
 	UserID:     whereHelpernull_String{field: "\"order_events\".\"user_id\""},
 }
@@ -123,9 +123,9 @@ func (r *orderEventR) GetUser() *User {
 type orderEventL struct{}
 
 var (
-	orderEventAllColumns            = []string{"id", "create_at", "type", "order_id", "parameters", "user_id"}
-	orderEventColumnsWithoutDefault = []string{"id"}
-	orderEventColumnsWithDefault    = []string{"create_at", "type", "order_id", "parameters", "user_id"}
+	orderEventAllColumns            = []string{"id", "created_at", "type", "order_id", "parameters", "user_id"}
+	orderEventColumnsWithoutDefault = []string{"created_at", "type", "order_id"}
+	orderEventColumnsWithDefault    = []string{"id", "parameters", "user_id"}
 	orderEventPrimaryKeyColumns     = []string{"id"}
 	orderEventGeneratedColumns      = []string{}
 )
@@ -463,9 +463,7 @@ func (orderEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singul
 		if object.R == nil {
 			object.R = &orderEventR{}
 		}
-		if !queries.IsNil(object.OrderID) {
-			args = append(args, object.OrderID)
-		}
+		args = append(args, object.OrderID)
 
 	} else {
 	Outer:
@@ -475,14 +473,12 @@ func (orderEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.OrderID) {
+				if a == obj.OrderID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.OrderID) {
-				args = append(args, obj.OrderID)
-			}
+			args = append(args, obj.OrderID)
 
 		}
 	}
@@ -540,7 +536,7 @@ func (orderEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singul
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.OrderID, foreign.ID) {
+			if local.OrderID == foreign.ID {
 				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
@@ -705,7 +701,7 @@ func (o *OrderEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, in
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.OrderID, related.ID)
+	o.OrderID = related.ID
 	if o.R == nil {
 		o.R = &orderEventR{
 			Order: related,
@@ -722,39 +718,6 @@ func (o *OrderEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, in
 		related.R.OrderEvents = append(related.R.OrderEvents, o)
 	}
 
-	return nil
-}
-
-// RemoveOrder relationship.
-// Sets o.R.Order to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *OrderEvent) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
-	var err error
-
-	queries.SetScanner(&o.OrderID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Order = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.OrderEvents {
-		if queries.Equal(o.OrderID, ri.OrderID) {
-			continue
-		}
-
-		ln := len(related.R.OrderEvents)
-		if ln > 1 && i < ln-1 {
-			related.R.OrderEvents[i] = related.R.OrderEvents[ln-1]
-		}
-		related.R.OrderEvents = related.R.OrderEvents[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -976,10 +939,6 @@ func (o *OrderEvent) Update(ctx context.Context, exec boil.ContextExecutor, colu
 			orderEventAllColumns,
 			orderEventPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update order_events, could not build whitelist")
 		}

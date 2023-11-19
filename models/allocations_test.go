@@ -805,7 +805,7 @@ func testAllocationsSelect(t *testing.T) {
 }
 
 var (
-	allocationDBTypes = map[string]string{`ID`: `character varying`, `CreatedAt`: `bigint`, `OrderLineID`: `character varying`, `StockID`: `character varying`, `QuantityAllocated`: `integer`}
+	allocationDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `OrderLineID`: `uuid`, `StockID`: `uuid`, `QuantityAllocated`: `integer`}
 	_                 = bytes.MinRead
 )
 

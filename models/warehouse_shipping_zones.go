@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +23,9 @@ import (
 
 // WarehouseShippingZone is an object representing the database table.
 type WarehouseShippingZone struct {
-	ID             string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	WarehouseID    null.String `boil:"warehouse_id" json:"warehouse_id,omitempty" toml:"warehouse_id" yaml:"warehouse_id,omitempty"`
-	ShippingZoneID null.String `boil:"shipping_zone_id" json:"shipping_zone_id,omitempty" toml:"shipping_zone_id" yaml:"shipping_zone_id,omitempty"`
+	ID             string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	WarehouseID    string `boil:"warehouse_id" json:"warehouse_id" toml:"warehouse_id" yaml:"warehouse_id"`
+	ShippingZoneID string `boil:"shipping_zone_id" json:"shipping_zone_id" toml:"shipping_zone_id" yaml:"shipping_zone_id"`
 
 	R *warehouseShippingZoneR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L warehouseShippingZoneL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -56,12 +55,12 @@ var WarehouseShippingZoneTableColumns = struct {
 
 var WarehouseShippingZoneWhere = struct {
 	ID             whereHelperstring
-	WarehouseID    whereHelpernull_String
-	ShippingZoneID whereHelpernull_String
+	WarehouseID    whereHelperstring
+	ShippingZoneID whereHelperstring
 }{
 	ID:             whereHelperstring{field: "\"warehouse_shipping_zones\".\"id\""},
-	WarehouseID:    whereHelpernull_String{field: "\"warehouse_shipping_zones\".\"warehouse_id\""},
-	ShippingZoneID: whereHelpernull_String{field: "\"warehouse_shipping_zones\".\"shipping_zone_id\""},
+	WarehouseID:    whereHelperstring{field: "\"warehouse_shipping_zones\".\"warehouse_id\""},
+	ShippingZoneID: whereHelperstring{field: "\"warehouse_shipping_zones\".\"shipping_zone_id\""},
 }
 
 // WarehouseShippingZoneRels is where relationship names are stored.
@@ -103,8 +102,8 @@ type warehouseShippingZoneL struct{}
 
 var (
 	warehouseShippingZoneAllColumns            = []string{"id", "warehouse_id", "shipping_zone_id"}
-	warehouseShippingZoneColumnsWithoutDefault = []string{"id"}
-	warehouseShippingZoneColumnsWithDefault    = []string{"warehouse_id", "shipping_zone_id"}
+	warehouseShippingZoneColumnsWithoutDefault = []string{"warehouse_id", "shipping_zone_id"}
+	warehouseShippingZoneColumnsWithDefault    = []string{"id"}
 	warehouseShippingZonePrimaryKeyColumns     = []string{"id"}
 	warehouseShippingZoneGeneratedColumns      = []string{}
 )
@@ -442,9 +441,7 @@ func (warehouseShippingZoneL) LoadShippingZone(ctx context.Context, e boil.Conte
 		if object.R == nil {
 			object.R = &warehouseShippingZoneR{}
 		}
-		if !queries.IsNil(object.ShippingZoneID) {
-			args = append(args, object.ShippingZoneID)
-		}
+		args = append(args, object.ShippingZoneID)
 
 	} else {
 	Outer:
@@ -454,14 +451,12 @@ func (warehouseShippingZoneL) LoadShippingZone(ctx context.Context, e boil.Conte
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ShippingZoneID) {
+				if a == obj.ShippingZoneID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ShippingZoneID) {
-				args = append(args, obj.ShippingZoneID)
-			}
+			args = append(args, obj.ShippingZoneID)
 
 		}
 	}
@@ -519,7 +514,7 @@ func (warehouseShippingZoneL) LoadShippingZone(ctx context.Context, e boil.Conte
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ShippingZoneID, foreign.ID) {
+			if local.ShippingZoneID == foreign.ID {
 				local.R.ShippingZone = foreign
 				if foreign.R == nil {
 					foreign.R = &shippingZoneR{}
@@ -566,9 +561,7 @@ func (warehouseShippingZoneL) LoadWarehouse(ctx context.Context, e boil.ContextE
 		if object.R == nil {
 			object.R = &warehouseShippingZoneR{}
 		}
-		if !queries.IsNil(object.WarehouseID) {
-			args = append(args, object.WarehouseID)
-		}
+		args = append(args, object.WarehouseID)
 
 	} else {
 	Outer:
@@ -578,14 +571,12 @@ func (warehouseShippingZoneL) LoadWarehouse(ctx context.Context, e boil.ContextE
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.WarehouseID) {
+				if a == obj.WarehouseID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.WarehouseID) {
-				args = append(args, obj.WarehouseID)
-			}
+			args = append(args, obj.WarehouseID)
 
 		}
 	}
@@ -643,7 +634,7 @@ func (warehouseShippingZoneL) LoadWarehouse(ctx context.Context, e boil.ContextE
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.WarehouseID, foreign.ID) {
+			if local.WarehouseID == foreign.ID {
 				local.R.Warehouse = foreign
 				if foreign.R == nil {
 					foreign.R = &warehouseR{}
@@ -684,7 +675,7 @@ func (o *WarehouseShippingZone) SetShippingZone(ctx context.Context, exec boil.C
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ShippingZoneID, related.ID)
+	o.ShippingZoneID = related.ID
 	if o.R == nil {
 		o.R = &warehouseShippingZoneR{
 			ShippingZone: related,
@@ -701,39 +692,6 @@ func (o *WarehouseShippingZone) SetShippingZone(ctx context.Context, exec boil.C
 		related.R.WarehouseShippingZones = append(related.R.WarehouseShippingZones, o)
 	}
 
-	return nil
-}
-
-// RemoveShippingZone relationship.
-// Sets o.R.ShippingZone to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *WarehouseShippingZone) RemoveShippingZone(ctx context.Context, exec boil.ContextExecutor, related *ShippingZone) error {
-	var err error
-
-	queries.SetScanner(&o.ShippingZoneID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_zone_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.ShippingZone = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.WarehouseShippingZones {
-		if queries.Equal(o.ShippingZoneID, ri.ShippingZoneID) {
-			continue
-		}
-
-		ln := len(related.R.WarehouseShippingZones)
-		if ln > 1 && i < ln-1 {
-			related.R.WarehouseShippingZones[i] = related.R.WarehouseShippingZones[ln-1]
-		}
-		related.R.WarehouseShippingZones = related.R.WarehouseShippingZones[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -764,7 +722,7 @@ func (o *WarehouseShippingZone) SetWarehouse(ctx context.Context, exec boil.Cont
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.WarehouseID, related.ID)
+	o.WarehouseID = related.ID
 	if o.R == nil {
 		o.R = &warehouseShippingZoneR{
 			Warehouse: related,
@@ -781,39 +739,6 @@ func (o *WarehouseShippingZone) SetWarehouse(ctx context.Context, exec boil.Cont
 		related.R.WarehouseShippingZones = append(related.R.WarehouseShippingZones, o)
 	}
 
-	return nil
-}
-
-// RemoveWarehouse relationship.
-// Sets o.R.Warehouse to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *WarehouseShippingZone) RemoveWarehouse(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
-	var err error
-
-	queries.SetScanner(&o.WarehouseID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("warehouse_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Warehouse = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.WarehouseShippingZones {
-		if queries.Equal(o.WarehouseID, ri.WarehouseID) {
-			continue
-		}
-
-		ln := len(related.R.WarehouseShippingZones)
-		if ln > 1 && i < ln-1 {
-			related.R.WarehouseShippingZones[i] = related.R.WarehouseShippingZones[ln-1]
-		}
-		related.R.WarehouseShippingZones = related.R.WarehouseShippingZones[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -955,10 +880,6 @@ func (o *WarehouseShippingZone) Update(ctx context.Context, exec boil.ContextExe
 			warehouseShippingZoneAllColumns,
 			warehouseShippingZonePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update warehouse_shipping_zones, could not build whitelist")
 		}

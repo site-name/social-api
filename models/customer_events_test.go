@@ -908,7 +908,7 @@ func testCustomerEventsSelect(t *testing.T) {
 }
 
 var (
-	customerEventDBTypes = map[string]string{`ID`: `character varying`, `Date`: `bigint`, `Type`: `character varying`, `OrderID`: `character varying`, `UserID`: `character varying`, `Parameters`: `jsonb`}
+	customerEventDBTypes = map[string]string{`ID`: `uuid`, `Date`: `bigint`, `Type`: `character varying`, `OrderID`: `uuid`, `UserID`: `uuid`, `Parameters`: `jsonb`}
 	_                    = bytes.MinRead
 )
 

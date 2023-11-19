@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS shipping_zone_channels (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipping_zone_id uuid,
-  channel_id character varying(36)
+  shipping_zone_id uuid NOT NULL,
+  channel_id uuid NOT NULL
 );
 
 ALTER TABLE ONLY shipping_zone_channels

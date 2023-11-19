@@ -503,7 +503,7 @@ func testDigitalContentURLToOneDigitalContentUsingContent(t *testing.T) {
 	var foreign DigitalContent
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, digitalContentURLDBTypes, true, digitalContentURLColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, digitalContentURLDBTypes, false, digitalContentURLColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize DigitalContentURL struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, digitalContentDBTypes, false, digitalContentColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testDigitalContentURLToOneDigitalContentUsingContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ContentID, foreign.ID)
+	local.ContentID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testDigitalContentURLToOneDigitalContentUsingContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testDigitalContentURLToOneSetOpDigitalContentUsingContent(t *testing.T) {
 		if x.R.ContentDigitalContentUrls[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ContentID, x.ID) {
+		if a.ContentID != x.ID {
 			t.Error("foreign key was wrong value", a.ContentID)
 		}
 
@@ -668,63 +668,11 @@ func testDigitalContentURLToOneSetOpDigitalContentUsingContent(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ContentID, x.ID) {
+		if a.ContentID != x.ID {
 			t.Error("foreign key was wrong value", a.ContentID, x.ID)
 		}
 	}
 }
-
-func testDigitalContentURLToOneRemoveOpDigitalContentUsingContent(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a DigitalContentURL
-	var b DigitalContent
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, digitalContentURLDBTypes, false, strmangle.SetComplement(digitalContentURLPrimaryKeyColumns, digitalContentURLColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, digitalContentDBTypes, false, strmangle.SetComplement(digitalContentPrimaryKeyColumns, digitalContentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetContent(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveContent(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Content().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Content != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ContentID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ContentDigitalContentUrls) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testDigitalContentURLToOneSetOpOrderLineUsingLine(t *testing.T) {
 	var err error
 
@@ -909,7 +857,7 @@ func testDigitalContentUrlsSelect(t *testing.T) {
 }
 
 var (
-	digitalContentURLDBTypes = map[string]string{`ID`: `character varying`, `Token`: `character varying`, `ContentID`: `character varying`, `CreateAt`: `bigint`, `DownloadNum`: `integer`, `LineID`: `character varying`}
+	digitalContentURLDBTypes = map[string]string{`ID`: `uuid`, `Token`: `uuid`, `ContentID`: `uuid`, `CreatedAt`: `bigint`, `DownloadNum`: `integer`, `LineID`: `uuid`}
 	_                        = bytes.MinRead
 )
 

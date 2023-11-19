@@ -519,8 +519,9 @@ func testWishlistItemToManyWishlistItemProductVariants(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.WishlistItemID, a.ID)
-	queries.Assign(&c.WishlistItemID, a.ID)
+	b.WishlistItemID = a.ID
+	c.WishlistItemID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -535,10 +536,10 @@ func testWishlistItemToManyWishlistItemProductVariants(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.WishlistItemID, b.WishlistItemID) {
+		if v.WishlistItemID == b.WishlistItemID {
 			bFound = true
 		}
-		if queries.Equal(v.WishlistItemID, c.WishlistItemID) {
+		if v.WishlistItemID == c.WishlistItemID {
 			cFound = true
 		}
 	}
@@ -616,10 +617,10 @@ func testWishlistItemToManyAddOpWishlistItemProductVariants(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.WishlistItemID) {
+		if a.ID != first.WishlistItemID {
 			t.Error("foreign key was wrong value", a.ID, first.WishlistItemID)
 		}
-		if !queries.Equal(a.ID, second.WishlistItemID) {
+		if a.ID != second.WishlistItemID {
 			t.Error("foreign key was wrong value", a.ID, second.WishlistItemID)
 		}
 
@@ -646,182 +647,6 @@ func testWishlistItemToManyAddOpWishlistItemProductVariants(t *testing.T) {
 		}
 	}
 }
-
-func testWishlistItemToManySetOpWishlistItemProductVariants(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a WishlistItem
-	var b, c, d, e WishlistItemProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, wishlistItemDBTypes, false, strmangle.SetComplement(wishlistItemPrimaryKeyColumns, wishlistItemColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*WishlistItemProductVariant{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, wishlistItemProductVariantDBTypes, false, strmangle.SetComplement(wishlistItemProductVariantPrimaryKeyColumns, wishlistItemProductVariantColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetWishlistItemProductVariants(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.WishlistItemProductVariants().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetWishlistItemProductVariants(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WishlistItemProductVariants().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.WishlistItemID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.WishlistItemID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.WishlistItemID) {
-		t.Error("foreign key was wrong value", a.ID, d.WishlistItemID)
-	}
-	if !queries.Equal(a.ID, e.WishlistItemID) {
-		t.Error("foreign key was wrong value", a.ID, e.WishlistItemID)
-	}
-
-	if b.R.WishlistItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.WishlistItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.WishlistItem != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.WishlistItem != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.WishlistItemProductVariants[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.WishlistItemProductVariants[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testWishlistItemToManyRemoveOpWishlistItemProductVariants(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a WishlistItem
-	var b, c, d, e WishlistItemProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, wishlistItemDBTypes, false, strmangle.SetComplement(wishlistItemPrimaryKeyColumns, wishlistItemColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*WishlistItemProductVariant{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, wishlistItemProductVariantDBTypes, false, strmangle.SetComplement(wishlistItemProductVariantPrimaryKeyColumns, wishlistItemProductVariantColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddWishlistItemProductVariants(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.WishlistItemProductVariants().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveWishlistItemProductVariants(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.WishlistItemProductVariants().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.WishlistItemID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.WishlistItemID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.WishlistItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.WishlistItem != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.WishlistItem != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.WishlistItem != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.WishlistItemProductVariants) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.WishlistItemProductVariants[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.WishlistItemProductVariants[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testWishlistItemToOneProductVariantUsingProduct(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -831,7 +656,7 @@ func testWishlistItemToOneProductVariantUsingProduct(t *testing.T) {
 	var foreign ProductVariant
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, wishlistItemDBTypes, true, wishlistItemColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, wishlistItemDBTypes, false, wishlistItemColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize WishlistItem struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productVariantDBTypes, false, productVariantColumnsWithDefault...); err != nil {
@@ -842,7 +667,7 @@ func testWishlistItemToOneProductVariantUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductID, foreign.ID)
+	local.ProductID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -852,7 +677,7 @@ func testWishlistItemToOneProductVariantUsingProduct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -892,7 +717,7 @@ func testWishlistItemToOneWishlistUsingWishlist(t *testing.T) {
 	var foreign Wishlist
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, wishlistItemDBTypes, true, wishlistItemColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, wishlistItemDBTypes, false, wishlistItemColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize WishlistItem struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, wishlistDBTypes, false, wishlistColumnsWithDefault...); err != nil {
@@ -903,7 +728,7 @@ func testWishlistItemToOneWishlistUsingWishlist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.WishlistID, foreign.ID)
+	local.WishlistID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -913,7 +738,7 @@ func testWishlistItemToOneWishlistUsingWishlist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -985,7 +810,7 @@ func testWishlistItemToOneSetOpProductVariantUsingProduct(t *testing.T) {
 		if x.R.ProductWishlistItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID)
 		}
 
@@ -996,63 +821,11 @@ func testWishlistItemToOneSetOpProductVariantUsingProduct(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductID, x.ID) {
+		if a.ProductID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductID, x.ID)
 		}
 	}
 }
-
-func testWishlistItemToOneRemoveOpProductVariantUsingProduct(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a WishlistItem
-	var b ProductVariant
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, wishlistItemDBTypes, false, strmangle.SetComplement(wishlistItemPrimaryKeyColumns, wishlistItemColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productVariantDBTypes, false, strmangle.SetComplement(productVariantPrimaryKeyColumns, productVariantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProduct(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProduct(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Product().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Product != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.ProductWishlistItems) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testWishlistItemToOneSetOpWishlistUsingWishlist(t *testing.T) {
 	var err error
 
@@ -1094,7 +867,7 @@ func testWishlistItemToOneSetOpWishlistUsingWishlist(t *testing.T) {
 		if x.R.WishlistItems[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.WishlistID, x.ID) {
+		if a.WishlistID != x.ID {
 			t.Error("foreign key was wrong value", a.WishlistID)
 		}
 
@@ -1105,60 +878,9 @@ func testWishlistItemToOneSetOpWishlistUsingWishlist(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.WishlistID, x.ID) {
+		if a.WishlistID != x.ID {
 			t.Error("foreign key was wrong value", a.WishlistID, x.ID)
 		}
-	}
-}
-
-func testWishlistItemToOneRemoveOpWishlistUsingWishlist(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a WishlistItem
-	var b Wishlist
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, wishlistItemDBTypes, false, strmangle.SetComplement(wishlistItemPrimaryKeyColumns, wishlistItemColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, wishlistDBTypes, false, strmangle.SetComplement(wishlistPrimaryKeyColumns, wishlistColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetWishlist(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveWishlist(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Wishlist().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Wishlist != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.WishlistID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.WishlistItems) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1236,7 +958,7 @@ func testWishlistItemsSelect(t *testing.T) {
 }
 
 var (
-	wishlistItemDBTypes = map[string]string{`ID`: `character varying`, `WishlistID`: `character varying`, `ProductID`: `character varying`, `CreateAt`: `bigint`}
+	wishlistItemDBTypes = map[string]string{`ID`: `uuid`, `WishlistID`: `uuid`, `ProductID`: `uuid`, `CreatedAt`: `bigint`}
 	_                   = bytes.MinRead
 )
 

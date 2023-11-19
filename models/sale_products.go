@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // SaleProduct is an object representing the database table.
 type SaleProduct struct {
-	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SaleID    null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
-	ProductID null.String `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
-	CreateAt  null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID        string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SaleID    string `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
+	ProductID string `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	CreatedAt int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *saleProductR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleProductL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,38 +36,38 @@ var SaleProductColumns = struct {
 	ID        string
 	SaleID    string
 	ProductID string
-	CreateAt  string
+	CreatedAt string
 }{
 	ID:        "id",
 	SaleID:    "sale_id",
 	ProductID: "product_id",
-	CreateAt:  "create_at",
+	CreatedAt: "created_at",
 }
 
 var SaleProductTableColumns = struct {
 	ID        string
 	SaleID    string
 	ProductID string
-	CreateAt  string
+	CreatedAt string
 }{
 	ID:        "sale_products.id",
 	SaleID:    "sale_products.sale_id",
 	ProductID: "sale_products.product_id",
-	CreateAt:  "sale_products.create_at",
+	CreatedAt: "sale_products.created_at",
 }
 
 // Generated where
 
 var SaleProductWhere = struct {
 	ID        whereHelperstring
-	SaleID    whereHelpernull_String
-	ProductID whereHelpernull_String
-	CreateAt  whereHelpernull_Int64
+	SaleID    whereHelperstring
+	ProductID whereHelperstring
+	CreatedAt whereHelperint64
 }{
 	ID:        whereHelperstring{field: "\"sale_products\".\"id\""},
-	SaleID:    whereHelpernull_String{field: "\"sale_products\".\"sale_id\""},
-	ProductID: whereHelpernull_String{field: "\"sale_products\".\"product_id\""},
-	CreateAt:  whereHelpernull_Int64{field: "\"sale_products\".\"create_at\""},
+	SaleID:    whereHelperstring{field: "\"sale_products\".\"sale_id\""},
+	ProductID: whereHelperstring{field: "\"sale_products\".\"product_id\""},
+	CreatedAt: whereHelperint64{field: "\"sale_products\".\"created_at\""},
 }
 
 // SaleProductRels is where relationship names are stored.
@@ -109,9 +108,9 @@ func (r *saleProductR) GetSale() *Sale {
 type saleProductL struct{}
 
 var (
-	saleProductAllColumns            = []string{"id", "sale_id", "product_id", "create_at"}
-	saleProductColumnsWithoutDefault = []string{"id"}
-	saleProductColumnsWithDefault    = []string{"sale_id", "product_id", "create_at"}
+	saleProductAllColumns            = []string{"id", "sale_id", "product_id", "created_at"}
+	saleProductColumnsWithoutDefault = []string{"sale_id", "product_id", "created_at"}
+	saleProductColumnsWithDefault    = []string{"id"}
 	saleProductPrimaryKeyColumns     = []string{"id"}
 	saleProductGeneratedColumns      = []string{}
 )
@@ -449,9 +448,7 @@ func (saleProductL) LoadProduct(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &saleProductR{}
 		}
-		if !queries.IsNil(object.ProductID) {
-			args = append(args, object.ProductID)
-		}
+		args = append(args, object.ProductID)
 
 	} else {
 	Outer:
@@ -461,14 +458,12 @@ func (saleProductL) LoadProduct(ctx context.Context, e boil.ContextExecutor, sin
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ProductID) {
+				if a == obj.ProductID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.ProductID) {
-				args = append(args, obj.ProductID)
-			}
+			args = append(args, obj.ProductID)
 
 		}
 	}
@@ -526,7 +521,7 @@ func (saleProductL) LoadProduct(ctx context.Context, e boil.ContextExecutor, sin
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.ProductID, foreign.ID) {
+			if local.ProductID == foreign.ID {
 				local.R.Product = foreign
 				if foreign.R == nil {
 					foreign.R = &productR{}
@@ -573,9 +568,7 @@ func (saleProductL) LoadSale(ctx context.Context, e boil.ContextExecutor, singul
 		if object.R == nil {
 			object.R = &saleProductR{}
 		}
-		if !queries.IsNil(object.SaleID) {
-			args = append(args, object.SaleID)
-		}
+		args = append(args, object.SaleID)
 
 	} else {
 	Outer:
@@ -585,14 +578,12 @@ func (saleProductL) LoadSale(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.SaleID) {
+				if a == obj.SaleID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.SaleID) {
-				args = append(args, obj.SaleID)
-			}
+			args = append(args, obj.SaleID)
 
 		}
 	}
@@ -650,7 +641,7 @@ func (saleProductL) LoadSale(ctx context.Context, e boil.ContextExecutor, singul
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.SaleID, foreign.ID) {
+			if local.SaleID == foreign.ID {
 				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
@@ -691,7 +682,7 @@ func (o *SaleProduct) SetProduct(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.ProductID, related.ID)
+	o.ProductID = related.ID
 	if o.R == nil {
 		o.R = &saleProductR{
 			Product: related,
@@ -708,39 +699,6 @@ func (o *SaleProduct) SetProduct(ctx context.Context, exec boil.ContextExecutor,
 		related.R.SaleProducts = append(related.R.SaleProducts, o)
 	}
 
-	return nil
-}
-
-// RemoveProduct relationship.
-// Sets o.R.Product to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleProduct) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
-	var err error
-
-	queries.SetScanner(&o.ProductID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Product = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleProducts {
-		if queries.Equal(o.ProductID, ri.ProductID) {
-			continue
-		}
-
-		ln := len(related.R.SaleProducts)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleProducts[i] = related.R.SaleProducts[ln-1]
-		}
-		related.R.SaleProducts = related.R.SaleProducts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -771,7 +729,7 @@ func (o *SaleProduct) SetSale(ctx context.Context, exec boil.ContextExecutor, in
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.SaleID, related.ID)
+	o.SaleID = related.ID
 	if o.R == nil {
 		o.R = &saleProductR{
 			Sale: related,
@@ -788,39 +746,6 @@ func (o *SaleProduct) SetSale(ctx context.Context, exec boil.ContextExecutor, in
 		related.R.SaleProducts = append(related.R.SaleProducts, o)
 	}
 
-	return nil
-}
-
-// RemoveSale relationship.
-// Sets o.R.Sale to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleProduct) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
-	var err error
-
-	queries.SetScanner(&o.SaleID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Sale = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleProducts {
-		if queries.Equal(o.SaleID, ri.SaleID) {
-			continue
-		}
-
-		ln := len(related.R.SaleProducts)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleProducts[i] = related.R.SaleProducts[ln-1]
-		}
-		related.R.SaleProducts = related.R.SaleProducts[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -962,10 +887,6 @@ func (o *SaleProduct) Update(ctx context.Context, exec boil.ContextExecutor, col
 			saleProductAllColumns,
 			saleProductPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update sale_products, could not build whitelist")
 		}

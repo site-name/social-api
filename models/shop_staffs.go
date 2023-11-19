@@ -19,18 +19,19 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ShopStaff is an object representing the database table.
 type ShopStaff struct {
-	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	StaffID        null.String  `boil:"staff_id" json:"staff_id,omitempty" toml:"staff_id" yaml:"staff_id,omitempty"`
-	CreateAt       null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	EndAt          null.Int64   `boil:"end_at" json:"end_at,omitempty" toml:"end_at" yaml:"end_at,omitempty"`
-	SalaryPeriod   null.String  `boil:"salary_period" json:"salary_period,omitempty" toml:"salary_period" yaml:"salary_period,omitempty"`
-	Salary         null.Float64 `boil:"salary" json:"salary,omitempty" toml:"salary" yaml:"salary,omitempty"`
-	SalaryCurrency null.String  `boil:"salary_currency" json:"salary_currency,omitempty" toml:"salary_currency" yaml:"salary_currency,omitempty"`
+	ID             string        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	StaffID        string        `boil:"staff_id" json:"staff_id" toml:"staff_id" yaml:"staff_id"`
+	CreatedAt      int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	EndAt          null.Int64    `boil:"end_at" json:"end_at,omitempty" toml:"end_at" yaml:"end_at,omitempty"`
+	SalaryPeriod   string        `boil:"salary_period" json:"salary_period" toml:"salary_period" yaml:"salary_period"`
+	Salary         types.Decimal `boil:"salary" json:"salary" toml:"salary" yaml:"salary"`
+	SalaryCurrency string        `boil:"salary_currency" json:"salary_currency" toml:"salary_currency" yaml:"salary_currency"`
 
 	R *shopStaffR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopStaffL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,7 +40,7 @@ type ShopStaff struct {
 var ShopStaffColumns = struct {
 	ID             string
 	StaffID        string
-	CreateAt       string
+	CreatedAt      string
 	EndAt          string
 	SalaryPeriod   string
 	Salary         string
@@ -47,7 +48,7 @@ var ShopStaffColumns = struct {
 }{
 	ID:             "id",
 	StaffID:        "staff_id",
-	CreateAt:       "create_at",
+	CreatedAt:      "created_at",
 	EndAt:          "end_at",
 	SalaryPeriod:   "salary_period",
 	Salary:         "salary",
@@ -57,7 +58,7 @@ var ShopStaffColumns = struct {
 var ShopStaffTableColumns = struct {
 	ID             string
 	StaffID        string
-	CreateAt       string
+	CreatedAt      string
 	EndAt          string
 	SalaryPeriod   string
 	Salary         string
@@ -65,7 +66,7 @@ var ShopStaffTableColumns = struct {
 }{
 	ID:             "shop_staffs.id",
 	StaffID:        "shop_staffs.staff_id",
-	CreateAt:       "shop_staffs.create_at",
+	CreatedAt:      "shop_staffs.created_at",
 	EndAt:          "shop_staffs.end_at",
 	SalaryPeriod:   "shop_staffs.salary_period",
 	Salary:         "shop_staffs.salary",
@@ -76,20 +77,20 @@ var ShopStaffTableColumns = struct {
 
 var ShopStaffWhere = struct {
 	ID             whereHelperstring
-	StaffID        whereHelpernull_String
-	CreateAt       whereHelpernull_Int64
+	StaffID        whereHelperstring
+	CreatedAt      whereHelperint64
 	EndAt          whereHelpernull_Int64
-	SalaryPeriod   whereHelpernull_String
-	Salary         whereHelpernull_Float64
-	SalaryCurrency whereHelpernull_String
+	SalaryPeriod   whereHelperstring
+	Salary         whereHelpertypes_Decimal
+	SalaryCurrency whereHelperstring
 }{
 	ID:             whereHelperstring{field: "\"shop_staffs\".\"id\""},
-	StaffID:        whereHelpernull_String{field: "\"shop_staffs\".\"staff_id\""},
-	CreateAt:       whereHelpernull_Int64{field: "\"shop_staffs\".\"create_at\""},
+	StaffID:        whereHelperstring{field: "\"shop_staffs\".\"staff_id\""},
+	CreatedAt:      whereHelperint64{field: "\"shop_staffs\".\"created_at\""},
 	EndAt:          whereHelpernull_Int64{field: "\"shop_staffs\".\"end_at\""},
-	SalaryPeriod:   whereHelpernull_String{field: "\"shop_staffs\".\"salary_period\""},
-	Salary:         whereHelpernull_Float64{field: "\"shop_staffs\".\"salary\""},
-	SalaryCurrency: whereHelpernull_String{field: "\"shop_staffs\".\"salary_currency\""},
+	SalaryPeriod:   whereHelperstring{field: "\"shop_staffs\".\"salary_period\""},
+	Salary:         whereHelpertypes_Decimal{field: "\"shop_staffs\".\"salary\""},
+	SalaryCurrency: whereHelperstring{field: "\"shop_staffs\".\"salary_currency\""},
 }
 
 // ShopStaffRels is where relationship names are stored.
@@ -120,9 +121,9 @@ func (r *shopStaffR) GetStaff() *User {
 type shopStaffL struct{}
 
 var (
-	shopStaffAllColumns            = []string{"id", "staff_id", "create_at", "end_at", "salary_period", "salary", "salary_currency"}
-	shopStaffColumnsWithoutDefault = []string{"id"}
-	shopStaffColumnsWithDefault    = []string{"staff_id", "create_at", "end_at", "salary_period", "salary", "salary_currency"}
+	shopStaffAllColumns            = []string{"id", "staff_id", "created_at", "end_at", "salary_period", "salary", "salary_currency"}
+	shopStaffColumnsWithoutDefault = []string{"staff_id", "created_at", "salary_period", "salary_currency"}
+	shopStaffColumnsWithDefault    = []string{"id", "end_at", "salary"}
 	shopStaffPrimaryKeyColumns     = []string{"id"}
 	shopStaffGeneratedColumns      = []string{}
 )
@@ -449,9 +450,7 @@ func (shopStaffL) LoadStaff(ctx context.Context, e boil.ContextExecutor, singula
 		if object.R == nil {
 			object.R = &shopStaffR{}
 		}
-		if !queries.IsNil(object.StaffID) {
-			args = append(args, object.StaffID)
-		}
+		args = append(args, object.StaffID)
 
 	} else {
 	Outer:
@@ -461,14 +460,12 @@ func (shopStaffL) LoadStaff(ctx context.Context, e boil.ContextExecutor, singula
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.StaffID) {
+				if a == obj.StaffID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.StaffID) {
-				args = append(args, obj.StaffID)
-			}
+			args = append(args, obj.StaffID)
 
 		}
 	}
@@ -526,7 +523,7 @@ func (shopStaffL) LoadStaff(ctx context.Context, e boil.ContextExecutor, singula
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.StaffID, foreign.ID) {
+			if local.StaffID == foreign.ID {
 				local.R.Staff = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -567,7 +564,7 @@ func (o *ShopStaff) SetStaff(ctx context.Context, exec boil.ContextExecutor, ins
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.StaffID, related.ID)
+	o.StaffID = related.ID
 	if o.R == nil {
 		o.R = &shopStaffR{
 			Staff: related,
@@ -584,39 +581,6 @@ func (o *ShopStaff) SetStaff(ctx context.Context, exec boil.ContextExecutor, ins
 		related.R.StaffShopStaffs = append(related.R.StaffShopStaffs, o)
 	}
 
-	return nil
-}
-
-// RemoveStaff relationship.
-// Sets o.R.Staff to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *ShopStaff) RemoveStaff(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.StaffID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("staff_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Staff = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.StaffShopStaffs {
-		if queries.Equal(o.StaffID, ri.StaffID) {
-			continue
-		}
-
-		ln := len(related.R.StaffShopStaffs)
-		if ln > 1 && i < ln-1 {
-			related.R.StaffShopStaffs[i] = related.R.StaffShopStaffs[ln-1]
-		}
-		related.R.StaffShopStaffs = related.R.StaffShopStaffs[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -758,10 +722,6 @@ func (o *ShopStaff) Update(ctx context.Context, exec boil.ContextExecutor, colum
 			shopStaffAllColumns,
 			shopStaffPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update shop_staffs, could not build whitelist")
 		}

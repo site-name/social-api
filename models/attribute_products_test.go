@@ -656,7 +656,7 @@ func testAttributeProductToOneAttributeUsingAttribute(t *testing.T) {
 	var foreign Attribute
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, attributeProductDBTypes, true, attributeProductColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, attributeProductDBTypes, false, attributeProductColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize AttributeProduct struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, attributeDBTypes, false, attributeColumnsWithDefault...); err != nil {
@@ -667,7 +667,7 @@ func testAttributeProductToOneAttributeUsingAttribute(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.AttributeID, foreign.ID)
+	local.AttributeID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -677,7 +677,7 @@ func testAttributeProductToOneAttributeUsingAttribute(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -717,7 +717,7 @@ func testAttributeProductToOneProductTypeUsingProductType(t *testing.T) {
 	var foreign ProductType
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, attributeProductDBTypes, true, attributeProductColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, attributeProductDBTypes, false, attributeProductColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize AttributeProduct struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, productTypeDBTypes, false, productTypeColumnsWithDefault...); err != nil {
@@ -728,7 +728,7 @@ func testAttributeProductToOneProductTypeUsingProductType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ProductTypeID, foreign.ID)
+	local.ProductTypeID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -738,7 +738,7 @@ func testAttributeProductToOneProductTypeUsingProductType(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -810,7 +810,7 @@ func testAttributeProductToOneSetOpAttributeUsingAttribute(t *testing.T) {
 		if x.R.AttributeProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.AttributeID, x.ID) {
+		if a.AttributeID != x.ID {
 			t.Error("foreign key was wrong value", a.AttributeID)
 		}
 
@@ -821,63 +821,11 @@ func testAttributeProductToOneSetOpAttributeUsingAttribute(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.AttributeID, x.ID) {
+		if a.AttributeID != x.ID {
 			t.Error("foreign key was wrong value", a.AttributeID, x.ID)
 		}
 	}
 }
-
-func testAttributeProductToOneRemoveOpAttributeUsingAttribute(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeProduct
-	var b Attribute
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeProductDBTypes, false, strmangle.SetComplement(attributeProductPrimaryKeyColumns, attributeProductColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, attributeDBTypes, false, strmangle.SetComplement(attributePrimaryKeyColumns, attributeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetAttribute(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveAttribute(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Attribute().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Attribute != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.AttributeID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.AttributeProducts) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testAttributeProductToOneSetOpProductTypeUsingProductType(t *testing.T) {
 	var err error
 
@@ -919,7 +867,7 @@ func testAttributeProductToOneSetOpProductTypeUsingProductType(t *testing.T) {
 		if x.R.AttributeProducts[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ProductTypeID, x.ID) {
+		if a.ProductTypeID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductTypeID)
 		}
 
@@ -930,60 +878,9 @@ func testAttributeProductToOneSetOpProductTypeUsingProductType(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ProductTypeID, x.ID) {
+		if a.ProductTypeID != x.ID {
 			t.Error("foreign key was wrong value", a.ProductTypeID, x.ID)
 		}
-	}
-}
-
-func testAttributeProductToOneRemoveOpProductTypeUsingProductType(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AttributeProduct
-	var b ProductType
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, attributeProductDBTypes, false, strmangle.SetComplement(attributeProductPrimaryKeyColumns, attributeProductColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, productTypeDBTypes, false, strmangle.SetComplement(productTypePrimaryKeyColumns, productTypeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetProductType(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveProductType(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.ProductType().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.ProductType != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.ProductTypeID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.AttributeProducts) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1061,7 +958,7 @@ func testAttributeProductsSelect(t *testing.T) {
 }
 
 var (
-	attributeProductDBTypes = map[string]string{`ID`: `character varying`, `AttributeID`: `character varying`, `ProductTypeID`: `character varying`, `SortOrder`: `integer`}
+	attributeProductDBTypes = map[string]string{`ID`: `uuid`, `AttributeID`: `uuid`, `ProductTypeID`: `uuid`, `SortOrder`: `integer`}
 	_                       = bytes.MinRead
 )
 

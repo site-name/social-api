@@ -25,12 +25,13 @@ import (
 // Warehouse is an object representing the database table.
 type Warehouse struct {
 	ID                    string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                  null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug                  null.String `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
+	Name                  string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug                  string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	AddressID             null.String `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
-	Email                 null.String `boil:"email" json:"email,omitempty" toml:"email" yaml:"email,omitempty"`
-	ClickAndCollectOption null.String `boil:"click_and_collect_option" json:"click_and_collect_option,omitempty" toml:"click_and_collect_option" yaml:"click_and_collect_option,omitempty"`
+	Email                 string      `boil:"email" json:"email" toml:"email" yaml:"email"`
+	ClickAndCollectOption string      `boil:"click_and_collect_option" json:"click_and_collect_option" toml:"click_and_collect_option" yaml:"click_and_collect_option"`
 	IsPrivate             null.Bool   `boil:"is_private" json:"is_private,omitempty" toml:"is_private" yaml:"is_private,omitempty"`
+	CreatedAt             int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Metadata              null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata       null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
@@ -46,6 +47,7 @@ var WarehouseColumns = struct {
 	Email                 string
 	ClickAndCollectOption string
 	IsPrivate             string
+	CreatedAt             string
 	Metadata              string
 	PrivateMetadata       string
 }{
@@ -56,6 +58,7 @@ var WarehouseColumns = struct {
 	Email:                 "email",
 	ClickAndCollectOption: "click_and_collect_option",
 	IsPrivate:             "is_private",
+	CreatedAt:             "created_at",
 	Metadata:              "metadata",
 	PrivateMetadata:       "private_metadata",
 }
@@ -68,6 +71,7 @@ var WarehouseTableColumns = struct {
 	Email                 string
 	ClickAndCollectOption string
 	IsPrivate             string
+	CreatedAt             string
 	Metadata              string
 	PrivateMetadata       string
 }{
@@ -78,6 +82,7 @@ var WarehouseTableColumns = struct {
 	Email:                 "warehouses.email",
 	ClickAndCollectOption: "warehouses.click_and_collect_option",
 	IsPrivate:             "warehouses.is_private",
+	CreatedAt:             "warehouses.created_at",
 	Metadata:              "warehouses.metadata",
 	PrivateMetadata:       "warehouses.private_metadata",
 }
@@ -86,22 +91,24 @@ var WarehouseTableColumns = struct {
 
 var WarehouseWhere = struct {
 	ID                    whereHelperstring
-	Name                  whereHelpernull_String
-	Slug                  whereHelpernull_String
+	Name                  whereHelperstring
+	Slug                  whereHelperstring
 	AddressID             whereHelpernull_String
-	Email                 whereHelpernull_String
-	ClickAndCollectOption whereHelpernull_String
+	Email                 whereHelperstring
+	ClickAndCollectOption whereHelperstring
 	IsPrivate             whereHelpernull_Bool
+	CreatedAt             whereHelperint64
 	Metadata              whereHelpernull_JSON
 	PrivateMetadata       whereHelpernull_JSON
 }{
 	ID:                    whereHelperstring{field: "\"warehouses\".\"id\""},
-	Name:                  whereHelpernull_String{field: "\"warehouses\".\"name\""},
-	Slug:                  whereHelpernull_String{field: "\"warehouses\".\"slug\""},
+	Name:                  whereHelperstring{field: "\"warehouses\".\"name\""},
+	Slug:                  whereHelperstring{field: "\"warehouses\".\"slug\""},
 	AddressID:             whereHelpernull_String{field: "\"warehouses\".\"address_id\""},
-	Email:                 whereHelpernull_String{field: "\"warehouses\".\"email\""},
-	ClickAndCollectOption: whereHelpernull_String{field: "\"warehouses\".\"click_and_collect_option\""},
+	Email:                 whereHelperstring{field: "\"warehouses\".\"email\""},
+	ClickAndCollectOption: whereHelperstring{field: "\"warehouses\".\"click_and_collect_option\""},
 	IsPrivate:             whereHelpernull_Bool{field: "\"warehouses\".\"is_private\""},
+	CreatedAt:             whereHelperint64{field: "\"warehouses\".\"created_at\""},
 	Metadata:              whereHelpernull_JSON{field: "\"warehouses\".\"metadata\""},
 	PrivateMetadata:       whereHelpernull_JSON{field: "\"warehouses\".\"private_metadata\""},
 }
@@ -174,9 +181,9 @@ func (r *warehouseR) GetWarehouseShippingZones() WarehouseShippingZoneSlice {
 type warehouseL struct{}
 
 var (
-	warehouseAllColumns            = []string{"id", "name", "slug", "address_id", "email", "click_and_collect_option", "is_private", "metadata", "private_metadata"}
-	warehouseColumnsWithoutDefault = []string{"id"}
-	warehouseColumnsWithDefault    = []string{"name", "slug", "address_id", "email", "click_and_collect_option", "is_private", "metadata", "private_metadata"}
+	warehouseAllColumns            = []string{"id", "name", "slug", "address_id", "email", "click_and_collect_option", "is_private", "created_at", "metadata", "private_metadata"}
+	warehouseColumnsWithoutDefault = []string{"name", "slug", "email", "click_and_collect_option", "created_at"}
+	warehouseColumnsWithDefault    = []string{"id", "address_id", "is_private", "metadata", "private_metadata"}
 	warehousePrimaryKeyColumns     = []string{"id"}
 	warehouseGeneratedColumns      = []string{}
 )
@@ -920,7 +927,7 @@ func (warehouseL) LoadStocks(ctx context.Context, e boil.ContextExecutor, singul
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -978,7 +985,7 @@ func (warehouseL) LoadStocks(ctx context.Context, e boil.ContextExecutor, singul
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.WarehouseID) {
+			if local.ID == foreign.WarehouseID {
 				local.R.Stocks = append(local.R.Stocks, foreign)
 				if foreign.R == nil {
 					foreign.R = &stockR{}
@@ -1034,7 +1041,7 @@ func (warehouseL) LoadWarehouseShippingZones(ctx context.Context, e boil.Context
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1092,7 +1099,7 @@ func (warehouseL) LoadWarehouseShippingZones(ctx context.Context, e boil.Context
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.WarehouseID) {
+			if local.ID == foreign.WarehouseID {
 				local.R.WarehouseShippingZones = append(local.R.WarehouseShippingZones, foreign)
 				if foreign.R == nil {
 					foreign.R = &warehouseShippingZoneR{}
@@ -1448,7 +1455,7 @@ func (o *Warehouse) AddStocks(ctx context.Context, exec boil.ContextExecutor, in
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.WarehouseID, o.ID)
+			rel.WarehouseID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1469,7 +1476,7 @@ func (o *Warehouse) AddStocks(ctx context.Context, exec boil.ContextExecutor, in
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.WarehouseID, o.ID)
+			rel.WarehouseID = o.ID
 		}
 	}
 
@@ -1493,80 +1500,6 @@ func (o *Warehouse) AddStocks(ctx context.Context, exec boil.ContextExecutor, in
 	return nil
 }
 
-// SetStocks removes all previously related items of the
-// warehouse replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Warehouse's Stocks accordingly.
-// Replaces o.R.Stocks with related.
-// Sets related.R.Warehouse's Stocks accordingly.
-func (o *Warehouse) SetStocks(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Stock) error {
-	query := "update \"stocks\" set \"warehouse_id\" = null where \"warehouse_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Stocks {
-			queries.SetScanner(&rel.WarehouseID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Warehouse = nil
-		}
-		o.R.Stocks = nil
-	}
-
-	return o.AddStocks(ctx, exec, insert, related...)
-}
-
-// RemoveStocks relationships from objects passed in.
-// Removes related items from R.Stocks (uses pointer comparison, removal does not keep order)
-// Sets related.R.Warehouse.
-func (o *Warehouse) RemoveStocks(ctx context.Context, exec boil.ContextExecutor, related ...*Stock) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.WarehouseID, nil)
-		if rel.R != nil {
-			rel.R.Warehouse = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("warehouse_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Stocks {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Stocks)
-			if ln > 1 && i < ln-1 {
-				o.R.Stocks[i] = o.R.Stocks[ln-1]
-			}
-			o.R.Stocks = o.R.Stocks[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddWarehouseShippingZones adds the given related objects to the existing relationships
 // of the warehouse, optionally inserting them as new records.
 // Appends related to o.R.WarehouseShippingZones.
@@ -1575,7 +1508,7 @@ func (o *Warehouse) AddWarehouseShippingZones(ctx context.Context, exec boil.Con
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.WarehouseID, o.ID)
+			rel.WarehouseID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1596,7 +1529,7 @@ func (o *Warehouse) AddWarehouseShippingZones(ctx context.Context, exec boil.Con
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.WarehouseID, o.ID)
+			rel.WarehouseID = o.ID
 		}
 	}
 
@@ -1617,80 +1550,6 @@ func (o *Warehouse) AddWarehouseShippingZones(ctx context.Context, exec boil.Con
 			rel.R.Warehouse = o
 		}
 	}
-	return nil
-}
-
-// SetWarehouseShippingZones removes all previously related items of the
-// warehouse replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Warehouse's WarehouseShippingZones accordingly.
-// Replaces o.R.WarehouseShippingZones with related.
-// Sets related.R.Warehouse's WarehouseShippingZones accordingly.
-func (o *Warehouse) SetWarehouseShippingZones(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*WarehouseShippingZone) error {
-	query := "update \"warehouse_shipping_zones\" set \"warehouse_id\" = null where \"warehouse_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.WarehouseShippingZones {
-			queries.SetScanner(&rel.WarehouseID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Warehouse = nil
-		}
-		o.R.WarehouseShippingZones = nil
-	}
-
-	return o.AddWarehouseShippingZones(ctx, exec, insert, related...)
-}
-
-// RemoveWarehouseShippingZones relationships from objects passed in.
-// Removes related items from R.WarehouseShippingZones (uses pointer comparison, removal does not keep order)
-// Sets related.R.Warehouse.
-func (o *Warehouse) RemoveWarehouseShippingZones(ctx context.Context, exec boil.ContextExecutor, related ...*WarehouseShippingZone) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.WarehouseID, nil)
-		if rel.R != nil {
-			rel.R.Warehouse = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("warehouse_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.WarehouseShippingZones {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.WarehouseShippingZones)
-			if ln > 1 && i < ln-1 {
-				o.R.WarehouseShippingZones[i] = o.R.WarehouseShippingZones[ln-1]
-			}
-			o.R.WarehouseShippingZones = o.R.WarehouseShippingZones[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1832,10 +1691,6 @@ func (o *Warehouse) Update(ctx context.Context, exec boil.ContextExecutor, colum
 			warehouseAllColumns,
 			warehousePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update warehouses, could not build whitelist")
 		}

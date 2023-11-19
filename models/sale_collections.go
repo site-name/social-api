@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // SaleCollection is an object representing the database table.
 type SaleCollection struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	SaleID       null.String `boil:"sale_id" json:"sale_id,omitempty" toml:"sale_id" yaml:"sale_id,omitempty"`
-	CollectionID null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
-	CreateAt     null.Int64  `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
+	ID           string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	SaleID       string `boil:"sale_id" json:"sale_id" toml:"sale_id" yaml:"sale_id"`
+	CollectionID string `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
+	CreatedAt    int64  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *saleCollectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleCollectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,38 +36,38 @@ var SaleCollectionColumns = struct {
 	ID           string
 	SaleID       string
 	CollectionID string
-	CreateAt     string
+	CreatedAt    string
 }{
 	ID:           "id",
 	SaleID:       "sale_id",
 	CollectionID: "collection_id",
-	CreateAt:     "create_at",
+	CreatedAt:    "created_at",
 }
 
 var SaleCollectionTableColumns = struct {
 	ID           string
 	SaleID       string
 	CollectionID string
-	CreateAt     string
+	CreatedAt    string
 }{
 	ID:           "sale_collections.id",
 	SaleID:       "sale_collections.sale_id",
 	CollectionID: "sale_collections.collection_id",
-	CreateAt:     "sale_collections.create_at",
+	CreatedAt:    "sale_collections.created_at",
 }
 
 // Generated where
 
 var SaleCollectionWhere = struct {
 	ID           whereHelperstring
-	SaleID       whereHelpernull_String
-	CollectionID whereHelpernull_String
-	CreateAt     whereHelpernull_Int64
+	SaleID       whereHelperstring
+	CollectionID whereHelperstring
+	CreatedAt    whereHelperint64
 }{
 	ID:           whereHelperstring{field: "\"sale_collections\".\"id\""},
-	SaleID:       whereHelpernull_String{field: "\"sale_collections\".\"sale_id\""},
-	CollectionID: whereHelpernull_String{field: "\"sale_collections\".\"collection_id\""},
-	CreateAt:     whereHelpernull_Int64{field: "\"sale_collections\".\"create_at\""},
+	SaleID:       whereHelperstring{field: "\"sale_collections\".\"sale_id\""},
+	CollectionID: whereHelperstring{field: "\"sale_collections\".\"collection_id\""},
+	CreatedAt:    whereHelperint64{field: "\"sale_collections\".\"created_at\""},
 }
 
 // SaleCollectionRels is where relationship names are stored.
@@ -109,9 +108,9 @@ func (r *saleCollectionR) GetSale() *Sale {
 type saleCollectionL struct{}
 
 var (
-	saleCollectionAllColumns            = []string{"id", "sale_id", "collection_id", "create_at"}
-	saleCollectionColumnsWithoutDefault = []string{"id"}
-	saleCollectionColumnsWithDefault    = []string{"sale_id", "collection_id", "create_at"}
+	saleCollectionAllColumns            = []string{"id", "sale_id", "collection_id", "created_at"}
+	saleCollectionColumnsWithoutDefault = []string{"sale_id", "collection_id", "created_at"}
+	saleCollectionColumnsWithDefault    = []string{"id"}
 	saleCollectionPrimaryKeyColumns     = []string{"id"}
 	saleCollectionGeneratedColumns      = []string{}
 )
@@ -449,9 +448,7 @@ func (saleCollectionL) LoadCollection(ctx context.Context, e boil.ContextExecuto
 		if object.R == nil {
 			object.R = &saleCollectionR{}
 		}
-		if !queries.IsNil(object.CollectionID) {
-			args = append(args, object.CollectionID)
-		}
+		args = append(args, object.CollectionID)
 
 	} else {
 	Outer:
@@ -461,14 +458,12 @@ func (saleCollectionL) LoadCollection(ctx context.Context, e boil.ContextExecuto
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.CollectionID) {
+				if a == obj.CollectionID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.CollectionID) {
-				args = append(args, obj.CollectionID)
-			}
+			args = append(args, obj.CollectionID)
 
 		}
 	}
@@ -526,7 +521,7 @@ func (saleCollectionL) LoadCollection(ctx context.Context, e boil.ContextExecuto
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.CollectionID, foreign.ID) {
+			if local.CollectionID == foreign.ID {
 				local.R.Collection = foreign
 				if foreign.R == nil {
 					foreign.R = &collectionR{}
@@ -573,9 +568,7 @@ func (saleCollectionL) LoadSale(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &saleCollectionR{}
 		}
-		if !queries.IsNil(object.SaleID) {
-			args = append(args, object.SaleID)
-		}
+		args = append(args, object.SaleID)
 
 	} else {
 	Outer:
@@ -585,14 +578,12 @@ func (saleCollectionL) LoadSale(ctx context.Context, e boil.ContextExecutor, sin
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.SaleID) {
+				if a == obj.SaleID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.SaleID) {
-				args = append(args, obj.SaleID)
-			}
+			args = append(args, obj.SaleID)
 
 		}
 	}
@@ -650,7 +641,7 @@ func (saleCollectionL) LoadSale(ctx context.Context, e boil.ContextExecutor, sin
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.SaleID, foreign.ID) {
+			if local.SaleID == foreign.ID {
 				local.R.Sale = foreign
 				if foreign.R == nil {
 					foreign.R = &saleR{}
@@ -691,7 +682,7 @@ func (o *SaleCollection) SetCollection(ctx context.Context, exec boil.ContextExe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.CollectionID, related.ID)
+	o.CollectionID = related.ID
 	if o.R == nil {
 		o.R = &saleCollectionR{
 			Collection: related,
@@ -708,39 +699,6 @@ func (o *SaleCollection) SetCollection(ctx context.Context, exec boil.ContextExe
 		related.R.SaleCollections = append(related.R.SaleCollections, o)
 	}
 
-	return nil
-}
-
-// RemoveCollection relationship.
-// Sets o.R.Collection to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleCollection) RemoveCollection(ctx context.Context, exec boil.ContextExecutor, related *Collection) error {
-	var err error
-
-	queries.SetScanner(&o.CollectionID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Collection = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleCollections {
-		if queries.Equal(o.CollectionID, ri.CollectionID) {
-			continue
-		}
-
-		ln := len(related.R.SaleCollections)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleCollections[i] = related.R.SaleCollections[ln-1]
-		}
-		related.R.SaleCollections = related.R.SaleCollections[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -771,7 +729,7 @@ func (o *SaleCollection) SetSale(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.SaleID, related.ID)
+	o.SaleID = related.ID
 	if o.R == nil {
 		o.R = &saleCollectionR{
 			Sale: related,
@@ -788,39 +746,6 @@ func (o *SaleCollection) SetSale(ctx context.Context, exec boil.ContextExecutor,
 		related.R.SaleCollections = append(related.R.SaleCollections, o)
 	}
 
-	return nil
-}
-
-// RemoveSale relationship.
-// Sets o.R.Sale to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *SaleCollection) RemoveSale(ctx context.Context, exec boil.ContextExecutor, related *Sale) error {
-	var err error
-
-	queries.SetScanner(&o.SaleID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("sale_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Sale = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.SaleCollections {
-		if queries.Equal(o.SaleID, ri.SaleID) {
-			continue
-		}
-
-		ln := len(related.R.SaleCollections)
-		if ln > 1 && i < ln-1 {
-			related.R.SaleCollections[i] = related.R.SaleCollections[ln-1]
-		}
-		related.R.SaleCollections = related.R.SaleCollections[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -962,10 +887,6 @@ func (o *SaleCollection) Update(ctx context.Context, exec boil.ContextExecutor, 
 			saleCollectionAllColumns,
 			saleCollectionPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update sale_collections, could not build whitelist")
 		}

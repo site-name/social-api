@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS order_events (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at bigint,
-  type character varying(255),
-  order_id uuid,
+  created_at bigint NOT NULL,
+  type character varying(255) NOT NULL,
+  order_id uuid NOT NULL,
   parameters text,
-  user_id character varying(36)
+  user_id uuid
 );

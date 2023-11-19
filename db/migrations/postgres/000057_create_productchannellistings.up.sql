@@ -1,14 +1,14 @@
 CREATE TABLE IF NOT EXISTS product_channel_listings (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id uuid,
-  channel_id uuid,
-  visible_in_listings boolean,
-  available_for_purchase timestamp with time zone,
-  currency character varying(3),
-  discounted_price_amount double precision,
-  created_at bigint,
-  publication_date timestamp with time zone,
-  is_published boolean
+  product_id uuid NOT NULL,
+  channel_id uuid NOT NULL,
+  visible_in_listings boolean NOT NULL,
+  available_for_purchase bigint, -- future time in milliseconds
+  currency character varying(3) NOT NULL,
+  discounted_price_amount decimal(12,3),
+  created_at bigint NOT NULL,
+  publication_date bigint, -- future time in milliseconds
+  is_published boolean NOT NULL
 );
 
 ALTER TABLE ONLY product_channel_listings

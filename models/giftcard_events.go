@@ -25,11 +25,11 @@ import (
 // GiftcardEvent is an object representing the database table.
 type GiftcardEvent struct {
 	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Date       null.Int64  `boil:"date" json:"date,omitempty" toml:"date" yaml:"date,omitempty"`
-	Type       null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
+	Date       int64       `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Type       string      `boil:"type" json:"type" toml:"type" yaml:"type"`
 	Parameters null.JSON   `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	GiftcardID null.String `boil:"giftcard_id" json:"giftcard_id,omitempty" toml:"giftcard_id" yaml:"giftcard_id,omitempty"`
+	GiftcardID string      `boil:"giftcard_id" json:"giftcard_id" toml:"giftcard_id" yaml:"giftcard_id"`
 
 	R *giftcardEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -71,18 +71,18 @@ var GiftcardEventTableColumns = struct {
 
 var GiftcardEventWhere = struct {
 	ID         whereHelperstring
-	Date       whereHelpernull_Int64
-	Type       whereHelpernull_String
+	Date       whereHelperint64
+	Type       whereHelperstring
 	Parameters whereHelpernull_JSON
 	UserID     whereHelpernull_String
-	GiftcardID whereHelpernull_String
+	GiftcardID whereHelperstring
 }{
 	ID:         whereHelperstring{field: "\"giftcard_events\".\"id\""},
-	Date:       whereHelpernull_Int64{field: "\"giftcard_events\".\"date\""},
-	Type:       whereHelpernull_String{field: "\"giftcard_events\".\"type\""},
+	Date:       whereHelperint64{field: "\"giftcard_events\".\"date\""},
+	Type:       whereHelperstring{field: "\"giftcard_events\".\"type\""},
 	Parameters: whereHelpernull_JSON{field: "\"giftcard_events\".\"parameters\""},
 	UserID:     whereHelpernull_String{field: "\"giftcard_events\".\"user_id\""},
-	GiftcardID: whereHelpernull_String{field: "\"giftcard_events\".\"giftcard_id\""},
+	GiftcardID: whereHelperstring{field: "\"giftcard_events\".\"giftcard_id\""},
 }
 
 // GiftcardEventRels is where relationship names are stored.
@@ -114,8 +114,8 @@ type giftcardEventL struct{}
 
 var (
 	giftcardEventAllColumns            = []string{"id", "date", "type", "parameters", "user_id", "giftcard_id"}
-	giftcardEventColumnsWithoutDefault = []string{"id"}
-	giftcardEventColumnsWithDefault    = []string{"date", "type", "parameters", "user_id", "giftcard_id"}
+	giftcardEventColumnsWithoutDefault = []string{"date", "type", "giftcard_id"}
+	giftcardEventColumnsWithDefault    = []string{"id", "parameters", "user_id"}
 	giftcardEventPrimaryKeyColumns     = []string{"id"}
 	giftcardEventGeneratedColumns      = []string{}
 )
@@ -442,9 +442,7 @@ func (giftcardEventL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, 
 		if object.R == nil {
 			object.R = &giftcardEventR{}
 		}
-		if !queries.IsNil(object.GiftcardID) {
-			args = append(args, object.GiftcardID)
-		}
+		args = append(args, object.GiftcardID)
 
 	} else {
 	Outer:
@@ -454,14 +452,12 @@ func (giftcardEventL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.GiftcardID) {
+				if a == obj.GiftcardID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.GiftcardID) {
-				args = append(args, obj.GiftcardID)
-			}
+			args = append(args, obj.GiftcardID)
 
 		}
 	}
@@ -519,7 +515,7 @@ func (giftcardEventL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.GiftcardID, foreign.ID) {
+			if local.GiftcardID == foreign.ID {
 				local.R.Giftcard = foreign
 				if foreign.R == nil {
 					foreign.R = &giftcardR{}
@@ -560,7 +556,7 @@ func (o *GiftcardEvent) SetGiftcard(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.GiftcardID, related.ID)
+	o.GiftcardID = related.ID
 	if o.R == nil {
 		o.R = &giftcardEventR{
 			Giftcard: related,
@@ -577,39 +573,6 @@ func (o *GiftcardEvent) SetGiftcard(ctx context.Context, exec boil.ContextExecut
 		related.R.GiftcardEvents = append(related.R.GiftcardEvents, o)
 	}
 
-	return nil
-}
-
-// RemoveGiftcard relationship.
-// Sets o.R.Giftcard to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *GiftcardEvent) RemoveGiftcard(ctx context.Context, exec boil.ContextExecutor, related *Giftcard) error {
-	var err error
-
-	queries.SetScanner(&o.GiftcardID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("giftcard_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Giftcard = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.GiftcardEvents {
-		if queries.Equal(o.GiftcardID, ri.GiftcardID) {
-			continue
-		}
-
-		ln := len(related.R.GiftcardEvents)
-		if ln > 1 && i < ln-1 {
-			related.R.GiftcardEvents[i] = related.R.GiftcardEvents[ln-1]
-		}
-		related.R.GiftcardEvents = related.R.GiftcardEvents[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -751,10 +714,6 @@ func (o *GiftcardEvent) Update(ctx context.Context, exec boil.ContextExecutor, c
 			giftcardEventAllColumns,
 			giftcardEventPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update giftcard_events, could not build whitelist")
 		}

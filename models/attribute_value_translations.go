@@ -25,9 +25,9 @@ import (
 // AttributeValueTranslation is an object representing the database table.
 type AttributeValueTranslation struct {
 	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode     null.String `boil:"language_code" json:"language_code,omitempty" toml:"language_code" yaml:"language_code,omitempty"`
-	AttributeValueID null.String `boil:"attribute_value_id" json:"attribute_value_id,omitempty" toml:"attribute_value_id" yaml:"attribute_value_id,omitempty"`
-	Name             null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	LanguageCode     string      `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	AttributeValueID string      `boil:"attribute_value_id" json:"attribute_value_id" toml:"attribute_value_id" yaml:"attribute_value_id"`
+	Name             string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	RichText         null.String `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
 
 	R *attributeValueTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -64,17 +64,67 @@ var AttributeValueTranslationTableColumns = struct {
 
 // Generated where
 
+type whereHelpernull_String struct{ field string }
+
+func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" LIKE ?", x)
+}
+func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT LIKE ?", x)
+}
+func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" ILIKE ?", x)
+}
+func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT ILIKE ?", x)
+}
+func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var AttributeValueTranslationWhere = struct {
 	ID               whereHelperstring
-	LanguageCode     whereHelpernull_String
-	AttributeValueID whereHelpernull_String
-	Name             whereHelpernull_String
+	LanguageCode     whereHelperstring
+	AttributeValueID whereHelperstring
+	Name             whereHelperstring
 	RichText         whereHelpernull_String
 }{
 	ID:               whereHelperstring{field: "\"attribute_value_translations\".\"id\""},
-	LanguageCode:     whereHelpernull_String{field: "\"attribute_value_translations\".\"language_code\""},
-	AttributeValueID: whereHelpernull_String{field: "\"attribute_value_translations\".\"attribute_value_id\""},
-	Name:             whereHelpernull_String{field: "\"attribute_value_translations\".\"name\""},
+	LanguageCode:     whereHelperstring{field: "\"attribute_value_translations\".\"language_code\""},
+	AttributeValueID: whereHelperstring{field: "\"attribute_value_translations\".\"attribute_value_id\""},
+	Name:             whereHelperstring{field: "\"attribute_value_translations\".\"name\""},
 	RichText:         whereHelpernull_String{field: "\"attribute_value_translations\".\"rich_text\""},
 }
 
@@ -96,8 +146,8 @@ type attributeValueTranslationL struct{}
 
 var (
 	attributeValueTranslationAllColumns            = []string{"id", "language_code", "attribute_value_id", "name", "rich_text"}
-	attributeValueTranslationColumnsWithoutDefault = []string{"id"}
-	attributeValueTranslationColumnsWithDefault    = []string{"language_code", "attribute_value_id", "name", "rich_text"}
+	attributeValueTranslationColumnsWithoutDefault = []string{"language_code", "attribute_value_id", "name"}
+	attributeValueTranslationColumnsWithDefault    = []string{"id", "rich_text"}
 	attributeValueTranslationPrimaryKeyColumns     = []string{"id"}
 	attributeValueTranslationGeneratedColumns      = []string{}
 )
@@ -518,10 +568,6 @@ func (o *AttributeValueTranslation) Update(ctx context.Context, exec boil.Contex
 			attributeValueTranslationAllColumns,
 			attributeValueTranslationPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update attribute_value_translations, could not build whitelist")
 		}

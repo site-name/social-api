@@ -568,7 +568,7 @@ func testOpenExchangeRatesSelect(t *testing.T) {
 }
 
 var (
-	openExchangeRateDBTypes = map[string]string{`ID`: `character varying`, `ToCurrency`: `character varying`, `Rate`: `double precision`}
+	openExchangeRateDBTypes = map[string]string{`ID`: `uuid`, `ToCurrency`: `character varying`, `Rate`: `double precision`}
 	_                       = bytes.MinRead
 )
 

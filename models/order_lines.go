@@ -19,39 +19,40 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // OrderLine is an object representing the database table.
 type OrderLine struct {
-	ID                                string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateAt                          null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	OrderID                           null.String  `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	VariantID                         null.String  `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
-	ProductName                       null.String  `boil:"product_name" json:"product_name,omitempty" toml:"product_name" yaml:"product_name,omitempty"`
-	VariantName                       null.String  `boil:"variant_name" json:"variant_name,omitempty" toml:"variant_name" yaml:"variant_name,omitempty"`
-	TranslatedProductName             null.String  `boil:"translated_product_name" json:"translated_product_name,omitempty" toml:"translated_product_name" yaml:"translated_product_name,omitempty"`
-	TranslatedVariantName             null.String  `boil:"translated_variant_name" json:"translated_variant_name,omitempty" toml:"translated_variant_name" yaml:"translated_variant_name,omitempty"`
-	ProductSku                        null.String  `boil:"product_sku" json:"product_sku,omitempty" toml:"product_sku" yaml:"product_sku,omitempty"`
-	ProductVariantID                  null.String  `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
-	IsShippingRequired                null.Bool    `boil:"is_shipping_required" json:"is_shipping_required,omitempty" toml:"is_shipping_required" yaml:"is_shipping_required,omitempty"`
-	IsGiftcard                        null.Bool    `boil:"is_giftcard" json:"is_giftcard,omitempty" toml:"is_giftcard" yaml:"is_giftcard,omitempty"`
-	Quantity                          null.Int     `boil:"quantity" json:"quantity,omitempty" toml:"quantity" yaml:"quantity,omitempty"`
-	QuantityFulfilled                 null.Int     `boil:"quantity_fulfilled" json:"quantity_fulfilled,omitempty" toml:"quantity_fulfilled" yaml:"quantity_fulfilled,omitempty"`
-	Currency                          null.String  `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	UnitDiscountAmount                null.Float64 `boil:"unit_discount_amount" json:"unit_discount_amount,omitempty" toml:"unit_discount_amount" yaml:"unit_discount_amount,omitempty"`
-	UnitDiscountType                  null.String  `boil:"unit_discount_type" json:"unit_discount_type,omitempty" toml:"unit_discount_type" yaml:"unit_discount_type,omitempty"`
-	UnitDiscountReason                null.String  `boil:"unit_discount_reason" json:"unit_discount_reason,omitempty" toml:"unit_discount_reason" yaml:"unit_discount_reason,omitempty"`
-	UnitPriceNetAmount                null.Float64 `boil:"unit_price_net_amount" json:"unit_price_net_amount,omitempty" toml:"unit_price_net_amount" yaml:"unit_price_net_amount,omitempty"`
-	UnitDiscountValue                 null.Float64 `boil:"unit_discount_value" json:"unit_discount_value,omitempty" toml:"unit_discount_value" yaml:"unit_discount_value,omitempty"`
-	UnitPriceGrossAmount              null.Float64 `boil:"unit_price_gross_amount" json:"unit_price_gross_amount,omitempty" toml:"unit_price_gross_amount" yaml:"unit_price_gross_amount,omitempty"`
-	TotalPriceNetAmount               null.Float64 `boil:"total_price_net_amount" json:"total_price_net_amount,omitempty" toml:"total_price_net_amount" yaml:"total_price_net_amount,omitempty"`
-	TotalPriceGrossAmount             null.Float64 `boil:"total_price_gross_amount" json:"total_price_gross_amount,omitempty" toml:"total_price_gross_amount" yaml:"total_price_gross_amount,omitempty"`
-	UndiscountedUnitPriceGrossAmount  null.Float64 `boil:"undiscounted_unit_price_gross_amount" json:"undiscounted_unit_price_gross_amount,omitempty" toml:"undiscounted_unit_price_gross_amount" yaml:"undiscounted_unit_price_gross_amount,omitempty"`
-	UndiscountedUnitPriceNetAmount    null.Float64 `boil:"undiscounted_unit_price_net_amount" json:"undiscounted_unit_price_net_amount,omitempty" toml:"undiscounted_unit_price_net_amount" yaml:"undiscounted_unit_price_net_amount,omitempty"`
-	UndiscountedTotalPriceGrossAmount null.Float64 `boil:"undiscounted_total_price_gross_amount" json:"undiscounted_total_price_gross_amount,omitempty" toml:"undiscounted_total_price_gross_amount" yaml:"undiscounted_total_price_gross_amount,omitempty"`
-	UndiscountedTotalPriceNetAmount   null.Float64 `boil:"undiscounted_total_price_net_amount" json:"undiscounted_total_price_net_amount,omitempty" toml:"undiscounted_total_price_net_amount" yaml:"undiscounted_total_price_net_amount,omitempty"`
-	TaxRate                           null.Float64 `boil:"tax_rate" json:"tax_rate,omitempty" toml:"tax_rate" yaml:"tax_rate,omitempty"`
+	ID                                string            `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt                         int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	OrderID                           string            `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
+	VariantID                         null.String       `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
+	ProductName                       string            `boil:"product_name" json:"product_name" toml:"product_name" yaml:"product_name"`
+	VariantName                       string            `boil:"variant_name" json:"variant_name" toml:"variant_name" yaml:"variant_name"`
+	TranslatedProductName             string            `boil:"translated_product_name" json:"translated_product_name" toml:"translated_product_name" yaml:"translated_product_name"`
+	TranslatedVariantName             string            `boil:"translated_variant_name" json:"translated_variant_name" toml:"translated_variant_name" yaml:"translated_variant_name"`
+	ProductSku                        null.String       `boil:"product_sku" json:"product_sku,omitempty" toml:"product_sku" yaml:"product_sku,omitempty"`
+	ProductVariantID                  null.String       `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
+	IsShippingRequired                bool              `boil:"is_shipping_required" json:"is_shipping_required" toml:"is_shipping_required" yaml:"is_shipping_required"`
+	IsGiftcard                        bool              `boil:"is_giftcard" json:"is_giftcard" toml:"is_giftcard" yaml:"is_giftcard"`
+	Quantity                          int               `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	QuantityFulfilled                 int               `boil:"quantity_fulfilled" json:"quantity_fulfilled" toml:"quantity_fulfilled" yaml:"quantity_fulfilled"`
+	Currency                          string            `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	UnitDiscountAmount                types.Decimal     `boil:"unit_discount_amount" json:"unit_discount_amount" toml:"unit_discount_amount" yaml:"unit_discount_amount"`
+	UnitDiscountType                  string            `boil:"unit_discount_type" json:"unit_discount_type" toml:"unit_discount_type" yaml:"unit_discount_type"`
+	UnitDiscountReason                null.String       `boil:"unit_discount_reason" json:"unit_discount_reason,omitempty" toml:"unit_discount_reason" yaml:"unit_discount_reason,omitempty"`
+	UnitPriceNetAmount                types.Decimal     `boil:"unit_price_net_amount" json:"unit_price_net_amount" toml:"unit_price_net_amount" yaml:"unit_price_net_amount"`
+	UnitDiscountValue                 types.Decimal     `boil:"unit_discount_value" json:"unit_discount_value" toml:"unit_discount_value" yaml:"unit_discount_value"`
+	UnitPriceGrossAmount              types.Decimal     `boil:"unit_price_gross_amount" json:"unit_price_gross_amount" toml:"unit_price_gross_amount" yaml:"unit_price_gross_amount"`
+	TotalPriceNetAmount               types.NullDecimal `boil:"total_price_net_amount" json:"total_price_net_amount,omitempty" toml:"total_price_net_amount" yaml:"total_price_net_amount,omitempty"`
+	TotalPriceGrossAmount             types.NullDecimal `boil:"total_price_gross_amount" json:"total_price_gross_amount,omitempty" toml:"total_price_gross_amount" yaml:"total_price_gross_amount,omitempty"`
+	UndiscountedUnitPriceGrossAmount  types.Decimal     `boil:"undiscounted_unit_price_gross_amount" json:"undiscounted_unit_price_gross_amount" toml:"undiscounted_unit_price_gross_amount" yaml:"undiscounted_unit_price_gross_amount"`
+	UndiscountedUnitPriceNetAmount    types.Decimal     `boil:"undiscounted_unit_price_net_amount" json:"undiscounted_unit_price_net_amount" toml:"undiscounted_unit_price_net_amount" yaml:"undiscounted_unit_price_net_amount"`
+	UndiscountedTotalPriceGrossAmount types.Decimal     `boil:"undiscounted_total_price_gross_amount" json:"undiscounted_total_price_gross_amount" toml:"undiscounted_total_price_gross_amount" yaml:"undiscounted_total_price_gross_amount"`
+	UndiscountedTotalPriceNetAmount   types.Decimal     `boil:"undiscounted_total_price_net_amount" json:"undiscounted_total_price_net_amount" toml:"undiscounted_total_price_net_amount" yaml:"undiscounted_total_price_net_amount"`
+	TaxRate                           types.NullDecimal `boil:"tax_rate" json:"tax_rate,omitempty" toml:"tax_rate" yaml:"tax_rate,omitempty"`
 
 	R *orderLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderLineL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -59,7 +60,7 @@ type OrderLine struct {
 
 var OrderLineColumns = struct {
 	ID                                string
-	CreateAt                          string
+	CreatedAt                         string
 	OrderID                           string
 	VariantID                         string
 	ProductName                       string
@@ -88,7 +89,7 @@ var OrderLineColumns = struct {
 	TaxRate                           string
 }{
 	ID:                                "id",
-	CreateAt:                          "create_at",
+	CreatedAt:                         "created_at",
 	OrderID:                           "order_id",
 	VariantID:                         "variant_id",
 	ProductName:                       "product_name",
@@ -119,7 +120,7 @@ var OrderLineColumns = struct {
 
 var OrderLineTableColumns = struct {
 	ID                                string
-	CreateAt                          string
+	CreatedAt                         string
 	OrderID                           string
 	VariantID                         string
 	ProductName                       string
@@ -148,7 +149,7 @@ var OrderLineTableColumns = struct {
 	TaxRate                           string
 }{
 	ID:                                "order_lines.id",
-	CreateAt:                          "order_lines.create_at",
+	CreatedAt:                         "order_lines.created_at",
 	OrderID:                           "order_lines.order_id",
 	VariantID:                         "order_lines.variant_id",
 	ProductName:                       "order_lines.product_name",
@@ -179,64 +180,90 @@ var OrderLineTableColumns = struct {
 
 // Generated where
 
+type whereHelpertypes_NullDecimal struct{ field string }
+
+func (w whereHelpertypes_NullDecimal) EQ(x types.NullDecimal) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpertypes_NullDecimal) NEQ(x types.NullDecimal) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpertypes_NullDecimal) LT(x types.NullDecimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertypes_NullDecimal) LTE(x types.NullDecimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertypes_NullDecimal) GT(x types.NullDecimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertypes_NullDecimal) GTE(x types.NullDecimal) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpertypes_NullDecimal) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpertypes_NullDecimal) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
+
 var OrderLineWhere = struct {
 	ID                                whereHelperstring
-	CreateAt                          whereHelpernull_Int64
-	OrderID                           whereHelpernull_String
+	CreatedAt                         whereHelperint64
+	OrderID                           whereHelperstring
 	VariantID                         whereHelpernull_String
-	ProductName                       whereHelpernull_String
-	VariantName                       whereHelpernull_String
-	TranslatedProductName             whereHelpernull_String
-	TranslatedVariantName             whereHelpernull_String
+	ProductName                       whereHelperstring
+	VariantName                       whereHelperstring
+	TranslatedProductName             whereHelperstring
+	TranslatedVariantName             whereHelperstring
 	ProductSku                        whereHelpernull_String
 	ProductVariantID                  whereHelpernull_String
-	IsShippingRequired                whereHelpernull_Bool
-	IsGiftcard                        whereHelpernull_Bool
-	Quantity                          whereHelpernull_Int
-	QuantityFulfilled                 whereHelpernull_Int
-	Currency                          whereHelpernull_String
-	UnitDiscountAmount                whereHelpernull_Float64
-	UnitDiscountType                  whereHelpernull_String
+	IsShippingRequired                whereHelperbool
+	IsGiftcard                        whereHelperbool
+	Quantity                          whereHelperint
+	QuantityFulfilled                 whereHelperint
+	Currency                          whereHelperstring
+	UnitDiscountAmount                whereHelpertypes_Decimal
+	UnitDiscountType                  whereHelperstring
 	UnitDiscountReason                whereHelpernull_String
-	UnitPriceNetAmount                whereHelpernull_Float64
-	UnitDiscountValue                 whereHelpernull_Float64
-	UnitPriceGrossAmount              whereHelpernull_Float64
-	TotalPriceNetAmount               whereHelpernull_Float64
-	TotalPriceGrossAmount             whereHelpernull_Float64
-	UndiscountedUnitPriceGrossAmount  whereHelpernull_Float64
-	UndiscountedUnitPriceNetAmount    whereHelpernull_Float64
-	UndiscountedTotalPriceGrossAmount whereHelpernull_Float64
-	UndiscountedTotalPriceNetAmount   whereHelpernull_Float64
-	TaxRate                           whereHelpernull_Float64
+	UnitPriceNetAmount                whereHelpertypes_Decimal
+	UnitDiscountValue                 whereHelpertypes_Decimal
+	UnitPriceGrossAmount              whereHelpertypes_Decimal
+	TotalPriceNetAmount               whereHelpertypes_NullDecimal
+	TotalPriceGrossAmount             whereHelpertypes_NullDecimal
+	UndiscountedUnitPriceGrossAmount  whereHelpertypes_Decimal
+	UndiscountedUnitPriceNetAmount    whereHelpertypes_Decimal
+	UndiscountedTotalPriceGrossAmount whereHelpertypes_Decimal
+	UndiscountedTotalPriceNetAmount   whereHelpertypes_Decimal
+	TaxRate                           whereHelpertypes_NullDecimal
 }{
 	ID:                                whereHelperstring{field: "\"order_lines\".\"id\""},
-	CreateAt:                          whereHelpernull_Int64{field: "\"order_lines\".\"create_at\""},
-	OrderID:                           whereHelpernull_String{field: "\"order_lines\".\"order_id\""},
+	CreatedAt:                         whereHelperint64{field: "\"order_lines\".\"created_at\""},
+	OrderID:                           whereHelperstring{field: "\"order_lines\".\"order_id\""},
 	VariantID:                         whereHelpernull_String{field: "\"order_lines\".\"variant_id\""},
-	ProductName:                       whereHelpernull_String{field: "\"order_lines\".\"product_name\""},
-	VariantName:                       whereHelpernull_String{field: "\"order_lines\".\"variant_name\""},
-	TranslatedProductName:             whereHelpernull_String{field: "\"order_lines\".\"translated_product_name\""},
-	TranslatedVariantName:             whereHelpernull_String{field: "\"order_lines\".\"translated_variant_name\""},
+	ProductName:                       whereHelperstring{field: "\"order_lines\".\"product_name\""},
+	VariantName:                       whereHelperstring{field: "\"order_lines\".\"variant_name\""},
+	TranslatedProductName:             whereHelperstring{field: "\"order_lines\".\"translated_product_name\""},
+	TranslatedVariantName:             whereHelperstring{field: "\"order_lines\".\"translated_variant_name\""},
 	ProductSku:                        whereHelpernull_String{field: "\"order_lines\".\"product_sku\""},
 	ProductVariantID:                  whereHelpernull_String{field: "\"order_lines\".\"product_variant_id\""},
-	IsShippingRequired:                whereHelpernull_Bool{field: "\"order_lines\".\"is_shipping_required\""},
-	IsGiftcard:                        whereHelpernull_Bool{field: "\"order_lines\".\"is_giftcard\""},
-	Quantity:                          whereHelpernull_Int{field: "\"order_lines\".\"quantity\""},
-	QuantityFulfilled:                 whereHelpernull_Int{field: "\"order_lines\".\"quantity_fulfilled\""},
-	Currency:                          whereHelpernull_String{field: "\"order_lines\".\"currency\""},
-	UnitDiscountAmount:                whereHelpernull_Float64{field: "\"order_lines\".\"unit_discount_amount\""},
-	UnitDiscountType:                  whereHelpernull_String{field: "\"order_lines\".\"unit_discount_type\""},
+	IsShippingRequired:                whereHelperbool{field: "\"order_lines\".\"is_shipping_required\""},
+	IsGiftcard:                        whereHelperbool{field: "\"order_lines\".\"is_giftcard\""},
+	Quantity:                          whereHelperint{field: "\"order_lines\".\"quantity\""},
+	QuantityFulfilled:                 whereHelperint{field: "\"order_lines\".\"quantity_fulfilled\""},
+	Currency:                          whereHelperstring{field: "\"order_lines\".\"currency\""},
+	UnitDiscountAmount:                whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_discount_amount\""},
+	UnitDiscountType:                  whereHelperstring{field: "\"order_lines\".\"unit_discount_type\""},
 	UnitDiscountReason:                whereHelpernull_String{field: "\"order_lines\".\"unit_discount_reason\""},
-	UnitPriceNetAmount:                whereHelpernull_Float64{field: "\"order_lines\".\"unit_price_net_amount\""},
-	UnitDiscountValue:                 whereHelpernull_Float64{field: "\"order_lines\".\"unit_discount_value\""},
-	UnitPriceGrossAmount:              whereHelpernull_Float64{field: "\"order_lines\".\"unit_price_gross_amount\""},
-	TotalPriceNetAmount:               whereHelpernull_Float64{field: "\"order_lines\".\"total_price_net_amount\""},
-	TotalPriceGrossAmount:             whereHelpernull_Float64{field: "\"order_lines\".\"total_price_gross_amount\""},
-	UndiscountedUnitPriceGrossAmount:  whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_unit_price_gross_amount\""},
-	UndiscountedUnitPriceNetAmount:    whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_unit_price_net_amount\""},
-	UndiscountedTotalPriceGrossAmount: whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_total_price_gross_amount\""},
-	UndiscountedTotalPriceNetAmount:   whereHelpernull_Float64{field: "\"order_lines\".\"undiscounted_total_price_net_amount\""},
-	TaxRate:                           whereHelpernull_Float64{field: "\"order_lines\".\"tax_rate\""},
+	UnitPriceNetAmount:                whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_price_net_amount\""},
+	UnitDiscountValue:                 whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_discount_value\""},
+	UnitPriceGrossAmount:              whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_price_gross_amount\""},
+	TotalPriceNetAmount:               whereHelpertypes_NullDecimal{field: "\"order_lines\".\"total_price_net_amount\""},
+	TotalPriceGrossAmount:             whereHelpertypes_NullDecimal{field: "\"order_lines\".\"total_price_gross_amount\""},
+	UndiscountedUnitPriceGrossAmount:  whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_unit_price_gross_amount\""},
+	UndiscountedUnitPriceNetAmount:    whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_unit_price_net_amount\""},
+	UndiscountedTotalPriceGrossAmount: whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_total_price_gross_amount\""},
+	UndiscountedTotalPriceNetAmount:   whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_total_price_net_amount\""},
+	TaxRate:                           whereHelpertypes_NullDecimal{field: "\"order_lines\".\"tax_rate\""},
 }
 
 // OrderLineRels is where relationship names are stored.
@@ -307,9 +334,9 @@ func (r *orderLineR) GetFulfillmentLines() FulfillmentLineSlice {
 type orderLineL struct{}
 
 var (
-	orderLineAllColumns            = []string{"id", "create_at", "order_id", "variant_id", "product_name", "variant_name", "translated_product_name", "translated_variant_name", "product_sku", "product_variant_id", "is_shipping_required", "is_giftcard", "quantity", "quantity_fulfilled", "currency", "unit_discount_amount", "unit_discount_type", "unit_discount_reason", "unit_price_net_amount", "unit_discount_value", "unit_price_gross_amount", "total_price_net_amount", "total_price_gross_amount", "undiscounted_unit_price_gross_amount", "undiscounted_unit_price_net_amount", "undiscounted_total_price_gross_amount", "undiscounted_total_price_net_amount", "tax_rate"}
-	orderLineColumnsWithoutDefault = []string{"id"}
-	orderLineColumnsWithDefault    = []string{"create_at", "order_id", "variant_id", "product_name", "variant_name", "translated_product_name", "translated_variant_name", "product_sku", "product_variant_id", "is_shipping_required", "is_giftcard", "quantity", "quantity_fulfilled", "currency", "unit_discount_amount", "unit_discount_type", "unit_discount_reason", "unit_price_net_amount", "unit_discount_value", "unit_price_gross_amount", "total_price_net_amount", "total_price_gross_amount", "undiscounted_unit_price_gross_amount", "undiscounted_unit_price_net_amount", "undiscounted_total_price_gross_amount", "undiscounted_total_price_net_amount", "tax_rate"}
+	orderLineAllColumns            = []string{"id", "created_at", "order_id", "variant_id", "product_name", "variant_name", "translated_product_name", "translated_variant_name", "product_sku", "product_variant_id", "is_shipping_required", "is_giftcard", "quantity", "quantity_fulfilled", "currency", "unit_discount_amount", "unit_discount_type", "unit_discount_reason", "unit_price_net_amount", "unit_discount_value", "unit_price_gross_amount", "total_price_net_amount", "total_price_gross_amount", "undiscounted_unit_price_gross_amount", "undiscounted_unit_price_net_amount", "undiscounted_total_price_gross_amount", "undiscounted_total_price_net_amount", "tax_rate"}
+	orderLineColumnsWithoutDefault = []string{"created_at", "order_id", "product_name", "variant_name", "translated_product_name", "translated_variant_name", "is_shipping_required", "is_giftcard", "quantity", "quantity_fulfilled", "currency", "unit_discount_type"}
+	orderLineColumnsWithDefault    = []string{"id", "variant_id", "product_sku", "product_variant_id", "unit_discount_amount", "unit_discount_reason", "unit_price_net_amount", "unit_discount_value", "unit_price_gross_amount", "total_price_net_amount", "total_price_gross_amount", "undiscounted_unit_price_gross_amount", "undiscounted_unit_price_net_amount", "undiscounted_total_price_gross_amount", "undiscounted_total_price_net_amount", "tax_rate"}
 	orderLinePrimaryKeyColumns     = []string{"id"}
 	orderLineGeneratedColumns      = []string{}
 )
@@ -686,9 +713,7 @@ func (orderLineL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singula
 		if object.R == nil {
 			object.R = &orderLineR{}
 		}
-		if !queries.IsNil(object.OrderID) {
-			args = append(args, object.OrderID)
-		}
+		args = append(args, object.OrderID)
 
 	} else {
 	Outer:
@@ -698,14 +723,12 @@ func (orderLineL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singula
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.OrderID) {
+				if a == obj.OrderID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.OrderID) {
-				args = append(args, obj.OrderID)
-			}
+			args = append(args, obj.OrderID)
 
 		}
 	}
@@ -763,7 +786,7 @@ func (orderLineL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singula
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.OrderID, foreign.ID) {
+			if local.OrderID == foreign.ID {
 				local.R.Order = foreign
 				if foreign.R == nil {
 					foreign.R = &orderR{}
@@ -1174,7 +1197,7 @@ func (orderLineL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1232,7 +1255,7 @@ func (orderLineL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecut
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.OrderLineID) {
+			if local.ID == foreign.OrderLineID {
 				local.R.FulfillmentLines = append(local.R.FulfillmentLines, foreign)
 				if foreign.R == nil {
 					foreign.R = &fulfillmentLineR{}
@@ -1273,7 +1296,7 @@ func (o *OrderLine) SetOrder(ctx context.Context, exec boil.ContextExecutor, ins
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.OrderID, related.ID)
+	o.OrderID = related.ID
 	if o.R == nil {
 		o.R = &orderLineR{
 			Order: related,
@@ -1290,39 +1313,6 @@ func (o *OrderLine) SetOrder(ctx context.Context, exec boil.ContextExecutor, ins
 		related.R.OrderLines = append(related.R.OrderLines, o)
 	}
 
-	return nil
-}
-
-// RemoveOrder relationship.
-// Sets o.R.Order to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *OrderLine) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
-	var err error
-
-	queries.SetScanner(&o.OrderID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Order = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.OrderLines {
-		if queries.Equal(o.OrderID, ri.OrderID) {
-			continue
-		}
-
-		ln := len(related.R.OrderLines)
-		if ln > 1 && i < ln-1 {
-			related.R.OrderLines[i] = related.R.OrderLines[ln-1]
-		}
-		related.R.OrderLines = related.R.OrderLines[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1541,7 +1531,7 @@ func (o *OrderLine) AddFulfillmentLines(ctx context.Context, exec boil.ContextEx
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.OrderLineID, o.ID)
+			rel.OrderLineID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1562,7 +1552,7 @@ func (o *OrderLine) AddFulfillmentLines(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.OrderLineID, o.ID)
+			rel.OrderLineID = o.ID
 		}
 	}
 
@@ -1583,80 +1573,6 @@ func (o *OrderLine) AddFulfillmentLines(ctx context.Context, exec boil.ContextEx
 			rel.R.OrderLine = o
 		}
 	}
-	return nil
-}
-
-// SetFulfillmentLines removes all previously related items of the
-// order_line replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.OrderLine's FulfillmentLines accordingly.
-// Replaces o.R.FulfillmentLines with related.
-// Sets related.R.OrderLine's FulfillmentLines accordingly.
-func (o *OrderLine) SetFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
-	query := "update \"fulfillment_lines\" set \"order_line_id\" = null where \"order_line_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.FulfillmentLines {
-			queries.SetScanner(&rel.OrderLineID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.OrderLine = nil
-		}
-		o.R.FulfillmentLines = nil
-	}
-
-	return o.AddFulfillmentLines(ctx, exec, insert, related...)
-}
-
-// RemoveFulfillmentLines relationships from objects passed in.
-// Removes related items from R.FulfillmentLines (uses pointer comparison, removal does not keep order)
-// Sets related.R.OrderLine.
-func (o *OrderLine) RemoveFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, related ...*FulfillmentLine) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.OrderLineID, nil)
-		if rel.R != nil {
-			rel.R.OrderLine = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("order_line_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.FulfillmentLines {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.FulfillmentLines)
-			if ln > 1 && i < ln-1 {
-				o.R.FulfillmentLines[i] = o.R.FulfillmentLines[ln-1]
-			}
-			o.R.FulfillmentLines = o.R.FulfillmentLines[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -1798,10 +1714,6 @@ func (o *OrderLine) Update(ctx context.Context, exec boil.ContextExecutor, colum
 			orderLineAllColumns,
 			orderLinePrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update order_lines, could not build whitelist")
 		}

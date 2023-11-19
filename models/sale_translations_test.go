@@ -503,7 +503,7 @@ func testSaleTranslationToOneSaleUsingSale(t *testing.T) {
 	var foreign Sale
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, saleTranslationDBTypes, true, saleTranslationColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, saleTranslationDBTypes, false, saleTranslationColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize SaleTranslation struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, saleDBTypes, false, saleColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testSaleTranslationToOneSaleUsingSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.SaleID, foreign.ID)
+	local.SaleID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testSaleTranslationToOneSaleUsingSale(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -596,7 +596,7 @@ func testSaleTranslationToOneSetOpSaleUsingSale(t *testing.T) {
 		if x.R.SaleTranslations[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.SaleID, x.ID) {
+		if a.SaleID != x.ID {
 			t.Error("foreign key was wrong value", a.SaleID)
 		}
 
@@ -607,60 +607,9 @@ func testSaleTranslationToOneSetOpSaleUsingSale(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.SaleID, x.ID) {
+		if a.SaleID != x.ID {
 			t.Error("foreign key was wrong value", a.SaleID, x.ID)
 		}
-	}
-}
-
-func testSaleTranslationToOneRemoveOpSaleUsingSale(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a SaleTranslation
-	var b Sale
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, saleTranslationDBTypes, false, strmangle.SetComplement(saleTranslationPrimaryKeyColumns, saleTranslationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, saleDBTypes, false, strmangle.SetComplement(salePrimaryKeyColumns, saleColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetSale(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveSale(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Sale().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Sale != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.SaleID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.SaleTranslations) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -738,7 +687,7 @@ func testSaleTranslationsSelect(t *testing.T) {
 }
 
 var (
-	saleTranslationDBTypes = map[string]string{`ID`: `character varying`, `LanguageCode`: `character varying`, `Name`: `character varying`, `SaleID`: `character varying`}
+	saleTranslationDBTypes = map[string]string{`ID`: `uuid`, `LanguageCode`: `character varying`, `Name`: `character varying`, `SaleID`: `uuid`}
 	_                      = bytes.MinRead
 )
 

@@ -12,6 +12,9 @@ g o x o x o x o x
 h x o x o x o x o
 */
 
+type CellName [2]int8
+type PieceName [3]int8
+
 type PieceType uint8
 
 const (
@@ -23,16 +26,62 @@ const (
 	PieceTypePawn
 )
 
-// type Side uint8
+type GameInterface interface {
+	IsCellWithinBoard(cellName string) bool
+	SetPieceToCell(cellName, pieceName string) bool
+	GetAvailableStepsForPiece(cellName string)
+}
 
-// const (
-// 	SideGood Side = iota
-// 	SideBad
-// )
+type stepDelta struct {
+	rankDelta int8
+	fileDelta int8
+}
+
+type PieceKing struct {
+	Piece
+}
+
+func (p *PieceKing) GetAvailableSteps() []Cell {
+	var res []Cell
+
+	// check if piece is dead
+	if p.container == nil {
+		return res
+	}
+
+	predictions := []stepDelta{
+		{1, 1}, {-1, -1}, {1, -1}, {-1, 1},
+		{1, 0}, {0, 1}, {-1, 0}, {0, -1},
+	}
+	for _, prediction := range predictions {
+
+	}
+}
+
+type PieceQueen struct {
+	Piece
+}
+
+type PieceRook struct {
+	Piece
+}
+
+type PieceBiShop struct {
+	Piece
+}
+
+type PieceKnight struct {
+	Piece
+}
+
+type PiecePawn struct {
+	Piece
+}
 
 type Piece struct {
 	Type  PieceType
 	Color Color
+	Index int8
 
 	container *Cell // nil means this piece is dead
 }
@@ -49,21 +98,18 @@ const (
 )
 
 type Cell struct {
-	File File
-	Rank Rank
+	File
+	Rank
 
 	piece *Piece // nil means this cell does not contain a piece
 }
 
-func (c *Cell) SetPiece(p *Piece) {
-	c.piece = p
-	if p != nil {
-		p.container = c
-	}
+func (c *Cell) Name() CellName {
+	return CellName{int8(c.Rank), int8(c.File)}
 }
 
-func (c Cell) GetPiece() *Piece {
-	return c.piece
+func (p *Piece) Name() PieceName {
+	return PieceName{int8(p.Type), int8(p.Color), p.Index}
 }
 
 // A trick
@@ -73,7 +119,7 @@ func (c Cell) GetColor() Color {
 }
 
 // horizontal row
-type Rank uint8
+type Rank int8
 
 const (
 	Rank1 Rank = 1 + iota
@@ -86,8 +132,15 @@ const (
 	Rank8
 )
 
+func (c *Cell) Move(fileDelta, rankDelta int8) Cell {
+	return Cell{
+		File: File(int8(c.File) + fileDelta),
+		Rank: Rank(int8(c.Rank) + rankDelta),
+	}
+}
+
 // vertical column
-type File byte
+type File int8
 
 const (
 	FileA File = 'a'
@@ -100,87 +153,36 @@ const (
 	FileH File = 'h'
 )
 
-// var Coordinate struct {
-// 	Rank Rank
-// 	File File
-// }
-
-func hi() {
-	cell_A1.GetPiece().IsDead()
+type game struct {
+	board  map[CellName]*Cell
+	pieces map[PieceName]*Piece
 }
 
-var (
-	cell_A1 = Cell{FileA, Rank1}
-	cell_A2 = Cell{FileA, Rank2}
-	cell_A3 = Cell{FileA, Rank3}
-	cell_A4 = Cell{FileA, Rank4}
-	cell_A5 = Cell{FileA, Rank5}
-	cell_A6 = Cell{FileA, Rank6}
-	cell_A7 = Cell{FileA, Rank7}
-	cell_A8 = Cell{FileA, Rank8}
+func (g *game) IsCellWithinBoard(cellName CellName) bool {
+	_, exist := g.board[cellName]
+	return exist
+}
 
-	cell_B1 = Cell{FileB, Rank1}
-	cell_B2 = Cell{FileB, Rank2}
-	cell_B3 = Cell{FileB, Rank3}
-	cell_B4 = Cell{FileB, Rank4}
-	cell_B5 = Cell{FileB, Rank5}
-	cell_B6 = Cell{FileB, Rank6}
-	cell_B7 = Cell{FileB, Rank7}
-	cell_B8 = Cell{FileB, Rank8}
+func (g *game) SetPieceToCell(cellName CellName, pieceName PieceName) bool {
+	piece, pieceExist := g.pieces[pieceName]
+	cell, cellExist := g.board[cellName]
 
-	cell_C1 = Cell{FileC, Rank1}
-	cell_C2 = Cell{FileC, Rank2}
-	cell_C3 = Cell{FileC, Rank3}
-	cell_C4 = Cell{FileC, Rank4}
-	cell_C5 = Cell{FileC, Rank5}
-	cell_C6 = Cell{FileC, Rank6}
-	cell_C7 = Cell{FileC, Rank7}
-	cell_C8 = Cell{FileC, Rank8}
+	if cellExist && pieceExist && cell != nil && piece != nil {
+		piece.container = cell
 
-	cell_D1 = Cell{FileD, Rank1}
-	cell_D2 = Cell{FileD, Rank2}
-	cell_D3 = Cell{FileD, Rank3}
-	cell_D4 = Cell{FileD, Rank4}
-	cell_D5 = Cell{FileD, Rank5}
-	cell_D6 = Cell{FileD, Rank6}
-	cell_D7 = Cell{FileD, Rank7}
-	cell_D8 = Cell{FileD, Rank8}
+		if cell.piece != nil {
+			delete(g.pieces, cell.piece.Name())
+		}
+		cell.piece = piece
+		return true
+	}
+	return false
+}
 
-	cell_E1 = Cell{FileE, Rank1}
-	cell_E2 = Cell{FileE, Rank2}
-	cell_E3 = Cell{FileE, Rank3}
-	cell_E4 = Cell{FileE, Rank4}
-	cell_E5 = Cell{FileE, Rank5}
-	cell_E6 = Cell{FileE, Rank6}
-	cell_E7 = Cell{FileE, Rank7}
-	cell_E8 = Cell{FileE, Rank8}
+func (g *game) GetAvailableStepsForPiece() []Cell {
 
-	cell_F1 = Cell{FileF, Rank1}
-	cell_F2 = Cell{FileF, Rank2}
-	cell_F3 = Cell{FileF, Rank3}
-	cell_F4 = Cell{FileF, Rank4}
-	cell_F5 = Cell{FileF, Rank5}
-	cell_F6 = Cell{FileF, Rank6}
-	cell_F7 = Cell{FileF, Rank7}
-	cell_F8 = Cell{FileF, Rank8}
+}
 
-	cell_G1 = Cell{FileG, Rank1}
-	cell_G2 = Cell{FileG, Rank2}
-	cell_G3 = Cell{FileG, Rank3}
-	cell_G4 = Cell{FileG, Rank4}
-	cell_G5 = Cell{FileG, Rank5}
-	cell_G6 = Cell{FileG, Rank6}
-	cell_G7 = Cell{FileG, Rank7}
-	cell_G8 = Cell{FileG, Rank8}
+func createGame() GameInterface {
 
-	cell_H1 = Cell{FileH, Rank1}
-	cell_H2 = Cell{FileH, Rank2}
-	cell_H3 = Cell{FileH, Rank3}
-	cell_H4 = Cell{FileH, Rank4}
-	cell_H5 = Cell{FileH, Rank5}
-	cell_H6 = Cell{FileH, Rank6}
-	cell_H7 = Cell{FileH, Rank7}
-	cell_H8 = Cell{FileH, Rank8}
-)
-
-// var initialSetup map[]
+}

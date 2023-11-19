@@ -503,7 +503,7 @@ func testFulfillmentLineToOneOrderLineUsingOrderLine(t *testing.T) {
 	var foreign OrderLine
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, fulfillmentLineDBTypes, true, fulfillmentLineColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, fulfillmentLineDBTypes, false, fulfillmentLineColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize FulfillmentLine struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, orderLineDBTypes, false, orderLineColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testFulfillmentLineToOneOrderLineUsingOrderLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.OrderLineID, foreign.ID)
+	local.OrderLineID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testFulfillmentLineToOneOrderLineUsingOrderLine(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testFulfillmentLineToOneSetOpOrderLineUsingOrderLine(t *testing.T) {
 		if x.R.FulfillmentLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.OrderLineID, x.ID) {
+		if a.OrderLineID != x.ID {
 			t.Error("foreign key was wrong value", a.OrderLineID)
 		}
 
@@ -668,63 +668,11 @@ func testFulfillmentLineToOneSetOpOrderLineUsingOrderLine(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.OrderLineID, x.ID) {
+		if a.OrderLineID != x.ID {
 			t.Error("foreign key was wrong value", a.OrderLineID, x.ID)
 		}
 	}
 }
-
-func testFulfillmentLineToOneRemoveOpOrderLineUsingOrderLine(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a FulfillmentLine
-	var b OrderLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, fulfillmentLineDBTypes, false, strmangle.SetComplement(fulfillmentLinePrimaryKeyColumns, fulfillmentLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetOrderLine(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveOrderLine(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.OrderLine().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.OrderLine != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.OrderLineID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.FulfillmentLines) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testFulfillmentLineToOneSetOpStockUsingStock(t *testing.T) {
 	var err error
 
@@ -908,7 +856,7 @@ func testFulfillmentLinesSelect(t *testing.T) {
 }
 
 var (
-	fulfillmentLineDBTypes = map[string]string{`ID`: `character varying`, `OrderLineID`: `character varying`, `FulfillmentID`: `character varying`, `Quantity`: `integer`, `StockID`: `character varying`}
+	fulfillmentLineDBTypes = map[string]string{`ID`: `uuid`, `OrderLineID`: `uuid`, `FulfillmentID`: `uuid`, `Quantity`: `integer`, `StockID`: `uuid`}
 	_                      = bytes.MinRead
 )
 

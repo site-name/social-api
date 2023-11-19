@@ -771,8 +771,9 @@ func testOrderLineToManyFulfillmentLines(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.OrderLineID, a.ID)
-	queries.Assign(&c.OrderLineID, a.ID)
+	b.OrderLineID = a.ID
+	c.OrderLineID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -787,10 +788,10 @@ func testOrderLineToManyFulfillmentLines(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.OrderLineID, b.OrderLineID) {
+		if v.OrderLineID == b.OrderLineID {
 			bFound = true
 		}
-		if queries.Equal(v.OrderLineID, c.OrderLineID) {
+		if v.OrderLineID == c.OrderLineID {
 			cFound = true
 		}
 	}
@@ -943,10 +944,10 @@ func testOrderLineToManyAddOpFulfillmentLines(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.OrderLineID) {
+		if a.ID != first.OrderLineID {
 			t.Error("foreign key was wrong value", a.ID, first.OrderLineID)
 		}
-		if !queries.Equal(a.ID, second.OrderLineID) {
+		if a.ID != second.OrderLineID {
 			t.Error("foreign key was wrong value", a.ID, second.OrderLineID)
 		}
 
@@ -973,182 +974,6 @@ func testOrderLineToManyAddOpFulfillmentLines(t *testing.T) {
 		}
 	}
 }
-
-func testOrderLineToManySetOpFulfillmentLines(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a OrderLine
-	var b, c, d, e FulfillmentLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*FulfillmentLine{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, fulfillmentLineDBTypes, false, strmangle.SetComplement(fulfillmentLinePrimaryKeyColumns, fulfillmentLineColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetFulfillmentLines(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.FulfillmentLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetFulfillmentLines(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.FulfillmentLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderLineID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderLineID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.OrderLineID) {
-		t.Error("foreign key was wrong value", a.ID, d.OrderLineID)
-	}
-	if !queries.Equal(a.ID, e.OrderLineID) {
-		t.Error("foreign key was wrong value", a.ID, e.OrderLineID)
-	}
-
-	if b.R.OrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.OrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.OrderLine != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.OrderLine != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.FulfillmentLines[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.FulfillmentLines[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testOrderLineToManyRemoveOpFulfillmentLines(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a OrderLine
-	var b, c, d, e FulfillmentLine
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*FulfillmentLine{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, fulfillmentLineDBTypes, false, strmangle.SetComplement(fulfillmentLinePrimaryKeyColumns, fulfillmentLineColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddFulfillmentLines(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.FulfillmentLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveFulfillmentLines(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.FulfillmentLines().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.OrderLineID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.OrderLineID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.OrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.OrderLine != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.OrderLine != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.OrderLine != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.FulfillmentLines) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.FulfillmentLines[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.FulfillmentLines[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testOrderLineToOneOrderUsingOrder(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1158,7 +983,7 @@ func testOrderLineToOneOrderUsingOrder(t *testing.T) {
 	var foreign Order
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, orderLineDBTypes, true, orderLineColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, orderLineDBTypes, false, orderLineColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize OrderLine struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, orderDBTypes, false, orderColumnsWithDefault...); err != nil {
@@ -1169,7 +994,7 @@ func testOrderLineToOneOrderUsingOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.OrderID, foreign.ID)
+	local.OrderID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -1179,7 +1004,7 @@ func testOrderLineToOneOrderUsingOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -1312,7 +1137,7 @@ func testOrderLineToOneSetOpOrderUsingOrder(t *testing.T) {
 		if x.R.OrderLines[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.OrderID, x.ID) {
+		if a.OrderID != x.ID {
 			t.Error("foreign key was wrong value", a.OrderID)
 		}
 
@@ -1323,63 +1148,11 @@ func testOrderLineToOneSetOpOrderUsingOrder(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.OrderID, x.ID) {
+		if a.OrderID != x.ID {
 			t.Error("foreign key was wrong value", a.OrderID, x.ID)
 		}
 	}
 }
-
-func testOrderLineToOneRemoveOpOrderUsingOrder(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a OrderLine
-	var b Order
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderLineDBTypes, false, strmangle.SetComplement(orderLinePrimaryKeyColumns, orderLineColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetOrder(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveOrder(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Order().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Order != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.OrderID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.OrderLines) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testOrderLineToOneSetOpProductVariantUsingVariant(t *testing.T) {
 	var err error
 
@@ -1563,7 +1336,7 @@ func testOrderLinesSelect(t *testing.T) {
 }
 
 var (
-	orderLineDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `OrderID`: `character varying`, `VariantID`: `character varying`, `ProductName`: `character varying`, `VariantName`: `character varying`, `TranslatedProductName`: `character varying`, `TranslatedVariantName`: `character varying`, `ProductSku`: `character varying`, `ProductVariantID`: `character varying`, `IsShippingRequired`: `boolean`, `IsGiftcard`: `boolean`, `Quantity`: `integer`, `QuantityFulfilled`: `integer`, `Currency`: `character varying`, `UnitDiscountAmount`: `double precision`, `UnitDiscountType`: `character varying`, `UnitDiscountReason`: `text`, `UnitPriceNetAmount`: `double precision`, `UnitDiscountValue`: `double precision`, `UnitPriceGrossAmount`: `double precision`, `TotalPriceNetAmount`: `double precision`, `TotalPriceGrossAmount`: `double precision`, `UndiscountedUnitPriceGrossAmount`: `double precision`, `UndiscountedUnitPriceNetAmount`: `double precision`, `UndiscountedTotalPriceGrossAmount`: `double precision`, `UndiscountedTotalPriceNetAmount`: `double precision`, `TaxRate`: `double precision`}
+	orderLineDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `OrderID`: `uuid`, `VariantID`: `uuid`, `ProductName`: `character varying`, `VariantName`: `character varying`, `TranslatedProductName`: `character varying`, `TranslatedVariantName`: `character varying`, `ProductSku`: `character varying`, `ProductVariantID`: `character varying`, `IsShippingRequired`: `boolean`, `IsGiftcard`: `boolean`, `Quantity`: `integer`, `QuantityFulfilled`: `integer`, `Currency`: `character varying`, `UnitDiscountAmount`: `numeric`, `UnitDiscountType`: `character varying`, `UnitDiscountReason`: `text`, `UnitPriceNetAmount`: `numeric`, `UnitDiscountValue`: `numeric`, `UnitPriceGrossAmount`: `numeric`, `TotalPriceNetAmount`: `numeric`, `TotalPriceGrossAmount`: `numeric`, `UndiscountedUnitPriceGrossAmount`: `numeric`, `UndiscountedUnitPriceNetAmount`: `numeric`, `UndiscountedTotalPriceGrossAmount`: `numeric`, `UndiscountedTotalPriceNetAmount`: `numeric`, `TaxRate`: `numeric`}
 	_                = bytes.MinRead
 )
 

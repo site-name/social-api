@@ -738,7 +738,7 @@ func testOrderDiscountsSelect(t *testing.T) {
 }
 
 var (
-	orderDiscountDBTypes = map[string]string{`ID`: `character varying`, `OrderID`: `character varying`, `Type`: `character varying`, `ValueType`: `character varying`, `Value`: `double precision`, `AmountValue`: `double precision`, `Currency`: `text`, `Name`: `character varying`, `TranslatedName`: `character varying`, `Reason`: `text`}
+	orderDiscountDBTypes = map[string]string{`ID`: `uuid`, `OrderID`: `uuid`, `Type`: `character varying`, `ValueType`: `character varying`, `Value`: `numeric`, `AmountValue`: `numeric`, `Currency`: `character varying`, `Name`: `character varying`, `TranslatedName`: `character varying`, `Reason`: `text`}
 	_                    = bytes.MinRead
 )
 

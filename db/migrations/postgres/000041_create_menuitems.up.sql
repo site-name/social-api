@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS menu_items (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  menu_id uuid,
-  name character varying(128),
+  menu_id uuid NOT NULL,
+  name character varying(128) NOT NULL,
   parent_id uuid,
   url character varying(256),
   category_id uuid,

@@ -503,7 +503,7 @@ func testOrderEventToOneOrderUsingOrder(t *testing.T) {
 	var foreign Order
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, orderEventDBTypes, true, orderEventColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, orderEventDBTypes, false, orderEventColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize OrderEvent struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, orderDBTypes, false, orderColumnsWithDefault...); err != nil {
@@ -514,7 +514,7 @@ func testOrderEventToOneOrderUsingOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.OrderID, foreign.ID)
+	local.OrderID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -524,7 +524,7 @@ func testOrderEventToOneOrderUsingOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -657,7 +657,7 @@ func testOrderEventToOneSetOpOrderUsingOrder(t *testing.T) {
 		if x.R.OrderEvents[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.OrderID, x.ID) {
+		if a.OrderID != x.ID {
 			t.Error("foreign key was wrong value", a.OrderID)
 		}
 
@@ -668,63 +668,11 @@ func testOrderEventToOneSetOpOrderUsingOrder(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.OrderID, x.ID) {
+		if a.OrderID != x.ID {
 			t.Error("foreign key was wrong value", a.OrderID, x.ID)
 		}
 	}
 }
-
-func testOrderEventToOneRemoveOpOrderUsingOrder(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a OrderEvent
-	var b Order
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, orderEventDBTypes, false, strmangle.SetComplement(orderEventPrimaryKeyColumns, orderEventColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, orderDBTypes, false, strmangle.SetComplement(orderPrimaryKeyColumns, orderColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetOrder(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveOrder(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Order().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Order != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.OrderID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.OrderEvents) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-}
-
 func testOrderEventToOneSetOpUserUsingUser(t *testing.T) {
 	var err error
 
@@ -908,7 +856,7 @@ func testOrderEventsSelect(t *testing.T) {
 }
 
 var (
-	orderEventDBTypes = map[string]string{`ID`: `character varying`, `CreateAt`: `bigint`, `Type`: `character varying`, `OrderID`: `character varying`, `Parameters`: `text`, `UserID`: `character varying`}
+	orderEventDBTypes = map[string]string{`ID`: `uuid`, `CreatedAt`: `bigint`, `Type`: `character varying`, `OrderID`: `uuid`, `Parameters`: `text`, `UserID`: `uuid`}
 	_                 = bytes.MinRead
 )
 

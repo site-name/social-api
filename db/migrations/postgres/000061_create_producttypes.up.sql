@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS product_types (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(250),
-  slug character varying(255),
-  kind character varying(32),
+  name character varying(250) NOT NULL,
+  slug character varying(255) NOT NULL,
+  kind character varying(32) NOT NULL,
   has_variants boolean,
   is_shipping_required boolean,
   is_digital boolean,
   weight real,
-  weight_unit text,
+  weight_unit text NOT NULL,
   metadata jsonb,
   private_metadata jsonb
 );

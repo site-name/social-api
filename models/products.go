@@ -25,23 +25,23 @@ import (
 // Product is an object representing the database table.
 type Product struct {
 	ID                   string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ProductTypeID        null.String  `boil:"product_type_id" json:"product_type_id,omitempty" toml:"product_type_id" yaml:"product_type_id,omitempty"`
-	Name                 null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Slug                 null.String  `boil:"slug" json:"slug,omitempty" toml:"slug" yaml:"slug,omitempty"`
-	Description          null.String  `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	DescriptionPlainText null.String  `boil:"description_plain_text" json:"description_plain_text,omitempty" toml:"description_plain_text" yaml:"description_plain_text,omitempty"`
+	ProductTypeID        string       `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
+	Name                 string       `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug                 string       `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Description          null.JSON    `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	DescriptionPlainText string       `boil:"description_plain_text" json:"description_plain_text" toml:"description_plain_text" yaml:"description_plain_text"`
 	CategoryID           null.String  `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
-	CreateAt             null.Int64   `boil:"create_at" json:"create_at,omitempty" toml:"create_at" yaml:"create_at,omitempty"`
-	UpdateAt             null.Int64   `boil:"update_at" json:"update_at,omitempty" toml:"update_at" yaml:"update_at,omitempty"`
+	CreatedAt            int64        `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt            int64        `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	ChargeTaxes          null.Bool    `boil:"charge_taxes" json:"charge_taxes,omitempty" toml:"charge_taxes" yaml:"charge_taxes,omitempty"`
 	Weight               null.Float32 `boil:"weight" json:"weight,omitempty" toml:"weight" yaml:"weight,omitempty"`
-	WeightUnit           null.String  `boil:"weight_unit" json:"weight_unit,omitempty" toml:"weight_unit" yaml:"weight_unit,omitempty"`
+	WeightUnit           string       `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
 	DefaultVariantID     null.String  `boil:"default_variant_id" json:"default_variant_id,omitempty" toml:"default_variant_id" yaml:"default_variant_id,omitempty"`
 	Rating               null.Float32 `boil:"rating" json:"rating,omitempty" toml:"rating" yaml:"rating,omitempty"`
 	Metadata             null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata      null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
-	SeoTitle             null.String  `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription       null.String  `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	SeoTitle             string       `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
+	SeoDescription       string       `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
 	R *productR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -55,8 +55,8 @@ var ProductColumns = struct {
 	Description          string
 	DescriptionPlainText string
 	CategoryID           string
-	CreateAt             string
-	UpdateAt             string
+	CreatedAt            string
+	UpdatedAt            string
 	ChargeTaxes          string
 	Weight               string
 	WeightUnit           string
@@ -74,8 +74,8 @@ var ProductColumns = struct {
 	Description:          "description",
 	DescriptionPlainText: "description_plain_text",
 	CategoryID:           "category_id",
-	CreateAt:             "create_at",
-	UpdateAt:             "update_at",
+	CreatedAt:            "created_at",
+	UpdatedAt:            "updated_at",
 	ChargeTaxes:          "charge_taxes",
 	Weight:               "weight",
 	WeightUnit:           "weight_unit",
@@ -95,8 +95,8 @@ var ProductTableColumns = struct {
 	Description          string
 	DescriptionPlainText string
 	CategoryID           string
-	CreateAt             string
-	UpdateAt             string
+	CreatedAt            string
+	UpdatedAt            string
 	ChargeTaxes          string
 	Weight               string
 	WeightUnit           string
@@ -114,8 +114,8 @@ var ProductTableColumns = struct {
 	Description:          "products.description",
 	DescriptionPlainText: "products.description_plain_text",
 	CategoryID:           "products.category_id",
-	CreateAt:             "products.create_at",
-	UpdateAt:             "products.update_at",
+	CreatedAt:            "products.created_at",
+	UpdatedAt:            "products.updated_at",
 	ChargeTaxes:          "products.charge_taxes",
 	Weight:               "products.weight",
 	WeightUnit:           "products.weight_unit",
@@ -131,42 +131,42 @@ var ProductTableColumns = struct {
 
 var ProductWhere = struct {
 	ID                   whereHelperstring
-	ProductTypeID        whereHelpernull_String
-	Name                 whereHelpernull_String
-	Slug                 whereHelpernull_String
-	Description          whereHelpernull_String
-	DescriptionPlainText whereHelpernull_String
+	ProductTypeID        whereHelperstring
+	Name                 whereHelperstring
+	Slug                 whereHelperstring
+	Description          whereHelpernull_JSON
+	DescriptionPlainText whereHelperstring
 	CategoryID           whereHelpernull_String
-	CreateAt             whereHelpernull_Int64
-	UpdateAt             whereHelpernull_Int64
+	CreatedAt            whereHelperint64
+	UpdatedAt            whereHelperint64
 	ChargeTaxes          whereHelpernull_Bool
 	Weight               whereHelpernull_Float32
-	WeightUnit           whereHelpernull_String
+	WeightUnit           whereHelperstring
 	DefaultVariantID     whereHelpernull_String
 	Rating               whereHelpernull_Float32
 	Metadata             whereHelpernull_JSON
 	PrivateMetadata      whereHelpernull_JSON
-	SeoTitle             whereHelpernull_String
-	SeoDescription       whereHelpernull_String
+	SeoTitle             whereHelperstring
+	SeoDescription       whereHelperstring
 }{
 	ID:                   whereHelperstring{field: "\"products\".\"id\""},
-	ProductTypeID:        whereHelpernull_String{field: "\"products\".\"product_type_id\""},
-	Name:                 whereHelpernull_String{field: "\"products\".\"name\""},
-	Slug:                 whereHelpernull_String{field: "\"products\".\"slug\""},
-	Description:          whereHelpernull_String{field: "\"products\".\"description\""},
-	DescriptionPlainText: whereHelpernull_String{field: "\"products\".\"description_plain_text\""},
+	ProductTypeID:        whereHelperstring{field: "\"products\".\"product_type_id\""},
+	Name:                 whereHelperstring{field: "\"products\".\"name\""},
+	Slug:                 whereHelperstring{field: "\"products\".\"slug\""},
+	Description:          whereHelpernull_JSON{field: "\"products\".\"description\""},
+	DescriptionPlainText: whereHelperstring{field: "\"products\".\"description_plain_text\""},
 	CategoryID:           whereHelpernull_String{field: "\"products\".\"category_id\""},
-	CreateAt:             whereHelpernull_Int64{field: "\"products\".\"create_at\""},
-	UpdateAt:             whereHelpernull_Int64{field: "\"products\".\"update_at\""},
+	CreatedAt:            whereHelperint64{field: "\"products\".\"created_at\""},
+	UpdatedAt:            whereHelperint64{field: "\"products\".\"updated_at\""},
 	ChargeTaxes:          whereHelpernull_Bool{field: "\"products\".\"charge_taxes\""},
 	Weight:               whereHelpernull_Float32{field: "\"products\".\"weight\""},
-	WeightUnit:           whereHelpernull_String{field: "\"products\".\"weight_unit\""},
+	WeightUnit:           whereHelperstring{field: "\"products\".\"weight_unit\""},
 	DefaultVariantID:     whereHelpernull_String{field: "\"products\".\"default_variant_id\""},
 	Rating:               whereHelpernull_Float32{field: "\"products\".\"rating\""},
 	Metadata:             whereHelpernull_JSON{field: "\"products\".\"metadata\""},
 	PrivateMetadata:      whereHelpernull_JSON{field: "\"products\".\"private_metadata\""},
-	SeoTitle:             whereHelpernull_String{field: "\"products\".\"seo_title\""},
-	SeoDescription:       whereHelpernull_String{field: "\"products\".\"seo_description\""},
+	SeoTitle:             whereHelperstring{field: "\"products\".\"seo_title\""},
+	SeoDescription:       whereHelperstring{field: "\"products\".\"seo_description\""},
 }
 
 // ProductRels is where relationship names are stored.
@@ -287,9 +287,9 @@ func (r *productR) GetVoucherProducts() VoucherProductSlice {
 type productL struct{}
 
 var (
-	productAllColumns            = []string{"id", "product_type_id", "name", "slug", "description", "description_plain_text", "category_id", "create_at", "update_at", "charge_taxes", "weight", "weight_unit", "default_variant_id", "rating", "metadata", "private_metadata", "seo_title", "seo_description"}
-	productColumnsWithoutDefault = []string{"id"}
-	productColumnsWithDefault    = []string{"product_type_id", "name", "slug", "description", "description_plain_text", "category_id", "create_at", "update_at", "charge_taxes", "weight", "weight_unit", "default_variant_id", "rating", "metadata", "private_metadata", "seo_title", "seo_description"}
+	productAllColumns            = []string{"id", "product_type_id", "name", "slug", "description", "description_plain_text", "category_id", "created_at", "updated_at", "charge_taxes", "weight", "weight_unit", "default_variant_id", "rating", "metadata", "private_metadata", "seo_title", "seo_description"}
+	productColumnsWithoutDefault = []string{"product_type_id", "name", "slug", "description_plain_text", "created_at", "updated_at", "weight_unit", "seo_title", "seo_description"}
+	productColumnsWithDefault    = []string{"id", "description", "category_id", "charge_taxes", "weight", "default_variant_id", "rating", "metadata", "private_metadata"}
 	productPrimaryKeyColumns     = []string{"id"}
 	productGeneratedColumns      = []string{}
 )
@@ -982,7 +982,7 @@ func (productL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1040,7 +1040,7 @@ func (productL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.ProductChannelListings = append(local.R.ProductChannelListings, foreign)
 				if foreign.R == nil {
 					foreign.R = &productChannelListingR{}
@@ -1096,7 +1096,7 @@ func (productL) LoadProductCollections(ctx context.Context, e boil.ContextExecut
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1154,7 +1154,7 @@ func (productL) LoadProductCollections(ctx context.Context, e boil.ContextExecut
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.ProductCollections = append(local.R.ProductCollections, foreign)
 				if foreign.R == nil {
 					foreign.R = &productCollectionR{}
@@ -1210,7 +1210,7 @@ func (productL) LoadProductMedia(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1268,7 +1268,7 @@ func (productL) LoadProductMedia(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.ProductMedia = append(local.R.ProductMedia, foreign)
 				if foreign.R == nil {
 					foreign.R = &productMediumR{}
@@ -1324,7 +1324,7 @@ func (productL) LoadProductTranslations(ctx context.Context, e boil.ContextExecu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1382,7 +1382,7 @@ func (productL) LoadProductTranslations(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.ProductTranslations = append(local.R.ProductTranslations, foreign)
 				if foreign.R == nil {
 					foreign.R = &productTranslationR{}
@@ -1438,7 +1438,7 @@ func (productL) LoadProductVariants(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1496,7 +1496,7 @@ func (productL) LoadProductVariants(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.ProductVariants = append(local.R.ProductVariants, foreign)
 				if foreign.R == nil {
 					foreign.R = &productVariantR{}
@@ -1552,7 +1552,7 @@ func (productL) LoadSaleProducts(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1610,7 +1610,7 @@ func (productL) LoadSaleProducts(ctx context.Context, e boil.ContextExecutor, si
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.SaleProducts = append(local.R.SaleProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &saleProductR{}
@@ -1666,7 +1666,7 @@ func (productL) LoadShippingMethodExcludedProducts(ctx context.Context, e boil.C
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1724,7 +1724,7 @@ func (productL) LoadShippingMethodExcludedProducts(ctx context.Context, e boil.C
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.ShippingMethodExcludedProducts = append(local.R.ShippingMethodExcludedProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &shippingMethodExcludedProductR{}
@@ -1780,7 +1780,7 @@ func (productL) LoadVoucherProducts(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1838,7 +1838,7 @@ func (productL) LoadVoucherProducts(ctx context.Context, e boil.ContextExecutor,
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ProductID) {
+			if local.ID == foreign.ProductID {
 				local.R.VoucherProducts = append(local.R.VoucherProducts, foreign)
 				if foreign.R == nil {
 					foreign.R = &voucherProductR{}
@@ -2040,7 +2040,7 @@ func (o *Product) AddProductChannelListings(ctx context.Context, exec boil.Conte
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2061,7 +2061,7 @@ func (o *Product) AddProductChannelListings(ctx context.Context, exec boil.Conte
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2085,80 +2085,6 @@ func (o *Product) AddProductChannelListings(ctx context.Context, exec boil.Conte
 	return nil
 }
 
-// SetProductChannelListings removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's ProductChannelListings accordingly.
-// Replaces o.R.ProductChannelListings with related.
-// Sets related.R.Product's ProductChannelListings accordingly.
-func (o *Product) SetProductChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductChannelListing) error {
-	query := "update \"product_channel_listings\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductChannelListings {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.ProductChannelListings = nil
-	}
-
-	return o.AddProductChannelListings(ctx, exec, insert, related...)
-}
-
-// RemoveProductChannelListings relationships from objects passed in.
-// Removes related items from R.ProductChannelListings (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveProductChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*ProductChannelListing) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductChannelListings {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductChannelListings)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductChannelListings[i] = o.R.ProductChannelListings[ln-1]
-			}
-			o.R.ProductChannelListings = o.R.ProductChannelListings[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddProductCollections adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.ProductCollections.
@@ -2167,7 +2093,7 @@ func (o *Product) AddProductCollections(ctx context.Context, exec boil.ContextEx
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2188,7 +2114,7 @@ func (o *Product) AddProductCollections(ctx context.Context, exec boil.ContextEx
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2212,80 +2138,6 @@ func (o *Product) AddProductCollections(ctx context.Context, exec boil.ContextEx
 	return nil
 }
 
-// SetProductCollections removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's ProductCollections accordingly.
-// Replaces o.R.ProductCollections with related.
-// Sets related.R.Product's ProductCollections accordingly.
-func (o *Product) SetProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
-	query := "update \"product_collections\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductCollections {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.ProductCollections = nil
-	}
-
-	return o.AddProductCollections(ctx, exec, insert, related...)
-}
-
-// RemoveProductCollections relationships from objects passed in.
-// Removes related items from R.ProductCollections (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveProductCollections(ctx context.Context, exec boil.ContextExecutor, related ...*ProductCollection) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductCollections {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductCollections)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductCollections[i] = o.R.ProductCollections[ln-1]
-			}
-			o.R.ProductCollections = o.R.ProductCollections[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddProductMedia adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.ProductMedia.
@@ -2294,7 +2146,7 @@ func (o *Product) AddProductMedia(ctx context.Context, exec boil.ContextExecutor
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2315,7 +2167,7 @@ func (o *Product) AddProductMedia(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2339,80 +2191,6 @@ func (o *Product) AddProductMedia(ctx context.Context, exec boil.ContextExecutor
 	return nil
 }
 
-// SetProductMedia removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's ProductMedia accordingly.
-// Replaces o.R.ProductMedia with related.
-// Sets related.R.Product's ProductMedia accordingly.
-func (o *Product) SetProductMedia(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductMedium) error {
-	query := "update \"product_media\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductMedia {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.ProductMedia = nil
-	}
-
-	return o.AddProductMedia(ctx, exec, insert, related...)
-}
-
-// RemoveProductMedia relationships from objects passed in.
-// Removes related items from R.ProductMedia (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveProductMedia(ctx context.Context, exec boil.ContextExecutor, related ...*ProductMedium) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductMedia {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductMedia)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductMedia[i] = o.R.ProductMedia[ln-1]
-			}
-			o.R.ProductMedia = o.R.ProductMedia[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddProductTranslations adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.ProductTranslations.
@@ -2421,7 +2199,7 @@ func (o *Product) AddProductTranslations(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2442,7 +2220,7 @@ func (o *Product) AddProductTranslations(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2466,80 +2244,6 @@ func (o *Product) AddProductTranslations(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// SetProductTranslations removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's ProductTranslations accordingly.
-// Replaces o.R.ProductTranslations with related.
-// Sets related.R.Product's ProductTranslations accordingly.
-func (o *Product) SetProductTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductTranslation) error {
-	query := "update \"product_translations\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductTranslations {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.ProductTranslations = nil
-	}
-
-	return o.AddProductTranslations(ctx, exec, insert, related...)
-}
-
-// RemoveProductTranslations relationships from objects passed in.
-// Removes related items from R.ProductTranslations (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveProductTranslations(ctx context.Context, exec boil.ContextExecutor, related ...*ProductTranslation) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductTranslations {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductTranslations)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductTranslations[i] = o.R.ProductTranslations[ln-1]
-			}
-			o.R.ProductTranslations = o.R.ProductTranslations[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddProductVariants adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.ProductVariants.
@@ -2548,7 +2252,7 @@ func (o *Product) AddProductVariants(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2569,7 +2273,7 @@ func (o *Product) AddProductVariants(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2593,80 +2297,6 @@ func (o *Product) AddProductVariants(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// SetProductVariants removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's ProductVariants accordingly.
-// Replaces o.R.ProductVariants with related.
-// Sets related.R.Product's ProductVariants accordingly.
-func (o *Product) SetProductVariants(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductVariant) error {
-	query := "update \"product_variants\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ProductVariants {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.ProductVariants = nil
-	}
-
-	return o.AddProductVariants(ctx, exec, insert, related...)
-}
-
-// RemoveProductVariants relationships from objects passed in.
-// Removes related items from R.ProductVariants (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveProductVariants(ctx context.Context, exec boil.ContextExecutor, related ...*ProductVariant) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ProductVariants {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ProductVariants)
-			if ln > 1 && i < ln-1 {
-				o.R.ProductVariants[i] = o.R.ProductVariants[ln-1]
-			}
-			o.R.ProductVariants = o.R.ProductVariants[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddSaleProducts adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.SaleProducts.
@@ -2675,7 +2305,7 @@ func (o *Product) AddSaleProducts(ctx context.Context, exec boil.ContextExecutor
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2696,7 +2326,7 @@ func (o *Product) AddSaleProducts(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2720,80 +2350,6 @@ func (o *Product) AddSaleProducts(ctx context.Context, exec boil.ContextExecutor
 	return nil
 }
 
-// SetSaleProducts removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's SaleProducts accordingly.
-// Replaces o.R.SaleProducts with related.
-// Sets related.R.Product's SaleProducts accordingly.
-func (o *Product) SetSaleProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleProduct) error {
-	query := "update \"sale_products\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.SaleProducts {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.SaleProducts = nil
-	}
-
-	return o.AddSaleProducts(ctx, exec, insert, related...)
-}
-
-// RemoveSaleProducts relationships from objects passed in.
-// Removes related items from R.SaleProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveSaleProducts(ctx context.Context, exec boil.ContextExecutor, related ...*SaleProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.SaleProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.SaleProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.SaleProducts[i] = o.R.SaleProducts[ln-1]
-			}
-			o.R.SaleProducts = o.R.SaleProducts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddShippingMethodExcludedProducts adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.ShippingMethodExcludedProducts.
@@ -2802,7 +2358,7 @@ func (o *Product) AddShippingMethodExcludedProducts(ctx context.Context, exec bo
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2823,7 +2379,7 @@ func (o *Product) AddShippingMethodExcludedProducts(ctx context.Context, exec bo
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2847,80 +2403,6 @@ func (o *Product) AddShippingMethodExcludedProducts(ctx context.Context, exec bo
 	return nil
 }
 
-// SetShippingMethodExcludedProducts removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's ShippingMethodExcludedProducts accordingly.
-// Replaces o.R.ShippingMethodExcludedProducts with related.
-// Sets related.R.Product's ShippingMethodExcludedProducts accordingly.
-func (o *Product) SetShippingMethodExcludedProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethodExcludedProduct) error {
-	query := "update \"shipping_method_excluded_products\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ShippingMethodExcludedProducts {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.ShippingMethodExcludedProducts = nil
-	}
-
-	return o.AddShippingMethodExcludedProducts(ctx, exec, insert, related...)
-}
-
-// RemoveShippingMethodExcludedProducts relationships from objects passed in.
-// Removes related items from R.ShippingMethodExcludedProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveShippingMethodExcludedProducts(ctx context.Context, exec boil.ContextExecutor, related ...*ShippingMethodExcludedProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ShippingMethodExcludedProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ShippingMethodExcludedProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.ShippingMethodExcludedProducts[i] = o.R.ShippingMethodExcludedProducts[ln-1]
-			}
-			o.R.ShippingMethodExcludedProducts = o.R.ShippingMethodExcludedProducts[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddVoucherProducts adds the given related objects to the existing relationships
 // of the product, optionally inserting them as new records.
 // Appends related to o.R.VoucherProducts.
@@ -2929,7 +2411,7 @@ func (o *Product) AddVoucherProducts(ctx context.Context, exec boil.ContextExecu
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -2950,7 +2432,7 @@ func (o *Product) AddVoucherProducts(ctx context.Context, exec boil.ContextExecu
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ProductID, o.ID)
+			rel.ProductID = o.ID
 		}
 	}
 
@@ -2971,80 +2453,6 @@ func (o *Product) AddVoucherProducts(ctx context.Context, exec boil.ContextExecu
 			rel.R.Product = o
 		}
 	}
-	return nil
-}
-
-// SetVoucherProducts removes all previously related items of the
-// product replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Product's VoucherProducts accordingly.
-// Replaces o.R.VoucherProducts with related.
-// Sets related.R.Product's VoucherProducts accordingly.
-func (o *Product) SetVoucherProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherProduct) error {
-	query := "update \"voucher_products\" set \"product_id\" = null where \"product_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.VoucherProducts {
-			queries.SetScanner(&rel.ProductID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Product = nil
-		}
-		o.R.VoucherProducts = nil
-	}
-
-	return o.AddVoucherProducts(ctx, exec, insert, related...)
-}
-
-// RemoveVoucherProducts relationships from objects passed in.
-// Removes related items from R.VoucherProducts (uses pointer comparison, removal does not keep order)
-// Sets related.R.Product.
-func (o *Product) RemoveVoucherProducts(ctx context.Context, exec boil.ContextExecutor, related ...*VoucherProduct) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ProductID, nil)
-		if rel.R != nil {
-			rel.R.Product = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.VoucherProducts {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.VoucherProducts)
-			if ln > 1 && i < ln-1 {
-				o.R.VoucherProducts[i] = o.R.VoucherProducts[ln-1]
-			}
-			o.R.VoucherProducts = o.R.VoucherProducts[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
@@ -3186,10 +2594,6 @@ func (o *Product) Update(ctx context.Context, exec boil.ContextExecutor, columns
 			productAllColumns,
 			productPrimaryKeyColumns,
 		)
-
-		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
-		}
 		if len(wl) == 0 {
 			return 0, errors.New("models: unable to update products, could not build whitelist")
 		}

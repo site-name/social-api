@@ -805,7 +805,7 @@ func testAssignedPageAttributeValuesSelect(t *testing.T) {
 }
 
 var (
-	assignedPageAttributeValueDBTypes = map[string]string{`ID`: `character varying`, `ValueID`: `character varying`, `AssignmentID`: `character varying`, `SortOrder`: `integer`}
+	assignedPageAttributeValueDBTypes = map[string]string{`ID`: `uuid`, `ValueID`: `uuid`, `AssignmentID`: `uuid`, `SortOrder`: `integer`}
 	_                                 = bytes.MinRead
 )
 

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS preferences (
-  user_id character varying(36) NOT NULL PRIMARY KEY,
+  user_id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   category character varying(32) NOT NULL,
   name character varying(32) NOT NULL,
   value character varying(2000)
