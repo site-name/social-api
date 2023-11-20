@@ -207,8 +207,6 @@ type (
 	// ProductTypeSlice is an alias for a slice of pointers to ProductType.
 	// This should almost always be used instead of []ProductType.
 	ProductTypeSlice []*ProductType
-	// ProductTypeHook is the signature for custom ProductType hook methods
-	ProductTypeHook func(context.Context, boil.ContextExecutor, *ProductType) error
 
 	productTypeQuery struct {
 		*queries.Query
@@ -236,179 +234,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var productTypeAfterSelectHooks []ProductTypeHook
-
-var productTypeBeforeInsertHooks []ProductTypeHook
-var productTypeAfterInsertHooks []ProductTypeHook
-
-var productTypeBeforeUpdateHooks []ProductTypeHook
-var productTypeAfterUpdateHooks []ProductTypeHook
-
-var productTypeBeforeDeleteHooks []ProductTypeHook
-var productTypeAfterDeleteHooks []ProductTypeHook
-
-var productTypeBeforeUpsertHooks []ProductTypeHook
-var productTypeAfterUpsertHooks []ProductTypeHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ProductType) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ProductType) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ProductType) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ProductType) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ProductType) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ProductType) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ProductType) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ProductType) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ProductType) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productTypeAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddProductTypeHook registers your hook function for all future operations.
-func AddProductTypeHook(hookPoint boil.HookPoint, productTypeHook ProductTypeHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		productTypeAfterSelectHooks = append(productTypeAfterSelectHooks, productTypeHook)
-	case boil.BeforeInsertHook:
-		productTypeBeforeInsertHooks = append(productTypeBeforeInsertHooks, productTypeHook)
-	case boil.AfterInsertHook:
-		productTypeAfterInsertHooks = append(productTypeAfterInsertHooks, productTypeHook)
-	case boil.BeforeUpdateHook:
-		productTypeBeforeUpdateHooks = append(productTypeBeforeUpdateHooks, productTypeHook)
-	case boil.AfterUpdateHook:
-		productTypeAfterUpdateHooks = append(productTypeAfterUpdateHooks, productTypeHook)
-	case boil.BeforeDeleteHook:
-		productTypeBeforeDeleteHooks = append(productTypeBeforeDeleteHooks, productTypeHook)
-	case boil.AfterDeleteHook:
-		productTypeAfterDeleteHooks = append(productTypeAfterDeleteHooks, productTypeHook)
-	case boil.BeforeUpsertHook:
-		productTypeBeforeUpsertHooks = append(productTypeBeforeUpsertHooks, productTypeHook)
-	case boil.AfterUpsertHook:
-		productTypeAfterUpsertHooks = append(productTypeAfterUpsertHooks, productTypeHook)
-	}
-}
-
 // One returns a single productType record from the query.
 func (q productTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ProductType, error) {
 	o := &ProductType{}
@@ -423,10 +248,6 @@ func (q productTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 		return nil, errors.Wrap(err, "models: failed to execute a one query for product_types")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -437,14 +258,6 @@ func (q productTypeQuery) All(ctx context.Context, exec boil.ContextExecutor) (P
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ProductType slice")
-	}
-
-	if len(productTypeAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -589,13 +402,6 @@ func (productTypeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExe
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attribute_products")
 	}
 
-	if len(attributeProductAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AttributeProducts = resultSlice
 		for _, foreign := range resultSlice {
@@ -703,13 +509,6 @@ func (productTypeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExe
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attribute_variants")
 	}
 
-	if len(attributeVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AttributeVariants = resultSlice
 		for _, foreign := range resultSlice {
@@ -877,10 +676,6 @@ func FindProductType(ctx context.Context, exec boil.ContextExecutor, iD string, 
 		return nil, errors.Wrap(err, "models: unable to select from product_types")
 	}
 
-	if err = productTypeObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return productTypeObj, err
-	}
-
 	return productTypeObj, nil
 }
 
@@ -892,10 +687,6 @@ func (o *ProductType) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productTypeColumnsWithDefault, o)
 
@@ -960,7 +751,7 @@ func (o *ProductType) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		productTypeInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ProductType.
@@ -968,9 +759,6 @@ func (o *ProductType) Insert(ctx context.Context, exec boil.ContextExecutor, col
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ProductType) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	productTypeUpdateCacheMut.RLock()
 	cache, cached := productTypeUpdateCache[key]
@@ -1019,7 +807,7 @@ func (o *ProductType) Update(ctx context.Context, exec boil.ContextExecutor, col
 		productTypeUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1092,10 +880,6 @@ func (o ProductTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 func (o *ProductType) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no product_types provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productTypeColumnsWithDefault, o)
@@ -1200,7 +984,7 @@ func (o *ProductType) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		productTypeUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ProductType record with an executor.
@@ -1208,10 +992,6 @@ func (o *ProductType) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 func (o *ProductType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ProductType provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), productTypePrimaryKeyMapping)
@@ -1230,10 +1010,6 @@ func (o *ProductType) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for product_types")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1266,14 +1042,6 @@ func (o ProductTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 		return 0, nil
 	}
 
-	if len(productTypeBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productTypePrimaryKeyMapping)
@@ -1296,14 +1064,6 @@ func (o ProductTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for product_types")
-	}
-
-	if len(productTypeAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

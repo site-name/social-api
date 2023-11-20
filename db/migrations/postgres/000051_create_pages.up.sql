@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS pages (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  title character varying(250) NOT NULL,
-  slug character varying(255) NOT NULL,
+  title varchar(250) NOT NULL,
+  slug varchar(255) NOT NULL,
   page_type_id uuid NOT NULL,
   content jsonb NOT NULL,
   created_at bigint NOT NULL,
@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS pages (
   private_metadata jsonb,
   publication_date timestamp with time zone,
   is_published boolean NOT NULL,
-  seo_title character varying(70) NOT NULL,
-  seo_description character varying(300) NOT NULL
+  seo_title varchar(70) NOT NULL,
+  seo_description varchar(300) NOT NULL
 );
 
 ALTER TABLE ONLY pages

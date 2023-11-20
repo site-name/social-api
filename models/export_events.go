@@ -134,8 +134,6 @@ type (
 	// ExportEventSlice is an alias for a slice of pointers to ExportEvent.
 	// This should almost always be used instead of []ExportEvent.
 	ExportEventSlice []*ExportEvent
-	// ExportEventHook is the signature for custom ExportEvent hook methods
-	ExportEventHook func(context.Context, boil.ContextExecutor, *ExportEvent) error
 
 	exportEventQuery struct {
 		*queries.Query
@@ -163,179 +161,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var exportEventAfterSelectHooks []ExportEventHook
-
-var exportEventBeforeInsertHooks []ExportEventHook
-var exportEventAfterInsertHooks []ExportEventHook
-
-var exportEventBeforeUpdateHooks []ExportEventHook
-var exportEventAfterUpdateHooks []ExportEventHook
-
-var exportEventBeforeDeleteHooks []ExportEventHook
-var exportEventAfterDeleteHooks []ExportEventHook
-
-var exportEventBeforeUpsertHooks []ExportEventHook
-var exportEventAfterUpsertHooks []ExportEventHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ExportEvent) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ExportEvent) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ExportEvent) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ExportEvent) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ExportEvent) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ExportEvent) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ExportEvent) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ExportEvent) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ExportEvent) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportEventAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddExportEventHook registers your hook function for all future operations.
-func AddExportEventHook(hookPoint boil.HookPoint, exportEventHook ExportEventHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		exportEventAfterSelectHooks = append(exportEventAfterSelectHooks, exportEventHook)
-	case boil.BeforeInsertHook:
-		exportEventBeforeInsertHooks = append(exportEventBeforeInsertHooks, exportEventHook)
-	case boil.AfterInsertHook:
-		exportEventAfterInsertHooks = append(exportEventAfterInsertHooks, exportEventHook)
-	case boil.BeforeUpdateHook:
-		exportEventBeforeUpdateHooks = append(exportEventBeforeUpdateHooks, exportEventHook)
-	case boil.AfterUpdateHook:
-		exportEventAfterUpdateHooks = append(exportEventAfterUpdateHooks, exportEventHook)
-	case boil.BeforeDeleteHook:
-		exportEventBeforeDeleteHooks = append(exportEventBeforeDeleteHooks, exportEventHook)
-	case boil.AfterDeleteHook:
-		exportEventAfterDeleteHooks = append(exportEventAfterDeleteHooks, exportEventHook)
-	case boil.BeforeUpsertHook:
-		exportEventBeforeUpsertHooks = append(exportEventBeforeUpsertHooks, exportEventHook)
-	case boil.AfterUpsertHook:
-		exportEventAfterUpsertHooks = append(exportEventAfterUpsertHooks, exportEventHook)
-	}
-}
-
 // One returns a single exportEvent record from the query.
 func (q exportEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ExportEvent, error) {
 	o := &ExportEvent{}
@@ -350,10 +175,6 @@ func (q exportEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 		return nil, errors.Wrap(err, "models: failed to execute a one query for export_events")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -364,14 +185,6 @@ func (q exportEventQuery) All(ctx context.Context, exec boil.ContextExecutor) (E
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ExportEvent slice")
-	}
-
-	if len(exportEventAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -512,14 +325,6 @@ func (exportEventL) LoadExportFile(ctx context.Context, e boil.ContextExecutor, 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for export_files")
 	}
 
-	if len(exportFileAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -634,14 +439,6 @@ func (exportEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singul
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -835,10 +632,6 @@ func FindExportEvent(ctx context.Context, exec boil.ContextExecutor, iD string, 
 		return nil, errors.Wrap(err, "models: unable to select from export_events")
 	}
 
-	if err = exportEventObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return exportEventObj, err
-	}
-
 	return exportEventObj, nil
 }
 
@@ -850,10 +643,6 @@ func (o *ExportEvent) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(exportEventColumnsWithDefault, o)
 
@@ -918,7 +707,7 @@ func (o *ExportEvent) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		exportEventInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ExportEvent.
@@ -926,9 +715,6 @@ func (o *ExportEvent) Insert(ctx context.Context, exec boil.ContextExecutor, col
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ExportEvent) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	exportEventUpdateCacheMut.RLock()
 	cache, cached := exportEventUpdateCache[key]
@@ -977,7 +763,7 @@ func (o *ExportEvent) Update(ctx context.Context, exec boil.ContextExecutor, col
 		exportEventUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1050,10 +836,6 @@ func (o ExportEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 func (o *ExportEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no export_events provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(exportEventColumnsWithDefault, o)
@@ -1158,7 +940,7 @@ func (o *ExportEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		exportEventUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ExportEvent record with an executor.
@@ -1166,10 +948,6 @@ func (o *ExportEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 func (o *ExportEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ExportEvent provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), exportEventPrimaryKeyMapping)
@@ -1188,10 +966,6 @@ func (o *ExportEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for export_events")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1224,14 +998,6 @@ func (o ExportEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 		return 0, nil
 	}
 
-	if len(exportEventBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), exportEventPrimaryKeyMapping)
@@ -1254,14 +1020,6 @@ func (o ExportEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for export_events")
-	}
-
-	if len(exportEventAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

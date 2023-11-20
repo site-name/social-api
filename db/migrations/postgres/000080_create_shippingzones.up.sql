@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS shipping_zones (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(100) NOT NULL,
-  countries character varying(749) NOT NULL,
+  name varchar(100) NOT NULL,
+  countries varchar(749) NOT NULL,
   default_flag boolean,
   description varchar(1000) NOT NULL,
   created_at bigint NOT NULL,

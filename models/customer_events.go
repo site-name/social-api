@@ -134,8 +134,6 @@ type (
 	// CustomerEventSlice is an alias for a slice of pointers to CustomerEvent.
 	// This should almost always be used instead of []CustomerEvent.
 	CustomerEventSlice []*CustomerEvent
-	// CustomerEventHook is the signature for custom CustomerEvent hook methods
-	CustomerEventHook func(context.Context, boil.ContextExecutor, *CustomerEvent) error
 
 	customerEventQuery struct {
 		*queries.Query
@@ -163,179 +161,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var customerEventAfterSelectHooks []CustomerEventHook
-
-var customerEventBeforeInsertHooks []CustomerEventHook
-var customerEventAfterInsertHooks []CustomerEventHook
-
-var customerEventBeforeUpdateHooks []CustomerEventHook
-var customerEventAfterUpdateHooks []CustomerEventHook
-
-var customerEventBeforeDeleteHooks []CustomerEventHook
-var customerEventAfterDeleteHooks []CustomerEventHook
-
-var customerEventBeforeUpsertHooks []CustomerEventHook
-var customerEventAfterUpsertHooks []CustomerEventHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *CustomerEvent) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *CustomerEvent) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *CustomerEvent) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *CustomerEvent) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *CustomerEvent) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *CustomerEvent) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *CustomerEvent) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *CustomerEvent) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *CustomerEvent) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerEventAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCustomerEventHook registers your hook function for all future operations.
-func AddCustomerEventHook(hookPoint boil.HookPoint, customerEventHook CustomerEventHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		customerEventAfterSelectHooks = append(customerEventAfterSelectHooks, customerEventHook)
-	case boil.BeforeInsertHook:
-		customerEventBeforeInsertHooks = append(customerEventBeforeInsertHooks, customerEventHook)
-	case boil.AfterInsertHook:
-		customerEventAfterInsertHooks = append(customerEventAfterInsertHooks, customerEventHook)
-	case boil.BeforeUpdateHook:
-		customerEventBeforeUpdateHooks = append(customerEventBeforeUpdateHooks, customerEventHook)
-	case boil.AfterUpdateHook:
-		customerEventAfterUpdateHooks = append(customerEventAfterUpdateHooks, customerEventHook)
-	case boil.BeforeDeleteHook:
-		customerEventBeforeDeleteHooks = append(customerEventBeforeDeleteHooks, customerEventHook)
-	case boil.AfterDeleteHook:
-		customerEventAfterDeleteHooks = append(customerEventAfterDeleteHooks, customerEventHook)
-	case boil.BeforeUpsertHook:
-		customerEventBeforeUpsertHooks = append(customerEventBeforeUpsertHooks, customerEventHook)
-	case boil.AfterUpsertHook:
-		customerEventAfterUpsertHooks = append(customerEventAfterUpsertHooks, customerEventHook)
-	}
-}
-
 // One returns a single customerEvent record from the query.
 func (q customerEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CustomerEvent, error) {
 	o := &CustomerEvent{}
@@ -350,10 +175,6 @@ func (q customerEventQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 		return nil, errors.Wrap(err, "models: failed to execute a one query for customer_events")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -364,14 +185,6 @@ func (q customerEventQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to CustomerEvent slice")
-	}
-
-	if len(customerEventAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -516,14 +329,6 @@ func (customerEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sin
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -638,14 +443,6 @@ func (customerEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, sing
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -872,10 +669,6 @@ func FindCustomerEvent(ctx context.Context, exec boil.ContextExecutor, iD string
 		return nil, errors.Wrap(err, "models: unable to select from customer_events")
 	}
 
-	if err = customerEventObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return customerEventObj, err
-	}
-
 	return customerEventObj, nil
 }
 
@@ -887,10 +680,6 @@ func (o *CustomerEvent) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(customerEventColumnsWithDefault, o)
 
@@ -955,7 +744,7 @@ func (o *CustomerEvent) Insert(ctx context.Context, exec boil.ContextExecutor, c
 		customerEventInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the CustomerEvent.
@@ -963,9 +752,6 @@ func (o *CustomerEvent) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *CustomerEvent) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	customerEventUpdateCacheMut.RLock()
 	cache, cached := customerEventUpdateCache[key]
@@ -1014,7 +800,7 @@ func (o *CustomerEvent) Update(ctx context.Context, exec boil.ContextExecutor, c
 		customerEventUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1087,10 +873,6 @@ func (o CustomerEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 func (o *CustomerEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no customer_events provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(customerEventColumnsWithDefault, o)
@@ -1195,7 +977,7 @@ func (o *CustomerEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		customerEventUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single CustomerEvent record with an executor.
@@ -1203,10 +985,6 @@ func (o *CustomerEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 func (o *CustomerEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no CustomerEvent provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), customerEventPrimaryKeyMapping)
@@ -1225,10 +1003,6 @@ func (o *CustomerEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for customer_events")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1261,14 +1035,6 @@ func (o CustomerEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 		return 0, nil
 	}
 
-	if len(customerEventBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customerEventPrimaryKeyMapping)
@@ -1291,14 +1057,6 @@ func (o CustomerEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for customer_events")
-	}
-
-	if len(customerEventAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

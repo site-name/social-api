@@ -116,8 +116,6 @@ type (
 	// VoucherTranslationSlice is an alias for a slice of pointers to VoucherTranslation.
 	// This should almost always be used instead of []VoucherTranslation.
 	VoucherTranslationSlice []*VoucherTranslation
-	// VoucherTranslationHook is the signature for custom VoucherTranslation hook methods
-	VoucherTranslationHook func(context.Context, boil.ContextExecutor, *VoucherTranslation) error
 
 	voucherTranslationQuery struct {
 		*queries.Query
@@ -145,179 +143,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var voucherTranslationAfterSelectHooks []VoucherTranslationHook
-
-var voucherTranslationBeforeInsertHooks []VoucherTranslationHook
-var voucherTranslationAfterInsertHooks []VoucherTranslationHook
-
-var voucherTranslationBeforeUpdateHooks []VoucherTranslationHook
-var voucherTranslationAfterUpdateHooks []VoucherTranslationHook
-
-var voucherTranslationBeforeDeleteHooks []VoucherTranslationHook
-var voucherTranslationAfterDeleteHooks []VoucherTranslationHook
-
-var voucherTranslationBeforeUpsertHooks []VoucherTranslationHook
-var voucherTranslationAfterUpsertHooks []VoucherTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *VoucherTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *VoucherTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *VoucherTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *VoucherTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *VoucherTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *VoucherTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *VoucherTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *VoucherTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *VoucherTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddVoucherTranslationHook registers your hook function for all future operations.
-func AddVoucherTranslationHook(hookPoint boil.HookPoint, voucherTranslationHook VoucherTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		voucherTranslationAfterSelectHooks = append(voucherTranslationAfterSelectHooks, voucherTranslationHook)
-	case boil.BeforeInsertHook:
-		voucherTranslationBeforeInsertHooks = append(voucherTranslationBeforeInsertHooks, voucherTranslationHook)
-	case boil.AfterInsertHook:
-		voucherTranslationAfterInsertHooks = append(voucherTranslationAfterInsertHooks, voucherTranslationHook)
-	case boil.BeforeUpdateHook:
-		voucherTranslationBeforeUpdateHooks = append(voucherTranslationBeforeUpdateHooks, voucherTranslationHook)
-	case boil.AfterUpdateHook:
-		voucherTranslationAfterUpdateHooks = append(voucherTranslationAfterUpdateHooks, voucherTranslationHook)
-	case boil.BeforeDeleteHook:
-		voucherTranslationBeforeDeleteHooks = append(voucherTranslationBeforeDeleteHooks, voucherTranslationHook)
-	case boil.AfterDeleteHook:
-		voucherTranslationAfterDeleteHooks = append(voucherTranslationAfterDeleteHooks, voucherTranslationHook)
-	case boil.BeforeUpsertHook:
-		voucherTranslationBeforeUpsertHooks = append(voucherTranslationBeforeUpsertHooks, voucherTranslationHook)
-	case boil.AfterUpsertHook:
-		voucherTranslationAfterUpsertHooks = append(voucherTranslationAfterUpsertHooks, voucherTranslationHook)
-	}
-}
-
 // One returns a single voucherTranslation record from the query.
 func (q voucherTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*VoucherTranslation, error) {
 	o := &VoucherTranslation{}
@@ -332,10 +157,6 @@ func (q voucherTranslationQuery) One(ctx context.Context, exec boil.ContextExecu
 		return nil, errors.Wrap(err, "models: failed to execute a one query for voucher_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -346,14 +167,6 @@ func (q voucherTranslationQuery) All(ctx context.Context, exec boil.ContextExecu
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to VoucherTranslation slice")
-	}
-
-	if len(voucherTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -483,14 +296,6 @@ func (voucherTranslationL) LoadVoucher(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
 	}
 
-	if len(voucherAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -602,10 +407,6 @@ func FindVoucherTranslation(ctx context.Context, exec boil.ContextExecutor, iD s
 		return nil, errors.Wrap(err, "models: unable to select from voucher_translations")
 	}
 
-	if err = voucherTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return voucherTranslationObj, err
-	}
-
 	return voucherTranslationObj, nil
 }
 
@@ -617,10 +418,6 @@ func (o *VoucherTranslation) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherTranslationColumnsWithDefault, o)
 
@@ -685,7 +482,7 @@ func (o *VoucherTranslation) Insert(ctx context.Context, exec boil.ContextExecut
 		voucherTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the VoucherTranslation.
@@ -693,9 +490,6 @@ func (o *VoucherTranslation) Insert(ctx context.Context, exec boil.ContextExecut
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *VoucherTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	voucherTranslationUpdateCacheMut.RLock()
 	cache, cached := voucherTranslationUpdateCache[key]
@@ -744,7 +538,7 @@ func (o *VoucherTranslation) Update(ctx context.Context, exec boil.ContextExecut
 		voucherTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -817,10 +611,6 @@ func (o VoucherTranslationSlice) UpdateAll(ctx context.Context, exec boil.Contex
 func (o *VoucherTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no voucher_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherTranslationColumnsWithDefault, o)
@@ -925,7 +715,7 @@ func (o *VoucherTranslation) Upsert(ctx context.Context, exec boil.ContextExecut
 		voucherTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single VoucherTranslation record with an executor.
@@ -933,10 +723,6 @@ func (o *VoucherTranslation) Upsert(ctx context.Context, exec boil.ContextExecut
 func (o *VoucherTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no VoucherTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), voucherTranslationPrimaryKeyMapping)
@@ -955,10 +741,6 @@ func (o *VoucherTranslation) Delete(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for voucher_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -991,14 +773,6 @@ func (o VoucherTranslationSlice) DeleteAll(ctx context.Context, exec boil.Contex
 		return 0, nil
 	}
 
-	if len(voucherTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherTranslationPrimaryKeyMapping)
@@ -1021,14 +795,6 @@ func (o VoucherTranslationSlice) DeleteAll(ctx context.Context, exec boil.Contex
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for voucher_translations")
-	}
-
-	if len(voucherTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

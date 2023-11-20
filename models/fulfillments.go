@@ -152,8 +152,6 @@ type (
 	// FulfillmentSlice is an alias for a slice of pointers to Fulfillment.
 	// This should almost always be used instead of []Fulfillment.
 	FulfillmentSlice []*Fulfillment
-	// FulfillmentHook is the signature for custom Fulfillment hook methods
-	FulfillmentHook func(context.Context, boil.ContextExecutor, *Fulfillment) error
 
 	fulfillmentQuery struct {
 		*queries.Query
@@ -181,179 +179,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var fulfillmentAfterSelectHooks []FulfillmentHook
-
-var fulfillmentBeforeInsertHooks []FulfillmentHook
-var fulfillmentAfterInsertHooks []FulfillmentHook
-
-var fulfillmentBeforeUpdateHooks []FulfillmentHook
-var fulfillmentAfterUpdateHooks []FulfillmentHook
-
-var fulfillmentBeforeDeleteHooks []FulfillmentHook
-var fulfillmentAfterDeleteHooks []FulfillmentHook
-
-var fulfillmentBeforeUpsertHooks []FulfillmentHook
-var fulfillmentAfterUpsertHooks []FulfillmentHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Fulfillment) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Fulfillment) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Fulfillment) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Fulfillment) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Fulfillment) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Fulfillment) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Fulfillment) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Fulfillment) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Fulfillment) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fulfillmentAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddFulfillmentHook registers your hook function for all future operations.
-func AddFulfillmentHook(hookPoint boil.HookPoint, fulfillmentHook FulfillmentHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		fulfillmentAfterSelectHooks = append(fulfillmentAfterSelectHooks, fulfillmentHook)
-	case boil.BeforeInsertHook:
-		fulfillmentBeforeInsertHooks = append(fulfillmentBeforeInsertHooks, fulfillmentHook)
-	case boil.AfterInsertHook:
-		fulfillmentAfterInsertHooks = append(fulfillmentAfterInsertHooks, fulfillmentHook)
-	case boil.BeforeUpdateHook:
-		fulfillmentBeforeUpdateHooks = append(fulfillmentBeforeUpdateHooks, fulfillmentHook)
-	case boil.AfterUpdateHook:
-		fulfillmentAfterUpdateHooks = append(fulfillmentAfterUpdateHooks, fulfillmentHook)
-	case boil.BeforeDeleteHook:
-		fulfillmentBeforeDeleteHooks = append(fulfillmentBeforeDeleteHooks, fulfillmentHook)
-	case boil.AfterDeleteHook:
-		fulfillmentAfterDeleteHooks = append(fulfillmentAfterDeleteHooks, fulfillmentHook)
-	case boil.BeforeUpsertHook:
-		fulfillmentBeforeUpsertHooks = append(fulfillmentBeforeUpsertHooks, fulfillmentHook)
-	case boil.AfterUpsertHook:
-		fulfillmentAfterUpsertHooks = append(fulfillmentAfterUpsertHooks, fulfillmentHook)
-	}
-}
-
 // One returns a single fulfillment record from the query.
 func (q fulfillmentQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Fulfillment, error) {
 	o := &Fulfillment{}
@@ -368,10 +193,6 @@ func (q fulfillmentQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 		return nil, errors.Wrap(err, "models: failed to execute a one query for fulfillments")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -382,14 +203,6 @@ func (q fulfillmentQuery) All(ctx context.Context, exec boil.ContextExecutor) (F
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Fulfillment slice")
-	}
-
-	if len(fulfillmentAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -519,14 +332,6 @@ func (fulfillmentL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -638,10 +443,6 @@ func FindFulfillment(ctx context.Context, exec boil.ContextExecutor, iD string, 
 		return nil, errors.Wrap(err, "models: unable to select from fulfillments")
 	}
 
-	if err = fulfillmentObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return fulfillmentObj, err
-	}
-
 	return fulfillmentObj, nil
 }
 
@@ -653,10 +454,6 @@ func (o *Fulfillment) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(fulfillmentColumnsWithDefault, o)
 
@@ -721,7 +518,7 @@ func (o *Fulfillment) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		fulfillmentInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Fulfillment.
@@ -729,9 +526,6 @@ func (o *Fulfillment) Insert(ctx context.Context, exec boil.ContextExecutor, col
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Fulfillment) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	fulfillmentUpdateCacheMut.RLock()
 	cache, cached := fulfillmentUpdateCache[key]
@@ -780,7 +574,7 @@ func (o *Fulfillment) Update(ctx context.Context, exec boil.ContextExecutor, col
 		fulfillmentUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -853,10 +647,6 @@ func (o FulfillmentSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 func (o *Fulfillment) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no fulfillments provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(fulfillmentColumnsWithDefault, o)
@@ -961,7 +751,7 @@ func (o *Fulfillment) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		fulfillmentUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Fulfillment record with an executor.
@@ -969,10 +759,6 @@ func (o *Fulfillment) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 func (o *Fulfillment) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Fulfillment provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), fulfillmentPrimaryKeyMapping)
@@ -991,10 +777,6 @@ func (o *Fulfillment) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for fulfillments")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1027,14 +809,6 @@ func (o FulfillmentSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 		return 0, nil
 	}
 
-	if len(fulfillmentBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fulfillmentPrimaryKeyMapping)
@@ -1057,14 +831,6 @@ func (o FulfillmentSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for fulfillments")
-	}
-
-	if len(fulfillmentAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

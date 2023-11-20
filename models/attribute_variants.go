@@ -146,8 +146,6 @@ type (
 	// AttributeVariantSlice is an alias for a slice of pointers to AttributeVariant.
 	// This should almost always be used instead of []AttributeVariant.
 	AttributeVariantSlice []*AttributeVariant
-	// AttributeVariantHook is the signature for custom AttributeVariant hook methods
-	AttributeVariantHook func(context.Context, boil.ContextExecutor, *AttributeVariant) error
 
 	attributeVariantQuery struct {
 		*queries.Query
@@ -175,179 +173,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var attributeVariantAfterSelectHooks []AttributeVariantHook
-
-var attributeVariantBeforeInsertHooks []AttributeVariantHook
-var attributeVariantAfterInsertHooks []AttributeVariantHook
-
-var attributeVariantBeforeUpdateHooks []AttributeVariantHook
-var attributeVariantAfterUpdateHooks []AttributeVariantHook
-
-var attributeVariantBeforeDeleteHooks []AttributeVariantHook
-var attributeVariantAfterDeleteHooks []AttributeVariantHook
-
-var attributeVariantBeforeUpsertHooks []AttributeVariantHook
-var attributeVariantAfterUpsertHooks []AttributeVariantHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AttributeVariant) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AttributeVariant) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AttributeVariant) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AttributeVariant) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AttributeVariant) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AttributeVariant) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AttributeVariant) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AttributeVariant) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AttributeVariant) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeVariantAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAttributeVariantHook registers your hook function for all future operations.
-func AddAttributeVariantHook(hookPoint boil.HookPoint, attributeVariantHook AttributeVariantHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		attributeVariantAfterSelectHooks = append(attributeVariantAfterSelectHooks, attributeVariantHook)
-	case boil.BeforeInsertHook:
-		attributeVariantBeforeInsertHooks = append(attributeVariantBeforeInsertHooks, attributeVariantHook)
-	case boil.AfterInsertHook:
-		attributeVariantAfterInsertHooks = append(attributeVariantAfterInsertHooks, attributeVariantHook)
-	case boil.BeforeUpdateHook:
-		attributeVariantBeforeUpdateHooks = append(attributeVariantBeforeUpdateHooks, attributeVariantHook)
-	case boil.AfterUpdateHook:
-		attributeVariantAfterUpdateHooks = append(attributeVariantAfterUpdateHooks, attributeVariantHook)
-	case boil.BeforeDeleteHook:
-		attributeVariantBeforeDeleteHooks = append(attributeVariantBeforeDeleteHooks, attributeVariantHook)
-	case boil.AfterDeleteHook:
-		attributeVariantAfterDeleteHooks = append(attributeVariantAfterDeleteHooks, attributeVariantHook)
-	case boil.BeforeUpsertHook:
-		attributeVariantBeforeUpsertHooks = append(attributeVariantBeforeUpsertHooks, attributeVariantHook)
-	case boil.AfterUpsertHook:
-		attributeVariantAfterUpsertHooks = append(attributeVariantAfterUpsertHooks, attributeVariantHook)
-	}
-}
-
 // One returns a single attributeVariant record from the query.
 func (q attributeVariantQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AttributeVariant, error) {
 	o := &AttributeVariant{}
@@ -362,10 +187,6 @@ func (q attributeVariantQuery) One(ctx context.Context, exec boil.ContextExecuto
 		return nil, errors.Wrap(err, "models: failed to execute a one query for attribute_variants")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -376,14 +197,6 @@ func (q attributeVariantQuery) All(ctx context.Context, exec boil.ContextExecuto
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AttributeVariant slice")
-	}
-
-	if len(attributeVariantAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -538,14 +351,6 @@ func (attributeVariantL) LoadAttribute(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attributes")
 	}
 
-	if len(attributeAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -658,14 +463,6 @@ func (attributeVariantL) LoadProductType(ctx context.Context, e boil.ContextExec
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_types")
 	}
 
-	if len(productTypeAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -776,13 +573,6 @@ func (attributeVariantL) LoadAssignmentAssignedVariantAttributes(ctx context.Con
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_variant_attributes")
 	}
 
-	if len(assignedVariantAttributeAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AssignmentAssignedVariantAttributes = resultSlice
 		for _, foreign := range resultSlice {
@@ -991,10 +781,6 @@ func FindAttributeVariant(ctx context.Context, exec boil.ContextExecutor, iD str
 		return nil, errors.Wrap(err, "models: unable to select from attribute_variants")
 	}
 
-	if err = attributeVariantObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return attributeVariantObj, err
-	}
-
 	return attributeVariantObj, nil
 }
 
@@ -1006,10 +792,6 @@ func (o *AttributeVariant) Insert(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(attributeVariantColumnsWithDefault, o)
 
@@ -1074,7 +856,7 @@ func (o *AttributeVariant) Insert(ctx context.Context, exec boil.ContextExecutor
 		attributeVariantInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AttributeVariant.
@@ -1082,9 +864,6 @@ func (o *AttributeVariant) Insert(ctx context.Context, exec boil.ContextExecutor
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *AttributeVariant) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	attributeVariantUpdateCacheMut.RLock()
 	cache, cached := attributeVariantUpdateCache[key]
@@ -1133,7 +912,7 @@ func (o *AttributeVariant) Update(ctx context.Context, exec boil.ContextExecutor
 		attributeVariantUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1206,10 +985,6 @@ func (o AttributeVariantSlice) UpdateAll(ctx context.Context, exec boil.ContextE
 func (o *AttributeVariant) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no attribute_variants provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(attributeVariantColumnsWithDefault, o)
@@ -1314,7 +1089,7 @@ func (o *AttributeVariant) Upsert(ctx context.Context, exec boil.ContextExecutor
 		attributeVariantUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AttributeVariant record with an executor.
@@ -1322,10 +1097,6 @@ func (o *AttributeVariant) Upsert(ctx context.Context, exec boil.ContextExecutor
 func (o *AttributeVariant) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AttributeVariant provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), attributeVariantPrimaryKeyMapping)
@@ -1344,10 +1115,6 @@ func (o *AttributeVariant) Delete(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for attribute_variants")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1380,14 +1147,6 @@ func (o AttributeVariantSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 		return 0, nil
 	}
 
-	if len(attributeVariantBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributeVariantPrimaryKeyMapping)
@@ -1410,14 +1169,6 @@ func (o AttributeVariantSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for attribute_variants")
-	}
-
-	if len(attributeVariantAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

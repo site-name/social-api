@@ -192,8 +192,6 @@ type (
 	// WarehouseSlice is an alias for a slice of pointers to Warehouse.
 	// This should almost always be used instead of []Warehouse.
 	WarehouseSlice []*Warehouse
-	// WarehouseHook is the signature for custom Warehouse hook methods
-	WarehouseHook func(context.Context, boil.ContextExecutor, *Warehouse) error
 
 	warehouseQuery struct {
 		*queries.Query
@@ -221,179 +219,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var warehouseAfterSelectHooks []WarehouseHook
-
-var warehouseBeforeInsertHooks []WarehouseHook
-var warehouseAfterInsertHooks []WarehouseHook
-
-var warehouseBeforeUpdateHooks []WarehouseHook
-var warehouseAfterUpdateHooks []WarehouseHook
-
-var warehouseBeforeDeleteHooks []WarehouseHook
-var warehouseAfterDeleteHooks []WarehouseHook
-
-var warehouseBeforeUpsertHooks []WarehouseHook
-var warehouseAfterUpsertHooks []WarehouseHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Warehouse) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Warehouse) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Warehouse) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Warehouse) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Warehouse) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Warehouse) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Warehouse) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Warehouse) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Warehouse) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddWarehouseHook registers your hook function for all future operations.
-func AddWarehouseHook(hookPoint boil.HookPoint, warehouseHook WarehouseHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		warehouseAfterSelectHooks = append(warehouseAfterSelectHooks, warehouseHook)
-	case boil.BeforeInsertHook:
-		warehouseBeforeInsertHooks = append(warehouseBeforeInsertHooks, warehouseHook)
-	case boil.AfterInsertHook:
-		warehouseAfterInsertHooks = append(warehouseAfterInsertHooks, warehouseHook)
-	case boil.BeforeUpdateHook:
-		warehouseBeforeUpdateHooks = append(warehouseBeforeUpdateHooks, warehouseHook)
-	case boil.AfterUpdateHook:
-		warehouseAfterUpdateHooks = append(warehouseAfterUpdateHooks, warehouseHook)
-	case boil.BeforeDeleteHook:
-		warehouseBeforeDeleteHooks = append(warehouseBeforeDeleteHooks, warehouseHook)
-	case boil.AfterDeleteHook:
-		warehouseAfterDeleteHooks = append(warehouseAfterDeleteHooks, warehouseHook)
-	case boil.BeforeUpsertHook:
-		warehouseBeforeUpsertHooks = append(warehouseBeforeUpsertHooks, warehouseHook)
-	case boil.AfterUpsertHook:
-		warehouseAfterUpsertHooks = append(warehouseAfterUpsertHooks, warehouseHook)
-	}
-}
-
 // One returns a single warehouse record from the query.
 func (q warehouseQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Warehouse, error) {
 	o := &Warehouse{}
@@ -408,10 +233,6 @@ func (q warehouseQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Wa
 		return nil, errors.Wrap(err, "models: failed to execute a one query for warehouses")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -422,14 +243,6 @@ func (q warehouseQuery) All(ctx context.Context, exec boil.ContextExecutor) (War
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Warehouse slice")
-	}
-
-	if len(warehouseAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -619,14 +432,6 @@ func (warehouseL) LoadAddress(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
 	}
 
-	if len(addressAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -737,13 +542,6 @@ func (warehouseL) LoadCollectionPointCheckouts(ctx context.Context, e boil.Conte
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
 	}
 
-	if len(checkoutAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.CollectionPointCheckouts = resultSlice
 		for _, foreign := range resultSlice {
@@ -851,13 +649,6 @@ func (warehouseL) LoadCollectionPointOrders(ctx context.Context, e boil.ContextE
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.CollectionPointOrders = resultSlice
 		for _, foreign := range resultSlice {
@@ -965,13 +756,6 @@ func (warehouseL) LoadStocks(ctx context.Context, e boil.ContextExecutor, singul
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for stocks")
 	}
 
-	if len(stockAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Stocks = resultSlice
 		for _, foreign := range resultSlice {
@@ -1079,13 +863,6 @@ func (warehouseL) LoadWarehouseShippingZones(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for warehouse_shipping_zones")
 	}
 
-	if len(warehouseShippingZoneAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.WarehouseShippingZones = resultSlice
 		for _, foreign := range resultSlice {
@@ -1587,10 +1364,6 @@ func FindWarehouse(ctx context.Context, exec boil.ContextExecutor, iD string, se
 		return nil, errors.Wrap(err, "models: unable to select from warehouses")
 	}
 
-	if err = warehouseObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return warehouseObj, err
-	}
-
 	return warehouseObj, nil
 }
 
@@ -1602,10 +1375,6 @@ func (o *Warehouse) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(warehouseColumnsWithDefault, o)
 
@@ -1670,7 +1439,7 @@ func (o *Warehouse) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 		warehouseInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Warehouse.
@@ -1678,9 +1447,6 @@ func (o *Warehouse) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Warehouse) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	warehouseUpdateCacheMut.RLock()
 	cache, cached := warehouseUpdateCache[key]
@@ -1729,7 +1495,7 @@ func (o *Warehouse) Update(ctx context.Context, exec boil.ContextExecutor, colum
 		warehouseUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1802,10 +1568,6 @@ func (o WarehouseSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 func (o *Warehouse) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no warehouses provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(warehouseColumnsWithDefault, o)
@@ -1910,7 +1672,7 @@ func (o *Warehouse) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 		warehouseUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Warehouse record with an executor.
@@ -1918,10 +1680,6 @@ func (o *Warehouse) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 func (o *Warehouse) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Warehouse provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), warehousePrimaryKeyMapping)
@@ -1940,10 +1698,6 @@ func (o *Warehouse) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for warehouses")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1976,14 +1730,6 @@ func (o WarehouseSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 		return 0, nil
 	}
 
-	if len(warehouseBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), warehousePrimaryKeyMapping)
@@ -2006,14 +1752,6 @@ func (o WarehouseSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for warehouses")
-	}
-
-	if len(warehouseAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -203,8 +203,6 @@ type (
 	// ChannelSlice is an alias for a slice of pointers to Channel.
 	// This should almost always be used instead of []Channel.
 	ChannelSlice []*Channel
-	// ChannelHook is the signature for custom Channel hook methods
-	ChannelHook func(context.Context, boil.ContextExecutor, *Channel) error
 
 	channelQuery struct {
 		*queries.Query
@@ -232,179 +230,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var channelAfterSelectHooks []ChannelHook
-
-var channelBeforeInsertHooks []ChannelHook
-var channelAfterInsertHooks []ChannelHook
-
-var channelBeforeUpdateHooks []ChannelHook
-var channelAfterUpdateHooks []ChannelHook
-
-var channelBeforeDeleteHooks []ChannelHook
-var channelAfterDeleteHooks []ChannelHook
-
-var channelBeforeUpsertHooks []ChannelHook
-var channelAfterUpsertHooks []ChannelHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Channel) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Channel) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Channel) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Channel) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Channel) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Channel) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Channel) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Channel) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Channel) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range channelAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddChannelHook registers your hook function for all future operations.
-func AddChannelHook(hookPoint boil.HookPoint, channelHook ChannelHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		channelAfterSelectHooks = append(channelAfterSelectHooks, channelHook)
-	case boil.BeforeInsertHook:
-		channelBeforeInsertHooks = append(channelBeforeInsertHooks, channelHook)
-	case boil.AfterInsertHook:
-		channelAfterInsertHooks = append(channelAfterInsertHooks, channelHook)
-	case boil.BeforeUpdateHook:
-		channelBeforeUpdateHooks = append(channelBeforeUpdateHooks, channelHook)
-	case boil.AfterUpdateHook:
-		channelAfterUpdateHooks = append(channelAfterUpdateHooks, channelHook)
-	case boil.BeforeDeleteHook:
-		channelBeforeDeleteHooks = append(channelBeforeDeleteHooks, channelHook)
-	case boil.AfterDeleteHook:
-		channelAfterDeleteHooks = append(channelAfterDeleteHooks, channelHook)
-	case boil.BeforeUpsertHook:
-		channelBeforeUpsertHooks = append(channelBeforeUpsertHooks, channelHook)
-	case boil.AfterUpsertHook:
-		channelAfterUpsertHooks = append(channelAfterUpsertHooks, channelHook)
-	}
-}
-
 // One returns a single channel record from the query.
 func (q channelQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Channel, error) {
 	o := &Channel{}
@@ -419,10 +244,6 @@ func (q channelQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Chan
 		return nil, errors.Wrap(err, "models: failed to execute a one query for channels")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -433,14 +254,6 @@ func (q channelQuery) All(ctx context.Context, exec boil.ContextExecutor) (Chann
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Channel slice")
-	}
-
-	if len(channelAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -683,13 +496,6 @@ func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
 	}
 
-	if len(checkoutAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Checkouts = resultSlice
 		for _, foreign := range resultSlice {
@@ -797,13 +603,6 @@ func (channelL) LoadCollectionChannelListings(ctx context.Context, e boil.Contex
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collection_channel_listings")
 	}
 
-	if len(collectionChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.CollectionChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -911,13 +710,6 @@ func (channelL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Orders = resultSlice
 		for _, foreign := range resultSlice {
@@ -1025,13 +817,6 @@ func (channelL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_channel_listings")
 	}
 
-	if len(productChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ProductChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -1139,13 +924,6 @@ func (channelL) LoadProductVariantChannelListings(ctx context.Context, e boil.Co
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variant_channel_listings")
 	}
 
-	if len(productVariantChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ProductVariantChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -1253,13 +1031,6 @@ func (channelL) LoadSaleChannelListings(ctx context.Context, e boil.ContextExecu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sale_channel_listings")
 	}
 
-	if len(saleChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.SaleChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -1367,13 +1138,6 @@ func (channelL) LoadShippingMethodChannelListings(ctx context.Context, e boil.Co
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_method_channel_listings")
 	}
 
-	if len(shippingMethodChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ShippingMethodChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -1481,13 +1245,6 @@ func (channelL) LoadShippingZoneChannels(ctx context.Context, e boil.ContextExec
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_zone_channels")
 	}
 
-	if len(shippingZoneChannelAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ShippingZoneChannels = resultSlice
 		for _, foreign := range resultSlice {
@@ -1595,13 +1352,6 @@ func (channelL) LoadVoucherChannelListings(ctx context.Context, e boil.ContextEx
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_channel_listings")
 	}
 
-	if len(voucherChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -2214,10 +1964,6 @@ func FindChannel(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 		return nil, errors.Wrap(err, "models: unable to select from channels")
 	}
 
-	if err = channelObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return channelObj, err
-	}
-
 	return channelObj, nil
 }
 
@@ -2229,10 +1975,6 @@ func (o *Channel) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(channelColumnsWithDefault, o)
 
@@ -2297,7 +2039,7 @@ func (o *Channel) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		channelInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Channel.
@@ -2305,9 +2047,6 @@ func (o *Channel) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Channel) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	channelUpdateCacheMut.RLock()
 	cache, cached := channelUpdateCache[key]
@@ -2356,7 +2095,7 @@ func (o *Channel) Update(ctx context.Context, exec boil.ContextExecutor, columns
 		channelUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -2429,10 +2168,6 @@ func (o ChannelSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Channel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no channels provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(channelColumnsWithDefault, o)
@@ -2537,7 +2272,7 @@ func (o *Channel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		channelUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Channel record with an executor.
@@ -2545,10 +2280,6 @@ func (o *Channel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 func (o *Channel) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Channel provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), channelPrimaryKeyMapping)
@@ -2567,10 +2298,6 @@ func (o *Channel) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for channels")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -2603,14 +2330,6 @@ func (o ChannelSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 		return 0, nil
 	}
 
-	if len(channelBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), channelPrimaryKeyMapping)
@@ -2633,14 +2352,6 @@ func (o ChannelSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for channels")
-	}
-
-	if len(channelAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

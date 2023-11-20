@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS voucher_channel_listings (
   voucher_id uuid NOT NULL,
   channel_id uuid NOT NULL,
   discount_value decimal(12,3) NOT NULL DEFAULT 0.00,
-  currency character varying(3) NOT NULL,
+  currency varchar(3) NOT NULL,
   min_spend_amount decimal(12,3) NOT NULL DEFAULT 0.00
 );
 

@@ -110,8 +110,6 @@ type (
 	// StaffNotificationRecipientSlice is an alias for a slice of pointers to StaffNotificationRecipient.
 	// This should almost always be used instead of []StaffNotificationRecipient.
 	StaffNotificationRecipientSlice []*StaffNotificationRecipient
-	// StaffNotificationRecipientHook is the signature for custom StaffNotificationRecipient hook methods
-	StaffNotificationRecipientHook func(context.Context, boil.ContextExecutor, *StaffNotificationRecipient) error
 
 	staffNotificationRecipientQuery struct {
 		*queries.Query
@@ -139,179 +137,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var staffNotificationRecipientAfterSelectHooks []StaffNotificationRecipientHook
-
-var staffNotificationRecipientBeforeInsertHooks []StaffNotificationRecipientHook
-var staffNotificationRecipientAfterInsertHooks []StaffNotificationRecipientHook
-
-var staffNotificationRecipientBeforeUpdateHooks []StaffNotificationRecipientHook
-var staffNotificationRecipientAfterUpdateHooks []StaffNotificationRecipientHook
-
-var staffNotificationRecipientBeforeDeleteHooks []StaffNotificationRecipientHook
-var staffNotificationRecipientAfterDeleteHooks []StaffNotificationRecipientHook
-
-var staffNotificationRecipientBeforeUpsertHooks []StaffNotificationRecipientHook
-var staffNotificationRecipientAfterUpsertHooks []StaffNotificationRecipientHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *StaffNotificationRecipient) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *StaffNotificationRecipient) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *StaffNotificationRecipient) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *StaffNotificationRecipient) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *StaffNotificationRecipient) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *StaffNotificationRecipient) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *StaffNotificationRecipient) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *StaffNotificationRecipient) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *StaffNotificationRecipient) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range staffNotificationRecipientAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddStaffNotificationRecipientHook registers your hook function for all future operations.
-func AddStaffNotificationRecipientHook(hookPoint boil.HookPoint, staffNotificationRecipientHook StaffNotificationRecipientHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		staffNotificationRecipientAfterSelectHooks = append(staffNotificationRecipientAfterSelectHooks, staffNotificationRecipientHook)
-	case boil.BeforeInsertHook:
-		staffNotificationRecipientBeforeInsertHooks = append(staffNotificationRecipientBeforeInsertHooks, staffNotificationRecipientHook)
-	case boil.AfterInsertHook:
-		staffNotificationRecipientAfterInsertHooks = append(staffNotificationRecipientAfterInsertHooks, staffNotificationRecipientHook)
-	case boil.BeforeUpdateHook:
-		staffNotificationRecipientBeforeUpdateHooks = append(staffNotificationRecipientBeforeUpdateHooks, staffNotificationRecipientHook)
-	case boil.AfterUpdateHook:
-		staffNotificationRecipientAfterUpdateHooks = append(staffNotificationRecipientAfterUpdateHooks, staffNotificationRecipientHook)
-	case boil.BeforeDeleteHook:
-		staffNotificationRecipientBeforeDeleteHooks = append(staffNotificationRecipientBeforeDeleteHooks, staffNotificationRecipientHook)
-	case boil.AfterDeleteHook:
-		staffNotificationRecipientAfterDeleteHooks = append(staffNotificationRecipientAfterDeleteHooks, staffNotificationRecipientHook)
-	case boil.BeforeUpsertHook:
-		staffNotificationRecipientBeforeUpsertHooks = append(staffNotificationRecipientBeforeUpsertHooks, staffNotificationRecipientHook)
-	case boil.AfterUpsertHook:
-		staffNotificationRecipientAfterUpsertHooks = append(staffNotificationRecipientAfterUpsertHooks, staffNotificationRecipientHook)
-	}
-}
-
 // One returns a single staffNotificationRecipient record from the query.
 func (q staffNotificationRecipientQuery) One(ctx context.Context, exec boil.ContextExecutor) (*StaffNotificationRecipient, error) {
 	o := &StaffNotificationRecipient{}
@@ -326,10 +151,6 @@ func (q staffNotificationRecipientQuery) One(ctx context.Context, exec boil.Cont
 		return nil, errors.Wrap(err, "models: failed to execute a one query for staff_notification_recipients")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -340,14 +161,6 @@ func (q staffNotificationRecipientQuery) All(ctx context.Context, exec boil.Cont
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to StaffNotificationRecipient slice")
-	}
-
-	if len(staffNotificationRecipientAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -479,14 +292,6 @@ func (staffNotificationRecipientL) LoadUser(ctx context.Context, e boil.ContextE
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -633,10 +438,6 @@ func FindStaffNotificationRecipient(ctx context.Context, exec boil.ContextExecut
 		return nil, errors.Wrap(err, "models: unable to select from staff_notification_recipients")
 	}
 
-	if err = staffNotificationRecipientObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return staffNotificationRecipientObj, err
-	}
-
 	return staffNotificationRecipientObj, nil
 }
 
@@ -648,10 +449,6 @@ func (o *StaffNotificationRecipient) Insert(ctx context.Context, exec boil.Conte
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(staffNotificationRecipientColumnsWithDefault, o)
 
@@ -716,7 +513,7 @@ func (o *StaffNotificationRecipient) Insert(ctx context.Context, exec boil.Conte
 		staffNotificationRecipientInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the StaffNotificationRecipient.
@@ -724,9 +521,6 @@ func (o *StaffNotificationRecipient) Insert(ctx context.Context, exec boil.Conte
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *StaffNotificationRecipient) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	staffNotificationRecipientUpdateCacheMut.RLock()
 	cache, cached := staffNotificationRecipientUpdateCache[key]
@@ -775,7 +569,7 @@ func (o *StaffNotificationRecipient) Update(ctx context.Context, exec boil.Conte
 		staffNotificationRecipientUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -848,10 +642,6 @@ func (o StaffNotificationRecipientSlice) UpdateAll(ctx context.Context, exec boi
 func (o *StaffNotificationRecipient) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no staff_notification_recipients provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(staffNotificationRecipientColumnsWithDefault, o)
@@ -956,7 +746,7 @@ func (o *StaffNotificationRecipient) Upsert(ctx context.Context, exec boil.Conte
 		staffNotificationRecipientUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single StaffNotificationRecipient record with an executor.
@@ -964,10 +754,6 @@ func (o *StaffNotificationRecipient) Upsert(ctx context.Context, exec boil.Conte
 func (o *StaffNotificationRecipient) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no StaffNotificationRecipient provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), staffNotificationRecipientPrimaryKeyMapping)
@@ -986,10 +772,6 @@ func (o *StaffNotificationRecipient) Delete(ctx context.Context, exec boil.Conte
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for staff_notification_recipients")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1022,14 +804,6 @@ func (o StaffNotificationRecipientSlice) DeleteAll(ctx context.Context, exec boi
 		return 0, nil
 	}
 
-	if len(staffNotificationRecipientBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), staffNotificationRecipientPrimaryKeyMapping)
@@ -1052,14 +826,6 @@ func (o StaffNotificationRecipientSlice) DeleteAll(ctx context.Context, exec boi
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for staff_notification_recipients")
-	}
-
-	if len(staffNotificationRecipientAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

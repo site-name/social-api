@@ -120,8 +120,6 @@ type (
 	// CategoryTranslationSlice is an alias for a slice of pointers to CategoryTranslation.
 	// This should almost always be used instead of []CategoryTranslation.
 	CategoryTranslationSlice []*CategoryTranslation
-	// CategoryTranslationHook is the signature for custom CategoryTranslation hook methods
-	CategoryTranslationHook func(context.Context, boil.ContextExecutor, *CategoryTranslation) error
 
 	categoryTranslationQuery struct {
 		*queries.Query
@@ -149,179 +147,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var categoryTranslationAfterSelectHooks []CategoryTranslationHook
-
-var categoryTranslationBeforeInsertHooks []CategoryTranslationHook
-var categoryTranslationAfterInsertHooks []CategoryTranslationHook
-
-var categoryTranslationBeforeUpdateHooks []CategoryTranslationHook
-var categoryTranslationAfterUpdateHooks []CategoryTranslationHook
-
-var categoryTranslationBeforeDeleteHooks []CategoryTranslationHook
-var categoryTranslationAfterDeleteHooks []CategoryTranslationHook
-
-var categoryTranslationBeforeUpsertHooks []CategoryTranslationHook
-var categoryTranslationAfterUpsertHooks []CategoryTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *CategoryTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *CategoryTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *CategoryTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *CategoryTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *CategoryTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *CategoryTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *CategoryTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *CategoryTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *CategoryTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range categoryTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCategoryTranslationHook registers your hook function for all future operations.
-func AddCategoryTranslationHook(hookPoint boil.HookPoint, categoryTranslationHook CategoryTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		categoryTranslationAfterSelectHooks = append(categoryTranslationAfterSelectHooks, categoryTranslationHook)
-	case boil.BeforeInsertHook:
-		categoryTranslationBeforeInsertHooks = append(categoryTranslationBeforeInsertHooks, categoryTranslationHook)
-	case boil.AfterInsertHook:
-		categoryTranslationAfterInsertHooks = append(categoryTranslationAfterInsertHooks, categoryTranslationHook)
-	case boil.BeforeUpdateHook:
-		categoryTranslationBeforeUpdateHooks = append(categoryTranslationBeforeUpdateHooks, categoryTranslationHook)
-	case boil.AfterUpdateHook:
-		categoryTranslationAfterUpdateHooks = append(categoryTranslationAfterUpdateHooks, categoryTranslationHook)
-	case boil.BeforeDeleteHook:
-		categoryTranslationBeforeDeleteHooks = append(categoryTranslationBeforeDeleteHooks, categoryTranslationHook)
-	case boil.AfterDeleteHook:
-		categoryTranslationAfterDeleteHooks = append(categoryTranslationAfterDeleteHooks, categoryTranslationHook)
-	case boil.BeforeUpsertHook:
-		categoryTranslationBeforeUpsertHooks = append(categoryTranslationBeforeUpsertHooks, categoryTranslationHook)
-	case boil.AfterUpsertHook:
-		categoryTranslationAfterUpsertHooks = append(categoryTranslationAfterUpsertHooks, categoryTranslationHook)
-	}
-}
-
 // One returns a single categoryTranslation record from the query.
 func (q categoryTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CategoryTranslation, error) {
 	o := &CategoryTranslation{}
@@ -336,10 +161,6 @@ func (q categoryTranslationQuery) One(ctx context.Context, exec boil.ContextExec
 		return nil, errors.Wrap(err, "models: failed to execute a one query for category_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -350,14 +171,6 @@ func (q categoryTranslationQuery) All(ctx context.Context, exec boil.ContextExec
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to CategoryTranslation slice")
-	}
-
-	if len(categoryTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -428,10 +241,6 @@ func FindCategoryTranslation(ctx context.Context, exec boil.ContextExecutor, iD 
 		return nil, errors.Wrap(err, "models: unable to select from category_translations")
 	}
 
-	if err = categoryTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return categoryTranslationObj, err
-	}
-
 	return categoryTranslationObj, nil
 }
 
@@ -443,10 +252,6 @@ func (o *CategoryTranslation) Insert(ctx context.Context, exec boil.ContextExecu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(categoryTranslationColumnsWithDefault, o)
 
@@ -511,7 +316,7 @@ func (o *CategoryTranslation) Insert(ctx context.Context, exec boil.ContextExecu
 		categoryTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the CategoryTranslation.
@@ -519,9 +324,6 @@ func (o *CategoryTranslation) Insert(ctx context.Context, exec boil.ContextExecu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *CategoryTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	categoryTranslationUpdateCacheMut.RLock()
 	cache, cached := categoryTranslationUpdateCache[key]
@@ -570,7 +372,7 @@ func (o *CategoryTranslation) Update(ctx context.Context, exec boil.ContextExecu
 		categoryTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -643,10 +445,6 @@ func (o CategoryTranslationSlice) UpdateAll(ctx context.Context, exec boil.Conte
 func (o *CategoryTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no category_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(categoryTranslationColumnsWithDefault, o)
@@ -751,7 +549,7 @@ func (o *CategoryTranslation) Upsert(ctx context.Context, exec boil.ContextExecu
 		categoryTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single CategoryTranslation record with an executor.
@@ -759,10 +557,6 @@ func (o *CategoryTranslation) Upsert(ctx context.Context, exec boil.ContextExecu
 func (o *CategoryTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no CategoryTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), categoryTranslationPrimaryKeyMapping)
@@ -781,10 +575,6 @@ func (o *CategoryTranslation) Delete(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for category_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -817,14 +607,6 @@ func (o CategoryTranslationSlice) DeleteAll(ctx context.Context, exec boil.Conte
 		return 0, nil
 	}
 
-	if len(categoryTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), categoryTranslationPrimaryKeyMapping)
@@ -847,14 +629,6 @@ func (o CategoryTranslationSlice) DeleteAll(ctx context.Context, exec boil.Conte
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for category_translations")
-	}
-
-	if len(categoryTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

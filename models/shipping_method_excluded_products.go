@@ -112,8 +112,6 @@ type (
 	// ShippingMethodExcludedProductSlice is an alias for a slice of pointers to ShippingMethodExcludedProduct.
 	// This should almost always be used instead of []ShippingMethodExcludedProduct.
 	ShippingMethodExcludedProductSlice []*ShippingMethodExcludedProduct
-	// ShippingMethodExcludedProductHook is the signature for custom ShippingMethodExcludedProduct hook methods
-	ShippingMethodExcludedProductHook func(context.Context, boil.ContextExecutor, *ShippingMethodExcludedProduct) error
 
 	shippingMethodExcludedProductQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var shippingMethodExcludedProductAfterSelectHooks []ShippingMethodExcludedProductHook
-
-var shippingMethodExcludedProductBeforeInsertHooks []ShippingMethodExcludedProductHook
-var shippingMethodExcludedProductAfterInsertHooks []ShippingMethodExcludedProductHook
-
-var shippingMethodExcludedProductBeforeUpdateHooks []ShippingMethodExcludedProductHook
-var shippingMethodExcludedProductAfterUpdateHooks []ShippingMethodExcludedProductHook
-
-var shippingMethodExcludedProductBeforeDeleteHooks []ShippingMethodExcludedProductHook
-var shippingMethodExcludedProductAfterDeleteHooks []ShippingMethodExcludedProductHook
-
-var shippingMethodExcludedProductBeforeUpsertHooks []ShippingMethodExcludedProductHook
-var shippingMethodExcludedProductAfterUpsertHooks []ShippingMethodExcludedProductHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ShippingMethodExcludedProduct) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ShippingMethodExcludedProduct) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ShippingMethodExcludedProduct) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ShippingMethodExcludedProduct) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ShippingMethodExcludedProduct) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ShippingMethodExcludedProduct) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ShippingMethodExcludedProduct) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ShippingMethodExcludedProduct) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ShippingMethodExcludedProduct) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodExcludedProductAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddShippingMethodExcludedProductHook registers your hook function for all future operations.
-func AddShippingMethodExcludedProductHook(hookPoint boil.HookPoint, shippingMethodExcludedProductHook ShippingMethodExcludedProductHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		shippingMethodExcludedProductAfterSelectHooks = append(shippingMethodExcludedProductAfterSelectHooks, shippingMethodExcludedProductHook)
-	case boil.BeforeInsertHook:
-		shippingMethodExcludedProductBeforeInsertHooks = append(shippingMethodExcludedProductBeforeInsertHooks, shippingMethodExcludedProductHook)
-	case boil.AfterInsertHook:
-		shippingMethodExcludedProductAfterInsertHooks = append(shippingMethodExcludedProductAfterInsertHooks, shippingMethodExcludedProductHook)
-	case boil.BeforeUpdateHook:
-		shippingMethodExcludedProductBeforeUpdateHooks = append(shippingMethodExcludedProductBeforeUpdateHooks, shippingMethodExcludedProductHook)
-	case boil.AfterUpdateHook:
-		shippingMethodExcludedProductAfterUpdateHooks = append(shippingMethodExcludedProductAfterUpdateHooks, shippingMethodExcludedProductHook)
-	case boil.BeforeDeleteHook:
-		shippingMethodExcludedProductBeforeDeleteHooks = append(shippingMethodExcludedProductBeforeDeleteHooks, shippingMethodExcludedProductHook)
-	case boil.AfterDeleteHook:
-		shippingMethodExcludedProductAfterDeleteHooks = append(shippingMethodExcludedProductAfterDeleteHooks, shippingMethodExcludedProductHook)
-	case boil.BeforeUpsertHook:
-		shippingMethodExcludedProductBeforeUpsertHooks = append(shippingMethodExcludedProductBeforeUpsertHooks, shippingMethodExcludedProductHook)
-	case boil.AfterUpsertHook:
-		shippingMethodExcludedProductAfterUpsertHooks = append(shippingMethodExcludedProductAfterUpsertHooks, shippingMethodExcludedProductHook)
-	}
-}
-
 // One returns a single shippingMethodExcludedProduct record from the query.
 func (q shippingMethodExcludedProductQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingMethodExcludedProduct, error) {
 	o := &ShippingMethodExcludedProduct{}
@@ -328,10 +153,6 @@ func (q shippingMethodExcludedProductQuery) One(ctx context.Context, exec boil.C
 		return nil, errors.Wrap(err, "models: failed to execute a one query for shipping_method_excluded_products")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q shippingMethodExcludedProductQuery) All(ctx context.Context, exec boil.C
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ShippingMethodExcludedProduct slice")
-	}
-
-	if len(shippingMethodExcludedProductAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (shippingMethodExcludedProductL) LoadProduct(ctx context.Context, e boil.Co
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
 	}
 
-	if len(productAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (shippingMethodExcludedProductL) LoadShippingMethod(ctx context.Context, e 
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
-	}
-
-	if len(shippingMethodAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindShippingMethodExcludedProduct(ctx context.Context, exec boil.ContextExe
 		return nil, errors.Wrap(err, "models: unable to select from shipping_method_excluded_products")
 	}
 
-	if err = shippingMethodExcludedProductObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return shippingMethodExcludedProductObj, err
-	}
-
 	return shippingMethodExcludedProductObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *ShippingMethodExcludedProduct) Insert(ctx context.Context, exec boil.Co
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodExcludedProductColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *ShippingMethodExcludedProduct) Insert(ctx context.Context, exec boil.Co
 		shippingMethodExcludedProductInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ShippingMethodExcludedProduct.
@@ -867,9 +656,6 @@ func (o *ShippingMethodExcludedProduct) Insert(ctx context.Context, exec boil.Co
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ShippingMethodExcludedProduct) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	shippingMethodExcludedProductUpdateCacheMut.RLock()
 	cache, cached := shippingMethodExcludedProductUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *ShippingMethodExcludedProduct) Update(ctx context.Context, exec boil.Co
 		shippingMethodExcludedProductUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o ShippingMethodExcludedProductSlice) UpdateAll(ctx context.Context, exec 
 func (o *ShippingMethodExcludedProduct) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no shipping_method_excluded_products provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodExcludedProductColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *ShippingMethodExcludedProduct) Upsert(ctx context.Context, exec boil.Co
 		shippingMethodExcludedProductUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ShippingMethodExcludedProduct record with an executor.
@@ -1107,10 +889,6 @@ func (o *ShippingMethodExcludedProduct) Upsert(ctx context.Context, exec boil.Co
 func (o *ShippingMethodExcludedProduct) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ShippingMethodExcludedProduct provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingMethodExcludedProductPrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *ShippingMethodExcludedProduct) Delete(ctx context.Context, exec boil.Co
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for shipping_method_excluded_products")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o ShippingMethodExcludedProductSlice) DeleteAll(ctx context.Context, exec 
 		return 0, nil
 	}
 
-	if len(shippingMethodExcludedProductBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodExcludedProductPrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o ShippingMethodExcludedProductSlice) DeleteAll(ctx context.Context, exec 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for shipping_method_excluded_products")
-	}
-
-	if len(shippingMethodExcludedProductAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

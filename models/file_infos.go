@@ -266,8 +266,6 @@ type (
 	// FileInfoSlice is an alias for a slice of pointers to FileInfo.
 	// This should almost always be used instead of []FileInfo.
 	FileInfoSlice []*FileInfo
-	// FileInfoHook is the signature for custom FileInfo hook methods
-	FileInfoHook func(context.Context, boil.ContextExecutor, *FileInfo) error
 
 	fileInfoQuery struct {
 		*queries.Query
@@ -295,179 +293,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var fileInfoAfterSelectHooks []FileInfoHook
-
-var fileInfoBeforeInsertHooks []FileInfoHook
-var fileInfoAfterInsertHooks []FileInfoHook
-
-var fileInfoBeforeUpdateHooks []FileInfoHook
-var fileInfoAfterUpdateHooks []FileInfoHook
-
-var fileInfoBeforeDeleteHooks []FileInfoHook
-var fileInfoAfterDeleteHooks []FileInfoHook
-
-var fileInfoBeforeUpsertHooks []FileInfoHook
-var fileInfoAfterUpsertHooks []FileInfoHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *FileInfo) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *FileInfo) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *FileInfo) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *FileInfo) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *FileInfo) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *FileInfo) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *FileInfo) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *FileInfo) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *FileInfo) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range fileInfoAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddFileInfoHook registers your hook function for all future operations.
-func AddFileInfoHook(hookPoint boil.HookPoint, fileInfoHook FileInfoHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		fileInfoAfterSelectHooks = append(fileInfoAfterSelectHooks, fileInfoHook)
-	case boil.BeforeInsertHook:
-		fileInfoBeforeInsertHooks = append(fileInfoBeforeInsertHooks, fileInfoHook)
-	case boil.AfterInsertHook:
-		fileInfoAfterInsertHooks = append(fileInfoAfterInsertHooks, fileInfoHook)
-	case boil.BeforeUpdateHook:
-		fileInfoBeforeUpdateHooks = append(fileInfoBeforeUpdateHooks, fileInfoHook)
-	case boil.AfterUpdateHook:
-		fileInfoAfterUpdateHooks = append(fileInfoAfterUpdateHooks, fileInfoHook)
-	case boil.BeforeDeleteHook:
-		fileInfoBeforeDeleteHooks = append(fileInfoBeforeDeleteHooks, fileInfoHook)
-	case boil.AfterDeleteHook:
-		fileInfoAfterDeleteHooks = append(fileInfoAfterDeleteHooks, fileInfoHook)
-	case boil.BeforeUpsertHook:
-		fileInfoBeforeUpsertHooks = append(fileInfoBeforeUpsertHooks, fileInfoHook)
-	case boil.AfterUpsertHook:
-		fileInfoAfterUpsertHooks = append(fileInfoAfterUpsertHooks, fileInfoHook)
-	}
-}
-
 // One returns a single fileInfo record from the query.
 func (q fileInfoQuery) One(ctx context.Context, exec boil.ContextExecutor) (*FileInfo, error) {
 	o := &FileInfo{}
@@ -482,10 +307,6 @@ func (q fileInfoQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Fil
 		return nil, errors.Wrap(err, "models: failed to execute a one query for file_infos")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -496,14 +317,6 @@ func (q fileInfoQuery) All(ctx context.Context, exec boil.ContextExecutor) (File
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to FileInfo slice")
-	}
-
-	if len(fileInfoAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -574,10 +387,6 @@ func FindFileInfo(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 		return nil, errors.Wrap(err, "models: unable to select from file_infos")
 	}
 
-	if err = fileInfoObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return fileInfoObj, err
-	}
-
 	return fileInfoObj, nil
 }
 
@@ -589,10 +398,6 @@ func (o *FileInfo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(fileInfoColumnsWithDefault, o)
 
@@ -657,7 +462,7 @@ func (o *FileInfo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		fileInfoInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the FileInfo.
@@ -665,9 +470,6 @@ func (o *FileInfo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *FileInfo) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	fileInfoUpdateCacheMut.RLock()
 	cache, cached := fileInfoUpdateCache[key]
@@ -716,7 +518,7 @@ func (o *FileInfo) Update(ctx context.Context, exec boil.ContextExecutor, column
 		fileInfoUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -789,10 +591,6 @@ func (o FileInfoSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 func (o *FileInfo) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no file_infos provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(fileInfoColumnsWithDefault, o)
@@ -897,7 +695,7 @@ func (o *FileInfo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		fileInfoUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single FileInfo record with an executor.
@@ -905,10 +703,6 @@ func (o *FileInfo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 func (o *FileInfo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no FileInfo provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), fileInfoPrimaryKeyMapping)
@@ -927,10 +721,6 @@ func (o *FileInfo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for file_infos")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -963,14 +753,6 @@ func (o FileInfoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 		return 0, nil
 	}
 
-	if len(fileInfoBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), fileInfoPrimaryKeyMapping)
@@ -993,14 +775,6 @@ func (o FileInfoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for file_infos")
-	}
-
-	if len(fileInfoAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

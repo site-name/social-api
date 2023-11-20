@@ -1007,7 +1007,7 @@ func (s *TimerLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addr
 	return result
 }
 
-func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error) {
+func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.FilterByOption(option)
@@ -1023,7 +1023,7 @@ func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOptio
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Get(addressID string) (*models.Address, error) {
+func (s *TimerLayerAddressStore) Get(addressID string) (*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Get(addressID)
@@ -1039,7 +1039,7 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*models.Address, error) 
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error) {
+func (s *TimerLayerAddressStore) Upsert(tx boil.ContextTransactor, address *model.Address) (*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Upsert(tx, address)

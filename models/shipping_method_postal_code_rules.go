@@ -116,8 +116,6 @@ type (
 	// ShippingMethodPostalCodeRuleSlice is an alias for a slice of pointers to ShippingMethodPostalCodeRule.
 	// This should almost always be used instead of []ShippingMethodPostalCodeRule.
 	ShippingMethodPostalCodeRuleSlice []*ShippingMethodPostalCodeRule
-	// ShippingMethodPostalCodeRuleHook is the signature for custom ShippingMethodPostalCodeRule hook methods
-	ShippingMethodPostalCodeRuleHook func(context.Context, boil.ContextExecutor, *ShippingMethodPostalCodeRule) error
 
 	shippingMethodPostalCodeRuleQuery struct {
 		*queries.Query
@@ -145,179 +143,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var shippingMethodPostalCodeRuleAfterSelectHooks []ShippingMethodPostalCodeRuleHook
-
-var shippingMethodPostalCodeRuleBeforeInsertHooks []ShippingMethodPostalCodeRuleHook
-var shippingMethodPostalCodeRuleAfterInsertHooks []ShippingMethodPostalCodeRuleHook
-
-var shippingMethodPostalCodeRuleBeforeUpdateHooks []ShippingMethodPostalCodeRuleHook
-var shippingMethodPostalCodeRuleAfterUpdateHooks []ShippingMethodPostalCodeRuleHook
-
-var shippingMethodPostalCodeRuleBeforeDeleteHooks []ShippingMethodPostalCodeRuleHook
-var shippingMethodPostalCodeRuleAfterDeleteHooks []ShippingMethodPostalCodeRuleHook
-
-var shippingMethodPostalCodeRuleBeforeUpsertHooks []ShippingMethodPostalCodeRuleHook
-var shippingMethodPostalCodeRuleAfterUpsertHooks []ShippingMethodPostalCodeRuleHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ShippingMethodPostalCodeRule) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ShippingMethodPostalCodeRule) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ShippingMethodPostalCodeRule) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ShippingMethodPostalCodeRule) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ShippingMethodPostalCodeRule) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ShippingMethodPostalCodeRule) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ShippingMethodPostalCodeRule) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ShippingMethodPostalCodeRule) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ShippingMethodPostalCodeRule) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodPostalCodeRuleAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddShippingMethodPostalCodeRuleHook registers your hook function for all future operations.
-func AddShippingMethodPostalCodeRuleHook(hookPoint boil.HookPoint, shippingMethodPostalCodeRuleHook ShippingMethodPostalCodeRuleHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		shippingMethodPostalCodeRuleAfterSelectHooks = append(shippingMethodPostalCodeRuleAfterSelectHooks, shippingMethodPostalCodeRuleHook)
-	case boil.BeforeInsertHook:
-		shippingMethodPostalCodeRuleBeforeInsertHooks = append(shippingMethodPostalCodeRuleBeforeInsertHooks, shippingMethodPostalCodeRuleHook)
-	case boil.AfterInsertHook:
-		shippingMethodPostalCodeRuleAfterInsertHooks = append(shippingMethodPostalCodeRuleAfterInsertHooks, shippingMethodPostalCodeRuleHook)
-	case boil.BeforeUpdateHook:
-		shippingMethodPostalCodeRuleBeforeUpdateHooks = append(shippingMethodPostalCodeRuleBeforeUpdateHooks, shippingMethodPostalCodeRuleHook)
-	case boil.AfterUpdateHook:
-		shippingMethodPostalCodeRuleAfterUpdateHooks = append(shippingMethodPostalCodeRuleAfterUpdateHooks, shippingMethodPostalCodeRuleHook)
-	case boil.BeforeDeleteHook:
-		shippingMethodPostalCodeRuleBeforeDeleteHooks = append(shippingMethodPostalCodeRuleBeforeDeleteHooks, shippingMethodPostalCodeRuleHook)
-	case boil.AfterDeleteHook:
-		shippingMethodPostalCodeRuleAfterDeleteHooks = append(shippingMethodPostalCodeRuleAfterDeleteHooks, shippingMethodPostalCodeRuleHook)
-	case boil.BeforeUpsertHook:
-		shippingMethodPostalCodeRuleBeforeUpsertHooks = append(shippingMethodPostalCodeRuleBeforeUpsertHooks, shippingMethodPostalCodeRuleHook)
-	case boil.AfterUpsertHook:
-		shippingMethodPostalCodeRuleAfterUpsertHooks = append(shippingMethodPostalCodeRuleAfterUpsertHooks, shippingMethodPostalCodeRuleHook)
-	}
-}
-
 // One returns a single shippingMethodPostalCodeRule record from the query.
 func (q shippingMethodPostalCodeRuleQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingMethodPostalCodeRule, error) {
 	o := &ShippingMethodPostalCodeRule{}
@@ -332,10 +157,6 @@ func (q shippingMethodPostalCodeRuleQuery) One(ctx context.Context, exec boil.Co
 		return nil, errors.Wrap(err, "models: failed to execute a one query for shipping_method_postal_code_rules")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -346,14 +167,6 @@ func (q shippingMethodPostalCodeRuleQuery) All(ctx context.Context, exec boil.Co
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ShippingMethodPostalCodeRule slice")
-	}
-
-	if len(shippingMethodPostalCodeRuleAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -483,14 +296,6 @@ func (shippingMethodPostalCodeRuleL) LoadShippingMethod(ctx context.Context, e b
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
 	}
 
-	if len(shippingMethodAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -602,10 +407,6 @@ func FindShippingMethodPostalCodeRule(ctx context.Context, exec boil.ContextExec
 		return nil, errors.Wrap(err, "models: unable to select from shipping_method_postal_code_rules")
 	}
 
-	if err = shippingMethodPostalCodeRuleObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return shippingMethodPostalCodeRuleObj, err
-	}
-
 	return shippingMethodPostalCodeRuleObj, nil
 }
 
@@ -617,10 +418,6 @@ func (o *ShippingMethodPostalCodeRule) Insert(ctx context.Context, exec boil.Con
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodPostalCodeRuleColumnsWithDefault, o)
 
@@ -685,7 +482,7 @@ func (o *ShippingMethodPostalCodeRule) Insert(ctx context.Context, exec boil.Con
 		shippingMethodPostalCodeRuleInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ShippingMethodPostalCodeRule.
@@ -693,9 +490,6 @@ func (o *ShippingMethodPostalCodeRule) Insert(ctx context.Context, exec boil.Con
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ShippingMethodPostalCodeRule) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	shippingMethodPostalCodeRuleUpdateCacheMut.RLock()
 	cache, cached := shippingMethodPostalCodeRuleUpdateCache[key]
@@ -744,7 +538,7 @@ func (o *ShippingMethodPostalCodeRule) Update(ctx context.Context, exec boil.Con
 		shippingMethodPostalCodeRuleUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -817,10 +611,6 @@ func (o ShippingMethodPostalCodeRuleSlice) UpdateAll(ctx context.Context, exec b
 func (o *ShippingMethodPostalCodeRule) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no shipping_method_postal_code_rules provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodPostalCodeRuleColumnsWithDefault, o)
@@ -925,7 +715,7 @@ func (o *ShippingMethodPostalCodeRule) Upsert(ctx context.Context, exec boil.Con
 		shippingMethodPostalCodeRuleUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ShippingMethodPostalCodeRule record with an executor.
@@ -933,10 +723,6 @@ func (o *ShippingMethodPostalCodeRule) Upsert(ctx context.Context, exec boil.Con
 func (o *ShippingMethodPostalCodeRule) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ShippingMethodPostalCodeRule provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingMethodPostalCodeRulePrimaryKeyMapping)
@@ -955,10 +741,6 @@ func (o *ShippingMethodPostalCodeRule) Delete(ctx context.Context, exec boil.Con
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for shipping_method_postal_code_rules")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -991,14 +773,6 @@ func (o ShippingMethodPostalCodeRuleSlice) DeleteAll(ctx context.Context, exec b
 		return 0, nil
 	}
 
-	if len(shippingMethodPostalCodeRuleBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodPostalCodeRulePrimaryKeyMapping)
@@ -1021,14 +795,6 @@ func (o ShippingMethodPostalCodeRuleSlice) DeleteAll(ctx context.Context, exec b
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for shipping_method_postal_code_rules")
-	}
-
-	if len(shippingMethodPostalCodeRuleAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

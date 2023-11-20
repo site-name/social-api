@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS status (
   user_id uuid NOT NULL PRIMARY KEY,
-  status character varying(32) NOT NULL,
+  status varchar(32) NOT NULL,
   manual boolean NOT NULL,
   last_activity_at bigint NOT NULL
 );

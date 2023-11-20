@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS sale_translations (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  language_code character varying(3) NOT NULL,
-  name character varying(255) NOT NULL,
+  language_code varchar(10) NOT NULL,
+  name varchar(255) NOT NULL,
   sale_id uuid NOT NULL
 );
 

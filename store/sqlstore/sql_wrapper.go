@@ -3,7 +3,6 @@ package sqlstore
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -41,46 +40,32 @@ func newSqlDbWrapper(db *sql.DB, timeout time.Duration, trace bool) *sqlDBWrappe
 }
 
 func (w *sqlDBWrapper) BeginTx(ctx context.Context, opts *sql.TxOptions) (store.ContextRunner, error) {
-	switch t := w.sqlDBInterface.(type) {
-	case *sql.Tx:
+	if _, ok := w.sqlDBInterface.(*sql.Tx); ok {
 		return w, nil
-	case *sql.DB:
-		tx, err := t.BeginTx(ctx, opts)
-		if err != nil {
-			return nil, err
-		}
-		res := &sqlDBWrapper{
-			sqlDBInterface: tx,
-			queryTimeout:   w.queryTimeout,
-			trace:          w.trace,
-		}
-		return res, nil
-
-	default:
-		return nil, fmt.Errorf("upsupported type %T", t)
 	}
+	tx, err := w.sqlDBInterface.(*sql.DB).BeginTx(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return &sqlDBWrapper{
+		sqlDBInterface: tx,
+		queryTimeout:   w.queryTimeout,
+		trace:          w.trace,
+	}, nil
 }
 
 func (w *sqlDBWrapper) Commit() error {
-	switch t := w.sqlDBInterface.(type) {
-	case *sql.DB:
-		return nil
-	case *sql.Tx:
-		return t.Commit()
-	default:
-		return fmt.Errorf("upsupported type %T", t)
+	if tx, ok := w.sqlDBInterface.(*sql.Tx); ok {
+		return tx.Commit()
 	}
+	return nil
 }
 
 func (w *sqlDBWrapper) Rollback() error {
-	switch t := w.sqlDBInterface.(type) {
-	case *sql.DB:
-		return nil
-	case *sql.Tx:
-		return t.Commit()
-	default:
-		return fmt.Errorf("upsupported type %T", t)
+	if tx, ok := w.sqlDBInterface.(*sql.Tx); ok {
+		return tx.Rollback()
 	}
+	return nil
 }
 
 // Exec implements boil.ContextExecutor.

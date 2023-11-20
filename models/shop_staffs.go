@@ -132,8 +132,6 @@ type (
 	// ShopStaffSlice is an alias for a slice of pointers to ShopStaff.
 	// This should almost always be used instead of []ShopStaff.
 	ShopStaffSlice []*ShopStaff
-	// ShopStaffHook is the signature for custom ShopStaff hook methods
-	ShopStaffHook func(context.Context, boil.ContextExecutor, *ShopStaff) error
 
 	shopStaffQuery struct {
 		*queries.Query
@@ -161,179 +159,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var shopStaffAfterSelectHooks []ShopStaffHook
-
-var shopStaffBeforeInsertHooks []ShopStaffHook
-var shopStaffAfterInsertHooks []ShopStaffHook
-
-var shopStaffBeforeUpdateHooks []ShopStaffHook
-var shopStaffAfterUpdateHooks []ShopStaffHook
-
-var shopStaffBeforeDeleteHooks []ShopStaffHook
-var shopStaffAfterDeleteHooks []ShopStaffHook
-
-var shopStaffBeforeUpsertHooks []ShopStaffHook
-var shopStaffAfterUpsertHooks []ShopStaffHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ShopStaff) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ShopStaff) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ShopStaff) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ShopStaff) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ShopStaff) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ShopStaff) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ShopStaff) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ShopStaff) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ShopStaff) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shopStaffAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddShopStaffHook registers your hook function for all future operations.
-func AddShopStaffHook(hookPoint boil.HookPoint, shopStaffHook ShopStaffHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		shopStaffAfterSelectHooks = append(shopStaffAfterSelectHooks, shopStaffHook)
-	case boil.BeforeInsertHook:
-		shopStaffBeforeInsertHooks = append(shopStaffBeforeInsertHooks, shopStaffHook)
-	case boil.AfterInsertHook:
-		shopStaffAfterInsertHooks = append(shopStaffAfterInsertHooks, shopStaffHook)
-	case boil.BeforeUpdateHook:
-		shopStaffBeforeUpdateHooks = append(shopStaffBeforeUpdateHooks, shopStaffHook)
-	case boil.AfterUpdateHook:
-		shopStaffAfterUpdateHooks = append(shopStaffAfterUpdateHooks, shopStaffHook)
-	case boil.BeforeDeleteHook:
-		shopStaffBeforeDeleteHooks = append(shopStaffBeforeDeleteHooks, shopStaffHook)
-	case boil.AfterDeleteHook:
-		shopStaffAfterDeleteHooks = append(shopStaffAfterDeleteHooks, shopStaffHook)
-	case boil.BeforeUpsertHook:
-		shopStaffBeforeUpsertHooks = append(shopStaffBeforeUpsertHooks, shopStaffHook)
-	case boil.AfterUpsertHook:
-		shopStaffAfterUpsertHooks = append(shopStaffAfterUpsertHooks, shopStaffHook)
-	}
-}
-
 // One returns a single shopStaff record from the query.
 func (q shopStaffQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShopStaff, error) {
 	o := &ShopStaff{}
@@ -348,10 +173,6 @@ func (q shopStaffQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Sh
 		return nil, errors.Wrap(err, "models: failed to execute a one query for shop_staffs")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -362,14 +183,6 @@ func (q shopStaffQuery) All(ctx context.Context, exec boil.ContextExecutor) (Sho
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ShopStaff slice")
-	}
-
-	if len(shopStaffAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -499,14 +312,6 @@ func (shopStaffL) LoadStaff(ctx context.Context, e boil.ContextExecutor, singula
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -618,10 +423,6 @@ func FindShopStaff(ctx context.Context, exec boil.ContextExecutor, iD string, se
 		return nil, errors.Wrap(err, "models: unable to select from shop_staffs")
 	}
 
-	if err = shopStaffObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return shopStaffObj, err
-	}
-
 	return shopStaffObj, nil
 }
 
@@ -633,10 +434,6 @@ func (o *ShopStaff) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shopStaffColumnsWithDefault, o)
 
@@ -701,7 +498,7 @@ func (o *ShopStaff) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 		shopStaffInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ShopStaff.
@@ -709,9 +506,6 @@ func (o *ShopStaff) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ShopStaff) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	shopStaffUpdateCacheMut.RLock()
 	cache, cached := shopStaffUpdateCache[key]
@@ -760,7 +554,7 @@ func (o *ShopStaff) Update(ctx context.Context, exec boil.ContextExecutor, colum
 		shopStaffUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -833,10 +627,6 @@ func (o ShopStaffSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 func (o *ShopStaff) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no shop_staffs provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shopStaffColumnsWithDefault, o)
@@ -941,7 +731,7 @@ func (o *ShopStaff) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 		shopStaffUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ShopStaff record with an executor.
@@ -949,10 +739,6 @@ func (o *ShopStaff) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 func (o *ShopStaff) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ShopStaff provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shopStaffPrimaryKeyMapping)
@@ -971,10 +757,6 @@ func (o *ShopStaff) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for shop_staffs")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1007,14 +789,6 @@ func (o ShopStaffSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 		return 0, nil
 	}
 
-	if len(shopStaffBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shopStaffPrimaryKeyMapping)
@@ -1037,14 +811,6 @@ func (o ShopStaffSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for shop_staffs")
-	}
-
-	if len(shopStaffAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

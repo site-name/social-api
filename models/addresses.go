@@ -279,8 +279,6 @@ type (
 	// AddressSlice is an alias for a slice of pointers to Address.
 	// This should almost always be used instead of []Address.
 	AddressSlice []*Address
-	// AddressHook is the signature for custom Address hook methods
-	AddressHook func(context.Context, boil.ContextExecutor, *Address) error
 
 	addressQuery struct {
 		*queries.Query
@@ -308,179 +306,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var addressAfterSelectHooks []AddressHook
-
-var addressBeforeInsertHooks []AddressHook
-var addressAfterInsertHooks []AddressHook
-
-var addressBeforeUpdateHooks []AddressHook
-var addressAfterUpdateHooks []AddressHook
-
-var addressBeforeDeleteHooks []AddressHook
-var addressAfterDeleteHooks []AddressHook
-
-var addressBeforeUpsertHooks []AddressHook
-var addressAfterUpsertHooks []AddressHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Address) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Address) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Address) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Address) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Address) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Address) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Address) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Address) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Address) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range addressAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAddressHook registers your hook function for all future operations.
-func AddAddressHook(hookPoint boil.HookPoint, addressHook AddressHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		addressAfterSelectHooks = append(addressAfterSelectHooks, addressHook)
-	case boil.BeforeInsertHook:
-		addressBeforeInsertHooks = append(addressBeforeInsertHooks, addressHook)
-	case boil.AfterInsertHook:
-		addressAfterInsertHooks = append(addressAfterInsertHooks, addressHook)
-	case boil.BeforeUpdateHook:
-		addressBeforeUpdateHooks = append(addressBeforeUpdateHooks, addressHook)
-	case boil.AfterUpdateHook:
-		addressAfterUpdateHooks = append(addressAfterUpdateHooks, addressHook)
-	case boil.BeforeDeleteHook:
-		addressBeforeDeleteHooks = append(addressBeforeDeleteHooks, addressHook)
-	case boil.AfterDeleteHook:
-		addressAfterDeleteHooks = append(addressAfterDeleteHooks, addressHook)
-	case boil.BeforeUpsertHook:
-		addressBeforeUpsertHooks = append(addressBeforeUpsertHooks, addressHook)
-	case boil.AfterUpsertHook:
-		addressAfterUpsertHooks = append(addressAfterUpsertHooks, addressHook)
-	}
-}
-
 // One returns a single address record from the query.
 func (q addressQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Address, error) {
 	o := &Address{}
@@ -495,10 +320,6 @@ func (q addressQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Addr
 		return nil, errors.Wrap(err, "models: failed to execute a one query for addresses")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -509,14 +330,6 @@ func (q addressQuery) All(ctx context.Context, exec boil.ContextExecutor) (Addre
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Address slice")
-	}
-
-	if len(addressAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -717,13 +530,6 @@ func (addressL) LoadBillingAddressCheckouts(ctx context.Context, e boil.ContextE
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
 	}
 
-	if len(checkoutAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.BillingAddressCheckouts = resultSlice
 		for _, foreign := range resultSlice {
@@ -831,13 +637,6 @@ func (addressL) LoadBillingAddressOrders(ctx context.Context, e boil.ContextExec
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.BillingAddressOrders = resultSlice
 		for _, foreign := range resultSlice {
@@ -945,13 +744,6 @@ func (addressL) LoadShops(ctx context.Context, e boil.ContextExecutor, singular 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shops")
 	}
 
-	if len(shopAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Shops = resultSlice
 		for _, foreign := range resultSlice {
@@ -1059,13 +851,6 @@ func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, s
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user_addresses")
 	}
 
-	if len(userAddressAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.UserAddresses = resultSlice
 		for _, foreign := range resultSlice {
@@ -1173,13 +958,6 @@ func (addressL) LoadDefaultShippingAddressUsers(ctx context.Context, e boil.Cont
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.DefaultShippingAddressUsers = resultSlice
 		for _, foreign := range resultSlice {
@@ -1287,13 +1065,6 @@ func (addressL) LoadWarehouses(ctx context.Context, e boil.ContextExecutor, sing
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for warehouses")
 	}
 
-	if len(warehouseAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Warehouses = resultSlice
 		for _, foreign := range resultSlice {
@@ -2043,10 +1814,6 @@ func FindAddress(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 		return nil, errors.Wrap(err, "models: unable to select from addresses")
 	}
 
-	if err = addressObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return addressObj, err
-	}
-
 	return addressObj, nil
 }
 
@@ -2058,10 +1825,6 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(addressColumnsWithDefault, o)
 
@@ -2126,7 +1889,7 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		addressInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Address.
@@ -2134,9 +1897,6 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	addressUpdateCacheMut.RLock()
 	cache, cached := addressUpdateCache[key]
@@ -2185,7 +1945,7 @@ func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns
 		addressUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -2258,10 +2018,6 @@ func (o AddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no addresses provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(addressColumnsWithDefault, o)
@@ -2366,7 +2122,7 @@ func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		addressUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Address record with an executor.
@@ -2374,10 +2130,6 @@ func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 func (o *Address) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Address provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), addressPrimaryKeyMapping)
@@ -2396,10 +2148,6 @@ func (o *Address) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for addresses")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -2432,14 +2180,6 @@ func (o AddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 		return 0, nil
 	}
 
-	if len(addressBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), addressPrimaryKeyMapping)
@@ -2462,14 +2202,6 @@ func (o AddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for addresses")
-	}
-
-	if len(addressAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

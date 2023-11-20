@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS menus (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(250) NOT NULL,
-  slug character varying(255) NOT NULL,
+  name varchar(250) NOT NULL,
+  slug varchar(255) NOT NULL,
   created_at bigint NOT NULL,
   metadata jsonb,
   private_metadata jsonb

@@ -98,8 +98,6 @@ type (
 	// TermsOfServiceSlice is an alias for a slice of pointers to TermsOfService.
 	// This should almost always be used instead of []TermsOfService.
 	TermsOfServiceSlice []*TermsOfService
-	// TermsOfServiceHook is the signature for custom TermsOfService hook methods
-	TermsOfServiceHook func(context.Context, boil.ContextExecutor, *TermsOfService) error
 
 	termsOfServiceQuery struct {
 		*queries.Query
@@ -127,179 +125,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var termsOfServiceAfterSelectHooks []TermsOfServiceHook
-
-var termsOfServiceBeforeInsertHooks []TermsOfServiceHook
-var termsOfServiceAfterInsertHooks []TermsOfServiceHook
-
-var termsOfServiceBeforeUpdateHooks []TermsOfServiceHook
-var termsOfServiceAfterUpdateHooks []TermsOfServiceHook
-
-var termsOfServiceBeforeDeleteHooks []TermsOfServiceHook
-var termsOfServiceAfterDeleteHooks []TermsOfServiceHook
-
-var termsOfServiceBeforeUpsertHooks []TermsOfServiceHook
-var termsOfServiceAfterUpsertHooks []TermsOfServiceHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *TermsOfService) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *TermsOfService) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *TermsOfService) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *TermsOfService) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *TermsOfService) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *TermsOfService) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *TermsOfService) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *TermsOfService) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *TermsOfService) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range termsOfServiceAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddTermsOfServiceHook registers your hook function for all future operations.
-func AddTermsOfServiceHook(hookPoint boil.HookPoint, termsOfServiceHook TermsOfServiceHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		termsOfServiceAfterSelectHooks = append(termsOfServiceAfterSelectHooks, termsOfServiceHook)
-	case boil.BeforeInsertHook:
-		termsOfServiceBeforeInsertHooks = append(termsOfServiceBeforeInsertHooks, termsOfServiceHook)
-	case boil.AfterInsertHook:
-		termsOfServiceAfterInsertHooks = append(termsOfServiceAfterInsertHooks, termsOfServiceHook)
-	case boil.BeforeUpdateHook:
-		termsOfServiceBeforeUpdateHooks = append(termsOfServiceBeforeUpdateHooks, termsOfServiceHook)
-	case boil.AfterUpdateHook:
-		termsOfServiceAfterUpdateHooks = append(termsOfServiceAfterUpdateHooks, termsOfServiceHook)
-	case boil.BeforeDeleteHook:
-		termsOfServiceBeforeDeleteHooks = append(termsOfServiceBeforeDeleteHooks, termsOfServiceHook)
-	case boil.AfterDeleteHook:
-		termsOfServiceAfterDeleteHooks = append(termsOfServiceAfterDeleteHooks, termsOfServiceHook)
-	case boil.BeforeUpsertHook:
-		termsOfServiceBeforeUpsertHooks = append(termsOfServiceBeforeUpsertHooks, termsOfServiceHook)
-	case boil.AfterUpsertHook:
-		termsOfServiceAfterUpsertHooks = append(termsOfServiceAfterUpsertHooks, termsOfServiceHook)
-	}
-}
-
 // One returns a single termsOfService record from the query.
 func (q termsOfServiceQuery) One(ctx context.Context, exec boil.ContextExecutor) (*TermsOfService, error) {
 	o := &TermsOfService{}
@@ -314,10 +139,6 @@ func (q termsOfServiceQuery) One(ctx context.Context, exec boil.ContextExecutor)
 		return nil, errors.Wrap(err, "models: failed to execute a one query for terms_of_services")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -328,14 +149,6 @@ func (q termsOfServiceQuery) All(ctx context.Context, exec boil.ContextExecutor)
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to TermsOfService slice")
-	}
-
-	if len(termsOfServiceAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -406,10 +219,6 @@ func FindTermsOfService(ctx context.Context, exec boil.ContextExecutor, iD strin
 		return nil, errors.Wrap(err, "models: unable to select from terms_of_services")
 	}
 
-	if err = termsOfServiceObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return termsOfServiceObj, err
-	}
-
 	return termsOfServiceObj, nil
 }
 
@@ -421,10 +230,6 @@ func (o *TermsOfService) Insert(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(termsOfServiceColumnsWithDefault, o)
 
@@ -489,7 +294,7 @@ func (o *TermsOfService) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		termsOfServiceInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the TermsOfService.
@@ -497,9 +302,6 @@ func (o *TermsOfService) Insert(ctx context.Context, exec boil.ContextExecutor, 
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *TermsOfService) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	termsOfServiceUpdateCacheMut.RLock()
 	cache, cached := termsOfServiceUpdateCache[key]
@@ -548,7 +350,7 @@ func (o *TermsOfService) Update(ctx context.Context, exec boil.ContextExecutor, 
 		termsOfServiceUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -621,10 +423,6 @@ func (o TermsOfServiceSlice) UpdateAll(ctx context.Context, exec boil.ContextExe
 func (o *TermsOfService) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no terms_of_services provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(termsOfServiceColumnsWithDefault, o)
@@ -729,7 +527,7 @@ func (o *TermsOfService) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		termsOfServiceUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single TermsOfService record with an executor.
@@ -737,10 +535,6 @@ func (o *TermsOfService) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 func (o *TermsOfService) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no TermsOfService provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), termsOfServicePrimaryKeyMapping)
@@ -759,10 +553,6 @@ func (o *TermsOfService) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for terms_of_services")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -795,14 +585,6 @@ func (o TermsOfServiceSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 		return 0, nil
 	}
 
-	if len(termsOfServiceBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), termsOfServicePrimaryKeyMapping)
@@ -825,14 +607,6 @@ func (o TermsOfServiceSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for terms_of_services")
-	}
-
-	if len(termsOfServiceAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

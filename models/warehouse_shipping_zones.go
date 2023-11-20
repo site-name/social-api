@@ -112,8 +112,6 @@ type (
 	// WarehouseShippingZoneSlice is an alias for a slice of pointers to WarehouseShippingZone.
 	// This should almost always be used instead of []WarehouseShippingZone.
 	WarehouseShippingZoneSlice []*WarehouseShippingZone
-	// WarehouseShippingZoneHook is the signature for custom WarehouseShippingZone hook methods
-	WarehouseShippingZoneHook func(context.Context, boil.ContextExecutor, *WarehouseShippingZone) error
 
 	warehouseShippingZoneQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var warehouseShippingZoneAfterSelectHooks []WarehouseShippingZoneHook
-
-var warehouseShippingZoneBeforeInsertHooks []WarehouseShippingZoneHook
-var warehouseShippingZoneAfterInsertHooks []WarehouseShippingZoneHook
-
-var warehouseShippingZoneBeforeUpdateHooks []WarehouseShippingZoneHook
-var warehouseShippingZoneAfterUpdateHooks []WarehouseShippingZoneHook
-
-var warehouseShippingZoneBeforeDeleteHooks []WarehouseShippingZoneHook
-var warehouseShippingZoneAfterDeleteHooks []WarehouseShippingZoneHook
-
-var warehouseShippingZoneBeforeUpsertHooks []WarehouseShippingZoneHook
-var warehouseShippingZoneAfterUpsertHooks []WarehouseShippingZoneHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *WarehouseShippingZone) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *WarehouseShippingZone) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *WarehouseShippingZone) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *WarehouseShippingZone) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *WarehouseShippingZone) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *WarehouseShippingZone) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *WarehouseShippingZone) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *WarehouseShippingZone) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *WarehouseShippingZone) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range warehouseShippingZoneAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddWarehouseShippingZoneHook registers your hook function for all future operations.
-func AddWarehouseShippingZoneHook(hookPoint boil.HookPoint, warehouseShippingZoneHook WarehouseShippingZoneHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		warehouseShippingZoneAfterSelectHooks = append(warehouseShippingZoneAfterSelectHooks, warehouseShippingZoneHook)
-	case boil.BeforeInsertHook:
-		warehouseShippingZoneBeforeInsertHooks = append(warehouseShippingZoneBeforeInsertHooks, warehouseShippingZoneHook)
-	case boil.AfterInsertHook:
-		warehouseShippingZoneAfterInsertHooks = append(warehouseShippingZoneAfterInsertHooks, warehouseShippingZoneHook)
-	case boil.BeforeUpdateHook:
-		warehouseShippingZoneBeforeUpdateHooks = append(warehouseShippingZoneBeforeUpdateHooks, warehouseShippingZoneHook)
-	case boil.AfterUpdateHook:
-		warehouseShippingZoneAfterUpdateHooks = append(warehouseShippingZoneAfterUpdateHooks, warehouseShippingZoneHook)
-	case boil.BeforeDeleteHook:
-		warehouseShippingZoneBeforeDeleteHooks = append(warehouseShippingZoneBeforeDeleteHooks, warehouseShippingZoneHook)
-	case boil.AfterDeleteHook:
-		warehouseShippingZoneAfterDeleteHooks = append(warehouseShippingZoneAfterDeleteHooks, warehouseShippingZoneHook)
-	case boil.BeforeUpsertHook:
-		warehouseShippingZoneBeforeUpsertHooks = append(warehouseShippingZoneBeforeUpsertHooks, warehouseShippingZoneHook)
-	case boil.AfterUpsertHook:
-		warehouseShippingZoneAfterUpsertHooks = append(warehouseShippingZoneAfterUpsertHooks, warehouseShippingZoneHook)
-	}
-}
-
 // One returns a single warehouseShippingZone record from the query.
 func (q warehouseShippingZoneQuery) One(ctx context.Context, exec boil.ContextExecutor) (*WarehouseShippingZone, error) {
 	o := &WarehouseShippingZone{}
@@ -328,10 +153,6 @@ func (q warehouseShippingZoneQuery) One(ctx context.Context, exec boil.ContextEx
 		return nil, errors.Wrap(err, "models: failed to execute a one query for warehouse_shipping_zones")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q warehouseShippingZoneQuery) All(ctx context.Context, exec boil.ContextEx
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to WarehouseShippingZone slice")
-	}
-
-	if len(warehouseShippingZoneAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (warehouseShippingZoneL) LoadShippingZone(ctx context.Context, e boil.Conte
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_zones")
 	}
 
-	if len(shippingZoneAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (warehouseShippingZoneL) LoadWarehouse(ctx context.Context, e boil.ContextE
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for warehouses")
-	}
-
-	if len(warehouseAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindWarehouseShippingZone(ctx context.Context, exec boil.ContextExecutor, i
 		return nil, errors.Wrap(err, "models: unable to select from warehouse_shipping_zones")
 	}
 
-	if err = warehouseShippingZoneObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return warehouseShippingZoneObj, err
-	}
-
 	return warehouseShippingZoneObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *WarehouseShippingZone) Insert(ctx context.Context, exec boil.ContextExe
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(warehouseShippingZoneColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *WarehouseShippingZone) Insert(ctx context.Context, exec boil.ContextExe
 		warehouseShippingZoneInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the WarehouseShippingZone.
@@ -867,9 +656,6 @@ func (o *WarehouseShippingZone) Insert(ctx context.Context, exec boil.ContextExe
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *WarehouseShippingZone) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	warehouseShippingZoneUpdateCacheMut.RLock()
 	cache, cached := warehouseShippingZoneUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *WarehouseShippingZone) Update(ctx context.Context, exec boil.ContextExe
 		warehouseShippingZoneUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o WarehouseShippingZoneSlice) UpdateAll(ctx context.Context, exec boil.Con
 func (o *WarehouseShippingZone) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no warehouse_shipping_zones provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(warehouseShippingZoneColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *WarehouseShippingZone) Upsert(ctx context.Context, exec boil.ContextExe
 		warehouseShippingZoneUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single WarehouseShippingZone record with an executor.
@@ -1107,10 +889,6 @@ func (o *WarehouseShippingZone) Upsert(ctx context.Context, exec boil.ContextExe
 func (o *WarehouseShippingZone) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no WarehouseShippingZone provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), warehouseShippingZonePrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *WarehouseShippingZone) Delete(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for warehouse_shipping_zones")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o WarehouseShippingZoneSlice) DeleteAll(ctx context.Context, exec boil.Con
 		return 0, nil
 	}
 
-	if len(warehouseShippingZoneBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), warehouseShippingZonePrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o WarehouseShippingZoneSlice) DeleteAll(ctx context.Context, exec boil.Con
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for warehouse_shipping_zones")
-	}
-
-	if len(warehouseShippingZoneAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -268,8 +268,6 @@ type (
 	// VoucherSlice is an alias for a slice of pointers to Voucher.
 	// This should almost always be used instead of []Voucher.
 	VoucherSlice []*Voucher
-	// VoucherHook is the signature for custom Voucher hook methods
-	VoucherHook func(context.Context, boil.ContextExecutor, *Voucher) error
 
 	voucherQuery struct {
 		*queries.Query
@@ -297,179 +295,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var voucherAfterSelectHooks []VoucherHook
-
-var voucherBeforeInsertHooks []VoucherHook
-var voucherAfterInsertHooks []VoucherHook
-
-var voucherBeforeUpdateHooks []VoucherHook
-var voucherAfterUpdateHooks []VoucherHook
-
-var voucherBeforeDeleteHooks []VoucherHook
-var voucherAfterDeleteHooks []VoucherHook
-
-var voucherBeforeUpsertHooks []VoucherHook
-var voucherAfterUpsertHooks []VoucherHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Voucher) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Voucher) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Voucher) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Voucher) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Voucher) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Voucher) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Voucher) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Voucher) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Voucher) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddVoucherHook registers your hook function for all future operations.
-func AddVoucherHook(hookPoint boil.HookPoint, voucherHook VoucherHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		voucherAfterSelectHooks = append(voucherAfterSelectHooks, voucherHook)
-	case boil.BeforeInsertHook:
-		voucherBeforeInsertHooks = append(voucherBeforeInsertHooks, voucherHook)
-	case boil.AfterInsertHook:
-		voucherAfterInsertHooks = append(voucherAfterInsertHooks, voucherHook)
-	case boil.BeforeUpdateHook:
-		voucherBeforeUpdateHooks = append(voucherBeforeUpdateHooks, voucherHook)
-	case boil.AfterUpdateHook:
-		voucherAfterUpdateHooks = append(voucherAfterUpdateHooks, voucherHook)
-	case boil.BeforeDeleteHook:
-		voucherBeforeDeleteHooks = append(voucherBeforeDeleteHooks, voucherHook)
-	case boil.AfterDeleteHook:
-		voucherAfterDeleteHooks = append(voucherAfterDeleteHooks, voucherHook)
-	case boil.BeforeUpsertHook:
-		voucherBeforeUpsertHooks = append(voucherBeforeUpsertHooks, voucherHook)
-	case boil.AfterUpsertHook:
-		voucherAfterUpsertHooks = append(voucherAfterUpsertHooks, voucherHook)
-	}
-}
-
 // One returns a single voucher record from the query.
 func (q voucherQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Voucher, error) {
 	o := &Voucher{}
@@ -484,10 +309,6 @@ func (q voucherQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Vouc
 		return nil, errors.Wrap(err, "models: failed to execute a one query for vouchers")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -498,14 +319,6 @@ func (q voucherQuery) All(ctx context.Context, exec boil.ContextExecutor) (Vouch
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Voucher slice")
-	}
-
-	if len(voucherAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -720,13 +533,6 @@ func (voucherL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Orders = resultSlice
 		for _, foreign := range resultSlice {
@@ -834,13 +640,6 @@ func (voucherL) LoadVoucherCategories(ctx context.Context, e boil.ContextExecuto
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_categories")
 	}
 
-	if len(voucherCategoryAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherCategories = resultSlice
 		for _, foreign := range resultSlice {
@@ -948,13 +747,6 @@ func (voucherL) LoadVoucherChannelListings(ctx context.Context, e boil.ContextEx
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_channel_listings")
 	}
 
-	if len(voucherChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherChannelListings = resultSlice
 		for _, foreign := range resultSlice {
@@ -1062,13 +854,6 @@ func (voucherL) LoadVoucherCollections(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_collections")
 	}
 
-	if len(voucherCollectionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherCollections = resultSlice
 		for _, foreign := range resultSlice {
@@ -1176,13 +961,6 @@ func (voucherL) LoadVoucherCustomers(ctx context.Context, e boil.ContextExecutor
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_customers")
 	}
 
-	if len(voucherCustomerAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherCustomers = resultSlice
 		for _, foreign := range resultSlice {
@@ -1290,13 +1068,6 @@ func (voucherL) LoadVoucherProducts(ctx context.Context, e boil.ContextExecutor,
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_products")
 	}
 
-	if len(voucherProductAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherProducts = resultSlice
 		for _, foreign := range resultSlice {
@@ -1404,13 +1175,6 @@ func (voucherL) LoadVoucherTranslations(ctx context.Context, e boil.ContextExecu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for voucher_translations")
 	}
 
-	if len(voucherTranslationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.VoucherTranslations = resultSlice
 		for _, foreign := range resultSlice {
@@ -1917,10 +1681,6 @@ func FindVoucher(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 		return nil, errors.Wrap(err, "models: unable to select from vouchers")
 	}
 
-	if err = voucherObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return voucherObj, err
-	}
-
 	return voucherObj, nil
 }
 
@@ -1932,10 +1692,6 @@ func (o *Voucher) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherColumnsWithDefault, o)
 
@@ -2000,7 +1756,7 @@ func (o *Voucher) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		voucherInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Voucher.
@@ -2008,9 +1764,6 @@ func (o *Voucher) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Voucher) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	voucherUpdateCacheMut.RLock()
 	cache, cached := voucherUpdateCache[key]
@@ -2059,7 +1812,7 @@ func (o *Voucher) Update(ctx context.Context, exec boil.ContextExecutor, columns
 		voucherUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -2132,10 +1885,6 @@ func (o VoucherSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Voucher) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no vouchers provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherColumnsWithDefault, o)
@@ -2240,7 +1989,7 @@ func (o *Voucher) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		voucherUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Voucher record with an executor.
@@ -2248,10 +1997,6 @@ func (o *Voucher) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 func (o *Voucher) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Voucher provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), voucherPrimaryKeyMapping)
@@ -2270,10 +2015,6 @@ func (o *Voucher) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for vouchers")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -2306,14 +2047,6 @@ func (o VoucherSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 		return 0, nil
 	}
 
-	if len(voucherBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherPrimaryKeyMapping)
@@ -2336,14 +2069,6 @@ func (o VoucherSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for vouchers")
-	}
-
-	if len(voucherAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

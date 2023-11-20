@@ -162,8 +162,6 @@ type (
 	// DigitalContentSlice is an alias for a slice of pointers to DigitalContent.
 	// This should almost always be used instead of []DigitalContent.
 	DigitalContentSlice []*DigitalContent
-	// DigitalContentHook is the signature for custom DigitalContent hook methods
-	DigitalContentHook func(context.Context, boil.ContextExecutor, *DigitalContent) error
 
 	digitalContentQuery struct {
 		*queries.Query
@@ -191,179 +189,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var digitalContentAfterSelectHooks []DigitalContentHook
-
-var digitalContentBeforeInsertHooks []DigitalContentHook
-var digitalContentAfterInsertHooks []DigitalContentHook
-
-var digitalContentBeforeUpdateHooks []DigitalContentHook
-var digitalContentAfterUpdateHooks []DigitalContentHook
-
-var digitalContentBeforeDeleteHooks []DigitalContentHook
-var digitalContentAfterDeleteHooks []DigitalContentHook
-
-var digitalContentBeforeUpsertHooks []DigitalContentHook
-var digitalContentAfterUpsertHooks []DigitalContentHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *DigitalContent) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *DigitalContent) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *DigitalContent) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *DigitalContent) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *DigitalContent) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *DigitalContent) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *DigitalContent) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *DigitalContent) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *DigitalContent) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range digitalContentAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddDigitalContentHook registers your hook function for all future operations.
-func AddDigitalContentHook(hookPoint boil.HookPoint, digitalContentHook DigitalContentHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		digitalContentAfterSelectHooks = append(digitalContentAfterSelectHooks, digitalContentHook)
-	case boil.BeforeInsertHook:
-		digitalContentBeforeInsertHooks = append(digitalContentBeforeInsertHooks, digitalContentHook)
-	case boil.AfterInsertHook:
-		digitalContentAfterInsertHooks = append(digitalContentAfterInsertHooks, digitalContentHook)
-	case boil.BeforeUpdateHook:
-		digitalContentBeforeUpdateHooks = append(digitalContentBeforeUpdateHooks, digitalContentHook)
-	case boil.AfterUpdateHook:
-		digitalContentAfterUpdateHooks = append(digitalContentAfterUpdateHooks, digitalContentHook)
-	case boil.BeforeDeleteHook:
-		digitalContentBeforeDeleteHooks = append(digitalContentBeforeDeleteHooks, digitalContentHook)
-	case boil.AfterDeleteHook:
-		digitalContentAfterDeleteHooks = append(digitalContentAfterDeleteHooks, digitalContentHook)
-	case boil.BeforeUpsertHook:
-		digitalContentBeforeUpsertHooks = append(digitalContentBeforeUpsertHooks, digitalContentHook)
-	case boil.AfterUpsertHook:
-		digitalContentAfterUpsertHooks = append(digitalContentAfterUpsertHooks, digitalContentHook)
-	}
-}
-
 // One returns a single digitalContent record from the query.
 func (q digitalContentQuery) One(ctx context.Context, exec boil.ContextExecutor) (*DigitalContent, error) {
 	o := &DigitalContent{}
@@ -378,10 +203,6 @@ func (q digitalContentQuery) One(ctx context.Context, exec boil.ContextExecutor)
 		return nil, errors.Wrap(err, "models: failed to execute a one query for digital_contents")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -392,14 +213,6 @@ func (q digitalContentQuery) All(ctx context.Context, exec boil.ContextExecutor)
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to DigitalContent slice")
-	}
-
-	if len(digitalContentAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -543,14 +356,6 @@ func (digitalContentL) LoadProductVariant(ctx context.Context, e boil.ContextExe
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
 	}
 
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -661,13 +466,6 @@ func (digitalContentL) LoadContentDigitalContentUrls(ctx context.Context, e boil
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for digital_content_urls")
 	}
 
-	if len(digitalContentURLAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ContentDigitalContentUrls = resultSlice
 		for _, foreign := range resultSlice {
@@ -829,10 +627,6 @@ func FindDigitalContent(ctx context.Context, exec boil.ContextExecutor, iD strin
 		return nil, errors.Wrap(err, "models: unable to select from digital_contents")
 	}
 
-	if err = digitalContentObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return digitalContentObj, err
-	}
-
 	return digitalContentObj, nil
 }
 
@@ -844,10 +638,6 @@ func (o *DigitalContent) Insert(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(digitalContentColumnsWithDefault, o)
 
@@ -912,7 +702,7 @@ func (o *DigitalContent) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		digitalContentInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the DigitalContent.
@@ -920,9 +710,6 @@ func (o *DigitalContent) Insert(ctx context.Context, exec boil.ContextExecutor, 
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *DigitalContent) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	digitalContentUpdateCacheMut.RLock()
 	cache, cached := digitalContentUpdateCache[key]
@@ -971,7 +758,7 @@ func (o *DigitalContent) Update(ctx context.Context, exec boil.ContextExecutor, 
 		digitalContentUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1044,10 +831,6 @@ func (o DigitalContentSlice) UpdateAll(ctx context.Context, exec boil.ContextExe
 func (o *DigitalContent) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no digital_contents provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(digitalContentColumnsWithDefault, o)
@@ -1152,7 +935,7 @@ func (o *DigitalContent) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		digitalContentUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single DigitalContent record with an executor.
@@ -1160,10 +943,6 @@ func (o *DigitalContent) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 func (o *DigitalContent) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no DigitalContent provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), digitalContentPrimaryKeyMapping)
@@ -1182,10 +961,6 @@ func (o *DigitalContent) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for digital_contents")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1218,14 +993,6 @@ func (o DigitalContentSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 		return 0, nil
 	}
 
-	if len(digitalContentBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), digitalContentPrimaryKeyMapping)
@@ -1248,14 +1015,6 @@ func (o DigitalContentSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for digital_contents")
-	}
-
-	if len(digitalContentAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

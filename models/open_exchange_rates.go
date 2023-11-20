@@ -92,8 +92,6 @@ type (
 	// OpenExchangeRateSlice is an alias for a slice of pointers to OpenExchangeRate.
 	// This should almost always be used instead of []OpenExchangeRate.
 	OpenExchangeRateSlice []*OpenExchangeRate
-	// OpenExchangeRateHook is the signature for custom OpenExchangeRate hook methods
-	OpenExchangeRateHook func(context.Context, boil.ContextExecutor, *OpenExchangeRate) error
 
 	openExchangeRateQuery struct {
 		*queries.Query
@@ -121,179 +119,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var openExchangeRateAfterSelectHooks []OpenExchangeRateHook
-
-var openExchangeRateBeforeInsertHooks []OpenExchangeRateHook
-var openExchangeRateAfterInsertHooks []OpenExchangeRateHook
-
-var openExchangeRateBeforeUpdateHooks []OpenExchangeRateHook
-var openExchangeRateAfterUpdateHooks []OpenExchangeRateHook
-
-var openExchangeRateBeforeDeleteHooks []OpenExchangeRateHook
-var openExchangeRateAfterDeleteHooks []OpenExchangeRateHook
-
-var openExchangeRateBeforeUpsertHooks []OpenExchangeRateHook
-var openExchangeRateAfterUpsertHooks []OpenExchangeRateHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *OpenExchangeRate) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *OpenExchangeRate) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *OpenExchangeRate) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *OpenExchangeRate) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *OpenExchangeRate) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *OpenExchangeRate) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *OpenExchangeRate) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *OpenExchangeRate) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *OpenExchangeRate) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range openExchangeRateAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOpenExchangeRateHook registers your hook function for all future operations.
-func AddOpenExchangeRateHook(hookPoint boil.HookPoint, openExchangeRateHook OpenExchangeRateHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		openExchangeRateAfterSelectHooks = append(openExchangeRateAfterSelectHooks, openExchangeRateHook)
-	case boil.BeforeInsertHook:
-		openExchangeRateBeforeInsertHooks = append(openExchangeRateBeforeInsertHooks, openExchangeRateHook)
-	case boil.AfterInsertHook:
-		openExchangeRateAfterInsertHooks = append(openExchangeRateAfterInsertHooks, openExchangeRateHook)
-	case boil.BeforeUpdateHook:
-		openExchangeRateBeforeUpdateHooks = append(openExchangeRateBeforeUpdateHooks, openExchangeRateHook)
-	case boil.AfterUpdateHook:
-		openExchangeRateAfterUpdateHooks = append(openExchangeRateAfterUpdateHooks, openExchangeRateHook)
-	case boil.BeforeDeleteHook:
-		openExchangeRateBeforeDeleteHooks = append(openExchangeRateBeforeDeleteHooks, openExchangeRateHook)
-	case boil.AfterDeleteHook:
-		openExchangeRateAfterDeleteHooks = append(openExchangeRateAfterDeleteHooks, openExchangeRateHook)
-	case boil.BeforeUpsertHook:
-		openExchangeRateBeforeUpsertHooks = append(openExchangeRateBeforeUpsertHooks, openExchangeRateHook)
-	case boil.AfterUpsertHook:
-		openExchangeRateAfterUpsertHooks = append(openExchangeRateAfterUpsertHooks, openExchangeRateHook)
-	}
-}
-
 // One returns a single openExchangeRate record from the query.
 func (q openExchangeRateQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OpenExchangeRate, error) {
 	o := &OpenExchangeRate{}
@@ -308,10 +133,6 @@ func (q openExchangeRateQuery) One(ctx context.Context, exec boil.ContextExecuto
 		return nil, errors.Wrap(err, "models: failed to execute a one query for open_exchange_rates")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -322,14 +143,6 @@ func (q openExchangeRateQuery) All(ctx context.Context, exec boil.ContextExecuto
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to OpenExchangeRate slice")
-	}
-
-	if len(openExchangeRateAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -400,10 +213,6 @@ func FindOpenExchangeRate(ctx context.Context, exec boil.ContextExecutor, iD str
 		return nil, errors.Wrap(err, "models: unable to select from open_exchange_rates")
 	}
 
-	if err = openExchangeRateObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return openExchangeRateObj, err
-	}
-
 	return openExchangeRateObj, nil
 }
 
@@ -415,10 +224,6 @@ func (o *OpenExchangeRate) Insert(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(openExchangeRateColumnsWithDefault, o)
 
@@ -483,7 +288,7 @@ func (o *OpenExchangeRate) Insert(ctx context.Context, exec boil.ContextExecutor
 		openExchangeRateInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the OpenExchangeRate.
@@ -491,9 +296,6 @@ func (o *OpenExchangeRate) Insert(ctx context.Context, exec boil.ContextExecutor
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OpenExchangeRate) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	openExchangeRateUpdateCacheMut.RLock()
 	cache, cached := openExchangeRateUpdateCache[key]
@@ -542,7 +344,7 @@ func (o *OpenExchangeRate) Update(ctx context.Context, exec boil.ContextExecutor
 		openExchangeRateUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -615,10 +417,6 @@ func (o OpenExchangeRateSlice) UpdateAll(ctx context.Context, exec boil.ContextE
 func (o *OpenExchangeRate) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no open_exchange_rates provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(openExchangeRateColumnsWithDefault, o)
@@ -723,7 +521,7 @@ func (o *OpenExchangeRate) Upsert(ctx context.Context, exec boil.ContextExecutor
 		openExchangeRateUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single OpenExchangeRate record with an executor.
@@ -731,10 +529,6 @@ func (o *OpenExchangeRate) Upsert(ctx context.Context, exec boil.ContextExecutor
 func (o *OpenExchangeRate) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no OpenExchangeRate provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), openExchangeRatePrimaryKeyMapping)
@@ -753,10 +547,6 @@ func (o *OpenExchangeRate) Delete(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for open_exchange_rates")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -789,14 +579,6 @@ func (o OpenExchangeRateSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 		return 0, nil
 	}
 
-	if len(openExchangeRateBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), openExchangeRatePrimaryKeyMapping)
@@ -819,14 +601,6 @@ func (o OpenExchangeRateSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for open_exchange_rates")
-	}
-
-	if len(openExchangeRateAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

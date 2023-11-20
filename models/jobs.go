@@ -134,8 +134,6 @@ type (
 	// JobSlice is an alias for a slice of pointers to Job.
 	// This should almost always be used instead of []Job.
 	JobSlice []*Job
-	// JobHook is the signature for custom Job hook methods
-	JobHook func(context.Context, boil.ContextExecutor, *Job) error
 
 	jobQuery struct {
 		*queries.Query
@@ -163,179 +161,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var jobAfterSelectHooks []JobHook
-
-var jobBeforeInsertHooks []JobHook
-var jobAfterInsertHooks []JobHook
-
-var jobBeforeUpdateHooks []JobHook
-var jobAfterUpdateHooks []JobHook
-
-var jobBeforeDeleteHooks []JobHook
-var jobAfterDeleteHooks []JobHook
-
-var jobBeforeUpsertHooks []JobHook
-var jobAfterUpsertHooks []JobHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Job) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Job) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Job) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Job) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Job) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Job) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Job) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Job) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Job) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jobAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddJobHook registers your hook function for all future operations.
-func AddJobHook(hookPoint boil.HookPoint, jobHook JobHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		jobAfterSelectHooks = append(jobAfterSelectHooks, jobHook)
-	case boil.BeforeInsertHook:
-		jobBeforeInsertHooks = append(jobBeforeInsertHooks, jobHook)
-	case boil.AfterInsertHook:
-		jobAfterInsertHooks = append(jobAfterInsertHooks, jobHook)
-	case boil.BeforeUpdateHook:
-		jobBeforeUpdateHooks = append(jobBeforeUpdateHooks, jobHook)
-	case boil.AfterUpdateHook:
-		jobAfterUpdateHooks = append(jobAfterUpdateHooks, jobHook)
-	case boil.BeforeDeleteHook:
-		jobBeforeDeleteHooks = append(jobBeforeDeleteHooks, jobHook)
-	case boil.AfterDeleteHook:
-		jobAfterDeleteHooks = append(jobAfterDeleteHooks, jobHook)
-	case boil.BeforeUpsertHook:
-		jobBeforeUpsertHooks = append(jobBeforeUpsertHooks, jobHook)
-	case boil.AfterUpsertHook:
-		jobAfterUpsertHooks = append(jobAfterUpsertHooks, jobHook)
-	}
-}
-
 // One returns a single job record from the query.
 func (q jobQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Job, error) {
 	o := &Job{}
@@ -350,10 +175,6 @@ func (q jobQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Job, err
 		return nil, errors.Wrap(err, "models: failed to execute a one query for jobs")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -364,14 +185,6 @@ func (q jobQuery) All(ctx context.Context, exec boil.ContextExecutor) (JobSlice,
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Job slice")
-	}
-
-	if len(jobAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -442,10 +255,6 @@ func FindJob(ctx context.Context, exec boil.ContextExecutor, iD string, selectCo
 		return nil, errors.Wrap(err, "models: unable to select from jobs")
 	}
 
-	if err = jobObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return jobObj, err
-	}
-
 	return jobObj, nil
 }
 
@@ -457,10 +266,6 @@ func (o *Job) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(jobColumnsWithDefault, o)
 
@@ -525,7 +330,7 @@ func (o *Job) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 		jobInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Job.
@@ -533,9 +338,6 @@ func (o *Job) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Job) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	jobUpdateCacheMut.RLock()
 	cache, cached := jobUpdateCache[key]
@@ -584,7 +386,7 @@ func (o *Job) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 		jobUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -657,10 +459,6 @@ func (o JobSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 func (o *Job) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no jobs provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(jobColumnsWithDefault, o)
@@ -765,7 +563,7 @@ func (o *Job) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 		jobUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Job record with an executor.
@@ -773,10 +571,6 @@ func (o *Job) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 func (o *Job) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Job provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), jobPrimaryKeyMapping)
@@ -795,10 +589,6 @@ func (o *Job) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, err
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for jobs")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -831,14 +621,6 @@ func (o JobSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 		return 0, nil
 	}
 
-	if len(jobBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), jobPrimaryKeyMapping)
@@ -861,14 +643,6 @@ func (o JobSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for jobs")
-	}
-
-	if len(jobAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

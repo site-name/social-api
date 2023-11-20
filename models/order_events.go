@@ -134,8 +134,6 @@ type (
 	// OrderEventSlice is an alias for a slice of pointers to OrderEvent.
 	// This should almost always be used instead of []OrderEvent.
 	OrderEventSlice []*OrderEvent
-	// OrderEventHook is the signature for custom OrderEvent hook methods
-	OrderEventHook func(context.Context, boil.ContextExecutor, *OrderEvent) error
 
 	orderEventQuery struct {
 		*queries.Query
@@ -163,179 +161,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var orderEventAfterSelectHooks []OrderEventHook
-
-var orderEventBeforeInsertHooks []OrderEventHook
-var orderEventAfterInsertHooks []OrderEventHook
-
-var orderEventBeforeUpdateHooks []OrderEventHook
-var orderEventAfterUpdateHooks []OrderEventHook
-
-var orderEventBeforeDeleteHooks []OrderEventHook
-var orderEventAfterDeleteHooks []OrderEventHook
-
-var orderEventBeforeUpsertHooks []OrderEventHook
-var orderEventAfterUpsertHooks []OrderEventHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *OrderEvent) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *OrderEvent) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *OrderEvent) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *OrderEvent) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *OrderEvent) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *OrderEvent) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *OrderEvent) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *OrderEvent) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *OrderEvent) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderEventAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOrderEventHook registers your hook function for all future operations.
-func AddOrderEventHook(hookPoint boil.HookPoint, orderEventHook OrderEventHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		orderEventAfterSelectHooks = append(orderEventAfterSelectHooks, orderEventHook)
-	case boil.BeforeInsertHook:
-		orderEventBeforeInsertHooks = append(orderEventBeforeInsertHooks, orderEventHook)
-	case boil.AfterInsertHook:
-		orderEventAfterInsertHooks = append(orderEventAfterInsertHooks, orderEventHook)
-	case boil.BeforeUpdateHook:
-		orderEventBeforeUpdateHooks = append(orderEventBeforeUpdateHooks, orderEventHook)
-	case boil.AfterUpdateHook:
-		orderEventAfterUpdateHooks = append(orderEventAfterUpdateHooks, orderEventHook)
-	case boil.BeforeDeleteHook:
-		orderEventBeforeDeleteHooks = append(orderEventBeforeDeleteHooks, orderEventHook)
-	case boil.AfterDeleteHook:
-		orderEventAfterDeleteHooks = append(orderEventAfterDeleteHooks, orderEventHook)
-	case boil.BeforeUpsertHook:
-		orderEventBeforeUpsertHooks = append(orderEventBeforeUpsertHooks, orderEventHook)
-	case boil.AfterUpsertHook:
-		orderEventAfterUpsertHooks = append(orderEventAfterUpsertHooks, orderEventHook)
-	}
-}
-
 // One returns a single orderEvent record from the query.
 func (q orderEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OrderEvent, error) {
 	o := &OrderEvent{}
@@ -350,10 +175,6 @@ func (q orderEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*O
 		return nil, errors.Wrap(err, "models: failed to execute a one query for order_events")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -364,14 +185,6 @@ func (q orderEventQuery) All(ctx context.Context, exec boil.ContextExecutor) (Or
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to OrderEvent slice")
-	}
-
-	if len(orderEventAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -512,14 +325,6 @@ func (orderEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singul
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -634,14 +439,6 @@ func (orderEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singula
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -835,10 +632,6 @@ func FindOrderEvent(ctx context.Context, exec boil.ContextExecutor, iD string, s
 		return nil, errors.Wrap(err, "models: unable to select from order_events")
 	}
 
-	if err = orderEventObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return orderEventObj, err
-	}
-
 	return orderEventObj, nil
 }
 
@@ -850,10 +643,6 @@ func (o *OrderEvent) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderEventColumnsWithDefault, o)
 
@@ -918,7 +707,7 @@ func (o *OrderEvent) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 		orderEventInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the OrderEvent.
@@ -926,9 +715,6 @@ func (o *OrderEvent) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OrderEvent) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	orderEventUpdateCacheMut.RLock()
 	cache, cached := orderEventUpdateCache[key]
@@ -977,7 +763,7 @@ func (o *OrderEvent) Update(ctx context.Context, exec boil.ContextExecutor, colu
 		orderEventUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1050,10 +836,6 @@ func (o OrderEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 func (o *OrderEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no order_events provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderEventColumnsWithDefault, o)
@@ -1158,7 +940,7 @@ func (o *OrderEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		orderEventUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single OrderEvent record with an executor.
@@ -1166,10 +948,6 @@ func (o *OrderEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 func (o *OrderEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no OrderEvent provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), orderEventPrimaryKeyMapping)
@@ -1188,10 +966,6 @@ func (o *OrderEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for order_events")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1224,14 +998,6 @@ func (o OrderEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 		return 0, nil
 	}
 
-	if len(orderEventBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderEventPrimaryKeyMapping)
@@ -1254,14 +1020,6 @@ func (o OrderEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for order_events")
-	}
-
-	if len(orderEventAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

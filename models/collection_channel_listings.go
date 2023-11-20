@@ -134,8 +134,6 @@ type (
 	// CollectionChannelListingSlice is an alias for a slice of pointers to CollectionChannelListing.
 	// This should almost always be used instead of []CollectionChannelListing.
 	CollectionChannelListingSlice []*CollectionChannelListing
-	// CollectionChannelListingHook is the signature for custom CollectionChannelListing hook methods
-	CollectionChannelListingHook func(context.Context, boil.ContextExecutor, *CollectionChannelListing) error
 
 	collectionChannelListingQuery struct {
 		*queries.Query
@@ -163,179 +161,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var collectionChannelListingAfterSelectHooks []CollectionChannelListingHook
-
-var collectionChannelListingBeforeInsertHooks []CollectionChannelListingHook
-var collectionChannelListingAfterInsertHooks []CollectionChannelListingHook
-
-var collectionChannelListingBeforeUpdateHooks []CollectionChannelListingHook
-var collectionChannelListingAfterUpdateHooks []CollectionChannelListingHook
-
-var collectionChannelListingBeforeDeleteHooks []CollectionChannelListingHook
-var collectionChannelListingAfterDeleteHooks []CollectionChannelListingHook
-
-var collectionChannelListingBeforeUpsertHooks []CollectionChannelListingHook
-var collectionChannelListingAfterUpsertHooks []CollectionChannelListingHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *CollectionChannelListing) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *CollectionChannelListing) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *CollectionChannelListing) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *CollectionChannelListing) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *CollectionChannelListing) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *CollectionChannelListing) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *CollectionChannelListing) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *CollectionChannelListing) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *CollectionChannelListing) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionChannelListingAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCollectionChannelListingHook registers your hook function for all future operations.
-func AddCollectionChannelListingHook(hookPoint boil.HookPoint, collectionChannelListingHook CollectionChannelListingHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		collectionChannelListingAfterSelectHooks = append(collectionChannelListingAfterSelectHooks, collectionChannelListingHook)
-	case boil.BeforeInsertHook:
-		collectionChannelListingBeforeInsertHooks = append(collectionChannelListingBeforeInsertHooks, collectionChannelListingHook)
-	case boil.AfterInsertHook:
-		collectionChannelListingAfterInsertHooks = append(collectionChannelListingAfterInsertHooks, collectionChannelListingHook)
-	case boil.BeforeUpdateHook:
-		collectionChannelListingBeforeUpdateHooks = append(collectionChannelListingBeforeUpdateHooks, collectionChannelListingHook)
-	case boil.AfterUpdateHook:
-		collectionChannelListingAfterUpdateHooks = append(collectionChannelListingAfterUpdateHooks, collectionChannelListingHook)
-	case boil.BeforeDeleteHook:
-		collectionChannelListingBeforeDeleteHooks = append(collectionChannelListingBeforeDeleteHooks, collectionChannelListingHook)
-	case boil.AfterDeleteHook:
-		collectionChannelListingAfterDeleteHooks = append(collectionChannelListingAfterDeleteHooks, collectionChannelListingHook)
-	case boil.BeforeUpsertHook:
-		collectionChannelListingBeforeUpsertHooks = append(collectionChannelListingBeforeUpsertHooks, collectionChannelListingHook)
-	case boil.AfterUpsertHook:
-		collectionChannelListingAfterUpsertHooks = append(collectionChannelListingAfterUpsertHooks, collectionChannelListingHook)
-	}
-}
-
 // One returns a single collectionChannelListing record from the query.
 func (q collectionChannelListingQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CollectionChannelListing, error) {
 	o := &CollectionChannelListing{}
@@ -350,10 +175,6 @@ func (q collectionChannelListingQuery) One(ctx context.Context, exec boil.Contex
 		return nil, errors.Wrap(err, "models: failed to execute a one query for collection_channel_listings")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -364,14 +185,6 @@ func (q collectionChannelListingQuery) All(ctx context.Context, exec boil.Contex
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to CollectionChannelListing slice")
-	}
-
-	if len(collectionChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -516,14 +329,6 @@ func (collectionChannelListingL) LoadChannel(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
 	}
 
-	if len(channelAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -634,14 +439,6 @@ func (collectionChannelListingL) LoadCollection(ctx context.Context, e boil.Cont
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
-	}
-
-	if len(collectionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -835,10 +632,6 @@ func FindCollectionChannelListing(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "models: unable to select from collection_channel_listings")
 	}
 
-	if err = collectionChannelListingObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return collectionChannelListingObj, err
-	}
-
 	return collectionChannelListingObj, nil
 }
 
@@ -850,10 +643,6 @@ func (o *CollectionChannelListing) Insert(ctx context.Context, exec boil.Context
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(collectionChannelListingColumnsWithDefault, o)
 
@@ -918,7 +707,7 @@ func (o *CollectionChannelListing) Insert(ctx context.Context, exec boil.Context
 		collectionChannelListingInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the CollectionChannelListing.
@@ -926,9 +715,6 @@ func (o *CollectionChannelListing) Insert(ctx context.Context, exec boil.Context
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *CollectionChannelListing) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	collectionChannelListingUpdateCacheMut.RLock()
 	cache, cached := collectionChannelListingUpdateCache[key]
@@ -977,7 +763,7 @@ func (o *CollectionChannelListing) Update(ctx context.Context, exec boil.Context
 		collectionChannelListingUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1050,10 +836,6 @@ func (o CollectionChannelListingSlice) UpdateAll(ctx context.Context, exec boil.
 func (o *CollectionChannelListing) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no collection_channel_listings provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(collectionChannelListingColumnsWithDefault, o)
@@ -1158,7 +940,7 @@ func (o *CollectionChannelListing) Upsert(ctx context.Context, exec boil.Context
 		collectionChannelListingUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single CollectionChannelListing record with an executor.
@@ -1166,10 +948,6 @@ func (o *CollectionChannelListing) Upsert(ctx context.Context, exec boil.Context
 func (o *CollectionChannelListing) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no CollectionChannelListing provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), collectionChannelListingPrimaryKeyMapping)
@@ -1188,10 +966,6 @@ func (o *CollectionChannelListing) Delete(ctx context.Context, exec boil.Context
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for collection_channel_listings")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1224,14 +998,6 @@ func (o CollectionChannelListingSlice) DeleteAll(ctx context.Context, exec boil.
 		return 0, nil
 	}
 
-	if len(collectionChannelListingBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), collectionChannelListingPrimaryKeyMapping)
@@ -1254,14 +1020,6 @@ func (o CollectionChannelListingSlice) DeleteAll(ctx context.Context, exec boil.
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for collection_channel_listings")
-	}
-
-	if len(collectionChannelListingAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

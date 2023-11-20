@@ -126,8 +126,6 @@ type (
 	// UploadSessionSlice is an alias for a slice of pointers to UploadSession.
 	// This should almost always be used instead of []UploadSession.
 	UploadSessionSlice []*UploadSession
-	// UploadSessionHook is the signature for custom UploadSession hook methods
-	UploadSessionHook func(context.Context, boil.ContextExecutor, *UploadSession) error
 
 	uploadSessionQuery struct {
 		*queries.Query
@@ -155,179 +153,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var uploadSessionAfterSelectHooks []UploadSessionHook
-
-var uploadSessionBeforeInsertHooks []UploadSessionHook
-var uploadSessionAfterInsertHooks []UploadSessionHook
-
-var uploadSessionBeforeUpdateHooks []UploadSessionHook
-var uploadSessionAfterUpdateHooks []UploadSessionHook
-
-var uploadSessionBeforeDeleteHooks []UploadSessionHook
-var uploadSessionAfterDeleteHooks []UploadSessionHook
-
-var uploadSessionBeforeUpsertHooks []UploadSessionHook
-var uploadSessionAfterUpsertHooks []UploadSessionHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *UploadSession) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *UploadSession) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *UploadSession) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *UploadSession) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *UploadSession) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *UploadSession) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *UploadSession) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *UploadSession) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *UploadSession) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range uploadSessionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddUploadSessionHook registers your hook function for all future operations.
-func AddUploadSessionHook(hookPoint boil.HookPoint, uploadSessionHook UploadSessionHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		uploadSessionAfterSelectHooks = append(uploadSessionAfterSelectHooks, uploadSessionHook)
-	case boil.BeforeInsertHook:
-		uploadSessionBeforeInsertHooks = append(uploadSessionBeforeInsertHooks, uploadSessionHook)
-	case boil.AfterInsertHook:
-		uploadSessionAfterInsertHooks = append(uploadSessionAfterInsertHooks, uploadSessionHook)
-	case boil.BeforeUpdateHook:
-		uploadSessionBeforeUpdateHooks = append(uploadSessionBeforeUpdateHooks, uploadSessionHook)
-	case boil.AfterUpdateHook:
-		uploadSessionAfterUpdateHooks = append(uploadSessionAfterUpdateHooks, uploadSessionHook)
-	case boil.BeforeDeleteHook:
-		uploadSessionBeforeDeleteHooks = append(uploadSessionBeforeDeleteHooks, uploadSessionHook)
-	case boil.AfterDeleteHook:
-		uploadSessionAfterDeleteHooks = append(uploadSessionAfterDeleteHooks, uploadSessionHook)
-	case boil.BeforeUpsertHook:
-		uploadSessionBeforeUpsertHooks = append(uploadSessionBeforeUpsertHooks, uploadSessionHook)
-	case boil.AfterUpsertHook:
-		uploadSessionAfterUpsertHooks = append(uploadSessionAfterUpsertHooks, uploadSessionHook)
-	}
-}
-
 // One returns a single uploadSession record from the query.
 func (q uploadSessionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*UploadSession, error) {
 	o := &UploadSession{}
@@ -342,10 +167,6 @@ func (q uploadSessionQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 		return nil, errors.Wrap(err, "models: failed to execute a one query for upload_sessions")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -356,14 +177,6 @@ func (q uploadSessionQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to UploadSession slice")
-	}
-
-	if len(uploadSessionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -434,10 +247,6 @@ func FindUploadSession(ctx context.Context, exec boil.ContextExecutor, iD string
 		return nil, errors.Wrap(err, "models: unable to select from upload_sessions")
 	}
 
-	if err = uploadSessionObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return uploadSessionObj, err
-	}
-
 	return uploadSessionObj, nil
 }
 
@@ -449,10 +258,6 @@ func (o *UploadSession) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(uploadSessionColumnsWithDefault, o)
 
@@ -517,7 +322,7 @@ func (o *UploadSession) Insert(ctx context.Context, exec boil.ContextExecutor, c
 		uploadSessionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the UploadSession.
@@ -525,9 +330,6 @@ func (o *UploadSession) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *UploadSession) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	uploadSessionUpdateCacheMut.RLock()
 	cache, cached := uploadSessionUpdateCache[key]
@@ -576,7 +378,7 @@ func (o *UploadSession) Update(ctx context.Context, exec boil.ContextExecutor, c
 		uploadSessionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -649,10 +451,6 @@ func (o UploadSessionSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 func (o *UploadSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no upload_sessions provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(uploadSessionColumnsWithDefault, o)
@@ -757,7 +555,7 @@ func (o *UploadSession) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		uploadSessionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single UploadSession record with an executor.
@@ -765,10 +563,6 @@ func (o *UploadSession) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 func (o *UploadSession) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no UploadSession provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uploadSessionPrimaryKeyMapping)
@@ -787,10 +581,6 @@ func (o *UploadSession) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for upload_sessions")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -823,14 +613,6 @@ func (o UploadSessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 		return 0, nil
 	}
 
-	if len(uploadSessionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), uploadSessionPrimaryKeyMapping)
@@ -853,14 +635,6 @@ func (o UploadSessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for upload_sessions")
-	}
-
-	if len(uploadSessionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

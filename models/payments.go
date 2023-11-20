@@ -362,8 +362,6 @@ type (
 	// PaymentSlice is an alias for a slice of pointers to Payment.
 	// This should almost always be used instead of []Payment.
 	PaymentSlice []*Payment
-	// PaymentHook is the signature for custom Payment hook methods
-	PaymentHook func(context.Context, boil.ContextExecutor, *Payment) error
 
 	paymentQuery struct {
 		*queries.Query
@@ -391,179 +389,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var paymentAfterSelectHooks []PaymentHook
-
-var paymentBeforeInsertHooks []PaymentHook
-var paymentAfterInsertHooks []PaymentHook
-
-var paymentBeforeUpdateHooks []PaymentHook
-var paymentAfterUpdateHooks []PaymentHook
-
-var paymentBeforeDeleteHooks []PaymentHook
-var paymentAfterDeleteHooks []PaymentHook
-
-var paymentBeforeUpsertHooks []PaymentHook
-var paymentAfterUpsertHooks []PaymentHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Payment) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Payment) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Payment) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Payment) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Payment) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Payment) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Payment) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Payment) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Payment) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range paymentAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPaymentHook registers your hook function for all future operations.
-func AddPaymentHook(hookPoint boil.HookPoint, paymentHook PaymentHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		paymentAfterSelectHooks = append(paymentAfterSelectHooks, paymentHook)
-	case boil.BeforeInsertHook:
-		paymentBeforeInsertHooks = append(paymentBeforeInsertHooks, paymentHook)
-	case boil.AfterInsertHook:
-		paymentAfterInsertHooks = append(paymentAfterInsertHooks, paymentHook)
-	case boil.BeforeUpdateHook:
-		paymentBeforeUpdateHooks = append(paymentBeforeUpdateHooks, paymentHook)
-	case boil.AfterUpdateHook:
-		paymentAfterUpdateHooks = append(paymentAfterUpdateHooks, paymentHook)
-	case boil.BeforeDeleteHook:
-		paymentBeforeDeleteHooks = append(paymentBeforeDeleteHooks, paymentHook)
-	case boil.AfterDeleteHook:
-		paymentAfterDeleteHooks = append(paymentAfterDeleteHooks, paymentHook)
-	case boil.BeforeUpsertHook:
-		paymentBeforeUpsertHooks = append(paymentBeforeUpsertHooks, paymentHook)
-	case boil.AfterUpsertHook:
-		paymentAfterUpsertHooks = append(paymentAfterUpsertHooks, paymentHook)
-	}
-}
-
 // One returns a single payment record from the query.
 func (q paymentQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Payment, error) {
 	o := &Payment{}
@@ -578,10 +403,6 @@ func (q paymentQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Paym
 		return nil, errors.Wrap(err, "models: failed to execute a one query for payments")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -592,14 +413,6 @@ func (q paymentQuery) All(ctx context.Context, exec boil.ContextExecutor) (Payme
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Payment slice")
-	}
-
-	if len(paymentAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -758,14 +571,6 @@ func (paymentL) LoadCheckout(ctx context.Context, e boil.ContextExecutor, singul
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkouts")
 	}
 
-	if len(checkoutAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -882,14 +687,6 @@ func (paymentL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1000,13 +797,6 @@ func (paymentL) LoadTransactions(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for transactions")
 	}
 
-	if len(transactionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Transactions = resultSlice
 		for _, foreign := range resultSlice {
@@ -1281,10 +1071,6 @@ func FindPayment(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 		return nil, errors.Wrap(err, "models: unable to select from payments")
 	}
 
-	if err = paymentObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return paymentObj, err
-	}
-
 	return paymentObj, nil
 }
 
@@ -1296,10 +1082,6 @@ func (o *Payment) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(paymentColumnsWithDefault, o)
 
@@ -1364,7 +1146,7 @@ func (o *Payment) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		paymentInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Payment.
@@ -1372,9 +1154,6 @@ func (o *Payment) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Payment) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	paymentUpdateCacheMut.RLock()
 	cache, cached := paymentUpdateCache[key]
@@ -1423,7 +1202,7 @@ func (o *Payment) Update(ctx context.Context, exec boil.ContextExecutor, columns
 		paymentUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1496,10 +1275,6 @@ func (o PaymentSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Payment) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no payments provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(paymentColumnsWithDefault, o)
@@ -1604,7 +1379,7 @@ func (o *Payment) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		paymentUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Payment record with an executor.
@@ -1612,10 +1387,6 @@ func (o *Payment) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 func (o *Payment) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Payment provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), paymentPrimaryKeyMapping)
@@ -1634,10 +1405,6 @@ func (o *Payment) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for payments")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1670,14 +1437,6 @@ func (o PaymentSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 		return 0, nil
 	}
 
-	if len(paymentBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), paymentPrimaryKeyMapping)
@@ -1700,14 +1459,6 @@ func (o PaymentSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for payments")
-	}
-
-	if len(paymentAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

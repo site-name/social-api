@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS product_types (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(250) NOT NULL,
-  slug character varying(255) NOT NULL,
-  kind character varying(32) NOT NULL,
+  name varchar(250) NOT NULL,
+  slug varchar(255) NOT NULL,
+  kind varchar(32) NOT NULL,
   has_variants boolean,
   is_shipping_required boolean,
   is_digital boolean,

@@ -131,8 +131,6 @@ type (
 	// PageTranslationSlice is an alias for a slice of pointers to PageTranslation.
 	// This should almost always be used instead of []PageTranslation.
 	PageTranslationSlice []*PageTranslation
-	// PageTranslationHook is the signature for custom PageTranslation hook methods
-	PageTranslationHook func(context.Context, boil.ContextExecutor, *PageTranslation) error
 
 	pageTranslationQuery struct {
 		*queries.Query
@@ -160,179 +158,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var pageTranslationAfterSelectHooks []PageTranslationHook
-
-var pageTranslationBeforeInsertHooks []PageTranslationHook
-var pageTranslationAfterInsertHooks []PageTranslationHook
-
-var pageTranslationBeforeUpdateHooks []PageTranslationHook
-var pageTranslationAfterUpdateHooks []PageTranslationHook
-
-var pageTranslationBeforeDeleteHooks []PageTranslationHook
-var pageTranslationAfterDeleteHooks []PageTranslationHook
-
-var pageTranslationBeforeUpsertHooks []PageTranslationHook
-var pageTranslationAfterUpsertHooks []PageTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *PageTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *PageTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *PageTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *PageTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *PageTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *PageTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *PageTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *PageTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *PageTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPageTranslationHook registers your hook function for all future operations.
-func AddPageTranslationHook(hookPoint boil.HookPoint, pageTranslationHook PageTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		pageTranslationAfterSelectHooks = append(pageTranslationAfterSelectHooks, pageTranslationHook)
-	case boil.BeforeInsertHook:
-		pageTranslationBeforeInsertHooks = append(pageTranslationBeforeInsertHooks, pageTranslationHook)
-	case boil.AfterInsertHook:
-		pageTranslationAfterInsertHooks = append(pageTranslationAfterInsertHooks, pageTranslationHook)
-	case boil.BeforeUpdateHook:
-		pageTranslationBeforeUpdateHooks = append(pageTranslationBeforeUpdateHooks, pageTranslationHook)
-	case boil.AfterUpdateHook:
-		pageTranslationAfterUpdateHooks = append(pageTranslationAfterUpdateHooks, pageTranslationHook)
-	case boil.BeforeDeleteHook:
-		pageTranslationBeforeDeleteHooks = append(pageTranslationBeforeDeleteHooks, pageTranslationHook)
-	case boil.AfterDeleteHook:
-		pageTranslationAfterDeleteHooks = append(pageTranslationAfterDeleteHooks, pageTranslationHook)
-	case boil.BeforeUpsertHook:
-		pageTranslationBeforeUpsertHooks = append(pageTranslationBeforeUpsertHooks, pageTranslationHook)
-	case boil.AfterUpsertHook:
-		pageTranslationAfterUpsertHooks = append(pageTranslationAfterUpsertHooks, pageTranslationHook)
-	}
-}
-
 // One returns a single pageTranslation record from the query.
 func (q pageTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PageTranslation, error) {
 	o := &PageTranslation{}
@@ -347,10 +172,6 @@ func (q pageTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "models: failed to execute a one query for page_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -361,14 +182,6 @@ func (q pageTranslationQuery) All(ctx context.Context, exec boil.ContextExecutor
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to PageTranslation slice")
-	}
-
-	if len(pageTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -498,14 +311,6 @@ func (pageTranslationL) LoadPage(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pages")
 	}
 
-	if len(pageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -617,10 +422,6 @@ func FindPageTranslation(ctx context.Context, exec boil.ContextExecutor, iD stri
 		return nil, errors.Wrap(err, "models: unable to select from page_translations")
 	}
 
-	if err = pageTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return pageTranslationObj, err
-	}
-
 	return pageTranslationObj, nil
 }
 
@@ -632,10 +433,6 @@ func (o *PageTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pageTranslationColumnsWithDefault, o)
 
@@ -700,7 +497,7 @@ func (o *PageTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 		pageTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the PageTranslation.
@@ -708,9 +505,6 @@ func (o *PageTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *PageTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	pageTranslationUpdateCacheMut.RLock()
 	cache, cached := pageTranslationUpdateCache[key]
@@ -759,7 +553,7 @@ func (o *PageTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 		pageTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -832,10 +626,6 @@ func (o PageTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 func (o *PageTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no page_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pageTranslationColumnsWithDefault, o)
@@ -940,7 +730,7 @@ func (o *PageTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		pageTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single PageTranslation record with an executor.
@@ -948,10 +738,6 @@ func (o *PageTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor,
 func (o *PageTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no PageTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pageTranslationPrimaryKeyMapping)
@@ -970,10 +756,6 @@ func (o *PageTranslation) Delete(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for page_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1006,14 +788,6 @@ func (o PageTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 		return 0, nil
 	}
 
-	if len(pageTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pageTranslationPrimaryKeyMapping)
@@ -1036,14 +810,6 @@ func (o PageTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for page_translations")
-	}
-
-	if len(pageTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -109,8 +109,6 @@ type (
 	// ProductVariantTranslationSlice is an alias for a slice of pointers to ProductVariantTranslation.
 	// This should almost always be used instead of []ProductVariantTranslation.
 	ProductVariantTranslationSlice []*ProductVariantTranslation
-	// ProductVariantTranslationHook is the signature for custom ProductVariantTranslation hook methods
-	ProductVariantTranslationHook func(context.Context, boil.ContextExecutor, *ProductVariantTranslation) error
 
 	productVariantTranslationQuery struct {
 		*queries.Query
@@ -138,179 +136,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var productVariantTranslationAfterSelectHooks []ProductVariantTranslationHook
-
-var productVariantTranslationBeforeInsertHooks []ProductVariantTranslationHook
-var productVariantTranslationAfterInsertHooks []ProductVariantTranslationHook
-
-var productVariantTranslationBeforeUpdateHooks []ProductVariantTranslationHook
-var productVariantTranslationAfterUpdateHooks []ProductVariantTranslationHook
-
-var productVariantTranslationBeforeDeleteHooks []ProductVariantTranslationHook
-var productVariantTranslationAfterDeleteHooks []ProductVariantTranslationHook
-
-var productVariantTranslationBeforeUpsertHooks []ProductVariantTranslationHook
-var productVariantTranslationAfterUpsertHooks []ProductVariantTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ProductVariantTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ProductVariantTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ProductVariantTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ProductVariantTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ProductVariantTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ProductVariantTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ProductVariantTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ProductVariantTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ProductVariantTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productVariantTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddProductVariantTranslationHook registers your hook function for all future operations.
-func AddProductVariantTranslationHook(hookPoint boil.HookPoint, productVariantTranslationHook ProductVariantTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		productVariantTranslationAfterSelectHooks = append(productVariantTranslationAfterSelectHooks, productVariantTranslationHook)
-	case boil.BeforeInsertHook:
-		productVariantTranslationBeforeInsertHooks = append(productVariantTranslationBeforeInsertHooks, productVariantTranslationHook)
-	case boil.AfterInsertHook:
-		productVariantTranslationAfterInsertHooks = append(productVariantTranslationAfterInsertHooks, productVariantTranslationHook)
-	case boil.BeforeUpdateHook:
-		productVariantTranslationBeforeUpdateHooks = append(productVariantTranslationBeforeUpdateHooks, productVariantTranslationHook)
-	case boil.AfterUpdateHook:
-		productVariantTranslationAfterUpdateHooks = append(productVariantTranslationAfterUpdateHooks, productVariantTranslationHook)
-	case boil.BeforeDeleteHook:
-		productVariantTranslationBeforeDeleteHooks = append(productVariantTranslationBeforeDeleteHooks, productVariantTranslationHook)
-	case boil.AfterDeleteHook:
-		productVariantTranslationAfterDeleteHooks = append(productVariantTranslationAfterDeleteHooks, productVariantTranslationHook)
-	case boil.BeforeUpsertHook:
-		productVariantTranslationBeforeUpsertHooks = append(productVariantTranslationBeforeUpsertHooks, productVariantTranslationHook)
-	case boil.AfterUpsertHook:
-		productVariantTranslationAfterUpsertHooks = append(productVariantTranslationAfterUpsertHooks, productVariantTranslationHook)
-	}
-}
-
 // One returns a single productVariantTranslation record from the query.
 func (q productVariantTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ProductVariantTranslation, error) {
 	o := &ProductVariantTranslation{}
@@ -325,10 +150,6 @@ func (q productVariantTranslationQuery) One(ctx context.Context, exec boil.Conte
 		return nil, errors.Wrap(err, "models: failed to execute a one query for product_variant_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -339,14 +160,6 @@ func (q productVariantTranslationQuery) All(ctx context.Context, exec boil.Conte
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ProductVariantTranslation slice")
-	}
-
-	if len(productVariantTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -476,14 +289,6 @@ func (productVariantTranslationL) LoadProductVariant(ctx context.Context, e boil
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
 	}
 
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -595,10 +400,6 @@ func FindProductVariantTranslation(ctx context.Context, exec boil.ContextExecuto
 		return nil, errors.Wrap(err, "models: unable to select from product_variant_translations")
 	}
 
-	if err = productVariantTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return productVariantTranslationObj, err
-	}
-
 	return productVariantTranslationObj, nil
 }
 
@@ -610,10 +411,6 @@ func (o *ProductVariantTranslation) Insert(ctx context.Context, exec boil.Contex
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productVariantTranslationColumnsWithDefault, o)
 
@@ -678,7 +475,7 @@ func (o *ProductVariantTranslation) Insert(ctx context.Context, exec boil.Contex
 		productVariantTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ProductVariantTranslation.
@@ -686,9 +483,6 @@ func (o *ProductVariantTranslation) Insert(ctx context.Context, exec boil.Contex
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ProductVariantTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	productVariantTranslationUpdateCacheMut.RLock()
 	cache, cached := productVariantTranslationUpdateCache[key]
@@ -737,7 +531,7 @@ func (o *ProductVariantTranslation) Update(ctx context.Context, exec boil.Contex
 		productVariantTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -810,10 +604,6 @@ func (o ProductVariantTranslationSlice) UpdateAll(ctx context.Context, exec boil
 func (o *ProductVariantTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no product_variant_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productVariantTranslationColumnsWithDefault, o)
@@ -918,7 +708,7 @@ func (o *ProductVariantTranslation) Upsert(ctx context.Context, exec boil.Contex
 		productVariantTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ProductVariantTranslation record with an executor.
@@ -926,10 +716,6 @@ func (o *ProductVariantTranslation) Upsert(ctx context.Context, exec boil.Contex
 func (o *ProductVariantTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ProductVariantTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), productVariantTranslationPrimaryKeyMapping)
@@ -948,10 +734,6 @@ func (o *ProductVariantTranslation) Delete(ctx context.Context, exec boil.Contex
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for product_variant_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -984,14 +766,6 @@ func (o ProductVariantTranslationSlice) DeleteAll(ctx context.Context, exec boil
 		return 0, nil
 	}
 
-	if len(productVariantTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productVariantTranslationPrimaryKeyMapping)
@@ -1014,14 +788,6 @@ func (o ProductVariantTranslationSlice) DeleteAll(ctx context.Context, exec boil
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for product_variant_translations")
-	}
-
-	if len(productVariantTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

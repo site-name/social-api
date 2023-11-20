@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS order_discounts (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id uuid,
-  type character varying(10) NOT NULL,
-  value_type character varying(10) NOT NULL,
+  type varchar(10) NOT NULL,
+  value_type varchar(10) NOT NULL,
   value decimal(12,3) NOT NULL DEFAULT 0.00,
   amount_value decimal(12,3) NOT NULL DEFAULT 0.00,
   currency varchar(3) NOT NULL,
-  name character varying(255),
-  translated_name character varying(255),
+  name varchar(255),
+  translated_name varchar(255),
   reason text
 );
 

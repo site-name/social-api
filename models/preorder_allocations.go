@@ -98,8 +98,6 @@ type (
 	// PreorderAllocationSlice is an alias for a slice of pointers to PreorderAllocation.
 	// This should almost always be used instead of []PreorderAllocation.
 	PreorderAllocationSlice []*PreorderAllocation
-	// PreorderAllocationHook is the signature for custom PreorderAllocation hook methods
-	PreorderAllocationHook func(context.Context, boil.ContextExecutor, *PreorderAllocation) error
 
 	preorderAllocationQuery struct {
 		*queries.Query
@@ -127,179 +125,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var preorderAllocationAfterSelectHooks []PreorderAllocationHook
-
-var preorderAllocationBeforeInsertHooks []PreorderAllocationHook
-var preorderAllocationAfterInsertHooks []PreorderAllocationHook
-
-var preorderAllocationBeforeUpdateHooks []PreorderAllocationHook
-var preorderAllocationAfterUpdateHooks []PreorderAllocationHook
-
-var preorderAllocationBeforeDeleteHooks []PreorderAllocationHook
-var preorderAllocationAfterDeleteHooks []PreorderAllocationHook
-
-var preorderAllocationBeforeUpsertHooks []PreorderAllocationHook
-var preorderAllocationAfterUpsertHooks []PreorderAllocationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *PreorderAllocation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *PreorderAllocation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *PreorderAllocation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *PreorderAllocation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *PreorderAllocation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *PreorderAllocation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *PreorderAllocation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *PreorderAllocation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *PreorderAllocation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preorderAllocationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPreorderAllocationHook registers your hook function for all future operations.
-func AddPreorderAllocationHook(hookPoint boil.HookPoint, preorderAllocationHook PreorderAllocationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		preorderAllocationAfterSelectHooks = append(preorderAllocationAfterSelectHooks, preorderAllocationHook)
-	case boil.BeforeInsertHook:
-		preorderAllocationBeforeInsertHooks = append(preorderAllocationBeforeInsertHooks, preorderAllocationHook)
-	case boil.AfterInsertHook:
-		preorderAllocationAfterInsertHooks = append(preorderAllocationAfterInsertHooks, preorderAllocationHook)
-	case boil.BeforeUpdateHook:
-		preorderAllocationBeforeUpdateHooks = append(preorderAllocationBeforeUpdateHooks, preorderAllocationHook)
-	case boil.AfterUpdateHook:
-		preorderAllocationAfterUpdateHooks = append(preorderAllocationAfterUpdateHooks, preorderAllocationHook)
-	case boil.BeforeDeleteHook:
-		preorderAllocationBeforeDeleteHooks = append(preorderAllocationBeforeDeleteHooks, preorderAllocationHook)
-	case boil.AfterDeleteHook:
-		preorderAllocationAfterDeleteHooks = append(preorderAllocationAfterDeleteHooks, preorderAllocationHook)
-	case boil.BeforeUpsertHook:
-		preorderAllocationBeforeUpsertHooks = append(preorderAllocationBeforeUpsertHooks, preorderAllocationHook)
-	case boil.AfterUpsertHook:
-		preorderAllocationAfterUpsertHooks = append(preorderAllocationAfterUpsertHooks, preorderAllocationHook)
-	}
-}
-
 // One returns a single preorderAllocation record from the query.
 func (q preorderAllocationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PreorderAllocation, error) {
 	o := &PreorderAllocation{}
@@ -314,10 +139,6 @@ func (q preorderAllocationQuery) One(ctx context.Context, exec boil.ContextExecu
 		return nil, errors.Wrap(err, "models: failed to execute a one query for preorder_allocations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -328,14 +149,6 @@ func (q preorderAllocationQuery) All(ctx context.Context, exec boil.ContextExecu
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to PreorderAllocation slice")
-	}
-
-	if len(preorderAllocationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -406,10 +219,6 @@ func FindPreorderAllocation(ctx context.Context, exec boil.ContextExecutor, iD s
 		return nil, errors.Wrap(err, "models: unable to select from preorder_allocations")
 	}
 
-	if err = preorderAllocationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return preorderAllocationObj, err
-	}
-
 	return preorderAllocationObj, nil
 }
 
@@ -421,10 +230,6 @@ func (o *PreorderAllocation) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(preorderAllocationColumnsWithDefault, o)
 
@@ -489,7 +294,7 @@ func (o *PreorderAllocation) Insert(ctx context.Context, exec boil.ContextExecut
 		preorderAllocationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the PreorderAllocation.
@@ -497,9 +302,6 @@ func (o *PreorderAllocation) Insert(ctx context.Context, exec boil.ContextExecut
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *PreorderAllocation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	preorderAllocationUpdateCacheMut.RLock()
 	cache, cached := preorderAllocationUpdateCache[key]
@@ -548,7 +350,7 @@ func (o *PreorderAllocation) Update(ctx context.Context, exec boil.ContextExecut
 		preorderAllocationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -621,10 +423,6 @@ func (o PreorderAllocationSlice) UpdateAll(ctx context.Context, exec boil.Contex
 func (o *PreorderAllocation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no preorder_allocations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(preorderAllocationColumnsWithDefault, o)
@@ -729,7 +527,7 @@ func (o *PreorderAllocation) Upsert(ctx context.Context, exec boil.ContextExecut
 		preorderAllocationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single PreorderAllocation record with an executor.
@@ -737,10 +535,6 @@ func (o *PreorderAllocation) Upsert(ctx context.Context, exec boil.ContextExecut
 func (o *PreorderAllocation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no PreorderAllocation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), preorderAllocationPrimaryKeyMapping)
@@ -759,10 +553,6 @@ func (o *PreorderAllocation) Delete(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for preorder_allocations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -795,14 +585,6 @@ func (o PreorderAllocationSlice) DeleteAll(ctx context.Context, exec boil.Contex
 		return 0, nil
 	}
 
-	if len(preorderAllocationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), preorderAllocationPrimaryKeyMapping)
@@ -825,14 +607,6 @@ func (o PreorderAllocationSlice) DeleteAll(ctx context.Context, exec boil.Contex
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for preorder_allocations")
-	}
-
-	if len(preorderAllocationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

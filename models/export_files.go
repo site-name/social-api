@@ -127,8 +127,6 @@ type (
 	// ExportFileSlice is an alias for a slice of pointers to ExportFile.
 	// This should almost always be used instead of []ExportFile.
 	ExportFileSlice []*ExportFile
-	// ExportFileHook is the signature for custom ExportFile hook methods
-	ExportFileHook func(context.Context, boil.ContextExecutor, *ExportFile) error
 
 	exportFileQuery struct {
 		*queries.Query
@@ -156,179 +154,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var exportFileAfterSelectHooks []ExportFileHook
-
-var exportFileBeforeInsertHooks []ExportFileHook
-var exportFileAfterInsertHooks []ExportFileHook
-
-var exportFileBeforeUpdateHooks []ExportFileHook
-var exportFileAfterUpdateHooks []ExportFileHook
-
-var exportFileBeforeDeleteHooks []ExportFileHook
-var exportFileAfterDeleteHooks []ExportFileHook
-
-var exportFileBeforeUpsertHooks []ExportFileHook
-var exportFileAfterUpsertHooks []ExportFileHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ExportFile) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ExportFile) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ExportFile) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ExportFile) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ExportFile) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ExportFile) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ExportFile) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ExportFile) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ExportFile) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range exportFileAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddExportFileHook registers your hook function for all future operations.
-func AddExportFileHook(hookPoint boil.HookPoint, exportFileHook ExportFileHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		exportFileAfterSelectHooks = append(exportFileAfterSelectHooks, exportFileHook)
-	case boil.BeforeInsertHook:
-		exportFileBeforeInsertHooks = append(exportFileBeforeInsertHooks, exportFileHook)
-	case boil.AfterInsertHook:
-		exportFileAfterInsertHooks = append(exportFileAfterInsertHooks, exportFileHook)
-	case boil.BeforeUpdateHook:
-		exportFileBeforeUpdateHooks = append(exportFileBeforeUpdateHooks, exportFileHook)
-	case boil.AfterUpdateHook:
-		exportFileAfterUpdateHooks = append(exportFileAfterUpdateHooks, exportFileHook)
-	case boil.BeforeDeleteHook:
-		exportFileBeforeDeleteHooks = append(exportFileBeforeDeleteHooks, exportFileHook)
-	case boil.AfterDeleteHook:
-		exportFileAfterDeleteHooks = append(exportFileAfterDeleteHooks, exportFileHook)
-	case boil.BeforeUpsertHook:
-		exportFileBeforeUpsertHooks = append(exportFileBeforeUpsertHooks, exportFileHook)
-	case boil.AfterUpsertHook:
-		exportFileAfterUpsertHooks = append(exportFileAfterUpsertHooks, exportFileHook)
-	}
-}
-
 // One returns a single exportFile record from the query.
 func (q exportFileQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ExportFile, error) {
 	o := &ExportFile{}
@@ -343,10 +168,6 @@ func (q exportFileQuery) One(ctx context.Context, exec boil.ContextExecutor) (*E
 		return nil, errors.Wrap(err, "models: failed to execute a one query for export_files")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -357,14 +178,6 @@ func (q exportFileQuery) All(ctx context.Context, exec boil.ContextExecutor) (Ex
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ExportFile slice")
-	}
-
-	if len(exportFileAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -512,14 +325,6 @@ func (exportFileL) LoadUser(ctx context.Context, e boil.ContextExecutor, singula
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -630,13 +435,6 @@ func (exportFileL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor,
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for export_events")
 	}
 
-	if len(exportEventAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ExportEvents = resultSlice
 		for _, foreign := range resultSlice {
@@ -831,10 +629,6 @@ func FindExportFile(ctx context.Context, exec boil.ContextExecutor, iD string, s
 		return nil, errors.Wrap(err, "models: unable to select from export_files")
 	}
 
-	if err = exportFileObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return exportFileObj, err
-	}
-
 	return exportFileObj, nil
 }
 
@@ -846,10 +640,6 @@ func (o *ExportFile) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(exportFileColumnsWithDefault, o)
 
@@ -914,7 +704,7 @@ func (o *ExportFile) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 		exportFileInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ExportFile.
@@ -922,9 +712,6 @@ func (o *ExportFile) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ExportFile) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	exportFileUpdateCacheMut.RLock()
 	cache, cached := exportFileUpdateCache[key]
@@ -973,7 +760,7 @@ func (o *ExportFile) Update(ctx context.Context, exec boil.ContextExecutor, colu
 		exportFileUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1046,10 +833,6 @@ func (o ExportFileSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 func (o *ExportFile) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no export_files provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(exportFileColumnsWithDefault, o)
@@ -1154,7 +937,7 @@ func (o *ExportFile) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		exportFileUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ExportFile record with an executor.
@@ -1162,10 +945,6 @@ func (o *ExportFile) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 func (o *ExportFile) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ExportFile provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), exportFilePrimaryKeyMapping)
@@ -1184,10 +963,6 @@ func (o *ExportFile) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for export_files")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1220,14 +995,6 @@ func (o ExportFileSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 		return 0, nil
 	}
 
-	if len(exportFileBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), exportFilePrimaryKeyMapping)
@@ -1250,14 +1017,6 @@ func (o ExportFileSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for export_files")
-	}
-
-	if len(exportFileAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

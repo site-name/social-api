@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS shipping_method_channel_listings (
   shipping_method_id uuid NOT NULL,
   channel_id uuid NOT NULL,
   minimum_order_price_amount decimal(12,3) NOT NULL DEFAULT 0.00,
-  currency character varying(3) NOT NULL,
+  currency varchar(3) NOT NULL,
   maximum_order_price_amount decimal(12,3),
   price_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   created_at bigint NOT NULL

@@ -119,8 +119,6 @@ type (
 	// WishlistSlice is an alias for a slice of pointers to Wishlist.
 	// This should almost always be used instead of []Wishlist.
 	WishlistSlice []*Wishlist
-	// WishlistHook is the signature for custom Wishlist hook methods
-	WishlistHook func(context.Context, boil.ContextExecutor, *Wishlist) error
 
 	wishlistQuery struct {
 		*queries.Query
@@ -148,179 +146,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var wishlistAfterSelectHooks []WishlistHook
-
-var wishlistBeforeInsertHooks []WishlistHook
-var wishlistAfterInsertHooks []WishlistHook
-
-var wishlistBeforeUpdateHooks []WishlistHook
-var wishlistAfterUpdateHooks []WishlistHook
-
-var wishlistBeforeDeleteHooks []WishlistHook
-var wishlistAfterDeleteHooks []WishlistHook
-
-var wishlistBeforeUpsertHooks []WishlistHook
-var wishlistAfterUpsertHooks []WishlistHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Wishlist) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Wishlist) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Wishlist) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Wishlist) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Wishlist) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Wishlist) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Wishlist) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Wishlist) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Wishlist) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddWishlistHook registers your hook function for all future operations.
-func AddWishlistHook(hookPoint boil.HookPoint, wishlistHook WishlistHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		wishlistAfterSelectHooks = append(wishlistAfterSelectHooks, wishlistHook)
-	case boil.BeforeInsertHook:
-		wishlistBeforeInsertHooks = append(wishlistBeforeInsertHooks, wishlistHook)
-	case boil.AfterInsertHook:
-		wishlistAfterInsertHooks = append(wishlistAfterInsertHooks, wishlistHook)
-	case boil.BeforeUpdateHook:
-		wishlistBeforeUpdateHooks = append(wishlistBeforeUpdateHooks, wishlistHook)
-	case boil.AfterUpdateHook:
-		wishlistAfterUpdateHooks = append(wishlistAfterUpdateHooks, wishlistHook)
-	case boil.BeforeDeleteHook:
-		wishlistBeforeDeleteHooks = append(wishlistBeforeDeleteHooks, wishlistHook)
-	case boil.AfterDeleteHook:
-		wishlistAfterDeleteHooks = append(wishlistAfterDeleteHooks, wishlistHook)
-	case boil.BeforeUpsertHook:
-		wishlistBeforeUpsertHooks = append(wishlistBeforeUpsertHooks, wishlistHook)
-	case boil.AfterUpsertHook:
-		wishlistAfterUpsertHooks = append(wishlistAfterUpsertHooks, wishlistHook)
-	}
-}
-
 // One returns a single wishlist record from the query.
 func (q wishlistQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Wishlist, error) {
 	o := &Wishlist{}
@@ -335,10 +160,6 @@ func (q wishlistQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Wis
 		return nil, errors.Wrap(err, "models: failed to execute a one query for wishlists")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -349,14 +170,6 @@ func (q wishlistQuery) All(ctx context.Context, exec boil.ContextExecutor) (Wish
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Wishlist slice")
-	}
-
-	if len(wishlistAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -500,14 +313,6 @@ func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -618,13 +423,6 @@ func (wishlistL) LoadWishlistItems(ctx context.Context, e boil.ContextExecutor, 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for wishlist_items")
 	}
 
-	if len(wishlistItemAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.WishlistItems = resultSlice
 		for _, foreign := range resultSlice {
@@ -786,10 +584,6 @@ func FindWishlist(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 		return nil, errors.Wrap(err, "models: unable to select from wishlists")
 	}
 
-	if err = wishlistObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return wishlistObj, err
-	}
-
 	return wishlistObj, nil
 }
 
@@ -801,10 +595,6 @@ func (o *Wishlist) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(wishlistColumnsWithDefault, o)
 
@@ -869,7 +659,7 @@ func (o *Wishlist) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		wishlistInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Wishlist.
@@ -877,9 +667,6 @@ func (o *Wishlist) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Wishlist) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	wishlistUpdateCacheMut.RLock()
 	cache, cached := wishlistUpdateCache[key]
@@ -928,7 +715,7 @@ func (o *Wishlist) Update(ctx context.Context, exec boil.ContextExecutor, column
 		wishlistUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1001,10 +788,6 @@ func (o WishlistSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 func (o *Wishlist) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no wishlists provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(wishlistColumnsWithDefault, o)
@@ -1109,7 +892,7 @@ func (o *Wishlist) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		wishlistUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Wishlist record with an executor.
@@ -1117,10 +900,6 @@ func (o *Wishlist) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 func (o *Wishlist) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Wishlist provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), wishlistPrimaryKeyMapping)
@@ -1139,10 +918,6 @@ func (o *Wishlist) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for wishlists")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1175,14 +950,6 @@ func (o WishlistSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 		return 0, nil
 	}
 
-	if len(wishlistBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), wishlistPrimaryKeyMapping)
@@ -1205,14 +972,6 @@ func (o WishlistSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for wishlists")
-	}
-
-	if len(wishlistAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

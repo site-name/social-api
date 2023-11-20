@@ -149,8 +149,6 @@ type (
 	// AllocationSlice is an alias for a slice of pointers to Allocation.
 	// This should almost always be used instead of []Allocation.
 	AllocationSlice []*Allocation
-	// AllocationHook is the signature for custom Allocation hook methods
-	AllocationHook func(context.Context, boil.ContextExecutor, *Allocation) error
 
 	allocationQuery struct {
 		*queries.Query
@@ -178,179 +176,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var allocationAfterSelectHooks []AllocationHook
-
-var allocationBeforeInsertHooks []AllocationHook
-var allocationAfterInsertHooks []AllocationHook
-
-var allocationBeforeUpdateHooks []AllocationHook
-var allocationAfterUpdateHooks []AllocationHook
-
-var allocationBeforeDeleteHooks []AllocationHook
-var allocationAfterDeleteHooks []AllocationHook
-
-var allocationBeforeUpsertHooks []AllocationHook
-var allocationAfterUpsertHooks []AllocationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Allocation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Allocation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Allocation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Allocation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Allocation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Allocation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Allocation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Allocation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Allocation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range allocationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAllocationHook registers your hook function for all future operations.
-func AddAllocationHook(hookPoint boil.HookPoint, allocationHook AllocationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		allocationAfterSelectHooks = append(allocationAfterSelectHooks, allocationHook)
-	case boil.BeforeInsertHook:
-		allocationBeforeInsertHooks = append(allocationBeforeInsertHooks, allocationHook)
-	case boil.AfterInsertHook:
-		allocationAfterInsertHooks = append(allocationAfterInsertHooks, allocationHook)
-	case boil.BeforeUpdateHook:
-		allocationBeforeUpdateHooks = append(allocationBeforeUpdateHooks, allocationHook)
-	case boil.AfterUpdateHook:
-		allocationAfterUpdateHooks = append(allocationAfterUpdateHooks, allocationHook)
-	case boil.BeforeDeleteHook:
-		allocationBeforeDeleteHooks = append(allocationBeforeDeleteHooks, allocationHook)
-	case boil.AfterDeleteHook:
-		allocationAfterDeleteHooks = append(allocationAfterDeleteHooks, allocationHook)
-	case boil.BeforeUpsertHook:
-		allocationBeforeUpsertHooks = append(allocationBeforeUpsertHooks, allocationHook)
-	case boil.AfterUpsertHook:
-		allocationAfterUpsertHooks = append(allocationAfterUpsertHooks, allocationHook)
-	}
-}
-
 // One returns a single allocation record from the query.
 func (q allocationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Allocation, error) {
 	o := &Allocation{}
@@ -365,10 +190,6 @@ func (q allocationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*A
 		return nil, errors.Wrap(err, "models: failed to execute a one query for allocations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -379,14 +200,6 @@ func (q allocationQuery) All(ctx context.Context, exec boil.ContextExecutor) (Al
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Allocation slice")
-	}
-
-	if len(allocationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -527,14 +340,6 @@ func (allocationL) LoadOrderLine(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_lines")
 	}
 
-	if len(orderLineAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -645,14 +450,6 @@ func (allocationL) LoadStock(ctx context.Context, e boil.ContextExecutor, singul
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for stocks")
-	}
-
-	if len(stockAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -813,10 +610,6 @@ func FindAllocation(ctx context.Context, exec boil.ContextExecutor, iD string, s
 		return nil, errors.Wrap(err, "models: unable to select from allocations")
 	}
 
-	if err = allocationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return allocationObj, err
-	}
-
 	return allocationObj, nil
 }
 
@@ -828,10 +621,6 @@ func (o *Allocation) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(allocationColumnsWithDefault, o)
 
@@ -896,7 +685,7 @@ func (o *Allocation) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 		allocationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Allocation.
@@ -904,9 +693,6 @@ func (o *Allocation) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Allocation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	allocationUpdateCacheMut.RLock()
 	cache, cached := allocationUpdateCache[key]
@@ -955,7 +741,7 @@ func (o *Allocation) Update(ctx context.Context, exec boil.ContextExecutor, colu
 		allocationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1028,10 +814,6 @@ func (o AllocationSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 func (o *Allocation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no allocations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(allocationColumnsWithDefault, o)
@@ -1136,7 +918,7 @@ func (o *Allocation) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		allocationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Allocation record with an executor.
@@ -1144,10 +926,6 @@ func (o *Allocation) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 func (o *Allocation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Allocation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), allocationPrimaryKeyMapping)
@@ -1166,10 +944,6 @@ func (o *Allocation) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for allocations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1202,14 +976,6 @@ func (o AllocationSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 		return 0, nil
 	}
 
-	if len(allocationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), allocationPrimaryKeyMapping)
@@ -1232,14 +998,6 @@ func (o AllocationSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for allocations")
-	}
-
-	if len(allocationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

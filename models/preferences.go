@@ -99,8 +99,6 @@ type (
 	// PreferenceSlice is an alias for a slice of pointers to Preference.
 	// This should almost always be used instead of []Preference.
 	PreferenceSlice []*Preference
-	// PreferenceHook is the signature for custom Preference hook methods
-	PreferenceHook func(context.Context, boil.ContextExecutor, *Preference) error
 
 	preferenceQuery struct {
 		*queries.Query
@@ -128,179 +126,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var preferenceAfterSelectHooks []PreferenceHook
-
-var preferenceBeforeInsertHooks []PreferenceHook
-var preferenceAfterInsertHooks []PreferenceHook
-
-var preferenceBeforeUpdateHooks []PreferenceHook
-var preferenceAfterUpdateHooks []PreferenceHook
-
-var preferenceBeforeDeleteHooks []PreferenceHook
-var preferenceAfterDeleteHooks []PreferenceHook
-
-var preferenceBeforeUpsertHooks []PreferenceHook
-var preferenceAfterUpsertHooks []PreferenceHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Preference) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Preference) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Preference) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Preference) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Preference) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Preference) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Preference) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Preference) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Preference) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range preferenceAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPreferenceHook registers your hook function for all future operations.
-func AddPreferenceHook(hookPoint boil.HookPoint, preferenceHook PreferenceHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		preferenceAfterSelectHooks = append(preferenceAfterSelectHooks, preferenceHook)
-	case boil.BeforeInsertHook:
-		preferenceBeforeInsertHooks = append(preferenceBeforeInsertHooks, preferenceHook)
-	case boil.AfterInsertHook:
-		preferenceAfterInsertHooks = append(preferenceAfterInsertHooks, preferenceHook)
-	case boil.BeforeUpdateHook:
-		preferenceBeforeUpdateHooks = append(preferenceBeforeUpdateHooks, preferenceHook)
-	case boil.AfterUpdateHook:
-		preferenceAfterUpdateHooks = append(preferenceAfterUpdateHooks, preferenceHook)
-	case boil.BeforeDeleteHook:
-		preferenceBeforeDeleteHooks = append(preferenceBeforeDeleteHooks, preferenceHook)
-	case boil.AfterDeleteHook:
-		preferenceAfterDeleteHooks = append(preferenceAfterDeleteHooks, preferenceHook)
-	case boil.BeforeUpsertHook:
-		preferenceBeforeUpsertHooks = append(preferenceBeforeUpsertHooks, preferenceHook)
-	case boil.AfterUpsertHook:
-		preferenceAfterUpsertHooks = append(preferenceAfterUpsertHooks, preferenceHook)
-	}
-}
-
 // One returns a single preference record from the query.
 func (q preferenceQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Preference, error) {
 	o := &Preference{}
@@ -315,10 +140,6 @@ func (q preferenceQuery) One(ctx context.Context, exec boil.ContextExecutor) (*P
 		return nil, errors.Wrap(err, "models: failed to execute a one query for preferences")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -329,14 +150,6 @@ func (q preferenceQuery) All(ctx context.Context, exec boil.ContextExecutor) (Pr
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Preference slice")
-	}
-
-	if len(preferenceAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -407,10 +220,6 @@ func FindPreference(ctx context.Context, exec boil.ContextExecutor, userID strin
 		return nil, errors.Wrap(err, "models: unable to select from preferences")
 	}
 
-	if err = preferenceObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return preferenceObj, err
-	}
-
 	return preferenceObj, nil
 }
 
@@ -422,10 +231,6 @@ func (o *Preference) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(preferenceColumnsWithDefault, o)
 
@@ -490,7 +295,7 @@ func (o *Preference) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 		preferenceInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Preference.
@@ -498,9 +303,6 @@ func (o *Preference) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Preference) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	preferenceUpdateCacheMut.RLock()
 	cache, cached := preferenceUpdateCache[key]
@@ -549,7 +351,7 @@ func (o *Preference) Update(ctx context.Context, exec boil.ContextExecutor, colu
 		preferenceUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -622,10 +424,6 @@ func (o PreferenceSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 func (o *Preference) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no preferences provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(preferenceColumnsWithDefault, o)
@@ -730,7 +528,7 @@ func (o *Preference) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		preferenceUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Preference record with an executor.
@@ -738,10 +536,6 @@ func (o *Preference) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 func (o *Preference) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Preference provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), preferencePrimaryKeyMapping)
@@ -760,10 +554,6 @@ func (o *Preference) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for preferences")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -796,14 +586,6 @@ func (o PreferenceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 		return 0, nil
 	}
 
-	if len(preferenceBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), preferencePrimaryKeyMapping)
@@ -826,14 +608,6 @@ func (o PreferenceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for preferences")
-	}
-
-	if len(preferenceAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

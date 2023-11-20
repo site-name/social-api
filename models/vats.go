@@ -92,8 +92,6 @@ type (
 	// VatSlice is an alias for a slice of pointers to Vat.
 	// This should almost always be used instead of []Vat.
 	VatSlice []*Vat
-	// VatHook is the signature for custom Vat hook methods
-	VatHook func(context.Context, boil.ContextExecutor, *Vat) error
 
 	vatQuery struct {
 		*queries.Query
@@ -121,179 +119,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var vatAfterSelectHooks []VatHook
-
-var vatBeforeInsertHooks []VatHook
-var vatAfterInsertHooks []VatHook
-
-var vatBeforeUpdateHooks []VatHook
-var vatAfterUpdateHooks []VatHook
-
-var vatBeforeDeleteHooks []VatHook
-var vatAfterDeleteHooks []VatHook
-
-var vatBeforeUpsertHooks []VatHook
-var vatAfterUpsertHooks []VatHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Vat) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Vat) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Vat) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Vat) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Vat) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Vat) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Vat) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Vat) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Vat) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range vatAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddVatHook registers your hook function for all future operations.
-func AddVatHook(hookPoint boil.HookPoint, vatHook VatHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		vatAfterSelectHooks = append(vatAfterSelectHooks, vatHook)
-	case boil.BeforeInsertHook:
-		vatBeforeInsertHooks = append(vatBeforeInsertHooks, vatHook)
-	case boil.AfterInsertHook:
-		vatAfterInsertHooks = append(vatAfterInsertHooks, vatHook)
-	case boil.BeforeUpdateHook:
-		vatBeforeUpdateHooks = append(vatBeforeUpdateHooks, vatHook)
-	case boil.AfterUpdateHook:
-		vatAfterUpdateHooks = append(vatAfterUpdateHooks, vatHook)
-	case boil.BeforeDeleteHook:
-		vatBeforeDeleteHooks = append(vatBeforeDeleteHooks, vatHook)
-	case boil.AfterDeleteHook:
-		vatAfterDeleteHooks = append(vatAfterDeleteHooks, vatHook)
-	case boil.BeforeUpsertHook:
-		vatBeforeUpsertHooks = append(vatBeforeUpsertHooks, vatHook)
-	case boil.AfterUpsertHook:
-		vatAfterUpsertHooks = append(vatAfterUpsertHooks, vatHook)
-	}
-}
-
 // One returns a single vat record from the query.
 func (q vatQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Vat, error) {
 	o := &Vat{}
@@ -308,10 +133,6 @@ func (q vatQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Vat, err
 		return nil, errors.Wrap(err, "models: failed to execute a one query for vats")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -322,14 +143,6 @@ func (q vatQuery) All(ctx context.Context, exec boil.ContextExecutor) (VatSlice,
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Vat slice")
-	}
-
-	if len(vatAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -400,10 +213,6 @@ func FindVat(ctx context.Context, exec boil.ContextExecutor, iD string, selectCo
 		return nil, errors.Wrap(err, "models: unable to select from vats")
 	}
 
-	if err = vatObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return vatObj, err
-	}
-
 	return vatObj, nil
 }
 
@@ -415,10 +224,6 @@ func (o *Vat) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(vatColumnsWithDefault, o)
 
@@ -483,7 +288,7 @@ func (o *Vat) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 		vatInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Vat.
@@ -491,9 +296,6 @@ func (o *Vat) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Vat) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	vatUpdateCacheMut.RLock()
 	cache, cached := vatUpdateCache[key]
@@ -542,7 +344,7 @@ func (o *Vat) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 		vatUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -615,10 +417,6 @@ func (o VatSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 func (o *Vat) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no vats provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(vatColumnsWithDefault, o)
@@ -723,7 +521,7 @@ func (o *Vat) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 		vatUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Vat record with an executor.
@@ -731,10 +529,6 @@ func (o *Vat) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 func (o *Vat) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Vat provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), vatPrimaryKeyMapping)
@@ -753,10 +547,6 @@ func (o *Vat) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, err
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for vats")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -789,14 +579,6 @@ func (o VatSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 		return 0, nil
 	}
 
-	if len(vatBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), vatPrimaryKeyMapping)
@@ -819,14 +601,6 @@ func (o VatSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for vats")
-	}
-
-	if len(vatAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

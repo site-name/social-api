@@ -1008,7 +1008,7 @@ func (s *RetryLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor, addr
 
 }
 
-func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error) {
+func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1028,7 +1028,7 @@ func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOptio
 
 }
 
-func (s *RetryLayerAddressStore) Get(addressID string) (*models.Address, error) {
+func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1048,7 +1048,7 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*models.Address, error) 
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(tx boil.ContextTransactor, address *model.Address) (*model.Address, error) {
 
 	tries := 0
 	for {

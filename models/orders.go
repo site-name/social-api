@@ -517,8 +517,6 @@ type (
 	// OrderSlice is an alias for a slice of pointers to Order.
 	// This should almost always be used instead of []Order.
 	OrderSlice []*Order
-	// OrderHook is the signature for custom Order hook methods
-	OrderHook func(context.Context, boil.ContextExecutor, *Order) error
 
 	orderQuery struct {
 		*queries.Query
@@ -546,179 +544,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var orderAfterSelectHooks []OrderHook
-
-var orderBeforeInsertHooks []OrderHook
-var orderAfterInsertHooks []OrderHook
-
-var orderBeforeUpdateHooks []OrderHook
-var orderAfterUpdateHooks []OrderHook
-
-var orderBeforeDeleteHooks []OrderHook
-var orderAfterDeleteHooks []OrderHook
-
-var orderBeforeUpsertHooks []OrderHook
-var orderAfterUpsertHooks []OrderHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Order) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Order) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Order) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Order) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Order) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Order) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Order) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Order) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Order) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOrderHook registers your hook function for all future operations.
-func AddOrderHook(hookPoint boil.HookPoint, orderHook OrderHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		orderAfterSelectHooks = append(orderAfterSelectHooks, orderHook)
-	case boil.BeforeInsertHook:
-		orderBeforeInsertHooks = append(orderBeforeInsertHooks, orderHook)
-	case boil.AfterInsertHook:
-		orderAfterInsertHooks = append(orderAfterInsertHooks, orderHook)
-	case boil.BeforeUpdateHook:
-		orderBeforeUpdateHooks = append(orderBeforeUpdateHooks, orderHook)
-	case boil.AfterUpdateHook:
-		orderAfterUpdateHooks = append(orderAfterUpdateHooks, orderHook)
-	case boil.BeforeDeleteHook:
-		orderBeforeDeleteHooks = append(orderBeforeDeleteHooks, orderHook)
-	case boil.AfterDeleteHook:
-		orderAfterDeleteHooks = append(orderAfterDeleteHooks, orderHook)
-	case boil.BeforeUpsertHook:
-		orderBeforeUpsertHooks = append(orderBeforeUpsertHooks, orderHook)
-	case boil.AfterUpsertHook:
-		orderAfterUpsertHooks = append(orderAfterUpsertHooks, orderHook)
-	}
-}
-
 // One returns a single order record from the query.
 func (q orderQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Order, error) {
 	o := &Order{}
@@ -733,10 +558,6 @@ func (q orderQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Order,
 		return nil, errors.Wrap(err, "models: failed to execute a one query for orders")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -747,14 +568,6 @@ func (q orderQuery) All(ctx context.Context, exec boil.ContextExecutor) (OrderSl
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Order slice")
-	}
-
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -1094,14 +907,6 @@ func (orderL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
 	}
 
-	if len(addressAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1212,14 +1017,6 @@ func (orderL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
-	}
-
-	if len(channelAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1338,14 +1135,6 @@ func (orderL) LoadOriginal(ctx context.Context, e boil.ContextExecutor, singular
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1460,14 +1249,6 @@ func (orderL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, si
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
-	}
-
-	if len(shippingMethodAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1586,14 +1367,6 @@ func (orderL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular boo
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1708,14 +1481,6 @@ func (orderL) LoadVoucher(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
-	}
-
-	if len(voucherAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1834,14 +1599,6 @@ func (orderL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor, s
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for warehouses")
 	}
 
-	if len(warehouseAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1952,13 +1709,6 @@ func (orderL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for customer_events")
 	}
 
-	if len(customerEventAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.CustomerEvents = resultSlice
 		for _, foreign := range resultSlice {
@@ -2066,13 +1816,6 @@ func (orderL) LoadFulfillments(ctx context.Context, e boil.ContextExecutor, sing
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for fulfillments")
 	}
 
-	if len(fulfillmentAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Fulfillments = resultSlice
 		for _, foreign := range resultSlice {
@@ -2180,13 +1923,6 @@ func (orderL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, sin
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for invoice_events")
 	}
 
-	if len(invoiceEventAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.InvoiceEvents = resultSlice
 		for _, foreign := range resultSlice {
@@ -2294,13 +2030,6 @@ func (orderL) LoadInvoices(ctx context.Context, e boil.ContextExecutor, singular
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for invoices")
 	}
 
-	if len(invoiceAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Invoices = resultSlice
 		for _, foreign := range resultSlice {
@@ -2408,13 +2137,6 @@ func (orderL) LoadOrderDiscounts(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_discounts")
 	}
 
-	if len(orderDiscountAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.OrderDiscounts = resultSlice
 		for _, foreign := range resultSlice {
@@ -2522,13 +2244,6 @@ func (orderL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_events")
 	}
 
-	if len(orderEventAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.OrderEvents = resultSlice
 		for _, foreign := range resultSlice {
@@ -2636,13 +2351,6 @@ func (orderL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_giftcards")
 	}
 
-	if len(orderGiftcardAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.OrderGiftcards = resultSlice
 		for _, foreign := range resultSlice {
@@ -2750,13 +2458,6 @@ func (orderL) LoadOrderLines(ctx context.Context, e boil.ContextExecutor, singul
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for order_lines")
 	}
 
-	if len(orderLineAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.OrderLines = resultSlice
 		for _, foreign := range resultSlice {
@@ -2864,13 +2565,6 @@ func (orderL) LoadOriginalOrders(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.OriginalOrders = resultSlice
 		for _, foreign := range resultSlice {
@@ -2978,13 +2672,6 @@ func (orderL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singular
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for payments")
 	}
 
-	if len(paymentAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Payments = resultSlice
 		for _, foreign := range resultSlice {
@@ -4547,10 +4234,6 @@ func FindOrder(ctx context.Context, exec boil.ContextExecutor, iD string, select
 		return nil, errors.Wrap(err, "models: unable to select from orders")
 	}
 
-	if err = orderObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return orderObj, err
-	}
-
 	return orderObj, nil
 }
 
@@ -4562,10 +4245,6 @@ func (o *Order) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderColumnsWithDefault, o)
 
@@ -4630,7 +4309,7 @@ func (o *Order) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		orderInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Order.
@@ -4638,9 +4317,6 @@ func (o *Order) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Order) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	orderUpdateCacheMut.RLock()
 	cache, cached := orderUpdateCache[key]
@@ -4689,7 +4365,7 @@ func (o *Order) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 		orderUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -4762,10 +4438,6 @@ func (o OrderSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 func (o *Order) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no orders provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderColumnsWithDefault, o)
@@ -4870,7 +4542,7 @@ func (o *Order) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 		orderUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Order record with an executor.
@@ -4878,10 +4550,6 @@ func (o *Order) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 func (o *Order) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Order provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), orderPrimaryKeyMapping)
@@ -4900,10 +4568,6 @@ func (o *Order) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for orders")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -4936,14 +4600,6 @@ func (o OrderSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 		return 0, nil
 	}
 
-	if len(orderBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderPrimaryKeyMapping)
@@ -4966,14 +4622,6 @@ func (o OrderSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for orders")
-	}
-
-	if len(orderAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

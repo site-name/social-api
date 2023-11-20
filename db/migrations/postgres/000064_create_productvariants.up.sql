@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS product_variants (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(255) NOT NULL,
+  name varchar(255) NOT NULL,
   product_id uuid NOT NULL,
-  sku character varying(255) NOT NULL,
+  sku varchar(255) NOT NULL,
   weight real,
   weight_unit text NOT NULL,
   track_inventory boolean,

@@ -4,14 +4,14 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/models"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gorm.io/gorm"
 )
 
@@ -29,7 +29,7 @@ type Store interface {
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
 	FinalizeTransaction(tx *gorm.DB)             // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
 
-	GetMaster() ContextRunner         // GetMaster returns a gorm wrapper
+	GetMaster() *sql.DB               // GetMaster returns a gorm wrapper
 	GetReplica() boil.ContextExecutor // GetReplica returns a gorm wrapper
 
 	// GetQueryBuilder create squirrel sql query builder.
@@ -810,11 +810,11 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		ScanFields(addr *models.Address) []any
-		Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error)
-		Get(addressID string) (*models.Address, error)                                  // Get returns an Address with given addressID is exist
-		DeleteAddresses(tx boil.ContextTransactor, addressIDs []string) *model.AppError // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error)    // FilterByOption finds and returns a list of address(es) filtered by given option
+		ScanFields(addr *model.Address) []any
+		Upsert(tx *sql.Tx, address *model.Address) (*model.Address, error)
+		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
+		DeleteAddresses(tx *sql.Tx, addressIDs []string) *model.AppError            // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent

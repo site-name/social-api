@@ -156,8 +156,6 @@ type (
 	// AttributeValueTranslationSlice is an alias for a slice of pointers to AttributeValueTranslation.
 	// This should almost always be used instead of []AttributeValueTranslation.
 	AttributeValueTranslationSlice []*AttributeValueTranslation
-	// AttributeValueTranslationHook is the signature for custom AttributeValueTranslation hook methods
-	AttributeValueTranslationHook func(context.Context, boil.ContextExecutor, *AttributeValueTranslation) error
 
 	attributeValueTranslationQuery struct {
 		*queries.Query
@@ -185,179 +183,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var attributeValueTranslationAfterSelectHooks []AttributeValueTranslationHook
-
-var attributeValueTranslationBeforeInsertHooks []AttributeValueTranslationHook
-var attributeValueTranslationAfterInsertHooks []AttributeValueTranslationHook
-
-var attributeValueTranslationBeforeUpdateHooks []AttributeValueTranslationHook
-var attributeValueTranslationAfterUpdateHooks []AttributeValueTranslationHook
-
-var attributeValueTranslationBeforeDeleteHooks []AttributeValueTranslationHook
-var attributeValueTranslationAfterDeleteHooks []AttributeValueTranslationHook
-
-var attributeValueTranslationBeforeUpsertHooks []AttributeValueTranslationHook
-var attributeValueTranslationAfterUpsertHooks []AttributeValueTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AttributeValueTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AttributeValueTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AttributeValueTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AttributeValueTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AttributeValueTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AttributeValueTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AttributeValueTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AttributeValueTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AttributeValueTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range attributeValueTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAttributeValueTranslationHook registers your hook function for all future operations.
-func AddAttributeValueTranslationHook(hookPoint boil.HookPoint, attributeValueTranslationHook AttributeValueTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		attributeValueTranslationAfterSelectHooks = append(attributeValueTranslationAfterSelectHooks, attributeValueTranslationHook)
-	case boil.BeforeInsertHook:
-		attributeValueTranslationBeforeInsertHooks = append(attributeValueTranslationBeforeInsertHooks, attributeValueTranslationHook)
-	case boil.AfterInsertHook:
-		attributeValueTranslationAfterInsertHooks = append(attributeValueTranslationAfterInsertHooks, attributeValueTranslationHook)
-	case boil.BeforeUpdateHook:
-		attributeValueTranslationBeforeUpdateHooks = append(attributeValueTranslationBeforeUpdateHooks, attributeValueTranslationHook)
-	case boil.AfterUpdateHook:
-		attributeValueTranslationAfterUpdateHooks = append(attributeValueTranslationAfterUpdateHooks, attributeValueTranslationHook)
-	case boil.BeforeDeleteHook:
-		attributeValueTranslationBeforeDeleteHooks = append(attributeValueTranslationBeforeDeleteHooks, attributeValueTranslationHook)
-	case boil.AfterDeleteHook:
-		attributeValueTranslationAfterDeleteHooks = append(attributeValueTranslationAfterDeleteHooks, attributeValueTranslationHook)
-	case boil.BeforeUpsertHook:
-		attributeValueTranslationBeforeUpsertHooks = append(attributeValueTranslationBeforeUpsertHooks, attributeValueTranslationHook)
-	case boil.AfterUpsertHook:
-		attributeValueTranslationAfterUpsertHooks = append(attributeValueTranslationAfterUpsertHooks, attributeValueTranslationHook)
-	}
-}
-
 // One returns a single attributeValueTranslation record from the query.
 func (q attributeValueTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AttributeValueTranslation, error) {
 	o := &AttributeValueTranslation{}
@@ -372,10 +197,6 @@ func (q attributeValueTranslationQuery) One(ctx context.Context, exec boil.Conte
 		return nil, errors.Wrap(err, "models: failed to execute a one query for attribute_value_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -386,14 +207,6 @@ func (q attributeValueTranslationQuery) All(ctx context.Context, exec boil.Conte
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AttributeValueTranslation slice")
-	}
-
-	if len(attributeValueTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -464,10 +277,6 @@ func FindAttributeValueTranslation(ctx context.Context, exec boil.ContextExecuto
 		return nil, errors.Wrap(err, "models: unable to select from attribute_value_translations")
 	}
 
-	if err = attributeValueTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return attributeValueTranslationObj, err
-	}
-
 	return attributeValueTranslationObj, nil
 }
 
@@ -479,10 +288,6 @@ func (o *AttributeValueTranslation) Insert(ctx context.Context, exec boil.Contex
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(attributeValueTranslationColumnsWithDefault, o)
 
@@ -547,7 +352,7 @@ func (o *AttributeValueTranslation) Insert(ctx context.Context, exec boil.Contex
 		attributeValueTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AttributeValueTranslation.
@@ -555,9 +360,6 @@ func (o *AttributeValueTranslation) Insert(ctx context.Context, exec boil.Contex
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *AttributeValueTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	attributeValueTranslationUpdateCacheMut.RLock()
 	cache, cached := attributeValueTranslationUpdateCache[key]
@@ -606,7 +408,7 @@ func (o *AttributeValueTranslation) Update(ctx context.Context, exec boil.Contex
 		attributeValueTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -679,10 +481,6 @@ func (o AttributeValueTranslationSlice) UpdateAll(ctx context.Context, exec boil
 func (o *AttributeValueTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no attribute_value_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(attributeValueTranslationColumnsWithDefault, o)
@@ -787,7 +585,7 @@ func (o *AttributeValueTranslation) Upsert(ctx context.Context, exec boil.Contex
 		attributeValueTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AttributeValueTranslation record with an executor.
@@ -795,10 +593,6 @@ func (o *AttributeValueTranslation) Upsert(ctx context.Context, exec boil.Contex
 func (o *AttributeValueTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AttributeValueTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), attributeValueTranslationPrimaryKeyMapping)
@@ -817,10 +611,6 @@ func (o *AttributeValueTranslation) Delete(ctx context.Context, exec boil.Contex
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for attribute_value_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -853,14 +643,6 @@ func (o AttributeValueTranslationSlice) DeleteAll(ctx context.Context, exec boil
 		return 0, nil
 	}
 
-	if len(attributeValueTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), attributeValueTranslationPrimaryKeyMapping)
@@ -883,14 +665,6 @@ func (o AttributeValueTranslationSlice) DeleteAll(ctx context.Context, exec boil
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for attribute_value_translations")
-	}
-
-	if len(attributeValueTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -119,8 +119,6 @@ type (
 	// VoucherCategorySlice is an alias for a slice of pointers to VoucherCategory.
 	// This should almost always be used instead of []VoucherCategory.
 	VoucherCategorySlice []*VoucherCategory
-	// VoucherCategoryHook is the signature for custom VoucherCategory hook methods
-	VoucherCategoryHook func(context.Context, boil.ContextExecutor, *VoucherCategory) error
 
 	voucherCategoryQuery struct {
 		*queries.Query
@@ -148,179 +146,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var voucherCategoryAfterSelectHooks []VoucherCategoryHook
-
-var voucherCategoryBeforeInsertHooks []VoucherCategoryHook
-var voucherCategoryAfterInsertHooks []VoucherCategoryHook
-
-var voucherCategoryBeforeUpdateHooks []VoucherCategoryHook
-var voucherCategoryAfterUpdateHooks []VoucherCategoryHook
-
-var voucherCategoryBeforeDeleteHooks []VoucherCategoryHook
-var voucherCategoryAfterDeleteHooks []VoucherCategoryHook
-
-var voucherCategoryBeforeUpsertHooks []VoucherCategoryHook
-var voucherCategoryAfterUpsertHooks []VoucherCategoryHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *VoucherCategory) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *VoucherCategory) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *VoucherCategory) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *VoucherCategory) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *VoucherCategory) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *VoucherCategory) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *VoucherCategory) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *VoucherCategory) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *VoucherCategory) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherCategoryAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddVoucherCategoryHook registers your hook function for all future operations.
-func AddVoucherCategoryHook(hookPoint boil.HookPoint, voucherCategoryHook VoucherCategoryHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		voucherCategoryAfterSelectHooks = append(voucherCategoryAfterSelectHooks, voucherCategoryHook)
-	case boil.BeforeInsertHook:
-		voucherCategoryBeforeInsertHooks = append(voucherCategoryBeforeInsertHooks, voucherCategoryHook)
-	case boil.AfterInsertHook:
-		voucherCategoryAfterInsertHooks = append(voucherCategoryAfterInsertHooks, voucherCategoryHook)
-	case boil.BeforeUpdateHook:
-		voucherCategoryBeforeUpdateHooks = append(voucherCategoryBeforeUpdateHooks, voucherCategoryHook)
-	case boil.AfterUpdateHook:
-		voucherCategoryAfterUpdateHooks = append(voucherCategoryAfterUpdateHooks, voucherCategoryHook)
-	case boil.BeforeDeleteHook:
-		voucherCategoryBeforeDeleteHooks = append(voucherCategoryBeforeDeleteHooks, voucherCategoryHook)
-	case boil.AfterDeleteHook:
-		voucherCategoryAfterDeleteHooks = append(voucherCategoryAfterDeleteHooks, voucherCategoryHook)
-	case boil.BeforeUpsertHook:
-		voucherCategoryBeforeUpsertHooks = append(voucherCategoryBeforeUpsertHooks, voucherCategoryHook)
-	case boil.AfterUpsertHook:
-		voucherCategoryAfterUpsertHooks = append(voucherCategoryAfterUpsertHooks, voucherCategoryHook)
-	}
-}
-
 // One returns a single voucherCategory record from the query.
 func (q voucherCategoryQuery) One(ctx context.Context, exec boil.ContextExecutor) (*VoucherCategory, error) {
 	o := &VoucherCategory{}
@@ -335,10 +160,6 @@ func (q voucherCategoryQuery) One(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "models: failed to execute a one query for voucher_categories")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -349,14 +170,6 @@ func (q voucherCategoryQuery) All(ctx context.Context, exec boil.ContextExecutor
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to VoucherCategory slice")
-	}
-
-	if len(voucherCategoryAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -497,14 +310,6 @@ func (voucherCategoryL) LoadCategory(ctx context.Context, e boil.ContextExecutor
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for categories")
 	}
 
-	if len(categoryAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -615,14 +420,6 @@ func (voucherCategoryL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
-	}
-
-	if len(voucherAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -783,10 +580,6 @@ func FindVoucherCategory(ctx context.Context, exec boil.ContextExecutor, iD stri
 		return nil, errors.Wrap(err, "models: unable to select from voucher_categories")
 	}
 
-	if err = voucherCategoryObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return voucherCategoryObj, err
-	}
-
 	return voucherCategoryObj, nil
 }
 
@@ -798,10 +591,6 @@ func (o *VoucherCategory) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherCategoryColumnsWithDefault, o)
 
@@ -866,7 +655,7 @@ func (o *VoucherCategory) Insert(ctx context.Context, exec boil.ContextExecutor,
 		voucherCategoryInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the VoucherCategory.
@@ -874,9 +663,6 @@ func (o *VoucherCategory) Insert(ctx context.Context, exec boil.ContextExecutor,
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *VoucherCategory) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	voucherCategoryUpdateCacheMut.RLock()
 	cache, cached := voucherCategoryUpdateCache[key]
@@ -925,7 +711,7 @@ func (o *VoucherCategory) Update(ctx context.Context, exec boil.ContextExecutor,
 		voucherCategoryUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -998,10 +784,6 @@ func (o VoucherCategorySlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 func (o *VoucherCategory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no voucher_categories provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherCategoryColumnsWithDefault, o)
@@ -1106,7 +888,7 @@ func (o *VoucherCategory) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		voucherCategoryUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single VoucherCategory record with an executor.
@@ -1114,10 +896,6 @@ func (o *VoucherCategory) Upsert(ctx context.Context, exec boil.ContextExecutor,
 func (o *VoucherCategory) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no VoucherCategory provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), voucherCategoryPrimaryKeyMapping)
@@ -1136,10 +914,6 @@ func (o *VoucherCategory) Delete(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for voucher_categories")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1172,14 +946,6 @@ func (o VoucherCategorySlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 		return 0, nil
 	}
 
-	if len(voucherCategoryBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherCategoryPrimaryKeyMapping)
@@ -1202,14 +968,6 @@ func (o VoucherCategorySlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for voucher_categories")
-	}
-
-	if len(voucherCategoryAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

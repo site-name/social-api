@@ -124,8 +124,6 @@ type (
 	// CustomerNoteSlice is an alias for a slice of pointers to CustomerNote.
 	// This should almost always be used instead of []CustomerNote.
 	CustomerNoteSlice []*CustomerNote
-	// CustomerNoteHook is the signature for custom CustomerNote hook methods
-	CustomerNoteHook func(context.Context, boil.ContextExecutor, *CustomerNote) error
 
 	customerNoteQuery struct {
 		*queries.Query
@@ -153,179 +151,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var customerNoteAfterSelectHooks []CustomerNoteHook
-
-var customerNoteBeforeInsertHooks []CustomerNoteHook
-var customerNoteAfterInsertHooks []CustomerNoteHook
-
-var customerNoteBeforeUpdateHooks []CustomerNoteHook
-var customerNoteAfterUpdateHooks []CustomerNoteHook
-
-var customerNoteBeforeDeleteHooks []CustomerNoteHook
-var customerNoteAfterDeleteHooks []CustomerNoteHook
-
-var customerNoteBeforeUpsertHooks []CustomerNoteHook
-var customerNoteAfterUpsertHooks []CustomerNoteHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *CustomerNote) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *CustomerNote) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *CustomerNote) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *CustomerNote) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *CustomerNote) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *CustomerNote) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *CustomerNote) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *CustomerNote) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *CustomerNote) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range customerNoteAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCustomerNoteHook registers your hook function for all future operations.
-func AddCustomerNoteHook(hookPoint boil.HookPoint, customerNoteHook CustomerNoteHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		customerNoteAfterSelectHooks = append(customerNoteAfterSelectHooks, customerNoteHook)
-	case boil.BeforeInsertHook:
-		customerNoteBeforeInsertHooks = append(customerNoteBeforeInsertHooks, customerNoteHook)
-	case boil.AfterInsertHook:
-		customerNoteAfterInsertHooks = append(customerNoteAfterInsertHooks, customerNoteHook)
-	case boil.BeforeUpdateHook:
-		customerNoteBeforeUpdateHooks = append(customerNoteBeforeUpdateHooks, customerNoteHook)
-	case boil.AfterUpdateHook:
-		customerNoteAfterUpdateHooks = append(customerNoteAfterUpdateHooks, customerNoteHook)
-	case boil.BeforeDeleteHook:
-		customerNoteBeforeDeleteHooks = append(customerNoteBeforeDeleteHooks, customerNoteHook)
-	case boil.AfterDeleteHook:
-		customerNoteAfterDeleteHooks = append(customerNoteAfterDeleteHooks, customerNoteHook)
-	case boil.BeforeUpsertHook:
-		customerNoteBeforeUpsertHooks = append(customerNoteBeforeUpsertHooks, customerNoteHook)
-	case boil.AfterUpsertHook:
-		customerNoteAfterUpsertHooks = append(customerNoteAfterUpsertHooks, customerNoteHook)
-	}
-}
-
 // One returns a single customerNote record from the query.
 func (q customerNoteQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CustomerNote, error) {
 	o := &CustomerNote{}
@@ -340,10 +165,6 @@ func (q customerNoteQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 		return nil, errors.Wrap(err, "models: failed to execute a one query for customer_notes")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -354,14 +175,6 @@ func (q customerNoteQuery) All(ctx context.Context, exec boil.ContextExecutor) (
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to CustomerNote slice")
-	}
-
-	if len(customerNoteAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -493,14 +306,6 @@ func (customerNoteL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -647,10 +452,6 @@ func FindCustomerNote(ctx context.Context, exec boil.ContextExecutor, iD string,
 		return nil, errors.Wrap(err, "models: unable to select from customer_notes")
 	}
 
-	if err = customerNoteObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return customerNoteObj, err
-	}
-
 	return customerNoteObj, nil
 }
 
@@ -662,10 +463,6 @@ func (o *CustomerNote) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(customerNoteColumnsWithDefault, o)
 
@@ -730,7 +527,7 @@ func (o *CustomerNote) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		customerNoteInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the CustomerNote.
@@ -738,9 +535,6 @@ func (o *CustomerNote) Insert(ctx context.Context, exec boil.ContextExecutor, co
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *CustomerNote) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	customerNoteUpdateCacheMut.RLock()
 	cache, cached := customerNoteUpdateCache[key]
@@ -789,7 +583,7 @@ func (o *CustomerNote) Update(ctx context.Context, exec boil.ContextExecutor, co
 		customerNoteUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -862,10 +656,6 @@ func (o CustomerNoteSlice) UpdateAll(ctx context.Context, exec boil.ContextExecu
 func (o *CustomerNote) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no customer_notes provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(customerNoteColumnsWithDefault, o)
@@ -970,7 +760,7 @@ func (o *CustomerNote) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		customerNoteUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single CustomerNote record with an executor.
@@ -978,10 +768,6 @@ func (o *CustomerNote) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 func (o *CustomerNote) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no CustomerNote provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), customerNotePrimaryKeyMapping)
@@ -1000,10 +786,6 @@ func (o *CustomerNote) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for customer_notes")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1036,14 +818,6 @@ func (o CustomerNoteSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 		return 0, nil
 	}
 
-	if len(customerNoteBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), customerNotePrimaryKeyMapping)
@@ -1066,14 +840,6 @@ func (o CustomerNoteSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for customer_notes")
-	}
-
-	if len(customerNoteAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

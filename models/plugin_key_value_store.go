@@ -99,8 +99,6 @@ type (
 	// PluginKeyValueStoreSlice is an alias for a slice of pointers to PluginKeyValueStore.
 	// This should almost always be used instead of []PluginKeyValueStore.
 	PluginKeyValueStoreSlice []*PluginKeyValueStore
-	// PluginKeyValueStoreHook is the signature for custom PluginKeyValueStore hook methods
-	PluginKeyValueStoreHook func(context.Context, boil.ContextExecutor, *PluginKeyValueStore) error
 
 	pluginKeyValueStoreQuery struct {
 		*queries.Query
@@ -128,179 +126,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var pluginKeyValueStoreAfterSelectHooks []PluginKeyValueStoreHook
-
-var pluginKeyValueStoreBeforeInsertHooks []PluginKeyValueStoreHook
-var pluginKeyValueStoreAfterInsertHooks []PluginKeyValueStoreHook
-
-var pluginKeyValueStoreBeforeUpdateHooks []PluginKeyValueStoreHook
-var pluginKeyValueStoreAfterUpdateHooks []PluginKeyValueStoreHook
-
-var pluginKeyValueStoreBeforeDeleteHooks []PluginKeyValueStoreHook
-var pluginKeyValueStoreAfterDeleteHooks []PluginKeyValueStoreHook
-
-var pluginKeyValueStoreBeforeUpsertHooks []PluginKeyValueStoreHook
-var pluginKeyValueStoreAfterUpsertHooks []PluginKeyValueStoreHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *PluginKeyValueStore) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *PluginKeyValueStore) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *PluginKeyValueStore) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *PluginKeyValueStore) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *PluginKeyValueStore) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *PluginKeyValueStore) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *PluginKeyValueStore) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *PluginKeyValueStore) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *PluginKeyValueStore) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginKeyValueStoreAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPluginKeyValueStoreHook registers your hook function for all future operations.
-func AddPluginKeyValueStoreHook(hookPoint boil.HookPoint, pluginKeyValueStoreHook PluginKeyValueStoreHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		pluginKeyValueStoreAfterSelectHooks = append(pluginKeyValueStoreAfterSelectHooks, pluginKeyValueStoreHook)
-	case boil.BeforeInsertHook:
-		pluginKeyValueStoreBeforeInsertHooks = append(pluginKeyValueStoreBeforeInsertHooks, pluginKeyValueStoreHook)
-	case boil.AfterInsertHook:
-		pluginKeyValueStoreAfterInsertHooks = append(pluginKeyValueStoreAfterInsertHooks, pluginKeyValueStoreHook)
-	case boil.BeforeUpdateHook:
-		pluginKeyValueStoreBeforeUpdateHooks = append(pluginKeyValueStoreBeforeUpdateHooks, pluginKeyValueStoreHook)
-	case boil.AfterUpdateHook:
-		pluginKeyValueStoreAfterUpdateHooks = append(pluginKeyValueStoreAfterUpdateHooks, pluginKeyValueStoreHook)
-	case boil.BeforeDeleteHook:
-		pluginKeyValueStoreBeforeDeleteHooks = append(pluginKeyValueStoreBeforeDeleteHooks, pluginKeyValueStoreHook)
-	case boil.AfterDeleteHook:
-		pluginKeyValueStoreAfterDeleteHooks = append(pluginKeyValueStoreAfterDeleteHooks, pluginKeyValueStoreHook)
-	case boil.BeforeUpsertHook:
-		pluginKeyValueStoreBeforeUpsertHooks = append(pluginKeyValueStoreBeforeUpsertHooks, pluginKeyValueStoreHook)
-	case boil.AfterUpsertHook:
-		pluginKeyValueStoreAfterUpsertHooks = append(pluginKeyValueStoreAfterUpsertHooks, pluginKeyValueStoreHook)
-	}
-}
-
 // One returns a single pluginKeyValueStore record from the query.
 func (q pluginKeyValueStoreQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PluginKeyValueStore, error) {
 	o := &PluginKeyValueStore{}
@@ -315,10 +140,6 @@ func (q pluginKeyValueStoreQuery) One(ctx context.Context, exec boil.ContextExec
 		return nil, errors.Wrap(err, "models: failed to execute a one query for plugin_key_value_store")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -329,14 +150,6 @@ func (q pluginKeyValueStoreQuery) All(ctx context.Context, exec boil.ContextExec
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to PluginKeyValueStore slice")
-	}
-
-	if len(pluginKeyValueStoreAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -407,10 +220,6 @@ func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, plu
 		return nil, errors.Wrap(err, "models: unable to select from plugin_key_value_store")
 	}
 
-	if err = pluginKeyValueStoreObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return pluginKeyValueStoreObj, err
-	}
-
 	return pluginKeyValueStoreObj, nil
 }
 
@@ -422,10 +231,6 @@ func (o *PluginKeyValueStore) Insert(ctx context.Context, exec boil.ContextExecu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pluginKeyValueStoreColumnsWithDefault, o)
 
@@ -490,7 +295,7 @@ func (o *PluginKeyValueStore) Insert(ctx context.Context, exec boil.ContextExecu
 		pluginKeyValueStoreInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the PluginKeyValueStore.
@@ -498,9 +303,6 @@ func (o *PluginKeyValueStore) Insert(ctx context.Context, exec boil.ContextExecu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *PluginKeyValueStore) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	pluginKeyValueStoreUpdateCacheMut.RLock()
 	cache, cached := pluginKeyValueStoreUpdateCache[key]
@@ -549,7 +351,7 @@ func (o *PluginKeyValueStore) Update(ctx context.Context, exec boil.ContextExecu
 		pluginKeyValueStoreUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -622,10 +424,6 @@ func (o PluginKeyValueStoreSlice) UpdateAll(ctx context.Context, exec boil.Conte
 func (o *PluginKeyValueStore) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no plugin_key_value_store provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pluginKeyValueStoreColumnsWithDefault, o)
@@ -730,7 +528,7 @@ func (o *PluginKeyValueStore) Upsert(ctx context.Context, exec boil.ContextExecu
 		pluginKeyValueStoreUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single PluginKeyValueStore record with an executor.
@@ -738,10 +536,6 @@ func (o *PluginKeyValueStore) Upsert(ctx context.Context, exec boil.ContextExecu
 func (o *PluginKeyValueStore) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no PluginKeyValueStore provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pluginKeyValueStorePrimaryKeyMapping)
@@ -760,10 +554,6 @@ func (o *PluginKeyValueStore) Delete(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for plugin_key_value_store")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -796,14 +586,6 @@ func (o PluginKeyValueStoreSlice) DeleteAll(ctx context.Context, exec boil.Conte
 		return 0, nil
 	}
 
-	if len(pluginKeyValueStoreBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pluginKeyValueStorePrimaryKeyMapping)
@@ -826,14 +608,6 @@ func (o PluginKeyValueStoreSlice) DeleteAll(ctx context.Context, exec boil.Conte
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for plugin_key_value_store")
-	}
-
-	if len(pluginKeyValueStoreAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -112,8 +112,6 @@ type (
 	// ProductCollectionSlice is an alias for a slice of pointers to ProductCollection.
 	// This should almost always be used instead of []ProductCollection.
 	ProductCollectionSlice []*ProductCollection
-	// ProductCollectionHook is the signature for custom ProductCollection hook methods
-	ProductCollectionHook func(context.Context, boil.ContextExecutor, *ProductCollection) error
 
 	productCollectionQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var productCollectionAfterSelectHooks []ProductCollectionHook
-
-var productCollectionBeforeInsertHooks []ProductCollectionHook
-var productCollectionAfterInsertHooks []ProductCollectionHook
-
-var productCollectionBeforeUpdateHooks []ProductCollectionHook
-var productCollectionAfterUpdateHooks []ProductCollectionHook
-
-var productCollectionBeforeDeleteHooks []ProductCollectionHook
-var productCollectionAfterDeleteHooks []ProductCollectionHook
-
-var productCollectionBeforeUpsertHooks []ProductCollectionHook
-var productCollectionAfterUpsertHooks []ProductCollectionHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ProductCollection) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ProductCollection) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ProductCollection) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ProductCollection) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ProductCollection) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ProductCollection) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ProductCollection) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ProductCollection) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ProductCollection) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productCollectionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddProductCollectionHook registers your hook function for all future operations.
-func AddProductCollectionHook(hookPoint boil.HookPoint, productCollectionHook ProductCollectionHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		productCollectionAfterSelectHooks = append(productCollectionAfterSelectHooks, productCollectionHook)
-	case boil.BeforeInsertHook:
-		productCollectionBeforeInsertHooks = append(productCollectionBeforeInsertHooks, productCollectionHook)
-	case boil.AfterInsertHook:
-		productCollectionAfterInsertHooks = append(productCollectionAfterInsertHooks, productCollectionHook)
-	case boil.BeforeUpdateHook:
-		productCollectionBeforeUpdateHooks = append(productCollectionBeforeUpdateHooks, productCollectionHook)
-	case boil.AfterUpdateHook:
-		productCollectionAfterUpdateHooks = append(productCollectionAfterUpdateHooks, productCollectionHook)
-	case boil.BeforeDeleteHook:
-		productCollectionBeforeDeleteHooks = append(productCollectionBeforeDeleteHooks, productCollectionHook)
-	case boil.AfterDeleteHook:
-		productCollectionAfterDeleteHooks = append(productCollectionAfterDeleteHooks, productCollectionHook)
-	case boil.BeforeUpsertHook:
-		productCollectionBeforeUpsertHooks = append(productCollectionBeforeUpsertHooks, productCollectionHook)
-	case boil.AfterUpsertHook:
-		productCollectionAfterUpsertHooks = append(productCollectionAfterUpsertHooks, productCollectionHook)
-	}
-}
-
 // One returns a single productCollection record from the query.
 func (q productCollectionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ProductCollection, error) {
 	o := &ProductCollection{}
@@ -328,10 +153,6 @@ func (q productCollectionQuery) One(ctx context.Context, exec boil.ContextExecut
 		return nil, errors.Wrap(err, "models: failed to execute a one query for product_collections")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q productCollectionQuery) All(ctx context.Context, exec boil.ContextExecut
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ProductCollection slice")
-	}
-
-	if len(productCollectionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (productCollectionL) LoadCollection(ctx context.Context, e boil.ContextExec
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
 	}
 
-	if len(collectionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (productCollectionL) LoadProduct(ctx context.Context, e boil.ContextExecuto
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
-	}
-
-	if len(productAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindProductCollection(ctx context.Context, exec boil.ContextExecutor, iD st
 		return nil, errors.Wrap(err, "models: unable to select from product_collections")
 	}
 
-	if err = productCollectionObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return productCollectionObj, err
-	}
-
 	return productCollectionObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *ProductCollection) Insert(ctx context.Context, exec boil.ContextExecuto
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productCollectionColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *ProductCollection) Insert(ctx context.Context, exec boil.ContextExecuto
 		productCollectionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ProductCollection.
@@ -867,9 +656,6 @@ func (o *ProductCollection) Insert(ctx context.Context, exec boil.ContextExecuto
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ProductCollection) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	productCollectionUpdateCacheMut.RLock()
 	cache, cached := productCollectionUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *ProductCollection) Update(ctx context.Context, exec boil.ContextExecuto
 		productCollectionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o ProductCollectionSlice) UpdateAll(ctx context.Context, exec boil.Context
 func (o *ProductCollection) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no product_collections provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productCollectionColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *ProductCollection) Upsert(ctx context.Context, exec boil.ContextExecuto
 		productCollectionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ProductCollection record with an executor.
@@ -1107,10 +889,6 @@ func (o *ProductCollection) Upsert(ctx context.Context, exec boil.ContextExecuto
 func (o *ProductCollection) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ProductCollection provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), productCollectionPrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *ProductCollection) Delete(ctx context.Context, exec boil.ContextExecuto
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for product_collections")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o ProductCollectionSlice) DeleteAll(ctx context.Context, exec boil.Context
 		return 0, nil
 	}
 
-	if len(productCollectionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productCollectionPrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o ProductCollectionSlice) DeleteAll(ctx context.Context, exec boil.Context
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for product_collections")
-	}
-
-	if len(productCollectionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

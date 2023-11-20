@@ -218,8 +218,6 @@ type (
 	// PageSlice is an alias for a slice of pointers to Page.
 	// This should almost always be used instead of []Page.
 	PageSlice []*Page
-	// PageHook is the signature for custom Page hook methods
-	PageHook func(context.Context, boil.ContextExecutor, *Page) error
 
 	pageQuery struct {
 		*queries.Query
@@ -247,179 +245,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var pageAfterSelectHooks []PageHook
-
-var pageBeforeInsertHooks []PageHook
-var pageAfterInsertHooks []PageHook
-
-var pageBeforeUpdateHooks []PageHook
-var pageAfterUpdateHooks []PageHook
-
-var pageBeforeDeleteHooks []PageHook
-var pageAfterDeleteHooks []PageHook
-
-var pageBeforeUpsertHooks []PageHook
-var pageAfterUpsertHooks []PageHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Page) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Page) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Page) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Page) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Page) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Page) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Page) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Page) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Page) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pageAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPageHook registers your hook function for all future operations.
-func AddPageHook(hookPoint boil.HookPoint, pageHook PageHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		pageAfterSelectHooks = append(pageAfterSelectHooks, pageHook)
-	case boil.BeforeInsertHook:
-		pageBeforeInsertHooks = append(pageBeforeInsertHooks, pageHook)
-	case boil.AfterInsertHook:
-		pageAfterInsertHooks = append(pageAfterInsertHooks, pageHook)
-	case boil.BeforeUpdateHook:
-		pageBeforeUpdateHooks = append(pageBeforeUpdateHooks, pageHook)
-	case boil.AfterUpdateHook:
-		pageAfterUpdateHooks = append(pageAfterUpdateHooks, pageHook)
-	case boil.BeforeDeleteHook:
-		pageBeforeDeleteHooks = append(pageBeforeDeleteHooks, pageHook)
-	case boil.AfterDeleteHook:
-		pageAfterDeleteHooks = append(pageAfterDeleteHooks, pageHook)
-	case boil.BeforeUpsertHook:
-		pageBeforeUpsertHooks = append(pageBeforeUpsertHooks, pageHook)
-	case boil.AfterUpsertHook:
-		pageAfterUpsertHooks = append(pageAfterUpsertHooks, pageHook)
-	}
-}
-
 // One returns a single page record from the query.
 func (q pageQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Page, error) {
 	o := &Page{}
@@ -434,10 +259,6 @@ func (q pageQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Page, e
 		return nil, errors.Wrap(err, "models: failed to execute a one query for pages")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -448,14 +269,6 @@ func (q pageQuery) All(ctx context.Context, exec boil.ContextExecutor) (PageSlic
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Page slice")
-	}
-
-	if len(pageAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -627,14 +440,6 @@ func (pageL) LoadPageType(ctx context.Context, e boil.ContextExecutor, singular 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for page_types")
 	}
 
-	if len(pageTypeAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -745,13 +550,6 @@ func (pageL) LoadAssignedPageAttributes(ctx context.Context, e boil.ContextExecu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_page_attributes")
 	}
 
-	if len(assignedPageAttributeAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AssignedPageAttributes = resultSlice
 		for _, foreign := range resultSlice {
@@ -859,13 +657,6 @@ func (pageL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menu_items")
 	}
 
-	if len(menuItemAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.MenuItems = resultSlice
 		for _, foreign := range resultSlice {
@@ -973,13 +764,6 @@ func (pageL) LoadPageTranslations(ctx context.Context, e boil.ContextExecutor, s
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for page_translations")
 	}
 
-	if len(pageTranslationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.PageTranslations = resultSlice
 		for _, foreign := range resultSlice {
@@ -1321,10 +1105,6 @@ func FindPage(ctx context.Context, exec boil.ContextExecutor, iD string, selectC
 		return nil, errors.Wrap(err, "models: unable to select from pages")
 	}
 
-	if err = pageObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return pageObj, err
-	}
-
 	return pageObj, nil
 }
 
@@ -1336,10 +1116,6 @@ func (o *Page) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pageColumnsWithDefault, o)
 
@@ -1404,7 +1180,7 @@ func (o *Page) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 		pageInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Page.
@@ -1412,9 +1188,6 @@ func (o *Page) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Page) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	pageUpdateCacheMut.RLock()
 	cache, cached := pageUpdateCache[key]
@@ -1463,7 +1236,7 @@ func (o *Page) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 		pageUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1536,10 +1309,6 @@ func (o PageSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 func (o *Page) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no pages provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pageColumnsWithDefault, o)
@@ -1644,7 +1413,7 @@ func (o *Page) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 		pageUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Page record with an executor.
@@ -1652,10 +1421,6 @@ func (o *Page) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 func (o *Page) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Page provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pagePrimaryKeyMapping)
@@ -1674,10 +1439,6 @@ func (o *Page) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for pages")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1710,14 +1471,6 @@ func (o PageSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 		return 0, nil
 	}
 
-	if len(pageBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pagePrimaryKeyMapping)
@@ -1740,14 +1493,6 @@ func (o PageSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for pages")
-	}
-
-	if len(pageAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -112,8 +112,6 @@ type (
 	// WishlistItemProductVariantSlice is an alias for a slice of pointers to WishlistItemProductVariant.
 	// This should almost always be used instead of []WishlistItemProductVariant.
 	WishlistItemProductVariantSlice []*WishlistItemProductVariant
-	// WishlistItemProductVariantHook is the signature for custom WishlistItemProductVariant hook methods
-	WishlistItemProductVariantHook func(context.Context, boil.ContextExecutor, *WishlistItemProductVariant) error
 
 	wishlistItemProductVariantQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var wishlistItemProductVariantAfterSelectHooks []WishlistItemProductVariantHook
-
-var wishlistItemProductVariantBeforeInsertHooks []WishlistItemProductVariantHook
-var wishlistItemProductVariantAfterInsertHooks []WishlistItemProductVariantHook
-
-var wishlistItemProductVariantBeforeUpdateHooks []WishlistItemProductVariantHook
-var wishlistItemProductVariantAfterUpdateHooks []WishlistItemProductVariantHook
-
-var wishlistItemProductVariantBeforeDeleteHooks []WishlistItemProductVariantHook
-var wishlistItemProductVariantAfterDeleteHooks []WishlistItemProductVariantHook
-
-var wishlistItemProductVariantBeforeUpsertHooks []WishlistItemProductVariantHook
-var wishlistItemProductVariantAfterUpsertHooks []WishlistItemProductVariantHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *WishlistItemProductVariant) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *WishlistItemProductVariant) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *WishlistItemProductVariant) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *WishlistItemProductVariant) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *WishlistItemProductVariant) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *WishlistItemProductVariant) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *WishlistItemProductVariant) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *WishlistItemProductVariant) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *WishlistItemProductVariant) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range wishlistItemProductVariantAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddWishlistItemProductVariantHook registers your hook function for all future operations.
-func AddWishlistItemProductVariantHook(hookPoint boil.HookPoint, wishlistItemProductVariantHook WishlistItemProductVariantHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		wishlistItemProductVariantAfterSelectHooks = append(wishlistItemProductVariantAfterSelectHooks, wishlistItemProductVariantHook)
-	case boil.BeforeInsertHook:
-		wishlistItemProductVariantBeforeInsertHooks = append(wishlistItemProductVariantBeforeInsertHooks, wishlistItemProductVariantHook)
-	case boil.AfterInsertHook:
-		wishlistItemProductVariantAfterInsertHooks = append(wishlistItemProductVariantAfterInsertHooks, wishlistItemProductVariantHook)
-	case boil.BeforeUpdateHook:
-		wishlistItemProductVariantBeforeUpdateHooks = append(wishlistItemProductVariantBeforeUpdateHooks, wishlistItemProductVariantHook)
-	case boil.AfterUpdateHook:
-		wishlistItemProductVariantAfterUpdateHooks = append(wishlistItemProductVariantAfterUpdateHooks, wishlistItemProductVariantHook)
-	case boil.BeforeDeleteHook:
-		wishlistItemProductVariantBeforeDeleteHooks = append(wishlistItemProductVariantBeforeDeleteHooks, wishlistItemProductVariantHook)
-	case boil.AfterDeleteHook:
-		wishlistItemProductVariantAfterDeleteHooks = append(wishlistItemProductVariantAfterDeleteHooks, wishlistItemProductVariantHook)
-	case boil.BeforeUpsertHook:
-		wishlistItemProductVariantBeforeUpsertHooks = append(wishlistItemProductVariantBeforeUpsertHooks, wishlistItemProductVariantHook)
-	case boil.AfterUpsertHook:
-		wishlistItemProductVariantAfterUpsertHooks = append(wishlistItemProductVariantAfterUpsertHooks, wishlistItemProductVariantHook)
-	}
-}
-
 // One returns a single wishlistItemProductVariant record from the query.
 func (q wishlistItemProductVariantQuery) One(ctx context.Context, exec boil.ContextExecutor) (*WishlistItemProductVariant, error) {
 	o := &WishlistItemProductVariant{}
@@ -328,10 +153,6 @@ func (q wishlistItemProductVariantQuery) One(ctx context.Context, exec boil.Cont
 		return nil, errors.Wrap(err, "models: failed to execute a one query for wishlist_item_product_variants")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q wishlistItemProductVariantQuery) All(ctx context.Context, exec boil.Cont
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to WishlistItemProductVariant slice")
-	}
-
-	if len(wishlistItemProductVariantAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (wishlistItemProductVariantL) LoadProductVariant(ctx context.Context, e boi
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
 	}
 
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (wishlistItemProductVariantL) LoadWishlistItem(ctx context.Context, e boil.
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for wishlist_items")
-	}
-
-	if len(wishlistItemAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindWishlistItemProductVariant(ctx context.Context, exec boil.ContextExecut
 		return nil, errors.Wrap(err, "models: unable to select from wishlist_item_product_variants")
 	}
 
-	if err = wishlistItemProductVariantObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return wishlistItemProductVariantObj, err
-	}
-
 	return wishlistItemProductVariantObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *WishlistItemProductVariant) Insert(ctx context.Context, exec boil.Conte
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(wishlistItemProductVariantColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *WishlistItemProductVariant) Insert(ctx context.Context, exec boil.Conte
 		wishlistItemProductVariantInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the WishlistItemProductVariant.
@@ -867,9 +656,6 @@ func (o *WishlistItemProductVariant) Insert(ctx context.Context, exec boil.Conte
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *WishlistItemProductVariant) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	wishlistItemProductVariantUpdateCacheMut.RLock()
 	cache, cached := wishlistItemProductVariantUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *WishlistItemProductVariant) Update(ctx context.Context, exec boil.Conte
 		wishlistItemProductVariantUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o WishlistItemProductVariantSlice) UpdateAll(ctx context.Context, exec boi
 func (o *WishlistItemProductVariant) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no wishlist_item_product_variants provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(wishlistItemProductVariantColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *WishlistItemProductVariant) Upsert(ctx context.Context, exec boil.Conte
 		wishlistItemProductVariantUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single WishlistItemProductVariant record with an executor.
@@ -1107,10 +889,6 @@ func (o *WishlistItemProductVariant) Upsert(ctx context.Context, exec boil.Conte
 func (o *WishlistItemProductVariant) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no WishlistItemProductVariant provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), wishlistItemProductVariantPrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *WishlistItemProductVariant) Delete(ctx context.Context, exec boil.Conte
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for wishlist_item_product_variants")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o WishlistItemProductVariantSlice) DeleteAll(ctx context.Context, exec boi
 		return 0, nil
 	}
 
-	if len(wishlistItemProductVariantBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), wishlistItemProductVariantPrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o WishlistItemProductVariantSlice) DeleteAll(ctx context.Context, exec boi
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for wishlist_item_product_variants")
-	}
-
-	if len(wishlistItemProductVariantAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

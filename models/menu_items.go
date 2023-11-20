@@ -219,8 +219,6 @@ type (
 	// MenuItemSlice is an alias for a slice of pointers to MenuItem.
 	// This should almost always be used instead of []MenuItem.
 	MenuItemSlice []*MenuItem
-	// MenuItemHook is the signature for custom MenuItem hook methods
-	MenuItemHook func(context.Context, boil.ContextExecutor, *MenuItem) error
 
 	menuItemQuery struct {
 		*queries.Query
@@ -248,179 +246,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var menuItemAfterSelectHooks []MenuItemHook
-
-var menuItemBeforeInsertHooks []MenuItemHook
-var menuItemAfterInsertHooks []MenuItemHook
-
-var menuItemBeforeUpdateHooks []MenuItemHook
-var menuItemAfterUpdateHooks []MenuItemHook
-
-var menuItemBeforeDeleteHooks []MenuItemHook
-var menuItemAfterDeleteHooks []MenuItemHook
-
-var menuItemBeforeUpsertHooks []MenuItemHook
-var menuItemAfterUpsertHooks []MenuItemHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *MenuItem) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *MenuItem) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *MenuItem) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *MenuItem) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *MenuItem) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *MenuItem) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *MenuItem) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *MenuItem) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *MenuItem) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range menuItemAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddMenuItemHook registers your hook function for all future operations.
-func AddMenuItemHook(hookPoint boil.HookPoint, menuItemHook MenuItemHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		menuItemAfterSelectHooks = append(menuItemAfterSelectHooks, menuItemHook)
-	case boil.BeforeInsertHook:
-		menuItemBeforeInsertHooks = append(menuItemBeforeInsertHooks, menuItemHook)
-	case boil.AfterInsertHook:
-		menuItemAfterInsertHooks = append(menuItemAfterInsertHooks, menuItemHook)
-	case boil.BeforeUpdateHook:
-		menuItemBeforeUpdateHooks = append(menuItemBeforeUpdateHooks, menuItemHook)
-	case boil.AfterUpdateHook:
-		menuItemAfterUpdateHooks = append(menuItemAfterUpdateHooks, menuItemHook)
-	case boil.BeforeDeleteHook:
-		menuItemBeforeDeleteHooks = append(menuItemBeforeDeleteHooks, menuItemHook)
-	case boil.AfterDeleteHook:
-		menuItemAfterDeleteHooks = append(menuItemAfterDeleteHooks, menuItemHook)
-	case boil.BeforeUpsertHook:
-		menuItemBeforeUpsertHooks = append(menuItemBeforeUpsertHooks, menuItemHook)
-	case boil.AfterUpsertHook:
-		menuItemAfterUpsertHooks = append(menuItemAfterUpsertHooks, menuItemHook)
-	}
-}
-
 // One returns a single menuItem record from the query.
 func (q menuItemQuery) One(ctx context.Context, exec boil.ContextExecutor) (*MenuItem, error) {
 	o := &MenuItem{}
@@ -435,10 +260,6 @@ func (q menuItemQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Men
 		return nil, errors.Wrap(err, "models: failed to execute a one query for menu_items")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -449,14 +270,6 @@ func (q menuItemQuery) All(ctx context.Context, exec boil.ContextExecutor) (Menu
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to MenuItem slice")
-	}
-
-	if len(menuItemAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -662,14 +475,6 @@ func (menuItemL) LoadCategory(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for categories")
 	}
 
-	if len(categoryAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -784,14 +589,6 @@ func (menuItemL) LoadCollection(ctx context.Context, e boil.ContextExecutor, sin
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
-	}
-
-	if len(collectionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -910,14 +707,6 @@ func (menuItemL) LoadParent(ctx context.Context, e boil.ContextExecutor, singula
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menu_items")
 	}
 
-	if len(menuItemAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1028,14 +817,6 @@ func (menuItemL) LoadMenu(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menus")
-	}
-
-	if len(menuAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1154,14 +935,6 @@ func (menuItemL) LoadPage(ctx context.Context, e boil.ContextExecutor, singular 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pages")
 	}
 
-	if len(pageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1272,13 +1045,6 @@ func (menuItemL) LoadMenuItemTranslations(ctx context.Context, e boil.ContextExe
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menu_item_translations")
 	}
 
-	if len(menuItemTranslationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.MenuItemTranslations = resultSlice
 		for _, foreign := range resultSlice {
@@ -1386,13 +1152,6 @@ func (menuItemL) LoadParentMenuItems(ctx context.Context, e boil.ContextExecutor
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for menu_items")
 	}
 
-	if len(menuItemAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ParentMenuItems = resultSlice
 		for _, foreign := range resultSlice {
@@ -2001,10 +1760,6 @@ func FindMenuItem(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 		return nil, errors.Wrap(err, "models: unable to select from menu_items")
 	}
 
-	if err = menuItemObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return menuItemObj, err
-	}
-
 	return menuItemObj, nil
 }
 
@@ -2016,10 +1771,6 @@ func (o *MenuItem) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(menuItemColumnsWithDefault, o)
 
@@ -2084,7 +1835,7 @@ func (o *MenuItem) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		menuItemInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the MenuItem.
@@ -2092,9 +1843,6 @@ func (o *MenuItem) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *MenuItem) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	menuItemUpdateCacheMut.RLock()
 	cache, cached := menuItemUpdateCache[key]
@@ -2143,7 +1891,7 @@ func (o *MenuItem) Update(ctx context.Context, exec boil.ContextExecutor, column
 		menuItemUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -2216,10 +1964,6 @@ func (o MenuItemSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 func (o *MenuItem) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no menu_items provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(menuItemColumnsWithDefault, o)
@@ -2324,7 +2068,7 @@ func (o *MenuItem) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		menuItemUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single MenuItem record with an executor.
@@ -2332,10 +2076,6 @@ func (o *MenuItem) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 func (o *MenuItem) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no MenuItem provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), menuItemPrimaryKeyMapping)
@@ -2354,10 +2094,6 @@ func (o *MenuItem) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for menu_items")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -2390,14 +2126,6 @@ func (o MenuItemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 		return 0, nil
 	}
 
-	if len(menuItemBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), menuItemPrimaryKeyMapping)
@@ -2420,14 +2148,6 @@ func (o MenuItemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for menu_items")
-	}
-
-	if len(menuItemAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

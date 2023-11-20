@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS products (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   product_type_id uuid NOT NULL,
-  name character varying(250) NOT NULL,
-  slug character varying(255) NOT NULL,
+  name varchar(250) NOT NULL,
+  slug varchar(255) NOT NULL,
   description jsonb,
   description_plain_text text NOT NULL,
   category_id uuid,
@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS products (
   rating real,
   metadata jsonb,
   private_metadata jsonb,
-  seo_title character varying(70) NOT NULL,
-  seo_description character varying(300) NOT NULL
+  seo_title varchar(70) NOT NULL,
+  seo_description varchar(300) NOT NULL
 );
 
 ALTER TABLE ONLY products

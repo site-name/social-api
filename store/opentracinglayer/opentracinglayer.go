@@ -1005,7 +1005,7 @@ func (s *OpenTracingLayerAddressStore) DeleteAddresses(tx boil.ContextTransactor
 	return result
 }
 
-func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*models.Address, error) {
+func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -1023,7 +1023,7 @@ func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilte
 	return result, err
 }
 
-func (s *OpenTracingLayerAddressStore) Get(addressID string) (*models.Address, error) {
+func (s *OpenTracingLayerAddressStore) Get(addressID string) (*model.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -1041,7 +1041,7 @@ func (s *OpenTracingLayerAddressStore) Get(addressID string) (*models.Address, e
 	return result, err
 }
 
-func (s *OpenTracingLayerAddressStore) Upsert(tx boil.ContextTransactor, address *models.Address) (*models.Address, error) {
+func (s *OpenTracingLayerAddressStore) Upsert(tx boil.ContextTransactor, address *model.Address) (*model.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Upsert")
 	s.Root.Store.SetContext(newCtx)

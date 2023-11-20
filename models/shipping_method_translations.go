@@ -105,8 +105,6 @@ type (
 	// ShippingMethodTranslationSlice is an alias for a slice of pointers to ShippingMethodTranslation.
 	// This should almost always be used instead of []ShippingMethodTranslation.
 	ShippingMethodTranslationSlice []*ShippingMethodTranslation
-	// ShippingMethodTranslationHook is the signature for custom ShippingMethodTranslation hook methods
-	ShippingMethodTranslationHook func(context.Context, boil.ContextExecutor, *ShippingMethodTranslation) error
 
 	shippingMethodTranslationQuery struct {
 		*queries.Query
@@ -134,179 +132,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var shippingMethodTranslationAfterSelectHooks []ShippingMethodTranslationHook
-
-var shippingMethodTranslationBeforeInsertHooks []ShippingMethodTranslationHook
-var shippingMethodTranslationAfterInsertHooks []ShippingMethodTranslationHook
-
-var shippingMethodTranslationBeforeUpdateHooks []ShippingMethodTranslationHook
-var shippingMethodTranslationAfterUpdateHooks []ShippingMethodTranslationHook
-
-var shippingMethodTranslationBeforeDeleteHooks []ShippingMethodTranslationHook
-var shippingMethodTranslationAfterDeleteHooks []ShippingMethodTranslationHook
-
-var shippingMethodTranslationBeforeUpsertHooks []ShippingMethodTranslationHook
-var shippingMethodTranslationAfterUpsertHooks []ShippingMethodTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ShippingMethodTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ShippingMethodTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ShippingMethodTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ShippingMethodTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ShippingMethodTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ShippingMethodTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ShippingMethodTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ShippingMethodTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ShippingMethodTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddShippingMethodTranslationHook registers your hook function for all future operations.
-func AddShippingMethodTranslationHook(hookPoint boil.HookPoint, shippingMethodTranslationHook ShippingMethodTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		shippingMethodTranslationAfterSelectHooks = append(shippingMethodTranslationAfterSelectHooks, shippingMethodTranslationHook)
-	case boil.BeforeInsertHook:
-		shippingMethodTranslationBeforeInsertHooks = append(shippingMethodTranslationBeforeInsertHooks, shippingMethodTranslationHook)
-	case boil.AfterInsertHook:
-		shippingMethodTranslationAfterInsertHooks = append(shippingMethodTranslationAfterInsertHooks, shippingMethodTranslationHook)
-	case boil.BeforeUpdateHook:
-		shippingMethodTranslationBeforeUpdateHooks = append(shippingMethodTranslationBeforeUpdateHooks, shippingMethodTranslationHook)
-	case boil.AfterUpdateHook:
-		shippingMethodTranslationAfterUpdateHooks = append(shippingMethodTranslationAfterUpdateHooks, shippingMethodTranslationHook)
-	case boil.BeforeDeleteHook:
-		shippingMethodTranslationBeforeDeleteHooks = append(shippingMethodTranslationBeforeDeleteHooks, shippingMethodTranslationHook)
-	case boil.AfterDeleteHook:
-		shippingMethodTranslationAfterDeleteHooks = append(shippingMethodTranslationAfterDeleteHooks, shippingMethodTranslationHook)
-	case boil.BeforeUpsertHook:
-		shippingMethodTranslationBeforeUpsertHooks = append(shippingMethodTranslationBeforeUpsertHooks, shippingMethodTranslationHook)
-	case boil.AfterUpsertHook:
-		shippingMethodTranslationAfterUpsertHooks = append(shippingMethodTranslationAfterUpsertHooks, shippingMethodTranslationHook)
-	}
-}
-
 // One returns a single shippingMethodTranslation record from the query.
 func (q shippingMethodTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingMethodTranslation, error) {
 	o := &ShippingMethodTranslation{}
@@ -321,10 +146,6 @@ func (q shippingMethodTranslationQuery) One(ctx context.Context, exec boil.Conte
 		return nil, errors.Wrap(err, "models: failed to execute a one query for shipping_method_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -335,14 +156,6 @@ func (q shippingMethodTranslationQuery) All(ctx context.Context, exec boil.Conte
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ShippingMethodTranslation slice")
-	}
-
-	if len(shippingMethodTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -413,10 +226,6 @@ func FindShippingMethodTranslation(ctx context.Context, exec boil.ContextExecuto
 		return nil, errors.Wrap(err, "models: unable to select from shipping_method_translations")
 	}
 
-	if err = shippingMethodTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return shippingMethodTranslationObj, err
-	}
-
 	return shippingMethodTranslationObj, nil
 }
 
@@ -428,10 +237,6 @@ func (o *ShippingMethodTranslation) Insert(ctx context.Context, exec boil.Contex
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodTranslationColumnsWithDefault, o)
 
@@ -496,7 +301,7 @@ func (o *ShippingMethodTranslation) Insert(ctx context.Context, exec boil.Contex
 		shippingMethodTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ShippingMethodTranslation.
@@ -504,9 +309,6 @@ func (o *ShippingMethodTranslation) Insert(ctx context.Context, exec boil.Contex
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ShippingMethodTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	shippingMethodTranslationUpdateCacheMut.RLock()
 	cache, cached := shippingMethodTranslationUpdateCache[key]
@@ -555,7 +357,7 @@ func (o *ShippingMethodTranslation) Update(ctx context.Context, exec boil.Contex
 		shippingMethodTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -628,10 +430,6 @@ func (o ShippingMethodTranslationSlice) UpdateAll(ctx context.Context, exec boil
 func (o *ShippingMethodTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no shipping_method_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodTranslationColumnsWithDefault, o)
@@ -736,7 +534,7 @@ func (o *ShippingMethodTranslation) Upsert(ctx context.Context, exec boil.Contex
 		shippingMethodTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ShippingMethodTranslation record with an executor.
@@ -744,10 +542,6 @@ func (o *ShippingMethodTranslation) Upsert(ctx context.Context, exec boil.Contex
 func (o *ShippingMethodTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ShippingMethodTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingMethodTranslationPrimaryKeyMapping)
@@ -766,10 +560,6 @@ func (o *ShippingMethodTranslation) Delete(ctx context.Context, exec boil.Contex
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for shipping_method_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -802,14 +592,6 @@ func (o ShippingMethodTranslationSlice) DeleteAll(ctx context.Context, exec boil
 		return 0, nil
 	}
 
-	if len(shippingMethodTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodTranslationPrimaryKeyMapping)
@@ -832,14 +614,6 @@ func (o ShippingMethodTranslationSlice) DeleteAll(ctx context.Context, exec boil
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for shipping_method_translations")
-	}
-
-	if len(shippingMethodTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -162,8 +162,6 @@ type (
 	// ProductMediumSlice is an alias for a slice of pointers to ProductMedium.
 	// This should almost always be used instead of []ProductMedium.
 	ProductMediumSlice []*ProductMedium
-	// ProductMediumHook is the signature for custom ProductMedium hook methods
-	ProductMediumHook func(context.Context, boil.ContextExecutor, *ProductMedium) error
 
 	productMediumQuery struct {
 		*queries.Query
@@ -191,179 +189,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var productMediumAfterSelectHooks []ProductMediumHook
-
-var productMediumBeforeInsertHooks []ProductMediumHook
-var productMediumAfterInsertHooks []ProductMediumHook
-
-var productMediumBeforeUpdateHooks []ProductMediumHook
-var productMediumAfterUpdateHooks []ProductMediumHook
-
-var productMediumBeforeDeleteHooks []ProductMediumHook
-var productMediumAfterDeleteHooks []ProductMediumHook
-
-var productMediumBeforeUpsertHooks []ProductMediumHook
-var productMediumAfterUpsertHooks []ProductMediumHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ProductMedium) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ProductMedium) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ProductMedium) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ProductMedium) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ProductMedium) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ProductMedium) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ProductMedium) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ProductMedium) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ProductMedium) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range productMediumAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddProductMediumHook registers your hook function for all future operations.
-func AddProductMediumHook(hookPoint boil.HookPoint, productMediumHook ProductMediumHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		productMediumAfterSelectHooks = append(productMediumAfterSelectHooks, productMediumHook)
-	case boil.BeforeInsertHook:
-		productMediumBeforeInsertHooks = append(productMediumBeforeInsertHooks, productMediumHook)
-	case boil.AfterInsertHook:
-		productMediumAfterInsertHooks = append(productMediumAfterInsertHooks, productMediumHook)
-	case boil.BeforeUpdateHook:
-		productMediumBeforeUpdateHooks = append(productMediumBeforeUpdateHooks, productMediumHook)
-	case boil.AfterUpdateHook:
-		productMediumAfterUpdateHooks = append(productMediumAfterUpdateHooks, productMediumHook)
-	case boil.BeforeDeleteHook:
-		productMediumBeforeDeleteHooks = append(productMediumBeforeDeleteHooks, productMediumHook)
-	case boil.AfterDeleteHook:
-		productMediumAfterDeleteHooks = append(productMediumAfterDeleteHooks, productMediumHook)
-	case boil.BeforeUpsertHook:
-		productMediumBeforeUpsertHooks = append(productMediumBeforeUpsertHooks, productMediumHook)
-	case boil.AfterUpsertHook:
-		productMediumAfterUpsertHooks = append(productMediumAfterUpsertHooks, productMediumHook)
-	}
-}
-
 // One returns a single productMedium record from the query.
 func (q productMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ProductMedium, error) {
 	o := &ProductMedium{}
@@ -378,10 +203,6 @@ func (q productMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 		return nil, errors.Wrap(err, "models: failed to execute a one query for product_media")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -392,14 +213,6 @@ func (q productMediumQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ProductMedium slice")
-	}
-
-	if len(productMediumAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -543,14 +356,6 @@ func (productMediumL) LoadProduct(ctx context.Context, e boil.ContextExecutor, s
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
 	}
 
-	if len(productAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -661,13 +466,6 @@ func (productMediumL) LoadMediumVariantMedia(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for variant_media")
 	}
 
-	if len(variantMediumAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.MediumVariantMedia = resultSlice
 		for _, foreign := range resultSlice {
@@ -829,10 +627,6 @@ func FindProductMedium(ctx context.Context, exec boil.ContextExecutor, iD string
 		return nil, errors.Wrap(err, "models: unable to select from product_media")
 	}
 
-	if err = productMediumObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return productMediumObj, err
-	}
-
 	return productMediumObj, nil
 }
 
@@ -844,10 +638,6 @@ func (o *ProductMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productMediumColumnsWithDefault, o)
 
@@ -912,7 +702,7 @@ func (o *ProductMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 		productMediumInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ProductMedium.
@@ -920,9 +710,6 @@ func (o *ProductMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ProductMedium) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	productMediumUpdateCacheMut.RLock()
 	cache, cached := productMediumUpdateCache[key]
@@ -971,7 +758,7 @@ func (o *ProductMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 		productMediumUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1044,10 +831,6 @@ func (o ProductMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 func (o *ProductMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no product_media provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(productMediumColumnsWithDefault, o)
@@ -1152,7 +935,7 @@ func (o *ProductMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		productMediumUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ProductMedium record with an executor.
@@ -1160,10 +943,6 @@ func (o *ProductMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 func (o *ProductMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ProductMedium provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), productMediumPrimaryKeyMapping)
@@ -1182,10 +961,6 @@ func (o *ProductMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for product_media")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1218,14 +993,6 @@ func (o ProductMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 		return 0, nil
 	}
 
-	if len(productMediumBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), productMediumPrimaryKeyMapping)
@@ -1248,14 +1015,6 @@ func (o ProductMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for product_media")
-	}
-
-	if len(productMediumAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

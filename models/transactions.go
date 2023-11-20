@@ -180,8 +180,6 @@ type (
 	// TransactionSlice is an alias for a slice of pointers to Transaction.
 	// This should almost always be used instead of []Transaction.
 	TransactionSlice []*Transaction
-	// TransactionHook is the signature for custom Transaction hook methods
-	TransactionHook func(context.Context, boil.ContextExecutor, *Transaction) error
 
 	transactionQuery struct {
 		*queries.Query
@@ -209,179 +207,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var transactionAfterSelectHooks []TransactionHook
-
-var transactionBeforeInsertHooks []TransactionHook
-var transactionAfterInsertHooks []TransactionHook
-
-var transactionBeforeUpdateHooks []TransactionHook
-var transactionAfterUpdateHooks []TransactionHook
-
-var transactionBeforeDeleteHooks []TransactionHook
-var transactionAfterDeleteHooks []TransactionHook
-
-var transactionBeforeUpsertHooks []TransactionHook
-var transactionAfterUpsertHooks []TransactionHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Transaction) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Transaction) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Transaction) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Transaction) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Transaction) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Transaction) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Transaction) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Transaction) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Transaction) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range transactionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddTransactionHook registers your hook function for all future operations.
-func AddTransactionHook(hookPoint boil.HookPoint, transactionHook TransactionHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		transactionAfterSelectHooks = append(transactionAfterSelectHooks, transactionHook)
-	case boil.BeforeInsertHook:
-		transactionBeforeInsertHooks = append(transactionBeforeInsertHooks, transactionHook)
-	case boil.AfterInsertHook:
-		transactionAfterInsertHooks = append(transactionAfterInsertHooks, transactionHook)
-	case boil.BeforeUpdateHook:
-		transactionBeforeUpdateHooks = append(transactionBeforeUpdateHooks, transactionHook)
-	case boil.AfterUpdateHook:
-		transactionAfterUpdateHooks = append(transactionAfterUpdateHooks, transactionHook)
-	case boil.BeforeDeleteHook:
-		transactionBeforeDeleteHooks = append(transactionBeforeDeleteHooks, transactionHook)
-	case boil.AfterDeleteHook:
-		transactionAfterDeleteHooks = append(transactionAfterDeleteHooks, transactionHook)
-	case boil.BeforeUpsertHook:
-		transactionBeforeUpsertHooks = append(transactionBeforeUpsertHooks, transactionHook)
-	case boil.AfterUpsertHook:
-		transactionAfterUpsertHooks = append(transactionAfterUpsertHooks, transactionHook)
-	}
-}
-
 // One returns a single transaction record from the query.
 func (q transactionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Transaction, error) {
 	o := &Transaction{}
@@ -396,10 +221,6 @@ func (q transactionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 		return nil, errors.Wrap(err, "models: failed to execute a one query for transactions")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -410,14 +231,6 @@ func (q transactionQuery) All(ctx context.Context, exec boil.ContextExecutor) (T
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Transaction slice")
-	}
-
-	if len(transactionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -547,14 +360,6 @@ func (transactionL) LoadPayment(ctx context.Context, e boil.ContextExecutor, sin
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for payments")
 	}
 
-	if len(paymentAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -666,10 +471,6 @@ func FindTransaction(ctx context.Context, exec boil.ContextExecutor, iD string, 
 		return nil, errors.Wrap(err, "models: unable to select from transactions")
 	}
 
-	if err = transactionObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return transactionObj, err
-	}
-
 	return transactionObj, nil
 }
 
@@ -681,10 +482,6 @@ func (o *Transaction) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(transactionColumnsWithDefault, o)
 
@@ -749,7 +546,7 @@ func (o *Transaction) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		transactionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Transaction.
@@ -757,9 +554,6 @@ func (o *Transaction) Insert(ctx context.Context, exec boil.ContextExecutor, col
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Transaction) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	transactionUpdateCacheMut.RLock()
 	cache, cached := transactionUpdateCache[key]
@@ -808,7 +602,7 @@ func (o *Transaction) Update(ctx context.Context, exec boil.ContextExecutor, col
 		transactionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -881,10 +675,6 @@ func (o TransactionSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 func (o *Transaction) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no transactions provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(transactionColumnsWithDefault, o)
@@ -989,7 +779,7 @@ func (o *Transaction) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		transactionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Transaction record with an executor.
@@ -997,10 +787,6 @@ func (o *Transaction) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 func (o *Transaction) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Transaction provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), transactionPrimaryKeyMapping)
@@ -1019,10 +805,6 @@ func (o *Transaction) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for transactions")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1055,14 +837,6 @@ func (o TransactionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 		return 0, nil
 	}
 
-	if len(transactionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), transactionPrimaryKeyMapping)
@@ -1085,14 +859,6 @@ func (o TransactionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for transactions")
-	}
-
-	if len(transactionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

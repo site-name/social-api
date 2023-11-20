@@ -122,8 +122,6 @@ type (
 	// AssignedProductAttributeSlice is an alias for a slice of pointers to AssignedProductAttribute.
 	// This should almost always be used instead of []AssignedProductAttribute.
 	AssignedProductAttributeSlice []*AssignedProductAttribute
-	// AssignedProductAttributeHook is the signature for custom AssignedProductAttribute hook methods
-	AssignedProductAttributeHook func(context.Context, boil.ContextExecutor, *AssignedProductAttribute) error
 
 	assignedProductAttributeQuery struct {
 		*queries.Query
@@ -151,179 +149,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var assignedProductAttributeAfterSelectHooks []AssignedProductAttributeHook
-
-var assignedProductAttributeBeforeInsertHooks []AssignedProductAttributeHook
-var assignedProductAttributeAfterInsertHooks []AssignedProductAttributeHook
-
-var assignedProductAttributeBeforeUpdateHooks []AssignedProductAttributeHook
-var assignedProductAttributeAfterUpdateHooks []AssignedProductAttributeHook
-
-var assignedProductAttributeBeforeDeleteHooks []AssignedProductAttributeHook
-var assignedProductAttributeAfterDeleteHooks []AssignedProductAttributeHook
-
-var assignedProductAttributeBeforeUpsertHooks []AssignedProductAttributeHook
-var assignedProductAttributeAfterUpsertHooks []AssignedProductAttributeHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AssignedProductAttribute) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AssignedProductAttribute) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AssignedProductAttribute) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AssignedProductAttribute) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AssignedProductAttribute) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AssignedProductAttribute) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AssignedProductAttribute) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AssignedProductAttribute) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AssignedProductAttribute) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedProductAttributeAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAssignedProductAttributeHook registers your hook function for all future operations.
-func AddAssignedProductAttributeHook(hookPoint boil.HookPoint, assignedProductAttributeHook AssignedProductAttributeHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		assignedProductAttributeAfterSelectHooks = append(assignedProductAttributeAfterSelectHooks, assignedProductAttributeHook)
-	case boil.BeforeInsertHook:
-		assignedProductAttributeBeforeInsertHooks = append(assignedProductAttributeBeforeInsertHooks, assignedProductAttributeHook)
-	case boil.AfterInsertHook:
-		assignedProductAttributeAfterInsertHooks = append(assignedProductAttributeAfterInsertHooks, assignedProductAttributeHook)
-	case boil.BeforeUpdateHook:
-		assignedProductAttributeBeforeUpdateHooks = append(assignedProductAttributeBeforeUpdateHooks, assignedProductAttributeHook)
-	case boil.AfterUpdateHook:
-		assignedProductAttributeAfterUpdateHooks = append(assignedProductAttributeAfterUpdateHooks, assignedProductAttributeHook)
-	case boil.BeforeDeleteHook:
-		assignedProductAttributeBeforeDeleteHooks = append(assignedProductAttributeBeforeDeleteHooks, assignedProductAttributeHook)
-	case boil.AfterDeleteHook:
-		assignedProductAttributeAfterDeleteHooks = append(assignedProductAttributeAfterDeleteHooks, assignedProductAttributeHook)
-	case boil.BeforeUpsertHook:
-		assignedProductAttributeBeforeUpsertHooks = append(assignedProductAttributeBeforeUpsertHooks, assignedProductAttributeHook)
-	case boil.AfterUpsertHook:
-		assignedProductAttributeAfterUpsertHooks = append(assignedProductAttributeAfterUpsertHooks, assignedProductAttributeHook)
-	}
-}
-
 // One returns a single assignedProductAttribute record from the query.
 func (q assignedProductAttributeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AssignedProductAttribute, error) {
 	o := &AssignedProductAttribute{}
@@ -338,10 +163,6 @@ func (q assignedProductAttributeQuery) One(ctx context.Context, exec boil.Contex
 		return nil, errors.Wrap(err, "models: failed to execute a one query for assigned_product_attributes")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -352,14 +173,6 @@ func (q assignedProductAttributeQuery) All(ctx context.Context, exec boil.Contex
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AssignedProductAttribute slice")
-	}
-
-	if len(assignedProductAttributeAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -514,14 +327,6 @@ func (assignedProductAttributeL) LoadAssignment(ctx context.Context, e boil.Cont
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attribute_products")
 	}
 
-	if len(attributeProductAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -634,14 +439,6 @@ func (assignedProductAttributeL) LoadProduct(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for products")
 	}
 
-	if len(productAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -752,13 +549,6 @@ func (assignedProductAttributeL) LoadAssignmentAssignedProductAttributeValues(ct
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_product_attribute_values")
 	}
 
-	if len(assignedProductAttributeValueAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AssignmentAssignedProductAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
@@ -967,10 +757,6 @@ func FindAssignedProductAttribute(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "models: unable to select from assigned_product_attributes")
 	}
 
-	if err = assignedProductAttributeObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return assignedProductAttributeObj, err
-	}
-
 	return assignedProductAttributeObj, nil
 }
 
@@ -982,10 +768,6 @@ func (o *AssignedProductAttribute) Insert(ctx context.Context, exec boil.Context
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(assignedProductAttributeColumnsWithDefault, o)
 
@@ -1050,7 +832,7 @@ func (o *AssignedProductAttribute) Insert(ctx context.Context, exec boil.Context
 		assignedProductAttributeInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AssignedProductAttribute.
@@ -1058,9 +840,6 @@ func (o *AssignedProductAttribute) Insert(ctx context.Context, exec boil.Context
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *AssignedProductAttribute) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	assignedProductAttributeUpdateCacheMut.RLock()
 	cache, cached := assignedProductAttributeUpdateCache[key]
@@ -1109,7 +888,7 @@ func (o *AssignedProductAttribute) Update(ctx context.Context, exec boil.Context
 		assignedProductAttributeUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1182,10 +961,6 @@ func (o AssignedProductAttributeSlice) UpdateAll(ctx context.Context, exec boil.
 func (o *AssignedProductAttribute) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no assigned_product_attributes provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(assignedProductAttributeColumnsWithDefault, o)
@@ -1290,7 +1065,7 @@ func (o *AssignedProductAttribute) Upsert(ctx context.Context, exec boil.Context
 		assignedProductAttributeUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AssignedProductAttribute record with an executor.
@@ -1298,10 +1073,6 @@ func (o *AssignedProductAttribute) Upsert(ctx context.Context, exec boil.Context
 func (o *AssignedProductAttribute) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AssignedProductAttribute provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), assignedProductAttributePrimaryKeyMapping)
@@ -1320,10 +1091,6 @@ func (o *AssignedProductAttribute) Delete(ctx context.Context, exec boil.Context
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for assigned_product_attributes")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1356,14 +1123,6 @@ func (o AssignedProductAttributeSlice) DeleteAll(ctx context.Context, exec boil.
 		return 0, nil
 	}
 
-	if len(assignedProductAttributeBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedProductAttributePrimaryKeyMapping)
@@ -1386,14 +1145,6 @@ func (o AssignedProductAttributeSlice) DeleteAll(ctx context.Context, exec boil.
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for assigned_product_attributes")
-	}
-
-	if len(assignedProductAttributeAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

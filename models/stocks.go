@@ -146,8 +146,6 @@ type (
 	// StockSlice is an alias for a slice of pointers to Stock.
 	// This should almost always be used instead of []Stock.
 	StockSlice []*Stock
-	// StockHook is the signature for custom Stock hook methods
-	StockHook func(context.Context, boil.ContextExecutor, *Stock) error
 
 	stockQuery struct {
 		*queries.Query
@@ -175,179 +173,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var stockAfterSelectHooks []StockHook
-
-var stockBeforeInsertHooks []StockHook
-var stockAfterInsertHooks []StockHook
-
-var stockBeforeUpdateHooks []StockHook
-var stockAfterUpdateHooks []StockHook
-
-var stockBeforeDeleteHooks []StockHook
-var stockAfterDeleteHooks []StockHook
-
-var stockBeforeUpsertHooks []StockHook
-var stockAfterUpsertHooks []StockHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Stock) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Stock) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Stock) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Stock) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Stock) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Stock) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Stock) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Stock) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Stock) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range stockAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddStockHook registers your hook function for all future operations.
-func AddStockHook(hookPoint boil.HookPoint, stockHook StockHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		stockAfterSelectHooks = append(stockAfterSelectHooks, stockHook)
-	case boil.BeforeInsertHook:
-		stockBeforeInsertHooks = append(stockBeforeInsertHooks, stockHook)
-	case boil.AfterInsertHook:
-		stockAfterInsertHooks = append(stockAfterInsertHooks, stockHook)
-	case boil.BeforeUpdateHook:
-		stockBeforeUpdateHooks = append(stockBeforeUpdateHooks, stockHook)
-	case boil.AfterUpdateHook:
-		stockAfterUpdateHooks = append(stockAfterUpdateHooks, stockHook)
-	case boil.BeforeDeleteHook:
-		stockBeforeDeleteHooks = append(stockBeforeDeleteHooks, stockHook)
-	case boil.AfterDeleteHook:
-		stockAfterDeleteHooks = append(stockAfterDeleteHooks, stockHook)
-	case boil.BeforeUpsertHook:
-		stockBeforeUpsertHooks = append(stockBeforeUpsertHooks, stockHook)
-	case boil.AfterUpsertHook:
-		stockAfterUpsertHooks = append(stockAfterUpsertHooks, stockHook)
-	}
-}
-
 // One returns a single stock record from the query.
 func (q stockQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Stock, error) {
 	o := &Stock{}
@@ -362,10 +187,6 @@ func (q stockQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Stock,
 		return nil, errors.Wrap(err, "models: failed to execute a one query for stocks")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -376,14 +197,6 @@ func (q stockQuery) All(ctx context.Context, exec boil.ContextExecutor) (StockSl
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Stock slice")
-	}
-
-	if len(stockAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -552,14 +365,6 @@ func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
 	}
 
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -672,14 +477,6 @@ func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singula
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for warehouses")
 	}
 
-	if len(warehouseAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -790,13 +587,6 @@ func (stockL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for allocations")
 	}
 
-	if len(allocationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Allocations = resultSlice
 		for _, foreign := range resultSlice {
@@ -904,13 +694,6 @@ func (stockL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecutor, 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for fulfillment_lines")
 	}
 
-	if len(fulfillmentLineAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.FulfillmentLines = resultSlice
 		for _, foreign := range resultSlice {
@@ -1246,10 +1029,6 @@ func FindStock(ctx context.Context, exec boil.ContextExecutor, iD string, select
 		return nil, errors.Wrap(err, "models: unable to select from stocks")
 	}
 
-	if err = stockObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return stockObj, err
-	}
-
 	return stockObj, nil
 }
 
@@ -1261,10 +1040,6 @@ func (o *Stock) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(stockColumnsWithDefault, o)
 
@@ -1329,7 +1104,7 @@ func (o *Stock) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		stockInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Stock.
@@ -1337,9 +1112,6 @@ func (o *Stock) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Stock) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	stockUpdateCacheMut.RLock()
 	cache, cached := stockUpdateCache[key]
@@ -1388,7 +1160,7 @@ func (o *Stock) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 		stockUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1461,10 +1233,6 @@ func (o StockSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 func (o *Stock) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no stocks provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(stockColumnsWithDefault, o)
@@ -1569,7 +1337,7 @@ func (o *Stock) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 		stockUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Stock record with an executor.
@@ -1577,10 +1345,6 @@ func (o *Stock) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 func (o *Stock) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Stock provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), stockPrimaryKeyMapping)
@@ -1599,10 +1363,6 @@ func (o *Stock) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for stocks")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1635,14 +1395,6 @@ func (o StockSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 		return 0, nil
 	}
 
-	if len(stockBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), stockPrimaryKeyMapping)
@@ -1665,14 +1417,6 @@ func (o StockSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for stocks")
-	}
-
-	if len(stockAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

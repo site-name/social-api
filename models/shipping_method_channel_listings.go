@@ -148,8 +148,6 @@ type (
 	// ShippingMethodChannelListingSlice is an alias for a slice of pointers to ShippingMethodChannelListing.
 	// This should almost always be used instead of []ShippingMethodChannelListing.
 	ShippingMethodChannelListingSlice []*ShippingMethodChannelListing
-	// ShippingMethodChannelListingHook is the signature for custom ShippingMethodChannelListing hook methods
-	ShippingMethodChannelListingHook func(context.Context, boil.ContextExecutor, *ShippingMethodChannelListing) error
 
 	shippingMethodChannelListingQuery struct {
 		*queries.Query
@@ -177,179 +175,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var shippingMethodChannelListingAfterSelectHooks []ShippingMethodChannelListingHook
-
-var shippingMethodChannelListingBeforeInsertHooks []ShippingMethodChannelListingHook
-var shippingMethodChannelListingAfterInsertHooks []ShippingMethodChannelListingHook
-
-var shippingMethodChannelListingBeforeUpdateHooks []ShippingMethodChannelListingHook
-var shippingMethodChannelListingAfterUpdateHooks []ShippingMethodChannelListingHook
-
-var shippingMethodChannelListingBeforeDeleteHooks []ShippingMethodChannelListingHook
-var shippingMethodChannelListingAfterDeleteHooks []ShippingMethodChannelListingHook
-
-var shippingMethodChannelListingBeforeUpsertHooks []ShippingMethodChannelListingHook
-var shippingMethodChannelListingAfterUpsertHooks []ShippingMethodChannelListingHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ShippingMethodChannelListing) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ShippingMethodChannelListing) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ShippingMethodChannelListing) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ShippingMethodChannelListing) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ShippingMethodChannelListing) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ShippingMethodChannelListing) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ShippingMethodChannelListing) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ShippingMethodChannelListing) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ShippingMethodChannelListing) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range shippingMethodChannelListingAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddShippingMethodChannelListingHook registers your hook function for all future operations.
-func AddShippingMethodChannelListingHook(hookPoint boil.HookPoint, shippingMethodChannelListingHook ShippingMethodChannelListingHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		shippingMethodChannelListingAfterSelectHooks = append(shippingMethodChannelListingAfterSelectHooks, shippingMethodChannelListingHook)
-	case boil.BeforeInsertHook:
-		shippingMethodChannelListingBeforeInsertHooks = append(shippingMethodChannelListingBeforeInsertHooks, shippingMethodChannelListingHook)
-	case boil.AfterInsertHook:
-		shippingMethodChannelListingAfterInsertHooks = append(shippingMethodChannelListingAfterInsertHooks, shippingMethodChannelListingHook)
-	case boil.BeforeUpdateHook:
-		shippingMethodChannelListingBeforeUpdateHooks = append(shippingMethodChannelListingBeforeUpdateHooks, shippingMethodChannelListingHook)
-	case boil.AfterUpdateHook:
-		shippingMethodChannelListingAfterUpdateHooks = append(shippingMethodChannelListingAfterUpdateHooks, shippingMethodChannelListingHook)
-	case boil.BeforeDeleteHook:
-		shippingMethodChannelListingBeforeDeleteHooks = append(shippingMethodChannelListingBeforeDeleteHooks, shippingMethodChannelListingHook)
-	case boil.AfterDeleteHook:
-		shippingMethodChannelListingAfterDeleteHooks = append(shippingMethodChannelListingAfterDeleteHooks, shippingMethodChannelListingHook)
-	case boil.BeforeUpsertHook:
-		shippingMethodChannelListingBeforeUpsertHooks = append(shippingMethodChannelListingBeforeUpsertHooks, shippingMethodChannelListingHook)
-	case boil.AfterUpsertHook:
-		shippingMethodChannelListingAfterUpsertHooks = append(shippingMethodChannelListingAfterUpsertHooks, shippingMethodChannelListingHook)
-	}
-}
-
 // One returns a single shippingMethodChannelListing record from the query.
 func (q shippingMethodChannelListingQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingMethodChannelListing, error) {
 	o := &ShippingMethodChannelListing{}
@@ -364,10 +189,6 @@ func (q shippingMethodChannelListingQuery) One(ctx context.Context, exec boil.Co
 		return nil, errors.Wrap(err, "models: failed to execute a one query for shipping_method_channel_listings")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -378,14 +199,6 @@ func (q shippingMethodChannelListingQuery) All(ctx context.Context, exec boil.Co
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ShippingMethodChannelListing slice")
-	}
-
-	if len(shippingMethodChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -526,14 +339,6 @@ func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.Con
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
 	}
 
-	if len(channelAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -644,14 +449,6 @@ func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e b
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
-	}
-
-	if len(shippingMethodAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -812,10 +609,6 @@ func FindShippingMethodChannelListing(ctx context.Context, exec boil.ContextExec
 		return nil, errors.Wrap(err, "models: unable to select from shipping_method_channel_listings")
 	}
 
-	if err = shippingMethodChannelListingObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return shippingMethodChannelListingObj, err
-	}
-
 	return shippingMethodChannelListingObj, nil
 }
 
@@ -827,10 +620,6 @@ func (o *ShippingMethodChannelListing) Insert(ctx context.Context, exec boil.Con
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodChannelListingColumnsWithDefault, o)
 
@@ -895,7 +684,7 @@ func (o *ShippingMethodChannelListing) Insert(ctx context.Context, exec boil.Con
 		shippingMethodChannelListingInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ShippingMethodChannelListing.
@@ -903,9 +692,6 @@ func (o *ShippingMethodChannelListing) Insert(ctx context.Context, exec boil.Con
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *ShippingMethodChannelListing) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	shippingMethodChannelListingUpdateCacheMut.RLock()
 	cache, cached := shippingMethodChannelListingUpdateCache[key]
@@ -954,7 +740,7 @@ func (o *ShippingMethodChannelListing) Update(ctx context.Context, exec boil.Con
 		shippingMethodChannelListingUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1027,10 +813,6 @@ func (o ShippingMethodChannelListingSlice) UpdateAll(ctx context.Context, exec b
 func (o *ShippingMethodChannelListing) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no shipping_method_channel_listings provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(shippingMethodChannelListingColumnsWithDefault, o)
@@ -1135,7 +917,7 @@ func (o *ShippingMethodChannelListing) Upsert(ctx context.Context, exec boil.Con
 		shippingMethodChannelListingUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ShippingMethodChannelListing record with an executor.
@@ -1143,10 +925,6 @@ func (o *ShippingMethodChannelListing) Upsert(ctx context.Context, exec boil.Con
 func (o *ShippingMethodChannelListing) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ShippingMethodChannelListing provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingMethodChannelListingPrimaryKeyMapping)
@@ -1165,10 +943,6 @@ func (o *ShippingMethodChannelListing) Delete(ctx context.Context, exec boil.Con
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for shipping_method_channel_listings")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1201,14 +975,6 @@ func (o ShippingMethodChannelListingSlice) DeleteAll(ctx context.Context, exec b
 		return 0, nil
 	}
 
-	if len(shippingMethodChannelListingBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), shippingMethodChannelListingPrimaryKeyMapping)
@@ -1231,14 +997,6 @@ func (o ShippingMethodChannelListingSlice) DeleteAll(ctx context.Context, exec b
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for shipping_method_channel_listings")
-	}
-
-	if len(shippingMethodChannelListingAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -155,8 +155,6 @@ type (
 	// SessionSlice is an alias for a slice of pointers to Session.
 	// This should almost always be used instead of []Session.
 	SessionSlice []*Session
-	// SessionHook is the signature for custom Session hook methods
-	SessionHook func(context.Context, boil.ContextExecutor, *Session) error
 
 	sessionQuery struct {
 		*queries.Query
@@ -184,179 +182,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var sessionAfterSelectHooks []SessionHook
-
-var sessionBeforeInsertHooks []SessionHook
-var sessionAfterInsertHooks []SessionHook
-
-var sessionBeforeUpdateHooks []SessionHook
-var sessionAfterUpdateHooks []SessionHook
-
-var sessionBeforeDeleteHooks []SessionHook
-var sessionAfterDeleteHooks []SessionHook
-
-var sessionBeforeUpsertHooks []SessionHook
-var sessionAfterUpsertHooks []SessionHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Session) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Session) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Session) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Session) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Session) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Session) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Session) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Session) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Session) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range sessionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddSessionHook registers your hook function for all future operations.
-func AddSessionHook(hookPoint boil.HookPoint, sessionHook SessionHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		sessionAfterSelectHooks = append(sessionAfterSelectHooks, sessionHook)
-	case boil.BeforeInsertHook:
-		sessionBeforeInsertHooks = append(sessionBeforeInsertHooks, sessionHook)
-	case boil.AfterInsertHook:
-		sessionAfterInsertHooks = append(sessionAfterInsertHooks, sessionHook)
-	case boil.BeforeUpdateHook:
-		sessionBeforeUpdateHooks = append(sessionBeforeUpdateHooks, sessionHook)
-	case boil.AfterUpdateHook:
-		sessionAfterUpdateHooks = append(sessionAfterUpdateHooks, sessionHook)
-	case boil.BeforeDeleteHook:
-		sessionBeforeDeleteHooks = append(sessionBeforeDeleteHooks, sessionHook)
-	case boil.AfterDeleteHook:
-		sessionAfterDeleteHooks = append(sessionAfterDeleteHooks, sessionHook)
-	case boil.BeforeUpsertHook:
-		sessionBeforeUpsertHooks = append(sessionBeforeUpsertHooks, sessionHook)
-	case boil.AfterUpsertHook:
-		sessionAfterUpsertHooks = append(sessionAfterUpsertHooks, sessionHook)
-	}
-}
-
 // One returns a single session record from the query.
 func (q sessionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Session, error) {
 	o := &Session{}
@@ -371,10 +196,6 @@ func (q sessionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Sess
 		return nil, errors.Wrap(err, "models: failed to execute a one query for sessions")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -385,14 +206,6 @@ func (q sessionQuery) All(ctx context.Context, exec boil.ContextExecutor) (Sessi
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Session slice")
-	}
-
-	if len(sessionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -463,10 +276,6 @@ func FindSession(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 		return nil, errors.Wrap(err, "models: unable to select from sessions")
 	}
 
-	if err = sessionObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return sessionObj, err
-	}
-
 	return sessionObj, nil
 }
 
@@ -478,10 +287,6 @@ func (o *Session) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(sessionColumnsWithDefault, o)
 
@@ -546,7 +351,7 @@ func (o *Session) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		sessionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Session.
@@ -554,9 +359,6 @@ func (o *Session) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Session) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	sessionUpdateCacheMut.RLock()
 	cache, cached := sessionUpdateCache[key]
@@ -605,7 +407,7 @@ func (o *Session) Update(ctx context.Context, exec boil.ContextExecutor, columns
 		sessionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -678,10 +480,6 @@ func (o SessionSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 func (o *Session) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no sessions provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(sessionColumnsWithDefault, o)
@@ -786,7 +584,7 @@ func (o *Session) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		sessionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Session record with an executor.
@@ -794,10 +592,6 @@ func (o *Session) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 func (o *Session) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Session provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), sessionPrimaryKeyMapping)
@@ -816,10 +610,6 @@ func (o *Session) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for sessions")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -852,14 +642,6 @@ func (o SessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 		return 0, nil
 	}
 
-	if len(sessionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), sessionPrimaryKeyMapping)
@@ -882,14 +664,6 @@ func (o SessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for sessions")
-	}
-
-	if len(sessionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

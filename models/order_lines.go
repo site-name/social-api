@@ -345,8 +345,6 @@ type (
 	// OrderLineSlice is an alias for a slice of pointers to OrderLine.
 	// This should almost always be used instead of []OrderLine.
 	OrderLineSlice []*OrderLine
-	// OrderLineHook is the signature for custom OrderLine hook methods
-	OrderLineHook func(context.Context, boil.ContextExecutor, *OrderLine) error
 
 	orderLineQuery struct {
 		*queries.Query
@@ -374,179 +372,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var orderLineAfterSelectHooks []OrderLineHook
-
-var orderLineBeforeInsertHooks []OrderLineHook
-var orderLineAfterInsertHooks []OrderLineHook
-
-var orderLineBeforeUpdateHooks []OrderLineHook
-var orderLineAfterUpdateHooks []OrderLineHook
-
-var orderLineBeforeDeleteHooks []OrderLineHook
-var orderLineAfterDeleteHooks []OrderLineHook
-
-var orderLineBeforeUpsertHooks []OrderLineHook
-var orderLineAfterUpsertHooks []OrderLineHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *OrderLine) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *OrderLine) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *OrderLine) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *OrderLine) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *OrderLine) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *OrderLine) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *OrderLine) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *OrderLine) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *OrderLine) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderLineAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOrderLineHook registers your hook function for all future operations.
-func AddOrderLineHook(hookPoint boil.HookPoint, orderLineHook OrderLineHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		orderLineAfterSelectHooks = append(orderLineAfterSelectHooks, orderLineHook)
-	case boil.BeforeInsertHook:
-		orderLineBeforeInsertHooks = append(orderLineBeforeInsertHooks, orderLineHook)
-	case boil.AfterInsertHook:
-		orderLineAfterInsertHooks = append(orderLineAfterInsertHooks, orderLineHook)
-	case boil.BeforeUpdateHook:
-		orderLineBeforeUpdateHooks = append(orderLineBeforeUpdateHooks, orderLineHook)
-	case boil.AfterUpdateHook:
-		orderLineAfterUpdateHooks = append(orderLineAfterUpdateHooks, orderLineHook)
-	case boil.BeforeDeleteHook:
-		orderLineBeforeDeleteHooks = append(orderLineBeforeDeleteHooks, orderLineHook)
-	case boil.AfterDeleteHook:
-		orderLineAfterDeleteHooks = append(orderLineAfterDeleteHooks, orderLineHook)
-	case boil.BeforeUpsertHook:
-		orderLineBeforeUpsertHooks = append(orderLineBeforeUpsertHooks, orderLineHook)
-	case boil.AfterUpsertHook:
-		orderLineAfterUpsertHooks = append(orderLineAfterUpsertHooks, orderLineHook)
-	}
-}
-
 // One returns a single orderLine record from the query.
 func (q orderLineQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OrderLine, error) {
 	o := &OrderLine{}
@@ -561,10 +386,6 @@ func (q orderLineQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Or
 		return nil, errors.Wrap(err, "models: failed to execute a one query for order_lines")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -575,14 +396,6 @@ func (q orderLineQuery) All(ctx context.Context, exec boil.ContextExecutor) (Ord
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to OrderLine slice")
-	}
-
-	if len(orderLineAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -762,14 +575,6 @@ func (orderLineL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singula
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -886,14 +691,6 @@ func (orderLineL) LoadVariant(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
 	}
 
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1002,14 +799,6 @@ func (orderLineL) LoadLineDigitalContentURL(ctx context.Context, e boil.ContextE
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for digital_content_urls")
-	}
-
-	if len(digitalContentURLAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1121,13 +910,6 @@ func (orderLineL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, s
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for allocations")
 	}
 
-	if len(allocationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Allocations = resultSlice
 		for _, foreign := range resultSlice {
@@ -1235,13 +1017,6 @@ func (orderLineL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for fulfillment_lines")
 	}
 
-	if len(fulfillmentLineAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.FulfillmentLines = resultSlice
 		for _, foreign := range resultSlice {
@@ -1610,10 +1385,6 @@ func FindOrderLine(ctx context.Context, exec boil.ContextExecutor, iD string, se
 		return nil, errors.Wrap(err, "models: unable to select from order_lines")
 	}
 
-	if err = orderLineObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return orderLineObj, err
-	}
-
 	return orderLineObj, nil
 }
 
@@ -1625,10 +1396,6 @@ func (o *OrderLine) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderLineColumnsWithDefault, o)
 
@@ -1693,7 +1460,7 @@ func (o *OrderLine) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 		orderLineInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the OrderLine.
@@ -1701,9 +1468,6 @@ func (o *OrderLine) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OrderLine) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	orderLineUpdateCacheMut.RLock()
 	cache, cached := orderLineUpdateCache[key]
@@ -1752,7 +1516,7 @@ func (o *OrderLine) Update(ctx context.Context, exec boil.ContextExecutor, colum
 		orderLineUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1825,10 +1589,6 @@ func (o OrderLineSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 func (o *OrderLine) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no order_lines provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderLineColumnsWithDefault, o)
@@ -1933,7 +1693,7 @@ func (o *OrderLine) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 		orderLineUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single OrderLine record with an executor.
@@ -1941,10 +1701,6 @@ func (o *OrderLine) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 func (o *OrderLine) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no OrderLine provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), orderLinePrimaryKeyMapping)
@@ -1963,10 +1719,6 @@ func (o *OrderLine) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for order_lines")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1999,14 +1751,6 @@ func (o OrderLineSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 		return 0, nil
 	}
 
-	if len(orderLineBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderLinePrimaryKeyMapping)
@@ -2029,14 +1773,6 @@ func (o OrderLineSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for order_lines")
-	}
-
-	if len(orderLineAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -109,8 +109,6 @@ type (
 	// SaleTranslationSlice is an alias for a slice of pointers to SaleTranslation.
 	// This should almost always be used instead of []SaleTranslation.
 	SaleTranslationSlice []*SaleTranslation
-	// SaleTranslationHook is the signature for custom SaleTranslation hook methods
-	SaleTranslationHook func(context.Context, boil.ContextExecutor, *SaleTranslation) error
 
 	saleTranslationQuery struct {
 		*queries.Query
@@ -138,179 +136,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var saleTranslationAfterSelectHooks []SaleTranslationHook
-
-var saleTranslationBeforeInsertHooks []SaleTranslationHook
-var saleTranslationAfterInsertHooks []SaleTranslationHook
-
-var saleTranslationBeforeUpdateHooks []SaleTranslationHook
-var saleTranslationAfterUpdateHooks []SaleTranslationHook
-
-var saleTranslationBeforeDeleteHooks []SaleTranslationHook
-var saleTranslationAfterDeleteHooks []SaleTranslationHook
-
-var saleTranslationBeforeUpsertHooks []SaleTranslationHook
-var saleTranslationAfterUpsertHooks []SaleTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *SaleTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *SaleTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *SaleTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *SaleTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *SaleTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *SaleTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *SaleTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *SaleTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *SaleTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddSaleTranslationHook registers your hook function for all future operations.
-func AddSaleTranslationHook(hookPoint boil.HookPoint, saleTranslationHook SaleTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		saleTranslationAfterSelectHooks = append(saleTranslationAfterSelectHooks, saleTranslationHook)
-	case boil.BeforeInsertHook:
-		saleTranslationBeforeInsertHooks = append(saleTranslationBeforeInsertHooks, saleTranslationHook)
-	case boil.AfterInsertHook:
-		saleTranslationAfterInsertHooks = append(saleTranslationAfterInsertHooks, saleTranslationHook)
-	case boil.BeforeUpdateHook:
-		saleTranslationBeforeUpdateHooks = append(saleTranslationBeforeUpdateHooks, saleTranslationHook)
-	case boil.AfterUpdateHook:
-		saleTranslationAfterUpdateHooks = append(saleTranslationAfterUpdateHooks, saleTranslationHook)
-	case boil.BeforeDeleteHook:
-		saleTranslationBeforeDeleteHooks = append(saleTranslationBeforeDeleteHooks, saleTranslationHook)
-	case boil.AfterDeleteHook:
-		saleTranslationAfterDeleteHooks = append(saleTranslationAfterDeleteHooks, saleTranslationHook)
-	case boil.BeforeUpsertHook:
-		saleTranslationBeforeUpsertHooks = append(saleTranslationBeforeUpsertHooks, saleTranslationHook)
-	case boil.AfterUpsertHook:
-		saleTranslationAfterUpsertHooks = append(saleTranslationAfterUpsertHooks, saleTranslationHook)
-	}
-}
-
 // One returns a single saleTranslation record from the query.
 func (q saleTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*SaleTranslation, error) {
 	o := &SaleTranslation{}
@@ -325,10 +150,6 @@ func (q saleTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "models: failed to execute a one query for sale_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -339,14 +160,6 @@ func (q saleTranslationQuery) All(ctx context.Context, exec boil.ContextExecutor
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to SaleTranslation slice")
-	}
-
-	if len(saleTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -476,14 +289,6 @@ func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sales")
 	}
 
-	if len(saleAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -595,10 +400,6 @@ func FindSaleTranslation(ctx context.Context, exec boil.ContextExecutor, iD stri
 		return nil, errors.Wrap(err, "models: unable to select from sale_translations")
 	}
 
-	if err = saleTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return saleTranslationObj, err
-	}
-
 	return saleTranslationObj, nil
 }
 
@@ -610,10 +411,6 @@ func (o *SaleTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(saleTranslationColumnsWithDefault, o)
 
@@ -678,7 +475,7 @@ func (o *SaleTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 		saleTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the SaleTranslation.
@@ -686,9 +483,6 @@ func (o *SaleTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *SaleTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	saleTranslationUpdateCacheMut.RLock()
 	cache, cached := saleTranslationUpdateCache[key]
@@ -737,7 +531,7 @@ func (o *SaleTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 		saleTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -810,10 +604,6 @@ func (o SaleTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 func (o *SaleTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no sale_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(saleTranslationColumnsWithDefault, o)
@@ -918,7 +708,7 @@ func (o *SaleTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		saleTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single SaleTranslation record with an executor.
@@ -926,10 +716,6 @@ func (o *SaleTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor,
 func (o *SaleTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no SaleTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), saleTranslationPrimaryKeyMapping)
@@ -948,10 +734,6 @@ func (o *SaleTranslation) Delete(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for sale_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -984,14 +766,6 @@ func (o SaleTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 		return 0, nil
 	}
 
-	if len(saleTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleTranslationPrimaryKeyMapping)
@@ -1014,14 +788,6 @@ func (o SaleTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for sale_translations")
-	}
-
-	if len(saleTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

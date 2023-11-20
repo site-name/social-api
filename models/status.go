@@ -98,8 +98,6 @@ type (
 	// StatusSlice is an alias for a slice of pointers to Status.
 	// This should almost always be used instead of []Status.
 	StatusSlice []*Status
-	// StatusHook is the signature for custom Status hook methods
-	StatusHook func(context.Context, boil.ContextExecutor, *Status) error
 
 	statusQuery struct {
 		*queries.Query
@@ -127,179 +125,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var statusAfterSelectHooks []StatusHook
-
-var statusBeforeInsertHooks []StatusHook
-var statusAfterInsertHooks []StatusHook
-
-var statusBeforeUpdateHooks []StatusHook
-var statusAfterUpdateHooks []StatusHook
-
-var statusBeforeDeleteHooks []StatusHook
-var statusAfterDeleteHooks []StatusHook
-
-var statusBeforeUpsertHooks []StatusHook
-var statusAfterUpsertHooks []StatusHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Status) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Status) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Status) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Status) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Status) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Status) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Status) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Status) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Status) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range statusAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddStatusHook registers your hook function for all future operations.
-func AddStatusHook(hookPoint boil.HookPoint, statusHook StatusHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		statusAfterSelectHooks = append(statusAfterSelectHooks, statusHook)
-	case boil.BeforeInsertHook:
-		statusBeforeInsertHooks = append(statusBeforeInsertHooks, statusHook)
-	case boil.AfterInsertHook:
-		statusAfterInsertHooks = append(statusAfterInsertHooks, statusHook)
-	case boil.BeforeUpdateHook:
-		statusBeforeUpdateHooks = append(statusBeforeUpdateHooks, statusHook)
-	case boil.AfterUpdateHook:
-		statusAfterUpdateHooks = append(statusAfterUpdateHooks, statusHook)
-	case boil.BeforeDeleteHook:
-		statusBeforeDeleteHooks = append(statusBeforeDeleteHooks, statusHook)
-	case boil.AfterDeleteHook:
-		statusAfterDeleteHooks = append(statusAfterDeleteHooks, statusHook)
-	case boil.BeforeUpsertHook:
-		statusBeforeUpsertHooks = append(statusBeforeUpsertHooks, statusHook)
-	case boil.AfterUpsertHook:
-		statusAfterUpsertHooks = append(statusAfterUpsertHooks, statusHook)
-	}
-}
-
 // One returns a single status record from the query.
 func (q statusQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Status, error) {
 	o := &Status{}
@@ -314,10 +139,6 @@ func (q statusQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Statu
 		return nil, errors.Wrap(err, "models: failed to execute a one query for status")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -328,14 +149,6 @@ func (q statusQuery) All(ctx context.Context, exec boil.ContextExecutor) (Status
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Status slice")
-	}
-
-	if len(statusAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -406,10 +219,6 @@ func FindStatus(ctx context.Context, exec boil.ContextExecutor, userID string, s
 		return nil, errors.Wrap(err, "models: unable to select from status")
 	}
 
-	if err = statusObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return statusObj, err
-	}
-
 	return statusObj, nil
 }
 
@@ -421,10 +230,6 @@ func (o *Status) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(statusColumnsWithDefault, o)
 
@@ -489,7 +294,7 @@ func (o *Status) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 		statusInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Status.
@@ -497,9 +302,6 @@ func (o *Status) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Status) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	statusUpdateCacheMut.RLock()
 	cache, cached := statusUpdateCache[key]
@@ -548,7 +350,7 @@ func (o *Status) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 		statusUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -621,10 +423,6 @@ func (o StatusSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 func (o *Status) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no status provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(statusColumnsWithDefault, o)
@@ -729,7 +527,7 @@ func (o *Status) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		statusUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Status record with an executor.
@@ -737,10 +535,6 @@ func (o *Status) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 func (o *Status) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Status provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), statusPrimaryKeyMapping)
@@ -759,10 +553,6 @@ func (o *Status) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for status")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -795,14 +585,6 @@ func (o StatusSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 		return 0, nil
 	}
 
-	if len(statusBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), statusPrimaryKeyMapping)
@@ -825,14 +607,6 @@ func (o StatusSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for status")
-	}
-
-	if len(statusAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

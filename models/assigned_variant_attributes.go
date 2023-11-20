@@ -122,8 +122,6 @@ type (
 	// AssignedVariantAttributeSlice is an alias for a slice of pointers to AssignedVariantAttribute.
 	// This should almost always be used instead of []AssignedVariantAttribute.
 	AssignedVariantAttributeSlice []*AssignedVariantAttribute
-	// AssignedVariantAttributeHook is the signature for custom AssignedVariantAttribute hook methods
-	AssignedVariantAttributeHook func(context.Context, boil.ContextExecutor, *AssignedVariantAttribute) error
 
 	assignedVariantAttributeQuery struct {
 		*queries.Query
@@ -151,179 +149,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var assignedVariantAttributeAfterSelectHooks []AssignedVariantAttributeHook
-
-var assignedVariantAttributeBeforeInsertHooks []AssignedVariantAttributeHook
-var assignedVariantAttributeAfterInsertHooks []AssignedVariantAttributeHook
-
-var assignedVariantAttributeBeforeUpdateHooks []AssignedVariantAttributeHook
-var assignedVariantAttributeAfterUpdateHooks []AssignedVariantAttributeHook
-
-var assignedVariantAttributeBeforeDeleteHooks []AssignedVariantAttributeHook
-var assignedVariantAttributeAfterDeleteHooks []AssignedVariantAttributeHook
-
-var assignedVariantAttributeBeforeUpsertHooks []AssignedVariantAttributeHook
-var assignedVariantAttributeAfterUpsertHooks []AssignedVariantAttributeHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AssignedVariantAttribute) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AssignedVariantAttribute) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AssignedVariantAttribute) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AssignedVariantAttribute) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AssignedVariantAttribute) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AssignedVariantAttribute) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AssignedVariantAttribute) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AssignedVariantAttribute) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AssignedVariantAttribute) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedVariantAttributeAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAssignedVariantAttributeHook registers your hook function for all future operations.
-func AddAssignedVariantAttributeHook(hookPoint boil.HookPoint, assignedVariantAttributeHook AssignedVariantAttributeHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		assignedVariantAttributeAfterSelectHooks = append(assignedVariantAttributeAfterSelectHooks, assignedVariantAttributeHook)
-	case boil.BeforeInsertHook:
-		assignedVariantAttributeBeforeInsertHooks = append(assignedVariantAttributeBeforeInsertHooks, assignedVariantAttributeHook)
-	case boil.AfterInsertHook:
-		assignedVariantAttributeAfterInsertHooks = append(assignedVariantAttributeAfterInsertHooks, assignedVariantAttributeHook)
-	case boil.BeforeUpdateHook:
-		assignedVariantAttributeBeforeUpdateHooks = append(assignedVariantAttributeBeforeUpdateHooks, assignedVariantAttributeHook)
-	case boil.AfterUpdateHook:
-		assignedVariantAttributeAfterUpdateHooks = append(assignedVariantAttributeAfterUpdateHooks, assignedVariantAttributeHook)
-	case boil.BeforeDeleteHook:
-		assignedVariantAttributeBeforeDeleteHooks = append(assignedVariantAttributeBeforeDeleteHooks, assignedVariantAttributeHook)
-	case boil.AfterDeleteHook:
-		assignedVariantAttributeAfterDeleteHooks = append(assignedVariantAttributeAfterDeleteHooks, assignedVariantAttributeHook)
-	case boil.BeforeUpsertHook:
-		assignedVariantAttributeBeforeUpsertHooks = append(assignedVariantAttributeBeforeUpsertHooks, assignedVariantAttributeHook)
-	case boil.AfterUpsertHook:
-		assignedVariantAttributeAfterUpsertHooks = append(assignedVariantAttributeAfterUpsertHooks, assignedVariantAttributeHook)
-	}
-}
-
 // One returns a single assignedVariantAttribute record from the query.
 func (q assignedVariantAttributeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AssignedVariantAttribute, error) {
 	o := &AssignedVariantAttribute{}
@@ -338,10 +163,6 @@ func (q assignedVariantAttributeQuery) One(ctx context.Context, exec boil.Contex
 		return nil, errors.Wrap(err, "models: failed to execute a one query for assigned_variant_attributes")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -352,14 +173,6 @@ func (q assignedVariantAttributeQuery) All(ctx context.Context, exec boil.Contex
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AssignedVariantAttribute slice")
-	}
-
-	if len(assignedVariantAttributeAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -514,14 +327,6 @@ func (assignedVariantAttributeL) LoadAssignment(ctx context.Context, e boil.Cont
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attribute_variants")
 	}
 
-	if len(attributeVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -634,14 +439,6 @@ func (assignedVariantAttributeL) LoadVariant(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
 	}
 
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -752,13 +549,6 @@ func (assignedVariantAttributeL) LoadAssignmentAssignedVariantAttributeValues(ct
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_variant_attribute_values")
 	}
 
-	if len(assignedVariantAttributeValueAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AssignmentAssignedVariantAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
@@ -967,10 +757,6 @@ func FindAssignedVariantAttribute(ctx context.Context, exec boil.ContextExecutor
 		return nil, errors.Wrap(err, "models: unable to select from assigned_variant_attributes")
 	}
 
-	if err = assignedVariantAttributeObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return assignedVariantAttributeObj, err
-	}
-
 	return assignedVariantAttributeObj, nil
 }
 
@@ -982,10 +768,6 @@ func (o *AssignedVariantAttribute) Insert(ctx context.Context, exec boil.Context
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(assignedVariantAttributeColumnsWithDefault, o)
 
@@ -1050,7 +832,7 @@ func (o *AssignedVariantAttribute) Insert(ctx context.Context, exec boil.Context
 		assignedVariantAttributeInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AssignedVariantAttribute.
@@ -1058,9 +840,6 @@ func (o *AssignedVariantAttribute) Insert(ctx context.Context, exec boil.Context
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *AssignedVariantAttribute) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	assignedVariantAttributeUpdateCacheMut.RLock()
 	cache, cached := assignedVariantAttributeUpdateCache[key]
@@ -1109,7 +888,7 @@ func (o *AssignedVariantAttribute) Update(ctx context.Context, exec boil.Context
 		assignedVariantAttributeUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1182,10 +961,6 @@ func (o AssignedVariantAttributeSlice) UpdateAll(ctx context.Context, exec boil.
 func (o *AssignedVariantAttribute) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no assigned_variant_attributes provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(assignedVariantAttributeColumnsWithDefault, o)
@@ -1290,7 +1065,7 @@ func (o *AssignedVariantAttribute) Upsert(ctx context.Context, exec boil.Context
 		assignedVariantAttributeUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AssignedVariantAttribute record with an executor.
@@ -1298,10 +1073,6 @@ func (o *AssignedVariantAttribute) Upsert(ctx context.Context, exec boil.Context
 func (o *AssignedVariantAttribute) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AssignedVariantAttribute provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), assignedVariantAttributePrimaryKeyMapping)
@@ -1320,10 +1091,6 @@ func (o *AssignedVariantAttribute) Delete(ctx context.Context, exec boil.Context
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for assigned_variant_attributes")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1356,14 +1123,6 @@ func (o AssignedVariantAttributeSlice) DeleteAll(ctx context.Context, exec boil.
 		return 0, nil
 	}
 
-	if len(assignedVariantAttributeBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedVariantAttributePrimaryKeyMapping)
@@ -1386,14 +1145,6 @@ func (o AssignedVariantAttributeSlice) DeleteAll(ctx context.Context, exec boil.
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for assigned_variant_attributes")
-	}
-
-	if len(assignedVariantAttributeAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

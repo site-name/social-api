@@ -131,8 +131,6 @@ type (
 	// CollectionTranslationSlice is an alias for a slice of pointers to CollectionTranslation.
 	// This should almost always be used instead of []CollectionTranslation.
 	CollectionTranslationSlice []*CollectionTranslation
-	// CollectionTranslationHook is the signature for custom CollectionTranslation hook methods
-	CollectionTranslationHook func(context.Context, boil.ContextExecutor, *CollectionTranslation) error
 
 	collectionTranslationQuery struct {
 		*queries.Query
@@ -160,179 +158,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var collectionTranslationAfterSelectHooks []CollectionTranslationHook
-
-var collectionTranslationBeforeInsertHooks []CollectionTranslationHook
-var collectionTranslationAfterInsertHooks []CollectionTranslationHook
-
-var collectionTranslationBeforeUpdateHooks []CollectionTranslationHook
-var collectionTranslationAfterUpdateHooks []CollectionTranslationHook
-
-var collectionTranslationBeforeDeleteHooks []CollectionTranslationHook
-var collectionTranslationAfterDeleteHooks []CollectionTranslationHook
-
-var collectionTranslationBeforeUpsertHooks []CollectionTranslationHook
-var collectionTranslationAfterUpsertHooks []CollectionTranslationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *CollectionTranslation) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *CollectionTranslation) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *CollectionTranslation) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *CollectionTranslation) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *CollectionTranslation) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *CollectionTranslation) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *CollectionTranslation) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *CollectionTranslation) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *CollectionTranslation) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range collectionTranslationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCollectionTranslationHook registers your hook function for all future operations.
-func AddCollectionTranslationHook(hookPoint boil.HookPoint, collectionTranslationHook CollectionTranslationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		collectionTranslationAfterSelectHooks = append(collectionTranslationAfterSelectHooks, collectionTranslationHook)
-	case boil.BeforeInsertHook:
-		collectionTranslationBeforeInsertHooks = append(collectionTranslationBeforeInsertHooks, collectionTranslationHook)
-	case boil.AfterInsertHook:
-		collectionTranslationAfterInsertHooks = append(collectionTranslationAfterInsertHooks, collectionTranslationHook)
-	case boil.BeforeUpdateHook:
-		collectionTranslationBeforeUpdateHooks = append(collectionTranslationBeforeUpdateHooks, collectionTranslationHook)
-	case boil.AfterUpdateHook:
-		collectionTranslationAfterUpdateHooks = append(collectionTranslationAfterUpdateHooks, collectionTranslationHook)
-	case boil.BeforeDeleteHook:
-		collectionTranslationBeforeDeleteHooks = append(collectionTranslationBeforeDeleteHooks, collectionTranslationHook)
-	case boil.AfterDeleteHook:
-		collectionTranslationAfterDeleteHooks = append(collectionTranslationAfterDeleteHooks, collectionTranslationHook)
-	case boil.BeforeUpsertHook:
-		collectionTranslationBeforeUpsertHooks = append(collectionTranslationBeforeUpsertHooks, collectionTranslationHook)
-	case boil.AfterUpsertHook:
-		collectionTranslationAfterUpsertHooks = append(collectionTranslationAfterUpsertHooks, collectionTranslationHook)
-	}
-}
-
 // One returns a single collectionTranslation record from the query.
 func (q collectionTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CollectionTranslation, error) {
 	o := &CollectionTranslation{}
@@ -347,10 +172,6 @@ func (q collectionTranslationQuery) One(ctx context.Context, exec boil.ContextEx
 		return nil, errors.Wrap(err, "models: failed to execute a one query for collection_translations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -361,14 +182,6 @@ func (q collectionTranslationQuery) All(ctx context.Context, exec boil.ContextEx
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to CollectionTranslation slice")
-	}
-
-	if len(collectionTranslationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -498,14 +311,6 @@ func (collectionTranslationL) LoadCollection(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
 	}
 
-	if len(collectionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -617,10 +422,6 @@ func FindCollectionTranslation(ctx context.Context, exec boil.ContextExecutor, i
 		return nil, errors.Wrap(err, "models: unable to select from collection_translations")
 	}
 
-	if err = collectionTranslationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return collectionTranslationObj, err
-	}
-
 	return collectionTranslationObj, nil
 }
 
@@ -632,10 +433,6 @@ func (o *CollectionTranslation) Insert(ctx context.Context, exec boil.ContextExe
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(collectionTranslationColumnsWithDefault, o)
 
@@ -700,7 +497,7 @@ func (o *CollectionTranslation) Insert(ctx context.Context, exec boil.ContextExe
 		collectionTranslationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the CollectionTranslation.
@@ -708,9 +505,6 @@ func (o *CollectionTranslation) Insert(ctx context.Context, exec boil.ContextExe
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *CollectionTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	collectionTranslationUpdateCacheMut.RLock()
 	cache, cached := collectionTranslationUpdateCache[key]
@@ -759,7 +553,7 @@ func (o *CollectionTranslation) Update(ctx context.Context, exec boil.ContextExe
 		collectionTranslationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -832,10 +626,6 @@ func (o CollectionTranslationSlice) UpdateAll(ctx context.Context, exec boil.Con
 func (o *CollectionTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no collection_translations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(collectionTranslationColumnsWithDefault, o)
@@ -940,7 +730,7 @@ func (o *CollectionTranslation) Upsert(ctx context.Context, exec boil.ContextExe
 		collectionTranslationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single CollectionTranslation record with an executor.
@@ -948,10 +738,6 @@ func (o *CollectionTranslation) Upsert(ctx context.Context, exec boil.ContextExe
 func (o *CollectionTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no CollectionTranslation provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), collectionTranslationPrimaryKeyMapping)
@@ -970,10 +756,6 @@ func (o *CollectionTranslation) Delete(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for collection_translations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1006,14 +788,6 @@ func (o CollectionTranslationSlice) DeleteAll(ctx context.Context, exec boil.Con
 		return 0, nil
 	}
 
-	if len(collectionTranslationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), collectionTranslationPrimaryKeyMapping)
@@ -1036,14 +810,6 @@ func (o CollectionTranslationSlice) DeleteAll(ctx context.Context, exec boil.Con
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for collection_translations")
-	}
-
-	if len(collectionTranslationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -112,8 +112,6 @@ type (
 	// OrderGiftcardSlice is an alias for a slice of pointers to OrderGiftcard.
 	// This should almost always be used instead of []OrderGiftcard.
 	OrderGiftcardSlice []*OrderGiftcard
-	// OrderGiftcardHook is the signature for custom OrderGiftcard hook methods
-	OrderGiftcardHook func(context.Context, boil.ContextExecutor, *OrderGiftcard) error
 
 	orderGiftcardQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var orderGiftcardAfterSelectHooks []OrderGiftcardHook
-
-var orderGiftcardBeforeInsertHooks []OrderGiftcardHook
-var orderGiftcardAfterInsertHooks []OrderGiftcardHook
-
-var orderGiftcardBeforeUpdateHooks []OrderGiftcardHook
-var orderGiftcardAfterUpdateHooks []OrderGiftcardHook
-
-var orderGiftcardBeforeDeleteHooks []OrderGiftcardHook
-var orderGiftcardAfterDeleteHooks []OrderGiftcardHook
-
-var orderGiftcardBeforeUpsertHooks []OrderGiftcardHook
-var orderGiftcardAfterUpsertHooks []OrderGiftcardHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *OrderGiftcard) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *OrderGiftcard) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *OrderGiftcard) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *OrderGiftcard) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *OrderGiftcard) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *OrderGiftcard) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *OrderGiftcard) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *OrderGiftcard) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *OrderGiftcard) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderGiftcardAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOrderGiftcardHook registers your hook function for all future operations.
-func AddOrderGiftcardHook(hookPoint boil.HookPoint, orderGiftcardHook OrderGiftcardHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		orderGiftcardAfterSelectHooks = append(orderGiftcardAfterSelectHooks, orderGiftcardHook)
-	case boil.BeforeInsertHook:
-		orderGiftcardBeforeInsertHooks = append(orderGiftcardBeforeInsertHooks, orderGiftcardHook)
-	case boil.AfterInsertHook:
-		orderGiftcardAfterInsertHooks = append(orderGiftcardAfterInsertHooks, orderGiftcardHook)
-	case boil.BeforeUpdateHook:
-		orderGiftcardBeforeUpdateHooks = append(orderGiftcardBeforeUpdateHooks, orderGiftcardHook)
-	case boil.AfterUpdateHook:
-		orderGiftcardAfterUpdateHooks = append(orderGiftcardAfterUpdateHooks, orderGiftcardHook)
-	case boil.BeforeDeleteHook:
-		orderGiftcardBeforeDeleteHooks = append(orderGiftcardBeforeDeleteHooks, orderGiftcardHook)
-	case boil.AfterDeleteHook:
-		orderGiftcardAfterDeleteHooks = append(orderGiftcardAfterDeleteHooks, orderGiftcardHook)
-	case boil.BeforeUpsertHook:
-		orderGiftcardBeforeUpsertHooks = append(orderGiftcardBeforeUpsertHooks, orderGiftcardHook)
-	case boil.AfterUpsertHook:
-		orderGiftcardAfterUpsertHooks = append(orderGiftcardAfterUpsertHooks, orderGiftcardHook)
-	}
-}
-
 // One returns a single orderGiftcard record from the query.
 func (q orderGiftcardQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OrderGiftcard, error) {
 	o := &OrderGiftcard{}
@@ -328,10 +153,6 @@ func (q orderGiftcardQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 		return nil, errors.Wrap(err, "models: failed to execute a one query for order_giftcards")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q orderGiftcardQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to OrderGiftcard slice")
-	}
-
-	if len(orderGiftcardAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (orderGiftcardL) LoadGiftcard(ctx context.Context, e boil.ContextExecutor, 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for giftcards")
 	}
 
-	if len(giftcardAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (orderGiftcardL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sin
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
-	}
-
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindOrderGiftcard(ctx context.Context, exec boil.ContextExecutor, iD string
 		return nil, errors.Wrap(err, "models: unable to select from order_giftcards")
 	}
 
-	if err = orderGiftcardObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return orderGiftcardObj, err
-	}
-
 	return orderGiftcardObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *OrderGiftcard) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderGiftcardColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *OrderGiftcard) Insert(ctx context.Context, exec boil.ContextExecutor, c
 		orderGiftcardInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the OrderGiftcard.
@@ -867,9 +656,6 @@ func (o *OrderGiftcard) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OrderGiftcard) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	orderGiftcardUpdateCacheMut.RLock()
 	cache, cached := orderGiftcardUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *OrderGiftcard) Update(ctx context.Context, exec boil.ContextExecutor, c
 		orderGiftcardUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o OrderGiftcardSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 func (o *OrderGiftcard) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no order_giftcards provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderGiftcardColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *OrderGiftcard) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		orderGiftcardUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single OrderGiftcard record with an executor.
@@ -1107,10 +889,6 @@ func (o *OrderGiftcard) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 func (o *OrderGiftcard) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no OrderGiftcard provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), orderGiftcardPrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *OrderGiftcard) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for order_giftcards")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o OrderGiftcardSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 		return 0, nil
 	}
 
-	if len(orderGiftcardBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderGiftcardPrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o OrderGiftcardSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for order_giftcards")
-	}
-
-	if len(orderGiftcardAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

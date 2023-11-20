@@ -151,8 +151,6 @@ type (
 	// InvoiceEventSlice is an alias for a slice of pointers to InvoiceEvent.
 	// This should almost always be used instead of []InvoiceEvent.
 	InvoiceEventSlice []*InvoiceEvent
-	// InvoiceEventHook is the signature for custom InvoiceEvent hook methods
-	InvoiceEventHook func(context.Context, boil.ContextExecutor, *InvoiceEvent) error
 
 	invoiceEventQuery struct {
 		*queries.Query
@@ -180,179 +178,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var invoiceEventAfterSelectHooks []InvoiceEventHook
-
-var invoiceEventBeforeInsertHooks []InvoiceEventHook
-var invoiceEventAfterInsertHooks []InvoiceEventHook
-
-var invoiceEventBeforeUpdateHooks []InvoiceEventHook
-var invoiceEventAfterUpdateHooks []InvoiceEventHook
-
-var invoiceEventBeforeDeleteHooks []InvoiceEventHook
-var invoiceEventAfterDeleteHooks []InvoiceEventHook
-
-var invoiceEventBeforeUpsertHooks []InvoiceEventHook
-var invoiceEventAfterUpsertHooks []InvoiceEventHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *InvoiceEvent) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *InvoiceEvent) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *InvoiceEvent) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *InvoiceEvent) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *InvoiceEvent) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *InvoiceEvent) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *InvoiceEvent) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *InvoiceEvent) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *InvoiceEvent) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range invoiceEventAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddInvoiceEventHook registers your hook function for all future operations.
-func AddInvoiceEventHook(hookPoint boil.HookPoint, invoiceEventHook InvoiceEventHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		invoiceEventAfterSelectHooks = append(invoiceEventAfterSelectHooks, invoiceEventHook)
-	case boil.BeforeInsertHook:
-		invoiceEventBeforeInsertHooks = append(invoiceEventBeforeInsertHooks, invoiceEventHook)
-	case boil.AfterInsertHook:
-		invoiceEventAfterInsertHooks = append(invoiceEventAfterInsertHooks, invoiceEventHook)
-	case boil.BeforeUpdateHook:
-		invoiceEventBeforeUpdateHooks = append(invoiceEventBeforeUpdateHooks, invoiceEventHook)
-	case boil.AfterUpdateHook:
-		invoiceEventAfterUpdateHooks = append(invoiceEventAfterUpdateHooks, invoiceEventHook)
-	case boil.BeforeDeleteHook:
-		invoiceEventBeforeDeleteHooks = append(invoiceEventBeforeDeleteHooks, invoiceEventHook)
-	case boil.AfterDeleteHook:
-		invoiceEventAfterDeleteHooks = append(invoiceEventAfterDeleteHooks, invoiceEventHook)
-	case boil.BeforeUpsertHook:
-		invoiceEventBeforeUpsertHooks = append(invoiceEventBeforeUpsertHooks, invoiceEventHook)
-	case boil.AfterUpsertHook:
-		invoiceEventAfterUpsertHooks = append(invoiceEventAfterUpsertHooks, invoiceEventHook)
-	}
-}
-
 // One returns a single invoiceEvent record from the query.
 func (q invoiceEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*InvoiceEvent, error) {
 	o := &InvoiceEvent{}
@@ -367,10 +192,6 @@ func (q invoiceEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 		return nil, errors.Wrap(err, "models: failed to execute a one query for invoice_events")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -381,14 +202,6 @@ func (q invoiceEventQuery) All(ctx context.Context, exec boil.ContextExecutor) (
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to InvoiceEvent slice")
-	}
-
-	if len(invoiceEventAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -544,14 +357,6 @@ func (invoiceEventL) LoadInvoice(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for invoices")
 	}
 
-	if len(invoiceAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -668,14 +473,6 @@ func (invoiceEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sing
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
 	}
 
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -790,14 +587,6 @@ func (invoiceEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1104,10 +893,6 @@ func FindInvoiceEvent(ctx context.Context, exec boil.ContextExecutor, iD string,
 		return nil, errors.Wrap(err, "models: unable to select from invoice_events")
 	}
 
-	if err = invoiceEventObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return invoiceEventObj, err
-	}
-
 	return invoiceEventObj, nil
 }
 
@@ -1119,10 +904,6 @@ func (o *InvoiceEvent) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(invoiceEventColumnsWithDefault, o)
 
@@ -1187,7 +968,7 @@ func (o *InvoiceEvent) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		invoiceEventInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the InvoiceEvent.
@@ -1195,9 +976,6 @@ func (o *InvoiceEvent) Insert(ctx context.Context, exec boil.ContextExecutor, co
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *InvoiceEvent) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	invoiceEventUpdateCacheMut.RLock()
 	cache, cached := invoiceEventUpdateCache[key]
@@ -1246,7 +1024,7 @@ func (o *InvoiceEvent) Update(ctx context.Context, exec boil.ContextExecutor, co
 		invoiceEventUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1319,10 +1097,6 @@ func (o InvoiceEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExecu
 func (o *InvoiceEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no invoice_events provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(invoiceEventColumnsWithDefault, o)
@@ -1427,7 +1201,7 @@ func (o *InvoiceEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		invoiceEventUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single InvoiceEvent record with an executor.
@@ -1435,10 +1209,6 @@ func (o *InvoiceEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 func (o *InvoiceEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no InvoiceEvent provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), invoiceEventPrimaryKeyMapping)
@@ -1457,10 +1227,6 @@ func (o *InvoiceEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for invoice_events")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1493,14 +1259,6 @@ func (o InvoiceEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 		return 0, nil
 	}
 
-	if len(invoiceEventBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), invoiceEventPrimaryKeyMapping)
@@ -1523,14 +1281,6 @@ func (o InvoiceEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for invoice_events")
-	}
-
-	if len(invoiceEventAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

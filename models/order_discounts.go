@@ -174,8 +174,6 @@ type (
 	// OrderDiscountSlice is an alias for a slice of pointers to OrderDiscount.
 	// This should almost always be used instead of []OrderDiscount.
 	OrderDiscountSlice []*OrderDiscount
-	// OrderDiscountHook is the signature for custom OrderDiscount hook methods
-	OrderDiscountHook func(context.Context, boil.ContextExecutor, *OrderDiscount) error
 
 	orderDiscountQuery struct {
 		*queries.Query
@@ -203,179 +201,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var orderDiscountAfterSelectHooks []OrderDiscountHook
-
-var orderDiscountBeforeInsertHooks []OrderDiscountHook
-var orderDiscountAfterInsertHooks []OrderDiscountHook
-
-var orderDiscountBeforeUpdateHooks []OrderDiscountHook
-var orderDiscountAfterUpdateHooks []OrderDiscountHook
-
-var orderDiscountBeforeDeleteHooks []OrderDiscountHook
-var orderDiscountAfterDeleteHooks []OrderDiscountHook
-
-var orderDiscountBeforeUpsertHooks []OrderDiscountHook
-var orderDiscountAfterUpsertHooks []OrderDiscountHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *OrderDiscount) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *OrderDiscount) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *OrderDiscount) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *OrderDiscount) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *OrderDiscount) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *OrderDiscount) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *OrderDiscount) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *OrderDiscount) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *OrderDiscount) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range orderDiscountAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddOrderDiscountHook registers your hook function for all future operations.
-func AddOrderDiscountHook(hookPoint boil.HookPoint, orderDiscountHook OrderDiscountHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		orderDiscountAfterSelectHooks = append(orderDiscountAfterSelectHooks, orderDiscountHook)
-	case boil.BeforeInsertHook:
-		orderDiscountBeforeInsertHooks = append(orderDiscountBeforeInsertHooks, orderDiscountHook)
-	case boil.AfterInsertHook:
-		orderDiscountAfterInsertHooks = append(orderDiscountAfterInsertHooks, orderDiscountHook)
-	case boil.BeforeUpdateHook:
-		orderDiscountBeforeUpdateHooks = append(orderDiscountBeforeUpdateHooks, orderDiscountHook)
-	case boil.AfterUpdateHook:
-		orderDiscountAfterUpdateHooks = append(orderDiscountAfterUpdateHooks, orderDiscountHook)
-	case boil.BeforeDeleteHook:
-		orderDiscountBeforeDeleteHooks = append(orderDiscountBeforeDeleteHooks, orderDiscountHook)
-	case boil.AfterDeleteHook:
-		orderDiscountAfterDeleteHooks = append(orderDiscountAfterDeleteHooks, orderDiscountHook)
-	case boil.BeforeUpsertHook:
-		orderDiscountBeforeUpsertHooks = append(orderDiscountBeforeUpsertHooks, orderDiscountHook)
-	case boil.AfterUpsertHook:
-		orderDiscountAfterUpsertHooks = append(orderDiscountAfterUpsertHooks, orderDiscountHook)
-	}
-}
-
 // One returns a single orderDiscount record from the query.
 func (q orderDiscountQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OrderDiscount, error) {
 	o := &OrderDiscount{}
@@ -390,10 +215,6 @@ func (q orderDiscountQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 		return nil, errors.Wrap(err, "models: failed to execute a one query for order_discounts")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -404,14 +225,6 @@ func (q orderDiscountQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to OrderDiscount slice")
-	}
-
-	if len(orderDiscountAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -543,14 +356,6 @@ func (orderDiscountL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sin
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for orders")
-	}
-
-	if len(orderAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -697,10 +502,6 @@ func FindOrderDiscount(ctx context.Context, exec boil.ContextExecutor, iD string
 		return nil, errors.Wrap(err, "models: unable to select from order_discounts")
 	}
 
-	if err = orderDiscountObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return orderDiscountObj, err
-	}
-
 	return orderDiscountObj, nil
 }
 
@@ -712,10 +513,6 @@ func (o *OrderDiscount) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderDiscountColumnsWithDefault, o)
 
@@ -780,7 +577,7 @@ func (o *OrderDiscount) Insert(ctx context.Context, exec boil.ContextExecutor, c
 		orderDiscountInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the OrderDiscount.
@@ -788,9 +585,6 @@ func (o *OrderDiscount) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OrderDiscount) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	orderDiscountUpdateCacheMut.RLock()
 	cache, cached := orderDiscountUpdateCache[key]
@@ -839,7 +633,7 @@ func (o *OrderDiscount) Update(ctx context.Context, exec boil.ContextExecutor, c
 		orderDiscountUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -912,10 +706,6 @@ func (o OrderDiscountSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 func (o *OrderDiscount) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no order_discounts provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(orderDiscountColumnsWithDefault, o)
@@ -1020,7 +810,7 @@ func (o *OrderDiscount) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		orderDiscountUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single OrderDiscount record with an executor.
@@ -1028,10 +818,6 @@ func (o *OrderDiscount) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 func (o *OrderDiscount) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no OrderDiscount provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), orderDiscountPrimaryKeyMapping)
@@ -1050,10 +836,6 @@ func (o *OrderDiscount) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for order_discounts")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1086,14 +868,6 @@ func (o OrderDiscountSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 		return 0, nil
 	}
 
-	if len(orderDiscountBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), orderDiscountPrimaryKeyMapping)
@@ -1116,14 +890,6 @@ func (o OrderDiscountSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for order_discounts")
-	}
-
-	if len(orderDiscountAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

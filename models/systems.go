@@ -84,8 +84,6 @@ type (
 	// SystemSlice is an alias for a slice of pointers to System.
 	// This should almost always be used instead of []System.
 	SystemSlice []*System
-	// SystemHook is the signature for custom System hook methods
-	SystemHook func(context.Context, boil.ContextExecutor, *System) error
 
 	systemQuery struct {
 		*queries.Query
@@ -113,179 +111,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var systemAfterSelectHooks []SystemHook
-
-var systemBeforeInsertHooks []SystemHook
-var systemAfterInsertHooks []SystemHook
-
-var systemBeforeUpdateHooks []SystemHook
-var systemAfterUpdateHooks []SystemHook
-
-var systemBeforeDeleteHooks []SystemHook
-var systemAfterDeleteHooks []SystemHook
-
-var systemBeforeUpsertHooks []SystemHook
-var systemAfterUpsertHooks []SystemHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *System) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *System) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *System) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *System) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *System) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *System) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *System) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *System) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *System) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range systemAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddSystemHook registers your hook function for all future operations.
-func AddSystemHook(hookPoint boil.HookPoint, systemHook SystemHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		systemAfterSelectHooks = append(systemAfterSelectHooks, systemHook)
-	case boil.BeforeInsertHook:
-		systemBeforeInsertHooks = append(systemBeforeInsertHooks, systemHook)
-	case boil.AfterInsertHook:
-		systemAfterInsertHooks = append(systemAfterInsertHooks, systemHook)
-	case boil.BeforeUpdateHook:
-		systemBeforeUpdateHooks = append(systemBeforeUpdateHooks, systemHook)
-	case boil.AfterUpdateHook:
-		systemAfterUpdateHooks = append(systemAfterUpdateHooks, systemHook)
-	case boil.BeforeDeleteHook:
-		systemBeforeDeleteHooks = append(systemBeforeDeleteHooks, systemHook)
-	case boil.AfterDeleteHook:
-		systemAfterDeleteHooks = append(systemAfterDeleteHooks, systemHook)
-	case boil.BeforeUpsertHook:
-		systemBeforeUpsertHooks = append(systemBeforeUpsertHooks, systemHook)
-	case boil.AfterUpsertHook:
-		systemAfterUpsertHooks = append(systemAfterUpsertHooks, systemHook)
-	}
-}
-
 // One returns a single system record from the query.
 func (q systemQuery) One(ctx context.Context, exec boil.ContextExecutor) (*System, error) {
 	o := &System{}
@@ -300,10 +125,6 @@ func (q systemQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Syste
 		return nil, errors.Wrap(err, "models: failed to execute a one query for systems")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -314,14 +135,6 @@ func (q systemQuery) All(ctx context.Context, exec boil.ContextExecutor) (System
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to System slice")
-	}
-
-	if len(systemAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -392,10 +205,6 @@ func FindSystem(ctx context.Context, exec boil.ContextExecutor, name string, sel
 		return nil, errors.Wrap(err, "models: unable to select from systems")
 	}
 
-	if err = systemObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return systemObj, err
-	}
-
 	return systemObj, nil
 }
 
@@ -407,10 +216,6 @@ func (o *System) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(systemColumnsWithDefault, o)
 
@@ -475,7 +280,7 @@ func (o *System) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 		systemInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the System.
@@ -483,9 +288,6 @@ func (o *System) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *System) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	systemUpdateCacheMut.RLock()
 	cache, cached := systemUpdateCache[key]
@@ -534,7 +336,7 @@ func (o *System) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 		systemUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -607,10 +409,6 @@ func (o SystemSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 func (o *System) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no systems provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(systemColumnsWithDefault, o)
@@ -715,7 +513,7 @@ func (o *System) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		systemUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single System record with an executor.
@@ -723,10 +521,6 @@ func (o *System) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 func (o *System) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no System provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), systemPrimaryKeyMapping)
@@ -745,10 +539,6 @@ func (o *System) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for systems")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -781,14 +571,6 @@ func (o SystemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 		return 0, nil
 	}
 
-	if len(systemBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), systemPrimaryKeyMapping)
@@ -811,14 +593,6 @@ func (o SystemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for systems")
-	}
-
-	if len(systemAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

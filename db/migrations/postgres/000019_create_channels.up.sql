@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS channels (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  name character varying(250) NOT NULL,
+  name varchar(250) NOT NULL,
   is_active boolean NOT NULL,
-  slug character varying(255) NOT NULL,
+  slug varchar(255) NOT NULL,
   currency text NOT NULL,
-  default_country character varying(5) NOT NULL
+  default_country varchar(5) NOT NULL
 );
 
 ALTER TABLE ONLY channels

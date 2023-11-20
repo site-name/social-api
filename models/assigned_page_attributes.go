@@ -122,8 +122,6 @@ type (
 	// AssignedPageAttributeSlice is an alias for a slice of pointers to AssignedPageAttribute.
 	// This should almost always be used instead of []AssignedPageAttribute.
 	AssignedPageAttributeSlice []*AssignedPageAttribute
-	// AssignedPageAttributeHook is the signature for custom AssignedPageAttribute hook methods
-	AssignedPageAttributeHook func(context.Context, boil.ContextExecutor, *AssignedPageAttribute) error
 
 	assignedPageAttributeQuery struct {
 		*queries.Query
@@ -151,179 +149,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var assignedPageAttributeAfterSelectHooks []AssignedPageAttributeHook
-
-var assignedPageAttributeBeforeInsertHooks []AssignedPageAttributeHook
-var assignedPageAttributeAfterInsertHooks []AssignedPageAttributeHook
-
-var assignedPageAttributeBeforeUpdateHooks []AssignedPageAttributeHook
-var assignedPageAttributeAfterUpdateHooks []AssignedPageAttributeHook
-
-var assignedPageAttributeBeforeDeleteHooks []AssignedPageAttributeHook
-var assignedPageAttributeAfterDeleteHooks []AssignedPageAttributeHook
-
-var assignedPageAttributeBeforeUpsertHooks []AssignedPageAttributeHook
-var assignedPageAttributeAfterUpsertHooks []AssignedPageAttributeHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AssignedPageAttribute) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AssignedPageAttribute) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AssignedPageAttribute) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AssignedPageAttribute) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AssignedPageAttribute) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AssignedPageAttribute) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AssignedPageAttribute) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AssignedPageAttribute) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AssignedPageAttribute) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range assignedPageAttributeAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAssignedPageAttributeHook registers your hook function for all future operations.
-func AddAssignedPageAttributeHook(hookPoint boil.HookPoint, assignedPageAttributeHook AssignedPageAttributeHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		assignedPageAttributeAfterSelectHooks = append(assignedPageAttributeAfterSelectHooks, assignedPageAttributeHook)
-	case boil.BeforeInsertHook:
-		assignedPageAttributeBeforeInsertHooks = append(assignedPageAttributeBeforeInsertHooks, assignedPageAttributeHook)
-	case boil.AfterInsertHook:
-		assignedPageAttributeAfterInsertHooks = append(assignedPageAttributeAfterInsertHooks, assignedPageAttributeHook)
-	case boil.BeforeUpdateHook:
-		assignedPageAttributeBeforeUpdateHooks = append(assignedPageAttributeBeforeUpdateHooks, assignedPageAttributeHook)
-	case boil.AfterUpdateHook:
-		assignedPageAttributeAfterUpdateHooks = append(assignedPageAttributeAfterUpdateHooks, assignedPageAttributeHook)
-	case boil.BeforeDeleteHook:
-		assignedPageAttributeBeforeDeleteHooks = append(assignedPageAttributeBeforeDeleteHooks, assignedPageAttributeHook)
-	case boil.AfterDeleteHook:
-		assignedPageAttributeAfterDeleteHooks = append(assignedPageAttributeAfterDeleteHooks, assignedPageAttributeHook)
-	case boil.BeforeUpsertHook:
-		assignedPageAttributeBeforeUpsertHooks = append(assignedPageAttributeBeforeUpsertHooks, assignedPageAttributeHook)
-	case boil.AfterUpsertHook:
-		assignedPageAttributeAfterUpsertHooks = append(assignedPageAttributeAfterUpsertHooks, assignedPageAttributeHook)
-	}
-}
-
 // One returns a single assignedPageAttribute record from the query.
 func (q assignedPageAttributeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AssignedPageAttribute, error) {
 	o := &AssignedPageAttribute{}
@@ -338,10 +163,6 @@ func (q assignedPageAttributeQuery) One(ctx context.Context, exec boil.ContextEx
 		return nil, errors.Wrap(err, "models: failed to execute a one query for assigned_page_attributes")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -352,14 +173,6 @@ func (q assignedPageAttributeQuery) All(ctx context.Context, exec boil.ContextEx
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AssignedPageAttribute slice")
-	}
-
-	if len(assignedPageAttributeAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -514,14 +327,6 @@ func (assignedPageAttributeL) LoadAssignment(ctx context.Context, e boil.Context
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for attribute_pages")
 	}
 
-	if len(attributePageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -634,14 +439,6 @@ func (assignedPageAttributeL) LoadPage(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pages")
 	}
 
-	if len(pageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -752,13 +549,6 @@ func (assignedPageAttributeL) LoadAssignmentAssignedPageAttributeValues(ctx cont
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for assigned_page_attribute_values")
 	}
 
-	if len(assignedPageAttributeValueAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.AssignmentAssignedPageAttributeValues = resultSlice
 		for _, foreign := range resultSlice {
@@ -967,10 +757,6 @@ func FindAssignedPageAttribute(ctx context.Context, exec boil.ContextExecutor, i
 		return nil, errors.Wrap(err, "models: unable to select from assigned_page_attributes")
 	}
 
-	if err = assignedPageAttributeObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return assignedPageAttributeObj, err
-	}
-
 	return assignedPageAttributeObj, nil
 }
 
@@ -982,10 +768,6 @@ func (o *AssignedPageAttribute) Insert(ctx context.Context, exec boil.ContextExe
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(assignedPageAttributeColumnsWithDefault, o)
 
@@ -1050,7 +832,7 @@ func (o *AssignedPageAttribute) Insert(ctx context.Context, exec boil.ContextExe
 		assignedPageAttributeInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AssignedPageAttribute.
@@ -1058,9 +840,6 @@ func (o *AssignedPageAttribute) Insert(ctx context.Context, exec boil.ContextExe
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *AssignedPageAttribute) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	assignedPageAttributeUpdateCacheMut.RLock()
 	cache, cached := assignedPageAttributeUpdateCache[key]
@@ -1109,7 +888,7 @@ func (o *AssignedPageAttribute) Update(ctx context.Context, exec boil.ContextExe
 		assignedPageAttributeUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1182,10 +961,6 @@ func (o AssignedPageAttributeSlice) UpdateAll(ctx context.Context, exec boil.Con
 func (o *AssignedPageAttribute) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no assigned_page_attributes provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(assignedPageAttributeColumnsWithDefault, o)
@@ -1290,7 +1065,7 @@ func (o *AssignedPageAttribute) Upsert(ctx context.Context, exec boil.ContextExe
 		assignedPageAttributeUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AssignedPageAttribute record with an executor.
@@ -1298,10 +1073,6 @@ func (o *AssignedPageAttribute) Upsert(ctx context.Context, exec boil.ContextExe
 func (o *AssignedPageAttribute) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AssignedPageAttribute provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), assignedPageAttributePrimaryKeyMapping)
@@ -1320,10 +1091,6 @@ func (o *AssignedPageAttribute) Delete(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for assigned_page_attributes")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1356,14 +1123,6 @@ func (o AssignedPageAttributeSlice) DeleteAll(ctx context.Context, exec boil.Con
 		return 0, nil
 	}
 
-	if len(assignedPageAttributeBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), assignedPageAttributePrimaryKeyMapping)
@@ -1386,14 +1145,6 @@ func (o AssignedPageAttributeSlice) DeleteAll(ctx context.Context, exec boil.Con
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for assigned_page_attributes")
-	}
-
-	if len(assignedPageAttributeAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

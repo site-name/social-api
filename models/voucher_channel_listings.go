@@ -141,8 +141,6 @@ type (
 	// VoucherChannelListingSlice is an alias for a slice of pointers to VoucherChannelListing.
 	// This should almost always be used instead of []VoucherChannelListing.
 	VoucherChannelListingSlice []*VoucherChannelListing
-	// VoucherChannelListingHook is the signature for custom VoucherChannelListing hook methods
-	VoucherChannelListingHook func(context.Context, boil.ContextExecutor, *VoucherChannelListing) error
 
 	voucherChannelListingQuery struct {
 		*queries.Query
@@ -170,179 +168,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var voucherChannelListingAfterSelectHooks []VoucherChannelListingHook
-
-var voucherChannelListingBeforeInsertHooks []VoucherChannelListingHook
-var voucherChannelListingAfterInsertHooks []VoucherChannelListingHook
-
-var voucherChannelListingBeforeUpdateHooks []VoucherChannelListingHook
-var voucherChannelListingAfterUpdateHooks []VoucherChannelListingHook
-
-var voucherChannelListingBeforeDeleteHooks []VoucherChannelListingHook
-var voucherChannelListingAfterDeleteHooks []VoucherChannelListingHook
-
-var voucherChannelListingBeforeUpsertHooks []VoucherChannelListingHook
-var voucherChannelListingAfterUpsertHooks []VoucherChannelListingHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *VoucherChannelListing) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *VoucherChannelListing) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *VoucherChannelListing) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *VoucherChannelListing) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *VoucherChannelListing) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *VoucherChannelListing) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *VoucherChannelListing) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *VoucherChannelListing) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *VoucherChannelListing) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range voucherChannelListingAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddVoucherChannelListingHook registers your hook function for all future operations.
-func AddVoucherChannelListingHook(hookPoint boil.HookPoint, voucherChannelListingHook VoucherChannelListingHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		voucherChannelListingAfterSelectHooks = append(voucherChannelListingAfterSelectHooks, voucherChannelListingHook)
-	case boil.BeforeInsertHook:
-		voucherChannelListingBeforeInsertHooks = append(voucherChannelListingBeforeInsertHooks, voucherChannelListingHook)
-	case boil.AfterInsertHook:
-		voucherChannelListingAfterInsertHooks = append(voucherChannelListingAfterInsertHooks, voucherChannelListingHook)
-	case boil.BeforeUpdateHook:
-		voucherChannelListingBeforeUpdateHooks = append(voucherChannelListingBeforeUpdateHooks, voucherChannelListingHook)
-	case boil.AfterUpdateHook:
-		voucherChannelListingAfterUpdateHooks = append(voucherChannelListingAfterUpdateHooks, voucherChannelListingHook)
-	case boil.BeforeDeleteHook:
-		voucherChannelListingBeforeDeleteHooks = append(voucherChannelListingBeforeDeleteHooks, voucherChannelListingHook)
-	case boil.AfterDeleteHook:
-		voucherChannelListingAfterDeleteHooks = append(voucherChannelListingAfterDeleteHooks, voucherChannelListingHook)
-	case boil.BeforeUpsertHook:
-		voucherChannelListingBeforeUpsertHooks = append(voucherChannelListingBeforeUpsertHooks, voucherChannelListingHook)
-	case boil.AfterUpsertHook:
-		voucherChannelListingAfterUpsertHooks = append(voucherChannelListingAfterUpsertHooks, voucherChannelListingHook)
-	}
-}
-
 // One returns a single voucherChannelListing record from the query.
 func (q voucherChannelListingQuery) One(ctx context.Context, exec boil.ContextExecutor) (*VoucherChannelListing, error) {
 	o := &VoucherChannelListing{}
@@ -357,10 +182,6 @@ func (q voucherChannelListingQuery) One(ctx context.Context, exec boil.ContextEx
 		return nil, errors.Wrap(err, "models: failed to execute a one query for voucher_channel_listings")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -371,14 +192,6 @@ func (q voucherChannelListingQuery) All(ctx context.Context, exec boil.ContextEx
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to VoucherChannelListing slice")
-	}
-
-	if len(voucherChannelListingAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -519,14 +332,6 @@ func (voucherChannelListingL) LoadChannel(ctx context.Context, e boil.ContextExe
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
 	}
 
-	if len(channelAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -637,14 +442,6 @@ func (voucherChannelListingL) LoadVoucher(ctx context.Context, e boil.ContextExe
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for vouchers")
-	}
-
-	if len(voucherAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -805,10 +602,6 @@ func FindVoucherChannelListing(ctx context.Context, exec boil.ContextExecutor, i
 		return nil, errors.Wrap(err, "models: unable to select from voucher_channel_listings")
 	}
 
-	if err = voucherChannelListingObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return voucherChannelListingObj, err
-	}
-
 	return voucherChannelListingObj, nil
 }
 
@@ -820,10 +613,6 @@ func (o *VoucherChannelListing) Insert(ctx context.Context, exec boil.ContextExe
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherChannelListingColumnsWithDefault, o)
 
@@ -888,7 +677,7 @@ func (o *VoucherChannelListing) Insert(ctx context.Context, exec boil.ContextExe
 		voucherChannelListingInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the VoucherChannelListing.
@@ -896,9 +685,6 @@ func (o *VoucherChannelListing) Insert(ctx context.Context, exec boil.ContextExe
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *VoucherChannelListing) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	voucherChannelListingUpdateCacheMut.RLock()
 	cache, cached := voucherChannelListingUpdateCache[key]
@@ -947,7 +733,7 @@ func (o *VoucherChannelListing) Update(ctx context.Context, exec boil.ContextExe
 		voucherChannelListingUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1020,10 +806,6 @@ func (o VoucherChannelListingSlice) UpdateAll(ctx context.Context, exec boil.Con
 func (o *VoucherChannelListing) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no voucher_channel_listings provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(voucherChannelListingColumnsWithDefault, o)
@@ -1128,7 +910,7 @@ func (o *VoucherChannelListing) Upsert(ctx context.Context, exec boil.ContextExe
 		voucherChannelListingUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single VoucherChannelListing record with an executor.
@@ -1136,10 +918,6 @@ func (o *VoucherChannelListing) Upsert(ctx context.Context, exec boil.ContextExe
 func (o *VoucherChannelListing) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no VoucherChannelListing provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), voucherChannelListingPrimaryKeyMapping)
@@ -1158,10 +936,6 @@ func (o *VoucherChannelListing) Delete(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for voucher_channel_listings")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1194,14 +968,6 @@ func (o VoucherChannelListingSlice) DeleteAll(ctx context.Context, exec boil.Con
 		return 0, nil
 	}
 
-	if len(voucherChannelListingBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), voucherChannelListingPrimaryKeyMapping)
@@ -1224,14 +990,6 @@ func (o VoucherChannelListingSlice) DeleteAll(ctx context.Context, exec boil.Con
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for voucher_channel_listings")
-	}
-
-	if len(voucherChannelListingAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

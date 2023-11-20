@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS open_exchange_rates (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  to_currency character varying(3) NOT NULL,
+  to_currency varchar(3) NOT NULL,
   rate double precision
 );
 

@@ -120,8 +120,6 @@ type (
 	// PluginConfigurationSlice is an alias for a slice of pointers to PluginConfiguration.
 	// This should almost always be used instead of []PluginConfiguration.
 	PluginConfigurationSlice []*PluginConfiguration
-	// PluginConfigurationHook is the signature for custom PluginConfiguration hook methods
-	PluginConfigurationHook func(context.Context, boil.ContextExecutor, *PluginConfiguration) error
 
 	pluginConfigurationQuery struct {
 		*queries.Query
@@ -149,179 +147,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var pluginConfigurationAfterSelectHooks []PluginConfigurationHook
-
-var pluginConfigurationBeforeInsertHooks []PluginConfigurationHook
-var pluginConfigurationAfterInsertHooks []PluginConfigurationHook
-
-var pluginConfigurationBeforeUpdateHooks []PluginConfigurationHook
-var pluginConfigurationAfterUpdateHooks []PluginConfigurationHook
-
-var pluginConfigurationBeforeDeleteHooks []PluginConfigurationHook
-var pluginConfigurationAfterDeleteHooks []PluginConfigurationHook
-
-var pluginConfigurationBeforeUpsertHooks []PluginConfigurationHook
-var pluginConfigurationAfterUpsertHooks []PluginConfigurationHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *PluginConfiguration) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *PluginConfiguration) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *PluginConfiguration) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *PluginConfiguration) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *PluginConfiguration) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *PluginConfiguration) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *PluginConfiguration) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *PluginConfiguration) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *PluginConfiguration) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pluginConfigurationAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPluginConfigurationHook registers your hook function for all future operations.
-func AddPluginConfigurationHook(hookPoint boil.HookPoint, pluginConfigurationHook PluginConfigurationHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		pluginConfigurationAfterSelectHooks = append(pluginConfigurationAfterSelectHooks, pluginConfigurationHook)
-	case boil.BeforeInsertHook:
-		pluginConfigurationBeforeInsertHooks = append(pluginConfigurationBeforeInsertHooks, pluginConfigurationHook)
-	case boil.AfterInsertHook:
-		pluginConfigurationAfterInsertHooks = append(pluginConfigurationAfterInsertHooks, pluginConfigurationHook)
-	case boil.BeforeUpdateHook:
-		pluginConfigurationBeforeUpdateHooks = append(pluginConfigurationBeforeUpdateHooks, pluginConfigurationHook)
-	case boil.AfterUpdateHook:
-		pluginConfigurationAfterUpdateHooks = append(pluginConfigurationAfterUpdateHooks, pluginConfigurationHook)
-	case boil.BeforeDeleteHook:
-		pluginConfigurationBeforeDeleteHooks = append(pluginConfigurationBeforeDeleteHooks, pluginConfigurationHook)
-	case boil.AfterDeleteHook:
-		pluginConfigurationAfterDeleteHooks = append(pluginConfigurationAfterDeleteHooks, pluginConfigurationHook)
-	case boil.BeforeUpsertHook:
-		pluginConfigurationBeforeUpsertHooks = append(pluginConfigurationBeforeUpsertHooks, pluginConfigurationHook)
-	case boil.AfterUpsertHook:
-		pluginConfigurationAfterUpsertHooks = append(pluginConfigurationAfterUpsertHooks, pluginConfigurationHook)
-	}
-}
-
 // One returns a single pluginConfiguration record from the query.
 func (q pluginConfigurationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PluginConfiguration, error) {
 	o := &PluginConfiguration{}
@@ -336,10 +161,6 @@ func (q pluginConfigurationQuery) One(ctx context.Context, exec boil.ContextExec
 		return nil, errors.Wrap(err, "models: failed to execute a one query for plugin_configurations")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -350,14 +171,6 @@ func (q pluginConfigurationQuery) All(ctx context.Context, exec boil.ContextExec
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to PluginConfiguration slice")
-	}
-
-	if len(pluginConfigurationAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -428,10 +241,6 @@ func FindPluginConfiguration(ctx context.Context, exec boil.ContextExecutor, iD 
 		return nil, errors.Wrap(err, "models: unable to select from plugin_configurations")
 	}
 
-	if err = pluginConfigurationObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return pluginConfigurationObj, err
-	}
-
 	return pluginConfigurationObj, nil
 }
 
@@ -443,10 +252,6 @@ func (o *PluginConfiguration) Insert(ctx context.Context, exec boil.ContextExecu
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pluginConfigurationColumnsWithDefault, o)
 
@@ -511,7 +316,7 @@ func (o *PluginConfiguration) Insert(ctx context.Context, exec boil.ContextExecu
 		pluginConfigurationInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the PluginConfiguration.
@@ -519,9 +324,6 @@ func (o *PluginConfiguration) Insert(ctx context.Context, exec boil.ContextExecu
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *PluginConfiguration) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	pluginConfigurationUpdateCacheMut.RLock()
 	cache, cached := pluginConfigurationUpdateCache[key]
@@ -570,7 +372,7 @@ func (o *PluginConfiguration) Update(ctx context.Context, exec boil.ContextExecu
 		pluginConfigurationUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -643,10 +445,6 @@ func (o PluginConfigurationSlice) UpdateAll(ctx context.Context, exec boil.Conte
 func (o *PluginConfiguration) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no plugin_configurations provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pluginConfigurationColumnsWithDefault, o)
@@ -751,7 +549,7 @@ func (o *PluginConfiguration) Upsert(ctx context.Context, exec boil.ContextExecu
 		pluginConfigurationUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single PluginConfiguration record with an executor.
@@ -759,10 +557,6 @@ func (o *PluginConfiguration) Upsert(ctx context.Context, exec boil.ContextExecu
 func (o *PluginConfiguration) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no PluginConfiguration provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pluginConfigurationPrimaryKeyMapping)
@@ -781,10 +575,6 @@ func (o *PluginConfiguration) Delete(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for plugin_configurations")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -817,14 +607,6 @@ func (o PluginConfigurationSlice) DeleteAll(ctx context.Context, exec boil.Conte
 		return 0, nil
 	}
 
-	if len(pluginConfigurationBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), pluginConfigurationPrimaryKeyMapping)
@@ -847,14 +629,6 @@ func (o PluginConfigurationSlice) DeleteAll(ctx context.Context, exec boil.Conte
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for plugin_configurations")
-	}
-
-	if len(pluginConfigurationAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -99,8 +99,6 @@ type (
 	// TokenSlice is an alias for a slice of pointers to Token.
 	// This should almost always be used instead of []Token.
 	TokenSlice []*Token
-	// TokenHook is the signature for custom Token hook methods
-	TokenHook func(context.Context, boil.ContextExecutor, *Token) error
 
 	tokenQuery struct {
 		*queries.Query
@@ -128,179 +126,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var tokenAfterSelectHooks []TokenHook
-
-var tokenBeforeInsertHooks []TokenHook
-var tokenAfterInsertHooks []TokenHook
-
-var tokenBeforeUpdateHooks []TokenHook
-var tokenAfterUpdateHooks []TokenHook
-
-var tokenBeforeDeleteHooks []TokenHook
-var tokenAfterDeleteHooks []TokenHook
-
-var tokenBeforeUpsertHooks []TokenHook
-var tokenAfterUpsertHooks []TokenHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Token) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Token) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Token) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Token) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Token) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Token) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Token) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Token) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Token) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range tokenAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddTokenHook registers your hook function for all future operations.
-func AddTokenHook(hookPoint boil.HookPoint, tokenHook TokenHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		tokenAfterSelectHooks = append(tokenAfterSelectHooks, tokenHook)
-	case boil.BeforeInsertHook:
-		tokenBeforeInsertHooks = append(tokenBeforeInsertHooks, tokenHook)
-	case boil.AfterInsertHook:
-		tokenAfterInsertHooks = append(tokenAfterInsertHooks, tokenHook)
-	case boil.BeforeUpdateHook:
-		tokenBeforeUpdateHooks = append(tokenBeforeUpdateHooks, tokenHook)
-	case boil.AfterUpdateHook:
-		tokenAfterUpdateHooks = append(tokenAfterUpdateHooks, tokenHook)
-	case boil.BeforeDeleteHook:
-		tokenBeforeDeleteHooks = append(tokenBeforeDeleteHooks, tokenHook)
-	case boil.AfterDeleteHook:
-		tokenAfterDeleteHooks = append(tokenAfterDeleteHooks, tokenHook)
-	case boil.BeforeUpsertHook:
-		tokenBeforeUpsertHooks = append(tokenBeforeUpsertHooks, tokenHook)
-	case boil.AfterUpsertHook:
-		tokenAfterUpsertHooks = append(tokenAfterUpsertHooks, tokenHook)
-	}
-}
-
 // One returns a single token record from the query.
 func (q tokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Token, error) {
 	o := &Token{}
@@ -315,10 +140,6 @@ func (q tokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Token,
 		return nil, errors.Wrap(err, "models: failed to execute a one query for tokens")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -329,14 +150,6 @@ func (q tokenQuery) All(ctx context.Context, exec boil.ContextExecutor) (TokenSl
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Token slice")
-	}
-
-	if len(tokenAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -407,10 +220,6 @@ func FindToken(ctx context.Context, exec boil.ContextExecutor, token string, sel
 		return nil, errors.Wrap(err, "models: unable to select from tokens")
 	}
 
-	if err = tokenObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return tokenObj, err
-	}
-
 	return tokenObj, nil
 }
 
@@ -422,10 +231,6 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(tokenColumnsWithDefault, o)
 
@@ -490,7 +295,7 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		tokenInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Token.
@@ -498,9 +303,6 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Token) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	tokenUpdateCacheMut.RLock()
 	cache, cached := tokenUpdateCache[key]
@@ -549,7 +351,7 @@ func (o *Token) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 		tokenUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -622,10 +424,6 @@ func (o TokenSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no tokens provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(tokenColumnsWithDefault, o)
@@ -730,7 +528,7 @@ func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 		tokenUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Token record with an executor.
@@ -738,10 +536,6 @@ func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 func (o *Token) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Token provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), tokenPrimaryKeyMapping)
@@ -760,10 +554,6 @@ func (o *Token) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for tokens")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -796,14 +586,6 @@ func (o TokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 		return 0, nil
 	}
 
-	if len(tokenBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), tokenPrimaryKeyMapping)
@@ -826,14 +608,6 @@ func (o TokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for tokens")
-	}
-
-	if len(tokenAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

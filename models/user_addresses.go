@@ -112,8 +112,6 @@ type (
 	// UserAddressSlice is an alias for a slice of pointers to UserAddress.
 	// This should almost always be used instead of []UserAddress.
 	UserAddressSlice []*UserAddress
-	// UserAddressHook is the signature for custom UserAddress hook methods
-	UserAddressHook func(context.Context, boil.ContextExecutor, *UserAddress) error
 
 	userAddressQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var userAddressAfterSelectHooks []UserAddressHook
-
-var userAddressBeforeInsertHooks []UserAddressHook
-var userAddressAfterInsertHooks []UserAddressHook
-
-var userAddressBeforeUpdateHooks []UserAddressHook
-var userAddressAfterUpdateHooks []UserAddressHook
-
-var userAddressBeforeDeleteHooks []UserAddressHook
-var userAddressAfterDeleteHooks []UserAddressHook
-
-var userAddressBeforeUpsertHooks []UserAddressHook
-var userAddressAfterUpsertHooks []UserAddressHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *UserAddress) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *UserAddress) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *UserAddress) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *UserAddress) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *UserAddress) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *UserAddress) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *UserAddress) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *UserAddress) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *UserAddress) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userAddressAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddUserAddressHook registers your hook function for all future operations.
-func AddUserAddressHook(hookPoint boil.HookPoint, userAddressHook UserAddressHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		userAddressAfterSelectHooks = append(userAddressAfterSelectHooks, userAddressHook)
-	case boil.BeforeInsertHook:
-		userAddressBeforeInsertHooks = append(userAddressBeforeInsertHooks, userAddressHook)
-	case boil.AfterInsertHook:
-		userAddressAfterInsertHooks = append(userAddressAfterInsertHooks, userAddressHook)
-	case boil.BeforeUpdateHook:
-		userAddressBeforeUpdateHooks = append(userAddressBeforeUpdateHooks, userAddressHook)
-	case boil.AfterUpdateHook:
-		userAddressAfterUpdateHooks = append(userAddressAfterUpdateHooks, userAddressHook)
-	case boil.BeforeDeleteHook:
-		userAddressBeforeDeleteHooks = append(userAddressBeforeDeleteHooks, userAddressHook)
-	case boil.AfterDeleteHook:
-		userAddressAfterDeleteHooks = append(userAddressAfterDeleteHooks, userAddressHook)
-	case boil.BeforeUpsertHook:
-		userAddressBeforeUpsertHooks = append(userAddressBeforeUpsertHooks, userAddressHook)
-	case boil.AfterUpsertHook:
-		userAddressAfterUpsertHooks = append(userAddressAfterUpsertHooks, userAddressHook)
-	}
-}
-
 // One returns a single userAddress record from the query.
 func (q userAddressQuery) One(ctx context.Context, exec boil.ContextExecutor) (*UserAddress, error) {
 	o := &UserAddress{}
@@ -328,10 +153,6 @@ func (q userAddressQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 		return nil, errors.Wrap(err, "models: failed to execute a one query for user_addresses")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q userAddressQuery) All(ctx context.Context, exec boil.ContextExecutor) (U
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to UserAddress slice")
-	}
-
-	if len(userAddressAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (userAddressL) LoadAddress(ctx context.Context, e boil.ContextExecutor, sin
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
 	}
 
-	if len(addressAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (userAddressL) LoadUser(ctx context.Context, e boil.ContextExecutor, singul
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindUserAddress(ctx context.Context, exec boil.ContextExecutor, iD string, 
 		return nil, errors.Wrap(err, "models: unable to select from user_addresses")
 	}
 
-	if err = userAddressObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return userAddressObj, err
-	}
-
 	return userAddressObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *UserAddress) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(userAddressColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *UserAddress) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		userAddressInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the UserAddress.
@@ -867,9 +656,6 @@ func (o *UserAddress) Insert(ctx context.Context, exec boil.ContextExecutor, col
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *UserAddress) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	userAddressUpdateCacheMut.RLock()
 	cache, cached := userAddressUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *UserAddress) Update(ctx context.Context, exec boil.ContextExecutor, col
 		userAddressUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o UserAddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 func (o *UserAddress) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no user_addresses provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(userAddressColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *UserAddress) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		userAddressUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single UserAddress record with an executor.
@@ -1107,10 +889,6 @@ func (o *UserAddress) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 func (o *UserAddress) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no UserAddress provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), userAddressPrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *UserAddress) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for user_addresses")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o UserAddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 		return 0, nil
 	}
 
-	if len(userAddressBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), userAddressPrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o UserAddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for user_addresses")
-	}
-
-	if len(userAddressAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

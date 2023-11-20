@@ -119,8 +119,6 @@ type (
 	// SaleCollectionSlice is an alias for a slice of pointers to SaleCollection.
 	// This should almost always be used instead of []SaleCollection.
 	SaleCollectionSlice []*SaleCollection
-	// SaleCollectionHook is the signature for custom SaleCollection hook methods
-	SaleCollectionHook func(context.Context, boil.ContextExecutor, *SaleCollection) error
 
 	saleCollectionQuery struct {
 		*queries.Query
@@ -148,179 +146,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var saleCollectionAfterSelectHooks []SaleCollectionHook
-
-var saleCollectionBeforeInsertHooks []SaleCollectionHook
-var saleCollectionAfterInsertHooks []SaleCollectionHook
-
-var saleCollectionBeforeUpdateHooks []SaleCollectionHook
-var saleCollectionAfterUpdateHooks []SaleCollectionHook
-
-var saleCollectionBeforeDeleteHooks []SaleCollectionHook
-var saleCollectionAfterDeleteHooks []SaleCollectionHook
-
-var saleCollectionBeforeUpsertHooks []SaleCollectionHook
-var saleCollectionAfterUpsertHooks []SaleCollectionHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *SaleCollection) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *SaleCollection) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *SaleCollection) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *SaleCollection) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *SaleCollection) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *SaleCollection) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *SaleCollection) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *SaleCollection) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *SaleCollection) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range saleCollectionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddSaleCollectionHook registers your hook function for all future operations.
-func AddSaleCollectionHook(hookPoint boil.HookPoint, saleCollectionHook SaleCollectionHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		saleCollectionAfterSelectHooks = append(saleCollectionAfterSelectHooks, saleCollectionHook)
-	case boil.BeforeInsertHook:
-		saleCollectionBeforeInsertHooks = append(saleCollectionBeforeInsertHooks, saleCollectionHook)
-	case boil.AfterInsertHook:
-		saleCollectionAfterInsertHooks = append(saleCollectionAfterInsertHooks, saleCollectionHook)
-	case boil.BeforeUpdateHook:
-		saleCollectionBeforeUpdateHooks = append(saleCollectionBeforeUpdateHooks, saleCollectionHook)
-	case boil.AfterUpdateHook:
-		saleCollectionAfterUpdateHooks = append(saleCollectionAfterUpdateHooks, saleCollectionHook)
-	case boil.BeforeDeleteHook:
-		saleCollectionBeforeDeleteHooks = append(saleCollectionBeforeDeleteHooks, saleCollectionHook)
-	case boil.AfterDeleteHook:
-		saleCollectionAfterDeleteHooks = append(saleCollectionAfterDeleteHooks, saleCollectionHook)
-	case boil.BeforeUpsertHook:
-		saleCollectionBeforeUpsertHooks = append(saleCollectionBeforeUpsertHooks, saleCollectionHook)
-	case boil.AfterUpsertHook:
-		saleCollectionAfterUpsertHooks = append(saleCollectionAfterUpsertHooks, saleCollectionHook)
-	}
-}
-
 // One returns a single saleCollection record from the query.
 func (q saleCollectionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*SaleCollection, error) {
 	o := &SaleCollection{}
@@ -335,10 +160,6 @@ func (q saleCollectionQuery) One(ctx context.Context, exec boil.ContextExecutor)
 		return nil, errors.Wrap(err, "models: failed to execute a one query for sale_collections")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -349,14 +170,6 @@ func (q saleCollectionQuery) All(ctx context.Context, exec boil.ContextExecutor)
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to SaleCollection slice")
-	}
-
-	if len(saleCollectionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -497,14 +310,6 @@ func (saleCollectionL) LoadCollection(ctx context.Context, e boil.ContextExecuto
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for collections")
 	}
 
-	if len(collectionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -615,14 +420,6 @@ func (saleCollectionL) LoadSale(ctx context.Context, e boil.ContextExecutor, sin
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for sales")
-	}
-
-	if len(saleAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -783,10 +580,6 @@ func FindSaleCollection(ctx context.Context, exec boil.ContextExecutor, iD strin
 		return nil, errors.Wrap(err, "models: unable to select from sale_collections")
 	}
 
-	if err = saleCollectionObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return saleCollectionObj, err
-	}
-
 	return saleCollectionObj, nil
 }
 
@@ -798,10 +591,6 @@ func (o *SaleCollection) Insert(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(saleCollectionColumnsWithDefault, o)
 
@@ -866,7 +655,7 @@ func (o *SaleCollection) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		saleCollectionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the SaleCollection.
@@ -874,9 +663,6 @@ func (o *SaleCollection) Insert(ctx context.Context, exec boil.ContextExecutor, 
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *SaleCollection) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	saleCollectionUpdateCacheMut.RLock()
 	cache, cached := saleCollectionUpdateCache[key]
@@ -925,7 +711,7 @@ func (o *SaleCollection) Update(ctx context.Context, exec boil.ContextExecutor, 
 		saleCollectionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -998,10 +784,6 @@ func (o SaleCollectionSlice) UpdateAll(ctx context.Context, exec boil.ContextExe
 func (o *SaleCollection) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no sale_collections provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(saleCollectionColumnsWithDefault, o)
@@ -1106,7 +888,7 @@ func (o *SaleCollection) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		saleCollectionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single SaleCollection record with an executor.
@@ -1114,10 +896,6 @@ func (o *SaleCollection) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 func (o *SaleCollection) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no SaleCollection provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), saleCollectionPrimaryKeyMapping)
@@ -1136,10 +914,6 @@ func (o *SaleCollection) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for sale_collections")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1172,14 +946,6 @@ func (o SaleCollectionSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 		return 0, nil
 	}
 
-	if len(saleCollectionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), saleCollectionPrimaryKeyMapping)
@@ -1202,14 +968,6 @@ func (o SaleCollectionSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for sale_collections")
-	}
-
-	if len(saleCollectionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

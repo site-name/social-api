@@ -112,8 +112,6 @@ type (
 	// VariantMediumSlice is an alias for a slice of pointers to VariantMedium.
 	// This should almost always be used instead of []VariantMedium.
 	VariantMediumSlice []*VariantMedium
-	// VariantMediumHook is the signature for custom VariantMedium hook methods
-	VariantMediumHook func(context.Context, boil.ContextExecutor, *VariantMedium) error
 
 	variantMediumQuery struct {
 		*queries.Query
@@ -141,179 +139,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var variantMediumAfterSelectHooks []VariantMediumHook
-
-var variantMediumBeforeInsertHooks []VariantMediumHook
-var variantMediumAfterInsertHooks []VariantMediumHook
-
-var variantMediumBeforeUpdateHooks []VariantMediumHook
-var variantMediumAfterUpdateHooks []VariantMediumHook
-
-var variantMediumBeforeDeleteHooks []VariantMediumHook
-var variantMediumAfterDeleteHooks []VariantMediumHook
-
-var variantMediumBeforeUpsertHooks []VariantMediumHook
-var variantMediumAfterUpsertHooks []VariantMediumHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *VariantMedium) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *VariantMedium) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *VariantMedium) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *VariantMedium) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *VariantMedium) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *VariantMedium) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *VariantMedium) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *VariantMedium) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *VariantMedium) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range variantMediumAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddVariantMediumHook registers your hook function for all future operations.
-func AddVariantMediumHook(hookPoint boil.HookPoint, variantMediumHook VariantMediumHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		variantMediumAfterSelectHooks = append(variantMediumAfterSelectHooks, variantMediumHook)
-	case boil.BeforeInsertHook:
-		variantMediumBeforeInsertHooks = append(variantMediumBeforeInsertHooks, variantMediumHook)
-	case boil.AfterInsertHook:
-		variantMediumAfterInsertHooks = append(variantMediumAfterInsertHooks, variantMediumHook)
-	case boil.BeforeUpdateHook:
-		variantMediumBeforeUpdateHooks = append(variantMediumBeforeUpdateHooks, variantMediumHook)
-	case boil.AfterUpdateHook:
-		variantMediumAfterUpdateHooks = append(variantMediumAfterUpdateHooks, variantMediumHook)
-	case boil.BeforeDeleteHook:
-		variantMediumBeforeDeleteHooks = append(variantMediumBeforeDeleteHooks, variantMediumHook)
-	case boil.AfterDeleteHook:
-		variantMediumAfterDeleteHooks = append(variantMediumAfterDeleteHooks, variantMediumHook)
-	case boil.BeforeUpsertHook:
-		variantMediumBeforeUpsertHooks = append(variantMediumBeforeUpsertHooks, variantMediumHook)
-	case boil.AfterUpsertHook:
-		variantMediumAfterUpsertHooks = append(variantMediumAfterUpsertHooks, variantMediumHook)
-	}
-}
-
 // One returns a single variantMedium record from the query.
 func (q variantMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) (*VariantMedium, error) {
 	o := &VariantMedium{}
@@ -328,10 +153,6 @@ func (q variantMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 		return nil, errors.Wrap(err, "models: failed to execute a one query for variant_media")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -342,14 +163,6 @@ func (q variantMediumQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to VariantMedium slice")
-	}
-
-	if len(variantMediumAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -490,14 +303,6 @@ func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_media")
 	}
 
-	if len(productMediumAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -608,14 +413,6 @@ func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, s
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for product_variants")
-	}
-
-	if len(productVariantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -776,10 +573,6 @@ func FindVariantMedium(ctx context.Context, exec boil.ContextExecutor, iD string
 		return nil, errors.Wrap(err, "models: unable to select from variant_media")
 	}
 
-	if err = variantMediumObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return variantMediumObj, err
-	}
-
 	return variantMediumObj, nil
 }
 
@@ -791,10 +584,6 @@ func (o *VariantMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(variantMediumColumnsWithDefault, o)
 
@@ -859,7 +648,7 @@ func (o *VariantMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 		variantMediumInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the VariantMedium.
@@ -867,9 +656,6 @@ func (o *VariantMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *VariantMedium) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	variantMediumUpdateCacheMut.RLock()
 	cache, cached := variantMediumUpdateCache[key]
@@ -918,7 +704,7 @@ func (o *VariantMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 		variantMediumUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -991,10 +777,6 @@ func (o VariantMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 func (o *VariantMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no variant_media provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(variantMediumColumnsWithDefault, o)
@@ -1099,7 +881,7 @@ func (o *VariantMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		variantMediumUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single VariantMedium record with an executor.
@@ -1107,10 +889,6 @@ func (o *VariantMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 func (o *VariantMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no VariantMedium provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), variantMediumPrimaryKeyMapping)
@@ -1129,10 +907,6 @@ func (o *VariantMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for variant_media")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1165,14 +939,6 @@ func (o VariantMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 		return 0, nil
 	}
 
-	if len(variantMediumBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), variantMediumPrimaryKeyMapping)
@@ -1195,14 +961,6 @@ func (o VariantMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for variant_media")
-	}
-
-	if len(variantMediumAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

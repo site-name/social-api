@@ -351,8 +351,6 @@ type (
 	// CheckoutSlice is an alias for a slice of pointers to Checkout.
 	// This should almost always be used instead of []Checkout.
 	CheckoutSlice []*Checkout
-	// CheckoutHook is the signature for custom Checkout hook methods
-	CheckoutHook func(context.Context, boil.ContextExecutor, *Checkout) error
 
 	checkoutQuery struct {
 		*queries.Query
@@ -380,179 +378,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var checkoutAfterSelectHooks []CheckoutHook
-
-var checkoutBeforeInsertHooks []CheckoutHook
-var checkoutAfterInsertHooks []CheckoutHook
-
-var checkoutBeforeUpdateHooks []CheckoutHook
-var checkoutAfterUpdateHooks []CheckoutHook
-
-var checkoutBeforeDeleteHooks []CheckoutHook
-var checkoutAfterDeleteHooks []CheckoutHook
-
-var checkoutBeforeUpsertHooks []CheckoutHook
-var checkoutAfterUpsertHooks []CheckoutHook
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Checkout) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Checkout) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Checkout) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Checkout) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Checkout) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Checkout) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Checkout) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Checkout) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Checkout) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range checkoutAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddCheckoutHook registers your hook function for all future operations.
-func AddCheckoutHook(hookPoint boil.HookPoint, checkoutHook CheckoutHook) {
-	switch hookPoint {
-	case boil.AfterSelectHook:
-		checkoutAfterSelectHooks = append(checkoutAfterSelectHooks, checkoutHook)
-	case boil.BeforeInsertHook:
-		checkoutBeforeInsertHooks = append(checkoutBeforeInsertHooks, checkoutHook)
-	case boil.AfterInsertHook:
-		checkoutAfterInsertHooks = append(checkoutAfterInsertHooks, checkoutHook)
-	case boil.BeforeUpdateHook:
-		checkoutBeforeUpdateHooks = append(checkoutBeforeUpdateHooks, checkoutHook)
-	case boil.AfterUpdateHook:
-		checkoutAfterUpdateHooks = append(checkoutAfterUpdateHooks, checkoutHook)
-	case boil.BeforeDeleteHook:
-		checkoutBeforeDeleteHooks = append(checkoutBeforeDeleteHooks, checkoutHook)
-	case boil.AfterDeleteHook:
-		checkoutAfterDeleteHooks = append(checkoutAfterDeleteHooks, checkoutHook)
-	case boil.BeforeUpsertHook:
-		checkoutBeforeUpsertHooks = append(checkoutBeforeUpsertHooks, checkoutHook)
-	case boil.AfterUpsertHook:
-		checkoutAfterUpsertHooks = append(checkoutAfterUpsertHooks, checkoutHook)
-	}
-}
-
 // One returns a single checkout record from the query.
 func (q checkoutQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Checkout, error) {
 	o := &Checkout{}
@@ -567,10 +392,6 @@ func (q checkoutQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Che
 		return nil, errors.Wrap(err, "models: failed to execute a one query for checkouts")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -581,14 +402,6 @@ func (q checkoutQuery) All(ctx context.Context, exec boil.ContextExecutor) (Chec
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Checkout slice")
-	}
-
-	if len(checkoutAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -808,14 +621,6 @@ func (checkoutL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor,
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
 	}
 
-	if len(addressAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -926,14 +731,6 @@ func (checkoutL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singul
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for channels")
-	}
-
-	if len(channelAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1052,14 +849,6 @@ func (checkoutL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor,
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for shipping_methods")
 	}
 
-	if len(shippingMethodAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1174,14 +963,6 @@ func (checkoutL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -1300,14 +1081,6 @@ func (checkoutL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for warehouses")
 	}
 
-	if len(warehouseAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -1418,13 +1191,6 @@ func (checkoutL) LoadCheckoutLines(ctx context.Context, e boil.ContextExecutor, 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for checkout_lines")
 	}
 
-	if len(checkoutLineAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.CheckoutLines = resultSlice
 		for _, foreign := range resultSlice {
@@ -1532,13 +1298,6 @@ func (checkoutL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for giftcard_checkouts")
 	}
 
-	if len(giftcardCheckoutAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.GiftcardCheckouts = resultSlice
 		for _, foreign := range resultSlice {
@@ -1646,13 +1405,6 @@ func (checkoutL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singu
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for payments")
 	}
 
-	if len(paymentAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Payments = resultSlice
 		for _, foreign := range resultSlice {
@@ -2314,10 +2066,6 @@ func FindCheckout(ctx context.Context, exec boil.ContextExecutor, token string, 
 		return nil, errors.Wrap(err, "models: unable to select from checkouts")
 	}
 
-	if err = checkoutObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return checkoutObj, err
-	}
-
 	return checkoutObj, nil
 }
 
@@ -2329,10 +2077,6 @@ func (o *Checkout) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
 
 	nzDefaults := queries.NonZeroDefaultSet(checkoutColumnsWithDefault, o)
 
@@ -2397,7 +2141,7 @@ func (o *Checkout) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		checkoutInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Checkout.
@@ -2405,9 +2149,6 @@ func (o *Checkout) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Checkout) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	checkoutUpdateCacheMut.RLock()
 	cache, cached := checkoutUpdateCache[key]
@@ -2456,7 +2197,7 @@ func (o *Checkout) Update(ctx context.Context, exec boil.ContextExecutor, column
 		checkoutUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -2529,10 +2270,6 @@ func (o CheckoutSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 func (o *Checkout) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no checkouts provided for upsert")
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(checkoutColumnsWithDefault, o)
@@ -2637,7 +2374,7 @@ func (o *Checkout) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		checkoutUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Checkout record with an executor.
@@ -2645,10 +2382,6 @@ func (o *Checkout) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 func (o *Checkout) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Checkout provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), checkoutPrimaryKeyMapping)
@@ -2667,10 +2400,6 @@ func (o *Checkout) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for checkouts")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -2703,14 +2432,6 @@ func (o CheckoutSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 		return 0, nil
 	}
 
-	if len(checkoutBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), checkoutPrimaryKeyMapping)
@@ -2733,14 +2454,6 @@ func (o CheckoutSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for checkouts")
-	}
-
-	if len(checkoutAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil
