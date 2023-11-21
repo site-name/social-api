@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // GenerateDefaultConfig writes default config to outputFile.
 func GenerateDefaultConfig(outputFile *os.File) error {
-	defaultCfg := &model.Config{}
+	defaultCfg := &model_helper.Config{}
 	defaultCfg.SetDefaults()
 	if data, err := json.MarshalIndent(defaultCfg, "", "  "); err != nil {
 		return err

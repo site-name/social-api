@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,18 +18,18 @@ const (
 
 func MakeMigrationsList() []string {
 	return []string{
-		model.MigrationKeyAdvancedPermissionsPhase2,
+		model_helper.MigrationKeyAdvancedPermissionsPhase2,
 	}
 }
 
-func GetMigrationState(migration string, store store.Store) (string, *model.Job, *model.AppError) {
+func GetMigrationState(migration string, store store.Store) (string, *model.Job, *model_helper.AppError) {
 	if _, err := store.System().GetByName(migration); err == nil {
 		return MigrationStateCompleted, nil, nil
 	}
 
-	jobs, err := store.Job().GetAllByType(model.JobTypeMigrations)
+	jobs, err := store.Job().GetAllByType(model.JobtypeMigrations.String())
 	if err != nil {
-		return "", nil, model.NewAppError("GetMigrationState", "app.job.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return "", nil, model_helper.NewAppError("GetMigrationState", "app.job.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	for _, job := range jobs {
@@ -38,7 +39,7 @@ func GetMigrationState(migration string, store store.Store) (string, *model.Job,
 			}
 
 			switch job.Status {
-			case model.JobStatusInProgress, model.JobStatusPending:
+			case model.JobstatusInProgress, model.JobstatusPending:
 				return MigrationStateInProgress, job, nil
 			default:
 				return MigrationStateUnscheduled, job, nil

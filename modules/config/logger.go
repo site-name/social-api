@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
@@ -26,7 +26,7 @@ const (
 
 type fileLocationFunc func(string) string
 
-func MloggerConfigFromLoggerConfig(s *model.LogSettings, configSrc LogConfigSrc, getFileFunc fileLocationFunc) (slog.LoggerConfiguration, error) {
+func MloggerConfigFromLoggerConfig(s *model_helper.LogSettings, configSrc LogConfigSrc, getFileFunc fileLocationFunc) (slog.LoggerConfiguration, error) {
 	cfg := make(slog.LoggerConfiguration)
 
 	var targetCfg slog.TargetCfg
@@ -60,7 +60,7 @@ func MloggerConfigFromLoggerConfig(s *model.LogSettings, configSrc LogConfigSrc,
 	return cfg, nil
 }
 
-func MloggerConfigFromAuditConfig(auditSettings model.ExperimentalAuditSettings, configSrc LogConfigSrc) (slog.LoggerConfiguration, error) {
+func MloggerConfigFromAuditConfig(auditSettings model_helper.ExperimentalAuditSettings, configSrc LogConfigSrc) (slog.LoggerConfiguration, error) {
 	cfg := make(slog.LoggerConfiguration)
 
 	var targetCfg slog.TargetCfg
@@ -109,8 +109,8 @@ func GetNotificationsLogFileLocation(fileLocation string) string {
 	return filepath.Join(fileLocation, LogNotificationFilename)
 }
 
-func GetLogSettingsFromNotificationsLogSettings(notificationLogSettings *model.NotificationLogSettings) *model.LogSettings {
-	settings := &model.LogSettings{}
+func GetLogSettingsFromNotificationsLogSettings(notificationLogSettings *model_helper.NotificationLogSettings) *model_helper.LogSettings {
+	settings := &model_helper.LogSettings{}
 	settings.SetDefaults()
 	settings.ConsoleJson = notificationLogSettings.ConsoleJson
 	settings.ConsoleLevel = notificationLogSettings.ConsoleLevel

@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // MemoryStore implements the Store interface. It is meant primarily for testing.
@@ -14,14 +13,14 @@ type MemoryStore struct {
 	allowEnvironmentOverrides bool
 	validate                  bool
 	files                     map[string][]byte
-	savedConfig               *model.Config
+	savedConfig               *model_helper.Config
 }
 
 // MemoryStoreOptions makes configuration of the memory store explicit.
 type MemoryStoreOptions struct {
 	IgnoreEnvironmentOverrides bool
 	SkipValidation             bool
-	InitialConfig              *model.Config
+	InitialConfig              *model_helper.Config
 	InitialFiles               map[string][]byte
 }
 
@@ -34,7 +33,7 @@ func NewMemoryStore() (*MemoryStore, error) {
 func NewMemoryStoreWithOptions(options *MemoryStoreOptions) (*MemoryStore, error) {
 	savedConfig := options.InitialConfig
 	if savedConfig == nil {
-		savedConfig = &model.Config{}
+		savedConfig = &model_helper.Config{}
 		savedConfig.SetDefaults()
 	}
 
@@ -54,12 +53,12 @@ func NewMemoryStoreWithOptions(options *MemoryStoreOptions) (*MemoryStore, error
 }
 
 // Set replaces the current configuration in its entirety.
-func (ms *MemoryStore) Set(newCfg *model.Config) error {
+func (ms *MemoryStore) Set(newCfg *model_helper.Config) error {
 	return ms.persist(newCfg)
 }
 
 // persist copies the active config to the saved config.
-func (ms *MemoryStore) persist(cfg *model.Config) error {
+func (ms *MemoryStore) persist(cfg *model_helper.Config) error {
 	ms.savedConfig = cfg.Clone()
 
 	return nil

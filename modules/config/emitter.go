@@ -3,12 +3,12 @@ package config
 import (
 	"sync"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
 // Listener is a callback function invoked when the configuration changes.
-type Listener func(oldCfg, newCfg *model.Config)
+type Listener func(oldCfg, newCfg *model_helper.Config)
 
 // emitter enables threadsafe registration and broadcasting to configuration listeners
 type emitter struct {
@@ -17,7 +17,7 @@ type emitter struct {
 
 // AddListener adds a callback function to invoke when the configuration is modified.
 func (e *emitter) AddListener(listener Listener) string {
-	id := model.NewId()
+	id := model_helper.NewId()
 	e.listeners.Store(id, listener)
 	return id
 }
@@ -28,7 +28,7 @@ func (e *emitter) RemoveListener(id string) {
 }
 
 // invokeConfigListeners synchronously notifies all listeners about the configuration change.
-func (e *emitter) invokeConfigListeners(oldCfg, newCfg *model.Config) {
+func (e *emitter) invokeConfigListeners(oldCfg, newCfg *model_helper.Config) {
 	e.listeners.Range(func(key, value interface{}) bool {
 		listener := value.(Listener)
 		listener(oldCfg, newCfg)
@@ -43,7 +43,7 @@ type logSrcEmitter struct {
 
 // AddListener adds a callback function to invoke when the configuration is modified.
 func (e *logSrcEmitter) AddListener(listener LogSrcListener) string {
-	id := model.NewId()
+	id := model_helper.NewId()
 	e.listeners.Store(id, listener)
 	return id
 }

@@ -12,7 +12,7 @@ import (
 	// Load the Postgres driver
 	_ "github.com/lib/pq"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -156,7 +156,7 @@ func parseDSN(dsn string) (string, string, error) {
 }
 
 // Set replaces the current configuration in its entirety and updates the backing store.
-func (ds *DatabaseStore) Set(newCfg *model.Config) error {
+func (ds *DatabaseStore) Set(newCfg *model_helper.Config) error {
 	return ds.persist(newCfg)
 }
 
@@ -170,15 +170,15 @@ func (ds *DatabaseStore) checkLength(length int) error {
 }
 
 // persist writes the configuration to the configured database.
-func (ds *DatabaseStore) persist(cfg *model.Config) error {
+func (ds *DatabaseStore) persist(cfg *model_helper.Config) error {
 	b, err := marshalConfig(cfg)
 	if err != nil {
 		return errors.Wrap(err, "failed to serialize")
 	}
 
-	id := model.NewId()
+	id := model_helper.NewId()
 	value := string(b)
-	createAt := model.GetMillis()
+	createAt := model_helper.GetMillis()
 
 	err = ds.checkLength(len(value))
 	if err != nil {
@@ -239,9 +239,9 @@ func (ds *DatabaseStore) Load() ([]byte, error) {
 
 	// Initialize from the default config if no active configuration could be found.
 	if len(configurationData) == 0 {
-		configWithDB := model.Config{}
-		configWithDB.SqlSettings.DriverName = model.GetPointerOfValue(ds.driverName)
-		configWithDB.SqlSettings.DataSource = model.GetPointerOfValue(ds.dataSourceName)
+		configWithDB := model_helper.Config{}
+		configWithDB.SqlSettings.DriverName = model_helper.GetPointerOfValue(ds.driverName)
+		configWithDB.SqlSettings.DataSource = model_helper.GetPointerOfValue(ds.dataSourceName)
 		return json.Marshal(configWithDB)
 	}
 
@@ -275,8 +275,8 @@ func (ds *DatabaseStore) SetFile(name string, data []byte) error {
 	params := map[string]interface{}{
 		"name":      name,
 		"data":      data,
-		"create_at": model.GetMillis(),
-		"update_at": model.GetMillis(),
+		"create_at": model_helper.GetMillis(),
+		"update_at": model_helper.GetMillis(),
 	}
 
 	result, err := ds.db.NamedExec("UPDATE ConfigurationFiles SET Data = :data, UpdateAt = :update_at WHERE Name = :name", params)

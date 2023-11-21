@@ -16,10 +16,10 @@ const (
 )
 
 // CreateJob create new job in database with type of given jobType and Data of given jobData
-func (srv *JobServer) CreateJob(jobType string, jobData map[string]string) (*model.Job, *model.AppError) {
+func (srv *JobServer) CreateJob(jobType model.Jobtype, jobData map[string]string) (*model.Job, *model.AppError) {
 	job := model.Job{
 		Type:   jobType,
-		Status: model.JobStatusPending,
+		Status: model.JobstatusPending,
 		Data:   jobData,
 	}
 

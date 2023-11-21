@@ -888,13 +888,9 @@ type ShopSettings struct {
 	GiftcardExpiryPeriod                     *int                        // default 10
 	AutomaticallyFulfillNonShippableGiftcard *bool                       // default true
 	MaxCheckoutLineQuantity                  *int                        // default to 50
-	Address                                  *Address
 }
 
 func (s *ShopSettings) SetDefaults() {
-	if s.Address == nil {
-		s.Address = new(Address)
-	}
 	if s.Description == nil {
 		s.Description = GetPointerOfValue("")
 	}

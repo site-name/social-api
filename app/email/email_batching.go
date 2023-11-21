@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -66,7 +67,7 @@ type batchedNotification struct {
 }
 
 type EmailBatchingJob struct {
-	config               func() *model.Config
+	config               func() *model_helper.Config
 	service              *Service
 	newNotifications     chan *batchedNotification
 	pendingNotifications map[string][]*batchedNotification
@@ -99,7 +100,7 @@ func (job *EmailBatchingJob) Start() {
 
 func (job *EmailBatchingJob) Add(user *model.User) bool {
 	notification := &batchedNotification{
-		userID: user.Id,
+		userID: user.ID,
 	}
 
 	select {

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -19,16 +20,16 @@ type Scheduler struct {
 	allMigrationsCompleted bool
 }
 
-func MakeScheduler(jobServer *jobs.JobServer, store store.Store) model.Scheduler {
+func MakeScheduler(jobServer *jobs.JobServer, store store.Store) model_helper.Scheduler {
 	return &Scheduler{jobServer, store, false}
 }
 
-func (scheduler *Scheduler) Enabled(_ *model.Config) bool {
+func (scheduler *Scheduler) Enabled(_ *model_helper.Config) bool {
 	return true
 }
 
 //nolint:unparam
-func (scheduler *Scheduler) NextScheduleTime(cfg *model.Config, now time.Time, pendingJobs bool, lastSuccessfulJob *model.Job) *time.Time {
+func (scheduler *Scheduler) NextScheduleTime(cfg *model_helper.Config, now time.Time, pendingJobs bool, lastSuccessfulJob *model_helper.Job) *time.Time {
 	if scheduler.allMigrationsCompleted {
 		return nil
 	}
@@ -38,23 +39,23 @@ func (scheduler *Scheduler) NextScheduleTime(cfg *model.Config, now time.Time, p
 }
 
 //nolint:unparam
-func (scheduler *Scheduler) ScheduleJob(cfg *model.Config, pendingJobs bool, lastSuccessfulJob *model.Job) (*model.Job, *model.AppError) {
-	slog.Debug("Scheduling Job", slog.String("scheduler", model.JobTypeMigrations))
+func (scheduler *Scheduler) ScheduleJob(cfg *model_helper.Config, pendingJobs bool, lastSuccessfulJob *model.Job) (*model.Job, *model_helper.AppError) {
+	slog.Debug("Scheduling Job", slog.String("scheduler", model.JobtypeMigrations.String()))
 
 	// Work through the list of migrations in order. Schedule the first one that isn't done (assuming it isn't in progress already).
 	for _, key := range MakeMigrationsList() {
 		state, job, err := GetMigrationState(key, scheduler.store)
 		if err != nil {
-			slog.Error("Failed to determine status of migration: ", slog.String("scheduler", model.JobTypeMigrations), slog.String("migration_key", key), slog.Err(err))
+			slog.Error("Failed to determine status of migration: ", slog.String("scheduler", model.JobtypeMigrations.String()), slog.String("migration_key", key), slog.Err(err))
 			return nil, nil
 		}
 
 		if state == MigrationStateInProgress {
 			// Check the migration job isn't wedged.
-			if job != nil && job.LastActivityAt < model.GetMillis()-MigrationJobWedgedTimeoutMilliseconds && job.CreateAt < model.GetMillis()-MigrationJobWedgedTimeoutMilliseconds {
-				slog.Warn("Job appears to be wedged. Rescheduling another instance.", slog.String("scheduler", model.JobTypeMigrations), slog.String("wedged_job_id", job.Id), slog.String("migration_key", key))
+			if job != nil && job.LastActivityAt < model_helper.GetMillis()-MigrationJobWedgedTimeoutMilliseconds && job.CreatedAt < model_helper.GetMillis()-MigrationJobWedgedTimeoutMilliseconds {
+				slog.Warn("Job appears to be wedged. Rescheduling another instance.", slog.String("scheduler", model.JobtypeMigrations.String()), slog.String("wedged_job_id", job.ID), slog.String("migration_key", key))
 				if err := scheduler.jobServer.SetJobError(job, nil); err != nil {
-					slog.Error("Worker: Failed to set job error", slog.String("scheduler", model.JobTypeMigrations), slog.String("job_id", job.Id), slog.Err(err))
+					slog.Error("Worker: Failed to set job error", slog.String("scheduler", model.JobtypeMigrations.String()), slog.String("job_id", job.ID), slog.Err(err))
 				}
 				return scheduler.createJob(key, job)
 			}
@@ -68,7 +69,7 @@ func (scheduler *Scheduler) ScheduleJob(cfg *model.Config, pendingJobs bool, las
 		}
 
 		if state == MigrationStateUnscheduled {
-			slog.Debug("Scheduling a new job for migration.", slog.String("scheduler", model.JobTypeMigrations), slog.String("migration_key", key))
+			slog.Debug("Scheduling a new job for migration.", slog.String("scheduler", model.JobtypeMigrations.String()), slog.String("migration_key", key))
 			return scheduler.createJob(key, job)
 		}
 
@@ -78,12 +79,12 @@ func (scheduler *Scheduler) ScheduleJob(cfg *model.Config, pendingJobs bool, las
 
 	// If we reached here, then there aren't any migrations left to run.
 	scheduler.allMigrationsCompleted = true
-	slog.Debug("All migrations are complete.", slog.String("scheduler", model.JobTypeMigrations))
+	slog.Debug("All migrations are complete.", slog.String("scheduler", model.JobtypeMigrations.String()))
 
 	return nil, nil
 }
 
-func (scheduler *Scheduler) createJob(migrationKey string, lastJob *model.Job) (*model.Job, *model.AppError) {
+func (scheduler *Scheduler) createJob(migrationKey string, lastJob *model.Job) (*model.Job, *model_helper.AppError) {
 	var lastDone string
 	if lastJob != nil {
 		lastDone = lastJob.Data[JobDataKeyMigrationLastDone]
@@ -94,7 +95,7 @@ func (scheduler *Scheduler) createJob(migrationKey string, lastJob *model.Job) (
 		JobDataKeyMigrationLastDone: lastDone,
 	}
 
-	job, err := scheduler.jobServer.CreateJob(model.JobTypeMigrations, data)
+	job, err := scheduler.jobServer.CreateJob(model.JobtypeMigrations.String(), data)
 	if err != nil {
 		return nil, err
 	}

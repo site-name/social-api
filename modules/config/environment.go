@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 func GetEnvironment() map[string]string {
@@ -73,7 +73,7 @@ func applyEnvKey(key, value string, rValueSubject reflect.Value) {
 	}
 }
 
-func applyEnvironmentMap(inputConfig *model.Config, env map[string]string) *model.Config {
+func applyEnvironmentMap(inputConfig *model_helper.Config, env map[string]string) *model_helper.Config {
 	appliedConfig := inputConfig.Clone()
 
 	rvalConfig := reflect.ValueOf(appliedConfig).Elem()
@@ -87,7 +87,7 @@ func applyEnvironmentMap(inputConfig *model.Config, env map[string]string) *mode
 // generateEnvironmentMap creates a map[string]interface{} containing true at the leaves mirroring the
 // configuration structure so the client can know which env variables are overridden
 func generateEnvironmentMap(env map[string]string, filter func(reflect.StructField) bool) map[string]interface{} {
-	rType := reflect.TypeOf(model.Config{})
+	rType := reflect.TypeOf(model_helper.Config{})
 	return generateEnvironmentMapWithBaseKey(env, rType, "MM", filter)
 }
 
@@ -123,7 +123,7 @@ func generateEnvironmentMapWithBaseKey(env map[string]string, rType reflect.Type
 // removeEnvOverrides returns a new config without the given environment overrides.
 // If a config variable has an environment override, that variable is set to the value that was
 // read from the store.
-func removeEnvOverrides(cfg, cfgWithoutEnv *model.Config, envOverrides map[string]interface{}) *model.Config {
+func removeEnvOverrides(cfg, cfgWithoutEnv *model_helper.Config, envOverrides map[string]interface{}) *model_helper.Config {
 	paths := getPaths(envOverrides)
 	newCfg := cfg.Clone()
 	for _, path := range paths {
@@ -156,7 +156,7 @@ func getPathsRec(src interface{}, curPath []string) [][]string {
 	return [][]string{curPath}
 }
 
-// getVal walks `src` (here it starts with a model.Config, then recurses into its leaves)
+// getVal walks `src` (here it starts with a model_helper.Config, then recurses into its leaves)
 // and returns the reflect.Value of the leaf at the end `path`
 func getVal(src interface{}, path []string) reflect.Value {
 	var val reflect.Value

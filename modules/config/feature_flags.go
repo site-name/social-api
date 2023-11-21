@@ -10,7 +10,7 @@ import (
 	"github.com/splitio/go-client/v6/splitio/client"
 	"github.com/splitio/go-client/v6/splitio/conf"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -30,7 +30,7 @@ type FeatureFlagSynchronizer struct {
 	stopped chan struct{}
 }
 
-var featureNames = getStructFields(model.FeatureFlags{})
+var featureNames = getStructFields(model_helper.FeatureFlags{})
 
 func NewFeatureFlagSynchronizer(params FeatureFlagSyncParams) (*FeatureFlagSynchronizer, error) {
 	cfg := conf.Default()
@@ -61,7 +61,7 @@ func (f *FeatureFlagSynchronizer) EnsureReady() error {
 	return nil
 }
 
-func (f *FeatureFlagSynchronizer) UpdateFeatureFlagValues(base model.FeatureFlags) model.FeatureFlags {
+func (f *FeatureFlagSynchronizer) UpdateFeatureFlagValues(base model_helper.FeatureFlags) model_helper.FeatureFlags {
 	featuresMap := f.client.Treatments(f.ServerID, featureNames, f.Attributes)
 	ffm := featureFlagsFromMap(featuresMap, base)
 	return ffm
@@ -76,7 +76,7 @@ func (f *FeatureFlagSynchronizer) Close() {
 // given by the upstream management system.
 // Makes the assumption that all feature flags are strings or booleans.
 // Strings are converted to booleans by considering case insensitive "on" or any value considered by strconv.ParseBool as true and any other value as false.
-func featureFlagsFromMap(featuresMap map[string]string, baseFeatureFlags model.FeatureFlags) model.FeatureFlags {
+func featureFlagsFromMap(featuresMap map[string]string, baseFeatureFlags model_helper.FeatureFlags) model_helper.FeatureFlags {
 	refStruct := reflect.ValueOf(&baseFeatureFlags).Elem()
 	for fieldName, fieldValue := range featuresMap {
 		refField := refStruct.FieldByName(fieldName)
@@ -99,7 +99,7 @@ func featureFlagsFromMap(featuresMap map[string]string, baseFeatureFlags model.F
 
 // featureFlagsToMap returns the feature flags as a map[string]string
 // Supports boolean and string feature flags.
-func featureFlagsToMap(featureFlags *model.FeatureFlags) map[string]string {
+func featureFlagsToMap(featureFlags *model_helper.FeatureFlags) map[string]string {
 	refStructVal := reflect.ValueOf(*featureFlags)
 	refStructType := reflect.TypeOf(*featureFlags)
 	ret := make(map[string]string)

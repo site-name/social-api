@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util/jsonutils"
 )
 
@@ -24,9 +24,9 @@ type Store struct {
 	backingStore BackingStore
 
 	configLock           sync.RWMutex
-	config               *model.Config
-	configNoEnv          *model.Config
-	configCustomDefaults *model.Config
+	config               *model_helper.Config
+	configNoEnv          *model_helper.Config
+	configCustomDefaults *model_helper.Config
 
 	readOnly   bool
 	readOnlyFF bool
@@ -36,7 +36,7 @@ type Store struct {
 // implementation (e.g. file, database).
 type BackingStore interface {
 	// Set replaces the current configuration in its entirety and updates the backing store.
-	Set(*model.Config) error
+	Set(*model_helper.Config) error
 	// Load retrieves the configuration stored. If there is no configuration stored
 	// the io.ReadCloser will be nil
 	Load() ([]byte, error)
@@ -56,7 +56,7 @@ type BackingStore interface {
 }
 
 // NewStoreFromBacking creates and returns a new config store given a backing store.
-func NewStoreFromBacking(backingStore BackingStore, customDefaults *model.Config, readOnly bool) (*Store, error) {
+func NewStoreFromBacking(backingStore BackingStore, customDefaults *model_helper.Config, readOnly bool) (*Store, error) {
 	store := &Store{
 		backingStore:         backingStore,
 		configCustomDefaults: customDefaults,
@@ -73,7 +73,7 @@ func NewStoreFromBacking(backingStore BackingStore, customDefaults *model.Config
 
 // NewStoreFromDSN creates and returns a new config store backed by either a database or file store
 // depending on the value of the given data source name string.
-func NewStoreFromDSN(dsn string, readOnly bool, customDefaults *model.Config, createFileIfNotExist bool) (*Store, error) {
+func NewStoreFromDSN(dsn string, readOnly bool, customDefaults *model_helper.Config, createFileIfNotExist bool) (*Store, error) {
 	var err error
 	var backingStore BackingStore
 	if IsDatabaseDSN(dsn) {
@@ -111,14 +111,14 @@ func NewTestMemoryStore() *Store {
 }
 
 // Get fetches the current, cached configuration.
-func (s *Store) Get() *model.Config {
+func (s *Store) Get() *model_helper.Config {
 	s.configLock.RLock()
 	defer s.configLock.RUnlock()
 	return s.config
 }
 
 // GetNoEnv fetches the current cached configuration without environment variable overrides.
-func (s *Store) GetNoEnv() *model.Config {
+func (s *Store) GetNoEnv() *model_helper.Config {
 	s.configLock.RLock()
 	defer s.configLock.RUnlock()
 	return s.configNoEnv
@@ -137,7 +137,7 @@ func (s *Store) GetEnvironmentOverridesWithFilter(filter func(reflect.StructFiel
 
 // RemoveEnvironmentOverrides returns a new config without the environment
 // overrides.
-func (s *Store) RemoveEnvironmentOverrides(cfg *model.Config) *model.Config {
+func (s *Store) RemoveEnvironmentOverrides(cfg *model_helper.Config) *model_helper.Config {
 	s.configLock.RLock()
 	defer s.configLock.RUnlock()
 	return removeEnvOverrides(cfg, s.configNoEnv, s.GetEnvironmentOverrides())
@@ -153,7 +153,7 @@ func (s *Store) SetReadOnlyFF(readOnly bool) {
 
 // Set replaces the current configuration in its entirety and updates the backing store.
 // It returns both old and new versions of the config.
-func (s *Store) Set(newCfg *model.Config) (*model.Config, *model.Config, error) {
+func (s *Store) Set(newCfg *model_helper.Config) (*model_helper.Config, *model_helper.Config, error) {
 	s.configLock.Lock()
 	defer s.configLock.Unlock()
 
@@ -236,7 +236,7 @@ func (s *Store) Load() error {
 	s.configLock.Lock()
 	defer s.configLock.Unlock()
 
-	oldCfg := &model.Config{}
+	oldCfg := &model_helper.Config{}
 	if s.config != nil {
 		oldCfg = s.config.Clone()
 	}
@@ -246,7 +246,7 @@ func (s *Store) Load() error {
 		return err
 	}
 
-	loadedCfg := &model.Config{}
+	loadedCfg := &model_helper.Config{}
 	if len(configBytes) != 0 {
 		if err = json.Unmarshal(configBytes, &loadedCfg); err != nil {
 			return jsonutils.HumanizeJSONError(err, configBytes)
@@ -269,7 +269,7 @@ func (s *Store) Load() error {
 	// SetDefaults() will generate missing data. This avoids an additional write
 	// to the backing store.
 	if loadedCfg.ServiceSettings.SiteURL == nil {
-		loadedCfg.ServiceSettings.SiteURL = model.GetPointerOfValue("")
+		loadedCfg.ServiceSettings.SiteURL = model_helper.GetPointerOfValue("")
 	}
 
 	// Setting defaults allows us to accept partial config objects.

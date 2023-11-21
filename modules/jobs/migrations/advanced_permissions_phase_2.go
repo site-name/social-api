@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -16,7 +16,7 @@ type AdvancedPermissionsPhase2Progress struct {
 }
 
 func (p *AdvancedPermissionsPhase2Progress) ToJSON() string {
-	return model.ModelToJson(p)
+	return model_helper.ModelToJson(p)
 }
 
 func AdvancedPermissionsPhase2ProgressFromJson(data io.Reader) *AdvancedPermissionsPhase2Progress {
@@ -29,15 +29,15 @@ func AdvancedPermissionsPhase2ProgressFromJson(data io.Reader) *AdvancedPermissi
 }
 
 func (p *AdvancedPermissionsPhase2Progress) IsValid() bool {
-	if !model.IsValidId(p.LastChannelId) {
+	if !model_helper.IsValidId(p.LastChannelId) {
 		return false
 	}
 
-	if !model.IsValidId(p.LastTeamId) {
+	if !model_helper.IsValidId(p.LastTeamId) {
 		return false
 	}
 
-	if !model.IsValidId(p.LastUserId) {
+	if !model_helper.IsValidId(p.LastUserId) {
 		return false
 	}
 
@@ -51,7 +51,7 @@ func (p *AdvancedPermissionsPhase2Progress) IsValid() bool {
 	return true
 }
 
-func (worker *Worker) runAdvancedPermissionsPhase2Migration(lastDone string) (bool, string, *model.AppError) {
+func (worker *Worker) runAdvancedPermissionsPhase2Migration(lastDone string) (bool, string, *model_helper.AppError) {
 	slog.Debug("runAdvancedPermissionsPhase2Migration...")
 	// TODO: consider remove me
 	return false, "", nil

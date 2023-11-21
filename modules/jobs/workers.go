@@ -3,7 +3,7 @@ package jobs
 import (
 	"errors"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/configservice"
 )
@@ -13,7 +13,7 @@ type Workers struct {
 	ConfigService configservice.ConfigService
 	Watcher       *Watcher
 
-	workers map[string]model.Worker
+	workers map[string]model_helper.Worker
 
 	listenerId string
 	running    bool
@@ -28,15 +28,15 @@ var (
 func NewWorkers(configService configservice.ConfigService) *Workers {
 	return &Workers{
 		ConfigService: configService,
-		workers:       make(map[string]model.Worker),
+		workers:       make(map[string]model_helper.Worker),
 	}
 }
 
-func (workers *Workers) AddWorker(name string, worker model.Worker) {
+func (workers *Workers) AddWorker(name string, worker model_helper.Worker) {
 	workers.workers[name] = worker
 }
 
-func (workers *Workers) Get(name string) model.Worker {
+func (workers *Workers) Get(name string) model_helper.Worker {
 	return workers.workers[name]
 }
 
@@ -57,7 +57,7 @@ func (workers *Workers) Start() {
 	workers.running = true
 }
 
-func (workers *Workers) handleConfigChange(oldConfig *model.Config, newConfig *model.Config) {
+func (workers *Workers) handleConfigChange(oldConfig *model_helper.Config, newConfig *model_helper.Config) {
 	slog.Debug("Workers received config change.")
 
 	for _, w := range workers.workers {

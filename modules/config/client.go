@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // GenerateClientConfig renders the given configuration for a client.
-func GenerateClientConfig(c *model.Config) map[string]string {
+func GenerateClientConfig(c *model_helper.Config) map[string]string {
 	props := GenerateLimitedClientConfig(c)
 
 	props["EnableBotAccountCreation"] = strconv.FormatBool(*c.ServiceSettings.EnableBotAccountCreation)
@@ -113,7 +113,7 @@ func GenerateClientConfig(c *model.Config) map[string]string {
 	props["CWSUrl"] = ""
 
 	props["CustomUrlSchemes"] = strings.Join(c.DisplaySettings.CustomUrlSchemes, ",")
-	props["IsDefaultMarketplace"] = strconv.FormatBool(*c.PluginSettings.MarketplaceUrl == model.PLUGIN_SETTINGS_DEFAULT_MARKETPLACE_URL)
+	props["IsDefaultMarketplace"] = strconv.FormatBool(*c.PluginSettings.MarketplaceUrl == model_helper.PLUGIN_SETTINGS_DEFAULT_MARKETPLACE_URL)
 	props["ExperimentalSharedChannels"] = "false"
 	props["CollapsedThreads"] = *c.ServiceSettings.CollapsedThreads
 
@@ -121,15 +121,15 @@ func GenerateClientConfig(c *model.Config) map[string]string {
 }
 
 // GenerateLimitedClientConfig renders the given configuration for an untrusted client.
-func GenerateLimitedClientConfig(c *model.Config) map[string]string {
+func GenerateLimitedClientConfig(c *model_helper.Config) map[string]string {
 	props := make(map[string]string)
 
-	props["Version"] = model.CurrentVersion
-	props["BuildNumber"] = model.BuildNumber
-	props["BuildDate"] = model.BuildDate
-	props["BuildHash"] = model.BuildHash
-	props["BuildHashEnterprise"] = model.BuildHashEnterprise
-	props["BuildEnterpriseReady"] = model.BuildEnterpriseReady
+	props["Version"] = model_helper.CurrentVersion
+	props["BuildNumber"] = model_helper.BuildNumber
+	props["BuildDate"] = model_helper.BuildDate
+	props["BuildHash"] = model_helper.BuildHash
+	props["BuildHashEnterprise"] = model_helper.BuildHashEnterprise
+	props["BuildEnterpriseReady"] = model_helper.BuildEnterpriseReady
 
 	props["EnableBotAccountCreation"] = strconv.FormatBool(*c.ServiceSettings.EnableBotAccountCreation)
 	props["EnableFile"] = strconv.FormatBool(*c.LogSettings.EnableFile)

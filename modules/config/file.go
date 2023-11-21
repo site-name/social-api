@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
@@ -95,7 +95,7 @@ func (fs *FileStore) resolveFilePath(name string) string {
 }
 
 // Set replaces the current configuration in its entirety and updates the backing store.
-func (fs *FileStore) Set(newCfg *model.Config) error {
+func (fs *FileStore) Set(newCfg *model_helper.Config) error {
 	if *newCfg.ClusterSettings.Enable && *newCfg.ClusterSettings.ReadOnlyConfig {
 		return ErrReadOnlyConfiguration
 	}
@@ -104,7 +104,7 @@ func (fs *FileStore) Set(newCfg *model.Config) error {
 }
 
 // persist writes the configuration to the configured file.
-func (fs *FileStore) persist(cfg *model.Config) error {
+func (fs *FileStore) persist(cfg *model_helper.Config) error {
 	b, err := marshalConfig(cfg)
 	if err != nil {
 		return errors.Wrap(err, "failed to serialize")

@@ -6,20 +6,21 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
 type Schedulers struct {
 	stop                 chan bool
 	stopped              chan bool
-	configChanged        chan *model.Config
+	configChanged        chan *model_helper.Config
 	clusterLeaderChanged chan bool
 	listenerId           string
 	jobs                 *JobServer
 	isLeader             bool
 	running              bool
 
-	schedulers   map[string]model.Scheduler
+	schedulers   map[string]model_helper.Scheduler
 	nextRunTimes map[string]*time.Time
 }
 
@@ -29,7 +30,7 @@ var (
 	ErrSchedulersUninitialized = errors.New("job schedulers are not initialized")
 )
 
-func (schedulers *Schedulers) AddScheduler(name string, scheduler model.Scheduler) {
+func (schedulers *Schedulers) AddScheduler(name string, scheduler model_helper.Scheduler) {
 	schedulers.schedulers[name] = scheduler
 }
 
@@ -120,7 +121,7 @@ func (schedulers *Schedulers) Stop() {
 	schedulers.running = false
 }
 
-func (schedulers *Schedulers) scheduleJob(cfg *model.Config, name string, scheduler model.Scheduler) (*model.Job, *model.AppError) {
+func (schedulers *Schedulers) scheduleJob(cfg *model_helper.Config, name string, scheduler model_helper.Scheduler) (*model.Job, *model_helper.AppError) {
 	pendingJobs, err := schedulers.jobs.CheckForPendingJobsByType(name)
 	if err != nil {
 		return nil, err
@@ -135,12 +136,12 @@ func (schedulers *Schedulers) scheduleJob(cfg *model.Config, name string, schedu
 }
 
 // handleConfigChange send new model.Config to schedulers's configChanged channel
-func (schedulers *Schedulers) handleConfigChange(_, new *model.Config) {
+func (schedulers *Schedulers) handleConfigChange(_, new *model_helper.Config) {
 	slog.Debug("Schedulers received config change.")
 	schedulers.configChanged <- new
 }
 
-func (schedulers *Schedulers) setNextRunTime(cfg *model.Config, name string, now time.Time, pendingJobs bool) {
+func (schedulers *Schedulers) setNextRunTime(cfg *model_helper.Config, name string, now time.Time, pendingJobs bool) {
 	scheduler := schedulers.schedulers[name]
 
 	if !pendingJobs {

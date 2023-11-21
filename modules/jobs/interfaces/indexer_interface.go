@@ -1,9 +1,9 @@
 package interfaces
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type IndexerJobInterface interface {
-	MakeWorker() model.Worker
+	MakeWorker() model_helper.Worker
 }
