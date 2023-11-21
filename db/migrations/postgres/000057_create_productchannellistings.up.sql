@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS product_channel_listings (
   channel_id uuid NOT NULL,
   visible_in_listings boolean NOT NULL,
   available_for_purchase bigint, -- future time in milliseconds
-  currency varchar(3) NOT NULL,
+  currency Currency NOT NULL,
   discounted_price_amount decimal(12,3),
   created_at bigint NOT NULL,
   publication_date bigint, -- future time in milliseconds

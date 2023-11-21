@@ -12,14 +12,14 @@ CREATE TABLE IF NOT EXISTS checkouts (
   collection_point_id uuid,
   note text NOT NULL,
   currency text NOT NULL,
-  country varchar(5) NOT NULL,
-  discount_amount double precision,
+  country CountryCode NOT NULL,
+  discount_amount decimal(12,3) NOT NULL DEFAULT 0.00,
   discount_name varchar(255),
   translated_discount_name varchar(255),
   voucher_code varchar(12),
   redirect_url text,
   tracking_code varchar(255),
-  language_code varchar(10) NOT NULL,
+  language_code LanguageCode NOT NULL,
   metadata jsonb,
   private_metadata jsonb
 );

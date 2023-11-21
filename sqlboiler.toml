@@ -1,11 +1,12 @@
-output   = "models"
+output   = "model"
 wipe     = true
 no-tests = true
 add-enum-types = true
-pkgname = "models"
+pkgname = "model"
 tracing = true
 no-auto-timestamps = true
 no-hooks = true
+debug = false
 
 [psql]
   dbname = "sitename_test"

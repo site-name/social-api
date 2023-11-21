@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS digital_contents (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   use_default_settings boolean,
   automatic_fulfillment boolean,
-  content_type varchar(128) NOT NULL,
+  content_type ContentType NOT NULL,
   product_variant_id uuid NOT NULL,
   content_file varchar(200) NOT NULL,
   max_downloads integer,

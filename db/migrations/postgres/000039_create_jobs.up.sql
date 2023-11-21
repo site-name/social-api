@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS jobs (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-  type varchar(32) NOT NULL,
+  type JobType NOT NULL,
   priority bigint NOT NULL,
   created_at bigint NOT NULL,
   start_at bigint NOT NULL,
   last_activity_at bigint NOT NULL,
-  status varchar(32) NOT NULL,
+  status JobStatus NOT NULL,
   progress bigint NOT NULL,
   data jsonb
 );

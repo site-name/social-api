@@ -2,14 +2,15 @@ CREATE TABLE IF NOT EXISTS fulfillments (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   fulfillment_order integer NOT NULL,
   order_id uuid NOT NULL,
-  status varchar(32) NOT NULL,
+  status FulfillmentStatus NOT NULL,
   tracking_number varchar(255) NOT NULL,
   created_at bigint NOT NULL,
-  shipping_refund_amount double precision,
-  total_refund_amount double precision,
+  shipping_refund_amount decimal(12,3),
+  total_refund_amount decimal(12,3),
   metadata jsonb,
   private_metadata jsonb
 );
+
 
 CREATE INDEX idx_fulfillments_status ON fulfillments USING btree (status);
 

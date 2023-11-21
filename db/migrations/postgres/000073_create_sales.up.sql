@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS sales (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar(255) NOT NULL,
-  type varchar(10) NOT NULL,
+  type DiscountValueType NOT NULL,
   start_date bigint NOT NULL, -- future time in milli
   end_date bigint,
   created_at bigint NOT NULL,

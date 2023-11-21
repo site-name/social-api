@@ -2,9 +2,9 @@ CREATE TABLE IF NOT EXISTS attributes (
   id uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
   slug varchar(255) NOT NULL,
   name varchar(250) NOT NULL,
-  type varchar(50) NOT NULL,
-  input_type varchar(50) NOT NULL,
-  entity_type varchar(50),
+  type AttributeType NOT NULL, -- enum
+  input_type AttributeInputType NOT NULL, -- enum
+  entity_type AttributeEntityType, -- enum
   unit varchar(100),
   value_required boolean NOT NULL,
   is_variant_only boolean NOT NULL,
@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS attributes (
   metadata jsonb,
   private_metadata jsonb
 );
+
 
 ALTER TABLE ONLY attributes
     ADD CONSTRAINT attributes_slug_key UNIQUE (slug);

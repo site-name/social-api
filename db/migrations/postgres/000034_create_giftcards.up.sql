@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS giftcards (
   product_id uuid,
   last_used_on bigint,
   is_active boolean,
-  currency varchar(3) NOT NULL,
-  initial_balance_amount double precision,
-  current_balance_amount double precision,
+  currency Currency NOT NULL,
+  initial_balance_amount decimal(12,3),
+  current_balance_amount decimal(12,3),
   metadata jsonb,
   private_metadata jsonb
 );
