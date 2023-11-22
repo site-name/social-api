@@ -1,10 +1,10 @@
 package jobs
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type LdapSyncInterface interface {
-	MakeWorker() model.Worker
-	MakeScheduler() model.Scheduler
+	MakeWorker() model_helper.Worker
+	MakeScheduler() model_helper.Scheduler
 }

@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
@@ -296,7 +295,7 @@ func (m StringInterface) Merge(other StringInterface) {
 	}
 }
 
-func GetPreferredTimezone(timezone StringMap) string {
+func GetPreferredTimezone(timezone Map[string, string]) string {
 	if timezone["useAutomaticTimezone"] == "true" {
 		return timezone["automaticTimezone"]
 	}
@@ -736,7 +735,7 @@ func DraftJSContentToRawText(content StringInterface, sep string) string {
 			continue
 		}
 
-		dataMap, ok := data.(StringMap)
+		dataMap, ok := data.(Map[string, string])
 		if !ok {
 			continue
 		}
@@ -945,94 +944,133 @@ func GetValueOfpointerOrNil[T any](pointer *T) any {
 	return *pointer
 }
 
-type StringMap map[string]string
+// type StringMap map[string]string
 
-func (s StringMap) DeepCopy() StringMap {
-	if s == nil {
-		return nil
-	}
-	res := StringMap{}
-	for key, value := range s {
-		res[key] = value
-	}
+// func (s StringMap) DeepCopy() StringMap {
+// 	if s == nil {
+// 		return nil
+// 	}
+// 	res := StringMap{}
+// 	for key, value := range s {
+// 		res[key] = value
+// 	}
 
-	return res
+// 	return res
+// }
+
+// func (s StringMap) Merge(other StringMap) StringMap {
+// 	for key, value := range other {
+// 		s[key] = value
+// 	}
+// 	return s
+// }
+
+// func (m StringMap) Pop(key string, defaultValue ...string) string {
+// 	v := m.Get(key, defaultValue...)
+// 	delete(m, key)
+// 	return v
+// }
+
+// func (m StringMap) Get(key string, defaultValue ...string) string {
+// 	if v, ok := m[key]; ok {
+// 		return v
+// 	}
+// 	if len(defaultValue) > 0 {
+// 		return defaultValue[0]
+// 	}
+// 	return ""
+// }
+
+// func (m StringMap) Set(key, value string) {
+// 	m[key] = value
+// }
+
+// func (m StringMap) Keys() []string {
+// 	return lo.Keys(m)
+// }
+
+// func (m StringMap) Values() []string {
+// 	return lo.Values(m)
+// }
+
+// // Scan converts database column value to StringMap
+// func (m *StringMap) Scan(value any) error {
+// 	if value == nil {
+// 		return nil
+// 	}
+
+// 	buf, ok := value.([]byte)
+// 	if ok {
+// 		return json.Unmarshal(buf, m)
+// 	}
+
+// 	str, ok := value.(string)
+// 	if ok {
+// 		return json.Unmarshal([]byte(str), m)
+// 	}
+
+// 	return errors.New("received value is neither a byte slice nor string")
+// }
+
+// const (
+// 	maxPropSizeBytes = 1024 * 1024
+// )
+
+// var ErrMaxPropSizeExceeded = fmt.Errorf("max prop size of %d exceeded", maxPropSizeBytes)
+
+// // Value converts StringMap to database value
+// func (m StringMap) Value() (driver.Value, error) {
+// 	sz := 0
+// 	for k := range m {
+// 		sz += len(k) + len(m[k])
+// 		if sz > maxPropSizeBytes {
+// 			return nil, ErrMaxPropSizeExceeded
+// 		}
+// 	}
+
+// 	buf, err := json.Marshal(m)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// Key wasn't found. We fall back to the default case.
+// 	return string(buf), nil
+// }
+
+type Map[K cmp.Ordered, V any] map[K]V
+
+func (m *Map[K, V]) Add(key K, value V) {
+	(*m)[key] = value
 }
 
-func (s StringMap) Merge(other StringMap) StringMap {
-	for key, value := range other {
-		s[key] = value
-	}
-	return s
-}
-
-func (m StringMap) Pop(key string, defaultValue ...string) string {
-	v := m.Get(key, defaultValue...)
-	delete(m, key)
-	return v
-}
-
-func (m StringMap) Get(key string, defaultValue ...string) string {
-	if v, ok := m[key]; ok {
-		return v
+func (m *Map[K, V]) Pop(key K, defaultValue ...V) V {
+	value, ok := (*m)[key]
+	if ok {
+		delete(*m, key)
+		return value
 	}
 	if len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
-	return ""
+
+	var res V
+	return res
 }
 
-func (m StringMap) Set(key, value string) {
-	m[key] = value
-}
-
-func (m StringMap) Keys() []string {
-	return lo.Keys(m)
-}
-
-func (m StringMap) Values() []string {
-	return lo.Values(m)
-}
-
-// Scan converts database column value to StringMap
-func (m *StringMap) Scan(value any) error {
-	if value == nil {
-		return nil
-	}
-
-	buf, ok := value.([]byte)
+func (m Map[K, V]) Get(key K, defaultValue ...V) V {
+	value, ok := m[key]
 	if ok {
-		return json.Unmarshal(buf, m)
+		return value
+	}
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
 	}
 
-	str, ok := value.(string)
-	if ok {
-		return json.Unmarshal([]byte(str), m)
-	}
-
-	return errors.New("received value is neither a byte slice nor string")
+	var res V
+	return res
 }
 
-const (
-	maxPropSizeBytes = 1024 * 1024
-)
-
-var ErrMaxPropSizeExceeded = fmt.Errorf("max prop size of %d exceeded", maxPropSizeBytes)
-
-// Value converts StringMap to database value
-func (m StringMap) Value() (driver.Value, error) {
-	sz := 0
-	for k := range m {
-		sz += len(k) + len(m[k])
-		if sz > maxPropSizeBytes {
-			return nil, ErrMaxPropSizeExceeded
-		}
+func (m *Map[K, V]) Merge(other Map[K, V]) {
+	for key, value := range other {
+		(*m)[key] = value
 	}
-
-	buf, err := json.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-	// Key wasn't found. We fall back to the default case.
-	return string(buf), nil
 }

@@ -18,6 +18,7 @@ import (
 
 	"github.com/mattermost/ldap"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/slog"
@@ -2208,10 +2209,10 @@ func (s *ComplianceSettings) SetDefaults() {
 }
 
 type LocalizationSettings struct {
-	DefaultServerLocale *string      `access:"site_localization"`
-	DefaultClientLocale *string      `access:"site_localization"`
-	AvailableLocales    *string      `access:"site_localization"`
-	DefaultCountryCode  *CountryCode `access:"site_localization"` // added for sitename
+	DefaultServerLocale *string            `access:"site_localization"`
+	DefaultClientLocale *string            `access:"site_localization"`
+	AvailableLocales    *string            `access:"site_localization"`
+	DefaultCountryCode  *model.Countrycode `access:"site_localization"` // added for sitename
 }
 
 func (s *LocalizationSettings) SetDefaults() {

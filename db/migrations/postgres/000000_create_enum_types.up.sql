@@ -1,4 +1,8 @@
-CREATE TYPE CountryCode AS ENUM (
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'CountryCode')
+THEN
+	CREATE TYPE CountryCode AS ENUM (
 	'ID',
 	'AX',
 	'AL',
@@ -249,9 +253,17 @@ CREATE TYPE CountryCode AS ENUM (
 	'YE',
 	'ZM',
 	'ZW'
-);
+	);
+END IF;
+END $$;
 
-CREATE TYPE LanguageCode AS ENUM (
+-------
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'LanguageCode')
+THEN
+	CREATE TYPE LanguageCode AS ENUM (
 	'AF',
 	'AF_NA',
 	'ID',
@@ -1032,8 +1044,15 @@ CREATE TYPE LanguageCode AS ENUM (
 	'ZH_HANT_TW',
 	'ZU',
 	'ZU_ZA'
-);
+	);
+END IF;
+END $$;
 
+------
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'CustomerEventType')
+THEN
 CREATE TYPE CustomerEventType AS ENUM (
 	 'ACCOUNT_CREATED',
 	 'PASSWORD_RESET_LINK_SENT',
@@ -1051,17 +1070,39 @@ CREATE TYPE CustomerEventType AS ENUM (
 	 'ACCOUNT_ACTIVATED',
 	 'ACCOUNT_DEACTIVATED'
 );
+END IF;
+END $$;
 
+------
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'AppType')
+THEN
 CREATE TYPE AppType AS ENUM (
 	'local',
 	'thirdparty'
 );
+END IF;
+END $$;
 
+------
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'AttributeType')
+THEN
 CREATE TYPE AttributeType AS ENUM (
 	'product_type',
 	'page_type'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'AttributeInputType')
+THEN
 CREATE TYPE AttributeInputType AS ENUM (
 	'dropdown',
 	'multiselect',
@@ -1074,12 +1115,24 @@ CREATE TYPE AttributeInputType AS ENUM (
 	'date',
 	'date_time'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'AttributeEntityType')
+THEN
 CREATE TYPE AttributeEntityType AS ENUM (
 	'page',
 	'product'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ExportEventType')
+THEN
 CREATE TYPE ExportEventType AS ENUM (
 	'export_pending',
 	'export_success',
@@ -1088,28 +1141,58 @@ CREATE TYPE ExportEventType AS ENUM (
 	'exported_file_sent',
 	'export_failed_info_sent'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'OrderDiscountType')
+THEN
 CREATE TYPE OrderDiscountType AS ENUM (
 	'voucher',
 	'manual'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'VoucherType')
+THEN
 CREATE TYPE VoucherType AS ENUM (
 	'shipping',
 	'entire_order',
 	'specific_product'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'DiscountValueType')
+THEN
 CREATE TYPE DiscountValueType AS ENUM (
 	'fixed',
 	'percentage'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'UploadType')
+THEN
 CREATE TYPE UploadType AS ENUM (
 	'attachment',
 	'import'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'GiftcardEventType')
+THEN
 CREATE TYPE GiftcardEventType AS ENUM (
 	'issued',
 	'bought',
@@ -1124,7 +1207,13 @@ CREATE TYPE GiftcardEventType AS ENUM (
 	'note_added',
 	'used_in_order'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'InvoiceEventType')
+THEN
 CREATE TYPE InvoiceEventType AS ENUM (
 	'requested',
 	'requested_deletion',
@@ -1132,7 +1221,13 @@ CREATE TYPE InvoiceEventType AS ENUM (
 	'deleted',
 	'sent'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'JobType')
+THEN
 CREATE TYPE JobType AS ENUM (
 	'data_retention',
 	'message_export',
@@ -1152,7 +1247,13 @@ CREATE TYPE JobType AS ENUM (
 	'cloud',
 	'resend_invitation_email'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'JobStatus')
+THEN
 CREATE TYPE JobStatus AS ENUM (
 	'pending',
 	'in_progress',
@@ -1162,7 +1263,13 @@ CREATE TYPE JobStatus AS ENUM (
 	'canceled',
 	'warning'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'FulfillmentStatus')
+THEN
 CREATE TYPE FulfillmentStatus AS ENUM (
 	'fulfilled',
 	'refunded',
@@ -1172,7 +1279,13 @@ CREATE TYPE FulfillmentStatus AS ENUM (
 	'canceled',
 	'waiting_for_approval'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'OrderEventType')
+THEN
 CREATE TYPE OrderEventType AS ENUM (
 	'confirmed',
 	'draft_created',
@@ -1217,13 +1330,25 @@ CREATE TYPE OrderEventType AS ENUM (
 	'note_added',
 	'other'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'OrderOrigin')
+THEN
 CREATE TYPE OrderOrigin AS ENUM (
 	'checkout',
 	'draft',
 	'reissue'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'OrderStatus')
+THEN
 CREATE TYPE OrderStatus AS ENUM (
 	'draft',
 	'unconfirmed',
@@ -1234,7 +1359,13 @@ CREATE TYPE OrderStatus AS ENUM (
 	'returned',
 	'canceled'
 );
+END IF;
+END $$;
 
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'TransactionKind')
+THEN
 CREATE TYPE TransactionKind AS ENUM (
 	'external',
 	'auth',
@@ -1250,7 +1381,14 @@ CREATE TYPE TransactionKind AS ENUM (
 	'cancel',
 	'pending'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'Currency')
+THEN
 CREATE TYPE Currency AS ENUM (
 	'AED',
 	'AFN',
@@ -1426,7 +1564,14 @@ CREATE TYPE Currency AS ENUM (
 	'ZWD',
 	'ZWL'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'PaymentChargeStatus')
+THEN
 CREATE TYPE PaymentChargeStatus AS ENUM (
 	'not_charged',
 	'pending',
@@ -1437,50 +1582,142 @@ CREATE TYPE PaymentChargeStatus AS ENUM (
 	'refused',
 	'cancelled'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'StorePaymentMethod')
+THEN
 CREATE TYPE StorePaymentMethod AS ENUM (
 	'on_session',
 	'off_session',
 	'none'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ContentType')
+THEN
 CREATE TYPE ContentType AS ENUM (
 	'file'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ProductMediaType')
+THEN
 CREATE TYPE ProductMediaType AS ENUM (
 	'VIDEO',
 	'IMAGE'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ProductTypeKind')
+THEN
 CREATE TYPE ProductTypeKind AS ENUM (
 	'normal',
 	'gift_card'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'InclusionType')
+THEN
 CREATE TYPE InclusionType AS ENUM (
 	'include',
 	'exclude'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ShippingMethodType')
+THEN
 CREATE TYPE ShippingMethodType AS ENUM (
 	'price',
 	'weight'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'StaffSalaryPeriod')
+THEN
 CREATE TYPE StaffSalaryPeriod AS ENUM (
 	'hourly',
 	'daily',
 	'monthly'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'StockAvailability')
+THEN
 CREATE TYPE StockAvailability AS ENUM (
 	'in_stock',
 	'out_of_stock'
 );
+END IF;
+END $$;
 
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'WarehouseClickAndCollectOption')
+THEN
 CREATE TYPE WarehouseClickAndCollectOption AS ENUM (
 	'disabled',
 	'local',
 	'all'
 );
+END IF;
+END $$;
+
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ComplianceStatus')
+THEN
+CREATE TYPE ComplianceStatus AS ENUM (
+    'created',
+    'running',
+    'finished',
+    'failed',
+    'removed'
+);
+END IF;
+END $$;
+
+
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname ILIKE 'ComplianceType')
+THEN
+CREATE TYPE ComplianceType AS ENUM (
+    'daily',
+    'adhoc'
+);
+END IF;
+END $$;

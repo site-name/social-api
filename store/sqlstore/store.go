@@ -28,7 +28,7 @@ import (
 	"github.com/sitename/sitename/db"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/models"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"gorm.io/gorm"
 )
@@ -72,7 +72,7 @@ type SqlStore struct {
 
 	replicaLagHandles []*dbsql.DB
 	stores            *SqlStoreStores
-	settings          *model.SqlSettings
+	settings          *model_helper.SqlSettings
 	lockedToMaster    bool
 	context           context.Context
 	metrics           einterfaces.MetricsInterface
@@ -80,7 +80,7 @@ type SqlStore struct {
 
 // New initializes connections to postgresql database
 // also migrates all the sql schema using gorp
-func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlStore {
+func New(settings model_helper.SqlSettings, metrics einterfaces.MetricsInterface) *SqlStore {
 	store := &SqlStore{
 		rrCounter: 0,
 		srCounter: 0,
@@ -114,7 +114,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 }
 
 // setupConnection opens connection to database, check if it works by ping
-func setupConnection(connType string, dataSource string, settings *model.SqlSettings) (*dbsql.DB, error) {
+func setupConnection(connType string, dataSource string, settings *model_helper.SqlSettings) (*dbsql.DB, error) {
 	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open SQL connection")
@@ -247,8 +247,6 @@ func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
 	if err := ss.GetReplica().QueryRow(sqlVersionQuery).Scan(&version); err != nil {
 		return "", err
 	}
-
-	models.NewQuery()
 
 	return version, nil
 }
@@ -485,12 +483,6 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	return results
 }
 
-type m2mRelation struct {
-	table     model.Modeler
-	field     string
-	joinTable model.Modeler
-}
-
 func (ss *SqlStore) migrate(direction migrationDirection, drRun bool) error {
 	engine, err := ss.initMorph(drRun)
 	if err != nil {
@@ -589,7 +581,7 @@ func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 	return migrations, nil
 }
 
-func newDbWrapper(handle *dbsql.DB, sqlSettings *model.SqlSettings) *sqlDBWrapper {
+func newDbWrapper(handle *dbsql.DB, sqlSettings *model_helper.SqlSettings) *sqlDBWrapper {
 	return newSqlDbWrapper(handle, time.Duration(*sqlSettings.QueryTimeout), *sqlSettings.Trace)
 }
 

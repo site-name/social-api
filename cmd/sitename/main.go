@@ -13,6 +13,7 @@ import (
 	_ "github.com/prometheus/client_golang/prometheus"
 	_ "github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sitename/sitename/cmd/sitename/commands"
+	_ "github.com/sitename/sitename/model_helper"
 	_ "github.com/sitename/sitename/modules/imports"
 	_ "github.com/tylerb/graceful"
 	_ "gopkg.in/olivere/elastic.v6"

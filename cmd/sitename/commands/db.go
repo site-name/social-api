@@ -11,6 +11,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -128,7 +129,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 	defer sqlStore.Close()
 
 	// check if we already populated categories for the first time
-	_, err = sqlStore.System().GetByName(model.PopulateCategoriesForTheFirstTimeKey)
+	_, err = sqlStore.System().GetByName(model_helper.PopulateCategoriesForTheFirstTimeKey)
 	if err == nil {
 		// means populated, return now
 		slog.Info("categories already populated. Returning now.")
@@ -149,7 +150,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	categories := model.Categories{}
+	categories := model.CategorySlice{}
 	meetMap := map[string]*model.Category{}
 
 	for _, cate := range rawCategories {
@@ -174,8 +175,8 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 				desired := &model.Category{
 					Slug:  slug.Make(slugg),
 					Name:  path.CategoryNameEn,
-					Level: uint8(pathIdx),
-					NameTranslation: model.StringMAP{
+					Level: int16(pathIdx),
+					NameTranslation: model_helper.Map[string, string]{
 						"vi": path.CategoryName,
 					},
 				}
@@ -183,7 +184,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 					desired.Images = strings.Join(cate.Images, " ")
 				}
 				if pathIdx > 0 {
-					desired.ParentID = &meetMap[parentKey].Id
+					desired.ParentID = &meetMap[parentKey].ID
 				}
 
 				categories = append(categories, desired)
@@ -194,7 +195,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 
 	slog.Info("Populating categories for the first time...")
 
-	_, err = sqlStore.GetMaster().Exec("DELETE FROM " + model.CategoryTableName)
+	_, err = sqlStore.GetMaster().Exec("DELETE FROM " + model.TableNames.Categories)
 	if err != nil {
 		slog.Error("failed to delete categories from db")
 		return err
@@ -212,7 +213,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 
 	// indicate populated
 	return sqlStore.System().Save(&model.System{
-		Name:  model.PopulateCategoriesForTheFirstTimeKey,
+		Name:  model_helper.PopulateCategoriesForTheFirstTimeKey,
 		Value: "true",
 	})
 }
@@ -263,7 +264,7 @@ func initDbCmdF(command *cobra.Command, _ []string) error {
 	}
 	defer file.Close()
 
-	var config *model.Config
+	var config *model_helper.Config
 	err = json.NewDecoder(file).Decode(&config)
 	if err != nil {
 		return fmt.Errorf("unable to decode custom defaults configuration: %w", err)

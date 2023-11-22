@@ -283,9 +283,11 @@ var UserWhere = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
+	DefaultBillingAddress       string
 	DefaultShippingAddress      string
 	Wishlist                    string
 	Checkouts                   string
+	Compliances                 string
 	CustomerEvents              string
 	CustomerNotes               string
 	ExportEvents                string
@@ -297,11 +299,14 @@ var UserRels = struct {
 	Orders                      string
 	StaffShopStaffs             string
 	StaffNotificationRecipients string
+	UserAccessTokens            string
 	UserAddresses               string
 }{
+	DefaultBillingAddress:       "DefaultBillingAddress",
 	DefaultShippingAddress:      "DefaultShippingAddress",
 	Wishlist:                    "Wishlist",
 	Checkouts:                   "Checkouts",
+	Compliances:                 "Compliances",
 	CustomerEvents:              "CustomerEvents",
 	CustomerNotes:               "CustomerNotes",
 	ExportEvents:                "ExportEvents",
@@ -313,14 +318,17 @@ var UserRels = struct {
 	Orders:                      "Orders",
 	StaffShopStaffs:             "StaffShopStaffs",
 	StaffNotificationRecipients: "StaffNotificationRecipients",
+	UserAccessTokens:            "UserAccessTokens",
 	UserAddresses:               "UserAddresses",
 }
 
 // userR is where relationships are stored.
 type userR struct {
+	DefaultBillingAddress       *Address                        `boil:"DefaultBillingAddress" json:"DefaultBillingAddress" toml:"DefaultBillingAddress" yaml:"DefaultBillingAddress"`
 	DefaultShippingAddress      *Address                        `boil:"DefaultShippingAddress" json:"DefaultShippingAddress" toml:"DefaultShippingAddress" yaml:"DefaultShippingAddress"`
 	Wishlist                    *Wishlist                       `boil:"Wishlist" json:"Wishlist" toml:"Wishlist" yaml:"Wishlist"`
 	Checkouts                   CheckoutSlice                   `boil:"Checkouts" json:"Checkouts" toml:"Checkouts" yaml:"Checkouts"`
+	Compliances                 ComplianceSlice                 `boil:"Compliances" json:"Compliances" toml:"Compliances" yaml:"Compliances"`
 	CustomerEvents              CustomerEventSlice              `boil:"CustomerEvents" json:"CustomerEvents" toml:"CustomerEvents" yaml:"CustomerEvents"`
 	CustomerNotes               CustomerNoteSlice               `boil:"CustomerNotes" json:"CustomerNotes" toml:"CustomerNotes" yaml:"CustomerNotes"`
 	ExportEvents                ExportEventSlice                `boil:"ExportEvents" json:"ExportEvents" toml:"ExportEvents" yaml:"ExportEvents"`
@@ -332,12 +340,20 @@ type userR struct {
 	Orders                      OrderSlice                      `boil:"Orders" json:"Orders" toml:"Orders" yaml:"Orders"`
 	StaffShopStaffs             ShopStaffSlice                  `boil:"StaffShopStaffs" json:"StaffShopStaffs" toml:"StaffShopStaffs" yaml:"StaffShopStaffs"`
 	StaffNotificationRecipients StaffNotificationRecipientSlice `boil:"StaffNotificationRecipients" json:"StaffNotificationRecipients" toml:"StaffNotificationRecipients" yaml:"StaffNotificationRecipients"`
+	UserAccessTokens            UserAccessTokenSlice            `boil:"UserAccessTokens" json:"UserAccessTokens" toml:"UserAccessTokens" yaml:"UserAccessTokens"`
 	UserAddresses               UserAddressSlice                `boil:"UserAddresses" json:"UserAddresses" toml:"UserAddresses" yaml:"UserAddresses"`
 }
 
 // NewStruct creates a new relationship struct
 func (*userR) NewStruct() *userR {
 	return &userR{}
+}
+
+func (r *userR) GetDefaultBillingAddress() *Address {
+	if r == nil {
+		return nil
+	}
+	return r.DefaultBillingAddress
 }
 
 func (r *userR) GetDefaultShippingAddress() *Address {
@@ -359,6 +375,13 @@ func (r *userR) GetCheckouts() CheckoutSlice {
 		return nil
 	}
 	return r.Checkouts
+}
+
+func (r *userR) GetCompliances() ComplianceSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Compliances
 }
 
 func (r *userR) GetCustomerEvents() CustomerEventSlice {
@@ -436,6 +459,13 @@ func (r *userR) GetStaffNotificationRecipients() StaffNotificationRecipientSlice
 		return nil
 	}
 	return r.StaffNotificationRecipients
+}
+
+func (r *userR) GetUserAccessTokens() UserAccessTokenSlice {
+	if r == nil {
+		return nil
+	}
+	return r.UserAccessTokens
 }
 
 func (r *userR) GetUserAddresses() UserAddressSlice {
@@ -547,6 +577,17 @@ func (q userQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
+// DefaultBillingAddress pointed to by the foreign key.
+func (o *User) DefaultBillingAddress(mods ...qm.QueryMod) addressQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.DefaultBillingAddressID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Addresses(queryMods...)
+}
+
 // DefaultShippingAddress pointed to by the foreign key.
 func (o *User) DefaultShippingAddress(mods ...qm.QueryMod) addressQuery {
 	queryMods := []qm.QueryMod{
@@ -581,6 +622,20 @@ func (o *User) Checkouts(mods ...qm.QueryMod) checkoutQuery {
 	)
 
 	return Checkouts(queryMods...)
+}
+
+// Compliances retrieves all the compliance's Compliances with an executor.
+func (o *User) Compliances(mods ...qm.QueryMod) complianceQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"compliances\".\"user_id\"=?", o.ID),
+	)
+
+	return Compliances(queryMods...)
 }
 
 // CustomerEvents retrieves all the customer_event's CustomerEvents with an executor.
@@ -737,6 +792,20 @@ func (o *User) StaffNotificationRecipients(mods ...qm.QueryMod) staffNotificatio
 	return StaffNotificationRecipients(queryMods...)
 }
 
+// UserAccessTokens retrieves all the user_access_token's UserAccessTokens with an executor.
+func (o *User) UserAccessTokens(mods ...qm.QueryMod) userAccessTokenQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"user_access_tokens\".\"user_id\"=?", o.ID),
+	)
+
+	return UserAccessTokens(queryMods...)
+}
+
 // UserAddresses retrieves all the user_address's UserAddresses with an executor.
 func (o *User) UserAddresses(mods ...qm.QueryMod) userAddressQuery {
 	var queryMods []qm.QueryMod
@@ -749,6 +818,122 @@ func (o *User) UserAddresses(mods ...qm.QueryMod) userAddressQuery {
 	)
 
 	return UserAddresses(queryMods...)
+}
+
+// LoadDefaultBillingAddress allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (userL) LoadDefaultBillingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		if !queries.IsNil(object.DefaultBillingAddressID) {
+			args = append(args, object.DefaultBillingAddressID)
+		}
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.DefaultBillingAddressID) {
+					continue Outer
+				}
+			}
+
+			if !queries.IsNil(obj.DefaultBillingAddressID) {
+				args = append(args, obj.DefaultBillingAddressID)
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`addresses`),
+		qm.WhereIn(`addresses.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Address")
+	}
+
+	var resultSlice []*Address
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Address")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for addresses")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for addresses")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.DefaultBillingAddress = foreign
+		if foreign.R == nil {
+			foreign.R = &addressR{}
+		}
+		foreign.R.DefaultBillingAddressUsers = append(foreign.R.DefaultBillingAddressUsers, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.DefaultBillingAddressID, foreign.ID) {
+				local.R.DefaultBillingAddress = foreign
+				if foreign.R == nil {
+					foreign.R = &addressR{}
+				}
+				foreign.R.DefaultBillingAddressUsers = append(foreign.R.DefaultBillingAddressUsers, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadDefaultShippingAddress allows an eager lookup of values, cached into the
@@ -1073,6 +1258,113 @@ func (userL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular
 				local.R.Checkouts = append(local.R.Checkouts, foreign)
 				if foreign.R == nil {
 					foreign.R = &checkoutR{}
+				}
+				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCompliances allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCompliances(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`compliances`),
+		qm.WhereIn(`compliances.user_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load compliances")
+	}
+
+	var resultSlice []*Compliance
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice compliances")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on compliances")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for compliances")
+	}
+
+	if singular {
+		object.R.Compliances = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &complianceR{}
+			}
+			foreign.R.User = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UserID {
+				local.R.Compliances = append(local.R.Compliances, foreign)
+				if foreign.R == nil {
+					foreign.R = &complianceR{}
 				}
 				foreign.R.User = local
 				break
@@ -2260,6 +2552,113 @@ func (userL) LoadStaffNotificationRecipients(ctx context.Context, e boil.Context
 	return nil
 }
 
+// LoadUserAccessTokens allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadUserAccessTokens(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`user_access_tokens`),
+		qm.WhereIn(`user_access_tokens.user_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load user_access_tokens")
+	}
+
+	var resultSlice []*UserAccessToken
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice user_access_tokens")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on user_access_tokens")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user_access_tokens")
+	}
+
+	if singular {
+		object.R.UserAccessTokens = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &userAccessTokenR{}
+			}
+			foreign.R.User = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UserID {
+				local.R.UserAccessTokens = append(local.R.UserAccessTokens, foreign)
+				if foreign.R == nil {
+					foreign.R = &userAccessTokenR{}
+				}
+				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadUserAddresses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
@@ -2364,6 +2763,86 @@ func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, sing
 		}
 	}
 
+	return nil
+}
+
+// SetDefaultBillingAddress of the user to the related item.
+// Sets o.R.DefaultBillingAddress to related.
+// Adds o to related.R.DefaultBillingAddressUsers.
+func (o *User) SetDefaultBillingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"users\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"default_billing_address_id"}),
+		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.DefaultBillingAddressID, related.ID)
+	if o.R == nil {
+		o.R = &userR{
+			DefaultBillingAddress: related,
+		}
+	} else {
+		o.R.DefaultBillingAddress = related
+	}
+
+	if related.R == nil {
+		related.R = &addressR{
+			DefaultBillingAddressUsers: UserSlice{o},
+		}
+	} else {
+		related.R.DefaultBillingAddressUsers = append(related.R.DefaultBillingAddressUsers, o)
+	}
+
+	return nil
+}
+
+// RemoveDefaultBillingAddress relationship.
+// Sets o.R.DefaultBillingAddress to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *User) RemoveDefaultBillingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+	var err error
+
+	queries.SetScanner(&o.DefaultBillingAddressID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("default_billing_address_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.DefaultBillingAddress = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.DefaultBillingAddressUsers {
+		if queries.Equal(o.DefaultBillingAddressID, ri.DefaultBillingAddressID) {
+			continue
+		}
+
+		ln := len(related.R.DefaultBillingAddressUsers)
+		if ln > 1 && i < ln-1 {
+			related.R.DefaultBillingAddressUsers[i] = related.R.DefaultBillingAddressUsers[ln-1]
+		}
+		related.R.DefaultBillingAddressUsers = related.R.DefaultBillingAddressUsers[:ln-1]
+		break
+	}
 	return nil
 }
 
@@ -2621,6 +3100,59 @@ func (o *User) RemoveCheckouts(ctx context.Context, exec boil.ContextExecutor, r
 		}
 	}
 
+	return nil
+}
+
+// AddCompliances adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.Compliances.
+// Sets related.R.User appropriately.
+func (o *User) AddCompliances(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Compliance) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UserID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"compliances\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+				strmangle.WhereClause("\"", "\"", 2, compliancePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			Compliances: related,
+		}
+	} else {
+		o.R.Compliances = append(o.R.Compliances, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &complianceR{
+				User: o,
+			}
+		} else {
+			rel.R.User = o
+		}
+	}
 	return nil
 }
 
@@ -3944,6 +4476,59 @@ func (o *User) RemoveStaffNotificationRecipients(ctx context.Context, exec boil.
 		}
 	}
 
+	return nil
+}
+
+// AddUserAccessTokens adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.UserAccessTokens.
+// Sets related.R.User appropriately.
+func (o *User) AddUserAccessTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAccessToken) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UserID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"user_access_tokens\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+				strmangle.WhereClause("\"", "\"", 2, userAccessTokenPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			UserAccessTokens: related,
+		}
+	} else {
+		o.R.UserAccessTokens = append(o.R.UserAccessTokens, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &userAccessTokenR{
+				User: o,
+			}
+		} else {
+			rel.R.User = o
+		}
+	}
 	return nil
 }
 

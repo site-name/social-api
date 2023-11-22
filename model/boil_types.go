@@ -2372,6 +2372,68 @@ func (e NullAttributeentitytype) Value() (driver.Value, error) {
 	return string(e.Val), nil
 }
 
+type Compliancestatus string
+
+// Enum values for Compliancestatus
+const (
+	CompliancestatusCreated  Compliancestatus = "created"
+	CompliancestatusRunning  Compliancestatus = "running"
+	CompliancestatusFinished Compliancestatus = "finished"
+	CompliancestatusFailed   Compliancestatus = "failed"
+	CompliancestatusRemoved  Compliancestatus = "removed"
+)
+
+func AllCompliancestatus() []Compliancestatus {
+	return []Compliancestatus{
+		CompliancestatusCreated,
+		CompliancestatusRunning,
+		CompliancestatusFinished,
+		CompliancestatusFailed,
+		CompliancestatusRemoved,
+	}
+}
+
+func (e Compliancestatus) IsValid() error {
+	switch e {
+	case CompliancestatusCreated, CompliancestatusRunning, CompliancestatusFinished, CompliancestatusFailed, CompliancestatusRemoved:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e Compliancestatus) String() string {
+	return string(e)
+}
+
+type Compliancetype string
+
+// Enum values for Compliancetype
+const (
+	CompliancetypeDaily Compliancetype = "daily"
+	CompliancetypeAdhoc Compliancetype = "adhoc"
+)
+
+func AllCompliancetype() []Compliancetype {
+	return []Compliancetype{
+		CompliancetypeDaily,
+		CompliancetypeAdhoc,
+	}
+}
+
+func (e Compliancetype) IsValid() error {
+	switch e {
+	case CompliancetypeDaily, CompliancetypeAdhoc:
+		return nil
+	default:
+		return errors.New("enum is not valid")
+	}
+}
+
+func (e Compliancetype) String() string {
+	return string(e)
+}
+
 type Customereventtype string
 
 // Enum values for Customereventtype

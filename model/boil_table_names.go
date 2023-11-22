@@ -24,9 +24,11 @@ var TableNames = struct {
 	Channels                       string
 	CheckoutLines                  string
 	Checkouts                      string
+	ClusterDiscoveries             string
 	CollectionChannelListings      string
 	CollectionTranslations         string
 	Collections                    string
+	Compliances                    string
 	CustomerEvents                 string
 	CustomerNotes                  string
 	DigitalContentUrls             string
@@ -96,6 +98,7 @@ var TableNames = struct {
 	Tokens                         string
 	Transactions                   string
 	UploadSessions                 string
+	UserAccessTokens               string
 	UserAddresses                  string
 	Users                          string
 	VariantMedia                   string
@@ -134,9 +137,11 @@ var TableNames = struct {
 	Channels:                       "channels",
 	CheckoutLines:                  "checkout_lines",
 	Checkouts:                      "checkouts",
+	ClusterDiscoveries:             "cluster_discoveries",
 	CollectionChannelListings:      "collection_channel_listings",
 	CollectionTranslations:         "collection_translations",
 	Collections:                    "collections",
+	Compliances:                    "compliances",
 	CustomerEvents:                 "customer_events",
 	CustomerNotes:                  "customer_notes",
 	DigitalContentUrls:             "digital_content_urls",
@@ -206,6 +211,7 @@ var TableNames = struct {
 	Tokens:                         "tokens",
 	Transactions:                   "transactions",
 	UploadSessions:                 "upload_sessions",
+	UserAccessTokens:               "user_access_tokens",
 	UserAddresses:                  "user_addresses",
 	Users:                          "users",
 	VariantMedia:                   "variant_media",

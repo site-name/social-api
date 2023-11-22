@@ -4,12 +4,12 @@ package store
 
 import (
 	"context"
-	"database/sql"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/volatiletech/sqlboiler/boil"
 	"gorm.io/gorm"
@@ -29,7 +29,7 @@ type Store interface {
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
 	FinalizeTransaction(tx *gorm.DB)             // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
 
-	GetMaster() *sql.DB               // GetMaster returns a gorm wrapper
+	GetMaster() ContextRunner         // GetMaster returns a gorm wrapper
 	GetReplica() boil.ContextExecutor // GetReplica returns a gorm wrapper
 
 	// GetQueryBuilder create squirrel sql query builder.
@@ -586,13 +586,13 @@ type (
 	MenuItemTranslationStore interface {
 	}
 	MenuStore interface {
-		Delete(ids []string) (int64, *model.AppError)
+		Delete(ids []string) (int64, error)
 		Save(menu *model.Menu) (*model.Menu, error) // Save insert given menu into database and returns it
 		GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error)
 		FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error)
 	}
 	MenuItemStore interface {
-		Delete(ids []string) (int64, *model.AppError)
+		Delete(ids []string) (int64, error)
 		Save(menuItem *model.MenuItem) (*model.MenuItem, error) // Save insert given menu item into database and returns it
 		GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error)
 		FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error)
@@ -811,16 +811,16 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ScanFields(addr *model.Address) []any
-		Upsert(tx *sql.Tx, address *model.Address) (*model.Address, error)
-		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
-		DeleteAddresses(tx *sql.Tx, addressIDs []string) *model.AppError            // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
+		Upsert(tx ContextRunner, address *model.Address) (*model.Address, error)
+		Get(addressID string) (*model.Address, error)                                         // Get returns an Address with given addressID is exist
+		DeleteAddresses(tx ContextRunner, addressIDs []string) error                          // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *model_helper.AddressFilterOptions) (model.AddressSlice, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
-		RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
+		RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) error
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
-		AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
+		AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) error
 		ClearCaches()
 		ScanFields(user *model.User) []any
 		Save(user *model.User) (*model.User, error)                               // Save takes an user struct and save into database

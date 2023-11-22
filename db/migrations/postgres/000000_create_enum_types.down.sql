@@ -28,3 +28,7 @@ DROP TYPE InclusionType;
 DROP TYPE ShippingMethodType;
 DROP TYPE StaffSalaryPeriod;
 DROP TYPE WarehouseClickAndCollectOption;
+DROP TYPE StorePaymentMethod;
+DROP TYPE StockAvailability;
+DROP TYPE ComplianceStatus;
+DROP TYPE ComplianceType;

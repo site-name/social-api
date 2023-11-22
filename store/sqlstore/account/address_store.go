@@ -2,17 +2,17 @@ package account
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/models"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
 )
 
 type SqlAddressStore struct {
@@ -24,9 +24,9 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 	return &SqlAddressStore{Store: sqlStore}
 }
 
-func (as *SqlAddressStore) ScanFields(addr *model.Address) []interface{} {
-	return []interface{}{
-		&addr.Id,
+func (as *SqlAddressStore) ScanFields(addr *model.Address) []any {
+	return []any{
+		&addr.ID,
 		&addr.FirstName,
 		&addr.LastName,
 		&addr.CompanyName,
@@ -38,17 +38,22 @@ func (as *SqlAddressStore) ScanFields(addr *model.Address) []interface{} {
 		&addr.Country,
 		&addr.CountryArea,
 		&addr.Phone,
-		&addr.CreateAt,
-		&addr.UpdateAt,
+		&addr.CreatedAt,
+		&addr.UpdatedAt,
 	}
 }
 
-func (as *SqlAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
+func (as *SqlAddressStore) Upsert(transaction store.ContextRunner, address *model.Address) (*model.Address, error) {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
 
-	var err = transaction.Save(address).Error
+	model_helper.AddressCommonPre(address)
+	if err := model_helper.AddressIsValid(address); err != nil {
+		return nil, err
+	}
+
+	err := address.Upsert(as.Context(), transaction, true, []string{}, boil.Infer(), boil.Infer())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to upsert address")
 	}
@@ -57,19 +62,17 @@ func (as *SqlAddressStore) Upsert(transaction *gorm.DB, address *model.Address) 
 }
 
 func (as *SqlAddressStore) Get(id string) (*model.Address, error) {
-	var res model.Address
-	err := as.GetReplica().First(&res, "Id = ?", id).Error
+	address, err := model.FindAddress(as.Context(), as.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AddressTableName, id)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, store.NewErrNotFound(model.TableNames.Addresses, id)
 		}
-		return nil, errors.Wrap(err, "failed to find address with id="+id)
 	}
-	return &res, nil
+	return address, nil
 }
 
 // FilterByOption finds and returns a list of address(es) filtered by given option
-func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
+func (as *SqlAddressStore) FilterByOption(option *model_helper.AddressFilterOptions) (model.AddressSlice, error) {
 	var (
 		res      []*model.Address
 		db       = as.GetReplica()

@@ -3,7 +3,7 @@ package commands
 import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/util"
@@ -36,7 +36,7 @@ func initDBCommandContext(configDSN string, readOnlyConfigStore bool) (*app.App,
 	if err := util.TranslationsPreInit(); err != nil {
 		return nil, err
 	}
-	model.AppErrorInit(i18n.T)
+	model_helper.AppErrorInit(i18n.T)
 
 	s, err := app.NewServer(
 		app.Config(configDSN, readOnlyConfigStore, nil),

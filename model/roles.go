@@ -24,16 +24,16 @@ import (
 
 // Role is an object representing the database table.
 type Role struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name          string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	DisplayName   string      `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
-	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	CreatedAt     int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt     int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeleteAt      null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
-	Permissions   string      `boil:"permissions" json:"permissions" toml:"permissions" yaml:"permissions"`
-	SchemeManaged bool        `boil:"scheme_managed" json:"scheme_managed" toml:"scheme_managed" yaml:"scheme_managed"`
-	BuiltIn       bool        `boil:"built_in" json:"built_in" toml:"built_in" yaml:"built_in"`
+	ID            string     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name          string     `boil:"name" json:"name" toml:"name" yaml:"name"`
+	DisplayName   string     `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	Description   string     `boil:"description" json:"description" toml:"description" yaml:"description"`
+	CreatedAt     int64      `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt     int64      `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeleteAt      null.Int64 `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
+	Permissions   string     `boil:"permissions" json:"permissions" toml:"permissions" yaml:"permissions"`
+	SchemeManaged bool       `boil:"scheme_managed" json:"scheme_managed" toml:"scheme_managed" yaml:"scheme_managed"`
+	BuiltIn       bool       `boil:"built_in" json:"built_in" toml:"built_in" yaml:"built_in"`
 
 	R *roleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L roleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -93,7 +93,7 @@ var RoleWhere = struct {
 	ID            whereHelperstring
 	Name          whereHelperstring
 	DisplayName   whereHelperstring
-	Description   whereHelpernull_String
+	Description   whereHelperstring
 	CreatedAt     whereHelperint64
 	UpdatedAt     whereHelperint64
 	DeleteAt      whereHelpernull_Int64
@@ -104,7 +104,7 @@ var RoleWhere = struct {
 	ID:            whereHelperstring{field: "\"roles\".\"id\""},
 	Name:          whereHelperstring{field: "\"roles\".\"name\""},
 	DisplayName:   whereHelperstring{field: "\"roles\".\"display_name\""},
-	Description:   whereHelpernull_String{field: "\"roles\".\"description\""},
+	Description:   whereHelperstring{field: "\"roles\".\"description\""},
 	CreatedAt:     whereHelperint64{field: "\"roles\".\"created_at\""},
 	UpdatedAt:     whereHelperint64{field: "\"roles\".\"updated_at\""},
 	DeleteAt:      whereHelpernull_Int64{field: "\"roles\".\"delete_at\""},
@@ -131,8 +131,8 @@ type roleL struct{}
 
 var (
 	roleAllColumns            = []string{"id", "name", "display_name", "description", "created_at", "updated_at", "delete_at", "permissions", "scheme_managed", "built_in"}
-	roleColumnsWithoutDefault = []string{"name", "display_name", "created_at", "updated_at", "permissions", "scheme_managed", "built_in"}
-	roleColumnsWithDefault    = []string{"id", "description", "delete_at"}
+	roleColumnsWithoutDefault = []string{"name", "display_name", "description", "created_at", "updated_at", "permissions", "scheme_managed", "built_in"}
+	roleColumnsWithDefault    = []string{"id", "delete_at"}
 	rolePrimaryKeyColumns     = []string{"id"}
 	roleGeneratedColumns      = []string{}
 )

@@ -231,6 +231,7 @@ var AddressRels = struct {
 	BillingAddressOrders        string
 	Shops                       string
 	UserAddresses               string
+	DefaultBillingAddressUsers  string
 	DefaultShippingAddressUsers string
 	Warehouses                  string
 }{
@@ -238,6 +239,7 @@ var AddressRels = struct {
 	BillingAddressOrders:        "BillingAddressOrders",
 	Shops:                       "Shops",
 	UserAddresses:               "UserAddresses",
+	DefaultBillingAddressUsers:  "DefaultBillingAddressUsers",
 	DefaultShippingAddressUsers: "DefaultShippingAddressUsers",
 	Warehouses:                  "Warehouses",
 }
@@ -248,6 +250,7 @@ type addressR struct {
 	BillingAddressOrders        OrderSlice       `boil:"BillingAddressOrders" json:"BillingAddressOrders" toml:"BillingAddressOrders" yaml:"BillingAddressOrders"`
 	Shops                       ShopSlice        `boil:"Shops" json:"Shops" toml:"Shops" yaml:"Shops"`
 	UserAddresses               UserAddressSlice `boil:"UserAddresses" json:"UserAddresses" toml:"UserAddresses" yaml:"UserAddresses"`
+	DefaultBillingAddressUsers  UserSlice        `boil:"DefaultBillingAddressUsers" json:"DefaultBillingAddressUsers" toml:"DefaultBillingAddressUsers" yaml:"DefaultBillingAddressUsers"`
 	DefaultShippingAddressUsers UserSlice        `boil:"DefaultShippingAddressUsers" json:"DefaultShippingAddressUsers" toml:"DefaultShippingAddressUsers" yaml:"DefaultShippingAddressUsers"`
 	Warehouses                  WarehouseSlice   `boil:"Warehouses" json:"Warehouses" toml:"Warehouses" yaml:"Warehouses"`
 }
@@ -283,6 +286,13 @@ func (r *addressR) GetUserAddresses() UserAddressSlice {
 		return nil
 	}
 	return r.UserAddresses
+}
+
+func (r *addressR) GetDefaultBillingAddressUsers() UserSlice {
+	if r == nil {
+		return nil
+	}
+	return r.DefaultBillingAddressUsers
 }
 
 func (r *addressR) GetDefaultShippingAddressUsers() UserSlice {
@@ -455,6 +465,20 @@ func (o *Address) UserAddresses(mods ...qm.QueryMod) userAddressQuery {
 	)
 
 	return UserAddresses(queryMods...)
+}
+
+// DefaultBillingAddressUsers retrieves all the user's Users with an executor via default_billing_address_id column.
+func (o *Address) DefaultBillingAddressUsers(mods ...qm.QueryMod) userQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"users\".\"default_billing_address_id\"=?", o.ID),
+	)
+
+	return Users(queryMods...)
 }
 
 // DefaultShippingAddressUsers retrieves all the user's Users with an executor via default_shipping_address_id column.
@@ -905,6 +929,113 @@ func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, s
 					foreign.R = &userAddressR{}
 				}
 				foreign.R.Address = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadDefaultBillingAddressUsers allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (addressL) LoadDefaultBillingAddressUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+	var slice []*Address
+	var object *Address
+
+	if singular {
+		var ok bool
+		object, ok = maybeAddress.(*Address)
+		if !ok {
+			object = new(Address)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAddress)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAddress))
+			}
+		}
+	} else {
+		s, ok := maybeAddress.(*[]*Address)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAddress)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAddress))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &addressR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &addressR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.ID) {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.default_billing_address_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load users")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice users")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if singular {
+		object.R.DefaultBillingAddressUsers = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &userR{}
+			}
+			foreign.R.DefaultBillingAddress = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if queries.Equal(local.ID, foreign.DefaultBillingAddressID) {
+				local.R.DefaultBillingAddressUsers = append(local.R.DefaultBillingAddressUsers, foreign)
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.DefaultBillingAddress = local
 				break
 			}
 		}
@@ -1558,6 +1689,133 @@ func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecuto
 			rel.R.Address = o
 		}
 	}
+	return nil
+}
+
+// AddDefaultBillingAddressUsers adds the given related objects to the existing relationships
+// of the address, optionally inserting them as new records.
+// Appends related to o.R.DefaultBillingAddressUsers.
+// Sets related.R.DefaultBillingAddress appropriately.
+func (o *Address) AddDefaultBillingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			queries.Assign(&rel.DefaultBillingAddressID, o.ID)
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"users\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"default_billing_address_id"}),
+				strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			queries.Assign(&rel.DefaultBillingAddressID, o.ID)
+		}
+	}
+
+	if o.R == nil {
+		o.R = &addressR{
+			DefaultBillingAddressUsers: related,
+		}
+	} else {
+		o.R.DefaultBillingAddressUsers = append(o.R.DefaultBillingAddressUsers, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &userR{
+				DefaultBillingAddress: o,
+			}
+		} else {
+			rel.R.DefaultBillingAddress = o
+		}
+	}
+	return nil
+}
+
+// SetDefaultBillingAddressUsers removes all previously related items of the
+// address replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.DefaultBillingAddress's DefaultBillingAddressUsers accordingly.
+// Replaces o.R.DefaultBillingAddressUsers with related.
+// Sets related.R.DefaultBillingAddress's DefaultBillingAddressUsers accordingly.
+func (o *Address) SetDefaultBillingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+	query := "update \"users\" set \"default_billing_address_id\" = null where \"default_billing_address_id\" = $1"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.DefaultBillingAddressUsers {
+			queries.SetScanner(&rel.DefaultBillingAddressID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.DefaultBillingAddress = nil
+		}
+		o.R.DefaultBillingAddressUsers = nil
+	}
+
+	return o.AddDefaultBillingAddressUsers(ctx, exec, insert, related...)
+}
+
+// RemoveDefaultBillingAddressUsers relationships from objects passed in.
+// Removes related items from R.DefaultBillingAddressUsers (uses pointer comparison, removal does not keep order)
+// Sets related.R.DefaultBillingAddress.
+func (o *Address) RemoveDefaultBillingAddressUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.DefaultBillingAddressID, nil)
+		if rel.R != nil {
+			rel.R.DefaultBillingAddress = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("default_billing_address_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.DefaultBillingAddressUsers {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.DefaultBillingAddressUsers)
+			if ln > 1 && i < ln-1 {
+				o.R.DefaultBillingAddressUsers[i] = o.R.DefaultBillingAddressUsers[ln-1]
+			}
+			o.R.DefaultBillingAddressUsers = o.R.DefaultBillingAddressUsers[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/spf13/cobra"
 )
@@ -316,7 +317,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		}
 	}
 
-	CommandPrettyPrintln("id: " + ruser.Id)
+	CommandPrettyPrintln("id: " + ruser.ID)
 	CommandPrettyPrintln("username: " + ruser.Username)
 	CommandPrettyPrintln("nickname: " + ruser.Nickname)
 	CommandPrettyPrintln("first_name: " + ruser.FirstName)
@@ -354,7 +355,7 @@ func searchUserCmdF(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		CommandPrettyPrintln("id: " + user.Id)
+		CommandPrettyPrintln("id: " + user.ID)
 		CommandPrettyPrintln("username: " + user.Username)
 		CommandPrettyPrintln("nickname: " + user.Nickname)
 		// CommandPrettyPrintln("position: " + user.Position)
@@ -432,7 +433,7 @@ func verifyUserCmdF(command *cobra.Command, args []string) error {
 			CommandPrintErrorln("Unable to find user '" + args[i] + "'")
 			continue
 		}
-		if _, err := a.Srv().Store.User().VerifyEmail(user.Id, user.Email); err != nil {
+		if _, err := a.Srv().Store.User().VerifyEmail(user.ID, user.Email); err != nil {
 			CommandPrintErrorln("Unable to verify '" + args[i] + "' email. Error: " + err.Error())
 		}
 	}
@@ -653,7 +654,7 @@ func resetUserMfaCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.Srv().AccountService().DeactivateMfa(user.Id); err != nil {
+		if err := a.Srv().AccountService().DeactivateMfa(user.ID); err != nil {
 			return err
 		}
 
@@ -678,7 +679,7 @@ func updateUserEmailCmdF(command *cobra.Command, args []string) error {
 
 	newEmail := args[1]
 	newEmail = strings.ToLower(newEmail)
-	if !model.IsValidEmail(newEmail) {
+	if !model_helper.IsValidEmail(newEmail) {
 		return errors.New("Invalid email: '" + newEmail + "'")
 	}
 
@@ -722,7 +723,7 @@ func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 	}
 	password := args[1]
 
-	if err := a.Srv().Store.User().UpdatePassword(user.Id, model.HashPassword(password)); err != nil {
+	if err := a.Srv().Store.User().UpdatePassword(user.ID, model_helper.HashPassword(password)); err != nil {
 		return err
 	}
 

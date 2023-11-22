@@ -1,14 +1,14 @@
 package jobs
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type ElasticsearchIndexerInterface interface {
-	MakeWorker() model.Worker
+	MakeWorker() model_helper.Worker
 }
 
 type ElasticsearchAggregatorInterface interface {
-	MakeWorker() model.Worker
-	MakeScheduler() model.Scheduler
+	MakeWorker() model_helper.Worker
+	MakeScheduler() model_helper.Scheduler
 }

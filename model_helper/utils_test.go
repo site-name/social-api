@@ -91,13 +91,13 @@ func TestDraftJSContentToRawText(t *testing.T) {
 	data := StringInterface{
 		"blocks": []StringInterface{
 			{
-				"data": StringMap{
+				"data": Map[string, string]{
 					"text": "Hello World",
 				},
 				"type": "paragraph",
 			},
 			{
-				"data": StringMap{
+				"data": Map[string, string]{
 					"text": "Hello World",
 				},
 				"type": "paragraph",

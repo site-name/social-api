@@ -202,8 +202,8 @@ gen-serialized: ## Generates serialization methods for hot structs
   #would be to temporarily move all the structs to the same file,
   #but that involves a lot of manual work.
 	$(GO) install github.com/tinylib/msgp
-	$(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
-	$(GOBIN)/msgp -file=./model/account.user.go -tests=false -o=./model/account.user_serial_gen.go
+	$(GOBIN)/msgp -file=./model/sessions.go -tests=false -o=./model/session_serial_gen.go
+	$(GOBIN)/msgp -file=./model/users.go -tests=false -o=./model/user_serial_gen.go
 
 update-dependencies: ## Uses go get -u to update all the dependencies while holding back any that require it.
 	@echo Updating Dependencies

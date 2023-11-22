@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/spf13/cobra"
 )
@@ -121,7 +121,7 @@ func getConfigDSN(command *cobra.Command, env map[string]string) string {
 	return configDSN
 }
 
-func loadCustomDefaults() (*model.Config, error) {
+func loadCustomDefaults() (*model_helper.Config, error) {
 	customDefaultsPath := os.Getenv(CustomDefaultsEnvVar)
 	if customDefaultsPath == "" {
 		return nil, nil
@@ -133,7 +133,7 @@ func loadCustomDefaults() (*model.Config, error) {
 	}
 	defer file.Close()
 
-	var customDefaults *model.Config
+	var customDefaults *model_helper.Config
 	err = json.NewDecoder(file).Decode(&customDefaults)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode custom defaults configuration: %w", err)
