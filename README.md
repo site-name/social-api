@@ -15,3 +15,4 @@ go >= 1.17 is required
 
 Hello added
 Goodbye added
+SayName added
