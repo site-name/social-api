@@ -12,3 +12,5 @@ go >= 1.17 is required
 `$ go mod tidy`
 
 `$ go run cmd/sitename/main.go server`
+
+Hello added
