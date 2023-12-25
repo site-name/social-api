@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 
 	"github.com/sitename/sitename/modules/config"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/spf13/cobra"
@@ -176,7 +177,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 					Slug:  slug.Make(slugg),
 					Name:  path.CategoryNameEn,
 					Level: int16(pathIdx),
-					NameTranslation: model_helper.Map[string, string]{
+					NameTranslation: model_types.JsonMap{
 						"vi": path.CategoryName,
 					},
 				}

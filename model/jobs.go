@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,15 +24,15 @@ import (
 
 // Job is an object representing the database table.
 type Job struct {
-	ID             string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Type           Jobtype   `boil:"type" json:"type" toml:"type" yaml:"type"`
-	Priority       int64     `boil:"priority" json:"priority" toml:"priority" yaml:"priority"`
-	CreatedAt      int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	StartAt        int64     `boil:"start_at" json:"start_at" toml:"start_at" yaml:"start_at"`
-	LastActivityAt int64     `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
-	Status         Jobstatus `boil:"status" json:"status" toml:"status" yaml:"status"`
-	Progress       int64     `boil:"progress" json:"progress" toml:"progress" yaml:"progress"`
-	Data           null.JSON `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
+	ID             string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Type           Jobtype             `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Priority       int64               `boil:"priority" json:"priority" toml:"priority" yaml:"priority"`
+	CreatedAt      int64               `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	StartAt        int64               `boil:"start_at" json:"start_at" toml:"start_at" yaml:"start_at"`
+	LastActivityAt int64               `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
+	Status         Jobstatus           `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Progress       int64               `boil:"progress" json:"progress" toml:"progress" yaml:"progress"`
+	Data           model_types.JsonMap `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
 
 	R *jobR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L jobL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -157,7 +157,7 @@ var JobWhere = struct {
 	LastActivityAt whereHelperint64
 	Status         whereHelperJobstatus
 	Progress       whereHelperint64
-	Data           whereHelpernull_JSON
+	Data           whereHelpermodel_types_JsonMap
 }{
 	ID:             whereHelperstring{field: "\"jobs\".\"id\""},
 	Type:           whereHelperJobtype{field: "\"jobs\".\"type\""},
@@ -167,7 +167,7 @@ var JobWhere = struct {
 	LastActivityAt: whereHelperint64{field: "\"jobs\".\"last_activity_at\""},
 	Status:         whereHelperJobstatus{field: "\"jobs\".\"status\""},
 	Progress:       whereHelperint64{field: "\"jobs\".\"progress\""},
-	Data:           whereHelpernull_JSON{field: "\"jobs\".\"data\""},
+	Data:           whereHelpermodel_types_JsonMap{field: "\"jobs\".\"data\""},
 }
 
 // JobRels is where relationship names are stored.

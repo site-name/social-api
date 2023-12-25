@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,13 +24,13 @@ import (
 
 // PageTranslation is an object representing the database table.
 type PageTranslation struct {
-	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode   Languagecode `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	PageID         string       `boil:"page_id" json:"page_id" toml:"page_id" yaml:"page_id"`
-	Title          string       `boil:"title" json:"title" toml:"title" yaml:"title"`
-	Content        null.String  `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	SeoTitle       null.String  `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription null.String  `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	ID             string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode   Languagecode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	PageID         string                 `boil:"page_id" json:"page_id" toml:"page_id" yaml:"page_id"`
+	Title          string                 `boil:"title" json:"title" toml:"title" yaml:"title"`
+	Content        model_types.NullString `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
+	SeoTitle       model_types.NullString `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription model_types.NullString `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *pageTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -79,17 +79,17 @@ var PageTranslationWhere = struct {
 	LanguageCode   whereHelperLanguagecode
 	PageID         whereHelperstring
 	Title          whereHelperstring
-	Content        whereHelpernull_String
-	SeoTitle       whereHelpernull_String
-	SeoDescription whereHelpernull_String
+	Content        whereHelpermodel_types_NullString
+	SeoTitle       whereHelpermodel_types_NullString
+	SeoDescription whereHelpermodel_types_NullString
 }{
 	ID:             whereHelperstring{field: "\"page_translations\".\"id\""},
 	LanguageCode:   whereHelperLanguagecode{field: "\"page_translations\".\"language_code\""},
 	PageID:         whereHelperstring{field: "\"page_translations\".\"page_id\""},
 	Title:          whereHelperstring{field: "\"page_translations\".\"title\""},
-	Content:        whereHelpernull_String{field: "\"page_translations\".\"content\""},
-	SeoTitle:       whereHelpernull_String{field: "\"page_translations\".\"seo_title\""},
-	SeoDescription: whereHelpernull_String{field: "\"page_translations\".\"seo_description\""},
+	Content:        whereHelpermodel_types_NullString{field: "\"page_translations\".\"content\""},
+	SeoTitle:       whereHelpermodel_types_NullString{field: "\"page_translations\".\"seo_title\""},
+	SeoDescription: whereHelpermodel_types_NullString{field: "\"page_translations\".\"seo_description\""},
 }
 
 // PageTranslationRels is where relationship names are stored.

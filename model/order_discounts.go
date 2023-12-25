@@ -14,27 +14,27 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // OrderDiscount is an object representing the database table.
 type OrderDiscount struct {
-	ID             string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrderID        null.String       `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	Type           Orderdiscounttype `boil:"type" json:"type" toml:"type" yaml:"type"`
-	ValueType      Discountvaluetype `boil:"value_type" json:"value_type" toml:"value_type" yaml:"value_type"`
-	Value          types.Decimal     `boil:"value" json:"value" toml:"value" yaml:"value"`
-	AmountValue    types.Decimal     `boil:"amount_value" json:"amount_value" toml:"amount_value" yaml:"amount_value"`
-	Currency       Currency          `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	Name           null.String       `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	TranslatedName null.String       `boil:"translated_name" json:"translated_name,omitempty" toml:"translated_name" yaml:"translated_name,omitempty"`
-	Reason         null.String       `boil:"reason" json:"reason,omitempty" toml:"reason" yaml:"reason,omitempty"`
+	ID             string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	OrderID        model_types.NullString `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	Type           Orderdiscounttype      `boil:"type" json:"type" toml:"type" yaml:"type"`
+	ValueType      Discountvaluetype      `boil:"value_type" json:"value_type" toml:"value_type" yaml:"value_type"`
+	Value          decimal.Decimal        `boil:"value" json:"value" toml:"value" yaml:"value"`
+	AmountValue    decimal.Decimal        `boil:"amount_value" json:"amount_value" toml:"amount_value" yaml:"amount_value"`
+	Currency       Currency               `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	Name           model_types.NullString `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	TranslatedName model_types.NullString `boil:"translated_name" json:"translated_name,omitempty" toml:"translated_name" yaml:"translated_name,omitempty"`
+	Reason         model_types.NullString `boil:"reason" json:"reason,omitempty" toml:"reason" yaml:"reason,omitempty"`
 
 	R *orderDiscountR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderDiscountL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -162,26 +162,26 @@ func (w whereHelperDiscountvaluetype) NIN(slice []Discountvaluetype) qm.QueryMod
 
 var OrderDiscountWhere = struct {
 	ID             whereHelperstring
-	OrderID        whereHelpernull_String
+	OrderID        whereHelpermodel_types_NullString
 	Type           whereHelperOrderdiscounttype
 	ValueType      whereHelperDiscountvaluetype
-	Value          whereHelpertypes_Decimal
-	AmountValue    whereHelpertypes_Decimal
+	Value          whereHelperdecimal_Decimal
+	AmountValue    whereHelperdecimal_Decimal
 	Currency       whereHelperCurrency
-	Name           whereHelpernull_String
-	TranslatedName whereHelpernull_String
-	Reason         whereHelpernull_String
+	Name           whereHelpermodel_types_NullString
+	TranslatedName whereHelpermodel_types_NullString
+	Reason         whereHelpermodel_types_NullString
 }{
 	ID:             whereHelperstring{field: "\"order_discounts\".\"id\""},
-	OrderID:        whereHelpernull_String{field: "\"order_discounts\".\"order_id\""},
+	OrderID:        whereHelpermodel_types_NullString{field: "\"order_discounts\".\"order_id\""},
 	Type:           whereHelperOrderdiscounttype{field: "\"order_discounts\".\"type\""},
 	ValueType:      whereHelperDiscountvaluetype{field: "\"order_discounts\".\"value_type\""},
-	Value:          whereHelpertypes_Decimal{field: "\"order_discounts\".\"value\""},
-	AmountValue:    whereHelpertypes_Decimal{field: "\"order_discounts\".\"amount_value\""},
+	Value:          whereHelperdecimal_Decimal{field: "\"order_discounts\".\"value\""},
+	AmountValue:    whereHelperdecimal_Decimal{field: "\"order_discounts\".\"amount_value\""},
 	Currency:       whereHelperCurrency{field: "\"order_discounts\".\"currency\""},
-	Name:           whereHelpernull_String{field: "\"order_discounts\".\"name\""},
-	TranslatedName: whereHelpernull_String{field: "\"order_discounts\".\"translated_name\""},
-	Reason:         whereHelpernull_String{field: "\"order_discounts\".\"reason\""},
+	Name:           whereHelpermodel_types_NullString{field: "\"order_discounts\".\"name\""},
+	TranslatedName: whereHelpermodel_types_NullString{field: "\"order_discounts\".\"translated_name\""},
+	Reason:         whereHelpermodel_types_NullString{field: "\"order_discounts\".\"reason\""},
 }
 
 // OrderDiscountRels is where relationship names are stored.

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,17 +24,17 @@ import (
 
 // MenuItem is an object representing the database table.
 type MenuItem struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	MenuID          string      `boil:"menu_id" json:"menu_id" toml:"menu_id" yaml:"menu_id"`
-	Name            string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	ParentID        null.String `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
-	URL             null.String `boil:"url" json:"url,omitempty" toml:"url" yaml:"url,omitempty"`
-	CategoryID      null.String `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
-	CollectionID    null.String `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
-	PageID          null.String `boil:"page_id" json:"page_id,omitempty" toml:"page_id" yaml:"page_id,omitempty"`
-	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
-	SortOrder       null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	MenuID          string                 `boil:"menu_id" json:"menu_id" toml:"menu_id" yaml:"menu_id"`
+	Name            string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ParentID        model_types.NullString `boil:"parent_id" json:"parent_id,omitempty" toml:"parent_id" yaml:"parent_id,omitempty"`
+	URL             model_types.NullString `boil:"url" json:"url,omitempty" toml:"url" yaml:"url,omitempty"`
+	CategoryID      model_types.NullString `boil:"category_id" json:"category_id,omitempty" toml:"category_id" yaml:"category_id,omitempty"`
+	CollectionID    model_types.NullString `boil:"collection_id" json:"collection_id,omitempty" toml:"collection_id" yaml:"collection_id,omitempty"`
+	PageID          model_types.NullString `boil:"page_id" json:"page_id,omitempty" toml:"page_id" yaml:"page_id,omitempty"`
+	Metadata        model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	SortOrder       model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *menuItemR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L menuItemL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -98,26 +98,26 @@ var MenuItemWhere = struct {
 	ID              whereHelperstring
 	MenuID          whereHelperstring
 	Name            whereHelperstring
-	ParentID        whereHelpernull_String
-	URL             whereHelpernull_String
-	CategoryID      whereHelpernull_String
-	CollectionID    whereHelpernull_String
-	PageID          whereHelpernull_String
-	Metadata        whereHelpernull_JSON
-	PrivateMetadata whereHelpernull_JSON
-	SortOrder       whereHelpernull_Int
+	ParentID        whereHelpermodel_types_NullString
+	URL             whereHelpermodel_types_NullString
+	CategoryID      whereHelpermodel_types_NullString
+	CollectionID    whereHelpermodel_types_NullString
+	PageID          whereHelpermodel_types_NullString
+	Metadata        whereHelpermodel_types_JsonMap
+	PrivateMetadata whereHelpermodel_types_JsonMap
+	SortOrder       whereHelpermodel_types_NullInt
 }{
 	ID:              whereHelperstring{field: "\"menu_items\".\"id\""},
 	MenuID:          whereHelperstring{field: "\"menu_items\".\"menu_id\""},
 	Name:            whereHelperstring{field: "\"menu_items\".\"name\""},
-	ParentID:        whereHelpernull_String{field: "\"menu_items\".\"parent_id\""},
-	URL:             whereHelpernull_String{field: "\"menu_items\".\"url\""},
-	CategoryID:      whereHelpernull_String{field: "\"menu_items\".\"category_id\""},
-	CollectionID:    whereHelpernull_String{field: "\"menu_items\".\"collection_id\""},
-	PageID:          whereHelpernull_String{field: "\"menu_items\".\"page_id\""},
-	Metadata:        whereHelpernull_JSON{field: "\"menu_items\".\"metadata\""},
-	PrivateMetadata: whereHelpernull_JSON{field: "\"menu_items\".\"private_metadata\""},
-	SortOrder:       whereHelpernull_Int{field: "\"menu_items\".\"sort_order\""},
+	ParentID:        whereHelpermodel_types_NullString{field: "\"menu_items\".\"parent_id\""},
+	URL:             whereHelpermodel_types_NullString{field: "\"menu_items\".\"url\""},
+	CategoryID:      whereHelpermodel_types_NullString{field: "\"menu_items\".\"category_id\""},
+	CollectionID:    whereHelpermodel_types_NullString{field: "\"menu_items\".\"collection_id\""},
+	PageID:          whereHelpermodel_types_NullString{field: "\"menu_items\".\"page_id\""},
+	Metadata:        whereHelpermodel_types_JsonMap{field: "\"menu_items\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"menu_items\".\"private_metadata\""},
+	SortOrder:       whereHelpermodel_types_NullInt{field: "\"menu_items\".\"sort_order\""},
 }
 
 // MenuItemRels is where relationship names are stored.

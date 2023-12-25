@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // AttributeProduct is an object representing the database table.
 type AttributeProduct struct {
-	ID            string   `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID   string   `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
-	ProductTypeID string   `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
-	SortOrder     null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID            string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID   string              `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	ProductTypeID string              `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
+	SortOrder     model_types.NullInt `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributeProductR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeProductL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,12 +63,12 @@ var AttributeProductWhere = struct {
 	ID            whereHelperstring
 	AttributeID   whereHelperstring
 	ProductTypeID whereHelperstring
-	SortOrder     whereHelpernull_Int
+	SortOrder     whereHelpermodel_types_NullInt
 }{
 	ID:            whereHelperstring{field: "\"attribute_products\".\"id\""},
 	AttributeID:   whereHelperstring{field: "\"attribute_products\".\"attribute_id\""},
 	ProductTypeID: whereHelperstring{field: "\"attribute_products\".\"product_type_id\""},
-	SortOrder:     whereHelpernull_Int{field: "\"attribute_products\".\"sort_order\""},
+	SortOrder:     whereHelpermodel_types_NullInt{field: "\"attribute_products\".\"sort_order\""},
 }
 
 // AttributeProductRels is where relationship names are stored.

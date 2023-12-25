@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,31 +24,31 @@ import (
 
 // Shop is an object representing the database table.
 type Shop struct {
-	ID                                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt                                int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt                                int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	Name                                     string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Description                              string      `boil:"description" json:"description" toml:"description" yaml:"description"`
-	TopMenuID                                null.String `boil:"top_menu_id" json:"top_menu_id,omitempty" toml:"top_menu_id" yaml:"top_menu_id,omitempty"`
-	IncludeTaxesInPrice                      null.Bool   `boil:"include_taxes_in_price" json:"include_taxes_in_price,omitempty" toml:"include_taxes_in_price" yaml:"include_taxes_in_price,omitempty"`
-	DisplayGrossPrices                       null.Bool   `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
-	ChargeTaxesOnShipping                    null.Bool   `boil:"charge_taxes_on_shipping" json:"charge_taxes_on_shipping,omitempty" toml:"charge_taxes_on_shipping" yaml:"charge_taxes_on_shipping,omitempty"`
-	TrackInventoryByDefault                  null.Bool   `boil:"track_inventory_by_default" json:"track_inventory_by_default,omitempty" toml:"track_inventory_by_default" yaml:"track_inventory_by_default,omitempty"`
-	DefaultWeightUnit                        string      `boil:"default_weight_unit" json:"default_weight_unit" toml:"default_weight_unit" yaml:"default_weight_unit"`
-	AutomaticFulfillmentDigitalProducts      null.Bool   `boil:"automatic_fulfillment_digital_products" json:"automatic_fulfillment_digital_products,omitempty" toml:"automatic_fulfillment_digital_products" yaml:"automatic_fulfillment_digital_products,omitempty"`
-	DefaultDigitalMaxDownloads               null.Int    `boil:"default_digital_max_downloads" json:"default_digital_max_downloads,omitempty" toml:"default_digital_max_downloads" yaml:"default_digital_max_downloads,omitempty"`
-	DefaultDigitalURLValidDays               null.Int    `boil:"default_digital_url_valid_days" json:"default_digital_url_valid_days,omitempty" toml:"default_digital_url_valid_days" yaml:"default_digital_url_valid_days,omitempty"`
-	AddressID                                null.String `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
-	DefaultMailSenderName                    string      `boil:"default_mail_sender_name" json:"default_mail_sender_name" toml:"default_mail_sender_name" yaml:"default_mail_sender_name"`
-	DefaultMailSenderAddress                 string      `boil:"default_mail_sender_address" json:"default_mail_sender_address" toml:"default_mail_sender_address" yaml:"default_mail_sender_address"`
-	CustomerSetPasswordURL                   null.String `boil:"customer_set_password_url" json:"customer_set_password_url,omitempty" toml:"customer_set_password_url" yaml:"customer_set_password_url,omitempty"`
-	AutomaticallyConfirmAllNewOrders         null.Bool   `boil:"automatically_confirm_all_new_orders" json:"automatically_confirm_all_new_orders,omitempty" toml:"automatically_confirm_all_new_orders" yaml:"automatically_confirm_all_new_orders,omitempty"`
-	FulfillmentAutoApprove                   null.Bool   `boil:"fulfillment_auto_approve" json:"fulfillment_auto_approve,omitempty" toml:"fulfillment_auto_approve" yaml:"fulfillment_auto_approve,omitempty"`
-	FulfillmentAllowUnpaid                   null.Bool   `boil:"fulfillment_allow_unpaid" json:"fulfillment_allow_unpaid,omitempty" toml:"fulfillment_allow_unpaid" yaml:"fulfillment_allow_unpaid,omitempty"`
-	GiftCardExpiryType                       string      `boil:"gift_card_expiry_type" json:"gift_card_expiry_type" toml:"gift_card_expiry_type" yaml:"gift_card_expiry_type"`
-	GiftCardExpiryPeriodType                 string      `boil:"gift_card_expiry_period_type" json:"gift_card_expiry_period_type" toml:"gift_card_expiry_period_type" yaml:"gift_card_expiry_period_type"`
-	GiftCardExpiryPeriod                     null.Int    `boil:"gift_card_expiry_period" json:"gift_card_expiry_period,omitempty" toml:"gift_card_expiry_period" yaml:"gift_card_expiry_period,omitempty"`
-	AutomaticallyFulfillNonShippableGiftCard null.Bool   `boil:"automatically_fulfill_non_shippable_gift_card" json:"automatically_fulfill_non_shippable_gift_card,omitempty" toml:"automatically_fulfill_non_shippable_gift_card" yaml:"automatically_fulfill_non_shippable_gift_card,omitempty"`
+	ID                                       string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt                                int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt                                int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Name                                     string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description                              string                 `boil:"description" json:"description" toml:"description" yaml:"description"`
+	TopMenuID                                model_types.NullString `boil:"top_menu_id" json:"top_menu_id,omitempty" toml:"top_menu_id" yaml:"top_menu_id,omitempty"`
+	IncludeTaxesInPrice                      model_types.NullBool   `boil:"include_taxes_in_price" json:"include_taxes_in_price,omitempty" toml:"include_taxes_in_price" yaml:"include_taxes_in_price,omitempty"`
+	DisplayGrossPrices                       model_types.NullBool   `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
+	ChargeTaxesOnShipping                    model_types.NullBool   `boil:"charge_taxes_on_shipping" json:"charge_taxes_on_shipping,omitempty" toml:"charge_taxes_on_shipping" yaml:"charge_taxes_on_shipping,omitempty"`
+	TrackInventoryByDefault                  model_types.NullBool   `boil:"track_inventory_by_default" json:"track_inventory_by_default,omitempty" toml:"track_inventory_by_default" yaml:"track_inventory_by_default,omitempty"`
+	DefaultWeightUnit                        string                 `boil:"default_weight_unit" json:"default_weight_unit" toml:"default_weight_unit" yaml:"default_weight_unit"`
+	AutomaticFulfillmentDigitalProducts      model_types.NullBool   `boil:"automatic_fulfillment_digital_products" json:"automatic_fulfillment_digital_products,omitempty" toml:"automatic_fulfillment_digital_products" yaml:"automatic_fulfillment_digital_products,omitempty"`
+	DefaultDigitalMaxDownloads               model_types.NullInt    `boil:"default_digital_max_downloads" json:"default_digital_max_downloads,omitempty" toml:"default_digital_max_downloads" yaml:"default_digital_max_downloads,omitempty"`
+	DefaultDigitalURLValidDays               model_types.NullInt    `boil:"default_digital_url_valid_days" json:"default_digital_url_valid_days,omitempty" toml:"default_digital_url_valid_days" yaml:"default_digital_url_valid_days,omitempty"`
+	AddressID                                model_types.NullString `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
+	DefaultMailSenderName                    string                 `boil:"default_mail_sender_name" json:"default_mail_sender_name" toml:"default_mail_sender_name" yaml:"default_mail_sender_name"`
+	DefaultMailSenderAddress                 string                 `boil:"default_mail_sender_address" json:"default_mail_sender_address" toml:"default_mail_sender_address" yaml:"default_mail_sender_address"`
+	CustomerSetPasswordURL                   model_types.NullString `boil:"customer_set_password_url" json:"customer_set_password_url,omitempty" toml:"customer_set_password_url" yaml:"customer_set_password_url,omitempty"`
+	AutomaticallyConfirmAllNewOrders         model_types.NullBool   `boil:"automatically_confirm_all_new_orders" json:"automatically_confirm_all_new_orders,omitempty" toml:"automatically_confirm_all_new_orders" yaml:"automatically_confirm_all_new_orders,omitempty"`
+	FulfillmentAutoApprove                   model_types.NullBool   `boil:"fulfillment_auto_approve" json:"fulfillment_auto_approve,omitempty" toml:"fulfillment_auto_approve" yaml:"fulfillment_auto_approve,omitempty"`
+	FulfillmentAllowUnpaid                   model_types.NullBool   `boil:"fulfillment_allow_unpaid" json:"fulfillment_allow_unpaid,omitempty" toml:"fulfillment_allow_unpaid" yaml:"fulfillment_allow_unpaid,omitempty"`
+	GiftCardExpiryType                       string                 `boil:"gift_card_expiry_type" json:"gift_card_expiry_type" toml:"gift_card_expiry_type" yaml:"gift_card_expiry_type"`
+	GiftCardExpiryPeriodType                 string                 `boil:"gift_card_expiry_period_type" json:"gift_card_expiry_period_type" toml:"gift_card_expiry_period_type" yaml:"gift_card_expiry_period_type"`
+	GiftCardExpiryPeriod                     model_types.NullInt    `boil:"gift_card_expiry_period" json:"gift_card_expiry_period,omitempty" toml:"gift_card_expiry_period" yaml:"gift_card_expiry_period,omitempty"`
+	AutomaticallyFulfillNonShippableGiftCard model_types.NullBool   `boil:"automatically_fulfill_non_shippable_gift_card" json:"automatically_fulfill_non_shippable_gift_card,omitempty" toml:"automatically_fulfill_non_shippable_gift_card" yaml:"automatically_fulfill_non_shippable_gift_card,omitempty"`
 
 	R *shopR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -170,52 +170,52 @@ var ShopWhere = struct {
 	UpdatedAt                                whereHelperint64
 	Name                                     whereHelperstring
 	Description                              whereHelperstring
-	TopMenuID                                whereHelpernull_String
-	IncludeTaxesInPrice                      whereHelpernull_Bool
-	DisplayGrossPrices                       whereHelpernull_Bool
-	ChargeTaxesOnShipping                    whereHelpernull_Bool
-	TrackInventoryByDefault                  whereHelpernull_Bool
+	TopMenuID                                whereHelpermodel_types_NullString
+	IncludeTaxesInPrice                      whereHelpermodel_types_NullBool
+	DisplayGrossPrices                       whereHelpermodel_types_NullBool
+	ChargeTaxesOnShipping                    whereHelpermodel_types_NullBool
+	TrackInventoryByDefault                  whereHelpermodel_types_NullBool
 	DefaultWeightUnit                        whereHelperstring
-	AutomaticFulfillmentDigitalProducts      whereHelpernull_Bool
-	DefaultDigitalMaxDownloads               whereHelpernull_Int
-	DefaultDigitalURLValidDays               whereHelpernull_Int
-	AddressID                                whereHelpernull_String
+	AutomaticFulfillmentDigitalProducts      whereHelpermodel_types_NullBool
+	DefaultDigitalMaxDownloads               whereHelpermodel_types_NullInt
+	DefaultDigitalURLValidDays               whereHelpermodel_types_NullInt
+	AddressID                                whereHelpermodel_types_NullString
 	DefaultMailSenderName                    whereHelperstring
 	DefaultMailSenderAddress                 whereHelperstring
-	CustomerSetPasswordURL                   whereHelpernull_String
-	AutomaticallyConfirmAllNewOrders         whereHelpernull_Bool
-	FulfillmentAutoApprove                   whereHelpernull_Bool
-	FulfillmentAllowUnpaid                   whereHelpernull_Bool
+	CustomerSetPasswordURL                   whereHelpermodel_types_NullString
+	AutomaticallyConfirmAllNewOrders         whereHelpermodel_types_NullBool
+	FulfillmentAutoApprove                   whereHelpermodel_types_NullBool
+	FulfillmentAllowUnpaid                   whereHelpermodel_types_NullBool
 	GiftCardExpiryType                       whereHelperstring
 	GiftCardExpiryPeriodType                 whereHelperstring
-	GiftCardExpiryPeriod                     whereHelpernull_Int
-	AutomaticallyFulfillNonShippableGiftCard whereHelpernull_Bool
+	GiftCardExpiryPeriod                     whereHelpermodel_types_NullInt
+	AutomaticallyFulfillNonShippableGiftCard whereHelpermodel_types_NullBool
 }{
 	ID:                                       whereHelperstring{field: "\"shops\".\"id\""},
 	CreatedAt:                                whereHelperint64{field: "\"shops\".\"created_at\""},
 	UpdatedAt:                                whereHelperint64{field: "\"shops\".\"updated_at\""},
 	Name:                                     whereHelperstring{field: "\"shops\".\"name\""},
 	Description:                              whereHelperstring{field: "\"shops\".\"description\""},
-	TopMenuID:                                whereHelpernull_String{field: "\"shops\".\"top_menu_id\""},
-	IncludeTaxesInPrice:                      whereHelpernull_Bool{field: "\"shops\".\"include_taxes_in_price\""},
-	DisplayGrossPrices:                       whereHelpernull_Bool{field: "\"shops\".\"display_gross_prices\""},
-	ChargeTaxesOnShipping:                    whereHelpernull_Bool{field: "\"shops\".\"charge_taxes_on_shipping\""},
-	TrackInventoryByDefault:                  whereHelpernull_Bool{field: "\"shops\".\"track_inventory_by_default\""},
+	TopMenuID:                                whereHelpermodel_types_NullString{field: "\"shops\".\"top_menu_id\""},
+	IncludeTaxesInPrice:                      whereHelpermodel_types_NullBool{field: "\"shops\".\"include_taxes_in_price\""},
+	DisplayGrossPrices:                       whereHelpermodel_types_NullBool{field: "\"shops\".\"display_gross_prices\""},
+	ChargeTaxesOnShipping:                    whereHelpermodel_types_NullBool{field: "\"shops\".\"charge_taxes_on_shipping\""},
+	TrackInventoryByDefault:                  whereHelpermodel_types_NullBool{field: "\"shops\".\"track_inventory_by_default\""},
 	DefaultWeightUnit:                        whereHelperstring{field: "\"shops\".\"default_weight_unit\""},
-	AutomaticFulfillmentDigitalProducts:      whereHelpernull_Bool{field: "\"shops\".\"automatic_fulfillment_digital_products\""},
-	DefaultDigitalMaxDownloads:               whereHelpernull_Int{field: "\"shops\".\"default_digital_max_downloads\""},
-	DefaultDigitalURLValidDays:               whereHelpernull_Int{field: "\"shops\".\"default_digital_url_valid_days\""},
-	AddressID:                                whereHelpernull_String{field: "\"shops\".\"address_id\""},
+	AutomaticFulfillmentDigitalProducts:      whereHelpermodel_types_NullBool{field: "\"shops\".\"automatic_fulfillment_digital_products\""},
+	DefaultDigitalMaxDownloads:               whereHelpermodel_types_NullInt{field: "\"shops\".\"default_digital_max_downloads\""},
+	DefaultDigitalURLValidDays:               whereHelpermodel_types_NullInt{field: "\"shops\".\"default_digital_url_valid_days\""},
+	AddressID:                                whereHelpermodel_types_NullString{field: "\"shops\".\"address_id\""},
 	DefaultMailSenderName:                    whereHelperstring{field: "\"shops\".\"default_mail_sender_name\""},
 	DefaultMailSenderAddress:                 whereHelperstring{field: "\"shops\".\"default_mail_sender_address\""},
-	CustomerSetPasswordURL:                   whereHelpernull_String{field: "\"shops\".\"customer_set_password_url\""},
-	AutomaticallyConfirmAllNewOrders:         whereHelpernull_Bool{field: "\"shops\".\"automatically_confirm_all_new_orders\""},
-	FulfillmentAutoApprove:                   whereHelpernull_Bool{field: "\"shops\".\"fulfillment_auto_approve\""},
-	FulfillmentAllowUnpaid:                   whereHelpernull_Bool{field: "\"shops\".\"fulfillment_allow_unpaid\""},
+	CustomerSetPasswordURL:                   whereHelpermodel_types_NullString{field: "\"shops\".\"customer_set_password_url\""},
+	AutomaticallyConfirmAllNewOrders:         whereHelpermodel_types_NullBool{field: "\"shops\".\"automatically_confirm_all_new_orders\""},
+	FulfillmentAutoApprove:                   whereHelpermodel_types_NullBool{field: "\"shops\".\"fulfillment_auto_approve\""},
+	FulfillmentAllowUnpaid:                   whereHelpermodel_types_NullBool{field: "\"shops\".\"fulfillment_allow_unpaid\""},
 	GiftCardExpiryType:                       whereHelperstring{field: "\"shops\".\"gift_card_expiry_type\""},
 	GiftCardExpiryPeriodType:                 whereHelperstring{field: "\"shops\".\"gift_card_expiry_period_type\""},
-	GiftCardExpiryPeriod:                     whereHelpernull_Int{field: "\"shops\".\"gift_card_expiry_period\""},
-	AutomaticallyFulfillNonShippableGiftCard: whereHelpernull_Bool{field: "\"shops\".\"automatically_fulfill_non_shippable_gift_card\""},
+	GiftCardExpiryPeriod:                     whereHelpermodel_types_NullInt{field: "\"shops\".\"gift_card_expiry_period\""},
+	AutomaticallyFulfillNonShippableGiftCard: whereHelpermodel_types_NullBool{field: "\"shops\".\"automatically_fulfill_non_shippable_gift_card\""},
 }
 
 // ShopRels is where relationship names are stored.

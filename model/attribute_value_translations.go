@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +24,11 @@ import (
 
 // AttributeValueTranslation is an object representing the database table.
 type AttributeValueTranslation struct {
-	ID               string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode     Languagecode `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	AttributeValueID string       `boil:"attribute_value_id" json:"attribute_value_id" toml:"attribute_value_id" yaml:"attribute_value_id"`
-	Name             string       `boil:"name" json:"name" toml:"name" yaml:"name"`
-	RichText         null.String  `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
+	ID               string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode     Languagecode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	AttributeValueID string                 `boil:"attribute_value_id" json:"attribute_value_id" toml:"attribute_value_id" yaml:"attribute_value_id"`
+	Name             string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	RichText         model_types.NullString `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
 
 	R *attributeValueTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeValueTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -64,68 +64,44 @@ var AttributeValueTranslationTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_String struct{ field string }
+type whereHelpermodel_types_NullString struct{ field string }
 
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+func (w whereHelpermodel_types_NullString) EQ(x model_types.NullString) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+func (w whereHelpermodel_types_NullString) NEQ(x model_types.NullString) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+func (w whereHelpermodel_types_NullString) LT(x model_types.NullString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+func (w whereHelpermodel_types_NullString) LTE(x model_types.NullString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+func (w whereHelpermodel_types_NullString) GT(x model_types.NullString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+func (w whereHelpermodel_types_NullString) GTE(x model_types.NullString) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" LIKE ?", x)
-}
-func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT LIKE ?", x)
-}
-func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" ILIKE ?", x)
-}
-func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT ILIKE ?", x)
-}
-func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_NullString) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_NullString) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
 var AttributeValueTranslationWhere = struct {
 	ID               whereHelperstring
 	LanguageCode     whereHelperLanguagecode
 	AttributeValueID whereHelperstring
 	Name             whereHelperstring
-	RichText         whereHelpernull_String
+	RichText         whereHelpermodel_types_NullString
 }{
 	ID:               whereHelperstring{field: "\"attribute_value_translations\".\"id\""},
 	LanguageCode:     whereHelperLanguagecode{field: "\"attribute_value_translations\".\"language_code\""},
 	AttributeValueID: whereHelperstring{field: "\"attribute_value_translations\".\"attribute_value_id\""},
 	Name:             whereHelperstring{field: "\"attribute_value_translations\".\"name\""},
-	RichText:         whereHelpernull_String{field: "\"attribute_value_translations\".\"rich_text\""},
+	RichText:         whereHelpermodel_types_NullString{field: "\"attribute_value_translations\".\"rich_text\""},
 }
 
 // AttributeValueTranslationRels is where relationship names are stored.

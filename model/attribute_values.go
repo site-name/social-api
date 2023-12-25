@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,17 +24,17 @@ import (
 
 // AttributeValue is an object representing the database table.
 type AttributeValue struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Value       string      `boil:"value" json:"value" toml:"value" yaml:"value"`
-	Slug        string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	FileURL     null.String `boil:"file_url" json:"file_url,omitempty" toml:"file_url" yaml:"file_url,omitempty"`
-	ContentType null.String `boil:"content_type" json:"content_type,omitempty" toml:"content_type" yaml:"content_type,omitempty"`
-	AttributeID string      `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
-	RichText    null.String `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
-	Boolean     null.Bool   `boil:"boolean" json:"boolean,omitempty" toml:"boolean" yaml:"boolean,omitempty"`
-	Datetime    null.Time   `boil:"datetime" json:"datetime,omitempty" toml:"datetime" yaml:"datetime,omitempty"`
-	SortOrder   null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID          string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name        string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Value       string                 `boil:"value" json:"value" toml:"value" yaml:"value"`
+	Slug        string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	FileURL     model_types.NullString `boil:"file_url" json:"file_url,omitempty" toml:"file_url" yaml:"file_url,omitempty"`
+	ContentType model_types.NullString `boil:"content_type" json:"content_type,omitempty" toml:"content_type" yaml:"content_type,omitempty"`
+	AttributeID string                 `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	RichText    model_types.NullString `boil:"rich_text" json:"rich_text,omitempty" toml:"rich_text" yaml:"rich_text,omitempty"`
+	Boolean     model_types.NullBool   `boil:"boolean" json:"boolean,omitempty" toml:"boolean" yaml:"boolean,omitempty"`
+	Datetime    model_types.NullTime   `boil:"datetime" json:"datetime,omitempty" toml:"datetime" yaml:"datetime,omitempty"`
+	SortOrder   model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributeValueR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeValueL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -94,78 +94,82 @@ var AttributeValueTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Bool struct{ field string }
+type whereHelpermodel_types_NullBool struct{ field string }
 
-func (w whereHelpernull_Bool) EQ(x null.Bool) qm.QueryMod {
+func (w whereHelpermodel_types_NullBool) EQ(x model_types.NullBool) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Bool) NEQ(x null.Bool) qm.QueryMod {
+func (w whereHelpermodel_types_NullBool) NEQ(x model_types.NullBool) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Bool) LT(x null.Bool) qm.QueryMod {
+func (w whereHelpermodel_types_NullBool) LT(x model_types.NullBool) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Bool) LTE(x null.Bool) qm.QueryMod {
+func (w whereHelpermodel_types_NullBool) LTE(x model_types.NullBool) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Bool) GT(x null.Bool) qm.QueryMod {
+func (w whereHelpermodel_types_NullBool) GT(x model_types.NullBool) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
+func (w whereHelpermodel_types_NullBool) GTE(x model_types.NullBool) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpernull_Bool) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Bool) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_NullBool) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_NullBool) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
-type whereHelpernull_Time struct{ field string }
+type whereHelpermodel_types_NullTime struct{ field string }
 
-func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
+func (w whereHelpermodel_types_NullTime) EQ(x model_types.NullTime) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
+func (w whereHelpermodel_types_NullTime) NEQ(x model_types.NullTime) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
+func (w whereHelpermodel_types_NullTime) LT(x model_types.NullTime) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
+func (w whereHelpermodel_types_NullTime) LTE(x model_types.NullTime) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
+func (w whereHelpermodel_types_NullTime) GT(x model_types.NullTime) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
+func (w whereHelpermodel_types_NullTime) GTE(x model_types.NullTime) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_NullTime) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_NullTime) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
 var AttributeValueWhere = struct {
 	ID          whereHelperstring
 	Name        whereHelperstring
 	Value       whereHelperstring
 	Slug        whereHelperstring
-	FileURL     whereHelpernull_String
-	ContentType whereHelpernull_String
+	FileURL     whereHelpermodel_types_NullString
+	ContentType whereHelpermodel_types_NullString
 	AttributeID whereHelperstring
-	RichText    whereHelpernull_String
-	Boolean     whereHelpernull_Bool
-	Datetime    whereHelpernull_Time
-	SortOrder   whereHelpernull_Int
+	RichText    whereHelpermodel_types_NullString
+	Boolean     whereHelpermodel_types_NullBool
+	Datetime    whereHelpermodel_types_NullTime
+	SortOrder   whereHelpermodel_types_NullInt
 }{
 	ID:          whereHelperstring{field: "\"attribute_values\".\"id\""},
 	Name:        whereHelperstring{field: "\"attribute_values\".\"name\""},
 	Value:       whereHelperstring{field: "\"attribute_values\".\"value\""},
 	Slug:        whereHelperstring{field: "\"attribute_values\".\"slug\""},
-	FileURL:     whereHelpernull_String{field: "\"attribute_values\".\"file_url\""},
-	ContentType: whereHelpernull_String{field: "\"attribute_values\".\"content_type\""},
+	FileURL:     whereHelpermodel_types_NullString{field: "\"attribute_values\".\"file_url\""},
+	ContentType: whereHelpermodel_types_NullString{field: "\"attribute_values\".\"content_type\""},
 	AttributeID: whereHelperstring{field: "\"attribute_values\".\"attribute_id\""},
-	RichText:    whereHelpernull_String{field: "\"attribute_values\".\"rich_text\""},
-	Boolean:     whereHelpernull_Bool{field: "\"attribute_values\".\"boolean\""},
-	Datetime:    whereHelpernull_Time{field: "\"attribute_values\".\"datetime\""},
-	SortOrder:   whereHelpernull_Int{field: "\"attribute_values\".\"sort_order\""},
+	RichText:    whereHelpermodel_types_NullString{field: "\"attribute_values\".\"rich_text\""},
+	Boolean:     whereHelpermodel_types_NullBool{field: "\"attribute_values\".\"boolean\""},
+	Datetime:    whereHelpermodel_types_NullTime{field: "\"attribute_values\".\"datetime\""},
+	SortOrder:   whereHelpermodel_types_NullInt{field: "\"attribute_values\".\"sort_order\""},
 }
 
 // AttributeValueRels is where relationship names are stored.

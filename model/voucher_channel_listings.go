@@ -14,23 +14,23 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/site-name/decimal"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // VoucherChannelListing is an object representing the database table.
 type VoucherChannelListing struct {
-	ID             string        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt      int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	VoucherID      string        `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
-	ChannelID      string        `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	DiscountValue  types.Decimal `boil:"discount_value" json:"discount_value" toml:"discount_value" yaml:"discount_value"`
-	Currency       Currency      `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	MinSpendAmount types.Decimal `boil:"min_spend_amount" json:"min_spend_amount" toml:"min_spend_amount" yaml:"min_spend_amount"`
+	ID             string          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt      int64           `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	VoucherID      string          `boil:"voucher_id" json:"voucher_id" toml:"voucher_id" yaml:"voucher_id"`
+	ChannelID      string          `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	DiscountValue  decimal.Decimal `boil:"discount_value" json:"discount_value" toml:"discount_value" yaml:"discount_value"`
+	Currency       Currency        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	MinSpendAmount decimal.Decimal `boil:"min_spend_amount" json:"min_spend_amount" toml:"min_spend_amount" yaml:"min_spend_amount"`
 
 	R *voucherChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -79,17 +79,17 @@ var VoucherChannelListingWhere = struct {
 	CreatedAt      whereHelperint64
 	VoucherID      whereHelperstring
 	ChannelID      whereHelperstring
-	DiscountValue  whereHelpertypes_Decimal
+	DiscountValue  whereHelperdecimal_Decimal
 	Currency       whereHelperCurrency
-	MinSpendAmount whereHelpertypes_Decimal
+	MinSpendAmount whereHelperdecimal_Decimal
 }{
 	ID:             whereHelperstring{field: "\"voucher_channel_listings\".\"id\""},
 	CreatedAt:      whereHelperint64{field: "\"voucher_channel_listings\".\"created_at\""},
 	VoucherID:      whereHelperstring{field: "\"voucher_channel_listings\".\"voucher_id\""},
 	ChannelID:      whereHelperstring{field: "\"voucher_channel_listings\".\"channel_id\""},
-	DiscountValue:  whereHelpertypes_Decimal{field: "\"voucher_channel_listings\".\"discount_value\""},
+	DiscountValue:  whereHelperdecimal_Decimal{field: "\"voucher_channel_listings\".\"discount_value\""},
 	Currency:       whereHelperCurrency{field: "\"voucher_channel_listings\".\"currency\""},
-	MinSpendAmount: whereHelpertypes_Decimal{field: "\"voucher_channel_listings\".\"min_spend_amount\""},
+	MinSpendAmount: whereHelperdecimal_Decimal{field: "\"voucher_channel_listings\".\"min_spend_amount\""},
 }
 
 // VoucherChannelListingRels is where relationship names are stored.

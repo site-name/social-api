@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,14 +24,14 @@ import (
 
 // ShippingZone is an object representing the database table.
 type ShippingZone struct {
-	ID              string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Countries       string    `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
-	DefaultFlag     null.Bool `boil:"default_flag" json:"default_flag,omitempty" toml:"default_flag" yaml:"default_flag,omitempty"`
-	Description     string    `boil:"description" json:"description" toml:"description" yaml:"description"`
-	CreatedAt       int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata        null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string               `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string               `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Countries       string               `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
+	DefaultFlag     model_types.NullBool `boil:"default_flag" json:"default_flag,omitempty" toml:"default_flag" yaml:"default_flag,omitempty"`
+	Description     string               `boil:"description" json:"description" toml:"description" yaml:"description"`
+	CreatedAt       int64                `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        model_types.JsonMap  `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JsonMap  `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *shippingZoneR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingZoneL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -83,20 +83,20 @@ var ShippingZoneWhere = struct {
 	ID              whereHelperstring
 	Name            whereHelperstring
 	Countries       whereHelperstring
-	DefaultFlag     whereHelpernull_Bool
+	DefaultFlag     whereHelpermodel_types_NullBool
 	Description     whereHelperstring
 	CreatedAt       whereHelperint64
-	Metadata        whereHelpernull_JSON
-	PrivateMetadata whereHelpernull_JSON
+	Metadata        whereHelpermodel_types_JsonMap
+	PrivateMetadata whereHelpermodel_types_JsonMap
 }{
 	ID:              whereHelperstring{field: "\"shipping_zones\".\"id\""},
 	Name:            whereHelperstring{field: "\"shipping_zones\".\"name\""},
 	Countries:       whereHelperstring{field: "\"shipping_zones\".\"countries\""},
-	DefaultFlag:     whereHelpernull_Bool{field: "\"shipping_zones\".\"default_flag\""},
+	DefaultFlag:     whereHelpermodel_types_NullBool{field: "\"shipping_zones\".\"default_flag\""},
 	Description:     whereHelperstring{field: "\"shipping_zones\".\"description\""},
 	CreatedAt:       whereHelperint64{field: "\"shipping_zones\".\"created_at\""},
-	Metadata:        whereHelpernull_JSON{field: "\"shipping_zones\".\"metadata\""},
-	PrivateMetadata: whereHelpernull_JSON{field: "\"shipping_zones\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JsonMap{field: "\"shipping_zones\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"shipping_zones\".\"private_metadata\""},
 }
 
 // ShippingZoneRels is where relationship names are stored.

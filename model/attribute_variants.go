@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +24,11 @@ import (
 
 // AttributeVariant is an object representing the database table.
 type AttributeVariant struct {
-	ID               string   `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID      string   `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
-	ProductTypeID    string   `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
-	VariantSelection bool     `boil:"variant_selection" json:"variant_selection" toml:"variant_selection" yaml:"variant_selection"`
-	SortOrder        null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID               string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID      string              `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	ProductTypeID    string              `boil:"product_type_id" json:"product_type_id" toml:"product_type_id" yaml:"product_type_id"`
+	VariantSelection bool                `boil:"variant_selection" json:"variant_selection" toml:"variant_selection" yaml:"variant_selection"`
+	SortOrder        model_types.NullInt `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributeVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -78,13 +78,13 @@ var AttributeVariantWhere = struct {
 	AttributeID      whereHelperstring
 	ProductTypeID    whereHelperstring
 	VariantSelection whereHelperbool
-	SortOrder        whereHelpernull_Int
+	SortOrder        whereHelpermodel_types_NullInt
 }{
 	ID:               whereHelperstring{field: "\"attribute_variants\".\"id\""},
 	AttributeID:      whereHelperstring{field: "\"attribute_variants\".\"attribute_id\""},
 	ProductTypeID:    whereHelperstring{field: "\"attribute_variants\".\"product_type_id\""},
 	VariantSelection: whereHelperbool{field: "\"attribute_variants\".\"variant_selection\""},
-	SortOrder:        whereHelpernull_Int{field: "\"attribute_variants\".\"sort_order\""},
+	SortOrder:        whereHelpermodel_types_NullInt{field: "\"attribute_variants\".\"sort_order\""},
 }
 
 // AttributeVariantRels is where relationship names are stored.

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // Preference is an object representing the database table.
 type Preference struct {
-	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Category string      `boil:"category" json:"category" toml:"category" yaml:"category"`
-	Name     string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Value    null.String `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
+	UserID   string                 `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Category string                 `boil:"category" json:"category" toml:"category" yaml:"category"`
+	Name     string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Value    model_types.NullString `boil:"value" json:"value,omitempty" toml:"value" yaml:"value,omitempty"`
 
 	R *preferenceR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L preferenceL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,12 +63,12 @@ var PreferenceWhere = struct {
 	UserID   whereHelperstring
 	Category whereHelperstring
 	Name     whereHelperstring
-	Value    whereHelpernull_String
+	Value    whereHelpermodel_types_NullString
 }{
 	UserID:   whereHelperstring{field: "\"preferences\".\"user_id\""},
 	Category: whereHelperstring{field: "\"preferences\".\"category\""},
 	Name:     whereHelperstring{field: "\"preferences\".\"name\""},
-	Value:    whereHelpernull_String{field: "\"preferences\".\"value\""},
+	Value:    whereHelpermodel_types_NullString{field: "\"preferences\".\"value\""},
 }
 
 // PreferenceRels is where relationship names are stored.

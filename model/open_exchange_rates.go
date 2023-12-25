@@ -14,19 +14,19 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // OpenExchangeRate is an object representing the database table.
 type OpenExchangeRate struct {
-	ID         string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ToCurrency string            `boil:"to_currency" json:"to_currency" toml:"to_currency" yaml:"to_currency"`
-	Rate       types.NullDecimal `boil:"rate" json:"rate,omitempty" toml:"rate" yaml:"rate,omitempty"`
+	ID         string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ToCurrency string                  `boil:"to_currency" json:"to_currency" toml:"to_currency" yaml:"to_currency"`
+	Rate       model_types.NullDecimal `boil:"rate" json:"rate,omitempty" toml:"rate" yaml:"rate,omitempty"`
 
 	R *openExchangeRateR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L openExchangeRateL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -57,11 +57,11 @@ var OpenExchangeRateTableColumns = struct {
 var OpenExchangeRateWhere = struct {
 	ID         whereHelperstring
 	ToCurrency whereHelperstring
-	Rate       whereHelpertypes_NullDecimal
+	Rate       whereHelpermodel_types_NullDecimal
 }{
 	ID:         whereHelperstring{field: "\"open_exchange_rates\".\"id\""},
 	ToCurrency: whereHelperstring{field: "\"open_exchange_rates\".\"to_currency\""},
-	Rate:       whereHelpertypes_NullDecimal{field: "\"open_exchange_rates\".\"rate\""},
+	Rate:       whereHelpermodel_types_NullDecimal{field: "\"open_exchange_rates\".\"rate\""},
 }
 
 // OpenExchangeRateRels is where relationship names are stored.

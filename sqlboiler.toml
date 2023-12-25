@@ -3,7 +3,7 @@ wipe     = true
 no-tests = true
 add-enum-types = true
 pkgname = "model"
-tracing = true
+tracing = false
 no-auto-timestamps = true
 no-hooks = true
 debug = false
@@ -16,3 +16,86 @@ debug = false
   pass   = "anhyeuem98"
   sslmode = "disable"
   blacklist = ["migrations", "other"]
+
+[[types]]
+  [types.match]
+    type = "types.Decimal"
+    nullable = false
+  [types.replace]
+    type = "decimal.Decimal"
+  [types.imports]
+    third_party = ['"github.com/site-name/decimal"']
+
+[[types]]
+  [types.match]
+    type = "null.JSON"
+    nullable = true
+  [types.replace]
+    type = "model_types.JsonMap"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "types.NullDecimal"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullDecimal"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "null.String"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullString"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "null.Int64"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullInt64"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "null.Int"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullInt"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "null.Bool"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullBool"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+
+[[types]]
+  [types.match]
+    type = "null.Float32"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullFloat32"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+
+[[types]]
+  [types.match]
+    type = "null.Time"
+    nullable = true
+  [types.replace]
+    type = "model_types.NullTime"
+  [types.imports]
+    third_party = ['"github.com/sitename/sitename/modules/model_types"']
+

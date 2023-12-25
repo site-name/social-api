@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // ExportEvent is an object representing the database table.
 type ExportEvent struct {
-	ID           string          `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Date         int64           `boil:"date" json:"date" toml:"date" yaml:"date"`
-	Type         Exporteventtype `boil:"type" json:"type" toml:"type" yaml:"type"`
-	Parameters   null.String     `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
-	ExportFileID string          `boil:"export_file_id" json:"export_file_id" toml:"export_file_id" yaml:"export_file_id"`
-	UserID       null.String     `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	ID           string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Date         int64                  `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Type         Exporteventtype        `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Parameters   model_types.NullString `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	ExportFileID string                 `boil:"export_file_id" json:"export_file_id" toml:"export_file_id" yaml:"export_file_id"`
+	UserID       model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 
 	R *exportEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L exportEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -108,16 +108,16 @@ var ExportEventWhere = struct {
 	ID           whereHelperstring
 	Date         whereHelperint64
 	Type         whereHelperExporteventtype
-	Parameters   whereHelpernull_String
+	Parameters   whereHelpermodel_types_NullString
 	ExportFileID whereHelperstring
-	UserID       whereHelpernull_String
+	UserID       whereHelpermodel_types_NullString
 }{
 	ID:           whereHelperstring{field: "\"export_events\".\"id\""},
 	Date:         whereHelperint64{field: "\"export_events\".\"date\""},
 	Type:         whereHelperExporteventtype{field: "\"export_events\".\"type\""},
-	Parameters:   whereHelpernull_String{field: "\"export_events\".\"parameters\""},
+	Parameters:   whereHelpermodel_types_NullString{field: "\"export_events\".\"parameters\""},
 	ExportFileID: whereHelperstring{field: "\"export_events\".\"export_file_id\""},
-	UserID:       whereHelpernull_String{field: "\"export_events\".\"user_id\""},
+	UserID:       whereHelpermodel_types_NullString{field: "\"export_events\".\"user_id\""},
 }
 
 // ExportEventRels is where relationship names are stored.

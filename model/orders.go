@@ -14,52 +14,52 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Order is an object representing the database table.
 type Order struct {
-	ID                           string        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt                    int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Status                       Orderstatus   `boil:"status" json:"status" toml:"status" yaml:"status"`
-	UserID                       null.String   `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	LanguageCode                 Languagecode  `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	TrackingClientID             string        `boil:"tracking_client_id" json:"tracking_client_id" toml:"tracking_client_id" yaml:"tracking_client_id"`
-	BillingAddressID             null.String   `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
-	ShippingAddressID            null.String   `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
-	UserEmail                    string        `boil:"user_email" json:"user_email" toml:"user_email" yaml:"user_email"`
-	OriginalID                   null.String   `boil:"original_id" json:"original_id,omitempty" toml:"original_id" yaml:"original_id,omitempty"`
-	Origin                       Orderorigin   `boil:"origin" json:"origin" toml:"origin" yaml:"origin"`
-	Currency                     string        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	ShippingMethodID             null.String   `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
-	CollectionPointID            null.String   `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
-	ShippingMethodName           null.String   `boil:"shipping_method_name" json:"shipping_method_name,omitempty" toml:"shipping_method_name" yaml:"shipping_method_name,omitempty"`
-	CollectionPointName          null.String   `boil:"collection_point_name" json:"collection_point_name,omitempty" toml:"collection_point_name" yaml:"collection_point_name,omitempty"`
-	ChannelID                    string        `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	ShippingPriceNetAmount       types.Decimal `boil:"shipping_price_net_amount" json:"shipping_price_net_amount" toml:"shipping_price_net_amount" yaml:"shipping_price_net_amount"`
-	ShippingPriceGrossAmount     types.Decimal `boil:"shipping_price_gross_amount" json:"shipping_price_gross_amount" toml:"shipping_price_gross_amount" yaml:"shipping_price_gross_amount"`
-	ShippingTaxRate              types.Decimal `boil:"shipping_tax_rate" json:"shipping_tax_rate" toml:"shipping_tax_rate" yaml:"shipping_tax_rate"`
-	Token                        string        `boil:"token" json:"token" toml:"token" yaml:"token"`
-	CheckoutToken                string        `boil:"checkout_token" json:"checkout_token" toml:"checkout_token" yaml:"checkout_token"`
-	TotalNetAmount               types.Decimal `boil:"total_net_amount" json:"total_net_amount" toml:"total_net_amount" yaml:"total_net_amount"`
-	UndiscountedTotalNetAmount   types.Decimal `boil:"undiscounted_total_net_amount" json:"undiscounted_total_net_amount" toml:"undiscounted_total_net_amount" yaml:"undiscounted_total_net_amount"`
-	TotalGrossAmount             types.Decimal `boil:"total_gross_amount" json:"total_gross_amount" toml:"total_gross_amount" yaml:"total_gross_amount"`
-	UndiscountedTotalGrossAmount types.Decimal `boil:"undiscounted_total_gross_amount" json:"undiscounted_total_gross_amount" toml:"undiscounted_total_gross_amount" yaml:"undiscounted_total_gross_amount"`
-	TotalPaidAmount              types.Decimal `boil:"total_paid_amount" json:"total_paid_amount" toml:"total_paid_amount" yaml:"total_paid_amount"`
-	VoucherID                    null.String   `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
-	DisplayGrossPrices           null.Bool     `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
-	CustomerNote                 string        `boil:"customer_note" json:"customer_note" toml:"customer_note" yaml:"customer_note"`
-	WeightAmount                 float32       `boil:"weight_amount" json:"weight_amount" toml:"weight_amount" yaml:"weight_amount"`
-	WeightUnit                   string        `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
-	RedirectURL                  null.String   `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
-	Metadata                     null.JSON     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata              null.JSON     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                           string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt                    int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Status                       Orderstatus            `boil:"status" json:"status" toml:"status" yaml:"status"`
+	UserID                       model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	LanguageCode                 Languagecode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	TrackingClientID             string                 `boil:"tracking_client_id" json:"tracking_client_id" toml:"tracking_client_id" yaml:"tracking_client_id"`
+	BillingAddressID             model_types.NullString `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
+	ShippingAddressID            model_types.NullString `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
+	UserEmail                    string                 `boil:"user_email" json:"user_email" toml:"user_email" yaml:"user_email"`
+	OriginalID                   model_types.NullString `boil:"original_id" json:"original_id,omitempty" toml:"original_id" yaml:"original_id,omitempty"`
+	Origin                       Orderorigin            `boil:"origin" json:"origin" toml:"origin" yaml:"origin"`
+	Currency                     string                 `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	ShippingMethodID             model_types.NullString `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	CollectionPointID            model_types.NullString `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
+	ShippingMethodName           model_types.NullString `boil:"shipping_method_name" json:"shipping_method_name,omitempty" toml:"shipping_method_name" yaml:"shipping_method_name,omitempty"`
+	CollectionPointName          model_types.NullString `boil:"collection_point_name" json:"collection_point_name,omitempty" toml:"collection_point_name" yaml:"collection_point_name,omitempty"`
+	ChannelID                    string                 `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	ShippingPriceNetAmount       decimal.Decimal        `boil:"shipping_price_net_amount" json:"shipping_price_net_amount" toml:"shipping_price_net_amount" yaml:"shipping_price_net_amount"`
+	ShippingPriceGrossAmount     decimal.Decimal        `boil:"shipping_price_gross_amount" json:"shipping_price_gross_amount" toml:"shipping_price_gross_amount" yaml:"shipping_price_gross_amount"`
+	ShippingTaxRate              decimal.Decimal        `boil:"shipping_tax_rate" json:"shipping_tax_rate" toml:"shipping_tax_rate" yaml:"shipping_tax_rate"`
+	Token                        string                 `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CheckoutToken                string                 `boil:"checkout_token" json:"checkout_token" toml:"checkout_token" yaml:"checkout_token"`
+	TotalNetAmount               decimal.Decimal        `boil:"total_net_amount" json:"total_net_amount" toml:"total_net_amount" yaml:"total_net_amount"`
+	UndiscountedTotalNetAmount   decimal.Decimal        `boil:"undiscounted_total_net_amount" json:"undiscounted_total_net_amount" toml:"undiscounted_total_net_amount" yaml:"undiscounted_total_net_amount"`
+	TotalGrossAmount             decimal.Decimal        `boil:"total_gross_amount" json:"total_gross_amount" toml:"total_gross_amount" yaml:"total_gross_amount"`
+	UndiscountedTotalGrossAmount decimal.Decimal        `boil:"undiscounted_total_gross_amount" json:"undiscounted_total_gross_amount" toml:"undiscounted_total_gross_amount" yaml:"undiscounted_total_gross_amount"`
+	TotalPaidAmount              decimal.Decimal        `boil:"total_paid_amount" json:"total_paid_amount" toml:"total_paid_amount" yaml:"total_paid_amount"`
+	VoucherID                    model_types.NullString `boil:"voucher_id" json:"voucher_id,omitempty" toml:"voucher_id" yaml:"voucher_id,omitempty"`
+	DisplayGrossPrices           model_types.NullBool   `boil:"display_gross_prices" json:"display_gross_prices,omitempty" toml:"display_gross_prices" yaml:"display_gross_prices,omitempty"`
+	CustomerNote                 string                 `boil:"customer_note" json:"customer_note" toml:"customer_note" yaml:"customer_note"`
+	WeightAmount                 float32                `boil:"weight_amount" json:"weight_amount" toml:"weight_amount" yaml:"weight_amount"`
+	WeightUnit                   string                 `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
+	RedirectURL                  model_types.NullString `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
+	Metadata                     model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata              model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *orderR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -318,74 +318,74 @@ var OrderWhere = struct {
 	ID                           whereHelperstring
 	CreatedAt                    whereHelperint64
 	Status                       whereHelperOrderstatus
-	UserID                       whereHelpernull_String
+	UserID                       whereHelpermodel_types_NullString
 	LanguageCode                 whereHelperLanguagecode
 	TrackingClientID             whereHelperstring
-	BillingAddressID             whereHelpernull_String
-	ShippingAddressID            whereHelpernull_String
+	BillingAddressID             whereHelpermodel_types_NullString
+	ShippingAddressID            whereHelpermodel_types_NullString
 	UserEmail                    whereHelperstring
-	OriginalID                   whereHelpernull_String
+	OriginalID                   whereHelpermodel_types_NullString
 	Origin                       whereHelperOrderorigin
 	Currency                     whereHelperstring
-	ShippingMethodID             whereHelpernull_String
-	CollectionPointID            whereHelpernull_String
-	ShippingMethodName           whereHelpernull_String
-	CollectionPointName          whereHelpernull_String
+	ShippingMethodID             whereHelpermodel_types_NullString
+	CollectionPointID            whereHelpermodel_types_NullString
+	ShippingMethodName           whereHelpermodel_types_NullString
+	CollectionPointName          whereHelpermodel_types_NullString
 	ChannelID                    whereHelperstring
-	ShippingPriceNetAmount       whereHelpertypes_Decimal
-	ShippingPriceGrossAmount     whereHelpertypes_Decimal
-	ShippingTaxRate              whereHelpertypes_Decimal
+	ShippingPriceNetAmount       whereHelperdecimal_Decimal
+	ShippingPriceGrossAmount     whereHelperdecimal_Decimal
+	ShippingTaxRate              whereHelperdecimal_Decimal
 	Token                        whereHelperstring
 	CheckoutToken                whereHelperstring
-	TotalNetAmount               whereHelpertypes_Decimal
-	UndiscountedTotalNetAmount   whereHelpertypes_Decimal
-	TotalGrossAmount             whereHelpertypes_Decimal
-	UndiscountedTotalGrossAmount whereHelpertypes_Decimal
-	TotalPaidAmount              whereHelpertypes_Decimal
-	VoucherID                    whereHelpernull_String
-	DisplayGrossPrices           whereHelpernull_Bool
+	TotalNetAmount               whereHelperdecimal_Decimal
+	UndiscountedTotalNetAmount   whereHelperdecimal_Decimal
+	TotalGrossAmount             whereHelperdecimal_Decimal
+	UndiscountedTotalGrossAmount whereHelperdecimal_Decimal
+	TotalPaidAmount              whereHelperdecimal_Decimal
+	VoucherID                    whereHelpermodel_types_NullString
+	DisplayGrossPrices           whereHelpermodel_types_NullBool
 	CustomerNote                 whereHelperstring
 	WeightAmount                 whereHelperfloat32
 	WeightUnit                   whereHelperstring
-	RedirectURL                  whereHelpernull_String
-	Metadata                     whereHelpernull_JSON
-	PrivateMetadata              whereHelpernull_JSON
+	RedirectURL                  whereHelpermodel_types_NullString
+	Metadata                     whereHelpermodel_types_JsonMap
+	PrivateMetadata              whereHelpermodel_types_JsonMap
 }{
 	ID:                           whereHelperstring{field: "\"orders\".\"id\""},
 	CreatedAt:                    whereHelperint64{field: "\"orders\".\"created_at\""},
 	Status:                       whereHelperOrderstatus{field: "\"orders\".\"status\""},
-	UserID:                       whereHelpernull_String{field: "\"orders\".\"user_id\""},
+	UserID:                       whereHelpermodel_types_NullString{field: "\"orders\".\"user_id\""},
 	LanguageCode:                 whereHelperLanguagecode{field: "\"orders\".\"language_code\""},
 	TrackingClientID:             whereHelperstring{field: "\"orders\".\"tracking_client_id\""},
-	BillingAddressID:             whereHelpernull_String{field: "\"orders\".\"billing_address_id\""},
-	ShippingAddressID:            whereHelpernull_String{field: "\"orders\".\"shipping_address_id\""},
+	BillingAddressID:             whereHelpermodel_types_NullString{field: "\"orders\".\"billing_address_id\""},
+	ShippingAddressID:            whereHelpermodel_types_NullString{field: "\"orders\".\"shipping_address_id\""},
 	UserEmail:                    whereHelperstring{field: "\"orders\".\"user_email\""},
-	OriginalID:                   whereHelpernull_String{field: "\"orders\".\"original_id\""},
+	OriginalID:                   whereHelpermodel_types_NullString{field: "\"orders\".\"original_id\""},
 	Origin:                       whereHelperOrderorigin{field: "\"orders\".\"origin\""},
 	Currency:                     whereHelperstring{field: "\"orders\".\"currency\""},
-	ShippingMethodID:             whereHelpernull_String{field: "\"orders\".\"shipping_method_id\""},
-	CollectionPointID:            whereHelpernull_String{field: "\"orders\".\"collection_point_id\""},
-	ShippingMethodName:           whereHelpernull_String{field: "\"orders\".\"shipping_method_name\""},
-	CollectionPointName:          whereHelpernull_String{field: "\"orders\".\"collection_point_name\""},
+	ShippingMethodID:             whereHelpermodel_types_NullString{field: "\"orders\".\"shipping_method_id\""},
+	CollectionPointID:            whereHelpermodel_types_NullString{field: "\"orders\".\"collection_point_id\""},
+	ShippingMethodName:           whereHelpermodel_types_NullString{field: "\"orders\".\"shipping_method_name\""},
+	CollectionPointName:          whereHelpermodel_types_NullString{field: "\"orders\".\"collection_point_name\""},
 	ChannelID:                    whereHelperstring{field: "\"orders\".\"channel_id\""},
-	ShippingPriceNetAmount:       whereHelpertypes_Decimal{field: "\"orders\".\"shipping_price_net_amount\""},
-	ShippingPriceGrossAmount:     whereHelpertypes_Decimal{field: "\"orders\".\"shipping_price_gross_amount\""},
-	ShippingTaxRate:              whereHelpertypes_Decimal{field: "\"orders\".\"shipping_tax_rate\""},
+	ShippingPriceNetAmount:       whereHelperdecimal_Decimal{field: "\"orders\".\"shipping_price_net_amount\""},
+	ShippingPriceGrossAmount:     whereHelperdecimal_Decimal{field: "\"orders\".\"shipping_price_gross_amount\""},
+	ShippingTaxRate:              whereHelperdecimal_Decimal{field: "\"orders\".\"shipping_tax_rate\""},
 	Token:                        whereHelperstring{field: "\"orders\".\"token\""},
 	CheckoutToken:                whereHelperstring{field: "\"orders\".\"checkout_token\""},
-	TotalNetAmount:               whereHelpertypes_Decimal{field: "\"orders\".\"total_net_amount\""},
-	UndiscountedTotalNetAmount:   whereHelpertypes_Decimal{field: "\"orders\".\"undiscounted_total_net_amount\""},
-	TotalGrossAmount:             whereHelpertypes_Decimal{field: "\"orders\".\"total_gross_amount\""},
-	UndiscountedTotalGrossAmount: whereHelpertypes_Decimal{field: "\"orders\".\"undiscounted_total_gross_amount\""},
-	TotalPaidAmount:              whereHelpertypes_Decimal{field: "\"orders\".\"total_paid_amount\""},
-	VoucherID:                    whereHelpernull_String{field: "\"orders\".\"voucher_id\""},
-	DisplayGrossPrices:           whereHelpernull_Bool{field: "\"orders\".\"display_gross_prices\""},
+	TotalNetAmount:               whereHelperdecimal_Decimal{field: "\"orders\".\"total_net_amount\""},
+	UndiscountedTotalNetAmount:   whereHelperdecimal_Decimal{field: "\"orders\".\"undiscounted_total_net_amount\""},
+	TotalGrossAmount:             whereHelperdecimal_Decimal{field: "\"orders\".\"total_gross_amount\""},
+	UndiscountedTotalGrossAmount: whereHelperdecimal_Decimal{field: "\"orders\".\"undiscounted_total_gross_amount\""},
+	TotalPaidAmount:              whereHelperdecimal_Decimal{field: "\"orders\".\"total_paid_amount\""},
+	VoucherID:                    whereHelpermodel_types_NullString{field: "\"orders\".\"voucher_id\""},
+	DisplayGrossPrices:           whereHelpermodel_types_NullBool{field: "\"orders\".\"display_gross_prices\""},
 	CustomerNote:                 whereHelperstring{field: "\"orders\".\"customer_note\""},
 	WeightAmount:                 whereHelperfloat32{field: "\"orders\".\"weight_amount\""},
 	WeightUnit:                   whereHelperstring{field: "\"orders\".\"weight_unit\""},
-	RedirectURL:                  whereHelpernull_String{field: "\"orders\".\"redirect_url\""},
-	Metadata:                     whereHelpernull_JSON{field: "\"orders\".\"metadata\""},
-	PrivateMetadata:              whereHelpernull_JSON{field: "\"orders\".\"private_metadata\""},
+	RedirectURL:                  whereHelpermodel_types_NullString{field: "\"orders\".\"redirect_url\""},
+	Metadata:                     whereHelpermodel_types_JsonMap{field: "\"orders\".\"metadata\""},
+	PrivateMetadata:              whereHelpermodel_types_JsonMap{field: "\"orders\".\"private_metadata\""},
 }
 
 // OrderRels is where relationship names are stored.

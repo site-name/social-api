@@ -14,35 +14,34 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Giftcard is an object representing the database table.
 type Giftcard struct {
-	ID                   string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Code                 string            `boil:"code" json:"code" toml:"code" yaml:"code"`
-	CreatedByID          null.String       `boil:"created_by_id" json:"created_by_id,omitempty" toml:"created_by_id" yaml:"created_by_id,omitempty"`
-	UsedByID             null.String       `boil:"used_by_id" json:"used_by_id,omitempty" toml:"used_by_id" yaml:"used_by_id,omitempty"`
-	CreatedByEmail       null.String       `boil:"created_by_email" json:"created_by_email,omitempty" toml:"created_by_email" yaml:"created_by_email,omitempty"`
-	UsedByEmail          null.String       `boil:"used_by_email" json:"used_by_email,omitempty" toml:"used_by_email" yaml:"used_by_email,omitempty"`
-	CreatedAt            int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	StartDate            null.Time         `boil:"start_date" json:"start_date,omitempty" toml:"start_date" yaml:"start_date,omitempty"`
-	ExpiryDate           null.Time         `boil:"expiry_date" json:"expiry_date,omitempty" toml:"expiry_date" yaml:"expiry_date,omitempty"`
-	Tag                  null.String       `boil:"tag" json:"tag,omitempty" toml:"tag" yaml:"tag,omitempty"`
-	ProductID            null.String       `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
-	LastUsedOn           null.Int64        `boil:"last_used_on" json:"last_used_on,omitempty" toml:"last_used_on" yaml:"last_used_on,omitempty"`
-	IsActive             null.Bool         `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
-	Currency             Currency          `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	InitialBalanceAmount types.NullDecimal `boil:"initial_balance_amount" json:"initial_balance_amount,omitempty" toml:"initial_balance_amount" yaml:"initial_balance_amount,omitempty"`
-	CurrentBalanceAmount types.NullDecimal `boil:"current_balance_amount" json:"current_balance_amount,omitempty" toml:"current_balance_amount" yaml:"current_balance_amount,omitempty"`
-	Metadata             null.JSON         `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      null.JSON         `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                   string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Code                 string                  `boil:"code" json:"code" toml:"code" yaml:"code"`
+	CreatedByID          model_types.NullString  `boil:"created_by_id" json:"created_by_id,omitempty" toml:"created_by_id" yaml:"created_by_id,omitempty"`
+	UsedByID             model_types.NullString  `boil:"used_by_id" json:"used_by_id,omitempty" toml:"used_by_id" yaml:"used_by_id,omitempty"`
+	CreatedByEmail       model_types.NullString  `boil:"created_by_email" json:"created_by_email,omitempty" toml:"created_by_email" yaml:"created_by_email,omitempty"`
+	UsedByEmail          model_types.NullString  `boil:"used_by_email" json:"used_by_email,omitempty" toml:"used_by_email" yaml:"used_by_email,omitempty"`
+	CreatedAt            int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	StartDate            model_types.NullTime    `boil:"start_date" json:"start_date,omitempty" toml:"start_date" yaml:"start_date,omitempty"`
+	ExpiryDate           model_types.NullTime    `boil:"expiry_date" json:"expiry_date,omitempty" toml:"expiry_date" yaml:"expiry_date,omitempty"`
+	Tag                  model_types.NullString  `boil:"tag" json:"tag,omitempty" toml:"tag" yaml:"tag,omitempty"`
+	ProductID            model_types.NullString  `boil:"product_id" json:"product_id,omitempty" toml:"product_id" yaml:"product_id,omitempty"`
+	LastUsedOn           model_types.NullInt64   `boil:"last_used_on" json:"last_used_on,omitempty" toml:"last_used_on" yaml:"last_used_on,omitempty"`
+	IsActive             model_types.NullBool    `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
+	Currency             Currency                `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	InitialBalanceAmount model_types.NullDecimal `boil:"initial_balance_amount" json:"initial_balance_amount,omitempty" toml:"initial_balance_amount" yaml:"initial_balance_amount,omitempty"`
+	CurrentBalanceAmount model_types.NullDecimal `boil:"current_balance_amount" json:"current_balance_amount,omitempty" toml:"current_balance_amount" yaml:"current_balance_amount,omitempty"`
+	Metadata             model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *giftcardR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -168,41 +167,41 @@ func (w whereHelperCurrency) NIN(slice []Currency) qm.QueryMod {
 var GiftcardWhere = struct {
 	ID                   whereHelperstring
 	Code                 whereHelperstring
-	CreatedByID          whereHelpernull_String
-	UsedByID             whereHelpernull_String
-	CreatedByEmail       whereHelpernull_String
-	UsedByEmail          whereHelpernull_String
+	CreatedByID          whereHelpermodel_types_NullString
+	UsedByID             whereHelpermodel_types_NullString
+	CreatedByEmail       whereHelpermodel_types_NullString
+	UsedByEmail          whereHelpermodel_types_NullString
 	CreatedAt            whereHelperint64
-	StartDate            whereHelpernull_Time
-	ExpiryDate           whereHelpernull_Time
-	Tag                  whereHelpernull_String
-	ProductID            whereHelpernull_String
-	LastUsedOn           whereHelpernull_Int64
-	IsActive             whereHelpernull_Bool
+	StartDate            whereHelpermodel_types_NullTime
+	ExpiryDate           whereHelpermodel_types_NullTime
+	Tag                  whereHelpermodel_types_NullString
+	ProductID            whereHelpermodel_types_NullString
+	LastUsedOn           whereHelpermodel_types_NullInt64
+	IsActive             whereHelpermodel_types_NullBool
 	Currency             whereHelperCurrency
-	InitialBalanceAmount whereHelpertypes_NullDecimal
-	CurrentBalanceAmount whereHelpertypes_NullDecimal
-	Metadata             whereHelpernull_JSON
-	PrivateMetadata      whereHelpernull_JSON
+	InitialBalanceAmount whereHelpermodel_types_NullDecimal
+	CurrentBalanceAmount whereHelpermodel_types_NullDecimal
+	Metadata             whereHelpermodel_types_JsonMap
+	PrivateMetadata      whereHelpermodel_types_JsonMap
 }{
 	ID:                   whereHelperstring{field: "\"giftcards\".\"id\""},
 	Code:                 whereHelperstring{field: "\"giftcards\".\"code\""},
-	CreatedByID:          whereHelpernull_String{field: "\"giftcards\".\"created_by_id\""},
-	UsedByID:             whereHelpernull_String{field: "\"giftcards\".\"used_by_id\""},
-	CreatedByEmail:       whereHelpernull_String{field: "\"giftcards\".\"created_by_email\""},
-	UsedByEmail:          whereHelpernull_String{field: "\"giftcards\".\"used_by_email\""},
+	CreatedByID:          whereHelpermodel_types_NullString{field: "\"giftcards\".\"created_by_id\""},
+	UsedByID:             whereHelpermodel_types_NullString{field: "\"giftcards\".\"used_by_id\""},
+	CreatedByEmail:       whereHelpermodel_types_NullString{field: "\"giftcards\".\"created_by_email\""},
+	UsedByEmail:          whereHelpermodel_types_NullString{field: "\"giftcards\".\"used_by_email\""},
 	CreatedAt:            whereHelperint64{field: "\"giftcards\".\"created_at\""},
-	StartDate:            whereHelpernull_Time{field: "\"giftcards\".\"start_date\""},
-	ExpiryDate:           whereHelpernull_Time{field: "\"giftcards\".\"expiry_date\""},
-	Tag:                  whereHelpernull_String{field: "\"giftcards\".\"tag\""},
-	ProductID:            whereHelpernull_String{field: "\"giftcards\".\"product_id\""},
-	LastUsedOn:           whereHelpernull_Int64{field: "\"giftcards\".\"last_used_on\""},
-	IsActive:             whereHelpernull_Bool{field: "\"giftcards\".\"is_active\""},
+	StartDate:            whereHelpermodel_types_NullTime{field: "\"giftcards\".\"start_date\""},
+	ExpiryDate:           whereHelpermodel_types_NullTime{field: "\"giftcards\".\"expiry_date\""},
+	Tag:                  whereHelpermodel_types_NullString{field: "\"giftcards\".\"tag\""},
+	ProductID:            whereHelpermodel_types_NullString{field: "\"giftcards\".\"product_id\""},
+	LastUsedOn:           whereHelpermodel_types_NullInt64{field: "\"giftcards\".\"last_used_on\""},
+	IsActive:             whereHelpermodel_types_NullBool{field: "\"giftcards\".\"is_active\""},
 	Currency:             whereHelperCurrency{field: "\"giftcards\".\"currency\""},
-	InitialBalanceAmount: whereHelpertypes_NullDecimal{field: "\"giftcards\".\"initial_balance_amount\""},
-	CurrentBalanceAmount: whereHelpertypes_NullDecimal{field: "\"giftcards\".\"current_balance_amount\""},
-	Metadata:             whereHelpernull_JSON{field: "\"giftcards\".\"metadata\""},
-	PrivateMetadata:      whereHelpernull_JSON{field: "\"giftcards\".\"private_metadata\""},
+	InitialBalanceAmount: whereHelpermodel_types_NullDecimal{field: "\"giftcards\".\"initial_balance_amount\""},
+	CurrentBalanceAmount: whereHelpermodel_types_NullDecimal{field: "\"giftcards\".\"current_balance_amount\""},
+	Metadata:             whereHelpermodel_types_JsonMap{field: "\"giftcards\".\"metadata\""},
+	PrivateMetadata:      whereHelpermodel_types_JsonMap{field: "\"giftcards\".\"private_metadata\""},
 }
 
 // GiftcardRels is where relationship names are stored.

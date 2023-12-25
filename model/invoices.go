@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,17 +24,17 @@ import (
 
 // Invoice is an object representing the database table.
 type Invoice struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrderID         null.String `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	Number          string      `boil:"number" json:"number" toml:"number" yaml:"number"`
-	CreatedAt       int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ExternalURL     string      `boil:"external_url" json:"external_url" toml:"external_url" yaml:"external_url"`
-	Status          string      `boil:"status" json:"status" toml:"status" yaml:"status"`
-	Message         string      `boil:"message" json:"message" toml:"message" yaml:"message"`
-	UpdatedAt       int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	InvoiceFile     null.String `boil:"invoice_file" json:"invoice_file,omitempty" toml:"invoice_file" yaml:"invoice_file,omitempty"`
-	Metadata        null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	OrderID         model_types.NullString `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	Number          string                 `boil:"number" json:"number" toml:"number" yaml:"number"`
+	CreatedAt       int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ExternalURL     string                 `boil:"external_url" json:"external_url" toml:"external_url" yaml:"external_url"`
+	Status          string                 `boil:"status" json:"status" toml:"status" yaml:"status"`
+	Message         string                 `boil:"message" json:"message" toml:"message" yaml:"message"`
+	UpdatedAt       int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	InvoiceFile     model_types.NullString `boil:"invoice_file" json:"invoice_file,omitempty" toml:"invoice_file" yaml:"invoice_file,omitempty"`
+	Metadata        model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *invoiceR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L invoiceL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -96,28 +96,28 @@ var InvoiceTableColumns = struct {
 
 var InvoiceWhere = struct {
 	ID              whereHelperstring
-	OrderID         whereHelpernull_String
+	OrderID         whereHelpermodel_types_NullString
 	Number          whereHelperstring
 	CreatedAt       whereHelperint64
 	ExternalURL     whereHelperstring
 	Status          whereHelperstring
 	Message         whereHelperstring
 	UpdatedAt       whereHelperint64
-	InvoiceFile     whereHelpernull_String
-	Metadata        whereHelpernull_JSON
-	PrivateMetadata whereHelpernull_JSON
+	InvoiceFile     whereHelpermodel_types_NullString
+	Metadata        whereHelpermodel_types_JsonMap
+	PrivateMetadata whereHelpermodel_types_JsonMap
 }{
 	ID:              whereHelperstring{field: "\"invoices\".\"id\""},
-	OrderID:         whereHelpernull_String{field: "\"invoices\".\"order_id\""},
+	OrderID:         whereHelpermodel_types_NullString{field: "\"invoices\".\"order_id\""},
 	Number:          whereHelperstring{field: "\"invoices\".\"number\""},
 	CreatedAt:       whereHelperint64{field: "\"invoices\".\"created_at\""},
 	ExternalURL:     whereHelperstring{field: "\"invoices\".\"external_url\""},
 	Status:          whereHelperstring{field: "\"invoices\".\"status\""},
 	Message:         whereHelperstring{field: "\"invoices\".\"message\""},
 	UpdatedAt:       whereHelperint64{field: "\"invoices\".\"updated_at\""},
-	InvoiceFile:     whereHelpernull_String{field: "\"invoices\".\"invoice_file\""},
-	Metadata:        whereHelpernull_JSON{field: "\"invoices\".\"metadata\""},
-	PrivateMetadata: whereHelpernull_JSON{field: "\"invoices\".\"private_metadata\""},
+	InvoiceFile:     whereHelpermodel_types_NullString{field: "\"invoices\".\"invoice_file\""},
+	Metadata:        whereHelpermodel_types_JsonMap{field: "\"invoices\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"invoices\".\"private_metadata\""},
 }
 
 // InvoiceRels is where relationship names are stored.

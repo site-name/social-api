@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // DigitalContentURL is an object representing the database table.
 type DigitalContentURL struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Token       string      `boil:"token" json:"token" toml:"token" yaml:"token"`
-	ContentID   string      `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
-	CreatedAt   int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	DownloadNum int         `boil:"download_num" json:"download_num" toml:"download_num" yaml:"download_num"`
-	LineID      null.String `boil:"line_id" json:"line_id,omitempty" toml:"line_id" yaml:"line_id,omitempty"`
+	ID          string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Token       string                 `boil:"token" json:"token" toml:"token" yaml:"token"`
+	ContentID   string                 `boil:"content_id" json:"content_id" toml:"content_id" yaml:"content_id"`
+	CreatedAt   int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	DownloadNum int                    `boil:"download_num" json:"download_num" toml:"download_num" yaml:"download_num"`
+	LineID      model_types.NullString `boil:"line_id" json:"line_id,omitempty" toml:"line_id" yaml:"line_id,omitempty"`
 
 	R *digitalContentURLR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L digitalContentURLL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -75,14 +75,14 @@ var DigitalContentURLWhere = struct {
 	ContentID   whereHelperstring
 	CreatedAt   whereHelperint64
 	DownloadNum whereHelperint
-	LineID      whereHelpernull_String
+	LineID      whereHelpermodel_types_NullString
 }{
 	ID:          whereHelperstring{field: "\"digital_content_urls\".\"id\""},
 	Token:       whereHelperstring{field: "\"digital_content_urls\".\"token\""},
 	ContentID:   whereHelperstring{field: "\"digital_content_urls\".\"content_id\""},
 	CreatedAt:   whereHelperint64{field: "\"digital_content_urls\".\"created_at\""},
 	DownloadNum: whereHelperint{field: "\"digital_content_urls\".\"download_num\""},
-	LineID:      whereHelpernull_String{field: "\"digital_content_urls\".\"line_id\""},
+	LineID:      whereHelpermodel_types_NullString{field: "\"digital_content_urls\".\"line_id\""},
 }
 
 // DigitalContentURLRels is where relationship names are stored.

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,18 +24,18 @@ import (
 
 // Session is an object representing the database table.
 type Session struct {
-	ID             string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Token          string    `boil:"token" json:"token" toml:"token" yaml:"token"`
-	CreatedAt      int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ExpiresAt      int64     `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
-	LastActivityAt int64     `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
-	UserID         string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	DeviceID       string    `boil:"device_id" json:"device_id" toml:"device_id" yaml:"device_id"`
-	Roles          string    `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
-	IsOauth        bool      `boil:"is_oauth" json:"is_oauth" toml:"is_oauth" yaml:"is_oauth"`
-	ExpiredNotify  bool      `boil:"expired_notify" json:"expired_notify" toml:"expired_notify" yaml:"expired_notify"`
-	Props          null.JSON `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
-	Local          bool      `boil:"local" json:"local" toml:"local" yaml:"local"`
+	ID             string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Token          string              `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CreatedAt      int64               `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ExpiresAt      int64               `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
+	LastActivityAt int64               `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
+	UserID         string              `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	DeviceID       string              `boil:"device_id" json:"device_id" toml:"device_id" yaml:"device_id"`
+	Roles          string              `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
+	IsOauth        bool                `boil:"is_oauth" json:"is_oauth" toml:"is_oauth" yaml:"is_oauth"`
+	ExpiredNotify  bool                `boil:"expired_notify" json:"expired_notify" toml:"expired_notify" yaml:"expired_notify"`
+	Props          model_types.JsonMap `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
+	Local          bool                `boil:"local" json:"local" toml:"local" yaml:"local"`
 
 	R *sessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L sessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -110,7 +110,7 @@ var SessionWhere = struct {
 	Roles          whereHelperstring
 	IsOauth        whereHelperbool
 	ExpiredNotify  whereHelperbool
-	Props          whereHelpernull_JSON
+	Props          whereHelpermodel_types_JsonMap
 	Local          whereHelperbool
 }{
 	ID:             whereHelperstring{field: "\"sessions\".\"id\""},
@@ -123,7 +123,7 @@ var SessionWhere = struct {
 	Roles:          whereHelperstring{field: "\"sessions\".\"roles\""},
 	IsOauth:        whereHelperbool{field: "\"sessions\".\"is_oauth\""},
 	ExpiredNotify:  whereHelperbool{field: "\"sessions\".\"expired_notify\""},
-	Props:          whereHelpernull_JSON{field: "\"sessions\".\"props\""},
+	Props:          whereHelpermodel_types_JsonMap{field: "\"sessions\".\"props\""},
 	Local:          whereHelperbool{field: "\"sessions\".\"local\""},
 }
 

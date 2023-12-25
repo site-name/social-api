@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +24,11 @@ import (
 
 // FulfillmentLine is an object representing the database table.
 type FulfillmentLine struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrderLineID   string      `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
-	FulfillmentID string      `boil:"fulfillment_id" json:"fulfillment_id" toml:"fulfillment_id" yaml:"fulfillment_id"`
-	Quantity      int         `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
-	StockID       null.String `boil:"stock_id" json:"stock_id,omitempty" toml:"stock_id" yaml:"stock_id,omitempty"`
+	ID            string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	OrderLineID   string                 `boil:"order_line_id" json:"order_line_id" toml:"order_line_id" yaml:"order_line_id"`
+	FulfillmentID string                 `boil:"fulfillment_id" json:"fulfillment_id" toml:"fulfillment_id" yaml:"fulfillment_id"`
+	Quantity      int                    `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	StockID       model_types.NullString `boil:"stock_id" json:"stock_id,omitempty" toml:"stock_id" yaml:"stock_id,omitempty"`
 
 	R *fulfillmentLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L fulfillmentLineL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -69,13 +69,13 @@ var FulfillmentLineWhere = struct {
 	OrderLineID   whereHelperstring
 	FulfillmentID whereHelperstring
 	Quantity      whereHelperint
-	StockID       whereHelpernull_String
+	StockID       whereHelpermodel_types_NullString
 }{
 	ID:            whereHelperstring{field: "\"fulfillment_lines\".\"id\""},
 	OrderLineID:   whereHelperstring{field: "\"fulfillment_lines\".\"order_line_id\""},
 	FulfillmentID: whereHelperstring{field: "\"fulfillment_lines\".\"fulfillment_id\""},
 	Quantity:      whereHelperint{field: "\"fulfillment_lines\".\"quantity\""},
-	StockID:       whereHelpernull_String{field: "\"fulfillment_lines\".\"stock_id\""},
+	StockID:       whereHelpermodel_types_NullString{field: "\"fulfillment_lines\".\"stock_id\""},
 }
 
 // FulfillmentLineRels is where relationship names are stored.

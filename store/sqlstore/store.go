@@ -30,7 +30,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
-	"gorm.io/gorm"
+	"github.com/sitename/sitename/store"
 )
 
 type migrationDirection string
@@ -114,7 +114,7 @@ func New(settings model_helper.SqlSettings, metrics einterfaces.MetricsInterface
 }
 
 // setupConnection opens connection to database, check if it works by ping
-func setupConnection(connType string, dataSource string, settings *model_helper.SqlSettings) (*dbsql.DB, error) {
+func setupConnection(connType, dataSource string, settings *model_helper.SqlSettings) (*dbsql.DB, error) {
 	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open SQL connection")
@@ -157,22 +157,20 @@ func setupConnection(connType string, dataSource string, settings *model_helper.
 	return db, nil
 }
 
-func (ss *SqlStore) SetContext(context context.Context) {
-	ss.context = context
+func (ss *SqlStore) SetContext(ctx context.Context) {
+	ss.context = ctx
 }
 
 func (ss *SqlStore) Context() context.Context {
 	return ss.context
 }
 
-func (ss *SqlStore) initConnection() error {
-	dataSource := *ss.settings.DataSource
-
-	handle, err := setupConnection("master", dataSource, ss.settings)
+func (ss *SqlStore) initConnection() (err error) {
+	handle, err := setupConnection("master", *ss.settings.DataSource, ss.settings)
 	if err != nil {
 		return err
 	}
-	ss.master = newDbWrapper(handle, ss.settings)
+	ss.master = newSqlDbWrapper(handle, *ss.settings)
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
 		ss.Replicas = make([]*sqlDBWrapper, len(ss.settings.DataSourceReplicas))
@@ -183,7 +181,7 @@ func (ss *SqlStore) initConnection() error {
 			if err != nil {
 				return errors.Wrapf(err, "failed to setup replica connection: %s", replicaName)
 			}
-			ss.Replicas[i] = newDbWrapper(handle, ss.settings)
+			ss.Replicas[i] = newSqlDbWrapper(handle, *ss.settings)
 		}
 	}
 
@@ -196,12 +194,13 @@ func (ss *SqlStore) initConnection() error {
 			if err != nil {
 				return errors.Wrapf(err, "failed to setup search replica connection: %s", replicaName)
 			}
-			ss.searchReplicas[i] = newDbWrapper(handle, ss.settings)
+			ss.searchReplicas[i] = newSqlDbWrapper(handle, *ss.settings)
 		}
 	}
 
 	if len(ss.settings.ReplicaLagSettings) > 0 {
 		ss.replicaLagHandles = make([]*dbsql.DB, len(ss.settings.ReplicaLagSettings))
+
 		for i, src := range ss.settings.ReplicaLagSettings {
 			if src.DataSource == nil {
 				continue
@@ -348,9 +347,9 @@ func (ss *SqlStore) MarkSystemRanUnitTests() {
 		return
 	}
 
-	unitTests := props[model.SystemRanUnitTests]
+	unitTests := props[model_helper.SystemRanUnitTests]
 	if unitTests == "" {
-		systemTests := &model.System{Name: model.SystemRanUnitTests, Value: "1"}
+		systemTests := &model.System{Name: model_helper.SystemRanUnitTests, Value: "1"}
 		ss.System().Save(systemTests)
 	}
 }
@@ -477,8 +476,8 @@ func (ss *SqlStore) GetQueryBuilder(placeholderFormats ...sq.PlaceholderFormat) 
 	return res.PlaceholderFormat(placeholderFormats[0])
 }
 
-func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
-	results := make(chan model.IntegrityCheckResult)
+func (ss *SqlStore) CheckIntegrity() <-chan model_helper.IntegrityCheckResult {
+	results := make(chan model_helper.IntegrityCheckResult)
 	go CheckRelationalIntegrity(ss, results)
 	return results
 }
@@ -570,8 +569,8 @@ func (ss *SqlStore) GetDBSchemaVersion() (int, error) {
 	return version, nil
 }
 
-func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
-	migrations := []model.AppliedMigration{}
+func (ss *SqlStore) GetAppliedMigrations() ([]model_helper.AppliedMigration, error) {
+	migrations := []model_helper.AppliedMigration{}
 	err := queries.Raw("SELECT * FROM db_migrations ORDER BY Version DESC").Bind(context.Background(), ss.GetMaster(), &migrations)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to select from db_migrations")
@@ -581,12 +580,8 @@ func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 	return migrations, nil
 }
 
-func newDbWrapper(handle *dbsql.DB, sqlSettings *model_helper.SqlSettings) *sqlDBWrapper {
-	return newSqlDbWrapper(handle, time.Duration(*sqlSettings.QueryTimeout), *sqlSettings.Trace)
-}
-
-func (s *SqlStore) FinalizeTransaction(tx *gorm.DB) {
-	err := tx.Rollback().Error
+func (s *SqlStore) FinalizeTransaction(tx store.ContextRunner) {
+	err := tx.Rollback()
 	if err != nil && !errors.Is(err, dbsql.ErrTxDone) {
 		slog.Error("failed to rollback a transaction", slog.Err(err))
 	}

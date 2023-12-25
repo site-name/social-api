@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // Token is an object representing the database table.
 type Token struct {
-	Token     string      `boil:"token" json:"token" toml:"token" yaml:"token"`
-	CreatedAt int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Type      string      `boil:"type" json:"type" toml:"type" yaml:"type"`
-	Extra     null.String `boil:"extra" json:"extra,omitempty" toml:"extra" yaml:"extra,omitempty"`
+	Token     string                 `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CreatedAt int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Type      string                 `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Extra     model_types.NullString `boil:"extra" json:"extra,omitempty" toml:"extra" yaml:"extra,omitempty"`
 
 	R *tokenR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tokenL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,12 +63,12 @@ var TokenWhere = struct {
 	Token     whereHelperstring
 	CreatedAt whereHelperint64
 	Type      whereHelperstring
-	Extra     whereHelpernull_String
+	Extra     whereHelpermodel_types_NullString
 }{
 	Token:     whereHelperstring{field: "\"tokens\".\"token\""},
 	CreatedAt: whereHelperint64{field: "\"tokens\".\"created_at\""},
 	Type:      whereHelperstring{field: "\"tokens\".\"type\""},
-	Extra:     whereHelpernull_String{field: "\"tokens\".\"extra\""},
+	Extra:     whereHelpermodel_types_NullString{field: "\"tokens\".\"extra\""},
 }
 
 // TokenRels is where relationship names are stored.

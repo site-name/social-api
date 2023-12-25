@@ -14,45 +14,45 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // OrderLine is an object representing the database table.
 type OrderLine struct {
-	ID                                string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt                         int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	OrderID                           string            `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
-	VariantID                         null.String       `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
-	ProductName                       string            `boil:"product_name" json:"product_name" toml:"product_name" yaml:"product_name"`
-	VariantName                       string            `boil:"variant_name" json:"variant_name" toml:"variant_name" yaml:"variant_name"`
-	TranslatedProductName             string            `boil:"translated_product_name" json:"translated_product_name" toml:"translated_product_name" yaml:"translated_product_name"`
-	TranslatedVariantName             string            `boil:"translated_variant_name" json:"translated_variant_name" toml:"translated_variant_name" yaml:"translated_variant_name"`
-	ProductSku                        null.String       `boil:"product_sku" json:"product_sku,omitempty" toml:"product_sku" yaml:"product_sku,omitempty"`
-	ProductVariantID                  null.String       `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
-	IsShippingRequired                bool              `boil:"is_shipping_required" json:"is_shipping_required" toml:"is_shipping_required" yaml:"is_shipping_required"`
-	IsGiftcard                        bool              `boil:"is_giftcard" json:"is_giftcard" toml:"is_giftcard" yaml:"is_giftcard"`
-	Quantity                          int               `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
-	QuantityFulfilled                 int               `boil:"quantity_fulfilled" json:"quantity_fulfilled" toml:"quantity_fulfilled" yaml:"quantity_fulfilled"`
-	Currency                          Currency          `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	UnitDiscountAmount                types.Decimal     `boil:"unit_discount_amount" json:"unit_discount_amount" toml:"unit_discount_amount" yaml:"unit_discount_amount"`
-	UnitDiscountType                  Discountvaluetype `boil:"unit_discount_type" json:"unit_discount_type" toml:"unit_discount_type" yaml:"unit_discount_type"`
-	UnitDiscountReason                null.String       `boil:"unit_discount_reason" json:"unit_discount_reason,omitempty" toml:"unit_discount_reason" yaml:"unit_discount_reason,omitempty"`
-	UnitPriceNetAmount                types.Decimal     `boil:"unit_price_net_amount" json:"unit_price_net_amount" toml:"unit_price_net_amount" yaml:"unit_price_net_amount"`
-	UnitDiscountValue                 types.Decimal     `boil:"unit_discount_value" json:"unit_discount_value" toml:"unit_discount_value" yaml:"unit_discount_value"`
-	UnitPriceGrossAmount              types.Decimal     `boil:"unit_price_gross_amount" json:"unit_price_gross_amount" toml:"unit_price_gross_amount" yaml:"unit_price_gross_amount"`
-	TotalPriceNetAmount               types.NullDecimal `boil:"total_price_net_amount" json:"total_price_net_amount,omitempty" toml:"total_price_net_amount" yaml:"total_price_net_amount,omitempty"`
-	TotalPriceGrossAmount             types.NullDecimal `boil:"total_price_gross_amount" json:"total_price_gross_amount,omitempty" toml:"total_price_gross_amount" yaml:"total_price_gross_amount,omitempty"`
-	UndiscountedUnitPriceGrossAmount  types.Decimal     `boil:"undiscounted_unit_price_gross_amount" json:"undiscounted_unit_price_gross_amount" toml:"undiscounted_unit_price_gross_amount" yaml:"undiscounted_unit_price_gross_amount"`
-	UndiscountedUnitPriceNetAmount    types.Decimal     `boil:"undiscounted_unit_price_net_amount" json:"undiscounted_unit_price_net_amount" toml:"undiscounted_unit_price_net_amount" yaml:"undiscounted_unit_price_net_amount"`
-	UndiscountedTotalPriceGrossAmount types.Decimal     `boil:"undiscounted_total_price_gross_amount" json:"undiscounted_total_price_gross_amount" toml:"undiscounted_total_price_gross_amount" yaml:"undiscounted_total_price_gross_amount"`
-	UndiscountedTotalPriceNetAmount   types.Decimal     `boil:"undiscounted_total_price_net_amount" json:"undiscounted_total_price_net_amount" toml:"undiscounted_total_price_net_amount" yaml:"undiscounted_total_price_net_amount"`
-	TaxRate                           types.NullDecimal `boil:"tax_rate" json:"tax_rate,omitempty" toml:"tax_rate" yaml:"tax_rate,omitempty"`
+	ID                                string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt                         int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	OrderID                           string                  `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
+	VariantID                         model_types.NullString  `boil:"variant_id" json:"variant_id,omitempty" toml:"variant_id" yaml:"variant_id,omitempty"`
+	ProductName                       string                  `boil:"product_name" json:"product_name" toml:"product_name" yaml:"product_name"`
+	VariantName                       string                  `boil:"variant_name" json:"variant_name" toml:"variant_name" yaml:"variant_name"`
+	TranslatedProductName             string                  `boil:"translated_product_name" json:"translated_product_name" toml:"translated_product_name" yaml:"translated_product_name"`
+	TranslatedVariantName             string                  `boil:"translated_variant_name" json:"translated_variant_name" toml:"translated_variant_name" yaml:"translated_variant_name"`
+	ProductSku                        model_types.NullString  `boil:"product_sku" json:"product_sku,omitempty" toml:"product_sku" yaml:"product_sku,omitempty"`
+	ProductVariantID                  model_types.NullString  `boil:"product_variant_id" json:"product_variant_id,omitempty" toml:"product_variant_id" yaml:"product_variant_id,omitempty"`
+	IsShippingRequired                bool                    `boil:"is_shipping_required" json:"is_shipping_required" toml:"is_shipping_required" yaml:"is_shipping_required"`
+	IsGiftcard                        bool                    `boil:"is_giftcard" json:"is_giftcard" toml:"is_giftcard" yaml:"is_giftcard"`
+	Quantity                          int                     `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	QuantityFulfilled                 int                     `boil:"quantity_fulfilled" json:"quantity_fulfilled" toml:"quantity_fulfilled" yaml:"quantity_fulfilled"`
+	Currency                          Currency                `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	UnitDiscountAmount                decimal.Decimal         `boil:"unit_discount_amount" json:"unit_discount_amount" toml:"unit_discount_amount" yaml:"unit_discount_amount"`
+	UnitDiscountType                  Discountvaluetype       `boil:"unit_discount_type" json:"unit_discount_type" toml:"unit_discount_type" yaml:"unit_discount_type"`
+	UnitDiscountReason                model_types.NullString  `boil:"unit_discount_reason" json:"unit_discount_reason,omitempty" toml:"unit_discount_reason" yaml:"unit_discount_reason,omitempty"`
+	UnitPriceNetAmount                decimal.Decimal         `boil:"unit_price_net_amount" json:"unit_price_net_amount" toml:"unit_price_net_amount" yaml:"unit_price_net_amount"`
+	UnitDiscountValue                 decimal.Decimal         `boil:"unit_discount_value" json:"unit_discount_value" toml:"unit_discount_value" yaml:"unit_discount_value"`
+	UnitPriceGrossAmount              decimal.Decimal         `boil:"unit_price_gross_amount" json:"unit_price_gross_amount" toml:"unit_price_gross_amount" yaml:"unit_price_gross_amount"`
+	TotalPriceNetAmount               model_types.NullDecimal `boil:"total_price_net_amount" json:"total_price_net_amount,omitempty" toml:"total_price_net_amount" yaml:"total_price_net_amount,omitempty"`
+	TotalPriceGrossAmount             model_types.NullDecimal `boil:"total_price_gross_amount" json:"total_price_gross_amount,omitempty" toml:"total_price_gross_amount" yaml:"total_price_gross_amount,omitempty"`
+	UndiscountedUnitPriceGrossAmount  decimal.Decimal         `boil:"undiscounted_unit_price_gross_amount" json:"undiscounted_unit_price_gross_amount" toml:"undiscounted_unit_price_gross_amount" yaml:"undiscounted_unit_price_gross_amount"`
+	UndiscountedUnitPriceNetAmount    decimal.Decimal         `boil:"undiscounted_unit_price_net_amount" json:"undiscounted_unit_price_net_amount" toml:"undiscounted_unit_price_net_amount" yaml:"undiscounted_unit_price_net_amount"`
+	UndiscountedTotalPriceGrossAmount decimal.Decimal         `boil:"undiscounted_total_price_gross_amount" json:"undiscounted_total_price_gross_amount" toml:"undiscounted_total_price_gross_amount" yaml:"undiscounted_total_price_gross_amount"`
+	UndiscountedTotalPriceNetAmount   decimal.Decimal         `boil:"undiscounted_total_price_net_amount" json:"undiscounted_total_price_net_amount" toml:"undiscounted_total_price_net_amount" yaml:"undiscounted_total_price_net_amount"`
+	TaxRate                           model_types.NullDecimal `boil:"tax_rate" json:"tax_rate,omitempty" toml:"tax_rate" yaml:"tax_rate,omitempty"`
 
 	R *orderLineR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderLineL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -184,60 +184,60 @@ var OrderLineWhere = struct {
 	ID                                whereHelperstring
 	CreatedAt                         whereHelperint64
 	OrderID                           whereHelperstring
-	VariantID                         whereHelpernull_String
+	VariantID                         whereHelpermodel_types_NullString
 	ProductName                       whereHelperstring
 	VariantName                       whereHelperstring
 	TranslatedProductName             whereHelperstring
 	TranslatedVariantName             whereHelperstring
-	ProductSku                        whereHelpernull_String
-	ProductVariantID                  whereHelpernull_String
+	ProductSku                        whereHelpermodel_types_NullString
+	ProductVariantID                  whereHelpermodel_types_NullString
 	IsShippingRequired                whereHelperbool
 	IsGiftcard                        whereHelperbool
 	Quantity                          whereHelperint
 	QuantityFulfilled                 whereHelperint
 	Currency                          whereHelperCurrency
-	UnitDiscountAmount                whereHelpertypes_Decimal
+	UnitDiscountAmount                whereHelperdecimal_Decimal
 	UnitDiscountType                  whereHelperDiscountvaluetype
-	UnitDiscountReason                whereHelpernull_String
-	UnitPriceNetAmount                whereHelpertypes_Decimal
-	UnitDiscountValue                 whereHelpertypes_Decimal
-	UnitPriceGrossAmount              whereHelpertypes_Decimal
-	TotalPriceNetAmount               whereHelpertypes_NullDecimal
-	TotalPriceGrossAmount             whereHelpertypes_NullDecimal
-	UndiscountedUnitPriceGrossAmount  whereHelpertypes_Decimal
-	UndiscountedUnitPriceNetAmount    whereHelpertypes_Decimal
-	UndiscountedTotalPriceGrossAmount whereHelpertypes_Decimal
-	UndiscountedTotalPriceNetAmount   whereHelpertypes_Decimal
-	TaxRate                           whereHelpertypes_NullDecimal
+	UnitDiscountReason                whereHelpermodel_types_NullString
+	UnitPriceNetAmount                whereHelperdecimal_Decimal
+	UnitDiscountValue                 whereHelperdecimal_Decimal
+	UnitPriceGrossAmount              whereHelperdecimal_Decimal
+	TotalPriceNetAmount               whereHelpermodel_types_NullDecimal
+	TotalPriceGrossAmount             whereHelpermodel_types_NullDecimal
+	UndiscountedUnitPriceGrossAmount  whereHelperdecimal_Decimal
+	UndiscountedUnitPriceNetAmount    whereHelperdecimal_Decimal
+	UndiscountedTotalPriceGrossAmount whereHelperdecimal_Decimal
+	UndiscountedTotalPriceNetAmount   whereHelperdecimal_Decimal
+	TaxRate                           whereHelpermodel_types_NullDecimal
 }{
 	ID:                                whereHelperstring{field: "\"order_lines\".\"id\""},
 	CreatedAt:                         whereHelperint64{field: "\"order_lines\".\"created_at\""},
 	OrderID:                           whereHelperstring{field: "\"order_lines\".\"order_id\""},
-	VariantID:                         whereHelpernull_String{field: "\"order_lines\".\"variant_id\""},
+	VariantID:                         whereHelpermodel_types_NullString{field: "\"order_lines\".\"variant_id\""},
 	ProductName:                       whereHelperstring{field: "\"order_lines\".\"product_name\""},
 	VariantName:                       whereHelperstring{field: "\"order_lines\".\"variant_name\""},
 	TranslatedProductName:             whereHelperstring{field: "\"order_lines\".\"translated_product_name\""},
 	TranslatedVariantName:             whereHelperstring{field: "\"order_lines\".\"translated_variant_name\""},
-	ProductSku:                        whereHelpernull_String{field: "\"order_lines\".\"product_sku\""},
-	ProductVariantID:                  whereHelpernull_String{field: "\"order_lines\".\"product_variant_id\""},
+	ProductSku:                        whereHelpermodel_types_NullString{field: "\"order_lines\".\"product_sku\""},
+	ProductVariantID:                  whereHelpermodel_types_NullString{field: "\"order_lines\".\"product_variant_id\""},
 	IsShippingRequired:                whereHelperbool{field: "\"order_lines\".\"is_shipping_required\""},
 	IsGiftcard:                        whereHelperbool{field: "\"order_lines\".\"is_giftcard\""},
 	Quantity:                          whereHelperint{field: "\"order_lines\".\"quantity\""},
 	QuantityFulfilled:                 whereHelperint{field: "\"order_lines\".\"quantity_fulfilled\""},
 	Currency:                          whereHelperCurrency{field: "\"order_lines\".\"currency\""},
-	UnitDiscountAmount:                whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_discount_amount\""},
+	UnitDiscountAmount:                whereHelperdecimal_Decimal{field: "\"order_lines\".\"unit_discount_amount\""},
 	UnitDiscountType:                  whereHelperDiscountvaluetype{field: "\"order_lines\".\"unit_discount_type\""},
-	UnitDiscountReason:                whereHelpernull_String{field: "\"order_lines\".\"unit_discount_reason\""},
-	UnitPriceNetAmount:                whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_price_net_amount\""},
-	UnitDiscountValue:                 whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_discount_value\""},
-	UnitPriceGrossAmount:              whereHelpertypes_Decimal{field: "\"order_lines\".\"unit_price_gross_amount\""},
-	TotalPriceNetAmount:               whereHelpertypes_NullDecimal{field: "\"order_lines\".\"total_price_net_amount\""},
-	TotalPriceGrossAmount:             whereHelpertypes_NullDecimal{field: "\"order_lines\".\"total_price_gross_amount\""},
-	UndiscountedUnitPriceGrossAmount:  whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_unit_price_gross_amount\""},
-	UndiscountedUnitPriceNetAmount:    whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_unit_price_net_amount\""},
-	UndiscountedTotalPriceGrossAmount: whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_total_price_gross_amount\""},
-	UndiscountedTotalPriceNetAmount:   whereHelpertypes_Decimal{field: "\"order_lines\".\"undiscounted_total_price_net_amount\""},
-	TaxRate:                           whereHelpertypes_NullDecimal{field: "\"order_lines\".\"tax_rate\""},
+	UnitDiscountReason:                whereHelpermodel_types_NullString{field: "\"order_lines\".\"unit_discount_reason\""},
+	UnitPriceNetAmount:                whereHelperdecimal_Decimal{field: "\"order_lines\".\"unit_price_net_amount\""},
+	UnitDiscountValue:                 whereHelperdecimal_Decimal{field: "\"order_lines\".\"unit_discount_value\""},
+	UnitPriceGrossAmount:              whereHelperdecimal_Decimal{field: "\"order_lines\".\"unit_price_gross_amount\""},
+	TotalPriceNetAmount:               whereHelpermodel_types_NullDecimal{field: "\"order_lines\".\"total_price_net_amount\""},
+	TotalPriceGrossAmount:             whereHelpermodel_types_NullDecimal{field: "\"order_lines\".\"total_price_gross_amount\""},
+	UndiscountedUnitPriceGrossAmount:  whereHelperdecimal_Decimal{field: "\"order_lines\".\"undiscounted_unit_price_gross_amount\""},
+	UndiscountedUnitPriceNetAmount:    whereHelperdecimal_Decimal{field: "\"order_lines\".\"undiscounted_unit_price_net_amount\""},
+	UndiscountedTotalPriceGrossAmount: whereHelperdecimal_Decimal{field: "\"order_lines\".\"undiscounted_total_price_gross_amount\""},
+	UndiscountedTotalPriceNetAmount:   whereHelperdecimal_Decimal{field: "\"order_lines\".\"undiscounted_total_price_net_amount\""},
+	TaxRate:                           whereHelpermodel_types_NullDecimal{field: "\"order_lines\".\"tax_rate\""},
 }
 
 // OrderLineRels is where relationship names are stored.

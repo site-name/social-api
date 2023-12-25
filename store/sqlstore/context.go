@@ -2,8 +2,6 @@ package sqlstore
 
 import (
 	"context"
-
-	"gorm.io/gorm"
 )
 
 // storeContextKey is the base type for all context keys for the store.
@@ -33,7 +31,7 @@ func hasMaster(ctx context.Context) bool {
 }
 
 // DBXFromContext is a helper utility that returns the sqlx DB handle from a given context.
-func (ss *SqlStore) DBXFromContext(ctx context.Context) *gorm.DB {
+func (ss *SqlStore) DBXFromContext(ctx context.Context) *sqlDBWrapper {
 	if hasMaster(ctx) {
 		return ss.GetMaster()
 	}

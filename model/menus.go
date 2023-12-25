@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // Menu is an object representing the database table.
 type Menu struct {
-	ID              string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug            string    `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	CreatedAt       int64     `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata        null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string              `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug            string              `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	CreatedAt       int64               `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata        model_types.JsonMap `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JsonMap `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *menuR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L menuL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -74,15 +74,15 @@ var MenuWhere = struct {
 	Name            whereHelperstring
 	Slug            whereHelperstring
 	CreatedAt       whereHelperint64
-	Metadata        whereHelpernull_JSON
-	PrivateMetadata whereHelpernull_JSON
+	Metadata        whereHelpermodel_types_JsonMap
+	PrivateMetadata whereHelpermodel_types_JsonMap
 }{
 	ID:              whereHelperstring{field: "\"menus\".\"id\""},
 	Name:            whereHelperstring{field: "\"menus\".\"name\""},
 	Slug:            whereHelperstring{field: "\"menus\".\"slug\""},
 	CreatedAt:       whereHelperint64{field: "\"menus\".\"created_at\""},
-	Metadata:        whereHelpernull_JSON{field: "\"menus\".\"metadata\""},
-	PrivateMetadata: whereHelpernull_JSON{field: "\"menus\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JsonMap{field: "\"menus\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"menus\".\"private_metadata\""},
 }
 
 // MenuRels is where relationship names are stored.

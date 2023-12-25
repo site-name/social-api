@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,16 +24,16 @@ import (
 
 // ProductMedium is an object representing the database table.
 type ProductMedium struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt   int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ProductID   string      `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
-	Ppoi        string      `boil:"ppoi" json:"ppoi" toml:"ppoi" yaml:"ppoi"`
-	Image       string      `boil:"image" json:"image" toml:"image" yaml:"image"`
-	Alt         string      `boil:"alt" json:"alt" toml:"alt" yaml:"alt"`
-	Type        string      `boil:"type" json:"type" toml:"type" yaml:"type"`
-	ExternalURL null.String `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
-	OembedData  null.JSON   `boil:"oembed_data" json:"oembed_data,omitempty" toml:"oembed_data" yaml:"oembed_data,omitempty"`
-	SortOrder   null.Int    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID          string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt   int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ProductID   string                 `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	Ppoi        string                 `boil:"ppoi" json:"ppoi" toml:"ppoi" yaml:"ppoi"`
+	Image       string                 `boil:"image" json:"image" toml:"image" yaml:"image"`
+	Alt         string                 `boil:"alt" json:"alt" toml:"alt" yaml:"alt"`
+	Type        string                 `boil:"type" json:"type" toml:"type" yaml:"type"`
+	ExternalURL model_types.NullString `boil:"external_url" json:"external_url,omitempty" toml:"external_url" yaml:"external_url,omitempty"`
+	OembedData  model_types.JsonMap    `boil:"oembed_data" json:"oembed_data,omitempty" toml:"oembed_data" yaml:"oembed_data,omitempty"`
+	SortOrder   model_types.NullInt    `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *productMediumR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productMediumL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -97,9 +97,9 @@ var ProductMediumWhere = struct {
 	Image       whereHelperstring
 	Alt         whereHelperstring
 	Type        whereHelperstring
-	ExternalURL whereHelpernull_String
-	OembedData  whereHelpernull_JSON
-	SortOrder   whereHelpernull_Int
+	ExternalURL whereHelpermodel_types_NullString
+	OembedData  whereHelpermodel_types_JsonMap
+	SortOrder   whereHelpermodel_types_NullInt
 }{
 	ID:          whereHelperstring{field: "\"product_media\".\"id\""},
 	CreatedAt:   whereHelperint64{field: "\"product_media\".\"created_at\""},
@@ -108,9 +108,9 @@ var ProductMediumWhere = struct {
 	Image:       whereHelperstring{field: "\"product_media\".\"image\""},
 	Alt:         whereHelperstring{field: "\"product_media\".\"alt\""},
 	Type:        whereHelperstring{field: "\"product_media\".\"type\""},
-	ExternalURL: whereHelpernull_String{field: "\"product_media\".\"external_url\""},
-	OembedData:  whereHelpernull_JSON{field: "\"product_media\".\"oembed_data\""},
-	SortOrder:   whereHelpernull_Int{field: "\"product_media\".\"sort_order\""},
+	ExternalURL: whereHelpermodel_types_NullString{field: "\"product_media\".\"external_url\""},
+	OembedData:  whereHelpermodel_types_JsonMap{field: "\"product_media\".\"oembed_data\""},
+	SortOrder:   whereHelpermodel_types_NullInt{field: "\"product_media\".\"sort_order\""},
 }
 
 // ProductMediumRels is where relationship names are stored.

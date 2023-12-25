@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // StaffNotificationRecipient is an object representing the database table.
 type StaffNotificationRecipient struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	StaffEmail null.String `boil:"staff_email" json:"staff_email,omitempty" toml:"staff_email" yaml:"staff_email,omitempty"`
-	Active     null.Bool   `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
+	ID         string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	StaffEmail model_types.NullString `boil:"staff_email" json:"staff_email,omitempty" toml:"staff_email" yaml:"staff_email,omitempty"`
+	Active     bool                   `boil:"active" json:"active" toml:"active" yaml:"active"`
 
 	R *staffNotificationRecipientR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L staffNotificationRecipientL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,14 +61,14 @@ var StaffNotificationRecipientTableColumns = struct {
 
 var StaffNotificationRecipientWhere = struct {
 	ID         whereHelperstring
-	UserID     whereHelpernull_String
-	StaffEmail whereHelpernull_String
-	Active     whereHelpernull_Bool
+	UserID     whereHelpermodel_types_NullString
+	StaffEmail whereHelpermodel_types_NullString
+	Active     whereHelperbool
 }{
 	ID:         whereHelperstring{field: "\"staff_notification_recipients\".\"id\""},
-	UserID:     whereHelpernull_String{field: "\"staff_notification_recipients\".\"user_id\""},
-	StaffEmail: whereHelpernull_String{field: "\"staff_notification_recipients\".\"staff_email\""},
-	Active:     whereHelpernull_Bool{field: "\"staff_notification_recipients\".\"active\""},
+	UserID:     whereHelpermodel_types_NullString{field: "\"staff_notification_recipients\".\"user_id\""},
+	StaffEmail: whereHelpermodel_types_NullString{field: "\"staff_notification_recipients\".\"staff_email\""},
+	Active:     whereHelperbool{field: "\"staff_notification_recipients\".\"active\""},
 }
 
 // StaffNotificationRecipientRels is where relationship names are stored.
@@ -100,8 +100,8 @@ type staffNotificationRecipientL struct{}
 
 var (
 	staffNotificationRecipientAllColumns            = []string{"id", "user_id", "staff_email", "active"}
-	staffNotificationRecipientColumnsWithoutDefault = []string{}
-	staffNotificationRecipientColumnsWithDefault    = []string{"id", "user_id", "staff_email", "active"}
+	staffNotificationRecipientColumnsWithoutDefault = []string{"active"}
+	staffNotificationRecipientColumnsWithDefault    = []string{"id", "user_id", "staff_email"}
 	staffNotificationRecipientPrimaryKeyColumns     = []string{"id"}
 	staffNotificationRecipientGeneratedColumns      = []string{}
 )

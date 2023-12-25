@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // CustomerNote is an object representing the database table.
 type CustomerNote struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Date       int64       `boil:"date" json:"date" toml:"date" yaml:"date"`
-	Content    null.String `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
-	IsPublic   null.Bool   `boil:"is_public" json:"is_public,omitempty" toml:"is_public" yaml:"is_public,omitempty"`
-	CustomerID string      `boil:"customer_id" json:"customer_id" toml:"customer_id" yaml:"customer_id"`
+	ID         string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	Date       int64                  `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Content    model_types.NullString `boil:"content" json:"content,omitempty" toml:"content" yaml:"content,omitempty"`
+	IsPublic   model_types.NullBool   `boil:"is_public" json:"is_public,omitempty" toml:"is_public" yaml:"is_public,omitempty"`
+	CustomerID string                 `boil:"customer_id" json:"customer_id" toml:"customer_id" yaml:"customer_id"`
 
 	R *customerNoteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customerNoteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -71,35 +71,45 @@ var CustomerNoteTableColumns = struct {
 
 var CustomerNoteWhere = struct {
 	ID         whereHelperstring
-	UserID     whereHelpernull_String
+	UserID     whereHelpermodel_types_NullString
 	Date       whereHelperint64
-	Content    whereHelpernull_String
-	IsPublic   whereHelpernull_Bool
+	Content    whereHelpermodel_types_NullString
+	IsPublic   whereHelpermodel_types_NullBool
 	CustomerID whereHelperstring
 }{
 	ID:         whereHelperstring{field: "\"customer_notes\".\"id\""},
-	UserID:     whereHelpernull_String{field: "\"customer_notes\".\"user_id\""},
+	UserID:     whereHelpermodel_types_NullString{field: "\"customer_notes\".\"user_id\""},
 	Date:       whereHelperint64{field: "\"customer_notes\".\"date\""},
-	Content:    whereHelpernull_String{field: "\"customer_notes\".\"content\""},
-	IsPublic:   whereHelpernull_Bool{field: "\"customer_notes\".\"is_public\""},
+	Content:    whereHelpermodel_types_NullString{field: "\"customer_notes\".\"content\""},
+	IsPublic:   whereHelpermodel_types_NullBool{field: "\"customer_notes\".\"is_public\""},
 	CustomerID: whereHelperstring{field: "\"customer_notes\".\"customer_id\""},
 }
 
 // CustomerNoteRels is where relationship names are stored.
 var CustomerNoteRels = struct {
-	User string
+	Customer string
+	User     string
 }{
-	User: "User",
+	Customer: "Customer",
+	User:     "User",
 }
 
 // customerNoteR is where relationships are stored.
 type customerNoteR struct {
-	User *User `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Customer *User `boil:"Customer" json:"Customer" toml:"Customer" yaml:"Customer"`
+	User     *User `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
 func (*customerNoteR) NewStruct() *customerNoteR {
 	return &customerNoteR{}
+}
+
+func (r *customerNoteR) GetCustomer() *User {
+	if r == nil {
+		return nil
+	}
+	return r.Customer
 }
 
 func (r *customerNoteR) GetUser() *User {
@@ -211,6 +221,17 @@ func (q customerNoteQuery) Exists(ctx context.Context, exec boil.ContextExecutor
 	return count > 0, nil
 }
 
+// Customer pointed to by the foreign key.
+func (o *CustomerNote) Customer(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.CustomerID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
 // User pointed to by the foreign key.
 func (o *CustomerNote) User(mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
@@ -220,6 +241,118 @@ func (o *CustomerNote) User(mods ...qm.QueryMod) userQuery {
 	queryMods = append(queryMods, mods...)
 
 	return Users(queryMods...)
+}
+
+// LoadCustomer allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (customerNoteL) LoadCustomer(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCustomerNote interface{}, mods queries.Applicator) error {
+	var slice []*CustomerNote
+	var object *CustomerNote
+
+	if singular {
+		var ok bool
+		object, ok = maybeCustomerNote.(*CustomerNote)
+		if !ok {
+			object = new(CustomerNote)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeCustomerNote)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeCustomerNote))
+			}
+		}
+	} else {
+		s, ok := maybeCustomerNote.(*[]*CustomerNote)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeCustomerNote)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeCustomerNote))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &customerNoteR{}
+		}
+		args = append(args, object.CustomerID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &customerNoteR{}
+			}
+
+			for _, a := range args {
+				if a == obj.CustomerID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.CustomerID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Customer = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.CustomerCustomerNotes = append(foreign.R.CustomerCustomerNotes, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.CustomerID == foreign.ID {
+				local.R.Customer = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.CustomerCustomerNotes = append(foreign.R.CustomerCustomerNotes, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadUser allows an eager lookup of values, cached into the
@@ -333,6 +466,53 @@ func (customerNoteL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetCustomer of the customerNote to the related item.
+// Sets o.R.Customer to related.
+// Adds o to related.R.CustomerCustomerNotes.
+func (o *CustomerNote) SetCustomer(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"customer_notes\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"customer_id"}),
+		strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.CustomerID = related.ID
+	if o.R == nil {
+		o.R = &customerNoteR{
+			Customer: related,
+		}
+	} else {
+		o.R.Customer = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			CustomerCustomerNotes: CustomerNoteSlice{o},
+		}
+	} else {
+		related.R.CustomerCustomerNotes = append(related.R.CustomerCustomerNotes, o)
 	}
 
 	return nil

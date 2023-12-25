@@ -14,27 +14,26 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ProductChannelListing is an object representing the database table.
 type ProductChannelListing struct {
-	ID                    string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ProductID             string            `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
-	ChannelID             string            `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	VisibleInListings     bool              `boil:"visible_in_listings" json:"visible_in_listings" toml:"visible_in_listings" yaml:"visible_in_listings"`
-	AvailableForPurchase  null.Int64        `boil:"available_for_purchase" json:"available_for_purchase,omitempty" toml:"available_for_purchase" yaml:"available_for_purchase,omitempty"`
-	Currency              Currency          `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	DiscountedPriceAmount types.NullDecimal `boil:"discounted_price_amount" json:"discounted_price_amount,omitempty" toml:"discounted_price_amount" yaml:"discounted_price_amount,omitempty"`
-	CreatedAt             int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	PublicationDate       null.Int64        `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
-	IsPublished           bool              `boil:"is_published" json:"is_published" toml:"is_published" yaml:"is_published"`
+	ID                    string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ProductID             string                  `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	ChannelID             string                  `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	VisibleInListings     bool                    `boil:"visible_in_listings" json:"visible_in_listings" toml:"visible_in_listings" yaml:"visible_in_listings"`
+	AvailableForPurchase  model_types.NullInt64   `boil:"available_for_purchase" json:"available_for_purchase,omitempty" toml:"available_for_purchase" yaml:"available_for_purchase,omitempty"`
+	Currency              Currency                `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	DiscountedPriceAmount model_types.NullDecimal `boil:"discounted_price_amount" json:"discounted_price_amount,omitempty" toml:"discounted_price_amount" yaml:"discounted_price_amount,omitempty"`
+	CreatedAt             int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	PublicationDate       model_types.NullInt64   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
+	IsPublished           bool                    `boil:"is_published" json:"is_published" toml:"is_published" yaml:"is_published"`
 
 	R *productChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -95,22 +94,22 @@ var ProductChannelListingWhere = struct {
 	ProductID             whereHelperstring
 	ChannelID             whereHelperstring
 	VisibleInListings     whereHelperbool
-	AvailableForPurchase  whereHelpernull_Int64
+	AvailableForPurchase  whereHelpermodel_types_NullInt64
 	Currency              whereHelperCurrency
-	DiscountedPriceAmount whereHelpertypes_NullDecimal
+	DiscountedPriceAmount whereHelpermodel_types_NullDecimal
 	CreatedAt             whereHelperint64
-	PublicationDate       whereHelpernull_Int64
+	PublicationDate       whereHelpermodel_types_NullInt64
 	IsPublished           whereHelperbool
 }{
 	ID:                    whereHelperstring{field: "\"product_channel_listings\".\"id\""},
 	ProductID:             whereHelperstring{field: "\"product_channel_listings\".\"product_id\""},
 	ChannelID:             whereHelperstring{field: "\"product_channel_listings\".\"channel_id\""},
 	VisibleInListings:     whereHelperbool{field: "\"product_channel_listings\".\"visible_in_listings\""},
-	AvailableForPurchase:  whereHelpernull_Int64{field: "\"product_channel_listings\".\"available_for_purchase\""},
+	AvailableForPurchase:  whereHelpermodel_types_NullInt64{field: "\"product_channel_listings\".\"available_for_purchase\""},
 	Currency:              whereHelperCurrency{field: "\"product_channel_listings\".\"currency\""},
-	DiscountedPriceAmount: whereHelpertypes_NullDecimal{field: "\"product_channel_listings\".\"discounted_price_amount\""},
+	DiscountedPriceAmount: whereHelpermodel_types_NullDecimal{field: "\"product_channel_listings\".\"discounted_price_amount\""},
 	CreatedAt:             whereHelperint64{field: "\"product_channel_listings\".\"created_at\""},
-	PublicationDate:       whereHelpernull_Int64{field: "\"product_channel_listings\".\"publication_date\""},
+	PublicationDate:       whereHelpermodel_types_NullInt64{field: "\"product_channel_listings\".\"publication_date\""},
 	IsPublished:           whereHelperbool{field: "\"product_channel_listings\".\"is_published\""},
 }
 

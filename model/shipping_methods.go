@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,18 +24,18 @@ import (
 
 // ShippingMethod is an object representing the database table.
 type ShippingMethod struct {
-	ID                  string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                string       `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Type                string       `boil:"type" json:"type" toml:"type" yaml:"type"`
-	ShippingZoneID      string       `boil:"shipping_zone_id" json:"shipping_zone_id" toml:"shipping_zone_id" yaml:"shipping_zone_id"`
-	MinimumOrderWeight  null.Float32 `boil:"minimum_order_weight" json:"minimum_order_weight,omitempty" toml:"minimum_order_weight" yaml:"minimum_order_weight,omitempty"`
-	MaximumOrderWeight  null.Float32 `boil:"maximum_order_weight" json:"maximum_order_weight,omitempty" toml:"maximum_order_weight" yaml:"maximum_order_weight,omitempty"`
-	WeightUnit          string       `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
-	MaximumDeliveryDays null.Int     `boil:"maximum_delivery_days" json:"maximum_delivery_days,omitempty" toml:"maximum_delivery_days" yaml:"maximum_delivery_days,omitempty"`
-	MinimumDeliveryDays null.Int     `boil:"minimum_delivery_days" json:"minimum_delivery_days,omitempty" toml:"minimum_delivery_days" yaml:"minimum_delivery_days,omitempty"`
-	Description         null.JSON    `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Metadata            null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata     null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                  string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name                string                  `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Type                string                  `boil:"type" json:"type" toml:"type" yaml:"type"`
+	ShippingZoneID      string                  `boil:"shipping_zone_id" json:"shipping_zone_id" toml:"shipping_zone_id" yaml:"shipping_zone_id"`
+	MinimumOrderWeight  model_types.NullFloat32 `boil:"minimum_order_weight" json:"minimum_order_weight,omitempty" toml:"minimum_order_weight" yaml:"minimum_order_weight,omitempty"`
+	MaximumOrderWeight  model_types.NullFloat32 `boil:"maximum_order_weight" json:"maximum_order_weight,omitempty" toml:"maximum_order_weight" yaml:"maximum_order_weight,omitempty"`
+	WeightUnit          string                  `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
+	MaximumDeliveryDays model_types.NullInt     `boil:"maximum_delivery_days" json:"maximum_delivery_days,omitempty" toml:"maximum_delivery_days" yaml:"maximum_delivery_days,omitempty"`
+	MinimumDeliveryDays model_types.NullInt     `boil:"minimum_delivery_days" json:"minimum_delivery_days,omitempty" toml:"minimum_delivery_days" yaml:"minimum_delivery_days,omitempty"`
+	Description         model_types.JsonMap     `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Metadata            model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata     model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *shippingMethodR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -104,27 +104,27 @@ var ShippingMethodWhere = struct {
 	Name                whereHelperstring
 	Type                whereHelperstring
 	ShippingZoneID      whereHelperstring
-	MinimumOrderWeight  whereHelpernull_Float32
-	MaximumOrderWeight  whereHelpernull_Float32
+	MinimumOrderWeight  whereHelpermodel_types_NullFloat32
+	MaximumOrderWeight  whereHelpermodel_types_NullFloat32
 	WeightUnit          whereHelperstring
-	MaximumDeliveryDays whereHelpernull_Int
-	MinimumDeliveryDays whereHelpernull_Int
-	Description         whereHelpernull_JSON
-	Metadata            whereHelpernull_JSON
-	PrivateMetadata     whereHelpernull_JSON
+	MaximumDeliveryDays whereHelpermodel_types_NullInt
+	MinimumDeliveryDays whereHelpermodel_types_NullInt
+	Description         whereHelpermodel_types_JsonMap
+	Metadata            whereHelpermodel_types_JsonMap
+	PrivateMetadata     whereHelpermodel_types_JsonMap
 }{
 	ID:                  whereHelperstring{field: "\"shipping_methods\".\"id\""},
 	Name:                whereHelperstring{field: "\"shipping_methods\".\"name\""},
 	Type:                whereHelperstring{field: "\"shipping_methods\".\"type\""},
 	ShippingZoneID:      whereHelperstring{field: "\"shipping_methods\".\"shipping_zone_id\""},
-	MinimumOrderWeight:  whereHelpernull_Float32{field: "\"shipping_methods\".\"minimum_order_weight\""},
-	MaximumOrderWeight:  whereHelpernull_Float32{field: "\"shipping_methods\".\"maximum_order_weight\""},
+	MinimumOrderWeight:  whereHelpermodel_types_NullFloat32{field: "\"shipping_methods\".\"minimum_order_weight\""},
+	MaximumOrderWeight:  whereHelpermodel_types_NullFloat32{field: "\"shipping_methods\".\"maximum_order_weight\""},
 	WeightUnit:          whereHelperstring{field: "\"shipping_methods\".\"weight_unit\""},
-	MaximumDeliveryDays: whereHelpernull_Int{field: "\"shipping_methods\".\"maximum_delivery_days\""},
-	MinimumDeliveryDays: whereHelpernull_Int{field: "\"shipping_methods\".\"minimum_delivery_days\""},
-	Description:         whereHelpernull_JSON{field: "\"shipping_methods\".\"description\""},
-	Metadata:            whereHelpernull_JSON{field: "\"shipping_methods\".\"metadata\""},
-	PrivateMetadata:     whereHelpernull_JSON{field: "\"shipping_methods\".\"private_metadata\""},
+	MaximumDeliveryDays: whereHelpermodel_types_NullInt{field: "\"shipping_methods\".\"maximum_delivery_days\""},
+	MinimumDeliveryDays: whereHelpermodel_types_NullInt{field: "\"shipping_methods\".\"minimum_delivery_days\""},
+	Description:         whereHelpermodel_types_JsonMap{field: "\"shipping_methods\".\"description\""},
+	Metadata:            whereHelpermodel_types_JsonMap{field: "\"shipping_methods\".\"metadata\""},
+	PrivateMetadata:     whereHelpermodel_types_JsonMap{field: "\"shipping_methods\".\"private_metadata\""},
 }
 
 // ShippingMethodRels is where relationship names are stored.

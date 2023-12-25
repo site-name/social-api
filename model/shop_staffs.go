@@ -14,24 +14,24 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ShopStaff is an object representing the database table.
 type ShopStaff struct {
-	ID             string        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	StaffID        string        `boil:"staff_id" json:"staff_id" toml:"staff_id" yaml:"staff_id"`
-	CreatedAt      int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	EndAt          null.Int64    `boil:"end_at" json:"end_at,omitempty" toml:"end_at" yaml:"end_at,omitempty"`
-	SalaryPeriod   string        `boil:"salary_period" json:"salary_period" toml:"salary_period" yaml:"salary_period"`
-	Salary         types.Decimal `boil:"salary" json:"salary" toml:"salary" yaml:"salary"`
-	SalaryCurrency string        `boil:"salary_currency" json:"salary_currency" toml:"salary_currency" yaml:"salary_currency"`
+	ID             string                `boil:"id" json:"id" toml:"id" yaml:"id"`
+	StaffID        string                `boil:"staff_id" json:"staff_id" toml:"staff_id" yaml:"staff_id"`
+	CreatedAt      int64                 `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	EndAt          model_types.NullInt64 `boil:"end_at" json:"end_at,omitempty" toml:"end_at" yaml:"end_at,omitempty"`
+	SalaryPeriod   string                `boil:"salary_period" json:"salary_period" toml:"salary_period" yaml:"salary_period"`
+	Salary         decimal.Decimal       `boil:"salary" json:"salary" toml:"salary" yaml:"salary"`
+	SalaryCurrency string                `boil:"salary_currency" json:"salary_currency" toml:"salary_currency" yaml:"salary_currency"`
 
 	R *shopStaffR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shopStaffL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -79,17 +79,17 @@ var ShopStaffWhere = struct {
 	ID             whereHelperstring
 	StaffID        whereHelperstring
 	CreatedAt      whereHelperint64
-	EndAt          whereHelpernull_Int64
+	EndAt          whereHelpermodel_types_NullInt64
 	SalaryPeriod   whereHelperstring
-	Salary         whereHelpertypes_Decimal
+	Salary         whereHelperdecimal_Decimal
 	SalaryCurrency whereHelperstring
 }{
 	ID:             whereHelperstring{field: "\"shop_staffs\".\"id\""},
 	StaffID:        whereHelperstring{field: "\"shop_staffs\".\"staff_id\""},
 	CreatedAt:      whereHelperint64{field: "\"shop_staffs\".\"created_at\""},
-	EndAt:          whereHelpernull_Int64{field: "\"shop_staffs\".\"end_at\""},
+	EndAt:          whereHelpermodel_types_NullInt64{field: "\"shop_staffs\".\"end_at\""},
 	SalaryPeriod:   whereHelperstring{field: "\"shop_staffs\".\"salary_period\""},
-	Salary:         whereHelpertypes_Decimal{field: "\"shop_staffs\".\"salary\""},
+	Salary:         whereHelperdecimal_Decimal{field: "\"shop_staffs\".\"salary\""},
 	SalaryCurrency: whereHelperstring{field: "\"shop_staffs\".\"salary_currency\""},
 }
 

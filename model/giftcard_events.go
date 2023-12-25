@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // GiftcardEvent is an object representing the database table.
 type GiftcardEvent struct {
-	ID         string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Date       int64             `boil:"date" json:"date" toml:"date" yaml:"date"`
-	Type       Giftcardeventtype `boil:"type" json:"type" toml:"type" yaml:"type"`
-	Parameters null.JSON         `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
-	UserID     null.String       `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	GiftcardID string            `boil:"giftcard_id" json:"giftcard_id" toml:"giftcard_id" yaml:"giftcard_id"`
+	ID         string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Date       int64                  `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Type       Giftcardeventtype      `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Parameters model_types.JsonMap    `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	GiftcardID string                 `boil:"giftcard_id" json:"giftcard_id" toml:"giftcard_id" yaml:"giftcard_id"`
 
 	R *giftcardEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L giftcardEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -108,15 +108,15 @@ var GiftcardEventWhere = struct {
 	ID         whereHelperstring
 	Date       whereHelperint64
 	Type       whereHelperGiftcardeventtype
-	Parameters whereHelpernull_JSON
-	UserID     whereHelpernull_String
+	Parameters whereHelpermodel_types_JsonMap
+	UserID     whereHelpermodel_types_NullString
 	GiftcardID whereHelperstring
 }{
 	ID:         whereHelperstring{field: "\"giftcard_events\".\"id\""},
 	Date:       whereHelperint64{field: "\"giftcard_events\".\"date\""},
 	Type:       whereHelperGiftcardeventtype{field: "\"giftcard_events\".\"type\""},
-	Parameters: whereHelpernull_JSON{field: "\"giftcard_events\".\"parameters\""},
-	UserID:     whereHelpernull_String{field: "\"giftcard_events\".\"user_id\""},
+	Parameters: whereHelpermodel_types_JsonMap{field: "\"giftcard_events\".\"parameters\""},
+	UserID:     whereHelpermodel_types_NullString{field: "\"giftcard_events\".\"user_id\""},
 	GiftcardID: whereHelperstring{field: "\"giftcard_events\".\"giftcard_id\""},
 }
 

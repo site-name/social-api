@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,19 +24,19 @@ import (
 
 // ProductVariant is an object representing the database table.
 type ProductVariant struct {
-	ID                      string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                    string       `boil:"name" json:"name" toml:"name" yaml:"name"`
-	ProductID               string       `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
-	Sku                     string       `boil:"sku" json:"sku" toml:"sku" yaml:"sku"`
-	Weight                  null.Float32 `boil:"weight" json:"weight,omitempty" toml:"weight" yaml:"weight,omitempty"`
-	WeightUnit              string       `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
-	TrackInventory          null.Bool    `boil:"track_inventory" json:"track_inventory,omitempty" toml:"track_inventory" yaml:"track_inventory,omitempty"`
-	IsPreorder              bool         `boil:"is_preorder" json:"is_preorder" toml:"is_preorder" yaml:"is_preorder"`
-	PreorderEndDate         null.Int64   `boil:"preorder_end_date" json:"preorder_end_date,omitempty" toml:"preorder_end_date" yaml:"preorder_end_date,omitempty"`
-	PreorderGlobalThreshold null.Int     `boil:"preorder_global_threshold" json:"preorder_global_threshold,omitempty" toml:"preorder_global_threshold" yaml:"preorder_global_threshold,omitempty"`
-	SortOrder               null.Int     `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
-	Metadata                null.JSON    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata         null.JSON    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                      string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name                    string                  `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ProductID               string                  `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	Sku                     string                  `boil:"sku" json:"sku" toml:"sku" yaml:"sku"`
+	Weight                  model_types.NullFloat32 `boil:"weight" json:"weight,omitempty" toml:"weight" yaml:"weight,omitempty"`
+	WeightUnit              string                  `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
+	TrackInventory          model_types.NullBool    `boil:"track_inventory" json:"track_inventory,omitempty" toml:"track_inventory" yaml:"track_inventory,omitempty"`
+	IsPreorder              bool                    `boil:"is_preorder" json:"is_preorder" toml:"is_preorder" yaml:"is_preorder"`
+	PreorderEndDate         model_types.NullInt64   `boil:"preorder_end_date" json:"preorder_end_date,omitempty" toml:"preorder_end_date" yaml:"preorder_end_date,omitempty"`
+	PreorderGlobalThreshold model_types.NullInt     `boil:"preorder_global_threshold" json:"preorder_global_threshold,omitempty" toml:"preorder_global_threshold" yaml:"preorder_global_threshold,omitempty"`
+	SortOrder               model_types.NullInt     `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	Metadata                model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata         model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *productVariantR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productVariantL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -109,29 +109,29 @@ var ProductVariantWhere = struct {
 	Name                    whereHelperstring
 	ProductID               whereHelperstring
 	Sku                     whereHelperstring
-	Weight                  whereHelpernull_Float32
+	Weight                  whereHelpermodel_types_NullFloat32
 	WeightUnit              whereHelperstring
-	TrackInventory          whereHelpernull_Bool
+	TrackInventory          whereHelpermodel_types_NullBool
 	IsPreorder              whereHelperbool
-	PreorderEndDate         whereHelpernull_Int64
-	PreorderGlobalThreshold whereHelpernull_Int
-	SortOrder               whereHelpernull_Int
-	Metadata                whereHelpernull_JSON
-	PrivateMetadata         whereHelpernull_JSON
+	PreorderEndDate         whereHelpermodel_types_NullInt64
+	PreorderGlobalThreshold whereHelpermodel_types_NullInt
+	SortOrder               whereHelpermodel_types_NullInt
+	Metadata                whereHelpermodel_types_JsonMap
+	PrivateMetadata         whereHelpermodel_types_JsonMap
 }{
 	ID:                      whereHelperstring{field: "\"product_variants\".\"id\""},
 	Name:                    whereHelperstring{field: "\"product_variants\".\"name\""},
 	ProductID:               whereHelperstring{field: "\"product_variants\".\"product_id\""},
 	Sku:                     whereHelperstring{field: "\"product_variants\".\"sku\""},
-	Weight:                  whereHelpernull_Float32{field: "\"product_variants\".\"weight\""},
+	Weight:                  whereHelpermodel_types_NullFloat32{field: "\"product_variants\".\"weight\""},
 	WeightUnit:              whereHelperstring{field: "\"product_variants\".\"weight_unit\""},
-	TrackInventory:          whereHelpernull_Bool{field: "\"product_variants\".\"track_inventory\""},
+	TrackInventory:          whereHelpermodel_types_NullBool{field: "\"product_variants\".\"track_inventory\""},
 	IsPreorder:              whereHelperbool{field: "\"product_variants\".\"is_preorder\""},
-	PreorderEndDate:         whereHelpernull_Int64{field: "\"product_variants\".\"preorder_end_date\""},
-	PreorderGlobalThreshold: whereHelpernull_Int{field: "\"product_variants\".\"preorder_global_threshold\""},
-	SortOrder:               whereHelpernull_Int{field: "\"product_variants\".\"sort_order\""},
-	Metadata:                whereHelpernull_JSON{field: "\"product_variants\".\"metadata\""},
-	PrivateMetadata:         whereHelpernull_JSON{field: "\"product_variants\".\"private_metadata\""},
+	PreorderEndDate:         whereHelpermodel_types_NullInt64{field: "\"product_variants\".\"preorder_end_date\""},
+	PreorderGlobalThreshold: whereHelpermodel_types_NullInt{field: "\"product_variants\".\"preorder_global_threshold\""},
+	SortOrder:               whereHelpermodel_types_NullInt{field: "\"product_variants\".\"sort_order\""},
+	Metadata:                whereHelpermodel_types_JsonMap{field: "\"product_variants\".\"metadata\""},
+	PrivateMetadata:         whereHelpermodel_types_JsonMap{field: "\"product_variants\".\"private_metadata\""},
 }
 
 // ProductVariantRels is where relationship names are stored.

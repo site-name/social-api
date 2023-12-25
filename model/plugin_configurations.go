@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,13 +24,13 @@ import (
 
 // PluginConfiguration is an object representing the database table.
 type PluginConfiguration struct {
-	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Identifier    string    `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
-	Name          string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	ChannelID     string    `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	Description   string    `boil:"description" json:"description" toml:"description" yaml:"description"`
-	Active        bool      `boil:"active" json:"active" toml:"active" yaml:"active"`
-	Configuration null.JSON `boil:"configuration" json:"configuration,omitempty" toml:"configuration" yaml:"configuration,omitempty"`
+	ID            string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Identifier    string              `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
+	Name          string              `boil:"name" json:"name" toml:"name" yaml:"name"`
+	ChannelID     string              `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	Description   string              `boil:"description" json:"description" toml:"description" yaml:"description"`
+	Active        bool                `boil:"active" json:"active" toml:"active" yaml:"active"`
+	Configuration model_types.JsonMap `boil:"configuration" json:"configuration,omitempty" toml:"configuration" yaml:"configuration,omitempty"`
 
 	R *pluginConfigurationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pluginConfigurationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -81,7 +81,7 @@ var PluginConfigurationWhere = struct {
 	ChannelID     whereHelperstring
 	Description   whereHelperstring
 	Active        whereHelperbool
-	Configuration whereHelpernull_JSON
+	Configuration whereHelpermodel_types_JsonMap
 }{
 	ID:            whereHelperstring{field: "\"plugin_configurations\".\"id\""},
 	Identifier:    whereHelperstring{field: "\"plugin_configurations\".\"identifier\""},
@@ -89,7 +89,7 @@ var PluginConfigurationWhere = struct {
 	ChannelID:     whereHelperstring{field: "\"plugin_configurations\".\"channel_id\""},
 	Description:   whereHelperstring{field: "\"plugin_configurations\".\"description\""},
 	Active:        whereHelperbool{field: "\"plugin_configurations\".\"active\""},
-	Configuration: whereHelpernull_JSON{field: "\"plugin_configurations\".\"configuration\""},
+	Configuration: whereHelpermodel_types_JsonMap{field: "\"plugin_configurations\".\"configuration\""},
 }
 
 // PluginConfigurationRels is where relationship names are stored.

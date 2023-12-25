@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // CustomerEvent is an object representing the database table.
 type CustomerEvent struct {
-	ID         string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Date       int64             `boil:"date" json:"date" toml:"date" yaml:"date"`
-	Type       Customereventtype `boil:"type" json:"type" toml:"type" yaml:"type"`
-	OrderID    null.String       `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	UserID     null.String       `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Parameters null.JSON         `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	ID         string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Date       int64                  `boil:"date" json:"date" toml:"date" yaml:"date"`
+	Type       Customereventtype      `boil:"type" json:"type" toml:"type" yaml:"type"`
+	OrderID    model_types.NullString `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	Parameters model_types.JsonMap    `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
 
 	R *customerEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L customerEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -108,16 +108,16 @@ var CustomerEventWhere = struct {
 	ID         whereHelperstring
 	Date       whereHelperint64
 	Type       whereHelperCustomereventtype
-	OrderID    whereHelpernull_String
-	UserID     whereHelpernull_String
-	Parameters whereHelpernull_JSON
+	OrderID    whereHelpermodel_types_NullString
+	UserID     whereHelpermodel_types_NullString
+	Parameters whereHelpermodel_types_JsonMap
 }{
 	ID:         whereHelperstring{field: "\"customer_events\".\"id\""},
 	Date:       whereHelperint64{field: "\"customer_events\".\"date\""},
 	Type:       whereHelperCustomereventtype{field: "\"customer_events\".\"type\""},
-	OrderID:    whereHelpernull_String{field: "\"customer_events\".\"order_id\""},
-	UserID:     whereHelpernull_String{field: "\"customer_events\".\"user_id\""},
-	Parameters: whereHelpernull_JSON{field: "\"customer_events\".\"parameters\""},
+	OrderID:    whereHelpermodel_types_NullString{field: "\"customer_events\".\"order_id\""},
+	UserID:     whereHelpermodel_types_NullString{field: "\"customer_events\".\"user_id\""},
+	Parameters: whereHelpermodel_types_JsonMap{field: "\"customer_events\".\"parameters\""},
 }
 
 // CustomerEventRels is where relationship names are stored.

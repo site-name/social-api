@@ -14,54 +14,54 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Payment is an object representing the database table.
 type Payment struct {
-	ID                 string              `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Gateway            string              `boil:"gateway" json:"gateway" toml:"gateway" yaml:"gateway"`
-	IsActive           null.Bool           `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
-	ToConfirm          bool                `boil:"to_confirm" json:"to_confirm" toml:"to_confirm" yaml:"to_confirm"`
-	CreatedAt          int64               `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt          int64               `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	ChargeStatus       Paymentchargestatus `boil:"charge_status" json:"charge_status" toml:"charge_status" yaml:"charge_status"`
-	Token              string              `boil:"token" json:"token" toml:"token" yaml:"token"`
-	Total              types.Decimal       `boil:"total" json:"total" toml:"total" yaml:"total"`
-	CapturedAmount     types.Decimal       `boil:"captured_amount" json:"captured_amount" toml:"captured_amount" yaml:"captured_amount"`
-	Currency           Currency            `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	CheckoutID         null.String         `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
-	OrderID            null.String         `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
-	BillingEmail       string              `boil:"billing_email" json:"billing_email" toml:"billing_email" yaml:"billing_email"`
-	BillingFirstName   string              `boil:"billing_first_name" json:"billing_first_name" toml:"billing_first_name" yaml:"billing_first_name"`
-	BillingLastName    string              `boil:"billing_last_name" json:"billing_last_name" toml:"billing_last_name" yaml:"billing_last_name"`
-	BillingCompanyName string              `boil:"billing_company_name" json:"billing_company_name" toml:"billing_company_name" yaml:"billing_company_name"`
-	BillingAddress1    string              `boil:"billing_address1" json:"billing_address1" toml:"billing_address1" yaml:"billing_address1"`
-	BillingAddress2    string              `boil:"billing_address2" json:"billing_address2" toml:"billing_address2" yaml:"billing_address2"`
-	BillingCity        string              `boil:"billing_city" json:"billing_city" toml:"billing_city" yaml:"billing_city"`
-	BillingCityArea    string              `boil:"billing_city_area" json:"billing_city_area" toml:"billing_city_area" yaml:"billing_city_area"`
-	BillingPostalCode  string              `boil:"billing_postal_code" json:"billing_postal_code" toml:"billing_postal_code" yaml:"billing_postal_code"`
-	BillingCountryCode Countrycode         `boil:"billing_country_code" json:"billing_country_code" toml:"billing_country_code" yaml:"billing_country_code"`
-	BillingCountryArea string              `boil:"billing_country_area" json:"billing_country_area" toml:"billing_country_area" yaml:"billing_country_area"`
-	CCFirstDigits      string              `boil:"cc_first_digits" json:"cc_first_digits" toml:"cc_first_digits" yaml:"cc_first_digits"`
-	CCLastDigits       string              `boil:"cc_last_digits" json:"cc_last_digits" toml:"cc_last_digits" yaml:"cc_last_digits"`
-	CCBrand            string              `boil:"cc_brand" json:"cc_brand" toml:"cc_brand" yaml:"cc_brand"`
-	CCExpMonth         null.Int            `boil:"cc_exp_month" json:"cc_exp_month,omitempty" toml:"cc_exp_month" yaml:"cc_exp_month,omitempty"`
-	CCExpYear          null.Int            `boil:"cc_exp_year" json:"cc_exp_year,omitempty" toml:"cc_exp_year" yaml:"cc_exp_year,omitempty"`
-	PaymentMethodType  string              `boil:"payment_method_type" json:"payment_method_type" toml:"payment_method_type" yaml:"payment_method_type"`
-	CustomerIPAddress  null.String         `boil:"customer_ip_address" json:"customer_ip_address,omitempty" toml:"customer_ip_address" yaml:"customer_ip_address,omitempty"`
-	ExtraData          string              `boil:"extra_data" json:"extra_data" toml:"extra_data" yaml:"extra_data"`
-	ReturnURL          null.String         `boil:"return_url" json:"return_url,omitempty" toml:"return_url" yaml:"return_url,omitempty"`
-	PSPReference       null.String         `boil:"psp_reference" json:"psp_reference,omitempty" toml:"psp_reference" yaml:"psp_reference,omitempty"`
-	StorePaymentMethod Storepaymentmethod  `boil:"store_payment_method" json:"store_payment_method" toml:"store_payment_method" yaml:"store_payment_method"`
-	Metadata           null.JSON           `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    null.JSON           `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                 string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Gateway            string                 `boil:"gateway" json:"gateway" toml:"gateway" yaml:"gateway"`
+	IsActive           model_types.NullBool   `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
+	ToConfirm          bool                   `boil:"to_confirm" json:"to_confirm" toml:"to_confirm" yaml:"to_confirm"`
+	CreatedAt          int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt          int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ChargeStatus       Paymentchargestatus    `boil:"charge_status" json:"charge_status" toml:"charge_status" yaml:"charge_status"`
+	Token              string                 `boil:"token" json:"token" toml:"token" yaml:"token"`
+	Total              decimal.Decimal        `boil:"total" json:"total" toml:"total" yaml:"total"`
+	CapturedAmount     decimal.Decimal        `boil:"captured_amount" json:"captured_amount" toml:"captured_amount" yaml:"captured_amount"`
+	Currency           Currency               `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	CheckoutID         model_types.NullString `boil:"checkout_id" json:"checkout_id,omitempty" toml:"checkout_id" yaml:"checkout_id,omitempty"`
+	OrderID            model_types.NullString `boil:"order_id" json:"order_id,omitempty" toml:"order_id" yaml:"order_id,omitempty"`
+	BillingEmail       string                 `boil:"billing_email" json:"billing_email" toml:"billing_email" yaml:"billing_email"`
+	BillingFirstName   string                 `boil:"billing_first_name" json:"billing_first_name" toml:"billing_first_name" yaml:"billing_first_name"`
+	BillingLastName    string                 `boil:"billing_last_name" json:"billing_last_name" toml:"billing_last_name" yaml:"billing_last_name"`
+	BillingCompanyName string                 `boil:"billing_company_name" json:"billing_company_name" toml:"billing_company_name" yaml:"billing_company_name"`
+	BillingAddress1    string                 `boil:"billing_address1" json:"billing_address1" toml:"billing_address1" yaml:"billing_address1"`
+	BillingAddress2    string                 `boil:"billing_address2" json:"billing_address2" toml:"billing_address2" yaml:"billing_address2"`
+	BillingCity        string                 `boil:"billing_city" json:"billing_city" toml:"billing_city" yaml:"billing_city"`
+	BillingCityArea    string                 `boil:"billing_city_area" json:"billing_city_area" toml:"billing_city_area" yaml:"billing_city_area"`
+	BillingPostalCode  string                 `boil:"billing_postal_code" json:"billing_postal_code" toml:"billing_postal_code" yaml:"billing_postal_code"`
+	BillingCountryCode Countrycode            `boil:"billing_country_code" json:"billing_country_code" toml:"billing_country_code" yaml:"billing_country_code"`
+	BillingCountryArea string                 `boil:"billing_country_area" json:"billing_country_area" toml:"billing_country_area" yaml:"billing_country_area"`
+	CCFirstDigits      string                 `boil:"cc_first_digits" json:"cc_first_digits" toml:"cc_first_digits" yaml:"cc_first_digits"`
+	CCLastDigits       string                 `boil:"cc_last_digits" json:"cc_last_digits" toml:"cc_last_digits" yaml:"cc_last_digits"`
+	CCBrand            string                 `boil:"cc_brand" json:"cc_brand" toml:"cc_brand" yaml:"cc_brand"`
+	CCExpMonth         model_types.NullInt    `boil:"cc_exp_month" json:"cc_exp_month,omitempty" toml:"cc_exp_month" yaml:"cc_exp_month,omitempty"`
+	CCExpYear          model_types.NullInt    `boil:"cc_exp_year" json:"cc_exp_year,omitempty" toml:"cc_exp_year" yaml:"cc_exp_year,omitempty"`
+	PaymentMethodType  string                 `boil:"payment_method_type" json:"payment_method_type" toml:"payment_method_type" yaml:"payment_method_type"`
+	CustomerIPAddress  model_types.NullString `boil:"customer_ip_address" json:"customer_ip_address,omitempty" toml:"customer_ip_address" yaml:"customer_ip_address,omitempty"`
+	ExtraData          string                 `boil:"extra_data" json:"extra_data" toml:"extra_data" yaml:"extra_data"`
+	ReturnURL          model_types.NullString `boil:"return_url" json:"return_url,omitempty" toml:"return_url" yaml:"return_url,omitempty"`
+	PSPReference       model_types.NullString `boil:"psp_reference" json:"psp_reference,omitempty" toml:"psp_reference" yaml:"psp_reference,omitempty"`
+	StorePaymentMethod Storepaymentmethod     `boil:"store_payment_method" json:"store_payment_method" toml:"store_payment_method" yaml:"store_payment_method"`
+	Metadata           model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *paymentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L paymentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -298,17 +298,17 @@ func (w whereHelperStorepaymentmethod) NIN(slice []Storepaymentmethod) qm.QueryM
 var PaymentWhere = struct {
 	ID                 whereHelperstring
 	Gateway            whereHelperstring
-	IsActive           whereHelpernull_Bool
+	IsActive           whereHelpermodel_types_NullBool
 	ToConfirm          whereHelperbool
 	CreatedAt          whereHelperint64
 	UpdatedAt          whereHelperint64
 	ChargeStatus       whereHelperPaymentchargestatus
 	Token              whereHelperstring
-	Total              whereHelpertypes_Decimal
-	CapturedAmount     whereHelpertypes_Decimal
+	Total              whereHelperdecimal_Decimal
+	CapturedAmount     whereHelperdecimal_Decimal
 	Currency           whereHelperCurrency
-	CheckoutID         whereHelpernull_String
-	OrderID            whereHelpernull_String
+	CheckoutID         whereHelpermodel_types_NullString
+	OrderID            whereHelpermodel_types_NullString
 	BillingEmail       whereHelperstring
 	BillingFirstName   whereHelperstring
 	BillingLastName    whereHelperstring
@@ -323,30 +323,30 @@ var PaymentWhere = struct {
 	CCFirstDigits      whereHelperstring
 	CCLastDigits       whereHelperstring
 	CCBrand            whereHelperstring
-	CCExpMonth         whereHelpernull_Int
-	CCExpYear          whereHelpernull_Int
+	CCExpMonth         whereHelpermodel_types_NullInt
+	CCExpYear          whereHelpermodel_types_NullInt
 	PaymentMethodType  whereHelperstring
-	CustomerIPAddress  whereHelpernull_String
+	CustomerIPAddress  whereHelpermodel_types_NullString
 	ExtraData          whereHelperstring
-	ReturnURL          whereHelpernull_String
-	PSPReference       whereHelpernull_String
+	ReturnURL          whereHelpermodel_types_NullString
+	PSPReference       whereHelpermodel_types_NullString
 	StorePaymentMethod whereHelperStorepaymentmethod
-	Metadata           whereHelpernull_JSON
-	PrivateMetadata    whereHelpernull_JSON
+	Metadata           whereHelpermodel_types_JsonMap
+	PrivateMetadata    whereHelpermodel_types_JsonMap
 }{
 	ID:                 whereHelperstring{field: "\"payments\".\"id\""},
 	Gateway:            whereHelperstring{field: "\"payments\".\"gateway\""},
-	IsActive:           whereHelpernull_Bool{field: "\"payments\".\"is_active\""},
+	IsActive:           whereHelpermodel_types_NullBool{field: "\"payments\".\"is_active\""},
 	ToConfirm:          whereHelperbool{field: "\"payments\".\"to_confirm\""},
 	CreatedAt:          whereHelperint64{field: "\"payments\".\"created_at\""},
 	UpdatedAt:          whereHelperint64{field: "\"payments\".\"updated_at\""},
 	ChargeStatus:       whereHelperPaymentchargestatus{field: "\"payments\".\"charge_status\""},
 	Token:              whereHelperstring{field: "\"payments\".\"token\""},
-	Total:              whereHelpertypes_Decimal{field: "\"payments\".\"total\""},
-	CapturedAmount:     whereHelpertypes_Decimal{field: "\"payments\".\"captured_amount\""},
+	Total:              whereHelperdecimal_Decimal{field: "\"payments\".\"total\""},
+	CapturedAmount:     whereHelperdecimal_Decimal{field: "\"payments\".\"captured_amount\""},
 	Currency:           whereHelperCurrency{field: "\"payments\".\"currency\""},
-	CheckoutID:         whereHelpernull_String{field: "\"payments\".\"checkout_id\""},
-	OrderID:            whereHelpernull_String{field: "\"payments\".\"order_id\""},
+	CheckoutID:         whereHelpermodel_types_NullString{field: "\"payments\".\"checkout_id\""},
+	OrderID:            whereHelpermodel_types_NullString{field: "\"payments\".\"order_id\""},
 	BillingEmail:       whereHelperstring{field: "\"payments\".\"billing_email\""},
 	BillingFirstName:   whereHelperstring{field: "\"payments\".\"billing_first_name\""},
 	BillingLastName:    whereHelperstring{field: "\"payments\".\"billing_last_name\""},
@@ -361,16 +361,16 @@ var PaymentWhere = struct {
 	CCFirstDigits:      whereHelperstring{field: "\"payments\".\"cc_first_digits\""},
 	CCLastDigits:       whereHelperstring{field: "\"payments\".\"cc_last_digits\""},
 	CCBrand:            whereHelperstring{field: "\"payments\".\"cc_brand\""},
-	CCExpMonth:         whereHelpernull_Int{field: "\"payments\".\"cc_exp_month\""},
-	CCExpYear:          whereHelpernull_Int{field: "\"payments\".\"cc_exp_year\""},
+	CCExpMonth:         whereHelpermodel_types_NullInt{field: "\"payments\".\"cc_exp_month\""},
+	CCExpYear:          whereHelpermodel_types_NullInt{field: "\"payments\".\"cc_exp_year\""},
 	PaymentMethodType:  whereHelperstring{field: "\"payments\".\"payment_method_type\""},
-	CustomerIPAddress:  whereHelpernull_String{field: "\"payments\".\"customer_ip_address\""},
+	CustomerIPAddress:  whereHelpermodel_types_NullString{field: "\"payments\".\"customer_ip_address\""},
 	ExtraData:          whereHelperstring{field: "\"payments\".\"extra_data\""},
-	ReturnURL:          whereHelpernull_String{field: "\"payments\".\"return_url\""},
-	PSPReference:       whereHelpernull_String{field: "\"payments\".\"psp_reference\""},
+	ReturnURL:          whereHelpermodel_types_NullString{field: "\"payments\".\"return_url\""},
+	PSPReference:       whereHelpermodel_types_NullString{field: "\"payments\".\"psp_reference\""},
 	StorePaymentMethod: whereHelperStorepaymentmethod{field: "\"payments\".\"store_payment_method\""},
-	Metadata:           whereHelpernull_JSON{field: "\"payments\".\"metadata\""},
-	PrivateMetadata:    whereHelpernull_JSON{field: "\"payments\".\"private_metadata\""},
+	Metadata:           whereHelpermodel_types_JsonMap{field: "\"payments\".\"metadata\""},
+	PrivateMetadata:    whereHelpermodel_types_JsonMap{field: "\"payments\".\"private_metadata\""},
 }
 
 // PaymentRels is where relationship names are stored.

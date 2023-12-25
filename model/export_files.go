@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +24,11 @@ import (
 
 // ExportFile is an object representing the database table.
 type ExportFile struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	ContentFile null.String `boil:"content_file" json:"content_file,omitempty" toml:"content_file" yaml:"content_file,omitempty"`
-	CreatedAt   int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt   int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID          string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID      model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	ContentFile model_types.NullString `boil:"content_file" json:"content_file,omitempty" toml:"content_file" yaml:"content_file,omitempty"`
+	CreatedAt   int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt   int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *exportFileR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L exportFileL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -66,14 +66,14 @@ var ExportFileTableColumns = struct {
 
 var ExportFileWhere = struct {
 	ID          whereHelperstring
-	UserID      whereHelpernull_String
-	ContentFile whereHelpernull_String
+	UserID      whereHelpermodel_types_NullString
+	ContentFile whereHelpermodel_types_NullString
 	CreatedAt   whereHelperint64
 	UpdatedAt   whereHelperint64
 }{
 	ID:          whereHelperstring{field: "\"export_files\".\"id\""},
-	UserID:      whereHelpernull_String{field: "\"export_files\".\"user_id\""},
-	ContentFile: whereHelpernull_String{field: "\"export_files\".\"content_file\""},
+	UserID:      whereHelpermodel_types_NullString{field: "\"export_files\".\"user_id\""},
+	ContentFile: whereHelpermodel_types_NullString{field: "\"export_files\".\"content_file\""},
 	CreatedAt:   whereHelperint64{field: "\"export_files\".\"created_at\""},
 	UpdatedAt:   whereHelperint64{field: "\"export_files\".\"updated_at\""},
 }

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,13 +24,13 @@ import (
 
 // CategoryTranslation is an object representing the database table.
 type CategoryTranslation struct {
-	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode   Languagecode `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	CategoryID     string       `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
-	Name           string       `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Description    string       `boil:"description" json:"description" toml:"description" yaml:"description"`
-	SeoTitle       null.String  `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription null.String  `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	ID             string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode   Languagecode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	CategoryID     string                 `boil:"category_id" json:"category_id" toml:"category_id" yaml:"category_id"`
+	Name           string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description    string                 `boil:"description" json:"description" toml:"description" yaml:"description"`
+	SeoTitle       model_types.NullString `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription model_types.NullString `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *categoryTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L categoryTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -80,16 +80,16 @@ var CategoryTranslationWhere = struct {
 	CategoryID     whereHelperstring
 	Name           whereHelperstring
 	Description    whereHelperstring
-	SeoTitle       whereHelpernull_String
-	SeoDescription whereHelpernull_String
+	SeoTitle       whereHelpermodel_types_NullString
+	SeoDescription whereHelpermodel_types_NullString
 }{
 	ID:             whereHelperstring{field: "\"category_translations\".\"id\""},
 	LanguageCode:   whereHelperLanguagecode{field: "\"category_translations\".\"language_code\""},
 	CategoryID:     whereHelperstring{field: "\"category_translations\".\"category_id\""},
 	Name:           whereHelperstring{field: "\"category_translations\".\"name\""},
 	Description:    whereHelperstring{field: "\"category_translations\".\"description\""},
-	SeoTitle:       whereHelpernull_String{field: "\"category_translations\".\"seo_title\""},
-	SeoDescription: whereHelpernull_String{field: "\"category_translations\".\"seo_description\""},
+	SeoTitle:       whereHelpermodel_types_NullString{field: "\"category_translations\".\"seo_title\""},
+	SeoDescription: whereHelpermodel_types_NullString{field: "\"category_translations\".\"seo_description\""},
 }
 
 // CategoryTranslationRels is where relationship names are stored.

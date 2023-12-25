@@ -14,40 +14,40 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Checkout is an object representing the database table.
 type Checkout struct {
-	Token                  string        `boil:"token" json:"token" toml:"token" yaml:"token"`
-	CreatedAt              int64         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt              int64         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	UserID                 null.String   `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Email                  string        `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Quantity               int           `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
-	ChannelID              string        `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	BillingAddressID       null.String   `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
-	ShippingAddressID      null.String   `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
-	ShippingMethodID       null.String   `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
-	CollectionPointID      null.String   `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
-	Note                   string        `boil:"note" json:"note" toml:"note" yaml:"note"`
-	Currency               string        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	Country                Countrycode   `boil:"country" json:"country" toml:"country" yaml:"country"`
-	DiscountAmount         types.Decimal `boil:"discount_amount" json:"discount_amount" toml:"discount_amount" yaml:"discount_amount"`
-	DiscountName           null.String   `boil:"discount_name" json:"discount_name,omitempty" toml:"discount_name" yaml:"discount_name,omitempty"`
-	TranslatedDiscountName null.String   `boil:"translated_discount_name" json:"translated_discount_name,omitempty" toml:"translated_discount_name" yaml:"translated_discount_name,omitempty"`
-	VoucherCode            null.String   `boil:"voucher_code" json:"voucher_code,omitempty" toml:"voucher_code" yaml:"voucher_code,omitempty"`
-	RedirectURL            null.String   `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
-	TrackingCode           null.String   `boil:"tracking_code" json:"tracking_code,omitempty" toml:"tracking_code" yaml:"tracking_code,omitempty"`
-	LanguageCode           Languagecode  `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	Metadata               null.JSON     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata        null.JSON     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Token                  string                 `boil:"token" json:"token" toml:"token" yaml:"token"`
+	CreatedAt              int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt              int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	UserID                 model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	Email                  string                 `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Quantity               int                    `boil:"quantity" json:"quantity" toml:"quantity" yaml:"quantity"`
+	ChannelID              string                 `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	BillingAddressID       model_types.NullString `boil:"billing_address_id" json:"billing_address_id,omitempty" toml:"billing_address_id" yaml:"billing_address_id,omitempty"`
+	ShippingAddressID      model_types.NullString `boil:"shipping_address_id" json:"shipping_address_id,omitempty" toml:"shipping_address_id" yaml:"shipping_address_id,omitempty"`
+	ShippingMethodID       model_types.NullString `boil:"shipping_method_id" json:"shipping_method_id,omitempty" toml:"shipping_method_id" yaml:"shipping_method_id,omitempty"`
+	CollectionPointID      model_types.NullString `boil:"collection_point_id" json:"collection_point_id,omitempty" toml:"collection_point_id" yaml:"collection_point_id,omitempty"`
+	Note                   string                 `boil:"note" json:"note" toml:"note" yaml:"note"`
+	Currency               string                 `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	Country                Countrycode            `boil:"country" json:"country" toml:"country" yaml:"country"`
+	DiscountAmount         decimal.Decimal        `boil:"discount_amount" json:"discount_amount" toml:"discount_amount" yaml:"discount_amount"`
+	DiscountName           model_types.NullString `boil:"discount_name" json:"discount_name,omitempty" toml:"discount_name" yaml:"discount_name,omitempty"`
+	TranslatedDiscountName model_types.NullString `boil:"translated_discount_name" json:"translated_discount_name,omitempty" toml:"translated_discount_name" yaml:"translated_discount_name,omitempty"`
+	VoucherCode            model_types.NullString `boil:"voucher_code" json:"voucher_code,omitempty" toml:"voucher_code" yaml:"voucher_code,omitempty"`
+	RedirectURL            model_types.NullString `boil:"redirect_url" json:"redirect_url,omitempty" toml:"redirect_url" yaml:"redirect_url,omitempty"`
+	TrackingCode           model_types.NullString `boil:"tracking_code" json:"tracking_code,omitempty" toml:"tracking_code" yaml:"tracking_code,omitempty"`
+	LanguageCode           Languagecode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	Metadata               model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata        model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *checkoutR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L checkoutL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -155,24 +155,24 @@ var CheckoutTableColumns = struct {
 
 // Generated where
 
-type whereHelpertypes_Decimal struct{ field string }
+type whereHelperdecimal_Decimal struct{ field string }
 
-func (w whereHelpertypes_Decimal) EQ(x types.Decimal) qm.QueryMod {
+func (w whereHelperdecimal_Decimal) EQ(x decimal.Decimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.EQ, x)
 }
-func (w whereHelpertypes_Decimal) NEQ(x types.Decimal) qm.QueryMod {
+func (w whereHelperdecimal_Decimal) NEQ(x decimal.Decimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.NEQ, x)
 }
-func (w whereHelpertypes_Decimal) LT(x types.Decimal) qm.QueryMod {
+func (w whereHelperdecimal_Decimal) LT(x decimal.Decimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpertypes_Decimal) LTE(x types.Decimal) qm.QueryMod {
+func (w whereHelperdecimal_Decimal) LTE(x decimal.Decimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpertypes_Decimal) GT(x types.Decimal) qm.QueryMod {
+func (w whereHelperdecimal_Decimal) GT(x decimal.Decimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpertypes_Decimal) GTE(x types.Decimal) qm.QueryMod {
+func (w whereHelperdecimal_Decimal) GTE(x decimal.Decimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
@@ -180,50 +180,50 @@ var CheckoutWhere = struct {
 	Token                  whereHelperstring
 	CreatedAt              whereHelperint64
 	UpdatedAt              whereHelperint64
-	UserID                 whereHelpernull_String
+	UserID                 whereHelpermodel_types_NullString
 	Email                  whereHelperstring
 	Quantity               whereHelperint
 	ChannelID              whereHelperstring
-	BillingAddressID       whereHelpernull_String
-	ShippingAddressID      whereHelpernull_String
-	ShippingMethodID       whereHelpernull_String
-	CollectionPointID      whereHelpernull_String
+	BillingAddressID       whereHelpermodel_types_NullString
+	ShippingAddressID      whereHelpermodel_types_NullString
+	ShippingMethodID       whereHelpermodel_types_NullString
+	CollectionPointID      whereHelpermodel_types_NullString
 	Note                   whereHelperstring
 	Currency               whereHelperstring
 	Country                whereHelperCountrycode
-	DiscountAmount         whereHelpertypes_Decimal
-	DiscountName           whereHelpernull_String
-	TranslatedDiscountName whereHelpernull_String
-	VoucherCode            whereHelpernull_String
-	RedirectURL            whereHelpernull_String
-	TrackingCode           whereHelpernull_String
+	DiscountAmount         whereHelperdecimal_Decimal
+	DiscountName           whereHelpermodel_types_NullString
+	TranslatedDiscountName whereHelpermodel_types_NullString
+	VoucherCode            whereHelpermodel_types_NullString
+	RedirectURL            whereHelpermodel_types_NullString
+	TrackingCode           whereHelpermodel_types_NullString
 	LanguageCode           whereHelperLanguagecode
-	Metadata               whereHelpernull_JSON
-	PrivateMetadata        whereHelpernull_JSON
+	Metadata               whereHelpermodel_types_JsonMap
+	PrivateMetadata        whereHelpermodel_types_JsonMap
 }{
 	Token:                  whereHelperstring{field: "\"checkouts\".\"token\""},
 	CreatedAt:              whereHelperint64{field: "\"checkouts\".\"created_at\""},
 	UpdatedAt:              whereHelperint64{field: "\"checkouts\".\"updated_at\""},
-	UserID:                 whereHelpernull_String{field: "\"checkouts\".\"user_id\""},
+	UserID:                 whereHelpermodel_types_NullString{field: "\"checkouts\".\"user_id\""},
 	Email:                  whereHelperstring{field: "\"checkouts\".\"email\""},
 	Quantity:               whereHelperint{field: "\"checkouts\".\"quantity\""},
 	ChannelID:              whereHelperstring{field: "\"checkouts\".\"channel_id\""},
-	BillingAddressID:       whereHelpernull_String{field: "\"checkouts\".\"billing_address_id\""},
-	ShippingAddressID:      whereHelpernull_String{field: "\"checkouts\".\"shipping_address_id\""},
-	ShippingMethodID:       whereHelpernull_String{field: "\"checkouts\".\"shipping_method_id\""},
-	CollectionPointID:      whereHelpernull_String{field: "\"checkouts\".\"collection_point_id\""},
+	BillingAddressID:       whereHelpermodel_types_NullString{field: "\"checkouts\".\"billing_address_id\""},
+	ShippingAddressID:      whereHelpermodel_types_NullString{field: "\"checkouts\".\"shipping_address_id\""},
+	ShippingMethodID:       whereHelpermodel_types_NullString{field: "\"checkouts\".\"shipping_method_id\""},
+	CollectionPointID:      whereHelpermodel_types_NullString{field: "\"checkouts\".\"collection_point_id\""},
 	Note:                   whereHelperstring{field: "\"checkouts\".\"note\""},
 	Currency:               whereHelperstring{field: "\"checkouts\".\"currency\""},
 	Country:                whereHelperCountrycode{field: "\"checkouts\".\"country\""},
-	DiscountAmount:         whereHelpertypes_Decimal{field: "\"checkouts\".\"discount_amount\""},
-	DiscountName:           whereHelpernull_String{field: "\"checkouts\".\"discount_name\""},
-	TranslatedDiscountName: whereHelpernull_String{field: "\"checkouts\".\"translated_discount_name\""},
-	VoucherCode:            whereHelpernull_String{field: "\"checkouts\".\"voucher_code\""},
-	RedirectURL:            whereHelpernull_String{field: "\"checkouts\".\"redirect_url\""},
-	TrackingCode:           whereHelpernull_String{field: "\"checkouts\".\"tracking_code\""},
+	DiscountAmount:         whereHelperdecimal_Decimal{field: "\"checkouts\".\"discount_amount\""},
+	DiscountName:           whereHelpermodel_types_NullString{field: "\"checkouts\".\"discount_name\""},
+	TranslatedDiscountName: whereHelpermodel_types_NullString{field: "\"checkouts\".\"translated_discount_name\""},
+	VoucherCode:            whereHelpermodel_types_NullString{field: "\"checkouts\".\"voucher_code\""},
+	RedirectURL:            whereHelpermodel_types_NullString{field: "\"checkouts\".\"redirect_url\""},
+	TrackingCode:           whereHelpermodel_types_NullString{field: "\"checkouts\".\"tracking_code\""},
 	LanguageCode:           whereHelperLanguagecode{field: "\"checkouts\".\"language_code\""},
-	Metadata:               whereHelpernull_JSON{field: "\"checkouts\".\"metadata\""},
-	PrivateMetadata:        whereHelpernull_JSON{field: "\"checkouts\".\"private_metadata\""},
+	Metadata:               whereHelpermodel_types_JsonMap{field: "\"checkouts\".\"metadata\""},
+	PrivateMetadata:        whereHelpermodel_types_JsonMap{field: "\"checkouts\".\"private_metadata\""},
 }
 
 // CheckoutRels is where relationship names are stored.

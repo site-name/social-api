@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,9 +24,9 @@ import (
 
 // Vat is an object representing the database table.
 type Vat struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CountryCode Countrycode `boil:"country_code" json:"country_code" toml:"country_code" yaml:"country_code"`
-	Data        null.JSON   `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
+	ID          string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CountryCode Countrycode         `boil:"country_code" json:"country_code" toml:"country_code" yaml:"country_code"`
+	Data        model_types.JsonMap `boil:"data" json:"data,omitempty" toml:"data" yaml:"data,omitempty"`
 
 	R *vatR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L vatL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -57,11 +57,11 @@ var VatTableColumns = struct {
 var VatWhere = struct {
 	ID          whereHelperstring
 	CountryCode whereHelperCountrycode
-	Data        whereHelpernull_JSON
+	Data        whereHelpermodel_types_JsonMap
 }{
 	ID:          whereHelperstring{field: "\"vats\".\"id\""},
 	CountryCode: whereHelperCountrycode{field: "\"vats\".\"country_code\""},
-	Data:        whereHelpernull_JSON{field: "\"vats\".\"data\""},
+	Data:        whereHelpermodel_types_JsonMap{field: "\"vats\".\"data\""},
 }
 
 // VatRels is where relationship names are stored.

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,16 +24,16 @@ import (
 
 // Collection is an object representing the database table.
 type Collection struct {
-	ID                 string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name               string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug               string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	BackgroundImage    null.String `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
-	BackgroundImageAlt string      `boil:"background_image_alt" json:"background_image_alt" toml:"background_image_alt" yaml:"background_image_alt"`
-	Description        null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Metadata           null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
-	SeoTitle           string      `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
-	SeoDescription     string      `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
+	ID                 string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name               string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug               string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	BackgroundImage    model_types.NullString `boil:"background_image" json:"background_image,omitempty" toml:"background_image" yaml:"background_image,omitempty"`
+	BackgroundImageAlt string                 `boil:"background_image_alt" json:"background_image_alt" toml:"background_image_alt" yaml:"background_image_alt"`
+	Description        model_types.NullString `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Metadata           model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	SeoTitle           string                 `boil:"seo_title" json:"seo_title" toml:"seo_title" yaml:"seo_title"`
+	SeoDescription     string                 `boil:"seo_description" json:"seo_description" toml:"seo_description" yaml:"seo_description"`
 
 	R *collectionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L collectionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -93,22 +93,22 @@ var CollectionWhere = struct {
 	ID                 whereHelperstring
 	Name               whereHelperstring
 	Slug               whereHelperstring
-	BackgroundImage    whereHelpernull_String
+	BackgroundImage    whereHelpermodel_types_NullString
 	BackgroundImageAlt whereHelperstring
-	Description        whereHelpernull_String
-	Metadata           whereHelpernull_JSON
-	PrivateMetadata    whereHelpernull_JSON
+	Description        whereHelpermodel_types_NullString
+	Metadata           whereHelpermodel_types_JsonMap
+	PrivateMetadata    whereHelpermodel_types_JsonMap
 	SeoTitle           whereHelperstring
 	SeoDescription     whereHelperstring
 }{
 	ID:                 whereHelperstring{field: "\"collections\".\"id\""},
 	Name:               whereHelperstring{field: "\"collections\".\"name\""},
 	Slug:               whereHelperstring{field: "\"collections\".\"slug\""},
-	BackgroundImage:    whereHelpernull_String{field: "\"collections\".\"background_image\""},
+	BackgroundImage:    whereHelpermodel_types_NullString{field: "\"collections\".\"background_image\""},
 	BackgroundImageAlt: whereHelperstring{field: "\"collections\".\"background_image_alt\""},
-	Description:        whereHelpernull_String{field: "\"collections\".\"description\""},
-	Metadata:           whereHelpernull_JSON{field: "\"collections\".\"metadata\""},
-	PrivateMetadata:    whereHelpernull_JSON{field: "\"collections\".\"private_metadata\""},
+	Description:        whereHelpermodel_types_NullString{field: "\"collections\".\"description\""},
+	Metadata:           whereHelpermodel_types_JsonMap{field: "\"collections\".\"metadata\""},
+	PrivateMetadata:    whereHelpermodel_types_JsonMap{field: "\"collections\".\"private_metadata\""},
 	SeoTitle:           whereHelperstring{field: "\"collections\".\"seo_title\""},
 	SeoDescription:     whereHelperstring{field: "\"collections\".\"seo_description\""},
 }

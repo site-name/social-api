@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -30,7 +30,7 @@ type Attribute struct {
 	Type                     Attributetype           `boil:"type" json:"type" toml:"type" yaml:"type"`
 	InputType                Attributeinputtype      `boil:"input_type" json:"input_type" toml:"input_type" yaml:"input_type"`
 	EntityType               NullAttributeentitytype `boil:"entity_type" json:"entity_type,omitempty" toml:"entity_type" yaml:"entity_type,omitempty"`
-	Unit                     null.String             `boil:"unit" json:"unit,omitempty" toml:"unit" yaml:"unit,omitempty"`
+	Unit                     model_types.NullString  `boil:"unit" json:"unit,omitempty" toml:"unit" yaml:"unit,omitempty"`
 	ValueRequired            bool                    `boil:"value_required" json:"value_required" toml:"value_required" yaml:"value_required"`
 	IsVariantOnly            bool                    `boil:"is_variant_only" json:"is_variant_only" toml:"is_variant_only" yaml:"is_variant_only"`
 	VisibleInStorefront      bool                    `boil:"visible_in_storefront" json:"visible_in_storefront" toml:"visible_in_storefront" yaml:"visible_in_storefront"`
@@ -38,8 +38,8 @@ type Attribute struct {
 	FilterableInDashboard    bool                    `boil:"filterable_in_dashboard" json:"filterable_in_dashboard" toml:"filterable_in_dashboard" yaml:"filterable_in_dashboard"`
 	StorefrontSearchPosition int                     `boil:"storefront_search_position" json:"storefront_search_position" toml:"storefront_search_position" yaml:"storefront_search_position"`
 	AvailableInGrid          bool                    `boil:"available_in_grid" json:"available_in_grid" toml:"available_in_grid" yaml:"available_in_grid"`
-	Metadata                 null.JSON               `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata          null.JSON               `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	Metadata                 model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata          model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *attributeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -231,29 +231,31 @@ func (w whereHelperNullAttributeentitytype) IsNotNull() qm.QueryMod {
 	return qmhelper.WhereIsNotNull(w.field)
 }
 
-type whereHelpernull_JSON struct{ field string }
+type whereHelpermodel_types_JsonMap struct{ field string }
 
-func (w whereHelpernull_JSON) EQ(x null.JSON) qm.QueryMod {
+func (w whereHelpermodel_types_JsonMap) EQ(x model_types.JsonMap) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_JSON) NEQ(x null.JSON) qm.QueryMod {
+func (w whereHelpermodel_types_JsonMap) NEQ(x model_types.JsonMap) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_JSON) LT(x null.JSON) qm.QueryMod {
+func (w whereHelpermodel_types_JsonMap) LT(x model_types.JsonMap) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_JSON) LTE(x null.JSON) qm.QueryMod {
+func (w whereHelpermodel_types_JsonMap) LTE(x model_types.JsonMap) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_JSON) GT(x null.JSON) qm.QueryMod {
+func (w whereHelpermodel_types_JsonMap) GT(x model_types.JsonMap) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_JSON) GTE(x null.JSON) qm.QueryMod {
+func (w whereHelpermodel_types_JsonMap) GTE(x model_types.JsonMap) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpernull_JSON) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_JsonMap) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_JsonMap) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
 var AttributeWhere = struct {
 	ID                       whereHelperstring
@@ -262,7 +264,7 @@ var AttributeWhere = struct {
 	Type                     whereHelperAttributetype
 	InputType                whereHelperAttributeinputtype
 	EntityType               whereHelperNullAttributeentitytype
-	Unit                     whereHelpernull_String
+	Unit                     whereHelpermodel_types_NullString
 	ValueRequired            whereHelperbool
 	IsVariantOnly            whereHelperbool
 	VisibleInStorefront      whereHelperbool
@@ -270,8 +272,8 @@ var AttributeWhere = struct {
 	FilterableInDashboard    whereHelperbool
 	StorefrontSearchPosition whereHelperint
 	AvailableInGrid          whereHelperbool
-	Metadata                 whereHelpernull_JSON
-	PrivateMetadata          whereHelpernull_JSON
+	Metadata                 whereHelpermodel_types_JsonMap
+	PrivateMetadata          whereHelpermodel_types_JsonMap
 }{
 	ID:                       whereHelperstring{field: "\"attributes\".\"id\""},
 	Slug:                     whereHelperstring{field: "\"attributes\".\"slug\""},
@@ -279,7 +281,7 @@ var AttributeWhere = struct {
 	Type:                     whereHelperAttributetype{field: "\"attributes\".\"type\""},
 	InputType:                whereHelperAttributeinputtype{field: "\"attributes\".\"input_type\""},
 	EntityType:               whereHelperNullAttributeentitytype{field: "\"attributes\".\"entity_type\""},
-	Unit:                     whereHelpernull_String{field: "\"attributes\".\"unit\""},
+	Unit:                     whereHelpermodel_types_NullString{field: "\"attributes\".\"unit\""},
 	ValueRequired:            whereHelperbool{field: "\"attributes\".\"value_required\""},
 	IsVariantOnly:            whereHelperbool{field: "\"attributes\".\"is_variant_only\""},
 	VisibleInStorefront:      whereHelperbool{field: "\"attributes\".\"visible_in_storefront\""},
@@ -287,8 +289,8 @@ var AttributeWhere = struct {
 	FilterableInDashboard:    whereHelperbool{field: "\"attributes\".\"filterable_in_dashboard\""},
 	StorefrontSearchPosition: whereHelperint{field: "\"attributes\".\"storefront_search_position\""},
 	AvailableInGrid:          whereHelperbool{field: "\"attributes\".\"available_in_grid\""},
-	Metadata:                 whereHelpernull_JSON{field: "\"attributes\".\"metadata\""},
-	PrivateMetadata:          whereHelpernull_JSON{field: "\"attributes\".\"private_metadata\""},
+	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"attributes\".\"metadata\""},
+	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"attributes\".\"private_metadata\""},
 }
 
 // AttributeRels is where relationship names are stored.

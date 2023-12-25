@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +24,11 @@ import (
 
 // PageType is an object representing the database table.
 type PageType struct {
-	ID              string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug            string    `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Metadata        null.JSON `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string              `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug            string              `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Metadata        model_types.JsonMap `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JsonMap `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *pageTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pageTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -68,14 +68,14 @@ var PageTypeWhere = struct {
 	ID              whereHelperstring
 	Name            whereHelperstring
 	Slug            whereHelperstring
-	Metadata        whereHelpernull_JSON
-	PrivateMetadata whereHelpernull_JSON
+	Metadata        whereHelpermodel_types_JsonMap
+	PrivateMetadata whereHelpermodel_types_JsonMap
 }{
 	ID:              whereHelperstring{field: "\"page_types\".\"id\""},
 	Name:            whereHelperstring{field: "\"page_types\".\"name\""},
 	Slug:            whereHelperstring{field: "\"page_types\".\"slug\""},
-	Metadata:        whereHelpernull_JSON{field: "\"page_types\".\"metadata\""},
-	PrivateMetadata: whereHelpernull_JSON{field: "\"page_types\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JsonMap{field: "\"page_types\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"page_types\".\"private_metadata\""},
 }
 
 // PageTypeRels is where relationship names are stored.

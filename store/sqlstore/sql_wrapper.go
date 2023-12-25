@@ -8,6 +8,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -31,11 +32,11 @@ type sqlDBWrapper struct {
 	trace        bool
 }
 
-func newSqlDbWrapper(db *sql.DB, timeout time.Duration, trace bool) *sqlDBWrapper {
+func newSqlDbWrapper(db *sql.DB, settings model_helper.SqlSettings) *sqlDBWrapper {
 	return &sqlDBWrapper{
 		sqlDBInterface: db,
-		queryTimeout:   timeout,
-		trace:          trace,
+		queryTimeout:   time.Duration(*settings.QueryTimeout) * time.Second,
+		trace:          *settings.Trace,
 	}
 }
 

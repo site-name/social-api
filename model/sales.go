@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,15 +24,15 @@ import (
 
 // Sale is an object representing the database table.
 type Sale struct {
-	ID              string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name            string            `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Type            Discountvaluetype `boil:"type" json:"type" toml:"type" yaml:"type"`
-	StartDate       int64             `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
-	EndDate         null.Int64        `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
-	CreatedAt       int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt       int64             `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	Metadata        null.JSON         `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata null.JSON         `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID              string                `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name            string                `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Type            Discountvaluetype     `boil:"type" json:"type" toml:"type" yaml:"type"`
+	StartDate       int64                 `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
+	EndDate         model_types.NullInt64 `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
+	CreatedAt       int64                 `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt       int64                 `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Metadata        model_types.JsonMap   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata model_types.JsonMap   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *saleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L saleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -89,21 +89,21 @@ var SaleWhere = struct {
 	Name            whereHelperstring
 	Type            whereHelperDiscountvaluetype
 	StartDate       whereHelperint64
-	EndDate         whereHelpernull_Int64
+	EndDate         whereHelpermodel_types_NullInt64
 	CreatedAt       whereHelperint64
 	UpdatedAt       whereHelperint64
-	Metadata        whereHelpernull_JSON
-	PrivateMetadata whereHelpernull_JSON
+	Metadata        whereHelpermodel_types_JsonMap
+	PrivateMetadata whereHelpermodel_types_JsonMap
 }{
 	ID:              whereHelperstring{field: "\"sales\".\"id\""},
 	Name:            whereHelperstring{field: "\"sales\".\"name\""},
 	Type:            whereHelperDiscountvaluetype{field: "\"sales\".\"type\""},
 	StartDate:       whereHelperint64{field: "\"sales\".\"start_date\""},
-	EndDate:         whereHelpernull_Int64{field: "\"sales\".\"end_date\""},
+	EndDate:         whereHelpermodel_types_NullInt64{field: "\"sales\".\"end_date\""},
 	CreatedAt:       whereHelperint64{field: "\"sales\".\"created_at\""},
 	UpdatedAt:       whereHelperint64{field: "\"sales\".\"updated_at\""},
-	Metadata:        whereHelpernull_JSON{field: "\"sales\".\"metadata\""},
-	PrivateMetadata: whereHelpernull_JSON{field: "\"sales\".\"private_metadata\""},
+	Metadata:        whereHelpermodel_types_JsonMap{field: "\"sales\".\"metadata\""},
+	PrivateMetadata: whereHelpermodel_types_JsonMap{field: "\"sales\".\"private_metadata\""},
 }
 
 // SaleRels is where relationship names are stored.

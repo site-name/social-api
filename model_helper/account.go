@@ -172,7 +172,7 @@ func IsValidNamePart(name string) bool {
 // ----------- customer note ----------
 
 func CustomerNoteIsValid(c *model.CustomerNote) *AppError {
-	if c.UserID.Valid && !IsValidId(c.UserID.String) {
+	if !c.UserID.IsNil() && !IsValidId(*c.UserID.String) {
 		return NewAppError("CustomerNote.IsValid", "model.customer_note.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if !IsValidId(c.CustomerID) {
@@ -222,11 +222,10 @@ func SessionSetExpireInDays(s *model.Session, days int) {
 
 // AddProp adds given value to session's Props with key of given key
 func SessionAddProp(s *model.Session, key string, value string) {
-	props := Map[string, string]{}
-	_ = s.Props.Unmarshal(&props)
-	props.Add(key, value)
-
-	_ = s.Props.Marshal(props)
+	if s.Props == nil {
+		s.Props = map[string]any{}
+	}
+	s.Props[key] = value
 }
 
 // IsMobileApp check if current session has non-empty `DeviceId` field or IsMobile()
@@ -236,22 +235,22 @@ func SessionIsMobileApp(s model.Session) bool {
 
 // IsMobile checks if the Props field has an item is ("isMobile": "true")
 func SessionIsMobile(s model.Session) bool {
-	props := Map[string, string]{}
-	_ = s.Props.Unmarshal(&props)
-
-	val, ok := props[USER_AUTH_SERVICE_IS_MOBILE]
-	return ok && strings.EqualFold(val, "true")
+	if s.Props == nil || len(s.Props) == 0 {
+		return false
+	}
+	val, ok := s.Props[USER_AUTH_SERVICE_IS_MOBILE]
+	return ok && strings.EqualFold(val.(string), "true")
 }
 
 func SessionIsSaml(s model.Session) bool {
-	props := Map[string, string]{}
-	_ = s.Props.Unmarshal(&props)
-
-	val, ok := props[USER_AUTH_SERVICE_IS_SAML]
+	if s.Props == nil || len(s.Props) == 0 {
+		return false
+	}
+	val, ok := s.Props[USER_AUTH_SERVICE_IS_SAML]
 	if !ok {
 		return false
 	}
-	isSaml, err := strconv.ParseBool(val)
+	isSaml, err := strconv.ParseBool(val.(string))
 	if err != nil {
 		slog.Debug("Error parsing boolean property from Session", slog.Err(err))
 		return false
@@ -260,14 +259,15 @@ func SessionIsSaml(s model.Session) bool {
 }
 
 func SessionIsOAuthUser(s model.Session) bool {
-	props := Map[string, string]{}
-	_ = s.Props.Unmarshal(&props)
+	if s.Props == nil || len(s.Props) == 0 {
+		return false
+	}
 
-	val, ok := props[USER_AUTH_SERVICE_IS_OAUTH]
+	val, ok := s.Props[USER_AUTH_SERVICE_IS_OAUTH]
 	if !ok {
 		return false
 	}
-	isOAuthUser, err := strconv.ParseBool(val)
+	isOAuthUser, err := strconv.ParseBool(val.(string))
 	if err != nil {
 		slog.Debug("Error parsing boolean property from Session", slog.Err(err))
 		return false
@@ -286,21 +286,25 @@ func SessionGetUserRoles(s model.Session) util.AnyArray[string] {
 
 // GenerateCSRF simply generates new UUID, then add that uuid to its "Props" with key is "csrf". Finally returns that token
 func SessionGenerateCSRF(s *model.Session) string {
-	props := Map[string, string]{}
-	_ = s.Props.Unmarshal(&props)
-
+	if s.Props == nil {
+		s.Props = map[string]any{}
+	}
 	token := NewId()
-	props.Add("csrf", token)
-	s.Props.Marshal(props)
+	s.Props["csrf"] = token
 	return token
 }
 
 // get value with key of "csrf" from session's Props
 func SessionGetCSRF(s model.Session) string {
-	props := Map[string, string]{}
-	_ = s.Props.Unmarshal(&props)
+	if s.Props == nil || len(s.Props) == 0 {
+		return ""
+	}
+	value, ok := s.Props["csrf"]
+	if !ok {
+		return ""
+	}
 
-	return props["csrf"]
+	return value.(string)
 }
 
 // HashPassword generates a hash using the bcrypt.GenerateFromPassword
@@ -329,4 +333,8 @@ func UserAccessTokenCommonPre(t *model.UserAccessToken) {
 	if t.Token == "" {
 		t.Token = NewId()
 	}
+}
+
+func IsSSOUser(u model.User) bool {
+	return u.AuthService != "" && u.AuthService != USER_AUTH_SERVICE_EMAIL
 }

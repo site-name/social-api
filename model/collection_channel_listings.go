@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // CollectionChannelListing is an object representing the database table.
 type CollectionChannelListing struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt       int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	CollectionID    string      `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
-	ChannelID       null.String `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
-	PublicationDate null.Time   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
-	IsPublished     null.Bool   `boil:"is_published" json:"is_published,omitempty" toml:"is_published" yaml:"is_published,omitempty"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt       int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	CollectionID    string                 `boil:"collection_id" json:"collection_id" toml:"collection_id" yaml:"collection_id"`
+	ChannelID       model_types.NullString `boil:"channel_id" json:"channel_id,omitempty" toml:"channel_id" yaml:"channel_id,omitempty"`
+	PublicationDate model_types.NullTime   `boil:"publication_date" json:"publication_date,omitempty" toml:"publication_date" yaml:"publication_date,omitempty"`
+	IsPublished     model_types.NullBool   `boil:"is_published" json:"is_published,omitempty" toml:"is_published" yaml:"is_published,omitempty"`
 
 	R *collectionChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L collectionChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -73,16 +73,16 @@ var CollectionChannelListingWhere = struct {
 	ID              whereHelperstring
 	CreatedAt       whereHelperint64
 	CollectionID    whereHelperstring
-	ChannelID       whereHelpernull_String
-	PublicationDate whereHelpernull_Time
-	IsPublished     whereHelpernull_Bool
+	ChannelID       whereHelpermodel_types_NullString
+	PublicationDate whereHelpermodel_types_NullTime
+	IsPublished     whereHelpermodel_types_NullBool
 }{
 	ID:              whereHelperstring{field: "\"collection_channel_listings\".\"id\""},
 	CreatedAt:       whereHelperint64{field: "\"collection_channel_listings\".\"created_at\""},
 	CollectionID:    whereHelperstring{field: "\"collection_channel_listings\".\"collection_id\""},
-	ChannelID:       whereHelpernull_String{field: "\"collection_channel_listings\".\"channel_id\""},
-	PublicationDate: whereHelpernull_Time{field: "\"collection_channel_listings\".\"publication_date\""},
-	IsPublished:     whereHelpernull_Bool{field: "\"collection_channel_listings\".\"is_published\""},
+	ChannelID:       whereHelpermodel_types_NullString{field: "\"collection_channel_listings\".\"channel_id\""},
+	PublicationDate: whereHelpermodel_types_NullTime{field: "\"collection_channel_listings\".\"publication_date\""},
+	IsPublished:     whereHelpermodel_types_NullBool{field: "\"collection_channel_listings\".\"is_published\""},
 }
 
 // CollectionChannelListingRels is where relationship names are stored.

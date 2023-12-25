@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +24,12 @@ import (
 
 // OrderEvent is an object representing the database table.
 type OrderEvent struct {
-	ID         string         `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt  int64          `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Type       Ordereventtype `boil:"type" json:"type" toml:"type" yaml:"type"`
-	OrderID    string         `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
-	Parameters null.String    `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
-	UserID     null.String    `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	ID         string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt  int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Type       Ordereventtype         `boil:"type" json:"type" toml:"type" yaml:"type"`
+	OrderID    string                 `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
+	Parameters model_types.NullString `boil:"parameters" json:"parameters,omitempty" toml:"parameters" yaml:"parameters,omitempty"`
+	UserID     model_types.NullString `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 
 	R *orderEventR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L orderEventL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -109,15 +109,15 @@ var OrderEventWhere = struct {
 	CreatedAt  whereHelperint64
 	Type       whereHelperOrdereventtype
 	OrderID    whereHelperstring
-	Parameters whereHelpernull_String
-	UserID     whereHelpernull_String
+	Parameters whereHelpermodel_types_NullString
+	UserID     whereHelpermodel_types_NullString
 }{
 	ID:         whereHelperstring{field: "\"order_events\".\"id\""},
 	CreatedAt:  whereHelperint64{field: "\"order_events\".\"created_at\""},
 	Type:       whereHelperOrdereventtype{field: "\"order_events\".\"type\""},
 	OrderID:    whereHelperstring{field: "\"order_events\".\"order_id\""},
-	Parameters: whereHelpernull_String{field: "\"order_events\".\"parameters\""},
-	UserID:     whereHelpernull_String{field: "\"order_events\".\"user_id\""},
+	Parameters: whereHelpermodel_types_NullString{field: "\"order_events\".\"parameters\""},
+	UserID:     whereHelpermodel_types_NullString{field: "\"order_events\".\"user_id\""},
 }
 
 // OrderEventRels is where relationship names are stored.

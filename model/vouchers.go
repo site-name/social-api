@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,24 +24,24 @@ import (
 
 // Voucher is an object representing the database table.
 type Voucher struct {
-	ID                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Type                     string      `boil:"type" json:"type" toml:"type" yaml:"type"`
-	Name                     null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Code                     string      `boil:"code" json:"code" toml:"code" yaml:"code"`
-	UsageLimit               null.Int    `boil:"usage_limit" json:"usage_limit,omitempty" toml:"usage_limit" yaml:"usage_limit,omitempty"`
-	Used                     int         `boil:"used" json:"used" toml:"used" yaml:"used"`
-	StartDate                int64       `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
-	EndDate                  null.Int64  `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
-	ApplyOncePerOrder        bool        `boil:"apply_once_per_order" json:"apply_once_per_order" toml:"apply_once_per_order" yaml:"apply_once_per_order"`
-	ApplyOncePerCustomer     bool        `boil:"apply_once_per_customer" json:"apply_once_per_customer" toml:"apply_once_per_customer" yaml:"apply_once_per_customer"`
-	OnlyForStaff             null.Bool   `boil:"only_for_staff" json:"only_for_staff,omitempty" toml:"only_for_staff" yaml:"only_for_staff,omitempty"`
-	DiscountValueType        string      `boil:"discount_value_type" json:"discount_value_type" toml:"discount_value_type" yaml:"discount_value_type"`
-	Countries                string      `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
-	MinCheckoutItemsQuantity int         `boil:"min_checkout_items_quantity" json:"min_checkout_items_quantity" toml:"min_checkout_items_quantity" yaml:"min_checkout_items_quantity"`
-	CreatedAt                int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt                int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	Metadata                 null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata          null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                       string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Type                     string                 `boil:"type" json:"type" toml:"type" yaml:"type"`
+	Name                     model_types.NullString `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	Code                     string                 `boil:"code" json:"code" toml:"code" yaml:"code"`
+	UsageLimit               model_types.NullInt    `boil:"usage_limit" json:"usage_limit,omitempty" toml:"usage_limit" yaml:"usage_limit,omitempty"`
+	Used                     int                    `boil:"used" json:"used" toml:"used" yaml:"used"`
+	StartDate                int64                  `boil:"start_date" json:"start_date" toml:"start_date" yaml:"start_date"`
+	EndDate                  model_types.NullInt64  `boil:"end_date" json:"end_date,omitempty" toml:"end_date" yaml:"end_date,omitempty"`
+	ApplyOncePerOrder        bool                   `boil:"apply_once_per_order" json:"apply_once_per_order" toml:"apply_once_per_order" yaml:"apply_once_per_order"`
+	ApplyOncePerCustomer     bool                   `boil:"apply_once_per_customer" json:"apply_once_per_customer" toml:"apply_once_per_customer" yaml:"apply_once_per_customer"`
+	OnlyForStaff             model_types.NullBool   `boil:"only_for_staff" json:"only_for_staff,omitempty" toml:"only_for_staff" yaml:"only_for_staff,omitempty"`
+	DiscountValueType        string                 `boil:"discount_value_type" json:"discount_value_type" toml:"discount_value_type" yaml:"discount_value_type"`
+	Countries                string                 `boil:"countries" json:"countries" toml:"countries" yaml:"countries"`
+	MinCheckoutItemsQuantity int                    `boil:"min_checkout_items_quantity" json:"min_checkout_items_quantity" toml:"min_checkout_items_quantity" yaml:"min_checkout_items_quantity"`
+	CreatedAt                int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt                int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Metadata                 model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata          model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *voucherR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L voucherL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -132,41 +132,41 @@ var VoucherTableColumns = struct {
 var VoucherWhere = struct {
 	ID                       whereHelperstring
 	Type                     whereHelperstring
-	Name                     whereHelpernull_String
+	Name                     whereHelpermodel_types_NullString
 	Code                     whereHelperstring
-	UsageLimit               whereHelpernull_Int
+	UsageLimit               whereHelpermodel_types_NullInt
 	Used                     whereHelperint
 	StartDate                whereHelperint64
-	EndDate                  whereHelpernull_Int64
+	EndDate                  whereHelpermodel_types_NullInt64
 	ApplyOncePerOrder        whereHelperbool
 	ApplyOncePerCustomer     whereHelperbool
-	OnlyForStaff             whereHelpernull_Bool
+	OnlyForStaff             whereHelpermodel_types_NullBool
 	DiscountValueType        whereHelperstring
 	Countries                whereHelperstring
 	MinCheckoutItemsQuantity whereHelperint
 	CreatedAt                whereHelperint64
 	UpdatedAt                whereHelperint64
-	Metadata                 whereHelpernull_JSON
-	PrivateMetadata          whereHelpernull_JSON
+	Metadata                 whereHelpermodel_types_JsonMap
+	PrivateMetadata          whereHelpermodel_types_JsonMap
 }{
 	ID:                       whereHelperstring{field: "\"vouchers\".\"id\""},
 	Type:                     whereHelperstring{field: "\"vouchers\".\"type\""},
-	Name:                     whereHelpernull_String{field: "\"vouchers\".\"name\""},
+	Name:                     whereHelpermodel_types_NullString{field: "\"vouchers\".\"name\""},
 	Code:                     whereHelperstring{field: "\"vouchers\".\"code\""},
-	UsageLimit:               whereHelpernull_Int{field: "\"vouchers\".\"usage_limit\""},
+	UsageLimit:               whereHelpermodel_types_NullInt{field: "\"vouchers\".\"usage_limit\""},
 	Used:                     whereHelperint{field: "\"vouchers\".\"used\""},
 	StartDate:                whereHelperint64{field: "\"vouchers\".\"start_date\""},
-	EndDate:                  whereHelpernull_Int64{field: "\"vouchers\".\"end_date\""},
+	EndDate:                  whereHelpermodel_types_NullInt64{field: "\"vouchers\".\"end_date\""},
 	ApplyOncePerOrder:        whereHelperbool{field: "\"vouchers\".\"apply_once_per_order\""},
 	ApplyOncePerCustomer:     whereHelperbool{field: "\"vouchers\".\"apply_once_per_customer\""},
-	OnlyForStaff:             whereHelpernull_Bool{field: "\"vouchers\".\"only_for_staff\""},
+	OnlyForStaff:             whereHelpermodel_types_NullBool{field: "\"vouchers\".\"only_for_staff\""},
 	DiscountValueType:        whereHelperstring{field: "\"vouchers\".\"discount_value_type\""},
 	Countries:                whereHelperstring{field: "\"vouchers\".\"countries\""},
 	MinCheckoutItemsQuantity: whereHelperint{field: "\"vouchers\".\"min_checkout_items_quantity\""},
 	CreatedAt:                whereHelperint64{field: "\"vouchers\".\"created_at\""},
 	UpdatedAt:                whereHelperint64{field: "\"vouchers\".\"updated_at\""},
-	Metadata:                 whereHelpernull_JSON{field: "\"vouchers\".\"metadata\""},
-	PrivateMetadata:          whereHelpernull_JSON{field: "\"vouchers\".\"private_metadata\""},
+	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"vouchers\".\"metadata\""},
+	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"vouchers\".\"private_metadata\""},
 }
 
 // VoucherRels is where relationship names are stored.

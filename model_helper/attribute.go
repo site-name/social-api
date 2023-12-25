@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
-func AttributePageIsValid(a *model.AttributePage) *AppError {
+func AttributePageIsValid(a model.AttributePage) *AppError {
 	if !IsValidId(a.AttributeID) {
 		return NewAppError("AttributePage.IsValid", "model.attribute_page.is_valid.attribute_id.app_error", nil, "please provide valid attribute id", http.StatusBadRequest)
 	}
@@ -17,7 +17,7 @@ func AttributePageIsValid(a *model.AttributePage) *AppError {
 	return nil
 }
 
-func AssignedPageAttributeValueIsValid(a *model.AssignedPageAttributeValue) *AppError {
+func AssignedPageAttributeValueIsValid(a model.AssignedPageAttributeValue) *AppError {
 	if !IsValidId(a.ValueID) {
 		return NewAppError("AssignedPageAttributeValue.IsValid", "model.assigned_page_attribute_value.is_valid.value_id.app_error", nil, "please provide valid value id", http.StatusBadRequest)
 	}
@@ -27,7 +27,7 @@ func AssignedPageAttributeValueIsValid(a *model.AssignedPageAttributeValue) *App
 	return nil
 }
 
-func AssignedPageAttributeIsValid(a *model.AssignedPageAttribute) *AppError {
+func AssignedPageAttributeIsValid(a model.AssignedPageAttribute) *AppError {
 	if !IsValidId(a.PageID) {
 		return NewAppError("AssignedPageAttribute.IsValid", "model.assigned_page_attribute.is_valid.page_id.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -38,7 +38,7 @@ func AssignedPageAttributeIsValid(a *model.AssignedPageAttribute) *AppError {
 	return nil
 }
 
-func AttributeProductIsValid(a *model.AttributeProduct) *AppError {
+func AttributeProductIsValid(a model.AttributeProduct) *AppError {
 	if !IsValidId(a.AttributeID) {
 		return NewAppError("AttributeProduct.IsValid", "model.attribute_product.is_valid.attribute_id.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -48,7 +48,7 @@ func AttributeProductIsValid(a *model.AttributeProduct) *AppError {
 	return nil
 }
 
-func AssignedProductAttributeIsValid(a *model.AssignedProductAttribute) *AppError {
+func AssignedProductAttributeIsValid(a model.AssignedProductAttribute) *AppError {
 	if !IsValidId(a.ProductID) {
 		return NewAppError("AssignedProductAttribute.IsValid", "model.assigned_product_attribute.is_valid.product_id.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -59,7 +59,7 @@ func AssignedProductAttributeIsValid(a *model.AssignedProductAttribute) *AppErro
 	return nil
 }
 
-func AssignedProductAttributeValueIsValid(a *model.AssignedProductAttributeValue) *AppError {
+func AssignedProductAttributeValueIsValid(a model.AssignedProductAttributeValue) *AppError {
 	if !IsValidId(a.ValueID) {
 		return NewAppError("AssignedProductAttributeValue.IsValid", "model.assigned_product_attribute.is_valid.value_id.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -79,11 +79,11 @@ func AttributeValuePreSave(a *model.AttributeValue) {
 	a.Slug = slug.Make(a.Name)
 }
 
-func AttributeValueIsValid(a *model.AttributeValue) *AppError {
+func AttributeValueIsValid(a model.AttributeValue) *AppError {
 	if !IsValidId(a.AttributeID) {
 		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.attribute_id.app_error", nil, "", http.StatusBadRequest)
 	}
-	if a.Datetime.IsZero() {
+	if a.Datetime.IsNil() || a.Datetime.Time.IsZero() {
 		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.date_time.app_error", nil, "", http.StatusBadRequest)
 	}
 

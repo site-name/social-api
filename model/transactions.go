@@ -14,31 +14,31 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Transaction is an object representing the database table.
 type Transaction struct {
-	ID                 string          `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatedAt          int64           `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	PaymentID          string          `boil:"payment_id" json:"payment_id" toml:"payment_id" yaml:"payment_id"`
-	Token              string          `boil:"token" json:"token" toml:"token" yaml:"token"`
-	Kind               Transactionkind `boil:"kind" json:"kind" toml:"kind" yaml:"kind"`
-	IsSuccess          bool            `boil:"is_success" json:"is_success" toml:"is_success" yaml:"is_success"`
-	ActionRequired     bool            `boil:"action_required" json:"action_required" toml:"action_required" yaml:"action_required"`
-	ActionRequiredData string          `boil:"action_required_data" json:"action_required_data" toml:"action_required_data" yaml:"action_required_data"`
-	Currency           Currency        `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	Amount             types.Decimal   `boil:"amount" json:"amount" toml:"amount" yaml:"amount"`
-	Error              null.String     `boil:"error" json:"error,omitempty" toml:"error" yaml:"error,omitempty"`
-	CustomerID         null.String     `boil:"customer_id" json:"customer_id,omitempty" toml:"customer_id" yaml:"customer_id,omitempty"`
-	GatewayResponse    string          `boil:"gateway_response" json:"gateway_response" toml:"gateway_response" yaml:"gateway_response"`
-	AlreadyProcessed   bool            `boil:"already_processed" json:"already_processed" toml:"already_processed" yaml:"already_processed"`
+	ID                 string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt          int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	PaymentID          string                 `boil:"payment_id" json:"payment_id" toml:"payment_id" yaml:"payment_id"`
+	Token              string                 `boil:"token" json:"token" toml:"token" yaml:"token"`
+	Kind               Transactionkind        `boil:"kind" json:"kind" toml:"kind" yaml:"kind"`
+	IsSuccess          bool                   `boil:"is_success" json:"is_success" toml:"is_success" yaml:"is_success"`
+	ActionRequired     bool                   `boil:"action_required" json:"action_required" toml:"action_required" yaml:"action_required"`
+	ActionRequiredData string                 `boil:"action_required_data" json:"action_required_data" toml:"action_required_data" yaml:"action_required_data"`
+	Currency           Currency               `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	Amount             decimal.Decimal        `boil:"amount" json:"amount" toml:"amount" yaml:"amount"`
+	Error              model_types.NullString `boil:"error" json:"error,omitempty" toml:"error" yaml:"error,omitempty"`
+	CustomerID         model_types.NullString `boil:"customer_id" json:"customer_id,omitempty" toml:"customer_id" yaml:"customer_id,omitempty"`
+	GatewayResponse    string                 `boil:"gateway_response" json:"gateway_response" toml:"gateway_response" yaml:"gateway_response"`
+	AlreadyProcessed   bool                   `boil:"already_processed" json:"already_processed" toml:"already_processed" yaml:"already_processed"`
 
 	R *transactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L transactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -155,9 +155,9 @@ var TransactionWhere = struct {
 	ActionRequired     whereHelperbool
 	ActionRequiredData whereHelperstring
 	Currency           whereHelperCurrency
-	Amount             whereHelpertypes_Decimal
-	Error              whereHelpernull_String
-	CustomerID         whereHelpernull_String
+	Amount             whereHelperdecimal_Decimal
+	Error              whereHelpermodel_types_NullString
+	CustomerID         whereHelpermodel_types_NullString
 	GatewayResponse    whereHelperstring
 	AlreadyProcessed   whereHelperbool
 }{
@@ -170,9 +170,9 @@ var TransactionWhere = struct {
 	ActionRequired:     whereHelperbool{field: "\"transactions\".\"action_required\""},
 	ActionRequiredData: whereHelperstring{field: "\"transactions\".\"action_required_data\""},
 	Currency:           whereHelperCurrency{field: "\"transactions\".\"currency\""},
-	Amount:             whereHelpertypes_Decimal{field: "\"transactions\".\"amount\""},
-	Error:              whereHelpernull_String{field: "\"transactions\".\"error\""},
-	CustomerID:         whereHelpernull_String{field: "\"transactions\".\"customer_id\""},
+	Amount:             whereHelperdecimal_Decimal{field: "\"transactions\".\"amount\""},
+	Error:              whereHelpermodel_types_NullString{field: "\"transactions\".\"error\""},
+	CustomerID:         whereHelpermodel_types_NullString{field: "\"transactions\".\"customer_id\""},
 	GatewayResponse:    whereHelperstring{field: "\"transactions\".\"gateway_response\""},
 	AlreadyProcessed:   whereHelperbool{field: "\"transactions\".\"already_processed\""},
 }

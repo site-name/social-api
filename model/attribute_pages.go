@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // AttributePage is an object representing the database table.
 type AttributePage struct {
-	ID          string   `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AttributeID string   `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
-	PageTypeID  string   `boil:"page_type_id" json:"page_type_id" toml:"page_type_id" yaml:"page_type_id"`
-	SortOrder   null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID          string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AttributeID string              `boil:"attribute_id" json:"attribute_id" toml:"attribute_id" yaml:"attribute_id"`
+	PageTypeID  string              `boil:"page_type_id" json:"page_type_id" toml:"page_type_id" yaml:"page_type_id"`
+	SortOrder   model_types.NullInt `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *attributePageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L attributePageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,12 +63,12 @@ var AttributePageWhere = struct {
 	ID          whereHelperstring
 	AttributeID whereHelperstring
 	PageTypeID  whereHelperstring
-	SortOrder   whereHelpernull_Int
+	SortOrder   whereHelpermodel_types_NullInt
 }{
 	ID:          whereHelperstring{field: "\"attribute_pages\".\"id\""},
 	AttributeID: whereHelperstring{field: "\"attribute_pages\".\"attribute_id\""},
 	PageTypeID:  whereHelperstring{field: "\"attribute_pages\".\"page_type_id\""},
-	SortOrder:   whereHelpernull_Int{field: "\"attribute_pages\".\"sort_order\""},
+	SortOrder:   whereHelpermodel_types_NullInt{field: "\"attribute_pages\".\"sort_order\""},
 }
 
 // AttributePageRels is where relationship names are stored.

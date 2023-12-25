@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -24,25 +25,25 @@ import (
 
 // FileInfo is an object representing the database table.
 type FileInfo struct {
-	ID              string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreatorID       string      `boil:"creator_id" json:"creator_id" toml:"creator_id" yaml:"creator_id"`
-	ParentID        string      `boil:"parent_id" json:"parent_id" toml:"parent_id" yaml:"parent_id"`
-	CreatedAt       int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt       int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeleteAt        null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
-	Path            string      `boil:"path" json:"path" toml:"path" yaml:"path"`
-	ThumbnailPath   string      `boil:"thumbnail_path" json:"thumbnail_path" toml:"thumbnail_path" yaml:"thumbnail_path"`
-	PreviewPath     string      `boil:"preview_path" json:"preview_path" toml:"preview_path" yaml:"preview_path"`
-	Name            string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Extension       string      `boil:"extension" json:"extension" toml:"extension" yaml:"extension"`
-	Size            int64       `boil:"size" json:"size" toml:"size" yaml:"size"`
-	MimeType        string      `boil:"mime_type" json:"mime_type" toml:"mime_type" yaml:"mime_type"`
-	Width           null.Int    `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
-	Height          null.Int    `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
-	HasPreviewImage bool        `boil:"has_preview_image" json:"has_preview_image" toml:"has_preview_image" yaml:"has_preview_image"`
-	MiniPreview     null.Bytes  `boil:"mini_preview" json:"mini_preview,omitempty" toml:"mini_preview" yaml:"mini_preview,omitempty"`
-	Content         string      `boil:"content" json:"content" toml:"content" yaml:"content"`
-	RemoteID        null.String `boil:"remote_id" json:"remote_id,omitempty" toml:"remote_id" yaml:"remote_id,omitempty"`
+	ID              string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatorID       string                 `boil:"creator_id" json:"creator_id" toml:"creator_id" yaml:"creator_id"`
+	ParentID        string                 `boil:"parent_id" json:"parent_id" toml:"parent_id" yaml:"parent_id"`
+	CreatedAt       int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt       int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeleteAt        model_types.NullInt64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
+	Path            string                 `boil:"path" json:"path" toml:"path" yaml:"path"`
+	ThumbnailPath   string                 `boil:"thumbnail_path" json:"thumbnail_path" toml:"thumbnail_path" yaml:"thumbnail_path"`
+	PreviewPath     string                 `boil:"preview_path" json:"preview_path" toml:"preview_path" yaml:"preview_path"`
+	Name            string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Extension       string                 `boil:"extension" json:"extension" toml:"extension" yaml:"extension"`
+	Size            int64                  `boil:"size" json:"size" toml:"size" yaml:"size"`
+	MimeType        string                 `boil:"mime_type" json:"mime_type" toml:"mime_type" yaml:"mime_type"`
+	Width           model_types.NullInt    `boil:"width" json:"width,omitempty" toml:"width" yaml:"width,omitempty"`
+	Height          model_types.NullInt    `boil:"height" json:"height,omitempty" toml:"height" yaml:"height,omitempty"`
+	HasPreviewImage bool                   `boil:"has_preview_image" json:"has_preview_image" toml:"has_preview_image" yaml:"has_preview_image"`
+	MiniPreview     null.Bytes             `boil:"mini_preview" json:"mini_preview,omitempty" toml:"mini_preview" yaml:"mini_preview,omitempty"`
+	Content         string                 `boil:"content" json:"content" toml:"content" yaml:"content"`
+	RemoteID        model_types.NullString `boil:"remote_id" json:"remote_id,omitempty" toml:"remote_id" yaml:"remote_id,omitempty"`
 
 	R *fileInfoR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L fileInfoL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -134,43 +135,31 @@ var FileInfoTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Int64 struct{ field string }
+type whereHelpermodel_types_NullInt64 struct{ field string }
 
-func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt64) EQ(x model_types.NullInt64) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Int64) NEQ(x null.Int64) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt64) NEQ(x model_types.NullInt64) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Int64) LT(x null.Int64) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt64) LT(x model_types.NullInt64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Int64) LTE(x null.Int64) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt64) LTE(x model_types.NullInt64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Int64) GT(x null.Int64) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt64) GT(x model_types.NullInt64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Int64) GTE(x null.Int64) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt64) GTE(x model_types.NullInt64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelpernull_Int64) IN(slice []int64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_Int64) NIN(slice []int64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
-func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_NullInt64) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_NullInt64) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
 type whereHelpernull_Bytes struct{ field string }
 
@@ -202,7 +191,7 @@ var FileInfoWhere = struct {
 	ParentID        whereHelperstring
 	CreatedAt       whereHelperint64
 	UpdatedAt       whereHelperint64
-	DeleteAt        whereHelpernull_Int64
+	DeleteAt        whereHelpermodel_types_NullInt64
 	Path            whereHelperstring
 	ThumbnailPath   whereHelperstring
 	PreviewPath     whereHelperstring
@@ -210,19 +199,19 @@ var FileInfoWhere = struct {
 	Extension       whereHelperstring
 	Size            whereHelperint64
 	MimeType        whereHelperstring
-	Width           whereHelpernull_Int
-	Height          whereHelpernull_Int
+	Width           whereHelpermodel_types_NullInt
+	Height          whereHelpermodel_types_NullInt
 	HasPreviewImage whereHelperbool
 	MiniPreview     whereHelpernull_Bytes
 	Content         whereHelperstring
-	RemoteID        whereHelpernull_String
+	RemoteID        whereHelpermodel_types_NullString
 }{
 	ID:              whereHelperstring{field: "\"file_infos\".\"id\""},
 	CreatorID:       whereHelperstring{field: "\"file_infos\".\"creator_id\""},
 	ParentID:        whereHelperstring{field: "\"file_infos\".\"parent_id\""},
 	CreatedAt:       whereHelperint64{field: "\"file_infos\".\"created_at\""},
 	UpdatedAt:       whereHelperint64{field: "\"file_infos\".\"updated_at\""},
-	DeleteAt:        whereHelpernull_Int64{field: "\"file_infos\".\"delete_at\""},
+	DeleteAt:        whereHelpermodel_types_NullInt64{field: "\"file_infos\".\"delete_at\""},
 	Path:            whereHelperstring{field: "\"file_infos\".\"path\""},
 	ThumbnailPath:   whereHelperstring{field: "\"file_infos\".\"thumbnail_path\""},
 	PreviewPath:     whereHelperstring{field: "\"file_infos\".\"preview_path\""},
@@ -230,12 +219,12 @@ var FileInfoWhere = struct {
 	Extension:       whereHelperstring{field: "\"file_infos\".\"extension\""},
 	Size:            whereHelperint64{field: "\"file_infos\".\"size\""},
 	MimeType:        whereHelperstring{field: "\"file_infos\".\"mime_type\""},
-	Width:           whereHelpernull_Int{field: "\"file_infos\".\"width\""},
-	Height:          whereHelpernull_Int{field: "\"file_infos\".\"height\""},
+	Width:           whereHelpermodel_types_NullInt{field: "\"file_infos\".\"width\""},
+	Height:          whereHelpermodel_types_NullInt{field: "\"file_infos\".\"height\""},
 	HasPreviewImage: whereHelperbool{field: "\"file_infos\".\"has_preview_image\""},
 	MiniPreview:     whereHelpernull_Bytes{field: "\"file_infos\".\"mini_preview\""},
 	Content:         whereHelperstring{field: "\"file_infos\".\"content\""},
-	RemoteID:        whereHelpernull_String{field: "\"file_infos\".\"remote_id\""},
+	RemoteID:        whereHelpermodel_types_NullString{field: "\"file_infos\".\"remote_id\""},
 }
 
 // FileInfoRels is where relationship names are stored.

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // AssignedPageAttributeValue is an object representing the database table.
 type AssignedPageAttributeValue struct {
-	ID           string   `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ValueID      string   `boil:"value_id" json:"value_id" toml:"value_id" yaml:"value_id"`
-	AssignmentID string   `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
-	SortOrder    null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID           string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ValueID      string              `boil:"value_id" json:"value_id" toml:"value_id" yaml:"value_id"`
+	AssignmentID string              `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
+	SortOrder    model_types.NullInt `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *assignedPageAttributeValueR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignedPageAttributeValueL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -59,54 +59,42 @@ var AssignedPageAttributeValueTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Int struct{ field string }
+type whereHelpermodel_types_NullInt struct{ field string }
 
-func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt) EQ(x model_types.NullInt) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt) NEQ(x model_types.NullInt) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt) LT(x model_types.NullInt) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt) LTE(x model_types.NullInt) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt) GT(x model_types.NullInt) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
+func (w whereHelpermodel_types_NullInt) GTE(x model_types.NullInt) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
-func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_NullInt) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpermodel_types_NullInt) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
 var AssignedPageAttributeValueWhere = struct {
 	ID           whereHelperstring
 	ValueID      whereHelperstring
 	AssignmentID whereHelperstring
-	SortOrder    whereHelpernull_Int
+	SortOrder    whereHelpermodel_types_NullInt
 }{
 	ID:           whereHelperstring{field: "\"assigned_page_attribute_values\".\"id\""},
 	ValueID:      whereHelperstring{field: "\"assigned_page_attribute_values\".\"value_id\""},
 	AssignmentID: whereHelperstring{field: "\"assigned_page_attribute_values\".\"assignment_id\""},
-	SortOrder:    whereHelpernull_Int{field: "\"assigned_page_attribute_values\".\"sort_order\""},
+	SortOrder:    whereHelpermodel_types_NullInt{field: "\"assigned_page_attribute_values\".\"sort_order\""},
 }
 
 // AssignedPageAttributeValueRels is where relationship names are stored.

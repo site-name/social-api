@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,17 +24,17 @@ import (
 
 // ProductType is an object representing the database table.
 type ProductType struct {
-	ID                 string          `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name               string          `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug               string          `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	Kind               Producttypekind `boil:"kind" json:"kind" toml:"kind" yaml:"kind"`
-	HasVariants        null.Bool       `boil:"has_variants" json:"has_variants,omitempty" toml:"has_variants" yaml:"has_variants,omitempty"`
-	IsShippingRequired null.Bool       `boil:"is_shipping_required" json:"is_shipping_required,omitempty" toml:"is_shipping_required" yaml:"is_shipping_required,omitempty"`
-	IsDigital          null.Bool       `boil:"is_digital" json:"is_digital,omitempty" toml:"is_digital" yaml:"is_digital,omitempty"`
-	Weight             null.Float32    `boil:"weight" json:"weight,omitempty" toml:"weight" yaml:"weight,omitempty"`
-	WeightUnit         string          `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
-	Metadata           null.JSON       `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata    null.JSON       `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                 string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name               string                  `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug               string                  `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	Kind               Producttypekind         `boil:"kind" json:"kind" toml:"kind" yaml:"kind"`
+	HasVariants        model_types.NullBool    `boil:"has_variants" json:"has_variants,omitempty" toml:"has_variants" yaml:"has_variants,omitempty"`
+	IsShippingRequired model_types.NullBool    `boil:"is_shipping_required" json:"is_shipping_required,omitempty" toml:"is_shipping_required" yaml:"is_shipping_required,omitempty"`
+	IsDigital          model_types.NullBool    `boil:"is_digital" json:"is_digital,omitempty" toml:"is_digital" yaml:"is_digital,omitempty"`
+	Weight             model_types.NullFloat32 `boil:"weight" json:"weight,omitempty" toml:"weight" yaml:"weight,omitempty"`
+	WeightUnit         string                  `boil:"weight_unit" json:"weight_unit" toml:"weight_unit" yaml:"weight_unit"`
+	Metadata           model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata    model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *productTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -129,68 +129,58 @@ func (w whereHelperProducttypekind) NIN(slice []Producttypekind) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelpernull_Float32 struct{ field string }
+type whereHelpermodel_types_NullFloat32 struct{ field string }
 
-func (w whereHelpernull_Float32) EQ(x null.Float32) qm.QueryMod {
+func (w whereHelpermodel_types_NullFloat32) EQ(x model_types.NullFloat32) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Float32) NEQ(x null.Float32) qm.QueryMod {
+func (w whereHelpermodel_types_NullFloat32) NEQ(x model_types.NullFloat32) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Float32) LT(x null.Float32) qm.QueryMod {
+func (w whereHelpermodel_types_NullFloat32) LT(x model_types.NullFloat32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Float32) LTE(x null.Float32) qm.QueryMod {
+func (w whereHelpermodel_types_NullFloat32) LTE(x model_types.NullFloat32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Float32) GT(x null.Float32) qm.QueryMod {
+func (w whereHelpermodel_types_NullFloat32) GT(x model_types.NullFloat32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Float32) GTE(x null.Float32) qm.QueryMod {
+func (w whereHelpermodel_types_NullFloat32) GTE(x model_types.NullFloat32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelpernull_Float32) IN(slice []float32) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_Float32) NIN(slice []float32) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
-func (w whereHelpernull_Float32) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Float32) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpermodel_types_NullFloat32) IsNull() qm.QueryMod {
+	return qmhelper.WhereIsNull(w.field)
+}
+func (w whereHelpermodel_types_NullFloat32) IsNotNull() qm.QueryMod {
+	return qmhelper.WhereIsNotNull(w.field)
+}
 
 var ProductTypeWhere = struct {
 	ID                 whereHelperstring
 	Name               whereHelperstring
 	Slug               whereHelperstring
 	Kind               whereHelperProducttypekind
-	HasVariants        whereHelpernull_Bool
-	IsShippingRequired whereHelpernull_Bool
-	IsDigital          whereHelpernull_Bool
-	Weight             whereHelpernull_Float32
+	HasVariants        whereHelpermodel_types_NullBool
+	IsShippingRequired whereHelpermodel_types_NullBool
+	IsDigital          whereHelpermodel_types_NullBool
+	Weight             whereHelpermodel_types_NullFloat32
 	WeightUnit         whereHelperstring
-	Metadata           whereHelpernull_JSON
-	PrivateMetadata    whereHelpernull_JSON
+	Metadata           whereHelpermodel_types_JsonMap
+	PrivateMetadata    whereHelpermodel_types_JsonMap
 }{
 	ID:                 whereHelperstring{field: "\"product_types\".\"id\""},
 	Name:               whereHelperstring{field: "\"product_types\".\"name\""},
 	Slug:               whereHelperstring{field: "\"product_types\".\"slug\""},
 	Kind:               whereHelperProducttypekind{field: "\"product_types\".\"kind\""},
-	HasVariants:        whereHelpernull_Bool{field: "\"product_types\".\"has_variants\""},
-	IsShippingRequired: whereHelpernull_Bool{field: "\"product_types\".\"is_shipping_required\""},
-	IsDigital:          whereHelpernull_Bool{field: "\"product_types\".\"is_digital\""},
-	Weight:             whereHelpernull_Float32{field: "\"product_types\".\"weight\""},
+	HasVariants:        whereHelpermodel_types_NullBool{field: "\"product_types\".\"has_variants\""},
+	IsShippingRequired: whereHelpermodel_types_NullBool{field: "\"product_types\".\"is_shipping_required\""},
+	IsDigital:          whereHelpermodel_types_NullBool{field: "\"product_types\".\"is_digital\""},
+	Weight:             whereHelpermodel_types_NullFloat32{field: "\"product_types\".\"weight\""},
 	WeightUnit:         whereHelperstring{field: "\"product_types\".\"weight_unit\""},
-	Metadata:           whereHelpernull_JSON{field: "\"product_types\".\"metadata\""},
-	PrivateMetadata:    whereHelpernull_JSON{field: "\"product_types\".\"private_metadata\""},
+	Metadata:           whereHelpermodel_types_JsonMap{field: "\"product_types\".\"metadata\""},
+	PrivateMetadata:    whereHelpermodel_types_JsonMap{field: "\"product_types\".\"private_metadata\""},
 }
 
 // ProductTypeRels is where relationship names are stored.

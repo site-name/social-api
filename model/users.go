@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,40 +24,40 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID                       string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Email                    string      `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Username                 string      `boil:"username" json:"username" toml:"username" yaml:"username"`
-	FirstName                string      `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
-	LastName                 string      `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
-	DefaultShippingAddressID null.String `boil:"default_shipping_address_id" json:"default_shipping_address_id,omitempty" toml:"default_shipping_address_id" yaml:"default_shipping_address_id,omitempty"`
-	DefaultBillingAddressID  null.String `boil:"default_billing_address_id" json:"default_billing_address_id,omitempty" toml:"default_billing_address_id" yaml:"default_billing_address_id,omitempty"`
-	Password                 string      `boil:"password" json:"password" toml:"password" yaml:"password"`
-	AuthData                 null.String `boil:"auth_data" json:"auth_data,omitempty" toml:"auth_data" yaml:"auth_data,omitempty"`
-	AuthService              string      `boil:"auth_service" json:"auth_service" toml:"auth_service" yaml:"auth_service"`
-	EmailVerified            bool        `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
-	Nickname                 string      `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
-	Roles                    string      `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
-	Props                    null.JSON   `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
-	NotifyProps              null.JSON   `boil:"notify_props" json:"notify_props,omitempty" toml:"notify_props" yaml:"notify_props,omitempty"`
-	LastPasswordUpdate       int64       `boil:"last_password_update" json:"last_password_update" toml:"last_password_update" yaml:"last_password_update"`
-	LastPictureUpdate        int64       `boil:"last_picture_update" json:"last_picture_update" toml:"last_picture_update" yaml:"last_picture_update"`
-	FailedAttempts           int         `boil:"failed_attempts" json:"failed_attempts" toml:"failed_attempts" yaml:"failed_attempts"`
-	Locale                   string      `boil:"locale" json:"locale" toml:"locale" yaml:"locale"`
-	Timezone                 null.JSON   `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
-	MfaActive                bool        `boil:"mfa_active" json:"mfa_active" toml:"mfa_active" yaml:"mfa_active"`
-	MfaSecret                string      `boil:"mfa_secret" json:"mfa_secret" toml:"mfa_secret" yaml:"mfa_secret"`
-	CreatedAt                int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt                int64       `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeleteAt                 null.Int64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
-	IsActive                 bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
-	Note                     null.String `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
-	JWTTokenKey              string      `boil:"jwt_token_key" json:"jwt_token_key" toml:"jwt_token_key" yaml:"jwt_token_key"`
-	LastActivityAt           int64       `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
-	TermsOfServiceID         string      `boil:"terms_of_service_id" json:"terms_of_service_id" toml:"terms_of_service_id" yaml:"terms_of_service_id"`
-	TermsIfServiceCreatedAt  int64       `boil:"terms_if_service_created_at" json:"terms_if_service_created_at" toml:"terms_if_service_created_at" yaml:"terms_if_service_created_at"`
-	DisableWelcomeEmail      bool        `boil:"disable_welcome_email" json:"disable_welcome_email" toml:"disable_welcome_email" yaml:"disable_welcome_email"`
-	Metadata                 null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata          null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                       string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Email                    string                 `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Username                 string                 `boil:"username" json:"username" toml:"username" yaml:"username"`
+	FirstName                string                 `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
+	LastName                 string                 `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
+	DefaultShippingAddressID model_types.NullString `boil:"default_shipping_address_id" json:"default_shipping_address_id,omitempty" toml:"default_shipping_address_id" yaml:"default_shipping_address_id,omitempty"`
+	DefaultBillingAddressID  model_types.NullString `boil:"default_billing_address_id" json:"default_billing_address_id,omitempty" toml:"default_billing_address_id" yaml:"default_billing_address_id,omitempty"`
+	Password                 string                 `boil:"password" json:"password" toml:"password" yaml:"password"`
+	AuthData                 model_types.NullString `boil:"auth_data" json:"auth_data,omitempty" toml:"auth_data" yaml:"auth_data,omitempty"`
+	AuthService              string                 `boil:"auth_service" json:"auth_service" toml:"auth_service" yaml:"auth_service"`
+	EmailVerified            bool                   `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
+	Nickname                 string                 `boil:"nickname" json:"nickname" toml:"nickname" yaml:"nickname"`
+	Roles                    string                 `boil:"roles" json:"roles" toml:"roles" yaml:"roles"`
+	Props                    model_types.JsonMap    `boil:"props" json:"props,omitempty" toml:"props" yaml:"props,omitempty"`
+	NotifyProps              model_types.JsonMap    `boil:"notify_props" json:"notify_props,omitempty" toml:"notify_props" yaml:"notify_props,omitempty"`
+	LastPasswordUpdate       int64                  `boil:"last_password_update" json:"last_password_update" toml:"last_password_update" yaml:"last_password_update"`
+	LastPictureUpdate        int64                  `boil:"last_picture_update" json:"last_picture_update" toml:"last_picture_update" yaml:"last_picture_update"`
+	FailedAttempts           int                    `boil:"failed_attempts" json:"failed_attempts" toml:"failed_attempts" yaml:"failed_attempts"`
+	Locale                   string                 `boil:"locale" json:"locale" toml:"locale" yaml:"locale"`
+	Timezone                 model_types.JsonMap    `boil:"timezone" json:"timezone,omitempty" toml:"timezone" yaml:"timezone,omitempty"`
+	MfaActive                bool                   `boil:"mfa_active" json:"mfa_active" toml:"mfa_active" yaml:"mfa_active"`
+	MfaSecret                string                 `boil:"mfa_secret" json:"mfa_secret" toml:"mfa_secret" yaml:"mfa_secret"`
+	CreatedAt                int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt                int64                  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeleteAt                 model_types.NullInt64  `boil:"delete_at" json:"delete_at,omitempty" toml:"delete_at" yaml:"delete_at,omitempty"`
+	IsActive                 bool                   `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
+	Note                     model_types.NullString `boil:"note" json:"note,omitempty" toml:"note" yaml:"note,omitempty"`
+	JWTTokenKey              string                 `boil:"jwt_token_key" json:"jwt_token_key" toml:"jwt_token_key" yaml:"jwt_token_key"`
+	LastActivityAt           int64                  `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
+	TermsOfServiceID         string                 `boil:"terms_of_service_id" json:"terms_of_service_id" toml:"terms_of_service_id" yaml:"terms_of_service_id"`
+	TermsIfServiceCreatedAt  int64                  `boil:"terms_if_service_created_at" json:"terms_if_service_created_at" toml:"terms_if_service_created_at" yaml:"terms_if_service_created_at"`
+	DisableWelcomeEmail      bool                   `boil:"disable_welcome_email" json:"disable_welcome_email" toml:"disable_welcome_email" yaml:"disable_welcome_email"`
+	Metadata                 model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata          model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -215,70 +215,70 @@ var UserWhere = struct {
 	Username                 whereHelperstring
 	FirstName                whereHelperstring
 	LastName                 whereHelperstring
-	DefaultShippingAddressID whereHelpernull_String
-	DefaultBillingAddressID  whereHelpernull_String
+	DefaultShippingAddressID whereHelpermodel_types_NullString
+	DefaultBillingAddressID  whereHelpermodel_types_NullString
 	Password                 whereHelperstring
-	AuthData                 whereHelpernull_String
+	AuthData                 whereHelpermodel_types_NullString
 	AuthService              whereHelperstring
 	EmailVerified            whereHelperbool
 	Nickname                 whereHelperstring
 	Roles                    whereHelperstring
-	Props                    whereHelpernull_JSON
-	NotifyProps              whereHelpernull_JSON
+	Props                    whereHelpermodel_types_JsonMap
+	NotifyProps              whereHelpermodel_types_JsonMap
 	LastPasswordUpdate       whereHelperint64
 	LastPictureUpdate        whereHelperint64
 	FailedAttempts           whereHelperint
 	Locale                   whereHelperstring
-	Timezone                 whereHelpernull_JSON
+	Timezone                 whereHelpermodel_types_JsonMap
 	MfaActive                whereHelperbool
 	MfaSecret                whereHelperstring
 	CreatedAt                whereHelperint64
 	UpdatedAt                whereHelperint64
-	DeleteAt                 whereHelpernull_Int64
+	DeleteAt                 whereHelpermodel_types_NullInt64
 	IsActive                 whereHelperbool
-	Note                     whereHelpernull_String
+	Note                     whereHelpermodel_types_NullString
 	JWTTokenKey              whereHelperstring
 	LastActivityAt           whereHelperint64
 	TermsOfServiceID         whereHelperstring
 	TermsIfServiceCreatedAt  whereHelperint64
 	DisableWelcomeEmail      whereHelperbool
-	Metadata                 whereHelpernull_JSON
-	PrivateMetadata          whereHelpernull_JSON
+	Metadata                 whereHelpermodel_types_JsonMap
+	PrivateMetadata          whereHelpermodel_types_JsonMap
 }{
 	ID:                       whereHelperstring{field: "\"users\".\"id\""},
 	Email:                    whereHelperstring{field: "\"users\".\"email\""},
 	Username:                 whereHelperstring{field: "\"users\".\"username\""},
 	FirstName:                whereHelperstring{field: "\"users\".\"first_name\""},
 	LastName:                 whereHelperstring{field: "\"users\".\"last_name\""},
-	DefaultShippingAddressID: whereHelpernull_String{field: "\"users\".\"default_shipping_address_id\""},
-	DefaultBillingAddressID:  whereHelpernull_String{field: "\"users\".\"default_billing_address_id\""},
+	DefaultShippingAddressID: whereHelpermodel_types_NullString{field: "\"users\".\"default_shipping_address_id\""},
+	DefaultBillingAddressID:  whereHelpermodel_types_NullString{field: "\"users\".\"default_billing_address_id\""},
 	Password:                 whereHelperstring{field: "\"users\".\"password\""},
-	AuthData:                 whereHelpernull_String{field: "\"users\".\"auth_data\""},
+	AuthData:                 whereHelpermodel_types_NullString{field: "\"users\".\"auth_data\""},
 	AuthService:              whereHelperstring{field: "\"users\".\"auth_service\""},
 	EmailVerified:            whereHelperbool{field: "\"users\".\"email_verified\""},
 	Nickname:                 whereHelperstring{field: "\"users\".\"nickname\""},
 	Roles:                    whereHelperstring{field: "\"users\".\"roles\""},
-	Props:                    whereHelpernull_JSON{field: "\"users\".\"props\""},
-	NotifyProps:              whereHelpernull_JSON{field: "\"users\".\"notify_props\""},
+	Props:                    whereHelpermodel_types_JsonMap{field: "\"users\".\"props\""},
+	NotifyProps:              whereHelpermodel_types_JsonMap{field: "\"users\".\"notify_props\""},
 	LastPasswordUpdate:       whereHelperint64{field: "\"users\".\"last_password_update\""},
 	LastPictureUpdate:        whereHelperint64{field: "\"users\".\"last_picture_update\""},
 	FailedAttempts:           whereHelperint{field: "\"users\".\"failed_attempts\""},
 	Locale:                   whereHelperstring{field: "\"users\".\"locale\""},
-	Timezone:                 whereHelpernull_JSON{field: "\"users\".\"timezone\""},
+	Timezone:                 whereHelpermodel_types_JsonMap{field: "\"users\".\"timezone\""},
 	MfaActive:                whereHelperbool{field: "\"users\".\"mfa_active\""},
 	MfaSecret:                whereHelperstring{field: "\"users\".\"mfa_secret\""},
 	CreatedAt:                whereHelperint64{field: "\"users\".\"created_at\""},
 	UpdatedAt:                whereHelperint64{field: "\"users\".\"updated_at\""},
-	DeleteAt:                 whereHelpernull_Int64{field: "\"users\".\"delete_at\""},
+	DeleteAt:                 whereHelpermodel_types_NullInt64{field: "\"users\".\"delete_at\""},
 	IsActive:                 whereHelperbool{field: "\"users\".\"is_active\""},
-	Note:                     whereHelpernull_String{field: "\"users\".\"note\""},
+	Note:                     whereHelpermodel_types_NullString{field: "\"users\".\"note\""},
 	JWTTokenKey:              whereHelperstring{field: "\"users\".\"jwt_token_key\""},
 	LastActivityAt:           whereHelperint64{field: "\"users\".\"last_activity_at\""},
 	TermsOfServiceID:         whereHelperstring{field: "\"users\".\"terms_of_service_id\""},
 	TermsIfServiceCreatedAt:  whereHelperint64{field: "\"users\".\"terms_if_service_created_at\""},
 	DisableWelcomeEmail:      whereHelperbool{field: "\"users\".\"disable_welcome_email\""},
-	Metadata:                 whereHelpernull_JSON{field: "\"users\".\"metadata\""},
-	PrivateMetadata:          whereHelpernull_JSON{field: "\"users\".\"private_metadata\""},
+	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"users\".\"metadata\""},
+	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"users\".\"private_metadata\""},
 }
 
 // UserRels is where relationship names are stored.
@@ -289,6 +289,7 @@ var UserRels = struct {
 	Checkouts                   string
 	Compliances                 string
 	CustomerEvents              string
+	CustomerCustomerNotes       string
 	CustomerNotes               string
 	ExportEvents                string
 	ExportFiles                 string
@@ -308,6 +309,7 @@ var UserRels = struct {
 	Checkouts:                   "Checkouts",
 	Compliances:                 "Compliances",
 	CustomerEvents:              "CustomerEvents",
+	CustomerCustomerNotes:       "CustomerCustomerNotes",
 	CustomerNotes:               "CustomerNotes",
 	ExportEvents:                "ExportEvents",
 	ExportFiles:                 "ExportFiles",
@@ -330,6 +332,7 @@ type userR struct {
 	Checkouts                   CheckoutSlice                   `boil:"Checkouts" json:"Checkouts" toml:"Checkouts" yaml:"Checkouts"`
 	Compliances                 ComplianceSlice                 `boil:"Compliances" json:"Compliances" toml:"Compliances" yaml:"Compliances"`
 	CustomerEvents              CustomerEventSlice              `boil:"CustomerEvents" json:"CustomerEvents" toml:"CustomerEvents" yaml:"CustomerEvents"`
+	CustomerCustomerNotes       CustomerNoteSlice               `boil:"CustomerCustomerNotes" json:"CustomerCustomerNotes" toml:"CustomerCustomerNotes" yaml:"CustomerCustomerNotes"`
 	CustomerNotes               CustomerNoteSlice               `boil:"CustomerNotes" json:"CustomerNotes" toml:"CustomerNotes" yaml:"CustomerNotes"`
 	ExportEvents                ExportEventSlice                `boil:"ExportEvents" json:"ExportEvents" toml:"ExportEvents" yaml:"ExportEvents"`
 	ExportFiles                 ExportFileSlice                 `boil:"ExportFiles" json:"ExportFiles" toml:"ExportFiles" yaml:"ExportFiles"`
@@ -389,6 +392,13 @@ func (r *userR) GetCustomerEvents() CustomerEventSlice {
 		return nil
 	}
 	return r.CustomerEvents
+}
+
+func (r *userR) GetCustomerCustomerNotes() CustomerNoteSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CustomerCustomerNotes
 }
 
 func (r *userR) GetCustomerNotes() CustomerNoteSlice {
@@ -650,6 +660,20 @@ func (o *User) CustomerEvents(mods ...qm.QueryMod) customerEventQuery {
 	)
 
 	return CustomerEvents(queryMods...)
+}
+
+// CustomerCustomerNotes retrieves all the customer_note's CustomerNotes with an executor via customer_id column.
+func (o *User) CustomerCustomerNotes(mods ...qm.QueryMod) customerNoteQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"customer_notes\".\"customer_id\"=?", o.ID),
+	)
+
+	return CustomerNotes(queryMods...)
 }
 
 // CustomerNotes retrieves all the customer_note's CustomerNotes with an executor.
@@ -1474,6 +1498,113 @@ func (userL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, sin
 					foreign.R = &customerEventR{}
 				}
 				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadCustomerCustomerNotes allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCustomerCustomerNotes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`customer_notes`),
+		qm.WhereIn(`customer_notes.customer_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load customer_notes")
+	}
+
+	var resultSlice []*CustomerNote
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice customer_notes")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on customer_notes")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for customer_notes")
+	}
+
+	if singular {
+		object.R.CustomerCustomerNotes = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &customerNoteR{}
+			}
+			foreign.R.Customer = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.CustomerID {
+				local.R.CustomerCustomerNotes = append(local.R.CustomerCustomerNotes, foreign)
+				if foreign.R == nil {
+					foreign.R = &customerNoteR{}
+				}
+				foreign.R.Customer = local
 				break
 			}
 		}
@@ -3280,6 +3411,59 @@ func (o *User) RemoveCustomerEvents(ctx context.Context, exec boil.ContextExecut
 		}
 	}
 
+	return nil
+}
+
+// AddCustomerCustomerNotes adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CustomerCustomerNotes.
+// Sets related.R.Customer appropriately.
+func (o *User) AddCustomerCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.CustomerID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"customer_notes\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"customer_id"}),
+				strmangle.WhereClause("\"", "\"", 2, customerNotePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.CustomerID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CustomerCustomerNotes: related,
+		}
+	} else {
+		o.R.CustomerCustomerNotes = append(o.R.CustomerCustomerNotes, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &customerNoteR{
+				Customer: o,
+			}
+		} else {
+			rel.R.Customer = o
+		}
+	}
 	return nil
 }
 

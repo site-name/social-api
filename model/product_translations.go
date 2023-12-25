@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,13 +24,13 @@ import (
 
 // ProductTranslation is an object representing the database table.
 type ProductTranslation struct {
-	ID             string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LanguageCode   Languagecode `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
-	ProductID      string       `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
-	Name           string       `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Description    string       `boil:"description" json:"description" toml:"description" yaml:"description"`
-	SeoTitle       null.String  `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
-	SeoDescription null.String  `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
+	ID             string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LanguageCode   Languagecode           `boil:"language_code" json:"language_code" toml:"language_code" yaml:"language_code"`
+	ProductID      string                 `boil:"product_id" json:"product_id" toml:"product_id" yaml:"product_id"`
+	Name           string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description    string                 `boil:"description" json:"description" toml:"description" yaml:"description"`
+	SeoTitle       model_types.NullString `boil:"seo_title" json:"seo_title,omitempty" toml:"seo_title" yaml:"seo_title,omitempty"`
+	SeoDescription model_types.NullString `boil:"seo_description" json:"seo_description,omitempty" toml:"seo_description" yaml:"seo_description,omitempty"`
 
 	R *productTranslationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productTranslationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -80,16 +80,16 @@ var ProductTranslationWhere = struct {
 	ProductID      whereHelperstring
 	Name           whereHelperstring
 	Description    whereHelperstring
-	SeoTitle       whereHelpernull_String
-	SeoDescription whereHelpernull_String
+	SeoTitle       whereHelpermodel_types_NullString
+	SeoDescription whereHelpermodel_types_NullString
 }{
 	ID:             whereHelperstring{field: "\"product_translations\".\"id\""},
 	LanguageCode:   whereHelperLanguagecode{field: "\"product_translations\".\"language_code\""},
 	ProductID:      whereHelperstring{field: "\"product_translations\".\"product_id\""},
 	Name:           whereHelperstring{field: "\"product_translations\".\"name\""},
 	Description:    whereHelperstring{field: "\"product_translations\".\"description\""},
-	SeoTitle:       whereHelpernull_String{field: "\"product_translations\".\"seo_title\""},
-	SeoDescription: whereHelpernull_String{field: "\"product_translations\".\"seo_description\""},
+	SeoTitle:       whereHelpermodel_types_NullString{field: "\"product_translations\".\"seo_title\""},
+	SeoDescription: whereHelpermodel_types_NullString{field: "\"product_translations\".\"seo_description\""},
 }
 
 // ProductTranslationRels is where relationship names are stored.

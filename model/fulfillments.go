@@ -14,27 +14,26 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Fulfillment is an object representing the database table.
 type Fulfillment struct {
-	ID                   string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FulfillmentOrder     int               `boil:"fulfillment_order" json:"fulfillment_order" toml:"fulfillment_order" yaml:"fulfillment_order"`
-	OrderID              string            `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
-	Status               Fulfillmentstatus `boil:"status" json:"status" toml:"status" yaml:"status"`
-	TrackingNumber       string            `boil:"tracking_number" json:"tracking_number" toml:"tracking_number" yaml:"tracking_number"`
-	CreatedAt            int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ShippingRefundAmount types.NullDecimal `boil:"shipping_refund_amount" json:"shipping_refund_amount,omitempty" toml:"shipping_refund_amount" yaml:"shipping_refund_amount,omitempty"`
-	TotalRefundAmount    types.NullDecimal `boil:"total_refund_amount" json:"total_refund_amount,omitempty" toml:"total_refund_amount" yaml:"total_refund_amount,omitempty"`
-	Metadata             null.JSON         `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata      null.JSON         `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                   string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	FulfillmentOrder     int                     `boil:"fulfillment_order" json:"fulfillment_order" toml:"fulfillment_order" yaml:"fulfillment_order"`
+	OrderID              string                  `boil:"order_id" json:"order_id" toml:"order_id" yaml:"order_id"`
+	Status               Fulfillmentstatus       `boil:"status" json:"status" toml:"status" yaml:"status"`
+	TrackingNumber       string                  `boil:"tracking_number" json:"tracking_number" toml:"tracking_number" yaml:"tracking_number"`
+	CreatedAt            int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ShippingRefundAmount model_types.NullDecimal `boil:"shipping_refund_amount" json:"shipping_refund_amount,omitempty" toml:"shipping_refund_amount" yaml:"shipping_refund_amount,omitempty"`
+	TotalRefundAmount    model_types.NullDecimal `boil:"total_refund_amount" json:"total_refund_amount,omitempty" toml:"total_refund_amount" yaml:"total_refund_amount,omitempty"`
+	Metadata             model_types.JsonMap     `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata      model_types.JsonMap     `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *fulfillmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L fulfillmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -125,29 +124,31 @@ func (w whereHelperFulfillmentstatus) NIN(slice []Fulfillmentstatus) qm.QueryMod
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelpertypes_NullDecimal struct{ field string }
+type whereHelpermodel_types_NullDecimal struct{ field string }
 
-func (w whereHelpertypes_NullDecimal) EQ(x types.NullDecimal) qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) EQ(x model_types.NullDecimal) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpertypes_NullDecimal) NEQ(x types.NullDecimal) qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) NEQ(x model_types.NullDecimal) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpertypes_NullDecimal) LT(x types.NullDecimal) qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) LT(x model_types.NullDecimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpertypes_NullDecimal) LTE(x types.NullDecimal) qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) LTE(x model_types.NullDecimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpertypes_NullDecimal) GT(x types.NullDecimal) qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) GT(x model_types.NullDecimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpertypes_NullDecimal) GTE(x types.NullDecimal) qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) GTE(x model_types.NullDecimal) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpertypes_NullDecimal) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpertypes_NullDecimal) IsNotNull() qm.QueryMod {
+func (w whereHelpermodel_types_NullDecimal) IsNull() qm.QueryMod {
+	return qmhelper.WhereIsNull(w.field)
+}
+func (w whereHelpermodel_types_NullDecimal) IsNotNull() qm.QueryMod {
 	return qmhelper.WhereIsNotNull(w.field)
 }
 
@@ -158,10 +159,10 @@ var FulfillmentWhere = struct {
 	Status               whereHelperFulfillmentstatus
 	TrackingNumber       whereHelperstring
 	CreatedAt            whereHelperint64
-	ShippingRefundAmount whereHelpertypes_NullDecimal
-	TotalRefundAmount    whereHelpertypes_NullDecimal
-	Metadata             whereHelpernull_JSON
-	PrivateMetadata      whereHelpernull_JSON
+	ShippingRefundAmount whereHelpermodel_types_NullDecimal
+	TotalRefundAmount    whereHelpermodel_types_NullDecimal
+	Metadata             whereHelpermodel_types_JsonMap
+	PrivateMetadata      whereHelpermodel_types_JsonMap
 }{
 	ID:                   whereHelperstring{field: "\"fulfillments\".\"id\""},
 	FulfillmentOrder:     whereHelperint{field: "\"fulfillments\".\"fulfillment_order\""},
@@ -169,10 +170,10 @@ var FulfillmentWhere = struct {
 	Status:               whereHelperFulfillmentstatus{field: "\"fulfillments\".\"status\""},
 	TrackingNumber:       whereHelperstring{field: "\"fulfillments\".\"tracking_number\""},
 	CreatedAt:            whereHelperint64{field: "\"fulfillments\".\"created_at\""},
-	ShippingRefundAmount: whereHelpertypes_NullDecimal{field: "\"fulfillments\".\"shipping_refund_amount\""},
-	TotalRefundAmount:    whereHelpertypes_NullDecimal{field: "\"fulfillments\".\"total_refund_amount\""},
-	Metadata:             whereHelpernull_JSON{field: "\"fulfillments\".\"metadata\""},
-	PrivateMetadata:      whereHelpernull_JSON{field: "\"fulfillments\".\"private_metadata\""},
+	ShippingRefundAmount: whereHelpermodel_types_NullDecimal{field: "\"fulfillments\".\"shipping_refund_amount\""},
+	TotalRefundAmount:    whereHelpermodel_types_NullDecimal{field: "\"fulfillments\".\"total_refund_amount\""},
+	Metadata:             whereHelpermodel_types_JsonMap{field: "\"fulfillments\".\"metadata\""},
+	PrivateMetadata:      whereHelpermodel_types_JsonMap{field: "\"fulfillments\".\"private_metadata\""},
 }
 
 // FulfillmentRels is where relationship names are stored.

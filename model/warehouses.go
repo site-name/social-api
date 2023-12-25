@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,16 +24,16 @@ import (
 
 // Warehouse is an object representing the database table.
 type Warehouse struct {
-	ID                    string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                  string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Slug                  string      `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	AddressID             null.String `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
-	Email                 string      `boil:"email" json:"email" toml:"email" yaml:"email"`
-	ClickAndCollectOption string      `boil:"click_and_collect_option" json:"click_and_collect_option" toml:"click_and_collect_option" yaml:"click_and_collect_option"`
-	IsPrivate             null.Bool   `boil:"is_private" json:"is_private,omitempty" toml:"is_private" yaml:"is_private,omitempty"`
-	CreatedAt             int64       `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Metadata              null.JSON   `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
-	PrivateMetadata       null.JSON   `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
+	ID                    string                 `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name                  string                 `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug                  string                 `boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	AddressID             model_types.NullString `boil:"address_id" json:"address_id,omitempty" toml:"address_id" yaml:"address_id,omitempty"`
+	Email                 string                 `boil:"email" json:"email" toml:"email" yaml:"email"`
+	ClickAndCollectOption string                 `boil:"click_and_collect_option" json:"click_and_collect_option" toml:"click_and_collect_option" yaml:"click_and_collect_option"`
+	IsPrivate             model_types.NullBool   `boil:"is_private" json:"is_private,omitempty" toml:"is_private" yaml:"is_private,omitempty"`
+	CreatedAt             int64                  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Metadata              model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
+	PrivateMetadata       model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
 
 	R *warehouseR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L warehouseL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -93,24 +93,24 @@ var WarehouseWhere = struct {
 	ID                    whereHelperstring
 	Name                  whereHelperstring
 	Slug                  whereHelperstring
-	AddressID             whereHelpernull_String
+	AddressID             whereHelpermodel_types_NullString
 	Email                 whereHelperstring
 	ClickAndCollectOption whereHelperstring
-	IsPrivate             whereHelpernull_Bool
+	IsPrivate             whereHelpermodel_types_NullBool
 	CreatedAt             whereHelperint64
-	Metadata              whereHelpernull_JSON
-	PrivateMetadata       whereHelpernull_JSON
+	Metadata              whereHelpermodel_types_JsonMap
+	PrivateMetadata       whereHelpermodel_types_JsonMap
 }{
 	ID:                    whereHelperstring{field: "\"warehouses\".\"id\""},
 	Name:                  whereHelperstring{field: "\"warehouses\".\"name\""},
 	Slug:                  whereHelperstring{field: "\"warehouses\".\"slug\""},
-	AddressID:             whereHelpernull_String{field: "\"warehouses\".\"address_id\""},
+	AddressID:             whereHelpermodel_types_NullString{field: "\"warehouses\".\"address_id\""},
 	Email:                 whereHelperstring{field: "\"warehouses\".\"email\""},
 	ClickAndCollectOption: whereHelperstring{field: "\"warehouses\".\"click_and_collect_option\""},
-	IsPrivate:             whereHelpernull_Bool{field: "\"warehouses\".\"is_private\""},
+	IsPrivate:             whereHelpermodel_types_NullBool{field: "\"warehouses\".\"is_private\""},
 	CreatedAt:             whereHelperint64{field: "\"warehouses\".\"created_at\""},
-	Metadata:              whereHelpernull_JSON{field: "\"warehouses\".\"metadata\""},
-	PrivateMetadata:       whereHelpernull_JSON{field: "\"warehouses\".\"private_metadata\""},
+	Metadata:              whereHelpermodel_types_JsonMap{field: "\"warehouses\".\"metadata\""},
+	PrivateMetadata:       whereHelpermodel_types_JsonMap{field: "\"warehouses\".\"private_metadata\""},
 }
 
 // WarehouseRels is where relationship names are stored.

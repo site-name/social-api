@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
@@ -24,10 +25,10 @@ type Store interface {
 	UnlockFromMaster()                  // UnlockFromMaster makes all datasources available
 	ReplicaLagTime() error
 	ReplicaLagAbs() error
-	CheckIntegrity() <-chan model.IntegrityCheckResult
+	CheckIntegrity() <-chan model_helper.IntegrityCheckResult
 	DropAllTables()                              // DropAllTables drop all tables in databases
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
-	FinalizeTransaction(tx *gorm.DB)             // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
+	FinalizeTransaction(tx ContextRunner)        // FinalizeTransaction tries to rollback given transaction, if an error occur and is not of type sql.ErrTxDone, it prints out the error
 
 	GetMaster() ContextRunner         // GetMaster returns a gorm wrapper
 	GetReplica() boil.ContextExecutor // GetReplica returns a gorm wrapper
@@ -176,10 +177,10 @@ type PluginStore interface {
 }
 
 type UploadSessionStore interface {
-	Save(session *model.UploadSession) (*model.UploadSession, error)
-	Update(session *model.UploadSession) error
+	Save(session model.UploadSession) (*model.UploadSession, error)
+	Update(session model.UploadSession) error
 	Get(id string) (*model.UploadSession, error)
-	GetForUser(userID string) ([]*model.UploadSession, error)
+	FindAll(mods ...qm.QueryMod) (model.UploadSessionSlice, error)
 	Delete(id string) error
 }
 
@@ -782,20 +783,22 @@ type PreferenceStore interface {
 }
 
 type JobStore interface {
-	Save(job *model.Job) (*model.Job, error)
-	UpdateOptimistically(job *model.Job, currentStatus string) (bool, error)
-	UpdateStatus(id string, status string) (*model.Job, error)
-	UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) // update job status from current status to new status
-	Get(id string) (*model.Job, error)
-	GetAllPage(offset int, limit int) ([]*model.Job, error)
-	GetAllByType(jobType string) ([]*model.Job, error)
-	GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error)
-	GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error)
-	GetAllByStatus(status string) ([]*model.Job, error)
-	GetNewestJobByStatusAndType(status string, jobType string) (*model.Job, error)
-	GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) // GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType. order by created time
-	GetCountByStatusAndType(status string, jobType string) (int64, error)
+	Save(job model.Job) (*model.Job, error)
+	UpdateOptimistically(job *model.Job, currentStatus model.Jobstatus) (bool, error)
+	UpdateStatus(id string, status model.Jobstatus) (*model.Job, error)
+	UpdateStatusOptimistically(id string, currentStatus model.Jobstatus, newStatus model.Jobstatus) (bool, error) // update job status from current status to new status
+	Get(mods ...qm.QueryMod) (*model.Job, error)
+	FindAll(mods ...qm.QueryMod) (model.JobSlice, error)
+	Count(mods ...qm.QueryMod) (int64, error)
 	Delete(id string) (string, error)
+	// GetAllPage(offset int, limit int) ([]*model.Job, error)
+	// GetAllByType(jobType string) ([]*model.Job, error)
+	// GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error)
+	// GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error)
+	// GetAllByStatus(status model.Jobstatus) ([]*model.Job, error)
+	// GetNewestJobByStatusAndType(status model.Jobstatus, jobType string) (*model.Job, error)
+	// GetNewestJobByStatusesAndType(statuses []model.Jobstatus, jobType string) (*model.Job, error) // GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType. order by created time
+	// GetCountByStatusAndType(status string, jobType string) (int64, error)
 }
 
 type StatusStore interface {
@@ -917,8 +920,8 @@ type (
 type SystemStore interface {
 	Save(system *model.System) error
 	SaveOrUpdate(system *model.System) error
-	Update(system *model.System) error
-	Get() (model.StringMap, error)
+	Update(system model.System) error
+	Get() (map[string]string, error)
 	GetByName(name string) (*model.System, error)
 	PermanentDeleteByName(name string) (*model.System, error)
 	InsertIfExists(system *model.System) (*model.System, error)

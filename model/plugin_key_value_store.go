@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -24,10 +25,10 @@ import (
 
 // PluginKeyValueStore is an object representing the database table.
 type PluginKeyValueStore struct {
-	PluginID string     `boil:"plugin_id" json:"plugin_id" toml:"plugin_id" yaml:"plugin_id"`
-	PKey     string     `boil:"p_key" json:"p_key" toml:"p_key" yaml:"p_key"`
-	PValue   null.Bytes `boil:"p_value" json:"p_value,omitempty" toml:"p_value" yaml:"p_value,omitempty"`
-	ExpireAt null.Int64 `boil:"expire_at" json:"expire_at,omitempty" toml:"expire_at" yaml:"expire_at,omitempty"`
+	PluginID string                `boil:"plugin_id" json:"plugin_id" toml:"plugin_id" yaml:"plugin_id"`
+	PKey     string                `boil:"p_key" json:"p_key" toml:"p_key" yaml:"p_key"`
+	PValue   null.Bytes            `boil:"p_value" json:"p_value,omitempty" toml:"p_value" yaml:"p_value,omitempty"`
+	ExpireAt model_types.NullInt64 `boil:"expire_at" json:"expire_at,omitempty" toml:"expire_at" yaml:"expire_at,omitempty"`
 
 	R *pluginKeyValueStoreR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L pluginKeyValueStoreL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,12 +64,12 @@ var PluginKeyValueStoreWhere = struct {
 	PluginID whereHelperstring
 	PKey     whereHelperstring
 	PValue   whereHelpernull_Bytes
-	ExpireAt whereHelpernull_Int64
+	ExpireAt whereHelpermodel_types_NullInt64
 }{
 	PluginID: whereHelperstring{field: "\"plugin_key_value_store\".\"plugin_id\""},
 	PKey:     whereHelperstring{field: "\"plugin_key_value_store\".\"p_key\""},
 	PValue:   whereHelpernull_Bytes{field: "\"plugin_key_value_store\".\"p_value\""},
-	ExpireAt: whereHelpernull_Int64{field: "\"plugin_key_value_store\".\"expire_at\""},
+	ExpireAt: whereHelpermodel_types_NullInt64{field: "\"plugin_key_value_store\".\"expire_at\""},
 }
 
 // PluginKeyValueStoreRels is where relationship names are stored.

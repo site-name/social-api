@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +24,10 @@ import (
 
 // AssignedProductAttributeValue is an object representing the database table.
 type AssignedProductAttributeValue struct {
-	ID           string   `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ValueID      string   `boil:"value_id" json:"value_id" toml:"value_id" yaml:"value_id"`
-	AssignmentID string   `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
-	SortOrder    null.Int `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
+	ID           string              `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ValueID      string              `boil:"value_id" json:"value_id" toml:"value_id" yaml:"value_id"`
+	AssignmentID string              `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
+	SortOrder    model_types.NullInt `boil:"sort_order" json:"sort_order,omitempty" toml:"sort_order" yaml:"sort_order,omitempty"`
 
 	R *assignedProductAttributeValueR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignedProductAttributeValueL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -63,12 +63,12 @@ var AssignedProductAttributeValueWhere = struct {
 	ID           whereHelperstring
 	ValueID      whereHelperstring
 	AssignmentID whereHelperstring
-	SortOrder    whereHelpernull_Int
+	SortOrder    whereHelpermodel_types_NullInt
 }{
 	ID:           whereHelperstring{field: "\"assigned_product_attribute_values\".\"id\""},
 	ValueID:      whereHelperstring{field: "\"assigned_product_attribute_values\".\"value_id\""},
 	AssignmentID: whereHelperstring{field: "\"assigned_product_attribute_values\".\"assignment_id\""},
-	SortOrder:    whereHelpernull_Int{field: "\"assigned_product_attribute_values\".\"sort_order\""},
+	SortOrder:    whereHelpermodel_types_NullInt{field: "\"assigned_product_attribute_values\".\"sort_order\""},
 }
 
 // AssignedProductAttributeValueRels is where relationship names are stored.

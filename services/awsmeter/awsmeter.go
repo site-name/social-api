@@ -15,6 +15,7 @@ import (
 	"github.com/uber/jaeger-client-go/utils"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -22,7 +23,7 @@ import (
 type AwsMeter struct {
 	store   store.Store
 	service *AWSMeterService
-	config  *model.Config
+	config  *model_helper.Config
 }
 
 type AWSMeterService struct {
@@ -38,10 +39,10 @@ type AWSMeterReport struct {
 }
 
 func (o *AWSMeterReport) ToJSON() string {
-	return model.ModelToJson(o)
+	return model_helper.ModelToJson(o)
 }
 
-func New(store store.Store, config *model.Config) *AwsMeter {
+func New(store store.Store, config *model_helper.Config) *AwsMeter {
 	svc := &AWSMeterService{
 		AwsDryRun:      false,
 		AwsProductCode: "12345", //TODO
@@ -94,7 +95,7 @@ func (awsm *AwsMeter) GetUserCategoryUsage(dimensions []string, startTime time.T
 		var err error
 
 		switch dimension {
-		case model.AwsMeteringDimensionUsageHrs:
+		case model_helper.AwsMeteringDimensionUsageHrs:
 			userCount, err = awsm.store.User().AnalyticsActiveCountForPeriod(utils.TimeToMicrosecondsSinceEpochInt64(startTime), utils.TimeToMicrosecondsSinceEpochInt64(endTime), model.UserCountOptions{})
 			if err != nil {
 				slog.Warn("Failed to obtain usage data", slog.String("dimension", dimension), slog.String("start", startTime.String()), slog.Int64("count", userCount), slog.Err(err))

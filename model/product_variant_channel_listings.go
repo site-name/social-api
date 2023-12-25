@@ -14,25 +14,24 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ProductVariantChannelListing is an object representing the database table.
 type ProductVariantChannelListing struct {
-	ID                        string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VariantID                 string            `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
-	ChannelID                 string            `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	Currency                  NullCurrency      `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
-	PriceAmount               types.NullDecimal `boil:"price_amount" json:"price_amount,omitempty" toml:"price_amount" yaml:"price_amount,omitempty"`
-	CostPriceAmount           types.NullDecimal `boil:"cost_price_amount" json:"cost_price_amount,omitempty" toml:"cost_price_amount" yaml:"cost_price_amount,omitempty"`
-	PreorderQuantityThreshold null.Int          `boil:"preorder_quantity_threshold" json:"preorder_quantity_threshold,omitempty" toml:"preorder_quantity_threshold" yaml:"preorder_quantity_threshold,omitempty"`
-	CreatedAt                 int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID                        string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	VariantID                 string                  `boil:"variant_id" json:"variant_id" toml:"variant_id" yaml:"variant_id"`
+	ChannelID                 string                  `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	Currency                  NullCurrency            `boil:"currency" json:"currency,omitempty" toml:"currency" yaml:"currency,omitempty"`
+	PriceAmount               model_types.NullDecimal `boil:"price_amount" json:"price_amount,omitempty" toml:"price_amount" yaml:"price_amount,omitempty"`
+	CostPriceAmount           model_types.NullDecimal `boil:"cost_price_amount" json:"cost_price_amount,omitempty" toml:"cost_price_amount" yaml:"cost_price_amount,omitempty"`
+	PreorderQuantityThreshold model_types.NullInt     `boil:"preorder_quantity_threshold" json:"preorder_quantity_threshold,omitempty" toml:"preorder_quantity_threshold" yaml:"preorder_quantity_threshold,omitempty"`
+	CreatedAt                 int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *productVariantChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L productVariantChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -123,18 +122,18 @@ var ProductVariantChannelListingWhere = struct {
 	VariantID                 whereHelperstring
 	ChannelID                 whereHelperstring
 	Currency                  whereHelperNullCurrency
-	PriceAmount               whereHelpertypes_NullDecimal
-	CostPriceAmount           whereHelpertypes_NullDecimal
-	PreorderQuantityThreshold whereHelpernull_Int
+	PriceAmount               whereHelpermodel_types_NullDecimal
+	CostPriceAmount           whereHelpermodel_types_NullDecimal
+	PreorderQuantityThreshold whereHelpermodel_types_NullInt
 	CreatedAt                 whereHelperint64
 }{
 	ID:                        whereHelperstring{field: "\"product_variant_channel_listings\".\"id\""},
 	VariantID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"variant_id\""},
 	ChannelID:                 whereHelperstring{field: "\"product_variant_channel_listings\".\"channel_id\""},
 	Currency:                  whereHelperNullCurrency{field: "\"product_variant_channel_listings\".\"currency\""},
-	PriceAmount:               whereHelpertypes_NullDecimal{field: "\"product_variant_channel_listings\".\"price_amount\""},
-	CostPriceAmount:           whereHelpertypes_NullDecimal{field: "\"product_variant_channel_listings\".\"cost_price_amount\""},
-	PreorderQuantityThreshold: whereHelpernull_Int{field: "\"product_variant_channel_listings\".\"preorder_quantity_threshold\""},
+	PriceAmount:               whereHelpermodel_types_NullDecimal{field: "\"product_variant_channel_listings\".\"price_amount\""},
+	CostPriceAmount:           whereHelpermodel_types_NullDecimal{field: "\"product_variant_channel_listings\".\"cost_price_amount\""},
+	PreorderQuantityThreshold: whereHelpermodel_types_NullInt{field: "\"product_variant_channel_listings\".\"preorder_quantity_threshold\""},
 	CreatedAt:                 whereHelperint64{field: "\"product_variant_channel_listings\".\"created_at\""},
 }
 

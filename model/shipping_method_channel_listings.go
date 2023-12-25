@@ -14,24 +14,25 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ShippingMethodChannelListing is an object representing the database table.
 type ShippingMethodChannelListing struct {
-	ID                      string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ShippingMethodID        string            `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
-	ChannelID               string            `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
-	MinimumOrderPriceAmount types.Decimal     `boil:"minimum_order_price_amount" json:"minimum_order_price_amount" toml:"minimum_order_price_amount" yaml:"minimum_order_price_amount"`
-	Currency                Currency          `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
-	MaximumOrderPriceAmount types.NullDecimal `boil:"maximum_order_price_amount" json:"maximum_order_price_amount,omitempty" toml:"maximum_order_price_amount" yaml:"maximum_order_price_amount,omitempty"`
-	PriceAmount             types.Decimal     `boil:"price_amount" json:"price_amount" toml:"price_amount" yaml:"price_amount"`
-	CreatedAt               int64             `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ID                      string                  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ShippingMethodID        string                  `boil:"shipping_method_id" json:"shipping_method_id" toml:"shipping_method_id" yaml:"shipping_method_id"`
+	ChannelID               string                  `boil:"channel_id" json:"channel_id" toml:"channel_id" yaml:"channel_id"`
+	MinimumOrderPriceAmount decimal.Decimal         `boil:"minimum_order_price_amount" json:"minimum_order_price_amount" toml:"minimum_order_price_amount" yaml:"minimum_order_price_amount"`
+	Currency                Currency                `boil:"currency" json:"currency" toml:"currency" yaml:"currency"`
+	MaximumOrderPriceAmount model_types.NullDecimal `boil:"maximum_order_price_amount" json:"maximum_order_price_amount,omitempty" toml:"maximum_order_price_amount" yaml:"maximum_order_price_amount,omitempty"`
+	PriceAmount             decimal.Decimal         `boil:"price_amount" json:"price_amount" toml:"price_amount" yaml:"price_amount"`
+	CreatedAt               int64                   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *shippingMethodChannelListingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L shippingMethodChannelListingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -83,19 +84,19 @@ var ShippingMethodChannelListingWhere = struct {
 	ID                      whereHelperstring
 	ShippingMethodID        whereHelperstring
 	ChannelID               whereHelperstring
-	MinimumOrderPriceAmount whereHelpertypes_Decimal
+	MinimumOrderPriceAmount whereHelperdecimal_Decimal
 	Currency                whereHelperCurrency
-	MaximumOrderPriceAmount whereHelpertypes_NullDecimal
-	PriceAmount             whereHelpertypes_Decimal
+	MaximumOrderPriceAmount whereHelpermodel_types_NullDecimal
+	PriceAmount             whereHelperdecimal_Decimal
 	CreatedAt               whereHelperint64
 }{
 	ID:                      whereHelperstring{field: "\"shipping_method_channel_listings\".\"id\""},
 	ShippingMethodID:        whereHelperstring{field: "\"shipping_method_channel_listings\".\"shipping_method_id\""},
 	ChannelID:               whereHelperstring{field: "\"shipping_method_channel_listings\".\"channel_id\""},
-	MinimumOrderPriceAmount: whereHelpertypes_Decimal{field: "\"shipping_method_channel_listings\".\"minimum_order_price_amount\""},
+	MinimumOrderPriceAmount: whereHelperdecimal_Decimal{field: "\"shipping_method_channel_listings\".\"minimum_order_price_amount\""},
 	Currency:                whereHelperCurrency{field: "\"shipping_method_channel_listings\".\"currency\""},
-	MaximumOrderPriceAmount: whereHelpertypes_NullDecimal{field: "\"shipping_method_channel_listings\".\"maximum_order_price_amount\""},
-	PriceAmount:             whereHelpertypes_Decimal{field: "\"shipping_method_channel_listings\".\"price_amount\""},
+	MaximumOrderPriceAmount: whereHelpermodel_types_NullDecimal{field: "\"shipping_method_channel_listings\".\"maximum_order_price_amount\""},
+	PriceAmount:             whereHelperdecimal_Decimal{field: "\"shipping_method_channel_listings\".\"price_amount\""},
 	CreatedAt:               whereHelperint64{field: "\"shipping_method_channel_listings\".\"created_at\""},
 }
 
