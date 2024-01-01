@@ -1,12 +1,12 @@
 package account
 
 import (
-	"fmt"
+	"database/sql"
 
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -18,60 +18,56 @@ func NewSqlStatusStore(sqlStore store.Store) store.StatusStore {
 	return &SqlStatusStore{sqlStore}
 }
 
-func (s SqlStatusStore) SaveOrUpdate(status *model.Status) error {
-	err := s.GetMaster().Save(status).Error
+func (s SqlStatusStore) Upsert(status model.Status) (*model.Status, error) {
+	if err := model_helper.StatusIsValid(status); err != nil {
+		return nil, err
+	}
+
+	err := status.Upsert(
+		s.GetMaster(),
+		true,
+		[]string{model.StatusColumns.UserID},
+		boil.Blacklist(model.StatusColumns.UserID),
+		boil.Infer(),
+	)
 	if err != nil {
-		return errors.Wrap(err, "failed to upsert status")
+		return nil, err
 	}
-	return nil
-}
 
-func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
-	var status model.Status
-
-	if err := s.GetReplica().First(&status, `UserId = ?`, userId).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("Status", fmt.Sprintf("userId=%s", userId))
-		}
-		return nil, errors.Wrapf(err, "failed to get Status with userId=%s", userId)
-	}
 	return &status, nil
 }
 
-func (s *SqlStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
-	var statuses []*model.Status
-	err := s.GetReplica().Find("UserId IN ?", userIds).Error
+func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
+	status, err := model.FindStatus(s.GetReplica(), userId)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find Statuses")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Status, userId)
+		}
+		return nil, err
 	}
+	return status, nil
+}
 
-	return statuses, nil
+func (s *SqlStatusStore) GetByIds(userIds []string) (model.StatusSlice, error) {
+	return model.Statuses(model.StatusWhere.UserID.IN(userIds)).All(s.GetReplica())
 }
 
 func (s *SqlStatusStore) ResetAll() error {
-	if err := s.GetMaster().Raw("UPDATE Status SET Status = ? WHERE Manual = false", model.STATUS_OFFLINE).Error; err != nil {
-		return errors.Wrap(err, "failed to update Statuses")
-	}
-	return nil
+	_, err := model.Statuses(model.StatusWhere.Manual.EQ(false)).UpdateAll(s.GetMaster(), model.M{
+		model.StatusColumns.Status: model_helper.STATUS_OFFLINE,
+	})
+	return err
 }
 
 func (s *SqlStatusStore) GetTotalActiveUsersCount() (int64, error) {
+	var lastActivityTime = model_helper.GetMillis() - (1000 * 60 * 60 * 24)
 
-	var (
-		time  = model.GetMillis() - (1000 * 60 * 60 * 24)
-		count int64
-	)
-	err := s.GetReplica().Raw("SELECT COUNT(UserId) FROM Status WHERE LastActivityAt > ?", time).Scan(&count).Error
-	if err != nil {
-		return count, errors.Wrap(err, "failed to count active users")
-	}
-	return count, nil
+	return model.Statuses(model.StatusWhere.LastActivityAt.GT(lastActivityTime)).Count(s.GetReplica())
 }
 
 func (s *SqlStatusStore) UpdateLastActivityAt(userId string, lastActivityAt int64) error {
-	if err := s.GetMaster().Raw("UPDATE Status SET LastActivityAt = ? WHERE UserId = ?", lastActivityAt, userId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update last activity for userId=%s", userId)
-	}
-
-	return nil
+	_, err := model.Statuses(model.StatusWhere.UserID.EQ(userId)).UpdateAll(s.GetMaster(), model.M{
+		model.StatusColumns.LastActivityAt: lastActivityAt,
+	})
+	return err
 }

@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -10,7 +11,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
 
@@ -21,65 +27,31 @@ var (
 	UserSearchTypeAll                = []string{"Username", "FirstName", "LastName", "Nickname", "Email"}
 )
 
+var (
+	UserUniqueColumnConstraint = []string{
+		"users_auth_data_key",
+		"users_email_key",
+		"users_username_key",
+	}
+)
+
 type SqlUserStore struct {
 	store.Store
 	metrics einterfaces.MetricsInterface
 
 	// usersQuery is a starting point for all queries that return one or more Users.
-	usersQuery squirrel.SelectBuilder
+	// usersQuery squirrel.SelectBuilder
 }
-
-func (us *SqlUserStore) ClearCaches() {}
 
 func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface) store.UserStore {
 	us := &SqlUserStore{
 		Store:   sqlStore,
 		metrics: metrics,
 	}
-
-	// note: we are providing field names explicitly here to maintain order of columns (needed when using raw queries)
-	us.usersQuery = us.
-		GetQueryBuilder().
-		Select(
-			"u.Id",
-			"u.Email",
-			"u.Username",
-			"u.FirstName",
-			"u.LastName",
-			"u.DefaultShippingAddressID",
-			"u.DefaultBillingAddressID",
-			"u.Password",
-			"u.AuthData",
-			"u.AuthService",
-			"u.EmailVerified",
-			"u.Nickname",
-			"u.Roles",
-			"u.Props",
-			"u.NotifyProps",
-			"u.LastPasswordUpdate",
-			"u.LastPictureUpdate",
-			"u.FailedAttempts",
-			"u.Locale",
-			"u.Timezone",
-			"u.MfaActive",
-			"u.MfaSecret",
-			"u.CreateAt",
-			"u.UpdateAt",
-			"u.DeleteAt",
-			"u.IsActive",
-			"u.Note",
-			"u.JwtTokenKey",
-			"u.LastActivityAt",
-			"u.TermsOfServiceId",
-			"u.TermsOfServiceCreateAt",
-			"u.DisableWelcomeEmail",
-			"u.Metadata",
-			"u.PrivateMetadata",
-		).
-		From(model.UserTableName + " u")
-
 	return us
 }
+
+func (us *SqlUserStore) ClearCaches() {}
 
 func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
 	return []interface{}{
@@ -121,31 +93,36 @@ func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
 }
 
 // TODO: remove this
-func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
-	panic("not implemented")
-}
+// func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
+// 	panic("not implemented")
+// }
 
 // DeactivateGuests
-func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
-	curTime := model.GetMillis()
+// func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
+// 	curTime := model.GetMillis()
 
-	err := us.GetMaster().Table(model.UserTableName).
-		Where("Roles = ? AND DeleteAt = ?", "system_guest", 0).
-		Updates(&model.User{DeleteAt: curTime}).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to update Users with roles=system_guest")
-	}
+// 	err := us.GetMaster().Table(model.UserTableName).
+// 		Where("Roles = ? AND DeleteAt = ?", "system_guest", 0).
+// 		Updates(&model.User{DeleteAt: curTime}).Error
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "failed to update Users with roles=system_guest")
+// 	}
 
-	userIds := []string{}
-	err = us.GetMaster().
-		Raw("SELECT Id FROM "+model.UserTableName+" WHERE DeleteAt = ?", curTime).
-		Scan(&userIds).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find Users")
-	}
+// 	userIds := []string{}
+// 	err = us.GetMaster().
+// 		Raw("SELECT Id FROM "+model.UserTableName+" WHERE DeleteAt = ?", curTime).
+// 		Scan(&userIds).Error
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "failed to find Users")
+// 	}
 
-	return userIds, nil
-}
+// 	return userIds, nil
+
+// 	now := model_helper.GetMillis()
+// 	model.Users(
+// 		model.UserWhere.Roles.EQ(model_helper.SystemAdminRoleId)
+// 	)
+// }
 
 // ResetAuthDataToEmailForUsers resets the AuthData of users whose AuthService
 // is |service| to their Email. If userIDs is non-empty, only the users whose
@@ -153,325 +130,317 @@ func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 // of users who *would* be affected is returned; otherwise, the number of
 // users who actually were affected is returned.
 func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
-	whereEquals := squirrel.Eq{"AuthService": service}
+	queryMods := []qm.QueryMod{
+		model.UserWhere.AuthService.EQ(service),
+	}
 	if len(userIDs) > 0 {
-		whereEquals["Id"] = userIDs
+		queryMods = append(queryMods, model.UserWhere.ID.IN(userIDs))
 	}
 	if !includeDeleted {
-		whereEquals["DeleteAt"] = 0
+		queryMods = append(queryMods, model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)))
 	}
 
 	if dryRun {
-		builder := us.GetQueryBuilder().
-			Select("COUNT(*)").
-			From("Users").
-			Where(whereEquals)
-		query, args, err := builder.ToSql()
-		if err != nil {
-			return 0, errors.Wrap(err, "select_count_users_tosql")
-		}
-		var numAffected int
-		err = us.GetReplica().Raw(query, args...).Scan(&numAffected).Error
-		return numAffected, err
+		count, err := model.Users(queryMods...).Count(us.Context(), us.GetReplica())
+		return int(count), err
 	}
 
-	cond, args, _ := whereEquals.ToSql()
-	result := us.GetMaster().Table(model.UserTableName).Where(cond, args...).Updates(map[string]any{"AuthData": "Email"})
-	if result.Error != nil {
-		return 0, errors.Wrap(result.Error, "failed to update users' AuthData")
-	}
-	return int(result.RowsAffected), nil
+	numUpdated, err := model.Users(queryMods...).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.AuthData:  "Email",
+			model.UserColumns.UpdatedAt: model_helper.GetMillis(),
+		})
+	return int(numUpdated), err
 }
 
 func (us *SqlUserStore) InvalidateProfileCacheForUser(userId string) {}
 
-func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
-	panic("not implemented")
+func (us *SqlUserStore) GetEtagForProfiles() string {
+	var updatedAt int64
+	err := model.
+		Users(
+			qm.Select(model.UserColumns.UpdatedAt),
+			qm.OrderBy(fmt.Sprintf("%s DESC", model.UserColumns.UpdatedAt)),
+			qm.Limit(1),
+		).
+		QueryRowContext(us.Context(), us.GetReplica()).
+		Scan(&updatedAt)
+	if err != nil {
+		return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, model_helper.GetMillis())
+	}
+
+	return fmt.Sprint("%v.%v", model_helper.CurrentVersion, updatedAt)
 }
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
-	var updateAt int64
-	err := us.GetReplica().Raw("SELECT UpdateAt FROM " + model.UserTableName + " ORDER BY UpdateAt DESC LIMIT 1").Scan(&updateAt).Error
+	user, err := model.
+		Users(qm.OrderBy(model.UserColumns.UpdatedAt+" DESC")).
+		One(us.Context(), us.GetReplica())
 	if err != nil {
-		return fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
+		return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, model_helper.GetMillis())
 	}
-	return fmt.Sprintf("%v.%v", model.CurrentVersion, updateAt)
+	return fmt.Sprintf("%v.%v", model_helper.CurrentVersion, user.UpdatedAt)
 }
 
-func (us *SqlUserStore) Save(user *model.User) (*model.User, error) {
-	err := us.GetMaster().Create(user).Error
+func (us *SqlUserStore) Save(user model.User) (*model.User, error) {
+	model_helper.UserPreSave(&user)
+	if err := model_helper.UserIsValid(user); err != nil {
+		return nil, err
+	}
+
+	err := user.Insert(us.Context(), us.GetMaster(), boil.Infer())
 	if err != nil {
-		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "users_email_index_key"}) {
+		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 			return nil, store.NewErrInvalidInput("User", "email", user.Email)
 		}
 		if us.IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
 			return nil, store.NewErrInvalidInput("User", "username", user.Username)
 		}
-		return nil, errors.Wrapf(err, "failed to save User with userId=%s", user.Id)
-	}
-
-	return user, nil
-}
-
-// Update updates user
-func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model.UserUpdate, error) {
-	user.PreUpdate()
-	if err := user.IsValid(); err != nil {
 		return nil, err
 	}
-	var oldUser model.User
 
-	err := us.GetMaster().First(&oldUser, "Id = ?", user.Id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.UserTableName, user.Id)
-		}
-		return nil, errors.Wrapf(err, "failed to get user with userId=%s", user.Id)
+	return &user, nil
+}
+
+func (us *SqlUserStore) Update(user model.User, trustedUpdateData bool) (*model_helper.UserUpdate, error) {
+	model_helper.UserPreUpdate(&user)
+	if err := model_helper.UserIsValid(user); err != nil {
+		return nil, err
 	}
 
-	user.CreateAt = oldUser.CreateAt
-	user.AuthData = oldUser.AuthData
-	user.AuthService = oldUser.AuthService
-	user.Password = oldUser.Password
-	user.LastPasswordUpdate = oldUser.LastPasswordUpdate
-	user.LastPictureUpdate = oldUser.LastPictureUpdate
-	user.EmailVerified = oldUser.EmailVerified
-	user.FailedAttempts = oldUser.FailedAttempts
-	user.MfaSecret = oldUser.MfaSecret
-	user.MfaActive = oldUser.MfaActive
+	oldUser, err := model.FindUser(us.Context(), us.GetReplica(), user.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Users, user.ID)
+		}
+		return nil, err
+	}
+
+	blackListedColumns := []string{
+		model.UserColumns.CreatedAt,
+		model.UserColumns.AuthData,
+		model.UserColumns.AuthService,
+		model.UserColumns.Password,
+		model.UserColumns.LastPasswordUpdate,
+		model.UserColumns.LastPictureUpdate,
+		model.UserColumns.FailedAttempts,
+		model.UserColumns.MfaSecret,
+		model.UserColumns.MfaActive,
+	}
 
 	if !trustedUpdateData {
-		user.Roles = oldUser.Roles
-		user.DeleteAt = oldUser.DeleteAt
+		blackListedColumns = append(blackListedColumns, model.UserColumns.Roles, model.UserColumns.DeleteAt)
 	}
 
-	if user.IsOAuthUser() && !trustedUpdateData {
-		user.Email = oldUser.Email
-	} else if user.IsLDAPUser() && !trustedUpdateData {
-		if user.Username != oldUser.Username || user.Email != oldUser.Email {
-			return nil, store.NewErrInvalidInput("User", "id", user.Id)
+	if model_helper.UserIsOauth(user) && !trustedUpdateData {
+		blackListedColumns = append(blackListedColumns, model.UserColumns.Email)
+	} else if model_helper.UserIsLDAP(user) && !trustedUpdateData {
+		if user.Username != oldUser.Username ||
+			user.Email != oldUser.Email {
+			return nil, store.NewErrInvalidInput(model.TableNames.Users, "id", user.ID)
 		}
-	} else if user.Email != oldUser.Email {
+	}
+	if user.Email == oldUser.Email {
+		blackListedColumns = append(blackListedColumns, model.UserColumns.EmailVerified)
+	} else {
 		user.EmailVerified = false
 	}
 
 	if user.Username != oldUser.Username {
-		user.UpdateMentionKeysFromUsername(oldUser.Username)
+		model_helper.UserUpdateMentionKeysFromUsername(&user, oldUser.Username)
 	}
 
-	err = us.GetMaster().Save(user).Error
+	_, err = user.Update(us.Context(), us.GetMaster(), boil.Blacklist(blackListedColumns...))
 	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
-			return nil, store.NewErrInvalidInput("User", "id", user.Id)
+			return nil, store.NewErrInvalidInput(model.TableNames.Users, model.UserColumns.ID, user.Email)
 		}
 		if us.IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
-			return nil, store.NewErrInvalidInput("User", "id", user.Id)
+			return nil, store.NewErrInvalidInput(model.TableNames.Users, model.UserColumns.ID, user.Username)
 		}
-		return nil, errors.Wrapf(err, "failed to update User with userId=%s", user.Id)
 	}
 
-	user.Sanitize(map[string]bool{})
-	oldUser.Sanitize(map[string]bool{})
-	return &model.UserUpdate{New: user, Old: &oldUser}, nil
+	model_helper.UserSanitize(oldUser, map[string]bool{})
+	model_helper.UserSanitize(&user, map[string]bool{})
+
+	return &model_helper.UserUpdate{Old: oldUser, New: &user}, nil
 }
 
-func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
-	now := model.GetMillis()
-	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET LastPictureUpdate = ? WHERE Id = ?", now, userId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-
-	return nil
+func (us *SqlUserStore) UpdateLastPictureUpdate(userId string, updateMillis int64) error {
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.LastPictureUpdate: updateMillis,
+		})
+	return err
 }
 
 func (us *SqlUserStore) ResetLastPictureUpdate(userId string) error {
-	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET LastPictureUpdate = ? WHERE Id = ?", 0, userId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-
-	return nil
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.LastPictureUpdate: model_helper.GetMillis(),
+		})
+	return err
 }
 
 func (us *SqlUserStore) UpdateUpdateAt(userId string) (int64, error) {
-	now := model.GetMillis()
-	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET UpdateAt = ? WHERE Id = ?", now, userId).Error; err != nil {
-		return now, errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-
-	return now, nil
+	now := model_helper.GetMillis()
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.UpdatedAt: now,
+		})
+	return now, err
 }
 
 func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
-	now := model.GetMillis()
-	if err := us.GetMaster().
-		Exec("UPDATE "+model.UserTableName+" SET Password = ?, LastPasswordUpdate = ?, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE Id = ?",
-			hashedPassword,
-			now,
-			userId,
-		).Error; err != nil {
-		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-
-	return nil
+	now := model_helper.GetMillis()
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.Password:           hashedPassword,
+			model.UserColumns.LastPasswordUpdate: now,
+			model.UserColumns.AuthData:           nil,
+			model.UserColumns.AuthService:        "",
+			model.UserColumns.FailedAttempts:     0,
+		})
+	return err
 }
 
 func (us *SqlUserStore) UpdateFailedPasswordAttempts(userId string, attempts int) error {
-	if err := us.GetMaster().Raw(
-		"UPDATE "+model.UserTableName+" SET FailedAttempts = ? WHERE Id = ?",
-		attempts, userId,
-	).Error; err != nil {
-		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-	return nil
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.FailedAttempts: attempts,
+		})
+	return err
 }
 
-// UpdateAuthData updates auth data of user
 func (us *SqlUserStore) UpdateAuthData(userId string, service string, authData *string, email string, resetMfa bool) (string, error) {
-	updateAt := model.GetMillis()
-	query := `UPDATE ` + model.UserTableName +
-		` SET
-			Password = '',
-			LastPasswordUpdate = ?,
-			UpdateAt = ?,
-			FailedAttempts = 0,
-			AuthService = ?,
-			AuthData = ?
-	`
+	updateAt := model_helper.GetMillis()
+	var updateColumns = model.M{
+		model.UserColumns.Password:           "",
+		model.UserColumns.LastPasswordUpdate: updateAt,
+		model.UserColumns.UpdatedAt:          updateAt,
+		model.UserColumns.FailedAttempts:     0,
+		model.UserColumns.AuthService:        service,
+		model.UserColumns.AuthData:           authData,
+	}
 	if email != "" {
-		query += ", Email = lower(?)"
+		updateColumns[model.UserColumns.Email] = fmt.Sprintf("lower(%s)", email)
 	}
 	if resetMfa {
-		query += ", MfaActive = false, MfaSecret = ''"
+		updateColumns[model.UserColumns.MfaActive] = false
+		updateColumns[model.UserColumns.MfaSecret] = ""
 	}
-	query += " WHERE Id = ?"
 
-	if err := us.GetMaster().Raw(query, updateAt, updateAt, service, authData, email, userId).Error; err != nil {
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), updateColumns)
+	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique", "AuthData", "users_authdata_key"}) {
 			return "", store.NewErrInvalidInput("User", "id", userId)
 		}
-		return "", errors.Wrapf(err, "failed to update User with userId=%s", userId)
+		return "", err
 	}
 	return userId, nil
 }
 
 // UpdateMfaSecret updates mfa secret for current user
 func (us *SqlUserStore) UpdateMfaSecret(userId, secret string) error {
-	updateAt := model.GetMillis()
-
-	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET MfaSecret = ?, UpdateAt = ? WHERE Id = ?", secret, updateAt, userId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-
-	return nil
+	updateAt := model_helper.GetMillis()
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.MfaSecret: secret,
+			model.UserColumns.UpdatedAt: updateAt,
+		})
+	return err
 }
 
 func (us *SqlUserStore) UpdateMfaActive(userId string, active bool) error {
-	updateAt := model.GetMillis()
-	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET MfaActive = ?, UpdateAt = ? WHERE Id = ?", active, updateAt, userId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
-	}
-
-	return nil
+	updateAt := model_helper.GetMillis()
+	_, err := model.
+		Users(model.UserWhere.ID.EQ(userId)).
+		UpdateAll(us.Context(), us.GetMaster(), model.M{
+			model.UserColumns.MfaActive: active,
+			model.UserColumns.UpdatedAt: updateAt,
+		})
+	return err
 }
 
-func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
-	if options == nil {
-		options = new(store.UserGetByIdsOpts)
+func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+	queryMods := []qm.QueryMod{
+		model.UserWhere.ID.IN(userIds),
+		qm.OrderBy(model.UserColumns.Username + " ASC"),
+		qm.Distinct(model.UserColumns.ID),
 	}
-
-	users := []*model.User{}
-	query := us.usersQuery.Where(squirrel.Eq{"u.Id": userIds}).OrderBy("u.Username ASC")
-
 	if options.Since > 0 {
-		query = query.Where(squirrel.Gt{"u.UpdateAt": options.Since})
+		queryMods = append(queryMods, model.UserWhere.UpdatedAt.GT(options.Since))
 	}
 
-	query = applyViewRestrictionsFilter(query, true)
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "get_profile_by_ids_tosql")
-	}
-
-	if err := us.DBXFromContext(ctx).Raw(queryString, args...).Find(&users).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find Users")
-	}
-
-	return users, nil
+	return model.Users(queryMods...).All(us.Context(), us.GetReplica())
 }
 
 func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
-	query := us.usersQuery.Where("Roles LIKE ?", "%system_admin%").OrderBy("u.Username ASC")
-	queryString, args, err := query.ToSql()
+	users, err := model.
+		Users(model.UserWhere.Roles.LIKE("%system_admin%"), qm.OrderBy(model.UserColumns.Username+" ASC")).
+		All(us.Context(), us.GetReplica())
 	if err != nil {
-		return nil, errors.Wrap(err, "get_system_admin_profiles_tosql")
-	}
-
-	var users []*model.User
-	if err := us.GetReplica().Raw(queryString, args...).Find(&users).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find Users")
+		return nil, err
 	}
 
 	userMap := make(map[string]*model.User)
 	for _, u := range users {
-		u.Sanitize(map[string]bool{})
-		userMap[u.Id] = u
+		model_helper.UserSanitize(u, map[string]bool{})
+		userMap[u.ID] = u
 	}
 
 	return userMap, nil
 }
 
 func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail bool) (*model.User, error) {
-	query := us.usersQuery
+	var queryMod qm.QueryMod
+	loginId = strings.ToLower(loginId)
+
 	if allowSignInWithUsername && allowSignInWithEmail {
-		query = query.Where("Username = lower(?) OR Email = lower(?)", loginId, loginId)
+		queryMod = qm.Where(fmt.Sprintf("%s = ? OR %s = ?", model.UserTableColumns.Email, model.UserTableColumns.Username), loginId, loginId)
 	} else if allowSignInWithUsername {
-		query = query.Where("Username = lower(?)", loginId)
+		queryMod = model.UserWhere.Username.EQ(loginId)
 	} else if allowSignInWithEmail {
-		query = query.Where("Email = lower(?)", loginId)
+		queryMod = model.UserWhere.Email.EQ(loginId)
 	} else {
 		return nil, errors.New("sign in with username and email are disabled")
 	}
 
-	queryString, args, err := query.ToSql()
+	user, err := model.Users(queryMod).One(us.Context(), us.GetReplica())
 	if err != nil {
-		return nil, errors.Wrap(err, "get_for_login_tosql")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Users, loginId)
+		}
+		return nil, err
 	}
-
-	users := []*model.User{}
-	if err := us.GetReplica().Raw(queryString, args...).Find(&users).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find Users")
-	}
-
-	if len(users) == 0 {
-		return nil, errors.New("user not found")
-	}
-
-	if len(users) > 1 {
-		return nil, errors.New("multiple users found")
-	}
-
-	return users[0], nil
+	return user, nil
 }
 
 func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
-	now := model.GetMillis()
+	now := model_helper.GetMillis()
 
-	if err := us.
-		GetMaster().
-		Raw("UPDATE "+model.UserTableName+" SET Email = lower(?), EmailVerified = true, UpdateAt = ? WHERE Id = ?",
-			email, now, userId,
-		).Error; err != nil {
-		return "", errors.Wrapf(err, "failed to update Users with userId=%s and email=%s", userId, email)
+	_, err := model.Users(model.UserWhere.ID.EQ(userId)).UpdateAll(us.Context(), us.GetMaster(), model.M{
+		model.UserColumns.Email:         strings.ToLower(email),
+		model.UserColumns.EmailVerified: true,
+		model.UserColumns.UpdatedAt:     now,
+	})
+	if err != nil {
+		return "", err
 	}
-
 	return userId, nil
 }
 
 func (us *SqlUserStore) PermanentDelete(userId string) error {
-	if err := us.GetMaster().Raw("DELETE FROM "+model.UserTableName+" WHERE Id = ?", userId).Error; err != nil {
-		return errors.Wrapf(err, "failed to delete User with userId=%s", userId)
-	}
-	return nil
+	_, err := model.Users(model.UserWhere.ID.EQ(userId)).DeleteAll(us.Context(), us.GetMaster())
+	return err
 }
 
 // applyViewRestrictionsFilter add "DISTINCT" to query if given distinct is `true`
@@ -483,11 +452,13 @@ func applyViewRestrictionsFilter(query squirrel.SelectBuilder, distinct bool) sq
 	return query
 }
 
-func (us *SqlUserStore) Count(options model.UserCountOptions) (int64, error) {
-	query := us.GetQueryBuilder().Select("COUNT(DISTINCT u.Id)").From(model.UserTableName + " AS u")
+func (us *SqlUserStore) Count(options model_helper.UserCountOptions) (int64, error) {
+	query := us.GetQueryBuilder().
+		Select(fmt.Sprintf("COUNT(DISTINCT %s)", model.UserTableColumns.ID)).
+		From(model.TableNames.Users)
 
 	if !options.IncludeDeleted {
-		query = query.Where("u.DeleteAt = 0")
+		query = query.Where(squirrel.Eq{model.UserTableColumns.DeleteAt: 0})
 	}
 
 	query = applyViewRestrictionsFilter(query, true)
@@ -499,70 +470,71 @@ func (us *SqlUserStore) Count(options model.UserCountOptions) (int64, error) {
 	}
 
 	var count int64
-	err = us.GetReplica().Raw(queryString, args...).Scan(&count).Error
+	err = queries.Raw(queryString, args...).QueryRowContext(us.Context(), us.GetReplica()).Scan(&count)
 	if err != nil {
-		return int64(0), errors.Wrap(err, "failed to count Users")
+		return 0, err
 	}
 	return count, nil
 }
 
-func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options model.UserCountOptions) (int64, error) {
-	time := model.GetMillis() - timePeriod
-	query := us.GetQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > ?", time)
+func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options model_helper.UserCountOptions) (int64, error) {
+	period := model_helper.GetMillis() - timePeriod
 
+	queryMods := []qm.QueryMod{
+		model.StatusWhere.LastActivityAt.GT(period),
+	}
 	if !options.IncludeDeleted {
-		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
+		queryMods = append(
+			queryMods,
+			qm.LeftOuterJoin(fmt.Sprintf(
+				"%[1]s ON %[2]s = %[3]s",
+				model.TableNames.Users,          // 1
+				model.UserTableColumns.ID,       // 2
+				model.StatusTableColumns.UserID, // 3
+			)),
+			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+		)
 	}
 
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "analytics_active_count_tosql")
-	}
-
-	var v int64
-	err = us.GetReplica().Raw(queryStr, args...).Scan(&v).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count Users")
-	}
-	return v, nil
+	return model.Statuses(queryMods...).Count(us.Context(), us.GetReplica())
 }
 
-func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
-	query := us.GetQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > ? AND LastActivityAt <= ?", startTime, endTime)
+func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error) {
+	queryMods := []qm.QueryMod{
+		model.StatusWhere.LastActivityAt.GT(startTime),
+		model.StatusWhere.LastActivityAt.LTE(endTime),
+	}
 	if !options.IncludeDeleted {
-		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
+		queryMods = append(
+			queryMods,
+			qm.LeftOuterJoin(fmt.Sprintf(
+				"%[1]s ON %[2]s = %[3]s",
+				model.TableNames.Users,          // 1
+				model.UserTableColumns.ID,       // 2
+				model.StatusTableColumns.UserID, // 3
+			)),
+			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+		)
 	}
 
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "Failed to build query.")
-	}
-
-	var v int64
-	err = us.GetReplica().Raw(queryStr, args...).Scan(&v).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "Unable to get the active users during the requested period")
-	}
-	return v, nil
+	return model.Users(queryMods...).Count(us.Context(), us.GetReplica())
 }
 
 func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string) squirrel.SelectBuilder {
 	sqOr := squirrel.Or{}
 
-	if len(systemRoles) > 0 && systemRoles[0] != "" {
-		for _, role := range systemRoles {
-			queryRole := store.WildcardSearchTerm(role)
-			switch role {
-			case model.SystemUserRoleId:
-				// If querying for a `system_user` ensure that the user is only a system_user.
-				sqOr = append(sqOr, squirrel.Eq{"u.Roles": role})
-			case model.SystemAdminRoleId,
-				model.SystemUserManagerRoleId,
-				model.SystemReadOnlyAdminRoleId,
-				model.SystemManagerRoleId:
-				// If querying for any other roles search using a wildcard
-				sqOr = append(sqOr, squirrel.ILike{"u.Roles": queryRole})
-			}
+	for _, role := range systemRoles {
+		queryRole := store.WildcardSearchTerm(role)
+		switch role {
+		case model_helper.SystemUserRoleId:
+			// If querying for a `system_user` ensure that the user is only a system_user.
+			sqOr = append(sqOr, squirrel.Eq{model.UserTableColumns.Roles: role})
+		case model_helper.SystemAdminRoleId,
+			model_helper.SystemUserManagerRoleId,
+			model_helper.SystemReadOnlyAdminRoleId,
+			model_helper.SystemManagerRoleId:
+			// If querying for any other roles search using a wildcard
+			sqOr = append(sqOr, squirrel.ILike{model.UserTableColumns.Roles: queryRole})
 		}
 	}
 
@@ -587,13 +559,6 @@ func generateSearchQuery(query squirrel.SelectBuilder, terms []string, fields []
 	return query
 }
 
-func (us *SqlUserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
-	query := us.usersQuery.
-		OrderBy("Username ASC").
-		Limit(uint64(options.Limit))
-	return us.performSearch(query, term, options)
-}
-
 func applyRoleFilter(query squirrel.SelectBuilder, role string) squirrel.SelectBuilder {
 	if role == "" {
 		return query
@@ -603,7 +568,16 @@ func applyRoleFilter(query squirrel.SelectBuilder, role string) squirrel.SelectB
 	return query.Where("u.Roles LIKE LOWER(?)", roleParam)
 }
 
-func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *model.UserSearchOptions) ([]*model.User, error) {
+func (us *SqlUserStore) Search(term string, options *model_helper.UserSearchOptions) ([]*model.User, error) {
+	query := us.GetQueryBuilder().
+		Select("*").
+		From(model.TableNames.Users).
+		OrderBy(fmt.Sprintf("%S ASC", model.UserColumns.Username)).
+		Limit(uint64(options.Limit))
+	return us.performSearch(query, term, options)
+}
+
+func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *model_helper.UserSearchOptions) ([]*model.User, error) {
 	term = store.SanitizeSearchTerm(term, "*")
 
 	var searchType []string
@@ -625,7 +599,7 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 	query = applyMultiRoleFilters(query, options.Roles)
 
 	if !options.AllowInactive {
-		query = query.Where("u.DeleteAt = 0")
+		query = query.Where(squirrel.Eq{model.UserColumns.DeleteAt: 0})
 	}
 
 	if strings.TrimSpace(term) != "" {
@@ -638,66 +612,72 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 	}
 
 	var users []*model.User
-	if err := us.GetReplica().Raw(queryString, args...).Find(&users).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find Users with term=%s and searchType=%v", term, searchType)
-	}
-	for _, u := range users {
-		u.Sanitize(map[string]bool{})
+	err = queries.Raw(queryString, args...).Bind(us.Context(), us.GetReplica(), &users)
+	if err != nil {
+		return nil, err
 	}
 
+	for _, user := range users {
+		model_helper.UserSanitize(user, map[string]bool{})
+	}
 	return users, nil
 }
 
 func (us *SqlUserStore) AnalyticsGetInactiveUsersCount() (int64, error) {
-	var count int64
-	err := us.GetReplica().Raw("SELECT COUNT(Id) FROM Users WHERE DeleteAt > 0").Scan(&count).Error
-	if err != nil {
-		return int64(0), errors.Wrap(err, "failed to count inactive Users")
-	}
-	return count, nil
+	return model.
+		Users(model.UserWhere.DeleteAt.GT(model_types.NewNullInt64(0))).
+		Count(us.Context(), us.GetReplica())
 }
 
 func (us *SqlUserStore) AnalyticsGetExternalUsers(hostDomain string) (bool, error) {
-	var count int64
-	err := us.GetReplica().Raw("SELECT COUNT(Id) FROM Users WHERE LOWER(Email) NOT LIKE ?", "%@"+strings.ToLower(hostDomain)).Scan(&count).Error
+	count, err := model.
+		Users(qm.Where("LOWER(email) NOT LIKE ?", "%@"+strings.ToLower(hostDomain))).
+		Count(us.Context(), us.GetReplica())
 	if err != nil {
-		return false, errors.Wrap(err, "failed to count inactive Users")
+		return false, err
 	}
+
 	return count > 0, nil
 }
 
 func (us *SqlUserStore) AnalyticsGetGuestCount() (int64, error) {
-	var count int64
-	err := us.GetReplica().Raw("SELECT count(*) FROM Users WHERE Roles LIKE ? and DeleteAt = 0", "%system_guest%").Scan(&count).Error
-	if err != nil {
-		return int64(0), errors.Wrap(err, "failed to count guest Users")
-	}
-	return count, nil
+	return model.
+		Users(
+			model.UserWhere.Roles.LIKE("%"+model_helper.SystemGuestRoleId+"%"),
+			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+		).
+		Count(us.Context(), us.GetReplica())
 }
 
 func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
-	var count int64
-	err := us.GetReplica().Raw("SELECT count(*) FROM Users WHERE Roles LIKE ? and DeleteAt = 0", "%system_admin%").Scan(&count).Error
-	if err != nil {
-		return int64(0), errors.Wrap(err, "failed to count system admin Users")
-	}
-	return count, nil
+	return model.
+		Users(
+			model.UserWhere.Roles.LIKE("%"+model_helper.SystemAdminRoleId+"%"),
+			model.UserWhere.DeleteAt.EQ(model_types.NewNullInt64(0)),
+		).
+		Count(us.Context(), us.GetReplica())
 }
 
 func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
-	builtinRoles := model.MakeDefaultRoles()
-	lastUserId := strings.Repeat("0", len(model.NewId()))
+	builtinRoles := model_helper.MakeDefaultRoles()
+	lastUserId := strings.Repeat("0", len(model_helper.NewId()))
 
 	for {
-		tx := us.GetMaster().Begin()
-		if tx.Error != nil {
-			return errors.Wrap(tx.Error, "begin_transaction")
+		tx, err := us.GetMaster().BeginTx(us.Context(), &sql.TxOptions{})
+		if err != nil {
+			return errors.Wrap(err, "begin_transaction")
 		}
 		defer us.FinalizeTransaction(tx)
 
-		var users []*model.User
-		if err := tx.Raw("SELECT * FROM Users WHERE Id > ? ORDER BY Id LIMIT 1000", lastUserId).Find(&users).Error; err != nil {
-			return errors.Wrapf(err, "failed to find Users with id > %s", lastUserId)
+		users, err := model.
+			Users(
+				model.UserWhere.ID.GT(lastUserId),
+				qm.OrderBy(model.UserColumns.ID),
+				qm.Limit(1000),
+			).
+			All(us.Context(), tx)
+		if err != nil {
+			return err
 		}
 
 		if len(users) == 0 {
@@ -705,7 +685,7 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 		}
 
 		for _, user := range users {
-			lastUserId = user.Id
+			lastUserId = user.ID
 			var newRoles []string
 
 			for _, role := range strings.Fields(user.Roles) {
@@ -719,13 +699,14 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 
 			newRolesString := strings.Join(newRoles, " ")
 			if newRolesString != user.Roles {
-				if err := tx.Raw("UPDATE Users SET Roles = ? WHERE Id = ?", newRolesString, user.Id).Error; err != nil {
-					return errors.Wrap(err, "failed to update Users")
+				_, err = user.Update(us.Context(), tx, boil.Whitelist(model.UserColumns.Roles))
+				if err != nil {
+					return err
 				}
 			}
 		}
 
-		if err := tx.Commit().Error; err != nil {
+		if err := tx.Commit(); err != nil {
 			return errors.Wrap(err, "commit_transaction")
 		}
 	}
@@ -735,15 +716,18 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 
 func (us *SqlUserStore) InferSystemInstallDate() (int64, error) {
 	var createAt int64
-	err := us.GetReplica().Raw("SELECT CreateAt FROM Users WHERE CreateAt IS NOT NULL ORDER BY CreateAt ASC LIMIT 1").Scan(&createAt).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to infer system install date")
-	}
-
-	return createAt, nil
+	return createAt, model.
+		Users(
+			qm.Select(model.UserColumns.CreatedAt),
+			qm.OrderBy(model.UserColumns.CreatedAt),
+			model.UserWhere.CreatedAt.NEQ(0),
+			qm.Limit(1),
+		).
+		QueryRowContext(us.Context(), us.GetReplica()).
+		Scan(&createAt)
 }
 
-func (us *SqlUserStore) GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model.UserForIndexing, error) {
+func (us *SqlUserStore) GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model_helper.UserForIndexing, error) {
 	panic("not implemented")
 }
 
@@ -759,7 +743,7 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+func (us *SqlUserStore) GetAllProfiles(options *model_helper.UserGetOptions) ([]*model.User, error) {
 	replicaDB := us.GetReplica()
 
 	if options != nil {
@@ -976,10 +960,9 @@ func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, rela
 }
 
 func (s *SqlUserStore) IsEmpty() (bool, error) {
-	var hasRows bool
-	err := s.GetReplica().Raw("SELECT EXISTS (SELECT 1 FROM " + model.UserTableName + ")").Scan(&hasRows).Error
+	exist, err := model.Users().Exists(s.Context(), s.GetReplica())
 	if err != nil {
-		return false, errors.Wrap(err, "failed to check if user table has any row or not")
+		return false, err
 	}
-	return !hasRows, nil
+	return !exist, nil
 }

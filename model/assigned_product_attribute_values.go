@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -148,12 +147,12 @@ var (
 )
 
 // One returns a single assignedProductAttributeValue record from the query.
-func (q assignedProductAttributeValueQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AssignedProductAttributeValue, error) {
+func (q assignedProductAttributeValueQuery) One(exec boil.Executor) (*AssignedProductAttributeValue, error) {
 	o := &AssignedProductAttributeValue{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -165,10 +164,10 @@ func (q assignedProductAttributeValueQuery) One(ctx context.Context, exec boil.C
 }
 
 // All returns all AssignedProductAttributeValue records from the query.
-func (q assignedProductAttributeValueQuery) All(ctx context.Context, exec boil.ContextExecutor) (AssignedProductAttributeValueSlice, error) {
+func (q assignedProductAttributeValueQuery) All(exec boil.Executor) (AssignedProductAttributeValueSlice, error) {
 	var o []*AssignedProductAttributeValue
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to AssignedProductAttributeValue slice")
 	}
@@ -177,13 +176,13 @@ func (q assignedProductAttributeValueQuery) All(ctx context.Context, exec boil.C
 }
 
 // Count returns the count of all AssignedProductAttributeValue records in the query.
-func (q assignedProductAttributeValueQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q assignedProductAttributeValueQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count assigned_product_attribute_values rows")
 	}
@@ -192,14 +191,14 @@ func (q assignedProductAttributeValueQuery) Count(ctx context.Context, exec boil
 }
 
 // Exists checks if the row exists in the table.
-func (q assignedProductAttributeValueQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q assignedProductAttributeValueQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if assigned_product_attribute_values exists")
 	}
@@ -231,7 +230,7 @@ func (o *AssignedProductAttributeValue) Value(mods ...qm.QueryMod) attributeValu
 
 // LoadAssignment allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeValueL) LoadAssignment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedProductAttributeValueL) LoadAssignment(e boil.Executor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttributeValue
 	var object *AssignedProductAttributeValue
 
@@ -294,7 +293,7 @@ func (assignedProductAttributeValueL) LoadAssignment(ctx context.Context, e boil
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load AssignedProductAttribute")
 	}
@@ -343,7 +342,7 @@ func (assignedProductAttributeValueL) LoadAssignment(ctx context.Context, e boil
 
 // LoadValue allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (assignedProductAttributeValueL) LoadValue(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
+func (assignedProductAttributeValueL) LoadValue(e boil.Executor, singular bool, maybeAssignedProductAttributeValue interface{}, mods queries.Applicator) error {
 	var slice []*AssignedProductAttributeValue
 	var object *AssignedProductAttributeValue
 
@@ -406,7 +405,7 @@ func (assignedProductAttributeValueL) LoadValue(ctx context.Context, e boil.Cont
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load AttributeValue")
 	}
@@ -456,10 +455,10 @@ func (assignedProductAttributeValueL) LoadValue(ctx context.Context, e boil.Cont
 // SetAssignment of the assignedProductAttributeValue to the related item.
 // Sets o.R.Assignment to related.
 // Adds o to related.R.AssignmentAssignedProductAttributeValues.
-func (o *AssignedProductAttributeValue) SetAssignment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AssignedProductAttribute) error {
+func (o *AssignedProductAttributeValue) SetAssignment(exec boil.Executor, insert bool, related *AssignedProductAttribute) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -471,12 +470,11 @@ func (o *AssignedProductAttributeValue) SetAssignment(ctx context.Context, exec 
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -503,10 +501,10 @@ func (o *AssignedProductAttributeValue) SetAssignment(ctx context.Context, exec 
 // SetValue of the assignedProductAttributeValue to the related item.
 // Sets o.R.Value to related.
 // Adds o to related.R.ValueAssignedProductAttributeValues.
-func (o *AssignedProductAttributeValue) SetValue(ctx context.Context, exec boil.ContextExecutor, insert bool, related *AttributeValue) error {
+func (o *AssignedProductAttributeValue) SetValue(exec boil.Executor, insert bool, related *AttributeValue) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -518,12 +516,11 @@ func (o *AssignedProductAttributeValue) SetValue(ctx context.Context, exec boil.
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -560,7 +557,7 @@ func AssignedProductAttributeValues(mods ...qm.QueryMod) assignedProductAttribut
 
 // FindAssignedProductAttributeValue retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindAssignedProductAttributeValue(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*AssignedProductAttributeValue, error) {
+func FindAssignedProductAttributeValue(exec boil.Executor, iD string, selectCols ...string) (*AssignedProductAttributeValue, error) {
 	assignedProductAttributeValueObj := &AssignedProductAttributeValue{}
 
 	sel := "*"
@@ -573,7 +570,7 @@ func FindAssignedProductAttributeValue(ctx context.Context, exec boil.ContextExe
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, assignedProductAttributeValueObj)
+	err := q.Bind(nil, exec, assignedProductAttributeValueObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -586,7 +583,7 @@ func FindAssignedProductAttributeValue(ctx context.Context, exec boil.ContextExe
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *AssignedProductAttributeValue) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *AssignedProductAttributeValue) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no assigned_product_attribute_values provided for insertion")
 	}
@@ -634,16 +631,15 @@ func (o *AssignedProductAttributeValue) Insert(ctx context.Context, exec boil.Co
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -662,7 +658,7 @@ func (o *AssignedProductAttributeValue) Insert(ctx context.Context, exec boil.Co
 // Update uses an executor to update the AssignedProductAttributeValue.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *AssignedProductAttributeValue) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *AssignedProductAttributeValue) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	assignedProductAttributeValueUpdateCacheMut.RLock()
@@ -690,13 +686,12 @@ func (o *AssignedProductAttributeValue) Update(ctx context.Context, exec boil.Co
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update assigned_product_attribute_values row")
 	}
@@ -716,10 +711,10 @@ func (o *AssignedProductAttributeValue) Update(ctx context.Context, exec boil.Co
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q assignedProductAttributeValueQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q assignedProductAttributeValueQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for assigned_product_attribute_values")
 	}
@@ -733,7 +728,7 @@ func (q assignedProductAttributeValueQuery) UpdateAll(ctx context.Context, exec 
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o AssignedProductAttributeValueSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o AssignedProductAttributeValueSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -763,12 +758,11 @@ func (o AssignedProductAttributeValueSlice) UpdateAll(ctx context.Context, exec 
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, assignedProductAttributeValuePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in assignedProductAttributeValue slice")
 	}
@@ -782,7 +776,7 @@ func (o AssignedProductAttributeValueSlice) UpdateAll(ctx context.Context, exec 
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *AssignedProductAttributeValue) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *AssignedProductAttributeValue) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no assigned_product_attribute_values provided for upsert")
 	}
@@ -866,18 +860,17 @@ func (o *AssignedProductAttributeValue) Upsert(ctx context.Context, exec boil.Co
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert assigned_product_attribute_values")
@@ -894,7 +887,7 @@ func (o *AssignedProductAttributeValue) Upsert(ctx context.Context, exec boil.Co
 
 // Delete deletes a single AssignedProductAttributeValue record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *AssignedProductAttributeValue) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *AssignedProductAttributeValue) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no AssignedProductAttributeValue provided for delete")
 	}
@@ -902,12 +895,11 @@ func (o *AssignedProductAttributeValue) Delete(ctx context.Context, exec boil.Co
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), assignedProductAttributeValuePrimaryKeyMapping)
 	sql := "DELETE FROM \"assigned_product_attribute_values\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from assigned_product_attribute_values")
 	}
@@ -921,14 +913,14 @@ func (o *AssignedProductAttributeValue) Delete(ctx context.Context, exec boil.Co
 }
 
 // DeleteAll deletes all matching rows.
-func (q assignedProductAttributeValueQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q assignedProductAttributeValueQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no assignedProductAttributeValueQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from assigned_product_attribute_values")
 	}
@@ -942,7 +934,7 @@ func (q assignedProductAttributeValueQuery) DeleteAll(ctx context.Context, exec 
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o AssignedProductAttributeValueSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o AssignedProductAttributeValueSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -956,12 +948,11 @@ func (o AssignedProductAttributeValueSlice) DeleteAll(ctx context.Context, exec 
 	sql := "DELETE FROM \"assigned_product_attribute_values\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, assignedProductAttributeValuePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from assignedProductAttributeValue slice")
 	}
@@ -976,8 +967,8 @@ func (o AssignedProductAttributeValueSlice) DeleteAll(ctx context.Context, exec 
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *AssignedProductAttributeValue) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindAssignedProductAttributeValue(ctx, exec, o.ID)
+func (o *AssignedProductAttributeValue) Reload(exec boil.Executor) error {
+	ret, err := FindAssignedProductAttributeValue(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -988,7 +979,7 @@ func (o *AssignedProductAttributeValue) Reload(ctx context.Context, exec boil.Co
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *AssignedProductAttributeValueSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *AssignedProductAttributeValueSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1005,7 +996,7 @@ func (o *AssignedProductAttributeValueSlice) ReloadAll(ctx context.Context, exec
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in AssignedProductAttributeValueSlice")
 	}
@@ -1016,16 +1007,15 @@ func (o *AssignedProductAttributeValueSlice) ReloadAll(ctx context.Context, exec
 }
 
 // AssignedProductAttributeValueExists checks if the AssignedProductAttributeValue row exists.
-func AssignedProductAttributeValueExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func AssignedProductAttributeValueExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"assigned_product_attribute_values\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1036,6 +1026,6 @@ func AssignedProductAttributeValueExists(ctx context.Context, exec boil.ContextE
 }
 
 // Exists checks if the AssignedProductAttributeValue row exists.
-func (o *AssignedProductAttributeValue) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return AssignedProductAttributeValueExists(ctx, exec, o.ID)
+func (o *AssignedProductAttributeValue) Exists(exec boil.Executor) (bool, error) {
+	return AssignedProductAttributeValueExists(exec, o.ID)
 }

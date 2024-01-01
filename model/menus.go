@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -162,12 +161,12 @@ var (
 )
 
 // One returns a single menu record from the query.
-func (q menuQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Menu, error) {
+func (q menuQuery) One(exec boil.Executor) (*Menu, error) {
 	o := &Menu{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -179,10 +178,10 @@ func (q menuQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Menu, e
 }
 
 // All returns all Menu records from the query.
-func (q menuQuery) All(ctx context.Context, exec boil.ContextExecutor) (MenuSlice, error) {
+func (q menuQuery) All(exec boil.Executor) (MenuSlice, error) {
 	var o []*Menu
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Menu slice")
 	}
@@ -191,13 +190,13 @@ func (q menuQuery) All(ctx context.Context, exec boil.ContextExecutor) (MenuSlic
 }
 
 // Count returns the count of all Menu records in the query.
-func (q menuQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q menuQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count menus rows")
 	}
@@ -206,14 +205,14 @@ func (q menuQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64,
 }
 
 // Exists checks if the row exists in the table.
-func (q menuQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q menuQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if menus exists")
 	}
@@ -251,7 +250,7 @@ func (o *Menu) TopMenuShops(mods ...qm.QueryMod) shopQuery {
 
 // LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
+func (menuL) LoadMenuItems(e boil.Executor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
 	var slice []*Menu
 	var object *Menu
 
@@ -312,7 +311,7 @@ func (menuL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load menu_items")
 	}
@@ -358,7 +357,7 @@ func (menuL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular
 
 // LoadTopMenuShops allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (menuL) LoadTopMenuShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
+func (menuL) LoadTopMenuShops(e boil.Executor, singular bool, maybeMenu interface{}, mods queries.Applicator) error {
 	var slice []*Menu
 	var object *Menu
 
@@ -419,7 +418,7 @@ func (menuL) LoadTopMenuShops(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load shops")
 	}
@@ -467,12 +466,12 @@ func (menuL) LoadTopMenuShops(ctx context.Context, e boil.ContextExecutor, singu
 // of the menu, optionally inserting them as new records.
 // Appends related to o.R.MenuItems.
 // Sets related.R.Menu appropriately.
-func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+func (o *Menu) AddMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.MenuID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -483,12 +482,11 @@ func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, inse
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -520,12 +518,12 @@ func (o *Menu) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, inse
 // of the menu, optionally inserting them as new records.
 // Appends related to o.R.TopMenuShops.
 // Sets related.R.TopMenu appropriately.
-func (o *Menu) AddTopMenuShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+func (o *Menu) AddTopMenuShops(exec boil.Executor, insert bool, related ...*Shop) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.TopMenuID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -536,12 +534,11 @@ func (o *Menu) AddTopMenuShops(ctx context.Context, exec boil.ContextExecutor, i
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -575,15 +572,14 @@ func (o *Menu) AddTopMenuShops(ctx context.Context, exec boil.ContextExecutor, i
 // Sets o.R.TopMenu's TopMenuShops accordingly.
 // Replaces o.R.TopMenuShops with related.
 // Sets related.R.TopMenu's TopMenuShops accordingly.
-func (o *Menu) SetTopMenuShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+func (o *Menu) SetTopMenuShops(exec boil.Executor, insert bool, related ...*Shop) error {
 	query := "update \"shops\" set \"top_menu_id\" = null where \"top_menu_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -600,13 +596,13 @@ func (o *Menu) SetTopMenuShops(ctx context.Context, exec boil.ContextExecutor, i
 		o.R.TopMenuShops = nil
 	}
 
-	return o.AddTopMenuShops(ctx, exec, insert, related...)
+	return o.AddTopMenuShops(exec, insert, related...)
 }
 
 // RemoveTopMenuShops relationships from objects passed in.
 // Removes related items from R.TopMenuShops (uses pointer comparison, removal does not keep order)
 // Sets related.R.TopMenu.
-func (o *Menu) RemoveTopMenuShops(ctx context.Context, exec boil.ContextExecutor, related ...*Shop) error {
+func (o *Menu) RemoveTopMenuShops(exec boil.Executor, related ...*Shop) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -617,7 +613,7 @@ func (o *Menu) RemoveTopMenuShops(ctx context.Context, exec boil.ContextExecutor
 		if rel.R != nil {
 			rel.R.TopMenu = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("top_menu_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("top_menu_id")); err != nil {
 			return err
 		}
 	}
@@ -656,7 +652,7 @@ func Menus(mods ...qm.QueryMod) menuQuery {
 
 // FindMenu retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindMenu(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Menu, error) {
+func FindMenu(exec boil.Executor, iD string, selectCols ...string) (*Menu, error) {
 	menuObj := &Menu{}
 
 	sel := "*"
@@ -669,7 +665,7 @@ func FindMenu(ctx context.Context, exec boil.ContextExecutor, iD string, selectC
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, menuObj)
+	err := q.Bind(nil, exec, menuObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -682,7 +678,7 @@ func FindMenu(ctx context.Context, exec boil.ContextExecutor, iD string, selectC
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Menu) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Menu) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no menus provided for insertion")
 	}
@@ -730,16 +726,15 @@ func (o *Menu) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -758,7 +753,7 @@ func (o *Menu) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 // Update uses an executor to update the Menu.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Menu) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Menu) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	menuUpdateCacheMut.RLock()
@@ -786,13 +781,12 @@ func (o *Menu) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update menus row")
 	}
@@ -812,10 +806,10 @@ func (o *Menu) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q menuQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q menuQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for menus")
 	}
@@ -829,7 +823,7 @@ func (q menuQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o MenuSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o MenuSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -859,12 +853,11 @@ func (o MenuSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, menuPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in menu slice")
 	}
@@ -878,7 +871,7 @@ func (o MenuSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Menu) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Menu) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no menus provided for upsert")
 	}
@@ -962,18 +955,17 @@ func (o *Menu) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert menus")
@@ -990,7 +982,7 @@ func (o *Menu) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 
 // Delete deletes a single Menu record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Menu) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Menu) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Menu provided for delete")
 	}
@@ -998,12 +990,11 @@ func (o *Menu) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), menuPrimaryKeyMapping)
 	sql := "DELETE FROM \"menus\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from menus")
 	}
@@ -1017,14 +1008,14 @@ func (o *Menu) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 }
 
 // DeleteAll deletes all matching rows.
-func (q menuQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q menuQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no menuQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from menus")
 	}
@@ -1038,7 +1029,7 @@ func (q menuQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o MenuSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o MenuSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1052,12 +1043,11 @@ func (o MenuSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 	sql := "DELETE FROM \"menus\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, menuPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from menu slice")
 	}
@@ -1072,8 +1062,8 @@ func (o MenuSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Menu) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindMenu(ctx, exec, o.ID)
+func (o *Menu) Reload(exec boil.Executor) error {
+	ret, err := FindMenu(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1084,7 +1074,7 @@ func (o *Menu) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *MenuSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *MenuSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1101,7 +1091,7 @@ func (o *MenuSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in MenuSlice")
 	}
@@ -1112,16 +1102,15 @@ func (o *MenuSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // MenuExists checks if the Menu row exists.
-func MenuExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func MenuExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"menus\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1132,6 +1121,6 @@ func MenuExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool
 }
 
 // Exists checks if the Menu row exists.
-func (o *Menu) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return MenuExists(ctx, exec, o.ID)
+func (o *Menu) Exists(exec boil.Executor) (bool, error) {
+	return MenuExists(exec, o.ID)
 }

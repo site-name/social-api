@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -363,12 +362,12 @@ var (
 )
 
 // One returns a single checkout record from the query.
-func (q checkoutQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Checkout, error) {
+func (q checkoutQuery) One(exec boil.Executor) (*Checkout, error) {
 	o := &Checkout{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -380,10 +379,10 @@ func (q checkoutQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Che
 }
 
 // All returns all Checkout records from the query.
-func (q checkoutQuery) All(ctx context.Context, exec boil.ContextExecutor) (CheckoutSlice, error) {
+func (q checkoutQuery) All(exec boil.Executor) (CheckoutSlice, error) {
 	var o []*Checkout
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Checkout slice")
 	}
@@ -392,13 +391,13 @@ func (q checkoutQuery) All(ctx context.Context, exec boil.ContextExecutor) (Chec
 }
 
 // Count returns the count of all Checkout records in the query.
-func (q checkoutQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q checkoutQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count checkouts rows")
 	}
@@ -407,14 +406,14 @@ func (q checkoutQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // Exists checks if the row exists in the table.
-func (q checkoutQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q checkoutQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if checkouts exists")
 	}
@@ -521,7 +520,7 @@ func (o *Checkout) Payments(mods ...qm.QueryMod) paymentQuery {
 
 // LoadBillingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadBillingAddress(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -588,7 +587,7 @@ func (checkoutL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Address")
 	}
@@ -637,7 +636,7 @@ func (checkoutL) LoadBillingAddress(ctx context.Context, e boil.ContextExecutor,
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadChannel(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -700,7 +699,7 @@ func (checkoutL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singul
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Channel")
 	}
@@ -749,7 +748,7 @@ func (checkoutL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singul
 
 // LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadShippingMethod(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -816,7 +815,7 @@ func (checkoutL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ShippingMethod")
 	}
@@ -865,7 +864,7 @@ func (checkoutL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor,
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadUser(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -932,7 +931,7 @@ func (checkoutL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load User")
 	}
@@ -981,7 +980,7 @@ func (checkoutL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 
 // LoadCollectionPoint allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (checkoutL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadCollectionPoint(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1048,7 +1047,7 @@ func (checkoutL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Warehouse")
 	}
@@ -1097,7 +1096,7 @@ func (checkoutL) LoadCollectionPoint(ctx context.Context, e boil.ContextExecutor
 
 // LoadCheckoutLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadCheckoutLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadCheckoutLines(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1158,7 +1157,7 @@ func (checkoutL) LoadCheckoutLines(ctx context.Context, e boil.ContextExecutor, 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load checkout_lines")
 	}
@@ -1204,7 +1203,7 @@ func (checkoutL) LoadCheckoutLines(ctx context.Context, e boil.ContextExecutor, 
 
 // LoadGiftcardCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1265,7 +1264,7 @@ func (checkoutL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load giftcard_checkouts")
 	}
@@ -1311,7 +1310,7 @@ func (checkoutL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 
 // LoadPayments allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (checkoutL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
+func (checkoutL) LoadPayments(e boil.Executor, singular bool, maybeCheckout interface{}, mods queries.Applicator) error {
 	var slice []*Checkout
 	var object *Checkout
 
@@ -1372,7 +1371,7 @@ func (checkoutL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load payments")
 	}
@@ -1419,10 +1418,10 @@ func (checkoutL) LoadPayments(ctx context.Context, e boil.ContextExecutor, singu
 // SetBillingAddress of the checkout to the related item.
 // Sets o.R.BillingAddress to related.
 // Adds o to related.R.BillingAddressCheckouts.
-func (o *Checkout) SetBillingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+func (o *Checkout) SetBillingAddress(exec boil.Executor, insert bool, related *Address) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1434,12 +1433,11 @@ func (o *Checkout) SetBillingAddress(ctx context.Context, exec boil.ContextExecu
 	)
 	values := []interface{}{related.ID, o.Token}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1466,11 +1464,11 @@ func (o *Checkout) SetBillingAddress(ctx context.Context, exec boil.ContextExecu
 // RemoveBillingAddress relationship.
 // Sets o.R.BillingAddress to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveBillingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *Checkout) RemoveBillingAddress(exec boil.Executor, related *Address) error {
 	var err error
 
 	queries.SetScanner(&o.BillingAddressID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("billing_address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1499,10 +1497,10 @@ func (o *Checkout) RemoveBillingAddress(ctx context.Context, exec boil.ContextEx
 // SetChannel of the checkout to the related item.
 // Sets o.R.Channel to related.
 // Adds o to related.R.Checkouts.
-func (o *Checkout) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+func (o *Checkout) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1514,12 +1512,11 @@ func (o *Checkout) SetChannel(ctx context.Context, exec boil.ContextExecutor, in
 	)
 	values := []interface{}{related.ID, o.Token}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1546,10 +1543,10 @@ func (o *Checkout) SetChannel(ctx context.Context, exec boil.ContextExecutor, in
 // SetShippingMethod of the checkout to the related item.
 // Sets o.R.ShippingMethod to related.
 // Adds o to related.R.Checkouts.
-func (o *Checkout) SetShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
+func (o *Checkout) SetShippingMethod(exec boil.Executor, insert bool, related *ShippingMethod) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1561,12 +1558,11 @@ func (o *Checkout) SetShippingMethod(ctx context.Context, exec boil.ContextExecu
 	)
 	values := []interface{}{related.ID, o.Token}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1593,11 +1589,11 @@ func (o *Checkout) SetShippingMethod(ctx context.Context, exec boil.ContextExecu
 // RemoveShippingMethod relationship.
 // Sets o.R.ShippingMethod to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveShippingMethod(ctx context.Context, exec boil.ContextExecutor, related *ShippingMethod) error {
+func (o *Checkout) RemoveShippingMethod(exec boil.Executor, related *ShippingMethod) error {
 	var err error
 
 	queries.SetScanner(&o.ShippingMethodID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("shipping_method_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("shipping_method_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1626,10 +1622,10 @@ func (o *Checkout) RemoveShippingMethod(ctx context.Context, exec boil.ContextEx
 // SetUser of the checkout to the related item.
 // Sets o.R.User to related.
 // Adds o to related.R.Checkouts.
-func (o *Checkout) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+func (o *Checkout) SetUser(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1641,12 +1637,11 @@ func (o *Checkout) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 	)
 	values := []interface{}{related.ID, o.Token}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1673,11 +1668,11 @@ func (o *Checkout) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 // RemoveUser relationship.
 // Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *Checkout) RemoveUser(exec boil.Executor, related *User) error {
 	var err error
 
 	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1706,10 +1701,10 @@ func (o *Checkout) RemoveUser(ctx context.Context, exec boil.ContextExecutor, re
 // SetCollectionPoint of the checkout to the related item.
 // Sets o.R.CollectionPoint to related.
 // Adds o to related.R.CollectionPointCheckouts.
-func (o *Checkout) SetCollectionPoint(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
+func (o *Checkout) SetCollectionPoint(exec boil.Executor, insert bool, related *Warehouse) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1721,12 +1716,11 @@ func (o *Checkout) SetCollectionPoint(ctx context.Context, exec boil.ContextExec
 	)
 	values := []interface{}{related.ID, o.Token}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1753,11 +1747,11 @@ func (o *Checkout) SetCollectionPoint(ctx context.Context, exec boil.ContextExec
 // RemoveCollectionPoint relationship.
 // Sets o.R.CollectionPoint to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Checkout) RemoveCollectionPoint(ctx context.Context, exec boil.ContextExecutor, related *Warehouse) error {
+func (o *Checkout) RemoveCollectionPoint(exec boil.Executor, related *Warehouse) error {
 	var err error
 
 	queries.SetScanner(&o.CollectionPointID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("collection_point_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("collection_point_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1787,12 +1781,12 @@ func (o *Checkout) RemoveCollectionPoint(ctx context.Context, exec boil.ContextE
 // of the checkout, optionally inserting them as new records.
 // Appends related to o.R.CheckoutLines.
 // Sets related.R.Checkout appropriately.
-func (o *Checkout) AddCheckoutLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CheckoutLine) error {
+func (o *Checkout) AddCheckoutLines(exec boil.Executor, insert bool, related ...*CheckoutLine) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CheckoutID = o.Token
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1803,12 +1797,11 @@ func (o *Checkout) AddCheckoutLines(ctx context.Context, exec boil.ContextExecut
 			)
 			values := []interface{}{o.Token, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1840,12 +1833,12 @@ func (o *Checkout) AddCheckoutLines(ctx context.Context, exec boil.ContextExecut
 // of the checkout, optionally inserting them as new records.
 // Appends related to o.R.GiftcardCheckouts.
 // Sets related.R.Checkout appropriately.
-func (o *Checkout) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
+func (o *Checkout) AddGiftcardCheckouts(exec boil.Executor, insert bool, related ...*GiftcardCheckout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CheckoutID = o.Token
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1856,12 +1849,11 @@ func (o *Checkout) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 			)
 			values := []interface{}{o.Token, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1893,12 +1885,12 @@ func (o *Checkout) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 // of the checkout, optionally inserting them as new records.
 // Appends related to o.R.Payments.
 // Sets related.R.Checkout appropriately.
-func (o *Checkout) AddPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+func (o *Checkout) AddPayments(exec boil.Executor, insert bool, related ...*Payment) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.CheckoutID, o.Token)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1909,12 +1901,11 @@ func (o *Checkout) AddPayments(ctx context.Context, exec boil.ContextExecutor, i
 			)
 			values := []interface{}{o.Token, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1948,15 +1939,14 @@ func (o *Checkout) AddPayments(ctx context.Context, exec boil.ContextExecutor, i
 // Sets o.R.Checkout's Payments accordingly.
 // Replaces o.R.Payments with related.
 // Sets related.R.Checkout's Payments accordingly.
-func (o *Checkout) SetPayments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Payment) error {
+func (o *Checkout) SetPayments(exec boil.Executor, insert bool, related ...*Payment) error {
 	query := "update \"payments\" set \"checkout_id\" = null where \"checkout_id\" = $1"
 	values := []interface{}{o.Token}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1973,13 +1963,13 @@ func (o *Checkout) SetPayments(ctx context.Context, exec boil.ContextExecutor, i
 		o.R.Payments = nil
 	}
 
-	return o.AddPayments(ctx, exec, insert, related...)
+	return o.AddPayments(exec, insert, related...)
 }
 
 // RemovePayments relationships from objects passed in.
 // Removes related items from R.Payments (uses pointer comparison, removal does not keep order)
 // Sets related.R.Checkout.
-func (o *Checkout) RemovePayments(ctx context.Context, exec boil.ContextExecutor, related ...*Payment) error {
+func (o *Checkout) RemovePayments(exec boil.Executor, related ...*Payment) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1990,7 +1980,7 @@ func (o *Checkout) RemovePayments(ctx context.Context, exec boil.ContextExecutor
 		if rel.R != nil {
 			rel.R.Checkout = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("checkout_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("checkout_id")); err != nil {
 			return err
 		}
 	}
@@ -2029,7 +2019,7 @@ func Checkouts(mods ...qm.QueryMod) checkoutQuery {
 
 // FindCheckout retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindCheckout(ctx context.Context, exec boil.ContextExecutor, token string, selectCols ...string) (*Checkout, error) {
+func FindCheckout(exec boil.Executor, token string, selectCols ...string) (*Checkout, error) {
 	checkoutObj := &Checkout{}
 
 	sel := "*"
@@ -2042,7 +2032,7 @@ func FindCheckout(ctx context.Context, exec boil.ContextExecutor, token string, 
 
 	q := queries.Raw(query, token)
 
-	err := q.Bind(ctx, exec, checkoutObj)
+	err := q.Bind(nil, exec, checkoutObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -2055,7 +2045,7 @@ func FindCheckout(ctx context.Context, exec boil.ContextExecutor, token string, 
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Checkout) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Checkout) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no checkouts provided for insertion")
 	}
@@ -2103,16 +2093,15 @@ func (o *Checkout) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -2131,7 +2120,7 @@ func (o *Checkout) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update uses an executor to update the Checkout.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Checkout) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Checkout) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	checkoutUpdateCacheMut.RLock()
@@ -2159,13 +2148,12 @@ func (o *Checkout) Update(ctx context.Context, exec boil.ContextExecutor, column
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update checkouts row")
 	}
@@ -2185,10 +2173,10 @@ func (o *Checkout) Update(ctx context.Context, exec boil.ContextExecutor, column
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q checkoutQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q checkoutQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for checkouts")
 	}
@@ -2202,7 +2190,7 @@ func (q checkoutQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o CheckoutSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o CheckoutSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -2232,12 +2220,11 @@ func (o CheckoutSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, checkoutPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in checkout slice")
 	}
@@ -2251,7 +2238,7 @@ func (o CheckoutSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Checkout) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Checkout) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no checkouts provided for upsert")
 	}
@@ -2335,18 +2322,17 @@ func (o *Checkout) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert checkouts")
@@ -2363,7 +2349,7 @@ func (o *Checkout) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 
 // Delete deletes a single Checkout record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Checkout) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Checkout) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Checkout provided for delete")
 	}
@@ -2371,12 +2357,11 @@ func (o *Checkout) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), checkoutPrimaryKeyMapping)
 	sql := "DELETE FROM \"checkouts\" WHERE \"token\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from checkouts")
 	}
@@ -2390,14 +2375,14 @@ func (o *Checkout) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // DeleteAll deletes all matching rows.
-func (q checkoutQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q checkoutQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no checkoutQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from checkouts")
 	}
@@ -2411,7 +2396,7 @@ func (q checkoutQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o CheckoutSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o CheckoutSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -2425,12 +2410,11 @@ func (o CheckoutSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	sql := "DELETE FROM \"checkouts\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, checkoutPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from checkout slice")
 	}
@@ -2445,8 +2429,8 @@ func (o CheckoutSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Checkout) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindCheckout(ctx, exec, o.Token)
+func (o *Checkout) Reload(exec boil.Executor) error {
+	ret, err := FindCheckout(exec, o.Token)
 	if err != nil {
 		return err
 	}
@@ -2457,7 +2441,7 @@ func (o *Checkout) Reload(ctx context.Context, exec boil.ContextExecutor) error 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *CheckoutSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *CheckoutSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -2474,7 +2458,7 @@ func (o *CheckoutSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in CheckoutSlice")
 	}
@@ -2485,16 +2469,15 @@ func (o *CheckoutSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // CheckoutExists checks if the Checkout row exists.
-func CheckoutExists(ctx context.Context, exec boil.ContextExecutor, token string) (bool, error) {
+func CheckoutExists(exec boil.Executor, token string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"checkouts\" where \"token\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, token)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, token)
 	}
-	row := exec.QueryRowContext(ctx, sql, token)
+	row := exec.QueryRow(sql, token)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -2505,6 +2488,6 @@ func CheckoutExists(ctx context.Context, exec boil.ContextExecutor, token string
 }
 
 // Exists checks if the Checkout row exists.
-func (o *Checkout) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return CheckoutExists(ctx, exec, o.Token)
+func (o *Checkout) Exists(exec boil.Executor) (bool, error) {
+	return CheckoutExists(exec, o.Token)
 }

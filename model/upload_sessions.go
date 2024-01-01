@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -189,12 +188,12 @@ var (
 )
 
 // One returns a single uploadSession record from the query.
-func (q uploadSessionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*UploadSession, error) {
+func (q uploadSessionQuery) One(exec boil.Executor) (*UploadSession, error) {
 	o := &UploadSession{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -206,10 +205,10 @@ func (q uploadSessionQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // All returns all UploadSession records from the query.
-func (q uploadSessionQuery) All(ctx context.Context, exec boil.ContextExecutor) (UploadSessionSlice, error) {
+func (q uploadSessionQuery) All(exec boil.Executor) (UploadSessionSlice, error) {
 	var o []*UploadSession
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to UploadSession slice")
 	}
@@ -218,13 +217,13 @@ func (q uploadSessionQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // Count returns the count of all UploadSession records in the query.
-func (q uploadSessionQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q uploadSessionQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count upload_sessions rows")
 	}
@@ -233,14 +232,14 @@ func (q uploadSessionQuery) Count(ctx context.Context, exec boil.ContextExecutor
 }
 
 // Exists checks if the row exists in the table.
-func (q uploadSessionQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q uploadSessionQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if upload_sessions exists")
 	}
@@ -261,7 +260,7 @@ func UploadSessions(mods ...qm.QueryMod) uploadSessionQuery {
 
 // FindUploadSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUploadSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*UploadSession, error) {
+func FindUploadSession(exec boil.Executor, iD string, selectCols ...string) (*UploadSession, error) {
 	uploadSessionObj := &UploadSession{}
 
 	sel := "*"
@@ -274,7 +273,7 @@ func FindUploadSession(ctx context.Context, exec boil.ContextExecutor, iD string
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, uploadSessionObj)
+	err := q.Bind(nil, exec, uploadSessionObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -287,7 +286,7 @@ func FindUploadSession(ctx context.Context, exec boil.ContextExecutor, iD string
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *UploadSession) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *UploadSession) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no upload_sessions provided for insertion")
 	}
@@ -335,16 +334,15 @@ func (o *UploadSession) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -363,7 +361,7 @@ func (o *UploadSession) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update uses an executor to update the UploadSession.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *UploadSession) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *UploadSession) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	uploadSessionUpdateCacheMut.RLock()
@@ -391,13 +389,12 @@ func (o *UploadSession) Update(ctx context.Context, exec boil.ContextExecutor, c
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update upload_sessions row")
 	}
@@ -417,10 +414,10 @@ func (o *UploadSession) Update(ctx context.Context, exec boil.ContextExecutor, c
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q uploadSessionQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q uploadSessionQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for upload_sessions")
 	}
@@ -434,7 +431,7 @@ func (q uploadSessionQuery) UpdateAll(ctx context.Context, exec boil.ContextExec
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o UploadSessionSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o UploadSessionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -464,12 +461,11 @@ func (o UploadSessionSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, uploadSessionPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in uploadSession slice")
 	}
@@ -483,7 +479,7 @@ func (o UploadSessionSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *UploadSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *UploadSession) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no upload_sessions provided for upsert")
 	}
@@ -567,18 +563,17 @@ func (o *UploadSession) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert upload_sessions")
@@ -595,7 +590,7 @@ func (o *UploadSession) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 
 // Delete deletes a single UploadSession record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *UploadSession) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *UploadSession) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no UploadSession provided for delete")
 	}
@@ -603,12 +598,11 @@ func (o *UploadSession) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uploadSessionPrimaryKeyMapping)
 	sql := "DELETE FROM \"upload_sessions\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from upload_sessions")
 	}
@@ -622,14 +616,14 @@ func (o *UploadSession) Delete(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // DeleteAll deletes all matching rows.
-func (q uploadSessionQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q uploadSessionQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no uploadSessionQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from upload_sessions")
 	}
@@ -643,7 +637,7 @@ func (q uploadSessionQuery) DeleteAll(ctx context.Context, exec boil.ContextExec
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o UploadSessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o UploadSessionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -657,12 +651,11 @@ func (o UploadSessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	sql := "DELETE FROM \"upload_sessions\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, uploadSessionPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from uploadSession slice")
 	}
@@ -677,8 +670,8 @@ func (o UploadSessionSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *UploadSession) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindUploadSession(ctx, exec, o.ID)
+func (o *UploadSession) Reload(exec boil.Executor) error {
+	ret, err := FindUploadSession(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -689,7 +682,7 @@ func (o *UploadSession) Reload(ctx context.Context, exec boil.ContextExecutor) e
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *UploadSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *UploadSessionSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -706,7 +699,7 @@ func (o *UploadSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in UploadSessionSlice")
 	}
@@ -717,16 +710,15 @@ func (o *UploadSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 }
 
 // UploadSessionExists checks if the UploadSession row exists.
-func UploadSessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func UploadSessionExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"upload_sessions\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -737,6 +729,6 @@ func UploadSessionExists(ctx context.Context, exec boil.ContextExecutor, iD stri
 }
 
 // Exists checks if the UploadSession row exists.
-func (o *UploadSession) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return UploadSessionExists(ctx, exec, o.ID)
+func (o *UploadSession) Exists(exec boil.Executor) (bool, error) {
+	return UploadSessionExists(exec, o.ID)
 }

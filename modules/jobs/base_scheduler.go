@@ -10,11 +10,11 @@ import (
 type PeriodicScheduler struct {
 	jobs        *JobServer
 	period      time.Duration
-	jobType     string
+	jobType     model.Jobtype
 	enabledFunc func(cfg *model_helper.Config) bool
 }
 
-func NewPeriodicScheduler(jobs *JobServer, jobType string, period time.Duration, enabledFunc func(cfg *model_helper.Config) bool) *PeriodicScheduler {
+func NewPeriodicScheduler(jobs *JobServer, jobType model.Jobtype, period time.Duration, enabledFunc func(cfg *model_helper.Config) bool) *PeriodicScheduler {
 	return &PeriodicScheduler{
 		period:      period,
 		jobType:     jobType,
@@ -39,11 +39,11 @@ func (scheduler *PeriodicScheduler) ScheduleJob(_ *model_helper.Config /* pendin
 type DailyScheduler struct {
 	jobs          *JobServer
 	startTimeFunc func(cfg *model_helper.Config) *time.Time
-	jobType       string
+	jobType       model.Jobtype
 	enabledFunc   func(cfg *model_helper.Config) bool
 }
 
-func NewDailyScheduler(jobs *JobServer, jobType string, startTimeFunc func(cfg *model_helper.Config) *time.Time, enabledFunc func(cfg *model_helper.Config) bool) *DailyScheduler {
+func NewDailyScheduler(jobs *JobServer, jobType model.Jobtype, startTimeFunc func(cfg *model_helper.Config) *time.Time, enabledFunc func(cfg *model_helper.Config) bool) *DailyScheduler {
 	return &DailyScheduler{
 		startTimeFunc: startTimeFunc,
 		jobType:       jobType,

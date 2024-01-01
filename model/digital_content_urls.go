@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -162,12 +161,12 @@ var (
 )
 
 // One returns a single digitalContentURL record from the query.
-func (q digitalContentURLQuery) One(ctx context.Context, exec boil.ContextExecutor) (*DigitalContentURL, error) {
+func (q digitalContentURLQuery) One(exec boil.Executor) (*DigitalContentURL, error) {
 	o := &DigitalContentURL{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -179,10 +178,10 @@ func (q digitalContentURLQuery) One(ctx context.Context, exec boil.ContextExecut
 }
 
 // All returns all DigitalContentURL records from the query.
-func (q digitalContentURLQuery) All(ctx context.Context, exec boil.ContextExecutor) (DigitalContentURLSlice, error) {
+func (q digitalContentURLQuery) All(exec boil.Executor) (DigitalContentURLSlice, error) {
 	var o []*DigitalContentURL
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to DigitalContentURL slice")
 	}
@@ -191,13 +190,13 @@ func (q digitalContentURLQuery) All(ctx context.Context, exec boil.ContextExecut
 }
 
 // Count returns the count of all DigitalContentURL records in the query.
-func (q digitalContentURLQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q digitalContentURLQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count digital_content_urls rows")
 	}
@@ -206,14 +205,14 @@ func (q digitalContentURLQuery) Count(ctx context.Context, exec boil.ContextExec
 }
 
 // Exists checks if the row exists in the table.
-func (q digitalContentURLQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q digitalContentURLQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if digital_content_urls exists")
 	}
@@ -245,7 +244,7 @@ func (o *DigitalContentURL) Line(mods ...qm.QueryMod) orderLineQuery {
 
 // LoadContent allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
+func (digitalContentURLL) LoadContent(e boil.Executor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
 	var slice []*DigitalContentURL
 	var object *DigitalContentURL
 
@@ -308,7 +307,7 @@ func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecuto
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load DigitalContent")
 	}
@@ -357,7 +356,7 @@ func (digitalContentURLL) LoadContent(ctx context.Context, e boil.ContextExecuto
 
 // LoadLine allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (digitalContentURLL) LoadLine(ctx context.Context, e boil.ContextExecutor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
+func (digitalContentURLL) LoadLine(e boil.Executor, singular bool, maybeDigitalContentURL interface{}, mods queries.Applicator) error {
 	var slice []*DigitalContentURL
 	var object *DigitalContentURL
 
@@ -424,7 +423,7 @@ func (digitalContentURLL) LoadLine(ctx context.Context, e boil.ContextExecutor, 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load OrderLine")
 	}
@@ -474,10 +473,10 @@ func (digitalContentURLL) LoadLine(ctx context.Context, e boil.ContextExecutor, 
 // SetContent of the digitalContentURL to the related item.
 // Sets o.R.Content to related.
 // Adds o to related.R.ContentDigitalContentUrls.
-func (o *DigitalContentURL) SetContent(ctx context.Context, exec boil.ContextExecutor, insert bool, related *DigitalContent) error {
+func (o *DigitalContentURL) SetContent(exec boil.Executor, insert bool, related *DigitalContent) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -489,12 +488,11 @@ func (o *DigitalContentURL) SetContent(ctx context.Context, exec boil.ContextExe
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -521,10 +519,10 @@ func (o *DigitalContentURL) SetContent(ctx context.Context, exec boil.ContextExe
 // SetLine of the digitalContentURL to the related item.
 // Sets o.R.Line to related.
 // Adds o to related.R.LineDigitalContentURL.
-func (o *DigitalContentURL) SetLine(ctx context.Context, exec boil.ContextExecutor, insert bool, related *OrderLine) error {
+func (o *DigitalContentURL) SetLine(exec boil.Executor, insert bool, related *OrderLine) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -536,12 +534,11 @@ func (o *DigitalContentURL) SetLine(ctx context.Context, exec boil.ContextExecut
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -568,11 +565,11 @@ func (o *DigitalContentURL) SetLine(ctx context.Context, exec boil.ContextExecut
 // RemoveLine relationship.
 // Sets o.R.Line to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *DigitalContentURL) RemoveLine(ctx context.Context, exec boil.ContextExecutor, related *OrderLine) error {
+func (o *DigitalContentURL) RemoveLine(exec boil.Executor, related *OrderLine) error {
 	var err error
 
 	queries.SetScanner(&o.LineID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("line_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("line_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -600,7 +597,7 @@ func DigitalContentUrls(mods ...qm.QueryMod) digitalContentURLQuery {
 
 // FindDigitalContentURL retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*DigitalContentURL, error) {
+func FindDigitalContentURL(exec boil.Executor, iD string, selectCols ...string) (*DigitalContentURL, error) {
 	digitalContentURLObj := &DigitalContentURL{}
 
 	sel := "*"
@@ -613,7 +610,7 @@ func FindDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, iD st
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, digitalContentURLObj)
+	err := q.Bind(nil, exec, digitalContentURLObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -626,7 +623,7 @@ func FindDigitalContentURL(ctx context.Context, exec boil.ContextExecutor, iD st
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *DigitalContentURL) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *DigitalContentURL) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no digital_content_urls provided for insertion")
 	}
@@ -674,16 +671,15 @@ func (o *DigitalContentURL) Insert(ctx context.Context, exec boil.ContextExecuto
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -702,7 +698,7 @@ func (o *DigitalContentURL) Insert(ctx context.Context, exec boil.ContextExecuto
 // Update uses an executor to update the DigitalContentURL.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *DigitalContentURL) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *DigitalContentURL) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	digitalContentURLUpdateCacheMut.RLock()
@@ -730,13 +726,12 @@ func (o *DigitalContentURL) Update(ctx context.Context, exec boil.ContextExecuto
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update digital_content_urls row")
 	}
@@ -756,10 +751,10 @@ func (o *DigitalContentURL) Update(ctx context.Context, exec boil.ContextExecuto
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q digitalContentURLQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q digitalContentURLQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for digital_content_urls")
 	}
@@ -773,7 +768,7 @@ func (q digitalContentURLQuery) UpdateAll(ctx context.Context, exec boil.Context
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o DigitalContentURLSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o DigitalContentURLSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -803,12 +798,11 @@ func (o DigitalContentURLSlice) UpdateAll(ctx context.Context, exec boil.Context
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, digitalContentURLPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in digitalContentURL slice")
 	}
@@ -822,7 +816,7 @@ func (o DigitalContentURLSlice) UpdateAll(ctx context.Context, exec boil.Context
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *DigitalContentURL) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *DigitalContentURL) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no digital_content_urls provided for upsert")
 	}
@@ -906,18 +900,17 @@ func (o *DigitalContentURL) Upsert(ctx context.Context, exec boil.ContextExecuto
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert digital_content_urls")
@@ -934,7 +927,7 @@ func (o *DigitalContentURL) Upsert(ctx context.Context, exec boil.ContextExecuto
 
 // Delete deletes a single DigitalContentURL record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *DigitalContentURL) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *DigitalContentURL) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no DigitalContentURL provided for delete")
 	}
@@ -942,12 +935,11 @@ func (o *DigitalContentURL) Delete(ctx context.Context, exec boil.ContextExecuto
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), digitalContentURLPrimaryKeyMapping)
 	sql := "DELETE FROM \"digital_content_urls\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from digital_content_urls")
 	}
@@ -961,14 +953,14 @@ func (o *DigitalContentURL) Delete(ctx context.Context, exec boil.ContextExecuto
 }
 
 // DeleteAll deletes all matching rows.
-func (q digitalContentURLQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q digitalContentURLQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no digitalContentURLQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from digital_content_urls")
 	}
@@ -982,7 +974,7 @@ func (q digitalContentURLQuery) DeleteAll(ctx context.Context, exec boil.Context
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o DigitalContentURLSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o DigitalContentURLSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -996,12 +988,11 @@ func (o DigitalContentURLSlice) DeleteAll(ctx context.Context, exec boil.Context
 	sql := "DELETE FROM \"digital_content_urls\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, digitalContentURLPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from digitalContentURL slice")
 	}
@@ -1016,8 +1007,8 @@ func (o DigitalContentURLSlice) DeleteAll(ctx context.Context, exec boil.Context
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *DigitalContentURL) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindDigitalContentURL(ctx, exec, o.ID)
+func (o *DigitalContentURL) Reload(exec boil.Executor) error {
+	ret, err := FindDigitalContentURL(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1028,7 +1019,7 @@ func (o *DigitalContentURL) Reload(ctx context.Context, exec boil.ContextExecuto
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *DigitalContentURLSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *DigitalContentURLSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1045,7 +1036,7 @@ func (o *DigitalContentURLSlice) ReloadAll(ctx context.Context, exec boil.Contex
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in DigitalContentURLSlice")
 	}
@@ -1056,16 +1047,15 @@ func (o *DigitalContentURLSlice) ReloadAll(ctx context.Context, exec boil.Contex
 }
 
 // DigitalContentURLExists checks if the DigitalContentURL row exists.
-func DigitalContentURLExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func DigitalContentURLExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"digital_content_urls\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1076,6 +1066,6 @@ func DigitalContentURLExists(ctx context.Context, exec boil.ContextExecutor, iD 
 }
 
 // Exists checks if the DigitalContentURL row exists.
-func (o *DigitalContentURL) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return DigitalContentURLExists(ctx, exec, o.ID)
+func (o *DigitalContentURL) Exists(exec boil.Executor) (bool, error) {
+	return DigitalContentURLExists(exec, o.ID)
 }

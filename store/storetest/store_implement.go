@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/storetest/mocks"
 	"github.com/stretchr/testify/mock"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var _ store.Store = (*Store)(nil)
@@ -50,7 +50,7 @@ type Store struct {
 }
 
 // FinalizeTransaction implements store.Store.
-func (*Store) FinalizeTransaction(tx *gorm.DB) {}
+func (*Store) FinalizeTransaction(tx store.ContextRunner) {}
 
 func (s *Store) SetContext(ctx context.Context) { s.context = ctx }
 func (s *Store) Context() context.Context       { return s.context }
@@ -133,8 +133,8 @@ func (*Store) Channel() store.ChannelStore {
 	panic("unimplemented")
 }
 
-func (*Store) CheckIntegrity() <-chan model.IntegrityCheckResult {
-	return make(chan model.IntegrityCheckResult)
+func (*Store) CheckIntegrity() <-chan model_helper.IntegrityCheckResult {
+	return make(chan model_helper.IntegrityCheckResult)
 }
 
 func (*Store) Checkout() store.CheckoutStore {
@@ -187,7 +187,7 @@ func (*Store) CustomerNote() store.CustomerNoteStore {
 	panic("unimplemented")
 }
 
-func (*Store) DBXFromContext(ctx context.Context) *gorm.DB {
+func (*Store) DBXFromContext(ctx context.Context) boil.ContextExecutor {
 	panic("unimplemented")
 }
 
@@ -233,7 +233,7 @@ func (*Store) GetDbVersion(numerical bool) (string, error) {
 	return "", nil
 }
 
-func (*Store) GetMaster() *gorm.DB {
+func (*Store) GetMaster() store.ContextRunner {
 	panic("unimplemented")
 }
 
@@ -242,7 +242,7 @@ func (*Store) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) 
 }
 
 // GetReplica implements store.Store.
-func (*Store) GetReplica() *gorm.DB {
+func (*Store) GetReplica() boil.ContextExecutor {
 	panic("unimplemented")
 }
 

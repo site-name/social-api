@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gorm.io/gorm"
 )
@@ -40,11 +40,9 @@ type Store interface {
 	//
 	// If no placeholder format is passed, defaut to squirrel.Dollar ($)
 	GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) squirrel.StatementBuilderType
-	// IsUniqueConstraintError checks if given error is unique constraint error in postgres (code 23505).
-	// indexNames are used to double check for specific unique constraint was violated (code == 23505 && on which constraint).
 	IsUniqueConstraintError(err error, indexNames []string) bool
 	MarkSystemRanUnitTests() //
-	DBXFromContext(ctx context.Context) *gorm.DB
+	DBXFromContext(ctx context.Context) boil.ContextExecutor
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -158,8 +156,8 @@ type (
 		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
 	}
 	VatStore interface {
-		Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error)
-		FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error)
+		Upsert(tx ContextRunner, vats model.VatSlice) (model.VatSlice, error)
+		FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error)
 	}
 )
 
@@ -758,13 +756,13 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
-	Save(audit *model.Audit) error
+	Save(audit model.Audit) error
 	Get(userID string, offset int, limit int) (model.Audits, error)
 	PermanentDeleteByUser(userID string) error
 }
 
 type TermsOfServiceStore interface {
-	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
+	Save(termsOfService model.TermsOfService) (*model.TermsOfService, error)
 	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
 	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
 }
@@ -784,7 +782,7 @@ type PreferenceStore interface {
 
 type JobStore interface {
 	Save(job model.Job) (*model.Job, error)
-	UpdateOptimistically(job *model.Job, currentStatus model.Jobstatus) (bool, error)
+	UpdateOptimistically(job model.Job, currentStatus model.Jobstatus) (bool, error)
 	UpdateStatus(id string, status model.Jobstatus) (*model.Job, error)
 	UpdateStatusOptimistically(id string, currentStatus model.Jobstatus, newStatus model.Jobstatus) (bool, error) // update job status from current status to new status
 	Get(mods ...qm.QueryMod) (*model.Job, error)
@@ -802,9 +800,9 @@ type JobStore interface {
 }
 
 type StatusStore interface {
-	SaveOrUpdate(status *model.Status) error
+	Upsert(status model.Status) (*model.Status, error)
 	Get(userID string) (*model.Status, error)
-	GetByIds(userIds []string) ([]*model.Status, error)
+	GetByIds(userIds []string) (model.StatusSlice, error)
 	ResetAll() error
 	GetTotalActiveUsersCount() (int64, error)
 	UpdateLastActivityAt(userID string, lastActivityAt int64) error
@@ -814,10 +812,10 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ScanFields(addr *model.Address) []any
-		Upsert(tx ContextRunner, address *model.Address) (*model.Address, error)
-		Get(addressID string) (*model.Address, error)                                         // Get returns an Address with given addressID is exist
-		DeleteAddresses(tx ContextRunner, addressIDs []string) error                          // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *model_helper.AddressFilterOptions) (model.AddressSlice, error) // FilterByOption finds and returns a list of address(es) filtered by given option
+		Upsert(tx ContextRunner, address model.Address) (*model.Address, error)
+		Get(addressID string) (*model.Address, error)                                        // Get returns an Address with given addressID is exist
+		DeleteAddresses(tx ContextRunner, addressIDs []string) error                         // DeleteAddress deletes given address and returns an error
+		FilterByOption(option model_helper.AddressFilterOptions) (model.AddressSlice, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
 		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
@@ -826,9 +824,9 @@ type (
 		AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) error
 		ClearCaches()
 		ScanFields(user *model.User) []any
-		Save(user *model.User) (*model.User, error)                               // Save takes an user struct and save into database
-		Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) // Update update given user
-		UpdateLastPictureUpdate(userID string) error
+		Save(user model.User) (*model.User, error)                                       // Save takes an user struct and save into database
+		Update(user *model.User, allowRoleUpdate bool) (*model_helper.UserUpdate, error) // Update update given user
+		UpdateLastPictureUpdate(userID string, updateMillis int64) error
 		ResetLastPictureUpdate(userID string) error
 		UpdatePassword(userID, newPassword string) error
 		UpdateUpdateAt(userID string) (int64, error)
@@ -840,7 +838,7 @@ type (
 		GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*model.User, error)
 		VerifyEmail(userID, email string) (string, error) // VerifyEmail set EmailVerified model of user to true
 		GetEtagForAllProfiles() string
-		GetEtagForProfiles(teamID string) string
+		GetEtagForProfiles() string
 		UpdateFailedPasswordAttempts(userID string, attempts int) error
 		GetSystemAdminProfiles() (map[string]*model.User, error)
 		PermanentDelete(userID string) error // PermanentDelete completely delete user from the system
@@ -850,17 +848,17 @@ type (
 		AnalyticsGetGuestCount() (int64, error)
 		ClearAllCustomRoleAssignments() error
 		InferSystemInstallDate() (int64, error)
-		GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model.UserForIndexing, error)
-		GetKnownUsers(userID string) ([]string, error)
-		Count(options model.UserCountOptions) (int64, error)
-		AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
-		GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error)
-		Search(term string, options *model.UserSearchOptions) ([]*model.User, error)
-		AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
-		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error)
-		GetUnreadCount(userID string) (int64, error) // TODO: consider me
-		FilterByOptions(ctx context.Context, options *model.UserFilterOptions) (int64, []*model.User, error)
-		GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error)
+		GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model_helper.UserForIndexing, error)
+		// GetKnownUsers(userID string) ([]string, error)
+		Count(options model_helper.UserCountOptions) (int64, error)
+		AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model_helper.UserCountOptions) (int64, error)
+		GetAllProfiles(options *model_helper.UserGetOptions) ([]*model.User, error)
+		Search(term string, options *model_helper.UserSearchOptions) ([]*model.User, error)
+		AnalyticsActiveCount(time int64, options model_helper.UserCountOptions) (int64, error)
+		GetProfileByIds(ctx context.Context, userIds []string, options UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error)
+		// GetUnreadCount(userID string) (int64, error) // TODO: consider me
+		FilterByOptions(ctx context.Context, options *model_helper.UserFilterOptions) (int64, []*model.User, error)
+		GetByOptions(ctx context.Context, options *model_helper.UserFilterOptions) (*model.User, error)
 		IsEmpty() (bool, error)
 	}
 	TokenStore interface {
@@ -872,46 +870,45 @@ type (
 		GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error)
 	}
 	UserAccessTokenStore interface {
-		Save(token *model.UserAccessToken) (*model.UserAccessToken, error)
+		Save(token model.UserAccessToken) (*model.UserAccessToken, error)
 		DeleteAllForUser(userID string) error
 		Delete(tokenID string) error
 		Get(tokenID string) (*model.UserAccessToken, error)
-		GetAll(offset int, limit int) ([]*model.UserAccessToken, error)
+		GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error)
 		GetByToken(tokenString string) (*model.UserAccessToken, error)
-		GetByUser(userID string, page, perPage int) ([]*model.UserAccessToken, error)
-		Search(term string) ([]*model.UserAccessToken, error)
+		Search(term string) (model.UserAccessTokenSlice, error)
 		UpdateTokenEnable(tokenID string) error
 		UpdateTokenDisable(tokenID string) error
 	}
 	CustomerEventStore interface {
-		Save(tx *gorm.DB, customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error)
+		Upsert(tx ContextRunner, customemrEvent model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
-		FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error)
+		FilterByOptions(queryMods ...qm.QueryMod) (model.CustomerEventSlice, error)
 	}
 	StaffNotificationRecipientStore interface {
-		Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error)
-		FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error)
+		Save(notificationRecipient model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error)
+		FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error)
 	}
 	CustomerNoteStore interface {
-		Save(note *model.CustomerNote) (*model.CustomerNote, error) // Save insert given customer note into database and returns it
-		Get(id string) (*model.CustomerNote, error)                 // Get find customer note with given id and returns it
+		Upsert(note model.CustomerNote) (*model.CustomerNote, error) // Save insert given customer note into database and returns it
+		Get(id string) (*model.CustomerNote, error)                  // Get find customer note with given id and returns it
 	}
 	SessionStore interface {
 		Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
-		Save(session *model.Session) (*model.Session, error)
-		GetSessions(userID string) ([]*model.Session, error)
-		GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error)
-		GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error)
+		Save(session model.Session) (*model.Session, error)
+		GetSessions(userID string) (model.SessionSlice, error)
+		GetSessionsWithActiveDeviceIds(userID string) (model.SessionSlice, error)
+		GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) (model.SessionSlice, error)
 		UpdateExpiredNotify(sessionid string, notified bool) error
 		Remove(sessionIDOrToken string) error
 		RemoveAllSessions() error
-		PermanentDeleteSessionsByUser(teamID string) error
+		PermanentDeleteSessionsByUser(userID string) error
 		UpdateExpiresAt(sessionID string, time int64) error
 		UpdateLastActivityAt(sessionID string, time int64) error                    // UpdateLastActivityAt
 		UpdateRoles(userID string, roles string) (string, error)                    // UpdateRoles updates roles for all sessions that have userId of given userID,
 		UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) // UpdateDeviceId updates device id for sessions
-		UpdateProps(session *model.Session) error                                   // UpdateProps update session's props
+		UpdateProps(session model.Session) error                                    // UpdateProps update session's props
 		AnalyticsSessionCount() (int64, error)                                      // AnalyticsSessionCount counts numbers of sessions
 		Cleanup(expiryTime int64, batchSize int64)                                  // Cleanup is called periodicly to remove sessions that are expired
 	}
@@ -929,11 +926,11 @@ type SystemStore interface {
 }
 
 type RoleStore interface {
-	Save(role *model.Role) (*model.Role, error)
+	Upsert(role model.Role) (*model.Role, error)
 	Get(roleID string) (*model.Role, error)
-	GetAll() ([]*model.Role, error)
+	GetAll() (model.RoleSlice, error)
 	GetByName(ctx context.Context, name string) (*model.Role, error)
-	GetByNames(names []string) ([]*model.Role, error)
+	GetByNames(names []string) (model.RoleSlice, error)
 	Delete(roleID string) (*model.Role, error)
 	PermanentDeleteAll() error
 	// ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error)

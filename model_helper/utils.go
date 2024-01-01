@@ -201,11 +201,21 @@ type AppError struct {
 	StatusCode    int    `json:"status_code,omitempty"` // The http status code
 	Where         string `json:"-"`                     // The function where it happened in the form of Struct.Func
 	IsOAuth       bool   `json:"is_oauth,omitempty"`    // Whether the error is OAuth specific
-	params        map[string]interface{}
+	params        map[string]any
+	wrapped       error
 }
 
 func (er *AppError) Error() string {
 	return er.Where + ": " + er.Message + ", " + er.DetailedError
+}
+
+func (er *AppError) Unwrap() error {
+	return er.wrapped
+}
+
+func (er *AppError) Wrap(err error) *AppError {
+	er.wrapped = err
+	return er
 }
 
 // NewAppError returns new app error with given parameters

@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -155,12 +154,12 @@ var (
 )
 
 // One returns a single pageType record from the query.
-func (q pageTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PageType, error) {
+func (q pageTypeQuery) One(exec boil.Executor) (*PageType, error) {
 	o := &PageType{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -172,10 +171,10 @@ func (q pageTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Pag
 }
 
 // All returns all PageType records from the query.
-func (q pageTypeQuery) All(ctx context.Context, exec boil.ContextExecutor) (PageTypeSlice, error) {
+func (q pageTypeQuery) All(exec boil.Executor) (PageTypeSlice, error) {
 	var o []*PageType
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to PageType slice")
 	}
@@ -184,13 +183,13 @@ func (q pageTypeQuery) All(ctx context.Context, exec boil.ContextExecutor) (Page
 }
 
 // Count returns the count of all PageType records in the query.
-func (q pageTypeQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q pageTypeQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count page_types rows")
 	}
@@ -199,14 +198,14 @@ func (q pageTypeQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // Exists checks if the row exists in the table.
-func (q pageTypeQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q pageTypeQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if page_types exists")
 	}
@@ -244,7 +243,7 @@ func (o *PageType) Pages(mods ...qm.QueryMod) pageQuery {
 
 // LoadAttributePages allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageTypeL) LoadAttributePages(ctx context.Context, e boil.ContextExecutor, singular bool, maybePageType interface{}, mods queries.Applicator) error {
+func (pageTypeL) LoadAttributePages(e boil.Executor, singular bool, maybePageType interface{}, mods queries.Applicator) error {
 	var slice []*PageType
 	var object *PageType
 
@@ -305,7 +304,7 @@ func (pageTypeL) LoadAttributePages(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load attribute_pages")
 	}
@@ -351,7 +350,7 @@ func (pageTypeL) LoadAttributePages(ctx context.Context, e boil.ContextExecutor,
 
 // LoadPages allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (pageTypeL) LoadPages(ctx context.Context, e boil.ContextExecutor, singular bool, maybePageType interface{}, mods queries.Applicator) error {
+func (pageTypeL) LoadPages(e boil.Executor, singular bool, maybePageType interface{}, mods queries.Applicator) error {
 	var slice []*PageType
 	var object *PageType
 
@@ -412,7 +411,7 @@ func (pageTypeL) LoadPages(ctx context.Context, e boil.ContextExecutor, singular
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load pages")
 	}
@@ -460,12 +459,12 @@ func (pageTypeL) LoadPages(ctx context.Context, e boil.ContextExecutor, singular
 // of the page_type, optionally inserting them as new records.
 // Appends related to o.R.AttributePages.
 // Sets related.R.PageType appropriately.
-func (o *PageType) AddAttributePages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributePage) error {
+func (o *PageType) AddAttributePages(exec boil.Executor, insert bool, related ...*AttributePage) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.PageTypeID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -476,12 +475,11 @@ func (o *PageType) AddAttributePages(ctx context.Context, exec boil.ContextExecu
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -513,12 +511,12 @@ func (o *PageType) AddAttributePages(ctx context.Context, exec boil.ContextExecu
 // of the page_type, optionally inserting them as new records.
 // Appends related to o.R.Pages.
 // Sets related.R.PageType appropriately.
-func (o *PageType) AddPages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Page) error {
+func (o *PageType) AddPages(exec boil.Executor, insert bool, related ...*Page) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.PageTypeID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -529,12 +527,11 @@ func (o *PageType) AddPages(ctx context.Context, exec boil.ContextExecutor, inse
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -575,7 +572,7 @@ func PageTypes(mods ...qm.QueryMod) pageTypeQuery {
 
 // FindPageType retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPageType(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*PageType, error) {
+func FindPageType(exec boil.Executor, iD string, selectCols ...string) (*PageType, error) {
 	pageTypeObj := &PageType{}
 
 	sel := "*"
@@ -588,7 +585,7 @@ func FindPageType(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, pageTypeObj)
+	err := q.Bind(nil, exec, pageTypeObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -601,7 +598,7 @@ func FindPageType(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *PageType) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *PageType) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no page_types provided for insertion")
 	}
@@ -649,16 +646,15 @@ func (o *PageType) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -677,7 +673,7 @@ func (o *PageType) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update uses an executor to update the PageType.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *PageType) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *PageType) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	pageTypeUpdateCacheMut.RLock()
@@ -705,13 +701,12 @@ func (o *PageType) Update(ctx context.Context, exec boil.ContextExecutor, column
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update page_types row")
 	}
@@ -731,10 +726,10 @@ func (o *PageType) Update(ctx context.Context, exec boil.ContextExecutor, column
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q pageTypeQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q pageTypeQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for page_types")
 	}
@@ -748,7 +743,7 @@ func (q pageTypeQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o PageTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o PageTypeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -778,12 +773,11 @@ func (o PageTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, pageTypePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in pageType slice")
 	}
@@ -797,7 +791,7 @@ func (o PageTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *PageType) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *PageType) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no page_types provided for upsert")
 	}
@@ -881,18 +875,17 @@ func (o *PageType) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert page_types")
@@ -909,7 +902,7 @@ func (o *PageType) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 
 // Delete deletes a single PageType record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *PageType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *PageType) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no PageType provided for delete")
 	}
@@ -917,12 +910,11 @@ func (o *PageType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pageTypePrimaryKeyMapping)
 	sql := "DELETE FROM \"page_types\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from page_types")
 	}
@@ -936,14 +928,14 @@ func (o *PageType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // DeleteAll deletes all matching rows.
-func (q pageTypeQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q pageTypeQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no pageTypeQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from page_types")
 	}
@@ -957,7 +949,7 @@ func (q pageTypeQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o PageTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o PageTypeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -971,12 +963,11 @@ func (o PageTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	sql := "DELETE FROM \"page_types\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, pageTypePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from pageType slice")
 	}
@@ -991,8 +982,8 @@ func (o PageTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *PageType) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindPageType(ctx, exec, o.ID)
+func (o *PageType) Reload(exec boil.Executor) error {
+	ret, err := FindPageType(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1003,7 +994,7 @@ func (o *PageType) Reload(ctx context.Context, exec boil.ContextExecutor) error 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *PageTypeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *PageTypeSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1020,7 +1011,7 @@ func (o *PageTypeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in PageTypeSlice")
 	}
@@ -1031,16 +1022,15 @@ func (o *PageTypeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // PageTypeExists checks if the PageType row exists.
-func PageTypeExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func PageTypeExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"page_types\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1051,6 +1041,6 @@ func PageTypeExists(ctx context.Context, exec boil.ContextExecutor, iD string) (
 }
 
 // Exists checks if the PageType row exists.
-func (o *PageType) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return PageTypeExists(ctx, exec, o.ID)
+func (o *PageType) Exists(exec boil.Executor) (bool, error) {
+	return PageTypeExists(exec, o.ID)
 }

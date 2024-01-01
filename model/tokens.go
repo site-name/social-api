@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -127,12 +126,12 @@ var (
 )
 
 // One returns a single token record from the query.
-func (q tokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Token, error) {
+func (q tokenQuery) One(exec boil.Executor) (*Token, error) {
 	o := &Token{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -144,10 +143,10 @@ func (q tokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Token,
 }
 
 // All returns all Token records from the query.
-func (q tokenQuery) All(ctx context.Context, exec boil.ContextExecutor) (TokenSlice, error) {
+func (q tokenQuery) All(exec boil.Executor) (TokenSlice, error) {
 	var o []*Token
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Token slice")
 	}
@@ -156,13 +155,13 @@ func (q tokenQuery) All(ctx context.Context, exec boil.ContextExecutor) (TokenSl
 }
 
 // Count returns the count of all Token records in the query.
-func (q tokenQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q tokenQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count tokens rows")
 	}
@@ -171,14 +170,14 @@ func (q tokenQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // Exists checks if the row exists in the table.
-func (q tokenQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q tokenQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if tokens exists")
 	}
@@ -199,7 +198,7 @@ func Tokens(mods ...qm.QueryMod) tokenQuery {
 
 // FindToken retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindToken(ctx context.Context, exec boil.ContextExecutor, token string, selectCols ...string) (*Token, error) {
+func FindToken(exec boil.Executor, token string, selectCols ...string) (*Token, error) {
 	tokenObj := &Token{}
 
 	sel := "*"
@@ -212,7 +211,7 @@ func FindToken(ctx context.Context, exec boil.ContextExecutor, token string, sel
 
 	q := queries.Raw(query, token)
 
-	err := q.Bind(ctx, exec, tokenObj)
+	err := q.Bind(nil, exec, tokenObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -225,7 +224,7 @@ func FindToken(ctx context.Context, exec boil.ContextExecutor, token string, sel
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Token) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no tokens provided for insertion")
 	}
@@ -273,16 +272,15 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -301,7 +299,7 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 // Update uses an executor to update the Token.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Token) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Token) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	tokenUpdateCacheMut.RLock()
@@ -329,13 +327,12 @@ func (o *Token) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update tokens row")
 	}
@@ -355,10 +352,10 @@ func (o *Token) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q tokenQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q tokenQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for tokens")
 	}
@@ -372,7 +369,7 @@ func (q tokenQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o TokenSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o TokenSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -402,12 +399,11 @@ func (o TokenSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, tokenPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in token slice")
 	}
@@ -421,7 +417,7 @@ func (o TokenSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Token) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no tokens provided for upsert")
 	}
@@ -505,18 +501,17 @@ func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert tokens")
@@ -533,7 +528,7 @@ func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 
 // Delete deletes a single Token record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Token) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Token) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Token provided for delete")
 	}
@@ -541,12 +536,11 @@ func (o *Token) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), tokenPrimaryKeyMapping)
 	sql := "DELETE FROM \"tokens\" WHERE \"token\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from tokens")
 	}
@@ -560,14 +554,14 @@ func (o *Token) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 }
 
 // DeleteAll deletes all matching rows.
-func (q tokenQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q tokenQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no tokenQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from tokens")
 	}
@@ -581,7 +575,7 @@ func (q tokenQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o TokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o TokenSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -595,12 +589,11 @@ func (o TokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 	sql := "DELETE FROM \"tokens\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, tokenPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from token slice")
 	}
@@ -615,8 +608,8 @@ func (o TokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Token) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindToken(ctx, exec, o.Token)
+func (o *Token) Reload(exec boil.Executor) error {
+	ret, err := FindToken(exec, o.Token)
 	if err != nil {
 		return err
 	}
@@ -627,7 +620,7 @@ func (o *Token) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *TokenSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *TokenSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -644,7 +637,7 @@ func (o *TokenSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in TokenSlice")
 	}
@@ -655,16 +648,15 @@ func (o *TokenSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 }
 
 // TokenExists checks if the Token row exists.
-func TokenExists(ctx context.Context, exec boil.ContextExecutor, token string) (bool, error) {
+func TokenExists(exec boil.Executor, token string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"tokens\" where \"token\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, token)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, token)
 	}
-	row := exec.QueryRowContext(ctx, sql, token)
+	row := exec.QueryRow(sql, token)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -675,6 +667,6 @@ func TokenExists(ctx context.Context, exec boil.ContextExecutor, token string) (
 }
 
 // Exists checks if the Token row exists.
-func (o *Token) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return TokenExists(ctx, exec, o.Token)
+func (o *Token) Exists(exec boil.Executor) (bool, error) {
+	return TokenExists(exec, o.Token)
 }

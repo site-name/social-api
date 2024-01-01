@@ -29,7 +29,7 @@ func (scheduler *Scheduler) Enabled(_ *model_helper.Config) bool {
 }
 
 //nolint:unparam
-func (scheduler *Scheduler) NextScheduleTime(cfg *model_helper.Config, now time.Time, pendingJobs bool, lastSuccessfulJob *model_helper.Job) *time.Time {
+func (scheduler *Scheduler) NextScheduleTime(cfg *model_helper.Config, now time.Time, pendingJobs bool, lastSuccessfulJob *model.Job) *time.Time {
 	if scheduler.allMigrationsCompleted {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (scheduler *Scheduler) ScheduleJob(cfg *model_helper.Config, pendingJobs bo
 			// Check the migration job isn't wedged.
 			if job != nil && job.LastActivityAt < model_helper.GetMillis()-MigrationJobWedgedTimeoutMilliseconds && job.CreatedAt < model_helper.GetMillis()-MigrationJobWedgedTimeoutMilliseconds {
 				slog.Warn("Job appears to be wedged. Rescheduling another instance.", slog.String("scheduler", model.JobtypeMigrations.String()), slog.String("wedged_job_id", job.ID), slog.String("migration_key", key))
-				if err := scheduler.jobServer.SetJobError(job, nil); err != nil {
+				if err := scheduler.jobServer.SetJobError(*job, nil); err != nil {
 					slog.Error("Worker: Failed to set job error", slog.String("scheduler", model.JobtypeMigrations.String()), slog.String("job_id", job.ID), slog.Err(err))
 				}
 				return scheduler.createJob(key, job)
@@ -87,15 +87,17 @@ func (scheduler *Scheduler) ScheduleJob(cfg *model_helper.Config, pendingJobs bo
 func (scheduler *Scheduler) createJob(migrationKey string, lastJob *model.Job) (*model.Job, *model_helper.AppError) {
 	var lastDone string
 	if lastJob != nil {
-		lastDone = lastJob.Data[JobDataKeyMigrationLastDone]
+		if lastDoneData, ok := lastJob.Data[JobDataKeyMigrationLastDone]; ok {
+			lastDone = lastDoneData.(string)
+		}
 	}
 
-	data := map[string]string{
+	data := map[string]any{
 		JobDataKeyMigration:         migrationKey,
 		JobDataKeyMigrationLastDone: lastDone,
 	}
 
-	job, err := scheduler.jobServer.CreateJob(model.JobtypeMigrations.String(), data)
+	job, err := scheduler.jobServer.CreateJob(model.JobtypeMigrations, data)
 	if err != nil {
 		return nil, err
 	}

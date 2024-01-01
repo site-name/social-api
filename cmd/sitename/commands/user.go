@@ -400,7 +400,7 @@ func changeUserActiveStatus(a *app.App, user *model.User, userArg string, activa
 		return fmt.Errorf("Can't find user '%v'", userArg)
 	}
 
-	if model_helper.IsSSOUser(*user) {
+	if model_helper.UserIsSSO(*user) {
 		fmt.Println("You must also deactivate this user in the SSO provider or they will be reactivated on next login or sync.")
 	}
 	updatedUser, err := a.Srv().AccountService().UpdateActive(&request.Context{}, user, activate)

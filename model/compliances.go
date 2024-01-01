@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -256,12 +255,12 @@ var (
 )
 
 // One returns a single compliance record from the query.
-func (q complianceQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Compliance, error) {
+func (q complianceQuery) One(exec boil.Executor) (*Compliance, error) {
 	o := &Compliance{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -273,10 +272,10 @@ func (q complianceQuery) One(ctx context.Context, exec boil.ContextExecutor) (*C
 }
 
 // All returns all Compliance records from the query.
-func (q complianceQuery) All(ctx context.Context, exec boil.ContextExecutor) (ComplianceSlice, error) {
+func (q complianceQuery) All(exec boil.Executor) (ComplianceSlice, error) {
 	var o []*Compliance
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Compliance slice")
 	}
@@ -285,13 +284,13 @@ func (q complianceQuery) All(ctx context.Context, exec boil.ContextExecutor) (Co
 }
 
 // Count returns the count of all Compliance records in the query.
-func (q complianceQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q complianceQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count compliances rows")
 	}
@@ -300,14 +299,14 @@ func (q complianceQuery) Count(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // Exists checks if the row exists in the table.
-func (q complianceQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q complianceQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if compliances exists")
 	}
@@ -328,7 +327,7 @@ func (o *Compliance) User(mods ...qm.QueryMod) userQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (complianceL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCompliance interface{}, mods queries.Applicator) error {
+func (complianceL) LoadUser(e boil.Executor, singular bool, maybeCompliance interface{}, mods queries.Applicator) error {
 	var slice []*Compliance
 	var object *Compliance
 
@@ -391,7 +390,7 @@ func (complianceL) LoadUser(ctx context.Context, e boil.ContextExecutor, singula
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load User")
 	}
@@ -441,10 +440,10 @@ func (complianceL) LoadUser(ctx context.Context, e boil.ContextExecutor, singula
 // SetUser of the compliance to the related item.
 // Sets o.R.User to related.
 // Adds o to related.R.Compliances.
-func (o *Compliance) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+func (o *Compliance) SetUser(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -456,12 +455,11 @@ func (o *Compliance) SetUser(ctx context.Context, exec boil.ContextExecutor, ins
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -498,7 +496,7 @@ func Compliances(mods ...qm.QueryMod) complianceQuery {
 
 // FindCompliance retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindCompliance(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Compliance, error) {
+func FindCompliance(exec boil.Executor, iD string, selectCols ...string) (*Compliance, error) {
 	complianceObj := &Compliance{}
 
 	sel := "*"
@@ -511,7 +509,7 @@ func FindCompliance(ctx context.Context, exec boil.ContextExecutor, iD string, s
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, complianceObj)
+	err := q.Bind(nil, exec, complianceObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -524,7 +522,7 @@ func FindCompliance(ctx context.Context, exec boil.ContextExecutor, iD string, s
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Compliance) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Compliance) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no compliances provided for insertion")
 	}
@@ -572,16 +570,15 @@ func (o *Compliance) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -600,7 +597,7 @@ func (o *Compliance) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 // Update uses an executor to update the Compliance.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Compliance) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Compliance) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	complianceUpdateCacheMut.RLock()
@@ -628,13 +625,12 @@ func (o *Compliance) Update(ctx context.Context, exec boil.ContextExecutor, colu
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update compliances row")
 	}
@@ -654,10 +650,10 @@ func (o *Compliance) Update(ctx context.Context, exec boil.ContextExecutor, colu
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q complianceQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q complianceQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for compliances")
 	}
@@ -671,7 +667,7 @@ func (q complianceQuery) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ComplianceSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ComplianceSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -701,12 +697,11 @@ func (o ComplianceSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, compliancePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in compliance slice")
 	}
@@ -720,7 +715,7 @@ func (o ComplianceSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Compliance) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Compliance) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no compliances provided for upsert")
 	}
@@ -804,18 +799,17 @@ func (o *Compliance) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert compliances")
@@ -832,7 +826,7 @@ func (o *Compliance) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 
 // Delete deletes a single Compliance record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Compliance) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Compliance) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Compliance provided for delete")
 	}
@@ -840,12 +834,11 @@ func (o *Compliance) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), compliancePrimaryKeyMapping)
 	sql := "DELETE FROM \"compliances\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from compliances")
 	}
@@ -859,14 +852,14 @@ func (o *Compliance) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 }
 
 // DeleteAll deletes all matching rows.
-func (q complianceQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q complianceQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no complianceQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from compliances")
 	}
@@ -880,7 +873,7 @@ func (q complianceQuery) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ComplianceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ComplianceSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -894,12 +887,11 @@ func (o ComplianceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	sql := "DELETE FROM \"compliances\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, compliancePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from compliance slice")
 	}
@@ -914,8 +906,8 @@ func (o ComplianceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Compliance) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindCompliance(ctx, exec, o.ID)
+func (o *Compliance) Reload(exec boil.Executor) error {
+	ret, err := FindCompliance(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -926,7 +918,7 @@ func (o *Compliance) Reload(ctx context.Context, exec boil.ContextExecutor) erro
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ComplianceSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ComplianceSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -943,7 +935,7 @@ func (o *ComplianceSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ComplianceSlice")
 	}
@@ -954,16 +946,15 @@ func (o *ComplianceSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 }
 
 // ComplianceExists checks if the Compliance row exists.
-func ComplianceExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ComplianceExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"compliances\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -974,6 +965,6 @@ func ComplianceExists(ctx context.Context, exec boil.ContextExecutor, iD string)
 }
 
 // Exists checks if the Compliance row exists.
-func (o *Compliance) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ComplianceExists(ctx, exec, o.ID)
+func (o *Compliance) Exists(exec boil.Executor) (bool, error) {
+	return ComplianceExists(exec, o.ID)
 }

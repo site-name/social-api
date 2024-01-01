@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -177,12 +176,12 @@ var (
 )
 
 // One returns a single shippingMethodChannelListing record from the query.
-func (q shippingMethodChannelListingQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingMethodChannelListing, error) {
+func (q shippingMethodChannelListingQuery) One(exec boil.Executor) (*ShippingMethodChannelListing, error) {
 	o := &ShippingMethodChannelListing{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -194,10 +193,10 @@ func (q shippingMethodChannelListingQuery) One(ctx context.Context, exec boil.Co
 }
 
 // All returns all ShippingMethodChannelListing records from the query.
-func (q shippingMethodChannelListingQuery) All(ctx context.Context, exec boil.ContextExecutor) (ShippingMethodChannelListingSlice, error) {
+func (q shippingMethodChannelListingQuery) All(exec boil.Executor) (ShippingMethodChannelListingSlice, error) {
 	var o []*ShippingMethodChannelListing
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to ShippingMethodChannelListing slice")
 	}
@@ -206,13 +205,13 @@ func (q shippingMethodChannelListingQuery) All(ctx context.Context, exec boil.Co
 }
 
 // Count returns the count of all ShippingMethodChannelListing records in the query.
-func (q shippingMethodChannelListingQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q shippingMethodChannelListingQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count shipping_method_channel_listings rows")
 	}
@@ -221,14 +220,14 @@ func (q shippingMethodChannelListingQuery) Count(ctx context.Context, exec boil.
 }
 
 // Exists checks if the row exists in the table.
-func (q shippingMethodChannelListingQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q shippingMethodChannelListingQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if shipping_method_channel_listings exists")
 	}
@@ -260,7 +259,7 @@ func (o *ShippingMethodChannelListing) ShippingMethod(mods ...qm.QueryMod) shipp
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodChannelListing interface{}, mods queries.Applicator) error {
+func (shippingMethodChannelListingL) LoadChannel(e boil.Executor, singular bool, maybeShippingMethodChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodChannelListing
 	var object *ShippingMethodChannelListing
 
@@ -323,7 +322,7 @@ func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.Con
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Channel")
 	}
@@ -372,7 +371,7 @@ func (shippingMethodChannelListingL) LoadChannel(ctx context.Context, e boil.Con
 
 // LoadShippingMethod allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingMethodChannelListing interface{}, mods queries.Applicator) error {
+func (shippingMethodChannelListingL) LoadShippingMethod(e boil.Executor, singular bool, maybeShippingMethodChannelListing interface{}, mods queries.Applicator) error {
 	var slice []*ShippingMethodChannelListing
 	var object *ShippingMethodChannelListing
 
@@ -435,7 +434,7 @@ func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e b
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ShippingMethod")
 	}
@@ -485,10 +484,10 @@ func (shippingMethodChannelListingL) LoadShippingMethod(ctx context.Context, e b
 // SetChannel of the shippingMethodChannelListing to the related item.
 // Sets o.R.Channel to related.
 // Adds o to related.R.ShippingMethodChannelListings.
-func (o *ShippingMethodChannelListing) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+func (o *ShippingMethodChannelListing) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -500,12 +499,11 @@ func (o *ShippingMethodChannelListing) SetChannel(ctx context.Context, exec boil
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -532,10 +530,10 @@ func (o *ShippingMethodChannelListing) SetChannel(ctx context.Context, exec boil
 // SetShippingMethod of the shippingMethodChannelListing to the related item.
 // Sets o.R.ShippingMethod to related.
 // Adds o to related.R.ShippingMethodChannelListings.
-func (o *ShippingMethodChannelListing) SetShippingMethod(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingMethod) error {
+func (o *ShippingMethodChannelListing) SetShippingMethod(exec boil.Executor, insert bool, related *ShippingMethod) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -547,12 +545,11 @@ func (o *ShippingMethodChannelListing) SetShippingMethod(ctx context.Context, ex
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -589,7 +586,7 @@ func ShippingMethodChannelListings(mods ...qm.QueryMod) shippingMethodChannelLis
 
 // FindShippingMethodChannelListing retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindShippingMethodChannelListing(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ShippingMethodChannelListing, error) {
+func FindShippingMethodChannelListing(exec boil.Executor, iD string, selectCols ...string) (*ShippingMethodChannelListing, error) {
 	shippingMethodChannelListingObj := &ShippingMethodChannelListing{}
 
 	sel := "*"
@@ -602,7 +599,7 @@ func FindShippingMethodChannelListing(ctx context.Context, exec boil.ContextExec
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, shippingMethodChannelListingObj)
+	err := q.Bind(nil, exec, shippingMethodChannelListingObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -615,7 +612,7 @@ func FindShippingMethodChannelListing(ctx context.Context, exec boil.ContextExec
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *ShippingMethodChannelListing) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *ShippingMethodChannelListing) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no shipping_method_channel_listings provided for insertion")
 	}
@@ -663,16 +660,15 @@ func (o *ShippingMethodChannelListing) Insert(ctx context.Context, exec boil.Con
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -691,7 +687,7 @@ func (o *ShippingMethodChannelListing) Insert(ctx context.Context, exec boil.Con
 // Update uses an executor to update the ShippingMethodChannelListing.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *ShippingMethodChannelListing) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *ShippingMethodChannelListing) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	shippingMethodChannelListingUpdateCacheMut.RLock()
@@ -719,13 +715,12 @@ func (o *ShippingMethodChannelListing) Update(ctx context.Context, exec boil.Con
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update shipping_method_channel_listings row")
 	}
@@ -745,10 +740,10 @@ func (o *ShippingMethodChannelListing) Update(ctx context.Context, exec boil.Con
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q shippingMethodChannelListingQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q shippingMethodChannelListingQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for shipping_method_channel_listings")
 	}
@@ -762,7 +757,7 @@ func (q shippingMethodChannelListingQuery) UpdateAll(ctx context.Context, exec b
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ShippingMethodChannelListingSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ShippingMethodChannelListingSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -792,12 +787,11 @@ func (o ShippingMethodChannelListingSlice) UpdateAll(ctx context.Context, exec b
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, shippingMethodChannelListingPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in shippingMethodChannelListing slice")
 	}
@@ -811,7 +805,7 @@ func (o ShippingMethodChannelListingSlice) UpdateAll(ctx context.Context, exec b
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *ShippingMethodChannelListing) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *ShippingMethodChannelListing) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no shipping_method_channel_listings provided for upsert")
 	}
@@ -895,18 +889,17 @@ func (o *ShippingMethodChannelListing) Upsert(ctx context.Context, exec boil.Con
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert shipping_method_channel_listings")
@@ -923,7 +916,7 @@ func (o *ShippingMethodChannelListing) Upsert(ctx context.Context, exec boil.Con
 
 // Delete deletes a single ShippingMethodChannelListing record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ShippingMethodChannelListing) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *ShippingMethodChannelListing) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no ShippingMethodChannelListing provided for delete")
 	}
@@ -931,12 +924,11 @@ func (o *ShippingMethodChannelListing) Delete(ctx context.Context, exec boil.Con
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingMethodChannelListingPrimaryKeyMapping)
 	sql := "DELETE FROM \"shipping_method_channel_listings\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from shipping_method_channel_listings")
 	}
@@ -950,14 +942,14 @@ func (o *ShippingMethodChannelListing) Delete(ctx context.Context, exec boil.Con
 }
 
 // DeleteAll deletes all matching rows.
-func (q shippingMethodChannelListingQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q shippingMethodChannelListingQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no shippingMethodChannelListingQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from shipping_method_channel_listings")
 	}
@@ -971,7 +963,7 @@ func (q shippingMethodChannelListingQuery) DeleteAll(ctx context.Context, exec b
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ShippingMethodChannelListingSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ShippingMethodChannelListingSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -985,12 +977,11 @@ func (o ShippingMethodChannelListingSlice) DeleteAll(ctx context.Context, exec b
 	sql := "DELETE FROM \"shipping_method_channel_listings\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, shippingMethodChannelListingPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from shippingMethodChannelListing slice")
 	}
@@ -1005,8 +996,8 @@ func (o ShippingMethodChannelListingSlice) DeleteAll(ctx context.Context, exec b
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ShippingMethodChannelListing) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindShippingMethodChannelListing(ctx, exec, o.ID)
+func (o *ShippingMethodChannelListing) Reload(exec boil.Executor) error {
+	ret, err := FindShippingMethodChannelListing(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1017,7 +1008,7 @@ func (o *ShippingMethodChannelListing) Reload(ctx context.Context, exec boil.Con
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ShippingMethodChannelListingSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ShippingMethodChannelListingSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1034,7 +1025,7 @@ func (o *ShippingMethodChannelListingSlice) ReloadAll(ctx context.Context, exec 
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ShippingMethodChannelListingSlice")
 	}
@@ -1045,16 +1036,15 @@ func (o *ShippingMethodChannelListingSlice) ReloadAll(ctx context.Context, exec 
 }
 
 // ShippingMethodChannelListingExists checks if the ShippingMethodChannelListing row exists.
-func ShippingMethodChannelListingExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ShippingMethodChannelListingExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"shipping_method_channel_listings\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1065,6 +1055,6 @@ func ShippingMethodChannelListingExists(ctx context.Context, exec boil.ContextEx
 }
 
 // Exists checks if the ShippingMethodChannelListing row exists.
-func (o *ShippingMethodChannelListing) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ShippingMethodChannelListingExists(ctx, exec, o.ID)
+func (o *ShippingMethodChannelListing) Exists(exec boil.Executor) (bool, error) {
+	return ShippingMethodChannelListingExists(exec, o.ID)
 }

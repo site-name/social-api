@@ -6,10 +6,9 @@ import (
 	"testing"
 
 	"github.com/cespare/xxhash/v2"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/sitename/sitename/model"
 )
 
 func makeLRUPredictibleTestData(num int) [][2]string {
@@ -102,8 +101,8 @@ func BenchmarkSum64(b *testing.B) {
 		"1",
 		"22",
 		"333",
-		model.NewId(),
-		model.NewId() + model.NewId(),
+		model_helper.NewId(),
+		model_helper.NewId() + model_helper.NewId(),
 	}
 
 	for _, case_ := range cases {

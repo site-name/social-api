@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -120,12 +119,12 @@ var (
 )
 
 // One returns a single openExchangeRate record from the query.
-func (q openExchangeRateQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OpenExchangeRate, error) {
+func (q openExchangeRateQuery) One(exec boil.Executor) (*OpenExchangeRate, error) {
 	o := &OpenExchangeRate{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -137,10 +136,10 @@ func (q openExchangeRateQuery) One(ctx context.Context, exec boil.ContextExecuto
 }
 
 // All returns all OpenExchangeRate records from the query.
-func (q openExchangeRateQuery) All(ctx context.Context, exec boil.ContextExecutor) (OpenExchangeRateSlice, error) {
+func (q openExchangeRateQuery) All(exec boil.Executor) (OpenExchangeRateSlice, error) {
 	var o []*OpenExchangeRate
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to OpenExchangeRate slice")
 	}
@@ -149,13 +148,13 @@ func (q openExchangeRateQuery) All(ctx context.Context, exec boil.ContextExecuto
 }
 
 // Count returns the count of all OpenExchangeRate records in the query.
-func (q openExchangeRateQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q openExchangeRateQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count open_exchange_rates rows")
 	}
@@ -164,14 +163,14 @@ func (q openExchangeRateQuery) Count(ctx context.Context, exec boil.ContextExecu
 }
 
 // Exists checks if the row exists in the table.
-func (q openExchangeRateQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q openExchangeRateQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if open_exchange_rates exists")
 	}
@@ -192,7 +191,7 @@ func OpenExchangeRates(mods ...qm.QueryMod) openExchangeRateQuery {
 
 // FindOpenExchangeRate retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOpenExchangeRate(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*OpenExchangeRate, error) {
+func FindOpenExchangeRate(exec boil.Executor, iD string, selectCols ...string) (*OpenExchangeRate, error) {
 	openExchangeRateObj := &OpenExchangeRate{}
 
 	sel := "*"
@@ -205,7 +204,7 @@ func FindOpenExchangeRate(ctx context.Context, exec boil.ContextExecutor, iD str
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, openExchangeRateObj)
+	err := q.Bind(nil, exec, openExchangeRateObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -218,7 +217,7 @@ func FindOpenExchangeRate(ctx context.Context, exec boil.ContextExecutor, iD str
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *OpenExchangeRate) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *OpenExchangeRate) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no open_exchange_rates provided for insertion")
 	}
@@ -266,16 +265,15 @@ func (o *OpenExchangeRate) Insert(ctx context.Context, exec boil.ContextExecutor
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -294,7 +292,7 @@ func (o *OpenExchangeRate) Insert(ctx context.Context, exec boil.ContextExecutor
 // Update uses an executor to update the OpenExchangeRate.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *OpenExchangeRate) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *OpenExchangeRate) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	openExchangeRateUpdateCacheMut.RLock()
@@ -322,13 +320,12 @@ func (o *OpenExchangeRate) Update(ctx context.Context, exec boil.ContextExecutor
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update open_exchange_rates row")
 	}
@@ -348,10 +345,10 @@ func (o *OpenExchangeRate) Update(ctx context.Context, exec boil.ContextExecutor
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q openExchangeRateQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q openExchangeRateQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for open_exchange_rates")
 	}
@@ -365,7 +362,7 @@ func (q openExchangeRateQuery) UpdateAll(ctx context.Context, exec boil.ContextE
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o OpenExchangeRateSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o OpenExchangeRateSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -395,12 +392,11 @@ func (o OpenExchangeRateSlice) UpdateAll(ctx context.Context, exec boil.ContextE
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, openExchangeRatePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in openExchangeRate slice")
 	}
@@ -414,7 +410,7 @@ func (o OpenExchangeRateSlice) UpdateAll(ctx context.Context, exec boil.ContextE
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *OpenExchangeRate) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *OpenExchangeRate) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no open_exchange_rates provided for upsert")
 	}
@@ -498,18 +494,17 @@ func (o *OpenExchangeRate) Upsert(ctx context.Context, exec boil.ContextExecutor
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert open_exchange_rates")
@@ -526,7 +521,7 @@ func (o *OpenExchangeRate) Upsert(ctx context.Context, exec boil.ContextExecutor
 
 // Delete deletes a single OpenExchangeRate record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *OpenExchangeRate) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *OpenExchangeRate) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no OpenExchangeRate provided for delete")
 	}
@@ -534,12 +529,11 @@ func (o *OpenExchangeRate) Delete(ctx context.Context, exec boil.ContextExecutor
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), openExchangeRatePrimaryKeyMapping)
 	sql := "DELETE FROM \"open_exchange_rates\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from open_exchange_rates")
 	}
@@ -553,14 +547,14 @@ func (o *OpenExchangeRate) Delete(ctx context.Context, exec boil.ContextExecutor
 }
 
 // DeleteAll deletes all matching rows.
-func (q openExchangeRateQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q openExchangeRateQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no openExchangeRateQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from open_exchange_rates")
 	}
@@ -574,7 +568,7 @@ func (q openExchangeRateQuery) DeleteAll(ctx context.Context, exec boil.ContextE
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o OpenExchangeRateSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o OpenExchangeRateSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -588,12 +582,11 @@ func (o OpenExchangeRateSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 	sql := "DELETE FROM \"open_exchange_rates\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, openExchangeRatePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from openExchangeRate slice")
 	}
@@ -608,8 +601,8 @@ func (o OpenExchangeRateSlice) DeleteAll(ctx context.Context, exec boil.ContextE
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *OpenExchangeRate) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindOpenExchangeRate(ctx, exec, o.ID)
+func (o *OpenExchangeRate) Reload(exec boil.Executor) error {
+	ret, err := FindOpenExchangeRate(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -620,7 +613,7 @@ func (o *OpenExchangeRate) Reload(ctx context.Context, exec boil.ContextExecutor
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *OpenExchangeRateSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *OpenExchangeRateSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -637,7 +630,7 @@ func (o *OpenExchangeRateSlice) ReloadAll(ctx context.Context, exec boil.Context
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in OpenExchangeRateSlice")
 	}
@@ -648,16 +641,15 @@ func (o *OpenExchangeRateSlice) ReloadAll(ctx context.Context, exec boil.Context
 }
 
 // OpenExchangeRateExists checks if the OpenExchangeRate row exists.
-func OpenExchangeRateExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func OpenExchangeRateExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"open_exchange_rates\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -668,6 +660,6 @@ func OpenExchangeRateExists(ctx context.Context, exec boil.ContextExecutor, iD s
 }
 
 // Exists checks if the OpenExchangeRate row exists.
-func (o *OpenExchangeRate) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return OpenExchangeRateExists(ctx, exec, o.ID)
+func (o *OpenExchangeRate) Exists(exec boil.Executor) (bool, error) {
+	return OpenExchangeRateExists(exec, o.ID)
 }

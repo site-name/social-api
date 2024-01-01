@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -321,12 +320,12 @@ var (
 )
 
 // One returns a single giftcard record from the query.
-func (q giftcardQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Giftcard, error) {
+func (q giftcardQuery) One(exec boil.Executor) (*Giftcard, error) {
 	o := &Giftcard{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -338,10 +337,10 @@ func (q giftcardQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Gif
 }
 
 // All returns all Giftcard records from the query.
-func (q giftcardQuery) All(ctx context.Context, exec boil.ContextExecutor) (GiftcardSlice, error) {
+func (q giftcardQuery) All(exec boil.Executor) (GiftcardSlice, error) {
 	var o []*Giftcard
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Giftcard slice")
 	}
@@ -350,13 +349,13 @@ func (q giftcardQuery) All(ctx context.Context, exec boil.ContextExecutor) (Gift
 }
 
 // Count returns the count of all Giftcard records in the query.
-func (q giftcardQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q giftcardQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count giftcards rows")
 	}
@@ -365,14 +364,14 @@ func (q giftcardQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // Exists checks if the row exists in the table.
-func (q giftcardQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q giftcardQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if giftcards exists")
 	}
@@ -457,7 +456,7 @@ func (o *Giftcard) OrderGiftcards(mods ...qm.QueryMod) orderGiftcardQuery {
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
+func (giftcardL) LoadProduct(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -524,7 +523,7 @@ func (giftcardL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singul
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Product")
 	}
@@ -573,7 +572,7 @@ func (giftcardL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singul
 
 // LoadUsedBy allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardL) LoadUsedBy(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
+func (giftcardL) LoadUsedBy(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -640,7 +639,7 @@ func (giftcardL) LoadUsedBy(ctx context.Context, e boil.ContextExecutor, singula
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load User")
 	}
@@ -689,7 +688,7 @@ func (giftcardL) LoadUsedBy(ctx context.Context, e boil.ContextExecutor, singula
 
 // LoadCreatedBy allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (giftcardL) LoadCreatedBy(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
+func (giftcardL) LoadCreatedBy(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -756,7 +755,7 @@ func (giftcardL) LoadCreatedBy(ctx context.Context, e boil.ContextExecutor, sing
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load User")
 	}
@@ -805,7 +804,7 @@ func (giftcardL) LoadCreatedBy(ctx context.Context, e boil.ContextExecutor, sing
 
 // LoadGiftcardCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (giftcardL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
+func (giftcardL) LoadGiftcardCheckouts(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -866,7 +865,7 @@ func (giftcardL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load giftcard_checkouts")
 	}
@@ -912,7 +911,7 @@ func (giftcardL) LoadGiftcardCheckouts(ctx context.Context, e boil.ContextExecut
 
 // LoadGiftcardEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (giftcardL) LoadGiftcardEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
+func (giftcardL) LoadGiftcardEvents(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -973,7 +972,7 @@ func (giftcardL) LoadGiftcardEvents(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load giftcard_events")
 	}
@@ -1019,7 +1018,7 @@ func (giftcardL) LoadGiftcardEvents(ctx context.Context, e boil.ContextExecutor,
 
 // LoadOrderGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (giftcardL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
+func (giftcardL) LoadOrderGiftcards(e boil.Executor, singular bool, maybeGiftcard interface{}, mods queries.Applicator) error {
 	var slice []*Giftcard
 	var object *Giftcard
 
@@ -1080,7 +1079,7 @@ func (giftcardL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load order_giftcards")
 	}
@@ -1127,10 +1126,10 @@ func (giftcardL) LoadOrderGiftcards(ctx context.Context, e boil.ContextExecutor,
 // SetProduct of the giftcard to the related item.
 // Sets o.R.Product to related.
 // Adds o to related.R.Giftcards.
-func (o *Giftcard) SetProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
+func (o *Giftcard) SetProduct(exec boil.Executor, insert bool, related *Product) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1142,12 +1141,11 @@ func (o *Giftcard) SetProduct(ctx context.Context, exec boil.ContextExecutor, in
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1174,11 +1172,11 @@ func (o *Giftcard) SetProduct(ctx context.Context, exec boil.ContextExecutor, in
 // RemoveProduct relationship.
 // Sets o.R.Product to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Giftcard) RemoveProduct(ctx context.Context, exec boil.ContextExecutor, related *Product) error {
+func (o *Giftcard) RemoveProduct(exec boil.Executor, related *Product) error {
 	var err error
 
 	queries.SetScanner(&o.ProductID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("product_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("product_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1207,10 +1205,10 @@ func (o *Giftcard) RemoveProduct(ctx context.Context, exec boil.ContextExecutor,
 // SetUsedBy of the giftcard to the related item.
 // Sets o.R.UsedBy to related.
 // Adds o to related.R.UsedByGiftcards.
-func (o *Giftcard) SetUsedBy(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+func (o *Giftcard) SetUsedBy(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1222,12 +1220,11 @@ func (o *Giftcard) SetUsedBy(ctx context.Context, exec boil.ContextExecutor, ins
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1254,11 +1251,11 @@ func (o *Giftcard) SetUsedBy(ctx context.Context, exec boil.ContextExecutor, ins
 // RemoveUsedBy relationship.
 // Sets o.R.UsedBy to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Giftcard) RemoveUsedBy(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *Giftcard) RemoveUsedBy(exec boil.Executor, related *User) error {
 	var err error
 
 	queries.SetScanner(&o.UsedByID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("used_by_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("used_by_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1287,10 +1284,10 @@ func (o *Giftcard) RemoveUsedBy(ctx context.Context, exec boil.ContextExecutor, 
 // SetCreatedBy of the giftcard to the related item.
 // Sets o.R.CreatedBy to related.
 // Adds o to related.R.CreatedByGiftcards.
-func (o *Giftcard) SetCreatedBy(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+func (o *Giftcard) SetCreatedBy(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -1302,12 +1299,11 @@ func (o *Giftcard) SetCreatedBy(ctx context.Context, exec boil.ContextExecutor, 
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1334,11 +1330,11 @@ func (o *Giftcard) SetCreatedBy(ctx context.Context, exec boil.ContextExecutor, 
 // RemoveCreatedBy relationship.
 // Sets o.R.CreatedBy to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Giftcard) RemoveCreatedBy(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *Giftcard) RemoveCreatedBy(exec boil.Executor, related *User) error {
 	var err error
 
 	queries.SetScanner(&o.CreatedByID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("created_by_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("created_by_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -1368,12 +1364,12 @@ func (o *Giftcard) RemoveCreatedBy(ctx context.Context, exec boil.ContextExecuto
 // of the giftcard, optionally inserting them as new records.
 // Appends related to o.R.GiftcardCheckouts.
 // Sets related.R.Giftcard appropriately.
-func (o *Giftcard) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardCheckout) error {
+func (o *Giftcard) AddGiftcardCheckouts(exec boil.Executor, insert bool, related ...*GiftcardCheckout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.GiftcardID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1384,12 +1380,11 @@ func (o *Giftcard) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1421,12 +1416,12 @@ func (o *Giftcard) AddGiftcardCheckouts(ctx context.Context, exec boil.ContextEx
 // of the giftcard, optionally inserting them as new records.
 // Appends related to o.R.GiftcardEvents.
 // Sets related.R.Giftcard appropriately.
-func (o *Giftcard) AddGiftcardEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*GiftcardEvent) error {
+func (o *Giftcard) AddGiftcardEvents(exec boil.Executor, insert bool, related ...*GiftcardEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.GiftcardID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1437,12 +1432,11 @@ func (o *Giftcard) AddGiftcardEvents(ctx context.Context, exec boil.ContextExecu
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1474,12 +1468,12 @@ func (o *Giftcard) AddGiftcardEvents(ctx context.Context, exec boil.ContextExecu
 // of the giftcard, optionally inserting them as new records.
 // Appends related to o.R.OrderGiftcards.
 // Sets related.R.Giftcard appropriately.
-func (o *Giftcard) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderGiftcard) error {
+func (o *Giftcard) AddOrderGiftcards(exec boil.Executor, insert bool, related ...*OrderGiftcard) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.GiftcardID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1490,12 +1484,11 @@ func (o *Giftcard) AddOrderGiftcards(ctx context.Context, exec boil.ContextExecu
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1536,7 +1529,7 @@ func Giftcards(mods ...qm.QueryMod) giftcardQuery {
 
 // FindGiftcard retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindGiftcard(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Giftcard, error) {
+func FindGiftcard(exec boil.Executor, iD string, selectCols ...string) (*Giftcard, error) {
 	giftcardObj := &Giftcard{}
 
 	sel := "*"
@@ -1549,7 +1542,7 @@ func FindGiftcard(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, giftcardObj)
+	err := q.Bind(nil, exec, giftcardObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -1562,7 +1555,7 @@ func FindGiftcard(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Giftcard) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Giftcard) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no giftcards provided for insertion")
 	}
@@ -1610,16 +1603,15 @@ func (o *Giftcard) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -1638,7 +1630,7 @@ func (o *Giftcard) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update uses an executor to update the Giftcard.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Giftcard) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Giftcard) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	giftcardUpdateCacheMut.RLock()
@@ -1666,13 +1658,12 @@ func (o *Giftcard) Update(ctx context.Context, exec boil.ContextExecutor, column
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update giftcards row")
 	}
@@ -1692,10 +1683,10 @@ func (o *Giftcard) Update(ctx context.Context, exec boil.ContextExecutor, column
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q giftcardQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q giftcardQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for giftcards")
 	}
@@ -1709,7 +1700,7 @@ func (q giftcardQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o GiftcardSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o GiftcardSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -1739,12 +1730,11 @@ func (o GiftcardSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, giftcardPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in giftcard slice")
 	}
@@ -1758,7 +1748,7 @@ func (o GiftcardSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Giftcard) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Giftcard) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no giftcards provided for upsert")
 	}
@@ -1842,18 +1832,17 @@ func (o *Giftcard) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert giftcards")
@@ -1870,7 +1859,7 @@ func (o *Giftcard) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 
 // Delete deletes a single Giftcard record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Giftcard) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Giftcard) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Giftcard provided for delete")
 	}
@@ -1878,12 +1867,11 @@ func (o *Giftcard) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), giftcardPrimaryKeyMapping)
 	sql := "DELETE FROM \"giftcards\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from giftcards")
 	}
@@ -1897,14 +1885,14 @@ func (o *Giftcard) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // DeleteAll deletes all matching rows.
-func (q giftcardQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q giftcardQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no giftcardQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from giftcards")
 	}
@@ -1918,7 +1906,7 @@ func (q giftcardQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o GiftcardSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o GiftcardSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1932,12 +1920,11 @@ func (o GiftcardSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	sql := "DELETE FROM \"giftcards\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, giftcardPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from giftcard slice")
 	}
@@ -1952,8 +1939,8 @@ func (o GiftcardSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Giftcard) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindGiftcard(ctx, exec, o.ID)
+func (o *Giftcard) Reload(exec boil.Executor) error {
+	ret, err := FindGiftcard(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1964,7 +1951,7 @@ func (o *Giftcard) Reload(ctx context.Context, exec boil.ContextExecutor) error 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *GiftcardSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *GiftcardSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1981,7 +1968,7 @@ func (o *GiftcardSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in GiftcardSlice")
 	}
@@ -1992,16 +1979,15 @@ func (o *GiftcardSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // GiftcardExists checks if the Giftcard row exists.
-func GiftcardExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func GiftcardExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"giftcards\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -2012,6 +1998,6 @@ func GiftcardExists(ctx context.Context, exec boil.ContextExecutor, iD string) (
 }
 
 // Exists checks if the Giftcard row exists.
-func (o *Giftcard) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return GiftcardExists(ctx, exec, o.ID)
+func (o *Giftcard) Exists(exec boil.Executor) (bool, error) {
+	return GiftcardExists(exec, o.ID)
 }

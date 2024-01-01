@@ -4,7 +4,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type sqlVatStore struct {
@@ -15,17 +16,17 @@ func NewSqlVatStore(s store.Store) store.VatStore {
 	return &sqlVatStore{s}
 }
 
-func (s *sqlVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error) {
-	if transaction == nil {
-		transaction = s.GetMaster()
+func (s *sqlVatStore) Upsert(tx store.ContextRunner, vats model.VatSlice) (model.VatSlice, error) {
+	if tx == nil {
+		tx = s.GetMaster()
 	}
 
 	for _, vat := range vats {
 		var err error
-		if vat.Id == "" {
-			err = transaction.Create(vat).Error
+		if vat.ID == "" {
+			err = vat.Insert(s.Context(), tx, boil.Infer())
 		} else {
-			err = transaction.Model(vat).Updates(vat).Error
+			_, err = vat.Update(s.Context(), tx, boil.Infer())
 		}
 
 		if err != nil {
@@ -36,17 +37,6 @@ func (s *sqlVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.
 	return vats, nil
 }
 
-func (s *sqlVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "Vat_FilterByOptions")
-	if err != nil {
-		return nil, err
-	}
-
-	var res []*model.Vat
-	err = s.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find vat objects by options")
-	}
-
-	return res, nil
+func (s *sqlVatStore) FilterByOptions(options ...qm.QueryMod) (model.VatSlice, error) {
+	return model.Vats(options...).All(s.Context(), s.GetReplica())
 }

@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -130,12 +129,12 @@ var (
 )
 
 // One returns a single voucherCustomer record from the query.
-func (q voucherCustomerQuery) One(ctx context.Context, exec boil.ContextExecutor) (*VoucherCustomer, error) {
+func (q voucherCustomerQuery) One(exec boil.Executor) (*VoucherCustomer, error) {
 	o := &VoucherCustomer{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -147,10 +146,10 @@ func (q voucherCustomerQuery) One(ctx context.Context, exec boil.ContextExecutor
 }
 
 // All returns all VoucherCustomer records from the query.
-func (q voucherCustomerQuery) All(ctx context.Context, exec boil.ContextExecutor) (VoucherCustomerSlice, error) {
+func (q voucherCustomerQuery) All(exec boil.Executor) (VoucherCustomerSlice, error) {
 	var o []*VoucherCustomer
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to VoucherCustomer slice")
 	}
@@ -159,13 +158,13 @@ func (q voucherCustomerQuery) All(ctx context.Context, exec boil.ContextExecutor
 }
 
 // Count returns the count of all VoucherCustomer records in the query.
-func (q voucherCustomerQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q voucherCustomerQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count voucher_customers rows")
 	}
@@ -174,14 +173,14 @@ func (q voucherCustomerQuery) Count(ctx context.Context, exec boil.ContextExecut
 }
 
 // Exists checks if the row exists in the table.
-func (q voucherCustomerQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q voucherCustomerQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if voucher_customers exists")
 	}
@@ -202,7 +201,7 @@ func (o *VoucherCustomer) Voucher(mods ...qm.QueryMod) voucherQuery {
 
 // LoadVoucher allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (voucherCustomerL) LoadVoucher(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVoucherCustomer interface{}, mods queries.Applicator) error {
+func (voucherCustomerL) LoadVoucher(e boil.Executor, singular bool, maybeVoucherCustomer interface{}, mods queries.Applicator) error {
 	var slice []*VoucherCustomer
 	var object *VoucherCustomer
 
@@ -265,7 +264,7 @@ func (voucherCustomerL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Voucher")
 	}
@@ -315,10 +314,10 @@ func (voucherCustomerL) LoadVoucher(ctx context.Context, e boil.ContextExecutor,
 // SetVoucher of the voucherCustomer to the related item.
 // Sets o.R.Voucher to related.
 // Adds o to related.R.VoucherCustomers.
-func (o *VoucherCustomer) SetVoucher(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Voucher) error {
+func (o *VoucherCustomer) SetVoucher(exec boil.Executor, insert bool, related *Voucher) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -330,12 +329,11 @@ func (o *VoucherCustomer) SetVoucher(ctx context.Context, exec boil.ContextExecu
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -372,7 +370,7 @@ func VoucherCustomers(mods ...qm.QueryMod) voucherCustomerQuery {
 
 // FindVoucherCustomer retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindVoucherCustomer(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*VoucherCustomer, error) {
+func FindVoucherCustomer(exec boil.Executor, iD string, selectCols ...string) (*VoucherCustomer, error) {
 	voucherCustomerObj := &VoucherCustomer{}
 
 	sel := "*"
@@ -385,7 +383,7 @@ func FindVoucherCustomer(ctx context.Context, exec boil.ContextExecutor, iD stri
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, voucherCustomerObj)
+	err := q.Bind(nil, exec, voucherCustomerObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -398,7 +396,7 @@ func FindVoucherCustomer(ctx context.Context, exec boil.ContextExecutor, iD stri
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *VoucherCustomer) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *VoucherCustomer) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no voucher_customers provided for insertion")
 	}
@@ -446,16 +444,15 @@ func (o *VoucherCustomer) Insert(ctx context.Context, exec boil.ContextExecutor,
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -474,7 +471,7 @@ func (o *VoucherCustomer) Insert(ctx context.Context, exec boil.ContextExecutor,
 // Update uses an executor to update the VoucherCustomer.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *VoucherCustomer) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *VoucherCustomer) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	voucherCustomerUpdateCacheMut.RLock()
@@ -502,13 +499,12 @@ func (o *VoucherCustomer) Update(ctx context.Context, exec boil.ContextExecutor,
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update voucher_customers row")
 	}
@@ -528,10 +524,10 @@ func (o *VoucherCustomer) Update(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q voucherCustomerQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q voucherCustomerQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for voucher_customers")
 	}
@@ -545,7 +541,7 @@ func (q voucherCustomerQuery) UpdateAll(ctx context.Context, exec boil.ContextEx
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o VoucherCustomerSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o VoucherCustomerSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -575,12 +571,11 @@ func (o VoucherCustomerSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, voucherCustomerPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in voucherCustomer slice")
 	}
@@ -594,7 +589,7 @@ func (o VoucherCustomerSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *VoucherCustomer) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *VoucherCustomer) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no voucher_customers provided for upsert")
 	}
@@ -678,18 +673,17 @@ func (o *VoucherCustomer) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert voucher_customers")
@@ -706,7 +700,7 @@ func (o *VoucherCustomer) Upsert(ctx context.Context, exec boil.ContextExecutor,
 
 // Delete deletes a single VoucherCustomer record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *VoucherCustomer) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *VoucherCustomer) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no VoucherCustomer provided for delete")
 	}
@@ -714,12 +708,11 @@ func (o *VoucherCustomer) Delete(ctx context.Context, exec boil.ContextExecutor)
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), voucherCustomerPrimaryKeyMapping)
 	sql := "DELETE FROM \"voucher_customers\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from voucher_customers")
 	}
@@ -733,14 +726,14 @@ func (o *VoucherCustomer) Delete(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all matching rows.
-func (q voucherCustomerQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q voucherCustomerQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no voucherCustomerQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from voucher_customers")
 	}
@@ -754,7 +747,7 @@ func (q voucherCustomerQuery) DeleteAll(ctx context.Context, exec boil.ContextEx
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o VoucherCustomerSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o VoucherCustomerSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -768,12 +761,11 @@ func (o VoucherCustomerSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 	sql := "DELETE FROM \"voucher_customers\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, voucherCustomerPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from voucherCustomer slice")
 	}
@@ -788,8 +780,8 @@ func (o VoucherCustomerSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *VoucherCustomer) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindVoucherCustomer(ctx, exec, o.ID)
+func (o *VoucherCustomer) Reload(exec boil.Executor) error {
+	ret, err := FindVoucherCustomer(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -800,7 +792,7 @@ func (o *VoucherCustomer) Reload(ctx context.Context, exec boil.ContextExecutor)
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *VoucherCustomerSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *VoucherCustomerSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -817,7 +809,7 @@ func (o *VoucherCustomerSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in VoucherCustomerSlice")
 	}
@@ -828,16 +820,15 @@ func (o *VoucherCustomerSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // VoucherCustomerExists checks if the VoucherCustomer row exists.
-func VoucherCustomerExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func VoucherCustomerExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"voucher_customers\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -848,6 +839,6 @@ func VoucherCustomerExists(ctx context.Context, exec boil.ContextExecutor, iD st
 }
 
 // Exists checks if the VoucherCustomer row exists.
-func (o *VoucherCustomer) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return VoucherCustomerExists(ctx, exec, o.ID)
+func (o *VoucherCustomer) Exists(exec boil.Executor) (bool, error) {
+	return VoucherCustomerExists(exec, o.ID)
 }

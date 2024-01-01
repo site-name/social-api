@@ -66,14 +66,14 @@ func (watcher *Watcher) Stop() {
 
 // sitting there waiting for new
 func (watcher *Watcher) PollAndNotify() {
-	jobs, err := watcher.srv.Store.Job().GetAllByStatus(model.JobstatusPending.String())
+	jobs, err := watcher.srv.Store.Job().FindAll(model.JobWhere.Status.EQ(model.JobstatusPending))
 	if err != nil {
 		slog.Error("Error occured getting all pending statuses.", slog.Err(err))
 		return
 	}
 
 	for _, job := range jobs {
-		worker := watcher.workers.Get(job.Type.String())
+		worker := watcher.workers.Get(job.Type)
 		if worker != nil {
 			select {
 			case worker.JobChannel() <- *job:

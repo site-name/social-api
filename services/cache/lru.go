@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/tinylib/msgp/msgp"
 	"github.com/vmihailenco/msgpack/v5"
 	// "github.com/sitename/sitename/model/account"
@@ -21,7 +21,7 @@ type LRU struct {
 	items                  map[string]*list.Element
 	defaultExpiry          time.Duration
 	name                   string
-	invalidateClusterEvent model.ClusterEvent
+	invalidateClusterEvent model_helper.ClusterEvent
 }
 
 // LRUOptions contains options for initializing LRU cache
@@ -29,7 +29,7 @@ type LRUOptions struct {
 	Name                   string
 	Size                   int
 	DefaultExpiry          time.Duration
-	InvalidateClusterEvent model.ClusterEvent
+	InvalidateClusterEvent model_helper.ClusterEvent
 	// StripedBuckets is used only by LRUStriped and shouldn't be greater than the number
 	// of CPUs available on the machine running this cache.
 	StripedBuckets int
@@ -125,7 +125,7 @@ func (l *LRU) Len() (int, error) {
 }
 
 // GetInvalidateClusterEvent returns the cluster event configured when this cache was created.
-func (l *LRU) GetInvalidateClusterEvent() model.ClusterEvent {
+func (l *LRU) GetInvalidateClusterEvent() model_helper.ClusterEvent {
 	return l.invalidateClusterEvent
 }
 
@@ -202,18 +202,18 @@ func (l *LRU) get(key string, value interface{}) error {
 	// like these and then return a pointer while returning from the cache function,
 	// but it will make the codebase inconsistent, and has some edge-cases to take care of.
 
-	switch v := value.(type) {
-	case **model.User:
-		var u model.User
-		_, err := u.UnmarshalMsg(val)
-		*v = &u
-		return err
-	case *map[string]*model.User:
-		var u model.UserMap
-		_, err := u.UnmarshalMsg(val)
-		*v = u
-		return err
-	}
+	// switch v := value.(type) {
+	// case **model.User:
+	// 	var u model.User
+	// 	_, err := u.UnmarshalMsg(val)
+	// 	*v = &u
+	// 	return err
+	// case *map[string]*model.User:
+	// 	var u model.UserMap
+	// 	_, err := u.UnmarshalMsg(val)
+	// 	*v = u
+	// 	return err
+	// }
 
 	// Slow path for other structs.
 	return msgpack.Unmarshal(val, value)

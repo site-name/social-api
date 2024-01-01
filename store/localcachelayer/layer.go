@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/store"
 )
@@ -88,7 +88,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		Size:                   UserProfileByIDCacheSize,
 		Name:                   "UserProfileByIds",
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
-		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForProfileByIds,
+		InvalidateClusterEvent: model_helper.ClusterEventInvalidateCacheForProfileByIds,
 		Striped:                true,
 		StripedBuckets:         max(runtime.NumCPU()-1, 1),
 	}); err != nil {
@@ -105,7 +105,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		Size:                   RoleCacheSize,
 		Name:                   "Role",
 		DefaultExpiry:          RoleCacheSec * time.Second,
-		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForRoles,
+		InvalidateClusterEvent: model_helper.ClusterEventInvalidateCacheForRoles,
 		Striped:                true,
 		StripedBuckets:         max(runtime.NumCPU()-1, 1),
 	}); err != nil {
@@ -115,17 +115,17 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		Size:                   RoleCacheSize,
 		Name:                   "RolePermission",
 		DefaultExpiry:          RoleCacheSec * time.Second,
-		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForRolePermissions,
+		InvalidateClusterEvent: model_helper.ClusterEventInvalidateCacheForRolePermissions,
 	}); err != nil {
 		return
 	}
 	localCacheStore.role = LocalCacheRoleStore{RoleStore: baseStore.Role(), rootStore: &localCacheStore}
 
 	if cluster != nil {
-		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForRoles, localCacheStore.role.handleClusterInvalidateRole)
-		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
-		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForRolePermissions, localCacheStore.role.handleClusterInvalidateRolePermissions)
-		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
+		cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForRoles, localCacheStore.role.handleClusterInvalidateRole)
+		cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
+		cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForRolePermissions, localCacheStore.role.handleClusterInvalidateRolePermissions)
+		cluster.RegisterClusterMessageHandler(model_helper.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
 	}
 
 	return
@@ -147,9 +147,9 @@ func (s LocalCacheStore) DropAllTables() {
 func (s *LocalCacheStore) doInvalidateCacheCluster(cache cache.Cache, key string) {
 	cache.Remove(key)
 	if s.cluster != nil {
-		msg := &model.ClusterMessage{
+		msg := &model_helper.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: model.ClusterSendBestEffort,
+			SendType: model_helper.ClusterSendBestEffort,
 			Data:     []byte(key),
 		}
 		s.cluster.SendClusterMessage(msg)
@@ -177,9 +177,9 @@ func (s *LocalCacheStore) doStandardReadCache(cache cache.Cache, key string, val
 func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 	cache.Purge()
 	if s.cluster != nil {
-		msg := &model.ClusterMessage{
+		msg := &model_helper.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: model.ClusterSendBestEffort,
+			SendType: model_helper.ClusterSendBestEffort,
 			Data:     clearCacheMessageData,
 		}
 		s.cluster.SendClusterMessage(msg)

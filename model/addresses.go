@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -352,12 +351,12 @@ var (
 )
 
 // One returns a single address record from the query.
-func (q addressQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Address, error) {
+func (q addressQuery) One(exec boil.Executor) (*Address, error) {
 	o := &Address{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -369,10 +368,10 @@ func (q addressQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Addr
 }
 
 // All returns all Address records from the query.
-func (q addressQuery) All(ctx context.Context, exec boil.ContextExecutor) (AddressSlice, error) {
+func (q addressQuery) All(exec boil.Executor) (AddressSlice, error) {
 	var o []*Address
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Address slice")
 	}
@@ -381,13 +380,13 @@ func (q addressQuery) All(ctx context.Context, exec boil.ContextExecutor) (Addre
 }
 
 // Count returns the count of all Address records in the query.
-func (q addressQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q addressQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count addresses rows")
 	}
@@ -396,14 +395,14 @@ func (q addressQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int
 }
 
 // Exists checks if the row exists in the table.
-func (q addressQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q addressQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if addresses exists")
 	}
@@ -511,7 +510,7 @@ func (o *Address) Warehouses(mods ...qm.QueryMod) warehouseQuery {
 
 // LoadBillingAddressCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadBillingAddressCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadBillingAddressCheckouts(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -572,7 +571,7 @@ func (addressL) LoadBillingAddressCheckouts(ctx context.Context, e boil.ContextE
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load checkouts")
 	}
@@ -618,7 +617,7 @@ func (addressL) LoadBillingAddressCheckouts(ctx context.Context, e boil.ContextE
 
 // LoadBillingAddressOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadBillingAddressOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadBillingAddressOrders(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -679,7 +678,7 @@ func (addressL) LoadBillingAddressOrders(ctx context.Context, e boil.ContextExec
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load orders")
 	}
@@ -725,7 +724,7 @@ func (addressL) LoadBillingAddressOrders(ctx context.Context, e boil.ContextExec
 
 // LoadShops allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadShops(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadShops(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -786,7 +785,7 @@ func (addressL) LoadShops(ctx context.Context, e boil.ContextExecutor, singular 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load shops")
 	}
@@ -832,7 +831,7 @@ func (addressL) LoadShops(ctx context.Context, e boil.ContextExecutor, singular 
 
 // LoadUserAddresses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadUserAddresses(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -893,7 +892,7 @@ func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, s
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load user_addresses")
 	}
@@ -939,7 +938,7 @@ func (addressL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, s
 
 // LoadDefaultBillingAddressUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadDefaultBillingAddressUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadDefaultBillingAddressUsers(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1000,7 +999,7 @@ func (addressL) LoadDefaultBillingAddressUsers(ctx context.Context, e boil.Conte
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load users")
 	}
@@ -1046,7 +1045,7 @@ func (addressL) LoadDefaultBillingAddressUsers(ctx context.Context, e boil.Conte
 
 // LoadDefaultShippingAddressUsers allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadDefaultShippingAddressUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadDefaultShippingAddressUsers(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1107,7 +1106,7 @@ func (addressL) LoadDefaultShippingAddressUsers(ctx context.Context, e boil.Cont
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load users")
 	}
@@ -1153,7 +1152,7 @@ func (addressL) LoadDefaultShippingAddressUsers(ctx context.Context, e boil.Cont
 
 // LoadWarehouses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (addressL) LoadWarehouses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
+func (addressL) LoadWarehouses(e boil.Executor, singular bool, maybeAddress interface{}, mods queries.Applicator) error {
 	var slice []*Address
 	var object *Address
 
@@ -1214,7 +1213,7 @@ func (addressL) LoadWarehouses(ctx context.Context, e boil.ContextExecutor, sing
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load warehouses")
 	}
@@ -1262,12 +1261,12 @@ func (addressL) LoadWarehouses(ctx context.Context, e boil.ContextExecutor, sing
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.BillingAddressCheckouts.
 // Sets related.R.BillingAddress appropriately.
-func (o *Address) AddBillingAddressCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *Address) AddBillingAddressCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.BillingAddressID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1278,12 +1277,11 @@ func (o *Address) AddBillingAddressCheckouts(ctx context.Context, exec boil.Cont
 			)
 			values := []interface{}{o.ID, rel.Token}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1317,15 +1315,14 @@ func (o *Address) AddBillingAddressCheckouts(ctx context.Context, exec boil.Cont
 // Sets o.R.BillingAddress's BillingAddressCheckouts accordingly.
 // Replaces o.R.BillingAddressCheckouts with related.
 // Sets related.R.BillingAddress's BillingAddressCheckouts accordingly.
-func (o *Address) SetBillingAddressCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *Address) SetBillingAddressCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"billing_address_id\" = null where \"billing_address_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1342,13 +1339,13 @@ func (o *Address) SetBillingAddressCheckouts(ctx context.Context, exec boil.Cont
 		o.R.BillingAddressCheckouts = nil
 	}
 
-	return o.AddBillingAddressCheckouts(ctx, exec, insert, related...)
+	return o.AddBillingAddressCheckouts(exec, insert, related...)
 }
 
 // RemoveBillingAddressCheckouts relationships from objects passed in.
 // Removes related items from R.BillingAddressCheckouts (uses pointer comparison, removal does not keep order)
 // Sets related.R.BillingAddress.
-func (o *Address) RemoveBillingAddressCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
+func (o *Address) RemoveBillingAddressCheckouts(exec boil.Executor, related ...*Checkout) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1359,7 +1356,7 @@ func (o *Address) RemoveBillingAddressCheckouts(ctx context.Context, exec boil.C
 		if rel.R != nil {
 			rel.R.BillingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("billing_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1389,12 +1386,12 @@ func (o *Address) RemoveBillingAddressCheckouts(ctx context.Context, exec boil.C
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.BillingAddressOrders.
 // Sets related.R.BillingAddress appropriately.
-func (o *Address) AddBillingAddressOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *Address) AddBillingAddressOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.BillingAddressID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1405,12 +1402,11 @@ func (o *Address) AddBillingAddressOrders(ctx context.Context, exec boil.Context
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1444,15 +1440,14 @@ func (o *Address) AddBillingAddressOrders(ctx context.Context, exec boil.Context
 // Sets o.R.BillingAddress's BillingAddressOrders accordingly.
 // Replaces o.R.BillingAddressOrders with related.
 // Sets related.R.BillingAddress's BillingAddressOrders accordingly.
-func (o *Address) SetBillingAddressOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *Address) SetBillingAddressOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"billing_address_id\" = null where \"billing_address_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1469,13 +1464,13 @@ func (o *Address) SetBillingAddressOrders(ctx context.Context, exec boil.Context
 		o.R.BillingAddressOrders = nil
 	}
 
-	return o.AddBillingAddressOrders(ctx, exec, insert, related...)
+	return o.AddBillingAddressOrders(exec, insert, related...)
 }
 
 // RemoveBillingAddressOrders relationships from objects passed in.
 // Removes related items from R.BillingAddressOrders (uses pointer comparison, removal does not keep order)
 // Sets related.R.BillingAddress.
-func (o *Address) RemoveBillingAddressOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
+func (o *Address) RemoveBillingAddressOrders(exec boil.Executor, related ...*Order) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1486,7 +1481,7 @@ func (o *Address) RemoveBillingAddressOrders(ctx context.Context, exec boil.Cont
 		if rel.R != nil {
 			rel.R.BillingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("billing_address_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("billing_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1516,12 +1511,12 @@ func (o *Address) RemoveBillingAddressOrders(ctx context.Context, exec boil.Cont
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.Shops.
 // Sets related.R.Address appropriately.
-func (o *Address) AddShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+func (o *Address) AddShops(exec boil.Executor, insert bool, related ...*Shop) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.AddressID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1532,12 +1527,11 @@ func (o *Address) AddShops(ctx context.Context, exec boil.ContextExecutor, inser
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1571,15 +1565,14 @@ func (o *Address) AddShops(ctx context.Context, exec boil.ContextExecutor, inser
 // Sets o.R.Address's Shops accordingly.
 // Replaces o.R.Shops with related.
 // Sets related.R.Address's Shops accordingly.
-func (o *Address) SetShops(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Shop) error {
+func (o *Address) SetShops(exec boil.Executor, insert bool, related ...*Shop) error {
 	query := "update \"shops\" set \"address_id\" = null where \"address_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1596,13 +1589,13 @@ func (o *Address) SetShops(ctx context.Context, exec boil.ContextExecutor, inser
 		o.R.Shops = nil
 	}
 
-	return o.AddShops(ctx, exec, insert, related...)
+	return o.AddShops(exec, insert, related...)
 }
 
 // RemoveShops relationships from objects passed in.
 // Removes related items from R.Shops (uses pointer comparison, removal does not keep order)
 // Sets related.R.Address.
-func (o *Address) RemoveShops(ctx context.Context, exec boil.ContextExecutor, related ...*Shop) error {
+func (o *Address) RemoveShops(exec boil.Executor, related ...*Shop) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1613,7 +1606,7 @@ func (o *Address) RemoveShops(ctx context.Context, exec boil.ContextExecutor, re
 		if rel.R != nil {
 			rel.R.Address = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("address_id")); err != nil {
 			return err
 		}
 	}
@@ -1643,12 +1636,12 @@ func (o *Address) RemoveShops(ctx context.Context, exec boil.ContextExecutor, re
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.UserAddresses.
 // Sets related.R.Address appropriately.
-func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
+func (o *Address) AddUserAddresses(exec boil.Executor, insert bool, related ...*UserAddress) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.AddressID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1659,12 +1652,11 @@ func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecuto
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1696,12 +1688,12 @@ func (o *Address) AddUserAddresses(ctx context.Context, exec boil.ContextExecuto
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.DefaultBillingAddressUsers.
 // Sets related.R.DefaultBillingAddress appropriately.
-func (o *Address) AddDefaultBillingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+func (o *Address) AddDefaultBillingAddressUsers(exec boil.Executor, insert bool, related ...*User) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.DefaultBillingAddressID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1712,12 +1704,11 @@ func (o *Address) AddDefaultBillingAddressUsers(ctx context.Context, exec boil.C
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1751,15 +1742,14 @@ func (o *Address) AddDefaultBillingAddressUsers(ctx context.Context, exec boil.C
 // Sets o.R.DefaultBillingAddress's DefaultBillingAddressUsers accordingly.
 // Replaces o.R.DefaultBillingAddressUsers with related.
 // Sets related.R.DefaultBillingAddress's DefaultBillingAddressUsers accordingly.
-func (o *Address) SetDefaultBillingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+func (o *Address) SetDefaultBillingAddressUsers(exec boil.Executor, insert bool, related ...*User) error {
 	query := "update \"users\" set \"default_billing_address_id\" = null where \"default_billing_address_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1776,13 +1766,13 @@ func (o *Address) SetDefaultBillingAddressUsers(ctx context.Context, exec boil.C
 		o.R.DefaultBillingAddressUsers = nil
 	}
 
-	return o.AddDefaultBillingAddressUsers(ctx, exec, insert, related...)
+	return o.AddDefaultBillingAddressUsers(exec, insert, related...)
 }
 
 // RemoveDefaultBillingAddressUsers relationships from objects passed in.
 // Removes related items from R.DefaultBillingAddressUsers (uses pointer comparison, removal does not keep order)
 // Sets related.R.DefaultBillingAddress.
-func (o *Address) RemoveDefaultBillingAddressUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
+func (o *Address) RemoveDefaultBillingAddressUsers(exec boil.Executor, related ...*User) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1793,7 +1783,7 @@ func (o *Address) RemoveDefaultBillingAddressUsers(ctx context.Context, exec boi
 		if rel.R != nil {
 			rel.R.DefaultBillingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("default_billing_address_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("default_billing_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1823,12 +1813,12 @@ func (o *Address) RemoveDefaultBillingAddressUsers(ctx context.Context, exec boi
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.DefaultShippingAddressUsers.
 // Sets related.R.DefaultShippingAddress appropriately.
-func (o *Address) AddDefaultShippingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+func (o *Address) AddDefaultShippingAddressUsers(exec boil.Executor, insert bool, related ...*User) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.DefaultShippingAddressID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1839,12 +1829,11 @@ func (o *Address) AddDefaultShippingAddressUsers(ctx context.Context, exec boil.
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1878,15 +1867,14 @@ func (o *Address) AddDefaultShippingAddressUsers(ctx context.Context, exec boil.
 // Sets o.R.DefaultShippingAddress's DefaultShippingAddressUsers accordingly.
 // Replaces o.R.DefaultShippingAddressUsers with related.
 // Sets related.R.DefaultShippingAddress's DefaultShippingAddressUsers accordingly.
-func (o *Address) SetDefaultShippingAddressUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+func (o *Address) SetDefaultShippingAddressUsers(exec boil.Executor, insert bool, related ...*User) error {
 	query := "update \"users\" set \"default_shipping_address_id\" = null where \"default_shipping_address_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1903,13 +1891,13 @@ func (o *Address) SetDefaultShippingAddressUsers(ctx context.Context, exec boil.
 		o.R.DefaultShippingAddressUsers = nil
 	}
 
-	return o.AddDefaultShippingAddressUsers(ctx, exec, insert, related...)
+	return o.AddDefaultShippingAddressUsers(exec, insert, related...)
 }
 
 // RemoveDefaultShippingAddressUsers relationships from objects passed in.
 // Removes related items from R.DefaultShippingAddressUsers (uses pointer comparison, removal does not keep order)
 // Sets related.R.DefaultShippingAddress.
-func (o *Address) RemoveDefaultShippingAddressUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
+func (o *Address) RemoveDefaultShippingAddressUsers(exec boil.Executor, related ...*User) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1920,7 +1908,7 @@ func (o *Address) RemoveDefaultShippingAddressUsers(ctx context.Context, exec bo
 		if rel.R != nil {
 			rel.R.DefaultShippingAddress = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("default_shipping_address_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("default_shipping_address_id")); err != nil {
 			return err
 		}
 	}
@@ -1950,12 +1938,12 @@ func (o *Address) RemoveDefaultShippingAddressUsers(ctx context.Context, exec bo
 // of the address, optionally inserting them as new records.
 // Appends related to o.R.Warehouses.
 // Sets related.R.Address appropriately.
-func (o *Address) AddWarehouses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Warehouse) error {
+func (o *Address) AddWarehouses(exec boil.Executor, insert bool, related ...*Warehouse) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.AddressID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1966,12 +1954,11 @@ func (o *Address) AddWarehouses(ctx context.Context, exec boil.ContextExecutor, 
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -2005,15 +1992,14 @@ func (o *Address) AddWarehouses(ctx context.Context, exec boil.ContextExecutor, 
 // Sets o.R.Address's Warehouses accordingly.
 // Replaces o.R.Warehouses with related.
 // Sets related.R.Address's Warehouses accordingly.
-func (o *Address) SetWarehouses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Warehouse) error {
+func (o *Address) SetWarehouses(exec boil.Executor, insert bool, related ...*Warehouse) error {
 	query := "update \"warehouses\" set \"address_id\" = null where \"address_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -2030,13 +2016,13 @@ func (o *Address) SetWarehouses(ctx context.Context, exec boil.ContextExecutor, 
 		o.R.Warehouses = nil
 	}
 
-	return o.AddWarehouses(ctx, exec, insert, related...)
+	return o.AddWarehouses(exec, insert, related...)
 }
 
 // RemoveWarehouses relationships from objects passed in.
 // Removes related items from R.Warehouses (uses pointer comparison, removal does not keep order)
 // Sets related.R.Address.
-func (o *Address) RemoveWarehouses(ctx context.Context, exec boil.ContextExecutor, related ...*Warehouse) error {
+func (o *Address) RemoveWarehouses(exec boil.Executor, related ...*Warehouse) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -2047,7 +2033,7 @@ func (o *Address) RemoveWarehouses(ctx context.Context, exec boil.ContextExecuto
 		if rel.R != nil {
 			rel.R.Address = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("address_id")); err != nil {
 			return err
 		}
 	}
@@ -2086,7 +2072,7 @@ func Addresses(mods ...qm.QueryMod) addressQuery {
 
 // FindAddress retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindAddress(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Address, error) {
+func FindAddress(exec boil.Executor, iD string, selectCols ...string) (*Address, error) {
 	addressObj := &Address{}
 
 	sel := "*"
@@ -2099,7 +2085,7 @@ func FindAddress(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, addressObj)
+	err := q.Bind(nil, exec, addressObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -2112,7 +2098,7 @@ func FindAddress(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Address) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no addresses provided for insertion")
 	}
@@ -2160,16 +2146,15 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -2188,7 +2173,7 @@ func (o *Address) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update uses an executor to update the Address.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Address) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	addressUpdateCacheMut.RLock()
@@ -2216,13 +2201,12 @@ func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update addresses row")
 	}
@@ -2242,10 +2226,10 @@ func (o *Address) Update(ctx context.Context, exec boil.ContextExecutor, columns
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q addressQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q addressQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for addresses")
 	}
@@ -2259,7 +2243,7 @@ func (q addressQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o AddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o AddressSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -2289,12 +2273,11 @@ func (o AddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, addressPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in address slice")
 	}
@@ -2308,7 +2291,7 @@ func (o AddressSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Address) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no addresses provided for upsert")
 	}
@@ -2392,18 +2375,17 @@ func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert addresses")
@@ -2420,7 +2402,7 @@ func (o *Address) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 
 // Delete deletes a single Address record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Address) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Address) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Address provided for delete")
 	}
@@ -2428,12 +2410,11 @@ func (o *Address) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), addressPrimaryKeyMapping)
 	sql := "DELETE FROM \"addresses\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from addresses")
 	}
@@ -2447,14 +2428,14 @@ func (o *Address) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 }
 
 // DeleteAll deletes all matching rows.
-func (q addressQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q addressQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no addressQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from addresses")
 	}
@@ -2468,7 +2449,7 @@ func (q addressQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o AddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o AddressSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -2482,12 +2463,11 @@ func (o AddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	sql := "DELETE FROM \"addresses\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, addressPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from address slice")
 	}
@@ -2502,8 +2482,8 @@ func (o AddressSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Address) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindAddress(ctx, exec, o.ID)
+func (o *Address) Reload(exec boil.Executor) error {
+	ret, err := FindAddress(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -2514,7 +2494,7 @@ func (o *Address) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *AddressSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *AddressSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -2531,7 +2511,7 @@ func (o *AddressSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in AddressSlice")
 	}
@@ -2542,16 +2522,15 @@ func (o *AddressSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // AddressExists checks if the Address row exists.
-func AddressExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func AddressExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"addresses\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -2562,6 +2541,6 @@ func AddressExists(ctx context.Context, exec boil.ContextExecutor, iD string) (b
 }
 
 // Exists checks if the Address row exists.
-func (o *Address) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return AddressExists(ctx, exec, o.ID)
+func (o *Address) Exists(exec boil.Executor) (bool, error) {
+	return AddressExists(exec, o.ID)
 }

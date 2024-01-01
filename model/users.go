@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -54,7 +53,7 @@ type User struct {
 	JWTTokenKey              string                 `boil:"jwt_token_key" json:"jwt_token_key" toml:"jwt_token_key" yaml:"jwt_token_key"`
 	LastActivityAt           int64                  `boil:"last_activity_at" json:"last_activity_at" toml:"last_activity_at" yaml:"last_activity_at"`
 	TermsOfServiceID         string                 `boil:"terms_of_service_id" json:"terms_of_service_id" toml:"terms_of_service_id" yaml:"terms_of_service_id"`
-	TermsIfServiceCreatedAt  int64                  `boil:"terms_if_service_created_at" json:"terms_if_service_created_at" toml:"terms_if_service_created_at" yaml:"terms_if_service_created_at"`
+	TermsOfServiceCreatedAt  int64                  `boil:"terms_of_service_created_at" json:"terms_of_service_created_at" toml:"terms_of_service_created_at" yaml:"terms_of_service_created_at"`
 	DisableWelcomeEmail      bool                   `boil:"disable_welcome_email" json:"disable_welcome_email" toml:"disable_welcome_email" yaml:"disable_welcome_email"`
 	Metadata                 model_types.JsonMap    `boil:"metadata" json:"metadata,omitempty" toml:"metadata" yaml:"metadata,omitempty"`
 	PrivateMetadata          model_types.JsonMap    `boil:"private_metadata" json:"private_metadata,omitempty" toml:"private_metadata" yaml:"private_metadata,omitempty"`
@@ -94,7 +93,7 @@ var UserColumns = struct {
 	JWTTokenKey              string
 	LastActivityAt           string
 	TermsOfServiceID         string
-	TermsIfServiceCreatedAt  string
+	TermsOfServiceCreatedAt  string
 	DisableWelcomeEmail      string
 	Metadata                 string
 	PrivateMetadata          string
@@ -129,7 +128,7 @@ var UserColumns = struct {
 	JWTTokenKey:              "jwt_token_key",
 	LastActivityAt:           "last_activity_at",
 	TermsOfServiceID:         "terms_of_service_id",
-	TermsIfServiceCreatedAt:  "terms_if_service_created_at",
+	TermsOfServiceCreatedAt:  "terms_of_service_created_at",
 	DisableWelcomeEmail:      "disable_welcome_email",
 	Metadata:                 "metadata",
 	PrivateMetadata:          "private_metadata",
@@ -166,7 +165,7 @@ var UserTableColumns = struct {
 	JWTTokenKey              string
 	LastActivityAt           string
 	TermsOfServiceID         string
-	TermsIfServiceCreatedAt  string
+	TermsOfServiceCreatedAt  string
 	DisableWelcomeEmail      string
 	Metadata                 string
 	PrivateMetadata          string
@@ -201,7 +200,7 @@ var UserTableColumns = struct {
 	JWTTokenKey:              "users.jwt_token_key",
 	LastActivityAt:           "users.last_activity_at",
 	TermsOfServiceID:         "users.terms_of_service_id",
-	TermsIfServiceCreatedAt:  "users.terms_if_service_created_at",
+	TermsOfServiceCreatedAt:  "users.terms_of_service_created_at",
 	DisableWelcomeEmail:      "users.disable_welcome_email",
 	Metadata:                 "users.metadata",
 	PrivateMetadata:          "users.private_metadata",
@@ -240,7 +239,7 @@ var UserWhere = struct {
 	JWTTokenKey              whereHelperstring
 	LastActivityAt           whereHelperint64
 	TermsOfServiceID         whereHelperstring
-	TermsIfServiceCreatedAt  whereHelperint64
+	TermsOfServiceCreatedAt  whereHelperint64
 	DisableWelcomeEmail      whereHelperbool
 	Metadata                 whereHelpermodel_types_JsonMap
 	PrivateMetadata          whereHelpermodel_types_JsonMap
@@ -275,7 +274,7 @@ var UserWhere = struct {
 	JWTTokenKey:              whereHelperstring{field: "\"users\".\"jwt_token_key\""},
 	LastActivityAt:           whereHelperint64{field: "\"users\".\"last_activity_at\""},
 	TermsOfServiceID:         whereHelperstring{field: "\"users\".\"terms_of_service_id\""},
-	TermsIfServiceCreatedAt:  whereHelperint64{field: "\"users\".\"terms_if_service_created_at\""},
+	TermsOfServiceCreatedAt:  whereHelperint64{field: "\"users\".\"terms_of_service_created_at\""},
 	DisableWelcomeEmail:      whereHelperbool{field: "\"users\".\"disable_welcome_email\""},
 	Metadata:                 whereHelpermodel_types_JsonMap{field: "\"users\".\"metadata\""},
 	PrivateMetadata:          whereHelpermodel_types_JsonMap{field: "\"users\".\"private_metadata\""},
@@ -489,8 +488,8 @@ func (r *userR) GetUserAddresses() UserAddressSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "note", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_if_service_created_at", "disable_welcome_email", "metadata", "private_metadata"}
-	userColumnsWithoutDefault = []string{"email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_if_service_created_at", "disable_welcome_email"}
+	userAllColumns            = []string{"id", "email", "username", "first_name", "last_name", "default_shipping_address_id", "default_billing_address_id", "password", "auth_data", "auth_service", "email_verified", "nickname", "roles", "props", "notify_props", "last_password_update", "last_picture_update", "failed_attempts", "locale", "timezone", "mfa_active", "mfa_secret", "created_at", "updated_at", "delete_at", "is_active", "note", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email", "metadata", "private_metadata"}
+	userColumnsWithoutDefault = []string{"email", "username", "first_name", "last_name", "password", "auth_service", "email_verified", "nickname", "roles", "last_password_update", "last_picture_update", "failed_attempts", "locale", "mfa_active", "mfa_secret", "created_at", "updated_at", "is_active", "jwt_token_key", "last_activity_at", "terms_of_service_id", "terms_of_service_created_at", "disable_welcome_email"}
 	userColumnsWithDefault    = []string{"id", "default_shipping_address_id", "default_billing_address_id", "auth_data", "props", "notify_props", "timezone", "delete_at", "note", "metadata", "private_metadata"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
@@ -528,12 +527,12 @@ var (
 )
 
 // One returns a single user record from the query.
-func (q userQuery) One(ctx context.Context, exec boil.ContextExecutor) (*User, error) {
+func (q userQuery) One(exec boil.Executor) (*User, error) {
 	o := &User{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -545,10 +544,10 @@ func (q userQuery) One(ctx context.Context, exec boil.ContextExecutor) (*User, e
 }
 
 // All returns all User records from the query.
-func (q userQuery) All(ctx context.Context, exec boil.ContextExecutor) (UserSlice, error) {
+func (q userQuery) All(exec boil.Executor) (UserSlice, error) {
 	var o []*User
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to User slice")
 	}
@@ -557,13 +556,13 @@ func (q userQuery) All(ctx context.Context, exec boil.ContextExecutor) (UserSlic
 }
 
 // Count returns the count of all User records in the query.
-func (q userQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q userQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count users rows")
 	}
@@ -572,14 +571,14 @@ func (q userQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64,
 }
 
 // Exists checks if the row exists in the table.
-func (q userQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q userQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if users exists")
 	}
@@ -846,7 +845,7 @@ func (o *User) UserAddresses(mods ...qm.QueryMod) userAddressQuery {
 
 // LoadDefaultBillingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userL) LoadDefaultBillingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadDefaultBillingAddress(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -913,7 +912,7 @@ func (userL) LoadDefaultBillingAddress(ctx context.Context, e boil.ContextExecut
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Address")
 	}
@@ -962,7 +961,7 @@ func (userL) LoadDefaultBillingAddress(ctx context.Context, e boil.ContextExecut
 
 // LoadDefaultShippingAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (userL) LoadDefaultShippingAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadDefaultShippingAddress(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1029,7 +1028,7 @@ func (userL) LoadDefaultShippingAddress(ctx context.Context, e boil.ContextExecu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Address")
 	}
@@ -1078,7 +1077,7 @@ func (userL) LoadDefaultShippingAddress(ctx context.Context, e boil.ContextExecu
 
 // LoadWishlist allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func (userL) LoadWishlist(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadWishlist(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1139,7 +1138,7 @@ func (userL) LoadWishlist(ctx context.Context, e boil.ContextExecutor, singular 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Wishlist")
 	}
@@ -1187,7 +1186,7 @@ func (userL) LoadWishlist(ctx context.Context, e boil.ContextExecutor, singular 
 
 // LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCheckouts(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1248,7 +1247,7 @@ func (userL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load checkouts")
 	}
@@ -1294,7 +1293,7 @@ func (userL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular
 
 // LoadCompliances allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCompliances(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCompliances(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1355,7 +1354,7 @@ func (userL) LoadCompliances(ctx context.Context, e boil.ContextExecutor, singul
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load compliances")
 	}
@@ -1401,7 +1400,7 @@ func (userL) LoadCompliances(ctx context.Context, e boil.ContextExecutor, singul
 
 // LoadCustomerEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1462,7 +1461,7 @@ func (userL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, sin
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load customer_events")
 	}
@@ -1508,7 +1507,7 @@ func (userL) LoadCustomerEvents(ctx context.Context, e boil.ContextExecutor, sin
 
 // LoadCustomerCustomerNotes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCustomerCustomerNotes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerCustomerNotes(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1569,7 +1568,7 @@ func (userL) LoadCustomerCustomerNotes(ctx context.Context, e boil.ContextExecut
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load customer_notes")
 	}
@@ -1615,7 +1614,7 @@ func (userL) LoadCustomerCustomerNotes(ctx context.Context, e boil.ContextExecut
 
 // LoadCustomerNotes allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCustomerNotes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCustomerNotes(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1676,7 +1675,7 @@ func (userL) LoadCustomerNotes(ctx context.Context, e boil.ContextExecutor, sing
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load customer_notes")
 	}
@@ -1722,7 +1721,7 @@ func (userL) LoadCustomerNotes(ctx context.Context, e boil.ContextExecutor, sing
 
 // LoadExportEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadExportEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1783,7 +1782,7 @@ func (userL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load export_events")
 	}
@@ -1829,7 +1828,7 @@ func (userL) LoadExportEvents(ctx context.Context, e boil.ContextExecutor, singu
 
 // LoadExportFiles allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadExportFiles(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadExportFiles(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1890,7 +1889,7 @@ func (userL) LoadExportFiles(ctx context.Context, e boil.ContextExecutor, singul
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load export_files")
 	}
@@ -1936,7 +1935,7 @@ func (userL) LoadExportFiles(ctx context.Context, e boil.ContextExecutor, singul
 
 // LoadUsedByGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUsedByGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUsedByGiftcards(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -1997,7 +1996,7 @@ func (userL) LoadUsedByGiftcards(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load giftcards")
 	}
@@ -2043,7 +2042,7 @@ func (userL) LoadUsedByGiftcards(ctx context.Context, e boil.ContextExecutor, si
 
 // LoadCreatedByGiftcards allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadCreatedByGiftcards(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadCreatedByGiftcards(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2104,7 +2103,7 @@ func (userL) LoadCreatedByGiftcards(ctx context.Context, e boil.ContextExecutor,
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load giftcards")
 	}
@@ -2150,7 +2149,7 @@ func (userL) LoadCreatedByGiftcards(ctx context.Context, e boil.ContextExecutor,
 
 // LoadInvoiceEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadInvoiceEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2211,7 +2210,7 @@ func (userL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, sing
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load invoice_events")
 	}
@@ -2257,7 +2256,7 @@ func (userL) LoadInvoiceEvents(ctx context.Context, e boil.ContextExecutor, sing
 
 // LoadOrderEvents allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadOrderEvents(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2318,7 +2317,7 @@ func (userL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singul
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load order_events")
 	}
@@ -2364,7 +2363,7 @@ func (userL) LoadOrderEvents(ctx context.Context, e boil.ContextExecutor, singul
 
 // LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadOrders(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2425,7 +2424,7 @@ func (userL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular bo
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load orders")
 	}
@@ -2471,7 +2470,7 @@ func (userL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular bo
 
 // LoadStaffShopStaffs allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadStaffShopStaffs(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadStaffShopStaffs(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2532,7 +2531,7 @@ func (userL) LoadStaffShopStaffs(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load shop_staffs")
 	}
@@ -2578,7 +2577,7 @@ func (userL) LoadStaffShopStaffs(ctx context.Context, e boil.ContextExecutor, si
 
 // LoadStaffNotificationRecipients allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadStaffNotificationRecipients(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadStaffNotificationRecipients(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2639,7 +2638,7 @@ func (userL) LoadStaffNotificationRecipients(ctx context.Context, e boil.Context
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load staff_notification_recipients")
 	}
@@ -2685,7 +2684,7 @@ func (userL) LoadStaffNotificationRecipients(ctx context.Context, e boil.Context
 
 // LoadUserAccessTokens allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUserAccessTokens(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUserAccessTokens(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2746,7 +2745,7 @@ func (userL) LoadUserAccessTokens(ctx context.Context, e boil.ContextExecutor, s
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load user_access_tokens")
 	}
@@ -2792,7 +2791,7 @@ func (userL) LoadUserAccessTokens(ctx context.Context, e boil.ContextExecutor, s
 
 // LoadUserAddresses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+func (userL) LoadUserAddresses(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
 	var slice []*User
 	var object *User
 
@@ -2853,7 +2852,7 @@ func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, sing
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load user_addresses")
 	}
@@ -2900,10 +2899,10 @@ func (userL) LoadUserAddresses(ctx context.Context, e boil.ContextExecutor, sing
 // SetDefaultBillingAddress of the user to the related item.
 // Sets o.R.DefaultBillingAddress to related.
 // Adds o to related.R.DefaultBillingAddressUsers.
-func (o *User) SetDefaultBillingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+func (o *User) SetDefaultBillingAddress(exec boil.Executor, insert bool, related *Address) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -2915,12 +2914,11 @@ func (o *User) SetDefaultBillingAddress(ctx context.Context, exec boil.ContextEx
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -2947,11 +2945,11 @@ func (o *User) SetDefaultBillingAddress(ctx context.Context, exec boil.ContextEx
 // RemoveDefaultBillingAddress relationship.
 // Sets o.R.DefaultBillingAddress to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *User) RemoveDefaultBillingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *User) RemoveDefaultBillingAddress(exec boil.Executor, related *Address) error {
 	var err error
 
 	queries.SetScanner(&o.DefaultBillingAddressID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("default_billing_address_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("default_billing_address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -2980,10 +2978,10 @@ func (o *User) RemoveDefaultBillingAddress(ctx context.Context, exec boil.Contex
 // SetDefaultShippingAddress of the user to the related item.
 // Sets o.R.DefaultShippingAddress to related.
 // Adds o to related.R.DefaultShippingAddressUsers.
-func (o *User) SetDefaultShippingAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+func (o *User) SetDefaultShippingAddress(exec boil.Executor, insert bool, related *Address) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -2995,12 +2993,11 @@ func (o *User) SetDefaultShippingAddress(ctx context.Context, exec boil.ContextE
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -3027,11 +3024,11 @@ func (o *User) SetDefaultShippingAddress(ctx context.Context, exec boil.ContextE
 // RemoveDefaultShippingAddress relationship.
 // Sets o.R.DefaultShippingAddress to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *User) RemoveDefaultShippingAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *User) RemoveDefaultShippingAddress(exec boil.Executor, related *Address) error {
 	var err error
 
 	queries.SetScanner(&o.DefaultShippingAddressID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("default_shipping_address_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("default_shipping_address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -3060,13 +3057,13 @@ func (o *User) RemoveDefaultShippingAddress(ctx context.Context, exec boil.Conte
 // SetWishlist of the user to the related item.
 // Sets o.R.Wishlist to related.
 // Adds o to related.R.User.
-func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Wishlist) error {
+func (o *User) SetWishlist(exec boil.Executor, insert bool, related *Wishlist) error {
 	var err error
 
 	if insert {
 		related.UserID = o.ID
 
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	} else {
@@ -3077,12 +3074,11 @@ func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, inser
 		)
 		values := []interface{}{o.ID, related.ID}
 
-		if boil.IsDebug(ctx) {
-			writer := boil.DebugWriterFrom(ctx)
-			fmt.Fprintln(writer, updateQuery)
-			fmt.Fprintln(writer, values)
+		if boil.DebugMode {
+			fmt.Fprintln(boil.DebugWriter, updateQuery)
+			fmt.Fprintln(boil.DebugWriter, values)
 		}
-		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		if _, err = exec.Exec(updateQuery, values...); err != nil {
 			return errors.Wrap(err, "failed to update foreign table")
 		}
 
@@ -3111,12 +3107,12 @@ func (o *User) SetWishlist(ctx context.Context, exec boil.ContextExecutor, inser
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.Checkouts.
 // Sets related.R.User appropriately.
-func (o *User) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *User) AddCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3127,12 +3123,11 @@ func (o *User) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, inse
 			)
 			values := []interface{}{o.ID, rel.Token}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3166,15 +3161,14 @@ func (o *User) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, inse
 // Sets o.R.User's Checkouts accordingly.
 // Replaces o.R.Checkouts with related.
 // Sets related.R.User's Checkouts accordingly.
-func (o *User) SetCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *User) SetCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -3191,13 +3185,13 @@ func (o *User) SetCheckouts(ctx context.Context, exec boil.ContextExecutor, inse
 		o.R.Checkouts = nil
 	}
 
-	return o.AddCheckouts(ctx, exec, insert, related...)
+	return o.AddCheckouts(exec, insert, related...)
 }
 
 // RemoveCheckouts relationships from objects passed in.
 // Removes related items from R.Checkouts (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
+func (o *User) RemoveCheckouts(exec boil.Executor, related ...*Checkout) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -3208,7 +3202,7 @@ func (o *User) RemoveCheckouts(ctx context.Context, exec boil.ContextExecutor, r
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3238,12 +3232,12 @@ func (o *User) RemoveCheckouts(ctx context.Context, exec boil.ContextExecutor, r
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.Compliances.
 // Sets related.R.User appropriately.
-func (o *User) AddCompliances(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Compliance) error {
+func (o *User) AddCompliances(exec boil.Executor, insert bool, related ...*Compliance) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.UserID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3254,12 +3248,11 @@ func (o *User) AddCompliances(ctx context.Context, exec boil.ContextExecutor, in
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3291,12 +3284,12 @@ func (o *User) AddCompliances(ctx context.Context, exec boil.ContextExecutor, in
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.CustomerEvents.
 // Sets related.R.User appropriately.
-func (o *User) AddCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
+func (o *User) AddCustomerEvents(exec boil.Executor, insert bool, related ...*CustomerEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3307,12 +3300,11 @@ func (o *User) AddCustomerEvents(ctx context.Context, exec boil.ContextExecutor,
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3346,15 +3338,14 @@ func (o *User) AddCustomerEvents(ctx context.Context, exec boil.ContextExecutor,
 // Sets o.R.User's CustomerEvents accordingly.
 // Replaces o.R.CustomerEvents with related.
 // Sets related.R.User's CustomerEvents accordingly.
-func (o *User) SetCustomerEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerEvent) error {
+func (o *User) SetCustomerEvents(exec boil.Executor, insert bool, related ...*CustomerEvent) error {
 	query := "update \"customer_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -3371,13 +3362,13 @@ func (o *User) SetCustomerEvents(ctx context.Context, exec boil.ContextExecutor,
 		o.R.CustomerEvents = nil
 	}
 
-	return o.AddCustomerEvents(ctx, exec, insert, related...)
+	return o.AddCustomerEvents(exec, insert, related...)
 }
 
 // RemoveCustomerEvents relationships from objects passed in.
 // Removes related items from R.CustomerEvents (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveCustomerEvents(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerEvent) error {
+func (o *User) RemoveCustomerEvents(exec boil.Executor, related ...*CustomerEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -3388,7 +3379,7 @@ func (o *User) RemoveCustomerEvents(ctx context.Context, exec boil.ContextExecut
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3418,12 +3409,12 @@ func (o *User) RemoveCustomerEvents(ctx context.Context, exec boil.ContextExecut
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.CustomerCustomerNotes.
 // Sets related.R.Customer appropriately.
-func (o *User) AddCustomerCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
+func (o *User) AddCustomerCustomerNotes(exec boil.Executor, insert bool, related ...*CustomerNote) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CustomerID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3434,12 +3425,11 @@ func (o *User) AddCustomerCustomerNotes(ctx context.Context, exec boil.ContextEx
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3471,12 +3461,12 @@ func (o *User) AddCustomerCustomerNotes(ctx context.Context, exec boil.ContextEx
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.CustomerNotes.
 // Sets related.R.User appropriately.
-func (o *User) AddCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
+func (o *User) AddCustomerNotes(exec boil.Executor, insert bool, related ...*CustomerNote) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3487,12 +3477,11 @@ func (o *User) AddCustomerNotes(ctx context.Context, exec boil.ContextExecutor, 
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3526,15 +3515,14 @@ func (o *User) AddCustomerNotes(ctx context.Context, exec boil.ContextExecutor, 
 // Sets o.R.User's CustomerNotes accordingly.
 // Replaces o.R.CustomerNotes with related.
 // Sets related.R.User's CustomerNotes accordingly.
-func (o *User) SetCustomerNotes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CustomerNote) error {
+func (o *User) SetCustomerNotes(exec boil.Executor, insert bool, related ...*CustomerNote) error {
 	query := "update \"customer_notes\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -3551,13 +3539,13 @@ func (o *User) SetCustomerNotes(ctx context.Context, exec boil.ContextExecutor, 
 		o.R.CustomerNotes = nil
 	}
 
-	return o.AddCustomerNotes(ctx, exec, insert, related...)
+	return o.AddCustomerNotes(exec, insert, related...)
 }
 
 // RemoveCustomerNotes relationships from objects passed in.
 // Removes related items from R.CustomerNotes (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveCustomerNotes(ctx context.Context, exec boil.ContextExecutor, related ...*CustomerNote) error {
+func (o *User) RemoveCustomerNotes(exec boil.Executor, related ...*CustomerNote) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -3568,7 +3556,7 @@ func (o *User) RemoveCustomerNotes(ctx context.Context, exec boil.ContextExecuto
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3598,12 +3586,12 @@ func (o *User) RemoveCustomerNotes(ctx context.Context, exec boil.ContextExecuto
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.ExportEvents.
 // Sets related.R.User appropriately.
-func (o *User) AddExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
+func (o *User) AddExportEvents(exec boil.Executor, insert bool, related ...*ExportEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3614,12 +3602,11 @@ func (o *User) AddExportEvents(ctx context.Context, exec boil.ContextExecutor, i
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3653,15 +3640,14 @@ func (o *User) AddExportEvents(ctx context.Context, exec boil.ContextExecutor, i
 // Sets o.R.User's ExportEvents accordingly.
 // Replaces o.R.ExportEvents with related.
 // Sets related.R.User's ExportEvents accordingly.
-func (o *User) SetExportEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportEvent) error {
+func (o *User) SetExportEvents(exec boil.Executor, insert bool, related ...*ExportEvent) error {
 	query := "update \"export_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -3678,13 +3664,13 @@ func (o *User) SetExportEvents(ctx context.Context, exec boil.ContextExecutor, i
 		o.R.ExportEvents = nil
 	}
 
-	return o.AddExportEvents(ctx, exec, insert, related...)
+	return o.AddExportEvents(exec, insert, related...)
 }
 
 // RemoveExportEvents relationships from objects passed in.
 // Removes related items from R.ExportEvents (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveExportEvents(ctx context.Context, exec boil.ContextExecutor, related ...*ExportEvent) error {
+func (o *User) RemoveExportEvents(exec boil.Executor, related ...*ExportEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -3695,7 +3681,7 @@ func (o *User) RemoveExportEvents(ctx context.Context, exec boil.ContextExecutor
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3725,12 +3711,12 @@ func (o *User) RemoveExportEvents(ctx context.Context, exec boil.ContextExecutor
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.ExportFiles.
 // Sets related.R.User appropriately.
-func (o *User) AddExportFiles(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportFile) error {
+func (o *User) AddExportFiles(exec boil.Executor, insert bool, related ...*ExportFile) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3741,12 +3727,11 @@ func (o *User) AddExportFiles(ctx context.Context, exec boil.ContextExecutor, in
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3780,15 +3765,14 @@ func (o *User) AddExportFiles(ctx context.Context, exec boil.ContextExecutor, in
 // Sets o.R.User's ExportFiles accordingly.
 // Replaces o.R.ExportFiles with related.
 // Sets related.R.User's ExportFiles accordingly.
-func (o *User) SetExportFiles(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ExportFile) error {
+func (o *User) SetExportFiles(exec boil.Executor, insert bool, related ...*ExportFile) error {
 	query := "update \"export_files\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -3805,13 +3789,13 @@ func (o *User) SetExportFiles(ctx context.Context, exec boil.ContextExecutor, in
 		o.R.ExportFiles = nil
 	}
 
-	return o.AddExportFiles(ctx, exec, insert, related...)
+	return o.AddExportFiles(exec, insert, related...)
 }
 
 // RemoveExportFiles relationships from objects passed in.
 // Removes related items from R.ExportFiles (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveExportFiles(ctx context.Context, exec boil.ContextExecutor, related ...*ExportFile) error {
+func (o *User) RemoveExportFiles(exec boil.Executor, related ...*ExportFile) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -3822,7 +3806,7 @@ func (o *User) RemoveExportFiles(ctx context.Context, exec boil.ContextExecutor,
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -3852,12 +3836,12 @@ func (o *User) RemoveExportFiles(ctx context.Context, exec boil.ContextExecutor,
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.UsedByGiftcards.
 // Sets related.R.UsedBy appropriately.
-func (o *User) AddUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+func (o *User) AddUsedByGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UsedByID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3868,12 +3852,11 @@ func (o *User) AddUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -3907,15 +3890,14 @@ func (o *User) AddUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor
 // Sets o.R.UsedBy's UsedByGiftcards accordingly.
 // Replaces o.R.UsedByGiftcards with related.
 // Sets related.R.UsedBy's UsedByGiftcards accordingly.
-func (o *User) SetUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+func (o *User) SetUsedByGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	query := "update \"giftcards\" set \"used_by_id\" = null where \"used_by_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -3932,13 +3914,13 @@ func (o *User) SetUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor
 		o.R.UsedByGiftcards = nil
 	}
 
-	return o.AddUsedByGiftcards(ctx, exec, insert, related...)
+	return o.AddUsedByGiftcards(exec, insert, related...)
 }
 
 // RemoveUsedByGiftcards relationships from objects passed in.
 // Removes related items from R.UsedByGiftcards (uses pointer comparison, removal does not keep order)
 // Sets related.R.UsedBy.
-func (o *User) RemoveUsedByGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*Giftcard) error {
+func (o *User) RemoveUsedByGiftcards(exec boil.Executor, related ...*Giftcard) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -3949,7 +3931,7 @@ func (o *User) RemoveUsedByGiftcards(ctx context.Context, exec boil.ContextExecu
 		if rel.R != nil {
 			rel.R.UsedBy = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("used_by_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("used_by_id")); err != nil {
 			return err
 		}
 	}
@@ -3979,12 +3961,12 @@ func (o *User) RemoveUsedByGiftcards(ctx context.Context, exec boil.ContextExecu
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.CreatedByGiftcards.
 // Sets related.R.CreatedBy appropriately.
-func (o *User) AddCreatedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+func (o *User) AddCreatedByGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.CreatedByID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -3995,12 +3977,11 @@ func (o *User) AddCreatedByGiftcards(ctx context.Context, exec boil.ContextExecu
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4034,15 +4015,14 @@ func (o *User) AddCreatedByGiftcards(ctx context.Context, exec boil.ContextExecu
 // Sets o.R.CreatedBy's CreatedByGiftcards accordingly.
 // Replaces o.R.CreatedByGiftcards with related.
 // Sets related.R.CreatedBy's CreatedByGiftcards accordingly.
-func (o *User) SetCreatedByGiftcards(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Giftcard) error {
+func (o *User) SetCreatedByGiftcards(exec boil.Executor, insert bool, related ...*Giftcard) error {
 	query := "update \"giftcards\" set \"created_by_id\" = null where \"created_by_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -4059,13 +4039,13 @@ func (o *User) SetCreatedByGiftcards(ctx context.Context, exec boil.ContextExecu
 		o.R.CreatedByGiftcards = nil
 	}
 
-	return o.AddCreatedByGiftcards(ctx, exec, insert, related...)
+	return o.AddCreatedByGiftcards(exec, insert, related...)
 }
 
 // RemoveCreatedByGiftcards relationships from objects passed in.
 // Removes related items from R.CreatedByGiftcards (uses pointer comparison, removal does not keep order)
 // Sets related.R.CreatedBy.
-func (o *User) RemoveCreatedByGiftcards(ctx context.Context, exec boil.ContextExecutor, related ...*Giftcard) error {
+func (o *User) RemoveCreatedByGiftcards(exec boil.Executor, related ...*Giftcard) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -4076,7 +4056,7 @@ func (o *User) RemoveCreatedByGiftcards(ctx context.Context, exec boil.ContextEx
 		if rel.R != nil {
 			rel.R.CreatedBy = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("created_by_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("created_by_id")); err != nil {
 			return err
 		}
 	}
@@ -4106,12 +4086,12 @@ func (o *User) RemoveCreatedByGiftcards(ctx context.Context, exec boil.ContextEx
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.InvoiceEvents.
 // Sets related.R.User appropriately.
-func (o *User) AddInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+func (o *User) AddInvoiceEvents(exec boil.Executor, insert bool, related ...*InvoiceEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4122,12 +4102,11 @@ func (o *User) AddInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, 
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4161,15 +4140,14 @@ func (o *User) AddInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, 
 // Sets o.R.User's InvoiceEvents accordingly.
 // Replaces o.R.InvoiceEvents with related.
 // Sets related.R.User's InvoiceEvents accordingly.
-func (o *User) SetInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*InvoiceEvent) error {
+func (o *User) SetInvoiceEvents(exec boil.Executor, insert bool, related ...*InvoiceEvent) error {
 	query := "update \"invoice_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -4186,13 +4164,13 @@ func (o *User) SetInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, 
 		o.R.InvoiceEvents = nil
 	}
 
-	return o.AddInvoiceEvents(ctx, exec, insert, related...)
+	return o.AddInvoiceEvents(exec, insert, related...)
 }
 
 // RemoveInvoiceEvents relationships from objects passed in.
 // Removes related items from R.InvoiceEvents (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveInvoiceEvents(ctx context.Context, exec boil.ContextExecutor, related ...*InvoiceEvent) error {
+func (o *User) RemoveInvoiceEvents(exec boil.Executor, related ...*InvoiceEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -4203,7 +4181,7 @@ func (o *User) RemoveInvoiceEvents(ctx context.Context, exec boil.ContextExecuto
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4233,12 +4211,12 @@ func (o *User) RemoveInvoiceEvents(ctx context.Context, exec boil.ContextExecuto
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.OrderEvents.
 // Sets related.R.User appropriately.
-func (o *User) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
+func (o *User) AddOrderEvents(exec boil.Executor, insert bool, related ...*OrderEvent) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4249,12 +4227,11 @@ func (o *User) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, in
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4288,15 +4265,14 @@ func (o *User) AddOrderEvents(ctx context.Context, exec boil.ContextExecutor, in
 // Sets o.R.User's OrderEvents accordingly.
 // Replaces o.R.OrderEvents with related.
 // Sets related.R.User's OrderEvents accordingly.
-func (o *User) SetOrderEvents(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrderEvent) error {
+func (o *User) SetOrderEvents(exec boil.Executor, insert bool, related ...*OrderEvent) error {
 	query := "update \"order_events\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -4313,13 +4289,13 @@ func (o *User) SetOrderEvents(ctx context.Context, exec boil.ContextExecutor, in
 		o.R.OrderEvents = nil
 	}
 
-	return o.AddOrderEvents(ctx, exec, insert, related...)
+	return o.AddOrderEvents(exec, insert, related...)
 }
 
 // RemoveOrderEvents relationships from objects passed in.
 // Removes related items from R.OrderEvents (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveOrderEvents(ctx context.Context, exec boil.ContextExecutor, related ...*OrderEvent) error {
+func (o *User) RemoveOrderEvents(exec boil.Executor, related ...*OrderEvent) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -4330,7 +4306,7 @@ func (o *User) RemoveOrderEvents(ctx context.Context, exec boil.ContextExecutor,
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4360,12 +4336,12 @@ func (o *User) RemoveOrderEvents(ctx context.Context, exec boil.ContextExecutor,
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.Orders.
 // Sets related.R.User appropriately.
-func (o *User) AddOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *User) AddOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4376,12 +4352,11 @@ func (o *User) AddOrders(ctx context.Context, exec boil.ContextExecutor, insert 
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4415,15 +4390,14 @@ func (o *User) AddOrders(ctx context.Context, exec boil.ContextExecutor, insert 
 // Sets o.R.User's Orders accordingly.
 // Replaces o.R.Orders with related.
 // Sets related.R.User's Orders accordingly.
-func (o *User) SetOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *User) SetOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -4440,13 +4414,13 @@ func (o *User) SetOrders(ctx context.Context, exec boil.ContextExecutor, insert 
 		o.R.Orders = nil
 	}
 
-	return o.AddOrders(ctx, exec, insert, related...)
+	return o.AddOrders(exec, insert, related...)
 }
 
 // RemoveOrders relationships from objects passed in.
 // Removes related items from R.Orders (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
+func (o *User) RemoveOrders(exec boil.Executor, related ...*Order) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -4457,7 +4431,7 @@ func (o *User) RemoveOrders(ctx context.Context, exec boil.ContextExecutor, rela
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4487,12 +4461,12 @@ func (o *User) RemoveOrders(ctx context.Context, exec boil.ContextExecutor, rela
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.StaffShopStaffs.
 // Sets related.R.Staff appropriately.
-func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShopStaff) error {
+func (o *User) AddStaffShopStaffs(exec boil.Executor, insert bool, related ...*ShopStaff) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.StaffID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4503,12 +4477,11 @@ func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4540,12 +4513,12 @@ func (o *User) AddStaffShopStaffs(ctx context.Context, exec boil.ContextExecutor
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.StaffNotificationRecipients.
 // Sets related.R.User appropriately.
-func (o *User) AddStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaffNotificationRecipient) error {
+func (o *User) AddStaffNotificationRecipients(exec boil.Executor, insert bool, related ...*StaffNotificationRecipient) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.UserID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4556,12 +4529,11 @@ func (o *User) AddStaffNotificationRecipients(ctx context.Context, exec boil.Con
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4595,15 +4567,14 @@ func (o *User) AddStaffNotificationRecipients(ctx context.Context, exec boil.Con
 // Sets o.R.User's StaffNotificationRecipients accordingly.
 // Replaces o.R.StaffNotificationRecipients with related.
 // Sets related.R.User's StaffNotificationRecipients accordingly.
-func (o *User) SetStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaffNotificationRecipient) error {
+func (o *User) SetStaffNotificationRecipients(exec boil.Executor, insert bool, related ...*StaffNotificationRecipient) error {
 	query := "update \"staff_notification_recipients\" set \"user_id\" = null where \"user_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -4620,13 +4591,13 @@ func (o *User) SetStaffNotificationRecipients(ctx context.Context, exec boil.Con
 		o.R.StaffNotificationRecipients = nil
 	}
 
-	return o.AddStaffNotificationRecipients(ctx, exec, insert, related...)
+	return o.AddStaffNotificationRecipients(exec, insert, related...)
 }
 
 // RemoveStaffNotificationRecipients relationships from objects passed in.
 // Removes related items from R.StaffNotificationRecipients (uses pointer comparison, removal does not keep order)
 // Sets related.R.User.
-func (o *User) RemoveStaffNotificationRecipients(ctx context.Context, exec boil.ContextExecutor, related ...*StaffNotificationRecipient) error {
+func (o *User) RemoveStaffNotificationRecipients(exec boil.Executor, related ...*StaffNotificationRecipient) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -4637,7 +4608,7 @@ func (o *User) RemoveStaffNotificationRecipients(ctx context.Context, exec boil.
 		if rel.R != nil {
 			rel.R.User = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("user_id")); err != nil {
 			return err
 		}
 	}
@@ -4667,12 +4638,12 @@ func (o *User) RemoveStaffNotificationRecipients(ctx context.Context, exec boil.
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.UserAccessTokens.
 // Sets related.R.User appropriately.
-func (o *User) AddUserAccessTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAccessToken) error {
+func (o *User) AddUserAccessTokens(exec boil.Executor, insert bool, related ...*UserAccessToken) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.UserID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4683,12 +4654,11 @@ func (o *User) AddUserAccessTokens(ctx context.Context, exec boil.ContextExecuto
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4720,12 +4690,12 @@ func (o *User) AddUserAccessTokens(ctx context.Context, exec boil.ContextExecuto
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.UserAddresses.
 // Sets related.R.User appropriately.
-func (o *User) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*UserAddress) error {
+func (o *User) AddUserAddresses(exec boil.Executor, insert bool, related ...*UserAddress) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.UserID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -4736,12 +4706,11 @@ func (o *User) AddUserAddresses(ctx context.Context, exec boil.ContextExecutor, 
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -4782,7 +4751,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*User, error) {
+func FindUser(exec boil.Executor, iD string, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -4795,7 +4764,7 @@ func FindUser(ctx context.Context, exec boil.ContextExecutor, iD string, selectC
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, userObj)
+	err := q.Bind(nil, exec, userObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -4808,7 +4777,7 @@ func FindUser(ctx context.Context, exec boil.ContextExecutor, iD string, selectC
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *User) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no users provided for insertion")
 	}
@@ -4856,16 +4825,15 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -4884,7 +4852,7 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 // Update uses an executor to update the User.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *User) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	userUpdateCacheMut.RLock()
@@ -4912,13 +4880,12 @@ func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update users row")
 	}
@@ -4938,10 +4905,10 @@ func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q userQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q userQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for users")
 	}
@@ -4955,7 +4922,7 @@ func (q userQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o UserSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o UserSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -4985,12 +4952,11 @@ func (o UserSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, userPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in user slice")
 	}
@@ -5004,7 +4970,7 @@ func (o UserSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *User) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no users provided for upsert")
 	}
@@ -5088,18 +5054,17 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert users")
@@ -5116,7 +5081,7 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 
 // Delete deletes a single User record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *User) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *User) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no User provided for delete")
 	}
@@ -5124,12 +5089,11 @@ func (o *User) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), userPrimaryKeyMapping)
 	sql := "DELETE FROM \"users\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from users")
 	}
@@ -5143,14 +5107,14 @@ func (o *User) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 }
 
 // DeleteAll deletes all matching rows.
-func (q userQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q userQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no userQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from users")
 	}
@@ -5164,7 +5128,7 @@ func (q userQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o UserSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o UserSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -5178,12 +5142,11 @@ func (o UserSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 	sql := "DELETE FROM \"users\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, userPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from user slice")
 	}
@@ -5198,8 +5161,8 @@ func (o UserSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *User) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindUser(ctx, exec, o.ID)
+func (o *User) Reload(exec boil.Executor) error {
+	ret, err := FindUser(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -5210,7 +5173,7 @@ func (o *User) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *UserSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -5227,7 +5190,7 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in UserSlice")
 	}
@@ -5238,16 +5201,15 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func UserExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"users\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -5258,6 +5220,6 @@ func UserExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool
 }
 
 // Exists checks if the User row exists.
-func (o *User) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return UserExists(ctx, exec, o.ID)
+func (o *User) Exists(exec boil.Executor) (bool, error) {
+	return UserExists(exec, o.ID)
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/einterfaces"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/services/configservice"
 	"github.com/sitename/sitename/store"
@@ -44,12 +45,12 @@ func (srv *JobServer) initSchedulers() {
 		clusterLeaderChanged: make(chan bool, 1),
 		jobs:                 srv,
 		isLeader:             true,
-		schedulers:           make(map[string]model_helper.Scheduler),
-		nextRunTimes:         make(map[string]*time.Time),
+		schedulers:           make(map[model.Jobtype]model_helper.Scheduler),
+		nextRunTimes:         make(map[model.Jobtype]*time.Time),
 	}
 }
 
-func (srv *JobServer) RegisterJobType(name string, worker model_helper.Worker, scheduler model_helper.Scheduler) {
+func (srv *JobServer) RegisterJobType(name model.Jobtype, worker model_helper.Worker, scheduler model_helper.Scheduler) {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
 	if worker != nil {

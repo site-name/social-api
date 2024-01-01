@@ -1,8 +1,8 @@
 package storetest
 
 import (
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
-	"gorm.io/gorm"
 )
 
 type StoreTestWrapper struct {
@@ -13,7 +13,7 @@ func NewStoreTestWrapper(orig *sqlstore.SqlStore) *StoreTestWrapper {
 	return &StoreTestWrapper{orig}
 }
 
-func (w *StoreTestWrapper) GetMaster() *gorm.DB {
+func (w *StoreTestWrapper) GetMaster() store.ContextRunner {
 	return w.orig.GetMaster()
 }
 

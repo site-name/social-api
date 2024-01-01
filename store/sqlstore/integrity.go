@@ -2,8 +2,9 @@ package sqlstore
 
 import (
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 )
 
 type relationalCheckConfig struct {
@@ -16,8 +17,8 @@ type relationalCheckConfig struct {
 	filter             interface{}
 }
 
-func getOrphanedRecords(ss *SqlStore, cfg relationalCheckConfig) ([]model.OrphanedRecord, error) {
-	var records []model.OrphanedRecord
+func getOrphanedRecords(ss *SqlStore, cfg relationalCheckConfig) ([]model_helper.OrphanedRecord, error) {
+	var records []model_helper.OrphanedRecord
 
 	sub := ss.GetQueryBuilder().
 		Select("TRUE").
@@ -50,12 +51,12 @@ func getOrphanedRecords(ss *SqlStore, cfg relationalCheckConfig) ([]model.Orphan
 
 	query, args, _ := main.ToSql()
 
-	return records, ss.GetMaster().Raw(query, args...).Find(&records).Error
+	return records, queries.Raw(query, args...).Bind(ss.context, ss.GetMaster(), &records)
 }
 
-func checkParentChildIntegrity(ss *SqlStore, config relationalCheckConfig) model.IntegrityCheckResult {
-	var result model.IntegrityCheckResult
-	var data model.RelationalIntegrityCheckData
+func checkParentChildIntegrity(ss *SqlStore, config relationalCheckConfig) model_helper.IntegrityCheckResult {
+	var result model_helper.IntegrityCheckResult
+	var data model_helper.RelationalIntegrityCheckData
 
 	config.sortRecords = true
 	data.Records, result.Err = getOrphanedRecords(ss, config)
@@ -72,7 +73,7 @@ func checkParentChildIntegrity(ss *SqlStore, config relationalCheckConfig) model
 	return result
 }
 
-func checkUsersAuditsIntegrity(ss *SqlStore) model.IntegrityCheckResult {
+func checkUsersAuditsIntegrity(ss *SqlStore) model_helper.IntegrityCheckResult {
 	return checkParentChildIntegrity(ss, relationalCheckConfig{
 		parentName:         "Users",
 		parentIdAttr:       "UserId",
@@ -81,7 +82,7 @@ func checkUsersAuditsIntegrity(ss *SqlStore) model.IntegrityCheckResult {
 		canParentIdBeEmpty: true,
 	})
 }
-func checkUsersCommandWebhooksIntegrity(ss *SqlStore) model.IntegrityCheckResult {
+func checkUsersCommandWebhooksIntegrity(ss *SqlStore) model_helper.IntegrityCheckResult {
 	return checkParentChildIntegrity(ss, relationalCheckConfig{
 		parentName:   "Users",
 		parentIdAttr: "UserId",
@@ -89,7 +90,7 @@ func checkUsersCommandWebhooksIntegrity(ss *SqlStore) model.IntegrityCheckResult
 		childIdAttr:  "Id",
 	})
 }
-func checkUsersChannelMemberHistoryIntegrity(ss *SqlStore) model.IntegrityCheckResult {
+func checkUsersChannelMemberHistoryIntegrity(ss *SqlStore) model_helper.IntegrityCheckResult {
 	return checkParentChildIntegrity(ss, relationalCheckConfig{
 		parentName:   "Users",
 		parentIdAttr: "UserId",
@@ -98,7 +99,7 @@ func checkUsersChannelMemberHistoryIntegrity(ss *SqlStore) model.IntegrityCheckR
 	})
 }
 
-func checkUsersIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult) {
+func checkUsersIntegrity(ss *SqlStore, results chan<- model_helper.IntegrityCheckResult) {
 	results <- checkUsersAuditsIntegrity(ss)
 	results <- checkUsersCommandWebhooksIntegrity(ss)
 	results <- checkUsersChannelMemberHistoryIntegrity(ss)
@@ -122,7 +123,7 @@ func checkUsersIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult
 	// results <- checkUsersUserAccessTokensIntegrity(ss)
 }
 
-func CheckRelationalIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult) {
+func CheckRelationalIntegrity(ss *SqlStore, results chan<- model_helper.IntegrityCheckResult) {
 	slog.Info("Starting relational integrity checks...")
 	// checkChannelsIntegrity(ss, results)
 	// checkCommandsIntegrity(ss, results)

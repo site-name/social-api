@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -148,12 +147,12 @@ var (
 )
 
 // One returns a single categoryTranslation record from the query.
-func (q categoryTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*CategoryTranslation, error) {
+func (q categoryTranslationQuery) One(exec boil.Executor) (*CategoryTranslation, error) {
 	o := &CategoryTranslation{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -165,10 +164,10 @@ func (q categoryTranslationQuery) One(ctx context.Context, exec boil.ContextExec
 }
 
 // All returns all CategoryTranslation records from the query.
-func (q categoryTranslationQuery) All(ctx context.Context, exec boil.ContextExecutor) (CategoryTranslationSlice, error) {
+func (q categoryTranslationQuery) All(exec boil.Executor) (CategoryTranslationSlice, error) {
 	var o []*CategoryTranslation
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to CategoryTranslation slice")
 	}
@@ -177,13 +176,13 @@ func (q categoryTranslationQuery) All(ctx context.Context, exec boil.ContextExec
 }
 
 // Count returns the count of all CategoryTranslation records in the query.
-func (q categoryTranslationQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q categoryTranslationQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count category_translations rows")
 	}
@@ -192,14 +191,14 @@ func (q categoryTranslationQuery) Count(ctx context.Context, exec boil.ContextEx
 }
 
 // Exists checks if the row exists in the table.
-func (q categoryTranslationQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q categoryTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if category_translations exists")
 	}
@@ -220,7 +219,7 @@ func CategoryTranslations(mods ...qm.QueryMod) categoryTranslationQuery {
 
 // FindCategoryTranslation retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindCategoryTranslation(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*CategoryTranslation, error) {
+func FindCategoryTranslation(exec boil.Executor, iD string, selectCols ...string) (*CategoryTranslation, error) {
 	categoryTranslationObj := &CategoryTranslation{}
 
 	sel := "*"
@@ -233,7 +232,7 @@ func FindCategoryTranslation(ctx context.Context, exec boil.ContextExecutor, iD 
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, categoryTranslationObj)
+	err := q.Bind(nil, exec, categoryTranslationObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -246,7 +245,7 @@ func FindCategoryTranslation(ctx context.Context, exec boil.ContextExecutor, iD 
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *CategoryTranslation) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *CategoryTranslation) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no category_translations provided for insertion")
 	}
@@ -294,16 +293,15 @@ func (o *CategoryTranslation) Insert(ctx context.Context, exec boil.ContextExecu
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -322,7 +320,7 @@ func (o *CategoryTranslation) Insert(ctx context.Context, exec boil.ContextExecu
 // Update uses an executor to update the CategoryTranslation.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *CategoryTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *CategoryTranslation) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	categoryTranslationUpdateCacheMut.RLock()
@@ -350,13 +348,12 @@ func (o *CategoryTranslation) Update(ctx context.Context, exec boil.ContextExecu
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update category_translations row")
 	}
@@ -376,10 +373,10 @@ func (o *CategoryTranslation) Update(ctx context.Context, exec boil.ContextExecu
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q categoryTranslationQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q categoryTranslationQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for category_translations")
 	}
@@ -393,7 +390,7 @@ func (q categoryTranslationQuery) UpdateAll(ctx context.Context, exec boil.Conte
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o CategoryTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o CategoryTranslationSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -423,12 +420,11 @@ func (o CategoryTranslationSlice) UpdateAll(ctx context.Context, exec boil.Conte
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, categoryTranslationPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in categoryTranslation slice")
 	}
@@ -442,7 +438,7 @@ func (o CategoryTranslationSlice) UpdateAll(ctx context.Context, exec boil.Conte
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *CategoryTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *CategoryTranslation) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no category_translations provided for upsert")
 	}
@@ -526,18 +522,17 @@ func (o *CategoryTranslation) Upsert(ctx context.Context, exec boil.ContextExecu
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert category_translations")
@@ -554,7 +549,7 @@ func (o *CategoryTranslation) Upsert(ctx context.Context, exec boil.ContextExecu
 
 // Delete deletes a single CategoryTranslation record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *CategoryTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *CategoryTranslation) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no CategoryTranslation provided for delete")
 	}
@@ -562,12 +557,11 @@ func (o *CategoryTranslation) Delete(ctx context.Context, exec boil.ContextExecu
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), categoryTranslationPrimaryKeyMapping)
 	sql := "DELETE FROM \"category_translations\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from category_translations")
 	}
@@ -581,14 +575,14 @@ func (o *CategoryTranslation) Delete(ctx context.Context, exec boil.ContextExecu
 }
 
 // DeleteAll deletes all matching rows.
-func (q categoryTranslationQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q categoryTranslationQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no categoryTranslationQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from category_translations")
 	}
@@ -602,7 +596,7 @@ func (q categoryTranslationQuery) DeleteAll(ctx context.Context, exec boil.Conte
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o CategoryTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o CategoryTranslationSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -616,12 +610,11 @@ func (o CategoryTranslationSlice) DeleteAll(ctx context.Context, exec boil.Conte
 	sql := "DELETE FROM \"category_translations\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, categoryTranslationPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from categoryTranslation slice")
 	}
@@ -636,8 +629,8 @@ func (o CategoryTranslationSlice) DeleteAll(ctx context.Context, exec boil.Conte
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *CategoryTranslation) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindCategoryTranslation(ctx, exec, o.ID)
+func (o *CategoryTranslation) Reload(exec boil.Executor) error {
+	ret, err := FindCategoryTranslation(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -648,7 +641,7 @@ func (o *CategoryTranslation) Reload(ctx context.Context, exec boil.ContextExecu
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *CategoryTranslationSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *CategoryTranslationSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -665,7 +658,7 @@ func (o *CategoryTranslationSlice) ReloadAll(ctx context.Context, exec boil.Cont
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in CategoryTranslationSlice")
 	}
@@ -676,16 +669,15 @@ func (o *CategoryTranslationSlice) ReloadAll(ctx context.Context, exec boil.Cont
 }
 
 // CategoryTranslationExists checks if the CategoryTranslation row exists.
-func CategoryTranslationExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func CategoryTranslationExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"category_translations\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -696,6 +688,6 @@ func CategoryTranslationExists(ctx context.Context, exec boil.ContextExecutor, i
 }
 
 // Exists checks if the CategoryTranslation row exists.
-func (o *CategoryTranslation) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return CategoryTranslationExists(ctx, exec, o.ID)
+func (o *CategoryTranslation) Exists(exec boil.Executor) (bool, error) {
+	return CategoryTranslationExists(exec, o.ID)
 }

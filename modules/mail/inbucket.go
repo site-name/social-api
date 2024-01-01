@@ -2,15 +2,13 @@ package mail
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/sitename/sitename/model"
 )
 
 const (
@@ -65,7 +63,7 @@ func GetMailBox(email string) (results JSONMessageHeaderInbucket, err error) {
 	}
 
 	defer func() {
-		io.Copy(ioutil.Discard, resp.Body)
+		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 	}()
 
@@ -74,7 +72,7 @@ func GetMailBox(email string) (results JSONMessageHeaderInbucket, err error) {
 	}
 
 	var record JSONMessageHeaderInbucket
-	err = model.ModelFromJson(&record, resp.Body)
+	err = json.NewDecoder(resp.Body).Decode(&record)
 	switch {
 	case err == io.EOF:
 		return nil, fmt.Errorf("error: %s", err)
@@ -99,11 +97,12 @@ func GetMessageFromMailbox(email, id string) (JSONMessageInbucket, error) {
 		return record, err
 	}
 	defer func() {
-		io.Copy(ioutil.Discard, emailResponse.Body)
+		io.Copy(io.Discard, emailResponse.Body)
 		emailResponse.Body.Close()
 	}()
 
-	if err = model.ModelFromJson(&record, emailResponse.Body); err != nil {
+	err = json.NewDecoder(emailResponse.Body).Decode(&record)
+	if err != nil {
 		return record, err
 	}
 

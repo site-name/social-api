@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -283,12 +282,12 @@ var (
 )
 
 // One returns a single fileInfo record from the query.
-func (q fileInfoQuery) One(ctx context.Context, exec boil.ContextExecutor) (*FileInfo, error) {
+func (q fileInfoQuery) One(exec boil.Executor) (*FileInfo, error) {
 	o := &FileInfo{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -300,10 +299,10 @@ func (q fileInfoQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Fil
 }
 
 // All returns all FileInfo records from the query.
-func (q fileInfoQuery) All(ctx context.Context, exec boil.ContextExecutor) (FileInfoSlice, error) {
+func (q fileInfoQuery) All(exec boil.Executor) (FileInfoSlice, error) {
 	var o []*FileInfo
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to FileInfo slice")
 	}
@@ -312,13 +311,13 @@ func (q fileInfoQuery) All(ctx context.Context, exec boil.ContextExecutor) (File
 }
 
 // Count returns the count of all FileInfo records in the query.
-func (q fileInfoQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q fileInfoQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count file_infos rows")
 	}
@@ -327,14 +326,14 @@ func (q fileInfoQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // Exists checks if the row exists in the table.
-func (q fileInfoQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q fileInfoQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if file_infos exists")
 	}
@@ -355,7 +354,7 @@ func FileInfos(mods ...qm.QueryMod) fileInfoQuery {
 
 // FindFileInfo retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindFileInfo(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*FileInfo, error) {
+func FindFileInfo(exec boil.Executor, iD string, selectCols ...string) (*FileInfo, error) {
 	fileInfoObj := &FileInfo{}
 
 	sel := "*"
@@ -368,7 +367,7 @@ func FindFileInfo(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, fileInfoObj)
+	err := q.Bind(nil, exec, fileInfoObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -381,7 +380,7 @@ func FindFileInfo(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *FileInfo) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *FileInfo) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no file_infos provided for insertion")
 	}
@@ -429,16 +428,15 @@ func (o *FileInfo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -457,7 +455,7 @@ func (o *FileInfo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update uses an executor to update the FileInfo.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *FileInfo) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *FileInfo) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	fileInfoUpdateCacheMut.RLock()
@@ -485,13 +483,12 @@ func (o *FileInfo) Update(ctx context.Context, exec boil.ContextExecutor, column
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update file_infos row")
 	}
@@ -511,10 +508,10 @@ func (o *FileInfo) Update(ctx context.Context, exec boil.ContextExecutor, column
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q fileInfoQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q fileInfoQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for file_infos")
 	}
@@ -528,7 +525,7 @@ func (q fileInfoQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o FileInfoSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o FileInfoSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -558,12 +555,11 @@ func (o FileInfoSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, fileInfoPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in fileInfo slice")
 	}
@@ -577,7 +573,7 @@ func (o FileInfoSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *FileInfo) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *FileInfo) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no file_infos provided for upsert")
 	}
@@ -661,18 +657,17 @@ func (o *FileInfo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert file_infos")
@@ -689,7 +684,7 @@ func (o *FileInfo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 
 // Delete deletes a single FileInfo record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *FileInfo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *FileInfo) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no FileInfo provided for delete")
 	}
@@ -697,12 +692,11 @@ func (o *FileInfo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), fileInfoPrimaryKeyMapping)
 	sql := "DELETE FROM \"file_infos\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from file_infos")
 	}
@@ -716,14 +710,14 @@ func (o *FileInfo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // DeleteAll deletes all matching rows.
-func (q fileInfoQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q fileInfoQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no fileInfoQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from file_infos")
 	}
@@ -737,7 +731,7 @@ func (q fileInfoQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o FileInfoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o FileInfoSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -751,12 +745,11 @@ func (o FileInfoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	sql := "DELETE FROM \"file_infos\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, fileInfoPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from fileInfo slice")
 	}
@@ -771,8 +764,8 @@ func (o FileInfoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *FileInfo) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindFileInfo(ctx, exec, o.ID)
+func (o *FileInfo) Reload(exec boil.Executor) error {
+	ret, err := FindFileInfo(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -783,7 +776,7 @@ func (o *FileInfo) Reload(ctx context.Context, exec boil.ContextExecutor) error 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *FileInfoSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *FileInfoSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -800,7 +793,7 @@ func (o *FileInfoSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in FileInfoSlice")
 	}
@@ -811,16 +804,15 @@ func (o *FileInfoSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // FileInfoExists checks if the FileInfo row exists.
-func FileInfoExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func FileInfoExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"file_infos\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -831,6 +823,6 @@ func FileInfoExists(ctx context.Context, exec boil.ContextExecutor, iD string) (
 }
 
 // Exists checks if the FileInfo row exists.
-func (o *FileInfo) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return FileInfoExists(ctx, exec, o.ID)
+func (o *FileInfo) Exists(exec boil.Executor) (bool, error) {
+	return FileInfoExists(exec, o.ID)
 }

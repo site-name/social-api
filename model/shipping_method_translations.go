@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -133,12 +132,12 @@ var (
 )
 
 // One returns a single shippingMethodTranslation record from the query.
-func (q shippingMethodTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingMethodTranslation, error) {
+func (q shippingMethodTranslationQuery) One(exec boil.Executor) (*ShippingMethodTranslation, error) {
 	o := &ShippingMethodTranslation{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -150,10 +149,10 @@ func (q shippingMethodTranslationQuery) One(ctx context.Context, exec boil.Conte
 }
 
 // All returns all ShippingMethodTranslation records from the query.
-func (q shippingMethodTranslationQuery) All(ctx context.Context, exec boil.ContextExecutor) (ShippingMethodTranslationSlice, error) {
+func (q shippingMethodTranslationQuery) All(exec boil.Executor) (ShippingMethodTranslationSlice, error) {
 	var o []*ShippingMethodTranslation
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to ShippingMethodTranslation slice")
 	}
@@ -162,13 +161,13 @@ func (q shippingMethodTranslationQuery) All(ctx context.Context, exec boil.Conte
 }
 
 // Count returns the count of all ShippingMethodTranslation records in the query.
-func (q shippingMethodTranslationQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q shippingMethodTranslationQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count shipping_method_translations rows")
 	}
@@ -177,14 +176,14 @@ func (q shippingMethodTranslationQuery) Count(ctx context.Context, exec boil.Con
 }
 
 // Exists checks if the row exists in the table.
-func (q shippingMethodTranslationQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q shippingMethodTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if shipping_method_translations exists")
 	}
@@ -205,7 +204,7 @@ func ShippingMethodTranslations(mods ...qm.QueryMod) shippingMethodTranslationQu
 
 // FindShippingMethodTranslation retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindShippingMethodTranslation(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ShippingMethodTranslation, error) {
+func FindShippingMethodTranslation(exec boil.Executor, iD string, selectCols ...string) (*ShippingMethodTranslation, error) {
 	shippingMethodTranslationObj := &ShippingMethodTranslation{}
 
 	sel := "*"
@@ -218,7 +217,7 @@ func FindShippingMethodTranslation(ctx context.Context, exec boil.ContextExecuto
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, shippingMethodTranslationObj)
+	err := q.Bind(nil, exec, shippingMethodTranslationObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -231,7 +230,7 @@ func FindShippingMethodTranslation(ctx context.Context, exec boil.ContextExecuto
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *ShippingMethodTranslation) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *ShippingMethodTranslation) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no shipping_method_translations provided for insertion")
 	}
@@ -279,16 +278,15 @@ func (o *ShippingMethodTranslation) Insert(ctx context.Context, exec boil.Contex
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -307,7 +305,7 @@ func (o *ShippingMethodTranslation) Insert(ctx context.Context, exec boil.Contex
 // Update uses an executor to update the ShippingMethodTranslation.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *ShippingMethodTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *ShippingMethodTranslation) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	shippingMethodTranslationUpdateCacheMut.RLock()
@@ -335,13 +333,12 @@ func (o *ShippingMethodTranslation) Update(ctx context.Context, exec boil.Contex
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update shipping_method_translations row")
 	}
@@ -361,10 +358,10 @@ func (o *ShippingMethodTranslation) Update(ctx context.Context, exec boil.Contex
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q shippingMethodTranslationQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q shippingMethodTranslationQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for shipping_method_translations")
 	}
@@ -378,7 +375,7 @@ func (q shippingMethodTranslationQuery) UpdateAll(ctx context.Context, exec boil
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ShippingMethodTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ShippingMethodTranslationSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -408,12 +405,11 @@ func (o ShippingMethodTranslationSlice) UpdateAll(ctx context.Context, exec boil
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, shippingMethodTranslationPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in shippingMethodTranslation slice")
 	}
@@ -427,7 +423,7 @@ func (o ShippingMethodTranslationSlice) UpdateAll(ctx context.Context, exec boil
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *ShippingMethodTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *ShippingMethodTranslation) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no shipping_method_translations provided for upsert")
 	}
@@ -511,18 +507,17 @@ func (o *ShippingMethodTranslation) Upsert(ctx context.Context, exec boil.Contex
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert shipping_method_translations")
@@ -539,7 +534,7 @@ func (o *ShippingMethodTranslation) Upsert(ctx context.Context, exec boil.Contex
 
 // Delete deletes a single ShippingMethodTranslation record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ShippingMethodTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *ShippingMethodTranslation) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no ShippingMethodTranslation provided for delete")
 	}
@@ -547,12 +542,11 @@ func (o *ShippingMethodTranslation) Delete(ctx context.Context, exec boil.Contex
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingMethodTranslationPrimaryKeyMapping)
 	sql := "DELETE FROM \"shipping_method_translations\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from shipping_method_translations")
 	}
@@ -566,14 +560,14 @@ func (o *ShippingMethodTranslation) Delete(ctx context.Context, exec boil.Contex
 }
 
 // DeleteAll deletes all matching rows.
-func (q shippingMethodTranslationQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q shippingMethodTranslationQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no shippingMethodTranslationQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from shipping_method_translations")
 	}
@@ -587,7 +581,7 @@ func (q shippingMethodTranslationQuery) DeleteAll(ctx context.Context, exec boil
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ShippingMethodTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ShippingMethodTranslationSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -601,12 +595,11 @@ func (o ShippingMethodTranslationSlice) DeleteAll(ctx context.Context, exec boil
 	sql := "DELETE FROM \"shipping_method_translations\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, shippingMethodTranslationPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from shippingMethodTranslation slice")
 	}
@@ -621,8 +614,8 @@ func (o ShippingMethodTranslationSlice) DeleteAll(ctx context.Context, exec boil
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ShippingMethodTranslation) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindShippingMethodTranslation(ctx, exec, o.ID)
+func (o *ShippingMethodTranslation) Reload(exec boil.Executor) error {
+	ret, err := FindShippingMethodTranslation(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -633,7 +626,7 @@ func (o *ShippingMethodTranslation) Reload(ctx context.Context, exec boil.Contex
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ShippingMethodTranslationSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ShippingMethodTranslationSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -650,7 +643,7 @@ func (o *ShippingMethodTranslationSlice) ReloadAll(ctx context.Context, exec boi
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ShippingMethodTranslationSlice")
 	}
@@ -661,16 +654,15 @@ func (o *ShippingMethodTranslationSlice) ReloadAll(ctx context.Context, exec boi
 }
 
 // ShippingMethodTranslationExists checks if the ShippingMethodTranslation row exists.
-func ShippingMethodTranslationExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ShippingMethodTranslationExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"shipping_method_translations\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -681,6 +673,6 @@ func ShippingMethodTranslationExists(ctx context.Context, exec boil.ContextExecu
 }
 
 // Exists checks if the ShippingMethodTranslation row exists.
-func (o *ShippingMethodTranslation) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ShippingMethodTranslationExists(ctx, exec, o.ID)
+func (o *ShippingMethodTranslation) Exists(exec boil.Executor) (bool, error) {
+	return ShippingMethodTranslationExists(exec, o.ID)
 }

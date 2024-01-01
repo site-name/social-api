@@ -16,8 +16,8 @@ func (t *Timezones) GetSupported() []string {
 	return t.supportedZones
 }
 
-func DefaultUserTimezone() map[string]string {
-	defaultTimezone := make(map[string]string)
+func DefaultUserTimezone() map[string]any {
+	defaultTimezone := make(map[string]any)
 	defaultTimezone["useAutomaticTimezone"] = "true"
 	defaultTimezone["automaticTimezone"] = ""
 	defaultTimezone["manualTimezone"] = ""

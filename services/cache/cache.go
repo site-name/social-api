@@ -7,7 +7,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // ErrKeyNotFound is the error when the given key is not found
@@ -44,7 +44,7 @@ type Cache interface {
 	Len() (int, error)
 
 	// GetInvalidateClusterEvent returns the cluster event configured when this cache was created.
-	GetInvalidateClusterEvent() model.ClusterEvent
+	GetInvalidateClusterEvent() model_helper.ClusterEvent
 
 	// Name returns the name of the cache
 	Name() string

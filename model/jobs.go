@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -226,12 +225,12 @@ var (
 )
 
 // One returns a single job record from the query.
-func (q jobQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Job, error) {
+func (q jobQuery) One(exec boil.Executor) (*Job, error) {
 	o := &Job{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -243,10 +242,10 @@ func (q jobQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Job, err
 }
 
 // All returns all Job records from the query.
-func (q jobQuery) All(ctx context.Context, exec boil.ContextExecutor) (JobSlice, error) {
+func (q jobQuery) All(exec boil.Executor) (JobSlice, error) {
 	var o []*Job
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Job slice")
 	}
@@ -255,13 +254,13 @@ func (q jobQuery) All(ctx context.Context, exec boil.ContextExecutor) (JobSlice,
 }
 
 // Count returns the count of all Job records in the query.
-func (q jobQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q jobQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count jobs rows")
 	}
@@ -270,14 +269,14 @@ func (q jobQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, 
 }
 
 // Exists checks if the row exists in the table.
-func (q jobQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q jobQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if jobs exists")
 	}
@@ -298,7 +297,7 @@ func Jobs(mods ...qm.QueryMod) jobQuery {
 
 // FindJob retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindJob(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Job, error) {
+func FindJob(exec boil.Executor, iD string, selectCols ...string) (*Job, error) {
 	jobObj := &Job{}
 
 	sel := "*"
@@ -311,7 +310,7 @@ func FindJob(ctx context.Context, exec boil.ContextExecutor, iD string, selectCo
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, jobObj)
+	err := q.Bind(nil, exec, jobObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -324,7 +323,7 @@ func FindJob(ctx context.Context, exec boil.ContextExecutor, iD string, selectCo
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Job) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Job) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no jobs provided for insertion")
 	}
@@ -372,16 +371,15 @@ func (o *Job) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -400,7 +398,7 @@ func (o *Job) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 // Update uses an executor to update the Job.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Job) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Job) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	jobUpdateCacheMut.RLock()
@@ -428,13 +426,12 @@ func (o *Job) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update jobs row")
 	}
@@ -454,10 +451,10 @@ func (o *Job) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q jobQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q jobQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for jobs")
 	}
@@ -471,7 +468,7 @@ func (q jobQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o JobSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o JobSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -501,12 +498,11 @@ func (o JobSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, jobPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in job slice")
 	}
@@ -520,7 +516,7 @@ func (o JobSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Job) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Job) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no jobs provided for upsert")
 	}
@@ -604,18 +600,17 @@ func (o *Job) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert jobs")
@@ -632,7 +627,7 @@ func (o *Job) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 
 // Delete deletes a single Job record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Job) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Job) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Job provided for delete")
 	}
@@ -640,12 +635,11 @@ func (o *Job) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, err
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), jobPrimaryKeyMapping)
 	sql := "DELETE FROM \"jobs\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from jobs")
 	}
@@ -659,14 +653,14 @@ func (o *Job) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, err
 }
 
 // DeleteAll deletes all matching rows.
-func (q jobQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q jobQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no jobQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from jobs")
 	}
@@ -680,7 +674,7 @@ func (q jobQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o JobSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o JobSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -694,12 +688,11 @@ func (o JobSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 	sql := "DELETE FROM \"jobs\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, jobPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from job slice")
 	}
@@ -714,8 +707,8 @@ func (o JobSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Job) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindJob(ctx, exec, o.ID)
+func (o *Job) Reload(exec boil.Executor) error {
+	ret, err := FindJob(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -726,7 +719,7 @@ func (o *Job) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *JobSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *JobSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -743,7 +736,7 @@ func (o *JobSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) err
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in JobSlice")
 	}
@@ -754,16 +747,15 @@ func (o *JobSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) err
 }
 
 // JobExists checks if the Job row exists.
-func JobExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func JobExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"jobs\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -774,6 +766,6 @@ func JobExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool,
 }
 
 // Exists checks if the Job row exists.
-func (o *Job) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return JobExists(ctx, exec, o.ID)
+func (o *Job) Exists(exec boil.Executor) (bool, error) {
+	return JobExists(exec, o.ID)
 }

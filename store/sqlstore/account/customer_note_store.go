@@ -1,11 +1,12 @@
 package account
 
 import (
-	"errors"
+	"database/sql"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type SqlCustomerNoteStore struct {
@@ -16,22 +17,33 @@ func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
 	return &SqlCustomerNoteStore{s}
 }
 
-func (cs *SqlCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
-	err := cs.GetMaster().Create(note).Error
+func (cs *SqlCustomerNoteStore) Upsert(note model.CustomerNote) (*model.CustomerNote, error) {
+	if err := model_helper.CustomerNoteIsValid(note); err != nil {
+		return nil, err
+	}
+	isSaving := note.ID == ""
+
+	var err error
+	if isSaving {
+		err = note.Insert(cs.GetMaster(), boil.Infer())
+	} else {
+		_, err = note.Update(cs.GetMaster(), boil.Infer())
+	}
 	if err != nil {
 		return nil, err
 	}
-	return note, err
+
+	return &note, nil
 }
 
 func (cs *SqlCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
-	var res model.CustomerNote
-	err := cs.GetReplica().First(&res, "Id = ?", id).Error
+	note, err := model.FindCustomerNote(cs.GetReplica(), id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.CustomerNoteTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.CustomerNotes, id)
 		}
 		return nil, err
 	}
-	return &res, nil
+
+	return note, nil
 }

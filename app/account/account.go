@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/services/cache"
 )
 
@@ -29,7 +30,7 @@ func init() {
 		}
 
 		sessionCache, err := s.CacheProvider.NewCache(&cache.CacheOptions{
-			Size:           model.SESSION_CACHE_SIZE,
+			Size:           model_helper.SESSION_CACHE_SIZE,
 			Striped:        true,
 			StripedBuckets: max(runtime.NumCPU()-1, 1),
 		})

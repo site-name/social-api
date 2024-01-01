@@ -1,16 +1,16 @@
 package searchengine
 
 import (
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 type Broker struct {
-	cfg                 *model.Config
+	cfg                 *model_helper.Config
 	ElasticsearchEngine SearchEngineInterface
 	BleveEngine         SearchEngineInterface
 }
 
-func NewBroker(cfg *model.Config) *Broker {
+func NewBroker(cfg *model_helper.Config) *Broker {
 	return &Broker{
 		cfg: cfg,
 	}
@@ -24,7 +24,7 @@ func (seb *Broker) RegisterBleveEngine(be SearchEngineInterface) {
 	seb.BleveEngine = be
 }
 
-func (seb *Broker) UpdateConfig(cfg *model.Config) *model.AppError {
+func (seb *Broker) UpdateConfig(cfg *model_helper.Config) *model_helper.AppError {
 	seb.cfg = cfg
 	if seb.ElasticsearchEngine != nil {
 		seb.ElasticsearchEngine.UpdateConfig(cfg)

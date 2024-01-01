@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/configservice"
 	"github.com/sitename/sitename/services/httpservice"
@@ -67,9 +67,9 @@ func (proxy *ImageProxy) makeBackend(enable bool, proxyType string) ImageProxyBa
 	}
 
 	switch proxyType {
-	case model.IMAGE_PROXY_TYPE_LOCAL:
+	case model_helper.IMAGE_PROXY_TYPE_LOCAL:
 		return makeLocalBackend(proxy)
-	case model.IMAGE_PROXY_TYPE_ATMOS_CAMO:
+	case model_helper.IMAGE_PROXY_TYPE_ATMOS_CAMO:
 		return makeAtmosCamoBackend(proxy)
 	default:
 		return nil
@@ -83,7 +83,7 @@ func (proxy *ImageProxy) Close() {
 	proxy.ConfigService.RemoveConfigListener(proxy.configListenerID)
 }
 
-func (proxy *ImageProxy) OnConfigChange(oldConfig, newConfig *model.Config) {
+func (proxy *ImageProxy) OnConfigChange(oldConfig, newConfig *model_helper.Config) {
 	if *oldConfig.ImageProxySettings.Enable != *newConfig.ImageProxySettings.Enable ||
 		*oldConfig.ImageProxySettings.ImageProxyType != *newConfig.ImageProxySettings.ImageProxyType {
 		proxy.lock.Lock()

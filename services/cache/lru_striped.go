@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cespare/xxhash/v2"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 )
 
 // LRUStriped keeps LRU caches in buckets in order to lower mutex contention.
@@ -37,7 +37,7 @@ import (
 type LRUStriped struct {
 	buckets                []*LRU
 	name                   string
-	invalidateClusterEvent model.ClusterEvent
+	invalidateClusterEvent model_helper.ClusterEvent
 }
 
 func (L LRUStriped) hashkeyMapHash(key string) uint64 {
@@ -106,7 +106,7 @@ func (L LRUStriped) Len() (int, error) {
 }
 
 // GetInvalidateClusterEvent does the same as LRU.GetInvalidateClusterEvent
-func (L LRUStriped) GetInvalidateClusterEvent() model.ClusterEvent {
+func (L LRUStriped) GetInvalidateClusterEvent() model_helper.ClusterEvent {
 	return L.invalidateClusterEvent
 }
 

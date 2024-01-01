@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/store"
 )
 
@@ -159,11 +161,11 @@ func (th *SearchTestHelper) SetupBasicFixtures() error {
 // }
 
 func (th *SearchTestHelper) makeEmail() string {
-	return "success_" + model.NewId() + "@simulator.amazon.com"
+	return "success_" + model_helper.NewId() + "@simulator.amazon.com"
 }
 
 func (th *SearchTestHelper) createUser(username, nickname, firstName, lastName string) (*model.User, error) {
-	return th.Store.User().Save(&model.User{
+	return th.Store.User().Save(model.User{
 		Username:  username,
 		Password:  username,
 		Nickname:  nickname,
@@ -186,7 +188,7 @@ func (th *SearchTestHelper) createUser(username, nickname, firstName, lastName s
 // }
 
 func (th *SearchTestHelper) deleteUser(user *model.User) error {
-	return th.Store.User().PermanentDelete(user.Id)
+	return th.Store.User().PermanentDelete(user.ID)
 }
 
 func (th *SearchTestHelper) cleanAllUsers() error {
@@ -355,17 +357,17 @@ func (th *SearchTestHelper) cleanAllUsers() error {
 
 func (th *SearchTestHelper) createFileInfoModel(creatorID, postID, name, content, extension, mimeType string, createAt, size int64) *model.FileInfo {
 	return &model.FileInfo{
-		CreatorId: creatorID,
-		// PostId:    postID,
-		CreateAt:  createAt,
-		UpdateAt:  createAt,
-		DeleteAt:  0,
+		CreatorID: creatorID,
+		CreatedAt: createAt,
+		UpdatedAt: createAt,
+		DeleteAt:  model_types.NewNullInt64(0),
 		Name:      name,
 		Content:   content,
 		Path:      name,
 		Extension: extension,
 		Size:      size,
 		MimeType:  mimeType,
+		// PostId:    postID,
 	}
 }
 
@@ -429,13 +431,13 @@ func (th *SearchTestHelper) deleteUserFileInfos(userID string) error {
 func (th *SearchTestHelper) assertUsersMatchInAnyOrder(t *testing.T, expected, actual []*model.User) {
 	expectedUsernames := make([]string, 0, len(expected))
 	for _, user := range expected {
-		user.Sanitize(map[string]bool{})
+		model_helper.UserSanitize(user, map[string]bool{})
 		expectedUsernames = append(expectedUsernames, user.Username)
 	}
 
 	actualUsernames := make([]string, 0, len(actual))
 	for _, user := range actual {
-		user.Sanitize(map[string]bool{})
+		model_helper.UserSanitize(user, map[string]bool{})
 		actualUsernames = append(actualUsernames, user.Username)
 	}
 

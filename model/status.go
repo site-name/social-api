@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -126,12 +125,12 @@ var (
 )
 
 // One returns a single status record from the query.
-func (q statusQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Status, error) {
+func (q statusQuery) One(exec boil.Executor) (*Status, error) {
 	o := &Status{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -143,10 +142,10 @@ func (q statusQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Statu
 }
 
 // All returns all Status records from the query.
-func (q statusQuery) All(ctx context.Context, exec boil.ContextExecutor) (StatusSlice, error) {
+func (q statusQuery) All(exec boil.Executor) (StatusSlice, error) {
 	var o []*Status
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Status slice")
 	}
@@ -155,13 +154,13 @@ func (q statusQuery) All(ctx context.Context, exec boil.ContextExecutor) (Status
 }
 
 // Count returns the count of all Status records in the query.
-func (q statusQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q statusQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count status rows")
 	}
@@ -170,14 +169,14 @@ func (q statusQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int6
 }
 
 // Exists checks if the row exists in the table.
-func (q statusQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q statusQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if status exists")
 	}
@@ -198,7 +197,7 @@ func Statuses(mods ...qm.QueryMod) statusQuery {
 
 // FindStatus retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindStatus(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Status, error) {
+func FindStatus(exec boil.Executor, userID string, selectCols ...string) (*Status, error) {
 	statusObj := &Status{}
 
 	sel := "*"
@@ -211,7 +210,7 @@ func FindStatus(ctx context.Context, exec boil.ContextExecutor, userID string, s
 
 	q := queries.Raw(query, userID)
 
-	err := q.Bind(ctx, exec, statusObj)
+	err := q.Bind(nil, exec, statusObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -224,7 +223,7 @@ func FindStatus(ctx context.Context, exec boil.ContextExecutor, userID string, s
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Status) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Status) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no status provided for insertion")
 	}
@@ -272,16 +271,15 @@ func (o *Status) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -300,7 +298,7 @@ func (o *Status) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 // Update uses an executor to update the Status.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Status) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Status) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	statusUpdateCacheMut.RLock()
@@ -328,13 +326,12 @@ func (o *Status) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update status row")
 	}
@@ -354,10 +351,10 @@ func (o *Status) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q statusQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q statusQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for status")
 	}
@@ -371,7 +368,7 @@ func (q statusQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o StatusSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o StatusSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -401,12 +398,11 @@ func (o StatusSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, statusPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in status slice")
 	}
@@ -420,7 +416,7 @@ func (o StatusSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Status) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Status) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no status provided for upsert")
 	}
@@ -504,18 +500,17 @@ func (o *Status) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert status")
@@ -532,7 +527,7 @@ func (o *Status) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 
 // Delete deletes a single Status record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Status) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Status) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Status provided for delete")
 	}
@@ -540,12 +535,11 @@ func (o *Status) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), statusPrimaryKeyMapping)
 	sql := "DELETE FROM \"status\" WHERE \"user_id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from status")
 	}
@@ -559,14 +553,14 @@ func (o *Status) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 }
 
 // DeleteAll deletes all matching rows.
-func (q statusQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q statusQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no statusQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from status")
 	}
@@ -580,7 +574,7 @@ func (q statusQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o StatusSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o StatusSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -594,12 +588,11 @@ func (o StatusSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 	sql := "DELETE FROM \"status\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, statusPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from status slice")
 	}
@@ -614,8 +607,8 @@ func (o StatusSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Status) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindStatus(ctx, exec, o.UserID)
+func (o *Status) Reload(exec boil.Executor) error {
+	ret, err := FindStatus(exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -626,7 +619,7 @@ func (o *Status) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *StatusSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *StatusSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -643,7 +636,7 @@ func (o *StatusSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in StatusSlice")
 	}
@@ -654,16 +647,15 @@ func (o *StatusSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // StatusExists checks if the Status row exists.
-func StatusExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
+func StatusExists(exec boil.Executor, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"status\" where \"user_id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, userID)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, userID)
+	row := exec.QueryRow(sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -674,6 +666,6 @@ func StatusExists(ctx context.Context, exec boil.ContextExecutor, userID string)
 }
 
 // Exists checks if the Status row exists.
-func (o *Status) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return StatusExists(ctx, exec, o.UserID)
+func (o *Status) Exists(exec boil.Executor) (bool, error) {
+	return StatusExists(exec, o.UserID)
 }

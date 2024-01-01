@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/services/httpservice"
 )
 
@@ -39,7 +40,7 @@ func NewClient(address string, httpService httpservice.HTTPService) (*Client, er
 }
 
 // GetPlugins fetches the list of plugins from the configured server.
-func (c *Client) GetPlugins(request *model.MarketplacePluginFilter) ([]*model.BaseMarketplacePlugin, error) {
+func (c *Client) GetPlugins(request *model_helper.MarketplacePluginFilter) ([]*model_helper.BaseMarketplacePlugin, error) {
 	u, err := url.Parse(c.buildURL("/api/v1/plugins"))
 	if err != nil {
 		return nil, err
@@ -55,13 +56,13 @@ func (c *Client) GetPlugins(request *model.MarketplacePluginFilter) ([]*model.Ba
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		return model.BaseMarketplacePluginsFromReader(resp.Body)
+		return model_helper.BaseMarketplacePluginsFromReader(resp.Body)
 	default:
 		return nil, errors.Errorf("failed with status code %d", resp.StatusCode)
 	}
 }
 
-func (c *Client) GetPlugin(filter *model.MarketplacePluginFilter, pluginVersion string) (*model.BaseMarketplacePlugin, error) {
+func (c *Client) GetPlugin(filter *model_helper.MarketplacePluginFilter, pluginVersion string) (*model.BaseMarketplacePlugin, error) {
 	plugins, err := c.GetPlugins(filter)
 	if err != nil {
 		return nil, err

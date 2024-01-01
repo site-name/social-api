@@ -14,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/uber/jaeger-client-go/utils"
 
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -96,7 +95,7 @@ func (awsm *AwsMeter) GetUserCategoryUsage(dimensions []string, startTime time.T
 
 		switch dimension {
 		case model_helper.AwsMeteringDimensionUsageHrs:
-			userCount, err = awsm.store.User().AnalyticsActiveCountForPeriod(utils.TimeToMicrosecondsSinceEpochInt64(startTime), utils.TimeToMicrosecondsSinceEpochInt64(endTime), model.UserCountOptions{})
+			userCount, err = awsm.store.User().AnalyticsActiveCountForPeriod(utils.TimeToMicrosecondsSinceEpochInt64(startTime), utils.TimeToMicrosecondsSinceEpochInt64(endTime), model_helper.UserCountOptions{})
 			if err != nil {
 				slog.Warn("Failed to obtain usage data", slog.String("dimension", dimension), slog.String("start", startTime.String()), slog.Int64("count", userCount), slog.Err(err))
 				continue

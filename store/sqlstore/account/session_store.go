@@ -2,14 +2,16 @@ package account
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const (
@@ -24,167 +26,138 @@ func NewSqlSessionStore(sqlStore store.Store) store.SessionStore {
 	return &SqlSessionStore{sqlStore}
 }
 
-func (me *SqlSessionStore) Save(session *model.Session) (*model.Session, error) {
-	err := me.GetMaster().Create(session).Error
+func (me *SqlSessionStore) Save(session model.Session) (*model.Session, error) {
+	err := session.Insert(me.GetMaster(), boil.Infer())
 	if err != nil {
+		return nil, err
+	}
+	return &session, nil
+}
+
+func (me *SqlSessionStore) Get(ctx context.Context, sessionIdOrToken string) (*model.Session, error) {
+	session, err := model.
+		Sessions(model.SessionWhere.Token.EQ(sessionIdOrToken), qm.Or(model.SessionColumns.ID+" = ?", sessionIdOrToken)).
+		One(me.DBXFromContext(ctx))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Sessions, sessionIdOrToken)
+		}
 		return nil, err
 	}
 
 	return session, nil
 }
 
-func (me *SqlSessionStore) Get(ctx context.Context, sessionIdOrToken string) (*model.Session, error) {
-	var session model.Session
-
-	err := me.DBXFromContext(ctx).First(&session, "Token = ? OR Id = ?", sessionIdOrToken, sessionIdOrToken).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.SessionTableName, sessionIdOrToken)
-		}
-		return nil, errors.Wrapf(err, "failed to find Sessions with sessionIdOrToken=%s", sessionIdOrToken)
-	}
-
-	return &session, nil
+func (me *SqlSessionStore) GetSessions(userId string) (model.SessionSlice, error) {
+	return model.
+		Sessions(model.SessionWhere.UserID.EQ(userId), qm.OrderBy(model.SessionColumns.LastActivityAt+" DESC")).
+		All(me.GetReplica())
 }
 
-func (me *SqlSessionStore) GetSessions(userId string) ([]*model.Session, error) {
-	var sessions []*model.Session
-
-	if err := me.GetReplica().Order("LastActivityAt DESC").Find(&sessions, "UserId = ?", userId).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find Sessions with userId=%s", userId)
-	}
-
-	return sessions, nil
+func (me *SqlSessionStore) GetSessionsWithActiveDeviceIds(userId string) (model.SessionSlice, error) {
+	return model.
+		Sessions(
+			model.SessionWhere.UserID.EQ(userId),
+			model.SessionWhere.ExpiresAt.NEQ(0),
+			model.SessionWhere.ExpiresAt.GTE(model_helper.GetMillis()),
+			model.SessionWhere.DeviceID.NEQ(""),
+		).
+		All(me.GetReplica())
 }
 
-func (me *SqlSessionStore) GetSessionsWithActiveDeviceIds(userId string) ([]*model.Session, error) {
-	var sessions []*model.Session
-	err := me.GetReplica().Find(&sessions, `UserId = ? AND ExpiresAt != 0 AND ExpiresAt >= ? AND DeviceId != ''`, userId, model.GetMillis()).Error
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find Sessions with userId=%s", userId)
+func (me *SqlSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) (model.SessionSlice, error) {
+	now := model_helper.GetMillis()
+
+	queryMods := []qm.QueryMod{
+		model.SessionWhere.ExpiresAt.NEQ(0),
+		model.SessionWhere.ExpiresAt.GT(now - thresholdMillis),
+		model.SessionWhere.ExpiresAt.LT(now),
 	}
-
-	return sessions, nil
-}
-
-func (me *SqlSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error) {
-	now := model.GetMillis()
-	cond := squirrel.And{
-		squirrel.NotEq{"ExpiresAt": 0},
-		squirrel.Lt{"ExpiresAt": now},
-		squirrel.Gt{"ExpiresAt": now - thresholdMillis},
-	}
-
 	if mobileOnly {
-		cond = append(cond, squirrel.NotEq{"DeviceId": ""})
+		queryMods = append(queryMods, model.SessionWhere.DeviceID.NEQ(""))
 	}
 	if unnotifiedOnly {
-		cond = append(cond, squirrel.NotEq{"ExpiredNotify": true})
+		queryMods = append(queryMods, model.SessionWhere.ExpiredNotify.NEQ(true))
 	}
 
-	args, err := store.BuildSqlizer(cond, "GetSessionsExpired")
-	if err != nil {
-		return nil, err
-	}
-	var sessions []*model.Session
-	err = me.GetReplica().Find(&sessions, args...).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find Sessions")
-	}
-	return sessions, nil
+	return model.Sessions(queryMods...).All(me.GetReplica())
 }
 
 func (me *SqlSessionStore) UpdateExpiredNotify(sessionId string, notified bool) error {
-	err := me.GetMaster().Raw("UPDATE Sessions SET ExpiredNotify = ? WHERE Id = ?", notified, sessionId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to update Session with id=%s", sessionId)
-	}
-	return nil
+	_, err := model.
+		Sessions(model.SessionWhere.ID.EQ(sessionId)).
+		UpdateAll(me.GetMaster(), model.M{model.SessionColumns.ExpiredNotify: notified})
+	return err
 }
 
 func (me *SqlSessionStore) Remove(sessionIdOrToken string) error {
-	err := me.GetMaster().Raw("DELETE FROM Sessions WHERE Id = ? Or Token = ?", sessionIdOrToken, sessionIdOrToken).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete Session with sessionIdOrToken=%s", sessionIdOrToken)
-	}
-	return nil
+	_, err := model.
+		Sessions(model.SessionWhere.ID.EQ(sessionIdOrToken), qm.Or(model.SessionColumns.Token+" = ?", sessionIdOrToken)).
+		DeleteAll(me.GetMaster())
+	return err
 }
 
 func (me *SqlSessionStore) RemoveAllSessions() error {
-	err := me.GetMaster().Raw("DELETE FROM Sessions").Error
-	if err != nil {
-		return errors.Wrap(err, "failed to delete all Sessions")
-	}
-	return nil
+	_, err := model.Sessions().DeleteAll(me.GetMaster())
+	return err
 }
 
 func (me *SqlSessionStore) PermanentDeleteSessionsByUser(userId string) error {
-	err := me.GetMaster().Raw("DELETE FROM Sessions WHERE UserId = ?", userId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete Session with userId=%s", userId)
-	}
-
-	return nil
+	_, err := model.Sessions(model.SessionWhere.UserID.EQ(userId)).DeleteAll(me.GetMaster())
+	return err
 }
 
-func (me *SqlSessionStore) UpdateExpiresAt(sessionId string, time int64) error {
-	err := me.GetMaster().Raw("UPDATE Sessions SET ExpiresAt = ?, ExpiredNotify = false WHERE Id = ?", time, sessionId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to update Session with sessionId=%s", sessionId)
-	}
-	return nil
+func (me *SqlSessionStore) UpdateExpiresAt(sessionId string, expireTime int64) error {
+	_, err := model.Sessions(model.SessionWhere.ID.EQ(sessionId)).
+		UpdateAll(me.GetMaster(), model.M{
+			model.SessionColumns.ExpiresAt:     expireTime,
+			model.SessionColumns.ExpiredNotify: false,
+		})
+	return err
 }
 
-func (me *SqlSessionStore) UpdateLastActivityAt(sessionId string, time int64) error {
-	err := me.GetMaster().Raw("UPDATE Sessions SET LastActivityAt = ? WHERE Id = ?", time, sessionId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to update Session with id=%s", sessionId)
-	}
-	return nil
+func (me *SqlSessionStore) UpdateLastActivityAt(sessionId string, lastActivityAt int64) error {
+	_, err := model.Sessions(model.SessionWhere.ID.EQ(sessionId)).
+		UpdateAll(me.GetMaster(), model.M{
+			model.SessionColumns.LastActivityAt: lastActivityAt,
+		})
+	return err
 }
 
 func (me *SqlSessionStore) UpdateRoles(userId, roles string) (string, error) {
-	err := me.GetMaster().Raw(
-		"UPDATE Sessions SET Roles = ? WHERE UserId = ?",
-		roles,
-		userId,
-	).Error
+	_, err := model.Sessions(model.SessionWhere.UserID.EQ(userId)).
+		UpdateAll(me.GetMaster(), model.M{
+			model.SessionColumns.Roles: roles,
+		})
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to update Session with userId=%s and roles=%s", userId, roles)
+		return "", err
 	}
 	return userId, nil
 }
 
 func (me *SqlSessionStore) UpdateDeviceId(id string, deviceId string, expiresAt int64) (string, error) {
-	err := me.GetMaster().Raw(
-		"UPDATE Sessions SET DeviceId = ?, ExpiresAt = ?, ExpiredNotify = false WHERE Id = ?",
-		deviceId,
-		expiresAt,
-		id,
-	).Error
+	_, err := model.Sessions(model.SessionWhere.ID.EQ(id)).
+		UpdateAll(me.GetMaster(), model.M{
+			model.SessionColumns.DeviceID:      deviceId,
+			model.SessionColumns.ExpiredNotify: false,
+			model.SessionColumns.ExpiresAt:     expiresAt,
+		})
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to update Session with id=%s", id)
+		return "", err
 	}
-	return deviceId, nil
+	return deviceId, err
 }
 
-func (me *SqlSessionStore) UpdateProps(session *model.Session) error {
-	result := me.GetMaster().Raw("UPDATE Sessions SET Props = ? WHERE Id = ?", session.Props, session.Id)
-	if result.Error != nil {
-		return errors.Wrap(result.Error, "failed to update session")
-	}
-
-	return nil
+func (me *SqlSessionStore) UpdateProps(session model.Session) error {
+	_, err := model.Sessions(model.SessionWhere.ID.EQ(session.ID)).
+		UpdateAll(me.GetMaster(), model.M{
+			model.SessionColumns.Props: session.Props,
+		})
+	return err
 }
 
 func (me *SqlSessionStore) AnalyticsSessionCount() (int64, error) {
-	var count int64
-	err := me.GetMaster().Raw("SELECT COUNT(*) FROM Sessions WHERE ExpiresAt > ?", model.GetMillis()).Scan(&count).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count Sessions")
-	}
-
-	return count, nil
+	return model.Sessions(model.SessionWhere.ExpiresAt.GT(model_helper.GetMillis())).Count(me.GetReplica())
 }
 
 func (me *SqlSessionStore) Cleanup(expiryTime int64, batchSize int64) {
@@ -192,15 +165,16 @@ func (me *SqlSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 
 	var RowsAffected int64 = 1
 	for RowsAffected > 0 {
-		result := me.GetMaster().Raw(
-			"DELETE FROM Sessions WHERE Id = any (array (SELECT Id FROM Sessions WHERE ExpiresAt != 0 AND ExpiresAt < ? LIMIT ?))",
-			expiryTime, batchSize)
-		if result.Error != nil {
-			slog.Error("Unable to cleanup session store", slog.Err(result.Error))
+		result, err := queries.
+			Raw("DELETE FROM Sessions WHERE Id IN (SELECT Id FROM Sessions WHERE ExpiresAt != 0 AND ? > ExpiresAt LIMIT ?)", expiryTime, batchSize).
+			Exec(me.GetMaster())
+		if err != nil {
+			slog.Error("Unable to cleanup session store", slog.Err(err))
 			return
 		}
-		RowsAffected = result.RowsAffected
+		RowsAffected, _ = result.RowsAffected()
 
 		time.Sleep(SessionsCleanupDelayMilliseconds * time.Second)
 	}
+
 }

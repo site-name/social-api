@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -154,12 +153,12 @@ var (
 )
 
 // One returns a single clusterDiscovery record from the query.
-func (q clusterDiscoveryQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ClusterDiscovery, error) {
+func (q clusterDiscoveryQuery) One(exec boil.Executor) (*ClusterDiscovery, error) {
 	o := &ClusterDiscovery{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -171,10 +170,10 @@ func (q clusterDiscoveryQuery) One(ctx context.Context, exec boil.ContextExecuto
 }
 
 // All returns all ClusterDiscovery records from the query.
-func (q clusterDiscoveryQuery) All(ctx context.Context, exec boil.ContextExecutor) (ClusterDiscoverySlice, error) {
+func (q clusterDiscoveryQuery) All(exec boil.Executor) (ClusterDiscoverySlice, error) {
 	var o []*ClusterDiscovery
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to ClusterDiscovery slice")
 	}
@@ -183,13 +182,13 @@ func (q clusterDiscoveryQuery) All(ctx context.Context, exec boil.ContextExecuto
 }
 
 // Count returns the count of all ClusterDiscovery records in the query.
-func (q clusterDiscoveryQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q clusterDiscoveryQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count cluster_discoveries rows")
 	}
@@ -198,14 +197,14 @@ func (q clusterDiscoveryQuery) Count(ctx context.Context, exec boil.ContextExecu
 }
 
 // Exists checks if the row exists in the table.
-func (q clusterDiscoveryQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q clusterDiscoveryQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if cluster_discoveries exists")
 	}
@@ -226,7 +225,7 @@ func ClusterDiscoveries(mods ...qm.QueryMod) clusterDiscoveryQuery {
 
 // FindClusterDiscovery retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindClusterDiscovery(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ClusterDiscovery, error) {
+func FindClusterDiscovery(exec boil.Executor, iD string, selectCols ...string) (*ClusterDiscovery, error) {
 	clusterDiscoveryObj := &ClusterDiscovery{}
 
 	sel := "*"
@@ -239,7 +238,7 @@ func FindClusterDiscovery(ctx context.Context, exec boil.ContextExecutor, iD str
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, clusterDiscoveryObj)
+	err := q.Bind(nil, exec, clusterDiscoveryObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -252,7 +251,7 @@ func FindClusterDiscovery(ctx context.Context, exec boil.ContextExecutor, iD str
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *ClusterDiscovery) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *ClusterDiscovery) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no cluster_discoveries provided for insertion")
 	}
@@ -300,16 +299,15 @@ func (o *ClusterDiscovery) Insert(ctx context.Context, exec boil.ContextExecutor
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -328,7 +326,7 @@ func (o *ClusterDiscovery) Insert(ctx context.Context, exec boil.ContextExecutor
 // Update uses an executor to update the ClusterDiscovery.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *ClusterDiscovery) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *ClusterDiscovery) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	clusterDiscoveryUpdateCacheMut.RLock()
@@ -356,13 +354,12 @@ func (o *ClusterDiscovery) Update(ctx context.Context, exec boil.ContextExecutor
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update cluster_discoveries row")
 	}
@@ -382,10 +379,10 @@ func (o *ClusterDiscovery) Update(ctx context.Context, exec boil.ContextExecutor
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q clusterDiscoveryQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q clusterDiscoveryQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for cluster_discoveries")
 	}
@@ -399,7 +396,7 @@ func (q clusterDiscoveryQuery) UpdateAll(ctx context.Context, exec boil.ContextE
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ClusterDiscoverySlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ClusterDiscoverySlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -429,12 +426,11 @@ func (o ClusterDiscoverySlice) UpdateAll(ctx context.Context, exec boil.ContextE
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, clusterDiscoveryPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in clusterDiscovery slice")
 	}
@@ -448,7 +444,7 @@ func (o ClusterDiscoverySlice) UpdateAll(ctx context.Context, exec boil.ContextE
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *ClusterDiscovery) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *ClusterDiscovery) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no cluster_discoveries provided for upsert")
 	}
@@ -532,18 +528,17 @@ func (o *ClusterDiscovery) Upsert(ctx context.Context, exec boil.ContextExecutor
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert cluster_discoveries")
@@ -560,7 +555,7 @@ func (o *ClusterDiscovery) Upsert(ctx context.Context, exec boil.ContextExecutor
 
 // Delete deletes a single ClusterDiscovery record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ClusterDiscovery) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *ClusterDiscovery) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no ClusterDiscovery provided for delete")
 	}
@@ -568,12 +563,11 @@ func (o *ClusterDiscovery) Delete(ctx context.Context, exec boil.ContextExecutor
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), clusterDiscoveryPrimaryKeyMapping)
 	sql := "DELETE FROM \"cluster_discoveries\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from cluster_discoveries")
 	}
@@ -587,14 +581,14 @@ func (o *ClusterDiscovery) Delete(ctx context.Context, exec boil.ContextExecutor
 }
 
 // DeleteAll deletes all matching rows.
-func (q clusterDiscoveryQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q clusterDiscoveryQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no clusterDiscoveryQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from cluster_discoveries")
 	}
@@ -608,7 +602,7 @@ func (q clusterDiscoveryQuery) DeleteAll(ctx context.Context, exec boil.ContextE
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ClusterDiscoverySlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ClusterDiscoverySlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -622,12 +616,11 @@ func (o ClusterDiscoverySlice) DeleteAll(ctx context.Context, exec boil.ContextE
 	sql := "DELETE FROM \"cluster_discoveries\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, clusterDiscoveryPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from clusterDiscovery slice")
 	}
@@ -642,8 +635,8 @@ func (o ClusterDiscoverySlice) DeleteAll(ctx context.Context, exec boil.ContextE
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ClusterDiscovery) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindClusterDiscovery(ctx, exec, o.ID)
+func (o *ClusterDiscovery) Reload(exec boil.Executor) error {
+	ret, err := FindClusterDiscovery(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -654,7 +647,7 @@ func (o *ClusterDiscovery) Reload(ctx context.Context, exec boil.ContextExecutor
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ClusterDiscoverySlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ClusterDiscoverySlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -671,7 +664,7 @@ func (o *ClusterDiscoverySlice) ReloadAll(ctx context.Context, exec boil.Context
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ClusterDiscoverySlice")
 	}
@@ -682,16 +675,15 @@ func (o *ClusterDiscoverySlice) ReloadAll(ctx context.Context, exec boil.Context
 }
 
 // ClusterDiscoveryExists checks if the ClusterDiscovery row exists.
-func ClusterDiscoveryExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ClusterDiscoveryExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"cluster_discoveries\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -702,6 +694,6 @@ func ClusterDiscoveryExists(ctx context.Context, exec boil.ContextExecutor, iD s
 }
 
 // Exists checks if the ClusterDiscovery row exists.
-func (o *ClusterDiscovery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ClusterDiscoveryExists(ctx, exec, o.ID)
+func (o *ClusterDiscovery) Exists(exec boil.Executor) (bool, error) {
+	return ClusterDiscoveryExists(exec, o.ID)
 }

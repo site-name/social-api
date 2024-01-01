@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -231,12 +230,12 @@ var (
 )
 
 // One returns a single channel record from the query.
-func (q channelQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Channel, error) {
+func (q channelQuery) One(exec boil.Executor) (*Channel, error) {
 	o := &Channel{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -248,10 +247,10 @@ func (q channelQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Chan
 }
 
 // All returns all Channel records from the query.
-func (q channelQuery) All(ctx context.Context, exec boil.ContextExecutor) (ChannelSlice, error) {
+func (q channelQuery) All(exec boil.Executor) (ChannelSlice, error) {
 	var o []*Channel
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Channel slice")
 	}
@@ -260,13 +259,13 @@ func (q channelQuery) All(ctx context.Context, exec boil.ContextExecutor) (Chann
 }
 
 // Count returns the count of all Channel records in the query.
-func (q channelQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q channelQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count channels rows")
 	}
@@ -275,14 +274,14 @@ func (q channelQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int
 }
 
 // Exists checks if the row exists in the table.
-func (q channelQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q channelQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if channels exists")
 	}
@@ -418,7 +417,7 @@ func (o *Channel) VoucherChannelListings(mods ...qm.QueryMod) voucherChannelList
 
 // LoadCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadCheckouts(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -479,7 +478,7 @@ func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load checkouts")
 	}
@@ -525,7 +524,7 @@ func (channelL) LoadCheckouts(ctx context.Context, e boil.ContextExecutor, singu
 
 // LoadCollectionChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadCollectionChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadCollectionChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -586,7 +585,7 @@ func (channelL) LoadCollectionChannelListings(ctx context.Context, e boil.Contex
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load collection_channel_listings")
 	}
@@ -632,7 +631,7 @@ func (channelL) LoadCollectionChannelListings(ctx context.Context, e boil.Contex
 
 // LoadOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadOrders(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -693,7 +692,7 @@ func (channelL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load orders")
 	}
@@ -739,7 +738,7 @@ func (channelL) LoadOrders(ctx context.Context, e boil.ContextExecutor, singular
 
 // LoadProductChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadProductChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadProductChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -800,7 +799,7 @@ func (channelL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load product_channel_listings")
 	}
@@ -846,7 +845,7 @@ func (channelL) LoadProductChannelListings(ctx context.Context, e boil.ContextEx
 
 // LoadProductVariantChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadProductVariantChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadProductVariantChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -907,7 +906,7 @@ func (channelL) LoadProductVariantChannelListings(ctx context.Context, e boil.Co
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load product_variant_channel_listings")
 	}
@@ -953,7 +952,7 @@ func (channelL) LoadProductVariantChannelListings(ctx context.Context, e boil.Co
 
 // LoadSaleChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadSaleChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadSaleChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1014,7 +1013,7 @@ func (channelL) LoadSaleChannelListings(ctx context.Context, e boil.ContextExecu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load sale_channel_listings")
 	}
@@ -1060,7 +1059,7 @@ func (channelL) LoadSaleChannelListings(ctx context.Context, e boil.ContextExecu
 
 // LoadShippingMethodChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadShippingMethodChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadShippingMethodChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1121,7 +1120,7 @@ func (channelL) LoadShippingMethodChannelListings(ctx context.Context, e boil.Co
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load shipping_method_channel_listings")
 	}
@@ -1167,7 +1166,7 @@ func (channelL) LoadShippingMethodChannelListings(ctx context.Context, e boil.Co
 
 // LoadShippingZoneChannels allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadShippingZoneChannels(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadShippingZoneChannels(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1228,7 +1227,7 @@ func (channelL) LoadShippingZoneChannels(ctx context.Context, e boil.ContextExec
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load shipping_zone_channels")
 	}
@@ -1274,7 +1273,7 @@ func (channelL) LoadShippingZoneChannels(ctx context.Context, e boil.ContextExec
 
 // LoadVoucherChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (channelL) LoadVoucherChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
+func (channelL) LoadVoucherChannelListings(e boil.Executor, singular bool, maybeChannel interface{}, mods queries.Applicator) error {
 	var slice []*Channel
 	var object *Channel
 
@@ -1335,7 +1334,7 @@ func (channelL) LoadVoucherChannelListings(ctx context.Context, e boil.ContextEx
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load voucher_channel_listings")
 	}
@@ -1383,12 +1382,12 @@ func (channelL) LoadVoucherChannelListings(ctx context.Context, e boil.ContextEx
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.Checkouts.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *Channel) AddCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1399,12 +1398,11 @@ func (o *Channel) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, i
 			)
 			values := []interface{}{o.ID, rel.Token}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1436,12 +1434,12 @@ func (o *Channel) AddCheckouts(ctx context.Context, exec boil.ContextExecutor, i
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.CollectionChannelListings.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
+func (o *Channel) AddCollectionChannelListings(exec boil.Executor, insert bool, related ...*CollectionChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.ChannelID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1452,12 +1450,11 @@ func (o *Channel) AddCollectionChannelListings(ctx context.Context, exec boil.Co
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1491,15 +1488,14 @@ func (o *Channel) AddCollectionChannelListings(ctx context.Context, exec boil.Co
 // Sets o.R.Channel's CollectionChannelListings accordingly.
 // Replaces o.R.CollectionChannelListings with related.
 // Sets related.R.Channel's CollectionChannelListings accordingly.
-func (o *Channel) SetCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
+func (o *Channel) SetCollectionChannelListings(exec boil.Executor, insert bool, related ...*CollectionChannelListing) error {
 	query := "update \"collection_channel_listings\" set \"channel_id\" = null where \"channel_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1516,13 +1512,13 @@ func (o *Channel) SetCollectionChannelListings(ctx context.Context, exec boil.Co
 		o.R.CollectionChannelListings = nil
 	}
 
-	return o.AddCollectionChannelListings(ctx, exec, insert, related...)
+	return o.AddCollectionChannelListings(exec, insert, related...)
 }
 
 // RemoveCollectionChannelListings relationships from objects passed in.
 // Removes related items from R.CollectionChannelListings (uses pointer comparison, removal does not keep order)
 // Sets related.R.Channel.
-func (o *Channel) RemoveCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, related ...*CollectionChannelListing) error {
+func (o *Channel) RemoveCollectionChannelListings(exec boil.Executor, related ...*CollectionChannelListing) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1533,7 +1529,7 @@ func (o *Channel) RemoveCollectionChannelListings(ctx context.Context, exec boil
 		if rel.R != nil {
 			rel.R.Channel = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("channel_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("channel_id")); err != nil {
 			return err
 		}
 	}
@@ -1563,12 +1559,12 @@ func (o *Channel) RemoveCollectionChannelListings(ctx context.Context, exec boil
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.Orders.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *Channel) AddOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1579,12 +1575,11 @@ func (o *Channel) AddOrders(ctx context.Context, exec boil.ContextExecutor, inse
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1616,12 +1611,12 @@ func (o *Channel) AddOrders(ctx context.Context, exec boil.ContextExecutor, inse
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ProductChannelListings.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddProductChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductChannelListing) error {
+func (o *Channel) AddProductChannelListings(exec boil.Executor, insert bool, related ...*ProductChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1632,12 +1627,11 @@ func (o *Channel) AddProductChannelListings(ctx context.Context, exec boil.Conte
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1669,12 +1663,12 @@ func (o *Channel) AddProductChannelListings(ctx context.Context, exec boil.Conte
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ProductVariantChannelListings.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddProductVariantChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductVariantChannelListing) error {
+func (o *Channel) AddProductVariantChannelListings(exec boil.Executor, insert bool, related ...*ProductVariantChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1685,12 +1679,11 @@ func (o *Channel) AddProductVariantChannelListings(ctx context.Context, exec boi
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1722,12 +1715,12 @@ func (o *Channel) AddProductVariantChannelListings(ctx context.Context, exec boi
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.SaleChannelListings.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddSaleChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleChannelListing) error {
+func (o *Channel) AddSaleChannelListings(exec boil.Executor, insert bool, related ...*SaleChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1738,12 +1731,11 @@ func (o *Channel) AddSaleChannelListings(ctx context.Context, exec boil.ContextE
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1775,12 +1767,12 @@ func (o *Channel) AddSaleChannelListings(ctx context.Context, exec boil.ContextE
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ShippingMethodChannelListings.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddShippingMethodChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingMethodChannelListing) error {
+func (o *Channel) AddShippingMethodChannelListings(exec boil.Executor, insert bool, related ...*ShippingMethodChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1791,12 +1783,11 @@ func (o *Channel) AddShippingMethodChannelListings(ctx context.Context, exec boi
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1828,12 +1819,12 @@ func (o *Channel) AddShippingMethodChannelListings(ctx context.Context, exec boi
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.ShippingZoneChannels.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddShippingZoneChannels(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ShippingZoneChannel) error {
+func (o *Channel) AddShippingZoneChannels(exec boil.Executor, insert bool, related ...*ShippingZoneChannel) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1844,12 +1835,11 @@ func (o *Channel) AddShippingZoneChannels(ctx context.Context, exec boil.Context
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1881,12 +1871,12 @@ func (o *Channel) AddShippingZoneChannels(ctx context.Context, exec boil.Context
 // of the channel, optionally inserting them as new records.
 // Appends related to o.R.VoucherChannelListings.
 // Sets related.R.Channel appropriately.
-func (o *Channel) AddVoucherChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherChannelListing) error {
+func (o *Channel) AddVoucherChannelListings(exec boil.Executor, insert bool, related ...*VoucherChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ChannelID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1897,12 +1887,11 @@ func (o *Channel) AddVoucherChannelListings(ctx context.Context, exec boil.Conte
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1943,7 +1932,7 @@ func Channels(mods ...qm.QueryMod) channelQuery {
 
 // FindChannel retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindChannel(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Channel, error) {
+func FindChannel(exec boil.Executor, iD string, selectCols ...string) (*Channel, error) {
 	channelObj := &Channel{}
 
 	sel := "*"
@@ -1956,7 +1945,7 @@ func FindChannel(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, channelObj)
+	err := q.Bind(nil, exec, channelObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -1969,7 +1958,7 @@ func FindChannel(ctx context.Context, exec boil.ContextExecutor, iD string, sele
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Channel) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Channel) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no channels provided for insertion")
 	}
@@ -2017,16 +2006,15 @@ func (o *Channel) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -2045,7 +2033,7 @@ func (o *Channel) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 // Update uses an executor to update the Channel.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Channel) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Channel) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	channelUpdateCacheMut.RLock()
@@ -2073,13 +2061,12 @@ func (o *Channel) Update(ctx context.Context, exec boil.ContextExecutor, columns
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update channels row")
 	}
@@ -2099,10 +2086,10 @@ func (o *Channel) Update(ctx context.Context, exec boil.ContextExecutor, columns
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q channelQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q channelQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for channels")
 	}
@@ -2116,7 +2103,7 @@ func (q channelQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ChannelSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ChannelSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -2146,12 +2133,11 @@ func (o ChannelSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, channelPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in channel slice")
 	}
@@ -2165,7 +2151,7 @@ func (o ChannelSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Channel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Channel) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no channels provided for upsert")
 	}
@@ -2249,18 +2235,17 @@ func (o *Channel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert channels")
@@ -2277,7 +2262,7 @@ func (o *Channel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateO
 
 // Delete deletes a single Channel record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Channel) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Channel) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Channel provided for delete")
 	}
@@ -2285,12 +2270,11 @@ func (o *Channel) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), channelPrimaryKeyMapping)
 	sql := "DELETE FROM \"channels\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from channels")
 	}
@@ -2304,14 +2288,14 @@ func (o *Channel) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 }
 
 // DeleteAll deletes all matching rows.
-func (q channelQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q channelQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no channelQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from channels")
 	}
@@ -2325,7 +2309,7 @@ func (q channelQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ChannelSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ChannelSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -2339,12 +2323,11 @@ func (o ChannelSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 	sql := "DELETE FROM \"channels\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, channelPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from channel slice")
 	}
@@ -2359,8 +2342,8 @@ func (o ChannelSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Channel) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindChannel(ctx, exec, o.ID)
+func (o *Channel) Reload(exec boil.Executor) error {
+	ret, err := FindChannel(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -2371,7 +2354,7 @@ func (o *Channel) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ChannelSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ChannelSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -2388,7 +2371,7 @@ func (o *ChannelSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ChannelSlice")
 	}
@@ -2399,16 +2382,15 @@ func (o *ChannelSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // ChannelExists checks if the Channel row exists.
-func ChannelExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ChannelExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"channels\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -2419,6 +2401,6 @@ func ChannelExists(ctx context.Context, exec boil.ContextExecutor, iD string) (b
 }
 
 // Exists checks if the Channel row exists.
-func (o *Channel) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ChannelExists(ctx, exec, o.ID)
+func (o *Channel) Exists(exec boil.Executor) (bool, error) {
+	return ChannelExists(exec, o.ID)
 }

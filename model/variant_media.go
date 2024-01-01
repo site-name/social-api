@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -140,12 +139,12 @@ var (
 )
 
 // One returns a single variantMedium record from the query.
-func (q variantMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) (*VariantMedium, error) {
+func (q variantMediumQuery) One(exec boil.Executor) (*VariantMedium, error) {
 	o := &VariantMedium{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -157,10 +156,10 @@ func (q variantMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // All returns all VariantMedium records from the query.
-func (q variantMediumQuery) All(ctx context.Context, exec boil.ContextExecutor) (VariantMediumSlice, error) {
+func (q variantMediumQuery) All(exec boil.Executor) (VariantMediumSlice, error) {
 	var o []*VariantMedium
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to VariantMedium slice")
 	}
@@ -169,13 +168,13 @@ func (q variantMediumQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // Count returns the count of all VariantMedium records in the query.
-func (q variantMediumQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q variantMediumQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count variant_media rows")
 	}
@@ -184,14 +183,14 @@ func (q variantMediumQuery) Count(ctx context.Context, exec boil.ContextExecutor
 }
 
 // Exists checks if the row exists in the table.
-func (q variantMediumQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q variantMediumQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if variant_media exists")
 	}
@@ -223,7 +222,7 @@ func (o *VariantMedium) Variant(mods ...qm.QueryMod) productVariantQuery {
 
 // LoadMedium allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVariantMedium interface{}, mods queries.Applicator) error {
+func (variantMediumL) LoadMedium(e boil.Executor, singular bool, maybeVariantMedium interface{}, mods queries.Applicator) error {
 	var slice []*VariantMedium
 	var object *VariantMedium
 
@@ -286,7 +285,7 @@ func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ProductMedium")
 	}
@@ -335,7 +334,7 @@ func (variantMediumL) LoadMedium(ctx context.Context, e boil.ContextExecutor, si
 
 // LoadVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeVariantMedium interface{}, mods queries.Applicator) error {
+func (variantMediumL) LoadVariant(e boil.Executor, singular bool, maybeVariantMedium interface{}, mods queries.Applicator) error {
 	var slice []*VariantMedium
 	var object *VariantMedium
 
@@ -398,7 +397,7 @@ func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, s
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ProductVariant")
 	}
@@ -448,10 +447,10 @@ func (variantMediumL) LoadVariant(ctx context.Context, e boil.ContextExecutor, s
 // SetMedium of the variantMedium to the related item.
 // Sets o.R.Medium to related.
 // Adds o to related.R.MediumVariantMedia.
-func (o *VariantMedium) SetMedium(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductMedium) error {
+func (o *VariantMedium) SetMedium(exec boil.Executor, insert bool, related *ProductMedium) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -463,12 +462,11 @@ func (o *VariantMedium) SetMedium(ctx context.Context, exec boil.ContextExecutor
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -495,10 +493,10 @@ func (o *VariantMedium) SetMedium(ctx context.Context, exec boil.ContextExecutor
 // SetVariant of the variantMedium to the related item.
 // Sets o.R.Variant to related.
 // Adds o to related.R.VariantVariantMedia.
-func (o *VariantMedium) SetVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+func (o *VariantMedium) SetVariant(exec boil.Executor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -510,12 +508,11 @@ func (o *VariantMedium) SetVariant(ctx context.Context, exec boil.ContextExecuto
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -552,7 +549,7 @@ func VariantMedia(mods ...qm.QueryMod) variantMediumQuery {
 
 // FindVariantMedium retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindVariantMedium(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*VariantMedium, error) {
+func FindVariantMedium(exec boil.Executor, iD string, selectCols ...string) (*VariantMedium, error) {
 	variantMediumObj := &VariantMedium{}
 
 	sel := "*"
@@ -565,7 +562,7 @@ func FindVariantMedium(ctx context.Context, exec boil.ContextExecutor, iD string
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, variantMediumObj)
+	err := q.Bind(nil, exec, variantMediumObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -578,7 +575,7 @@ func FindVariantMedium(ctx context.Context, exec boil.ContextExecutor, iD string
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *VariantMedium) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *VariantMedium) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no variant_media provided for insertion")
 	}
@@ -626,16 +623,15 @@ func (o *VariantMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -654,7 +650,7 @@ func (o *VariantMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update uses an executor to update the VariantMedium.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *VariantMedium) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *VariantMedium) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	variantMediumUpdateCacheMut.RLock()
@@ -682,13 +678,12 @@ func (o *VariantMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update variant_media row")
 	}
@@ -708,10 +703,10 @@ func (o *VariantMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q variantMediumQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q variantMediumQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for variant_media")
 	}
@@ -725,7 +720,7 @@ func (q variantMediumQuery) UpdateAll(ctx context.Context, exec boil.ContextExec
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o VariantMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o VariantMediumSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -755,12 +750,11 @@ func (o VariantMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, variantMediumPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in variantMedium slice")
 	}
@@ -774,7 +768,7 @@ func (o VariantMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *VariantMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *VariantMedium) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no variant_media provided for upsert")
 	}
@@ -858,18 +852,17 @@ func (o *VariantMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert variant_media")
@@ -886,7 +879,7 @@ func (o *VariantMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 
 // Delete deletes a single VariantMedium record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *VariantMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *VariantMedium) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no VariantMedium provided for delete")
 	}
@@ -894,12 +887,11 @@ func (o *VariantMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), variantMediumPrimaryKeyMapping)
 	sql := "DELETE FROM \"variant_media\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from variant_media")
 	}
@@ -913,14 +905,14 @@ func (o *VariantMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // DeleteAll deletes all matching rows.
-func (q variantMediumQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q variantMediumQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no variantMediumQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from variant_media")
 	}
@@ -934,7 +926,7 @@ func (q variantMediumQuery) DeleteAll(ctx context.Context, exec boil.ContextExec
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o VariantMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o VariantMediumSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -948,12 +940,11 @@ func (o VariantMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	sql := "DELETE FROM \"variant_media\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, variantMediumPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from variantMedium slice")
 	}
@@ -968,8 +959,8 @@ func (o VariantMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *VariantMedium) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindVariantMedium(ctx, exec, o.ID)
+func (o *VariantMedium) Reload(exec boil.Executor) error {
+	ret, err := FindVariantMedium(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -980,7 +971,7 @@ func (o *VariantMedium) Reload(ctx context.Context, exec boil.ContextExecutor) e
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *VariantMediumSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *VariantMediumSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -997,7 +988,7 @@ func (o *VariantMediumSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in VariantMediumSlice")
 	}
@@ -1008,16 +999,15 @@ func (o *VariantMediumSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 }
 
 // VariantMediumExists checks if the VariantMedium row exists.
-func VariantMediumExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func VariantMediumExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"variant_media\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1028,6 +1018,6 @@ func VariantMediumExists(ctx context.Context, exec boil.ContextExecutor, iD stri
 }
 
 // Exists checks if the VariantMedium row exists.
-func (o *VariantMedium) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return VariantMediumExists(ctx, exec, o.ID)
+func (o *VariantMedium) Exists(exec boil.Executor) (bool, error) {
+	return VariantMediumExists(exec, o.ID)
 }

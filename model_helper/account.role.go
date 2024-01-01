@@ -213,6 +213,17 @@ func AddAncillaryPermissions(permissions []string) []string {
 	return permissions
 }
 
+func RolePreSave(r *model.Role) {
+	if r.CreatedAt == 0 {
+		r.CreatedAt = GetMillis()
+	}
+	r.UpdatedAt = r.CreatedAt
+}
+
+func RolePreUpdate(r *model.Role) {
+	r.UpdatedAt = GetMillis()
+}
+
 // initRoles is called be the init() function located in /model.init.go file
 func initRoles() {
 	NewSystemRoleIDs = []string{

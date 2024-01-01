@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
@@ -19,7 +20,7 @@ type LocalCacheUserStore struct {
 	userProfileByIdsInvalidations map[string]bool
 }
 
-func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *model.ClusterMessage) {
+func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *model_helper.ClusterMessage) {
 	if bytes.Equal(msg.Data, clearCacheMessageData) {
 		s.rootStore.userProfileByIdsCache.Purge()
 	} else {
@@ -49,13 +50,9 @@ func (s *LocalCacheUserStore) InvalidateProfileCacheForUser(userId string) {
 	}
 }
 
-func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
+func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []string, options store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 	if !allowFromCache {
 		return s.UserStore.GetProfileByIds(ctx, userIds, options, false)
-	}
-
-	if options == nil {
-		options = &store.UserGetByIdsOpts{}
 	}
 
 	users := []*model.User{}
@@ -65,7 +62,7 @@ func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []str
 	for _, userId := range userIds {
 		var cacheItem *model.User
 		if err := s.rootStore.doStandardReadCache(s.rootStore.userProfileByIdsCache, userId, &cacheItem); err == nil {
-			if options.Since == 0 || cacheItem.UpdateAt > options.Since {
+			if options.Since == 0 || cacheItem.UpdatedAt > options.Since {
 				users = append(users, cacheItem)
 			}
 		} else {
@@ -90,7 +87,7 @@ func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []str
 			return nil, err
 		}
 		for _, user := range remainingUsers {
-			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, user.Id, user)
+			s.rootStore.doStandardAddToCache(s.rootStore.userProfileByIdsCache, user.ID, user)
 			users = append(users, user)
 		}
 	}

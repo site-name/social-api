@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -174,12 +173,12 @@ var (
 )
 
 // One returns a single stock record from the query.
-func (q stockQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Stock, error) {
+func (q stockQuery) One(exec boil.Executor) (*Stock, error) {
 	o := &Stock{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -191,10 +190,10 @@ func (q stockQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Stock,
 }
 
 // All returns all Stock records from the query.
-func (q stockQuery) All(ctx context.Context, exec boil.ContextExecutor) (StockSlice, error) {
+func (q stockQuery) All(exec boil.Executor) (StockSlice, error) {
 	var o []*Stock
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Stock slice")
 	}
@@ -203,13 +202,13 @@ func (q stockQuery) All(ctx context.Context, exec boil.ContextExecutor) (StockSl
 }
 
 // Count returns the count of all Stock records in the query.
-func (q stockQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q stockQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count stocks rows")
 	}
@@ -218,14 +217,14 @@ func (q stockQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // Exists checks if the row exists in the table.
-func (q stockQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q stockQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if stocks exists")
 	}
@@ -285,7 +284,7 @@ func (o *Stock) FulfillmentLines(mods ...qm.QueryMod) fulfillmentLineQuery {
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadProductVariant(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -348,7 +347,7 @@ func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ProductVariant")
 	}
@@ -397,7 +396,7 @@ func (stockL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, si
 
 // LoadWarehouse allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadWarehouse(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -460,7 +459,7 @@ func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singula
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Warehouse")
 	}
@@ -509,7 +508,7 @@ func (stockL) LoadWarehouse(ctx context.Context, e boil.ContextExecutor, singula
 
 // LoadAllocations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadAllocations(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -570,7 +569,7 @@ func (stockL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load allocations")
 	}
@@ -616,7 +615,7 @@ func (stockL) LoadAllocations(ctx context.Context, e boil.ContextExecutor, singu
 
 // LoadFulfillmentLines allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (stockL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecutor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
+func (stockL) LoadFulfillmentLines(e boil.Executor, singular bool, maybeStock interface{}, mods queries.Applicator) error {
 	var slice []*Stock
 	var object *Stock
 
@@ -677,7 +676,7 @@ func (stockL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecutor, 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load fulfillment_lines")
 	}
@@ -724,10 +723,10 @@ func (stockL) LoadFulfillmentLines(ctx context.Context, e boil.ContextExecutor, 
 // SetProductVariant of the stock to the related item.
 // Sets o.R.ProductVariant to related.
 // Adds o to related.R.Stocks.
-func (o *Stock) SetProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+func (o *Stock) SetProductVariant(exec boil.Executor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -739,12 +738,11 @@ func (o *Stock) SetProductVariant(ctx context.Context, exec boil.ContextExecutor
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -771,10 +769,10 @@ func (o *Stock) SetProductVariant(ctx context.Context, exec boil.ContextExecutor
 // SetWarehouse of the stock to the related item.
 // Sets o.R.Warehouse to related.
 // Adds o to related.R.Stocks.
-func (o *Stock) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Warehouse) error {
+func (o *Stock) SetWarehouse(exec boil.Executor, insert bool, related *Warehouse) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -786,12 +784,11 @@ func (o *Stock) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, ins
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -819,12 +816,12 @@ func (o *Stock) SetWarehouse(ctx context.Context, exec boil.ContextExecutor, ins
 // of the stock, optionally inserting them as new records.
 // Appends related to o.R.Allocations.
 // Sets related.R.Stock appropriately.
-func (o *Stock) AddAllocations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Allocation) error {
+func (o *Stock) AddAllocations(exec boil.Executor, insert bool, related ...*Allocation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.StockID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -835,12 +832,11 @@ func (o *Stock) AddAllocations(ctx context.Context, exec boil.ContextExecutor, i
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -872,12 +868,12 @@ func (o *Stock) AddAllocations(ctx context.Context, exec boil.ContextExecutor, i
 // of the stock, optionally inserting them as new records.
 // Appends related to o.R.FulfillmentLines.
 // Sets related.R.Stock appropriately.
-func (o *Stock) AddFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
+func (o *Stock) AddFulfillmentLines(exec boil.Executor, insert bool, related ...*FulfillmentLine) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.StockID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -888,12 +884,11 @@ func (o *Stock) AddFulfillmentLines(ctx context.Context, exec boil.ContextExecut
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -927,15 +922,14 @@ func (o *Stock) AddFulfillmentLines(ctx context.Context, exec boil.ContextExecut
 // Sets o.R.Stock's FulfillmentLines accordingly.
 // Replaces o.R.FulfillmentLines with related.
 // Sets related.R.Stock's FulfillmentLines accordingly.
-func (o *Stock) SetFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*FulfillmentLine) error {
+func (o *Stock) SetFulfillmentLines(exec boil.Executor, insert bool, related ...*FulfillmentLine) error {
 	query := "update \"fulfillment_lines\" set \"stock_id\" = null where \"stock_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -952,13 +946,13 @@ func (o *Stock) SetFulfillmentLines(ctx context.Context, exec boil.ContextExecut
 		o.R.FulfillmentLines = nil
 	}
 
-	return o.AddFulfillmentLines(ctx, exec, insert, related...)
+	return o.AddFulfillmentLines(exec, insert, related...)
 }
 
 // RemoveFulfillmentLines relationships from objects passed in.
 // Removes related items from R.FulfillmentLines (uses pointer comparison, removal does not keep order)
 // Sets related.R.Stock.
-func (o *Stock) RemoveFulfillmentLines(ctx context.Context, exec boil.ContextExecutor, related ...*FulfillmentLine) error {
+func (o *Stock) RemoveFulfillmentLines(exec boil.Executor, related ...*FulfillmentLine) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -969,7 +963,7 @@ func (o *Stock) RemoveFulfillmentLines(ctx context.Context, exec boil.ContextExe
 		if rel.R != nil {
 			rel.R.Stock = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("stock_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("stock_id")); err != nil {
 			return err
 		}
 	}
@@ -1008,7 +1002,7 @@ func Stocks(mods ...qm.QueryMod) stockQuery {
 
 // FindStock retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindStock(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Stock, error) {
+func FindStock(exec boil.Executor, iD string, selectCols ...string) (*Stock, error) {
 	stockObj := &Stock{}
 
 	sel := "*"
@@ -1021,7 +1015,7 @@ func FindStock(ctx context.Context, exec boil.ContextExecutor, iD string, select
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, stockObj)
+	err := q.Bind(nil, exec, stockObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -1034,7 +1028,7 @@ func FindStock(ctx context.Context, exec boil.ContextExecutor, iD string, select
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Stock) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Stock) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no stocks provided for insertion")
 	}
@@ -1082,16 +1076,15 @@ func (o *Stock) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -1110,7 +1103,7 @@ func (o *Stock) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 // Update uses an executor to update the Stock.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Stock) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Stock) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	stockUpdateCacheMut.RLock()
@@ -1138,13 +1131,12 @@ func (o *Stock) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update stocks row")
 	}
@@ -1164,10 +1156,10 @@ func (o *Stock) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q stockQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q stockQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for stocks")
 	}
@@ -1181,7 +1173,7 @@ func (q stockQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o StockSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o StockSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -1211,12 +1203,11 @@ func (o StockSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, stockPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in stock slice")
 	}
@@ -1230,7 +1221,7 @@ func (o StockSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Stock) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Stock) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no stocks provided for upsert")
 	}
@@ -1314,18 +1305,17 @@ func (o *Stock) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert stocks")
@@ -1342,7 +1332,7 @@ func (o *Stock) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 
 // Delete deletes a single Stock record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Stock) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Stock) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Stock provided for delete")
 	}
@@ -1350,12 +1340,11 @@ func (o *Stock) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), stockPrimaryKeyMapping)
 	sql := "DELETE FROM \"stocks\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from stocks")
 	}
@@ -1369,14 +1358,14 @@ func (o *Stock) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 }
 
 // DeleteAll deletes all matching rows.
-func (q stockQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q stockQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no stockQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from stocks")
 	}
@@ -1390,7 +1379,7 @@ func (q stockQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o StockSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o StockSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1404,12 +1393,11 @@ func (o StockSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 	sql := "DELETE FROM \"stocks\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, stockPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from stock slice")
 	}
@@ -1424,8 +1412,8 @@ func (o StockSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Stock) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindStock(ctx, exec, o.ID)
+func (o *Stock) Reload(exec boil.Executor) error {
+	ret, err := FindStock(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1436,7 +1424,7 @@ func (o *Stock) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *StockSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *StockSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1453,7 +1441,7 @@ func (o *StockSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in StockSlice")
 	}
@@ -1464,16 +1452,15 @@ func (o *StockSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 }
 
 // StockExists checks if the Stock row exists.
-func StockExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func StockExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"stocks\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1484,6 +1471,6 @@ func StockExists(ctx context.Context, exec boil.ContextExecutor, iD string) (boo
 }
 
 // Exists checks if the Stock row exists.
-func (o *Stock) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return StockExists(ctx, exec, o.ID)
+func (o *Stock) Exists(exec boil.Executor) (bool, error) {
+	return StockExists(exec, o.ID)
 }

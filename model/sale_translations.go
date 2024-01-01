@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -137,12 +136,12 @@ var (
 )
 
 // One returns a single saleTranslation record from the query.
-func (q saleTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*SaleTranslation, error) {
+func (q saleTranslationQuery) One(exec boil.Executor) (*SaleTranslation, error) {
 	o := &SaleTranslation{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -154,10 +153,10 @@ func (q saleTranslationQuery) One(ctx context.Context, exec boil.ContextExecutor
 }
 
 // All returns all SaleTranslation records from the query.
-func (q saleTranslationQuery) All(ctx context.Context, exec boil.ContextExecutor) (SaleTranslationSlice, error) {
+func (q saleTranslationQuery) All(exec boil.Executor) (SaleTranslationSlice, error) {
 	var o []*SaleTranslation
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to SaleTranslation slice")
 	}
@@ -166,13 +165,13 @@ func (q saleTranslationQuery) All(ctx context.Context, exec boil.ContextExecutor
 }
 
 // Count returns the count of all SaleTranslation records in the query.
-func (q saleTranslationQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q saleTranslationQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count sale_translations rows")
 	}
@@ -181,14 +180,14 @@ func (q saleTranslationQuery) Count(ctx context.Context, exec boil.ContextExecut
 }
 
 // Exists checks if the row exists in the table.
-func (q saleTranslationQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q saleTranslationQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if sale_translations exists")
 	}
@@ -209,7 +208,7 @@ func (o *SaleTranslation) Sale(mods ...qm.QueryMod) saleQuery {
 
 // LoadSale allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSaleTranslation interface{}, mods queries.Applicator) error {
+func (saleTranslationL) LoadSale(e boil.Executor, singular bool, maybeSaleTranslation interface{}, mods queries.Applicator) error {
 	var slice []*SaleTranslation
 	var object *SaleTranslation
 
@@ -272,7 +271,7 @@ func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Sale")
 	}
@@ -322,10 +321,10 @@ func (saleTranslationL) LoadSale(ctx context.Context, e boil.ContextExecutor, si
 // SetSale of the saleTranslation to the related item.
 // Sets o.R.Sale to related.
 // Adds o to related.R.SaleTranslations.
-func (o *SaleTranslation) SetSale(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Sale) error {
+func (o *SaleTranslation) SetSale(exec boil.Executor, insert bool, related *Sale) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -337,12 +336,11 @@ func (o *SaleTranslation) SetSale(ctx context.Context, exec boil.ContextExecutor
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -379,7 +377,7 @@ func SaleTranslations(mods ...qm.QueryMod) saleTranslationQuery {
 
 // FindSaleTranslation retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindSaleTranslation(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*SaleTranslation, error) {
+func FindSaleTranslation(exec boil.Executor, iD string, selectCols ...string) (*SaleTranslation, error) {
 	saleTranslationObj := &SaleTranslation{}
 
 	sel := "*"
@@ -392,7 +390,7 @@ func FindSaleTranslation(ctx context.Context, exec boil.ContextExecutor, iD stri
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, saleTranslationObj)
+	err := q.Bind(nil, exec, saleTranslationObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -405,7 +403,7 @@ func FindSaleTranslation(ctx context.Context, exec boil.ContextExecutor, iD stri
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *SaleTranslation) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *SaleTranslation) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no sale_translations provided for insertion")
 	}
@@ -453,16 +451,15 @@ func (o *SaleTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -481,7 +478,7 @@ func (o *SaleTranslation) Insert(ctx context.Context, exec boil.ContextExecutor,
 // Update uses an executor to update the SaleTranslation.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *SaleTranslation) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *SaleTranslation) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	saleTranslationUpdateCacheMut.RLock()
@@ -509,13 +506,12 @@ func (o *SaleTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update sale_translations row")
 	}
@@ -535,10 +531,10 @@ func (o *SaleTranslation) Update(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q saleTranslationQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q saleTranslationQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for sale_translations")
 	}
@@ -552,7 +548,7 @@ func (q saleTranslationQuery) UpdateAll(ctx context.Context, exec boil.ContextEx
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o SaleTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o SaleTranslationSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -582,12 +578,11 @@ func (o SaleTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, saleTranslationPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in saleTranslation slice")
 	}
@@ -601,7 +596,7 @@ func (o SaleTranslationSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *SaleTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *SaleTranslation) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no sale_translations provided for upsert")
 	}
@@ -685,18 +680,17 @@ func (o *SaleTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert sale_translations")
@@ -713,7 +707,7 @@ func (o *SaleTranslation) Upsert(ctx context.Context, exec boil.ContextExecutor,
 
 // Delete deletes a single SaleTranslation record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *SaleTranslation) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *SaleTranslation) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no SaleTranslation provided for delete")
 	}
@@ -721,12 +715,11 @@ func (o *SaleTranslation) Delete(ctx context.Context, exec boil.ContextExecutor)
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), saleTranslationPrimaryKeyMapping)
 	sql := "DELETE FROM \"sale_translations\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from sale_translations")
 	}
@@ -740,14 +733,14 @@ func (o *SaleTranslation) Delete(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all matching rows.
-func (q saleTranslationQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q saleTranslationQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no saleTranslationQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from sale_translations")
 	}
@@ -761,7 +754,7 @@ func (q saleTranslationQuery) DeleteAll(ctx context.Context, exec boil.ContextEx
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o SaleTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o SaleTranslationSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -775,12 +768,11 @@ func (o SaleTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 	sql := "DELETE FROM \"sale_translations\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, saleTranslationPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from saleTranslation slice")
 	}
@@ -795,8 +787,8 @@ func (o SaleTranslationSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *SaleTranslation) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindSaleTranslation(ctx, exec, o.ID)
+func (o *SaleTranslation) Reload(exec boil.Executor) error {
+	ret, err := FindSaleTranslation(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -807,7 +799,7 @@ func (o *SaleTranslation) Reload(ctx context.Context, exec boil.ContextExecutor)
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *SaleTranslationSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *SaleTranslationSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -824,7 +816,7 @@ func (o *SaleTranslationSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in SaleTranslationSlice")
 	}
@@ -835,16 +827,15 @@ func (o *SaleTranslationSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // SaleTranslationExists checks if the SaleTranslation row exists.
-func SaleTranslationExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func SaleTranslationExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"sale_translations\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -855,6 +846,6 @@ func SaleTranslationExists(ctx context.Context, exec boil.ContextExecutor, iD st
 }
 
 // Exists checks if the SaleTranslation row exists.
-func (o *SaleTranslation) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return SaleTranslationExists(ctx, exec, o.ID)
+func (o *SaleTranslation) Exists(exec boil.Executor) (bool, error) {
+	return SaleTranslationExists(exec, o.ID)
 }

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -48,7 +48,7 @@ func getDefaultPostgresqlDSN() string {
 
 // PostgresSQLSettings returns the database settings to connect to the PostgreSQL unittesting database.
 // The database name is generated randomly and must be created before use.
-func PostgreSQLSettings() *model.SqlSettings {
+func PostgreSQLSettings() *model_helper.SqlSettings {
 	dsn := os.Getenv("TEST_DATABASE_POSTGRESQL_DSN")
 	if dsn == "" {
 		dsn = getDefaultPostgresqlDSN()
@@ -63,13 +63,13 @@ func PostgreSQLSettings() *model.SqlSettings {
 	}
 
 	// Generate a random database name
-	dsnURL.Path = "db" + model.NewRandomString(26)
+	dsnURL.Path = "db" + model_helper.NewRandomString(26)
 
 	return databaseSettings("postgres", dsnURL.String())
 }
 
-func databaseSettings(driver, dataSource string) *model.SqlSettings {
-	settings := &model.SqlSettings{
+func databaseSettings(driver, dataSource string) *model_helper.SqlSettings {
+	settings := &model_helper.SqlSettings{
 		DriverName:                        &driver,
 		DataSource:                        &dataSource,
 		DataSourceReplicas:                []string{},
@@ -78,8 +78,8 @@ func databaseSettings(driver, dataSource string) *model.SqlSettings {
 		ConnMaxLifetimeMilliseconds:       new(int),
 		ConnMaxIdleTimeMilliseconds:       new(int),
 		MaxOpenConns:                      new(int),
-		Trace:                             model.GetPointerOfValue(false),
-		AtRestEncryptKey:                  model.GetPointerOfValue(model.NewRandomString(32)),
+		Trace:                             model_helper.GetPointerOfValue(false),
+		AtRestEncryptKey:                  model_helper.GetPointerOfValue(model_helper.NewRandomString(32)),
 		QueryTimeout:                      new(int),
 		MigrationsStatementTimeoutSeconds: new(int),
 	}
@@ -104,7 +104,7 @@ func postgreSQLRootDSN(dsn string) string {
 	return dsnURL.String()
 }
 
-func execAsRoot(settings *model.SqlSettings, sqlCommand string) error {
+func execAsRoot(settings *model_helper.SqlSettings, sqlCommand string) error {
 	dsn := postgreSQLRootDSN(*settings.DataSource)
 	db, err := sql.Open(*settings.DriverName, dsn)
 	if err != nil {
@@ -127,7 +127,7 @@ func postgreSQLDSNDatabase(dsn string) string {
 	return path.Base(dsnURL.Path)
 }
 
-func MakeSqlSettings(driver string, withReplica bool) *model.SqlSettings {
+func MakeSqlSettings(driver string, withReplica bool) *model_helper.SqlSettings {
 	settings := PostgreSQLSettings()
 	dbName := postgreSQLDSNDatabase(*settings.DataSource)
 
@@ -140,12 +140,12 @@ func MakeSqlSettings(driver string, withReplica bool) *model.SqlSettings {
 	}
 
 	log("Created temporary " + driver + " database " + dbName)
-	settings.ReplicaMonitorIntervalSeconds = model.GetPointerOfValue(5)
+	settings.ReplicaMonitorIntervalSeconds = model_helper.GetPointerOfValue(5)
 
 	return settings
 }
 
-func CleanupSqlSettings(settings *model.SqlSettings) {
+func CleanupSqlSettings(settings *model_helper.SqlSettings) {
 	dbName := postgreSQLDSNDatabase(*settings.DataSource)
 	if err := execAsRoot(settings, "DROP DATABASE "+dbName); err != nil {
 		panic("failed to drop temporary database " + dbName + ": " + err.Error())

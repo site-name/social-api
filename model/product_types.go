@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -260,12 +259,12 @@ var (
 )
 
 // One returns a single productType record from the query.
-func (q productTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ProductType, error) {
+func (q productTypeQuery) One(exec boil.Executor) (*ProductType, error) {
 	o := &ProductType{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -277,10 +276,10 @@ func (q productTypeQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 }
 
 // All returns all ProductType records from the query.
-func (q productTypeQuery) All(ctx context.Context, exec boil.ContextExecutor) (ProductTypeSlice, error) {
+func (q productTypeQuery) All(exec boil.Executor) (ProductTypeSlice, error) {
 	var o []*ProductType
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to ProductType slice")
 	}
@@ -289,13 +288,13 @@ func (q productTypeQuery) All(ctx context.Context, exec boil.ContextExecutor) (P
 }
 
 // Count returns the count of all ProductType records in the query.
-func (q productTypeQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q productTypeQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count product_types rows")
 	}
@@ -304,14 +303,14 @@ func (q productTypeQuery) Count(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // Exists checks if the row exists in the table.
-func (q productTypeQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q productTypeQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if product_types exists")
 	}
@@ -349,7 +348,7 @@ func (o *ProductType) AttributeVariants(mods ...qm.QueryMod) attributeVariantQue
 
 // LoadAttributeProducts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productTypeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductType interface{}, mods queries.Applicator) error {
+func (productTypeL) LoadAttributeProducts(e boil.Executor, singular bool, maybeProductType interface{}, mods queries.Applicator) error {
 	var slice []*ProductType
 	var object *ProductType
 
@@ -410,7 +409,7 @@ func (productTypeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExe
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load attribute_products")
 	}
@@ -456,7 +455,7 @@ func (productTypeL) LoadAttributeProducts(ctx context.Context, e boil.ContextExe
 
 // LoadAttributeVariants allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productTypeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductType interface{}, mods queries.Applicator) error {
+func (productTypeL) LoadAttributeVariants(e boil.Executor, singular bool, maybeProductType interface{}, mods queries.Applicator) error {
 	var slice []*ProductType
 	var object *ProductType
 
@@ -517,7 +516,7 @@ func (productTypeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExe
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load attribute_variants")
 	}
@@ -565,12 +564,12 @@ func (productTypeL) LoadAttributeVariants(ctx context.Context, e boil.ContextExe
 // of the product_type, optionally inserting them as new records.
 // Appends related to o.R.AttributeProducts.
 // Sets related.R.ProductType appropriately.
-func (o *ProductType) AddAttributeProducts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeProduct) error {
+func (o *ProductType) AddAttributeProducts(exec boil.Executor, insert bool, related ...*AttributeProduct) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ProductTypeID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -581,12 +580,11 @@ func (o *ProductType) AddAttributeProducts(ctx context.Context, exec boil.Contex
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -618,12 +616,12 @@ func (o *ProductType) AddAttributeProducts(ctx context.Context, exec boil.Contex
 // of the product_type, optionally inserting them as new records.
 // Appends related to o.R.AttributeVariants.
 // Sets related.R.ProductType appropriately.
-func (o *ProductType) AddAttributeVariants(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AttributeVariant) error {
+func (o *ProductType) AddAttributeVariants(exec boil.Executor, insert bool, related ...*AttributeVariant) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.ProductTypeID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -634,12 +632,11 @@ func (o *ProductType) AddAttributeVariants(ctx context.Context, exec boil.Contex
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -680,7 +677,7 @@ func ProductTypes(mods ...qm.QueryMod) productTypeQuery {
 
 // FindProductType retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindProductType(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ProductType, error) {
+func FindProductType(exec boil.Executor, iD string, selectCols ...string) (*ProductType, error) {
 	productTypeObj := &ProductType{}
 
 	sel := "*"
@@ -693,7 +690,7 @@ func FindProductType(ctx context.Context, exec boil.ContextExecutor, iD string, 
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, productTypeObj)
+	err := q.Bind(nil, exec, productTypeObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -706,7 +703,7 @@ func FindProductType(ctx context.Context, exec boil.ContextExecutor, iD string, 
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *ProductType) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *ProductType) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no product_types provided for insertion")
 	}
@@ -754,16 +751,15 @@ func (o *ProductType) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -782,7 +778,7 @@ func (o *ProductType) Insert(ctx context.Context, exec boil.ContextExecutor, col
 // Update uses an executor to update the ProductType.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *ProductType) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *ProductType) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	productTypeUpdateCacheMut.RLock()
@@ -810,13 +806,12 @@ func (o *ProductType) Update(ctx context.Context, exec boil.ContextExecutor, col
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update product_types row")
 	}
@@ -836,10 +831,10 @@ func (o *ProductType) Update(ctx context.Context, exec boil.ContextExecutor, col
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q productTypeQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q productTypeQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for product_types")
 	}
@@ -853,7 +848,7 @@ func (q productTypeQuery) UpdateAll(ctx context.Context, exec boil.ContextExecut
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ProductTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ProductTypeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -883,12 +878,11 @@ func (o ProductTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, productTypePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in productType slice")
 	}
@@ -902,7 +896,7 @@ func (o ProductTypeSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *ProductType) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *ProductType) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no product_types provided for upsert")
 	}
@@ -986,18 +980,17 @@ func (o *ProductType) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert product_types")
@@ -1014,7 +1007,7 @@ func (o *ProductType) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 
 // Delete deletes a single ProductType record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ProductType) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *ProductType) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no ProductType provided for delete")
 	}
@@ -1022,12 +1015,11 @@ func (o *ProductType) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), productTypePrimaryKeyMapping)
 	sql := "DELETE FROM \"product_types\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from product_types")
 	}
@@ -1041,14 +1033,14 @@ func (o *ProductType) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // DeleteAll deletes all matching rows.
-func (q productTypeQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q productTypeQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no productTypeQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from product_types")
 	}
@@ -1062,7 +1054,7 @@ func (q productTypeQuery) DeleteAll(ctx context.Context, exec boil.ContextExecut
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ProductTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ProductTypeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1076,12 +1068,11 @@ func (o ProductTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	sql := "DELETE FROM \"product_types\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, productTypePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from productType slice")
 	}
@@ -1096,8 +1087,8 @@ func (o ProductTypeSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ProductType) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindProductType(ctx, exec, o.ID)
+func (o *ProductType) Reload(exec boil.Executor) error {
+	ret, err := FindProductType(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1108,7 +1099,7 @@ func (o *ProductType) Reload(ctx context.Context, exec boil.ContextExecutor) err
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ProductTypeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ProductTypeSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1125,7 +1116,7 @@ func (o *ProductTypeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecu
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ProductTypeSlice")
 	}
@@ -1136,16 +1127,15 @@ func (o *ProductTypeSlice) ReloadAll(ctx context.Context, exec boil.ContextExecu
 }
 
 // ProductTypeExists checks if the ProductType row exists.
-func ProductTypeExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ProductTypeExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"product_types\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1156,6 +1146,6 @@ func ProductTypeExists(ctx context.Context, exec boil.ContextExecutor, iD string
 }
 
 // Exists checks if the ProductType row exists.
-func (o *ProductType) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ProductTypeExists(ctx, exec, o.ID)
+func (o *ProductType) Exists(exec boil.Executor) (bool, error) {
+	return ProductTypeExists(exec, o.ID)
 }

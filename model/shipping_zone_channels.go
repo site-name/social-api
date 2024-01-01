@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -140,12 +139,12 @@ var (
 )
 
 // One returns a single shippingZoneChannel record from the query.
-func (q shippingZoneChannelQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ShippingZoneChannel, error) {
+func (q shippingZoneChannelQuery) One(exec boil.Executor) (*ShippingZoneChannel, error) {
 	o := &ShippingZoneChannel{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -157,10 +156,10 @@ func (q shippingZoneChannelQuery) One(ctx context.Context, exec boil.ContextExec
 }
 
 // All returns all ShippingZoneChannel records from the query.
-func (q shippingZoneChannelQuery) All(ctx context.Context, exec boil.ContextExecutor) (ShippingZoneChannelSlice, error) {
+func (q shippingZoneChannelQuery) All(exec boil.Executor) (ShippingZoneChannelSlice, error) {
 	var o []*ShippingZoneChannel
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to ShippingZoneChannel slice")
 	}
@@ -169,13 +168,13 @@ func (q shippingZoneChannelQuery) All(ctx context.Context, exec boil.ContextExec
 }
 
 // Count returns the count of all ShippingZoneChannel records in the query.
-func (q shippingZoneChannelQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q shippingZoneChannelQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count shipping_zone_channels rows")
 	}
@@ -184,14 +183,14 @@ func (q shippingZoneChannelQuery) Count(ctx context.Context, exec boil.ContextEx
 }
 
 // Exists checks if the row exists in the table.
-func (q shippingZoneChannelQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q shippingZoneChannelQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if shipping_zone_channels exists")
 	}
@@ -223,7 +222,7 @@ func (o *ShippingZoneChannel) ShippingZone(mods ...qm.QueryMod) shippingZoneQuer
 
 // LoadChannel allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingZoneChannelL) LoadChannel(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingZoneChannel interface{}, mods queries.Applicator) error {
+func (shippingZoneChannelL) LoadChannel(e boil.Executor, singular bool, maybeShippingZoneChannel interface{}, mods queries.Applicator) error {
 	var slice []*ShippingZoneChannel
 	var object *ShippingZoneChannel
 
@@ -286,7 +285,7 @@ func (shippingZoneChannelL) LoadChannel(ctx context.Context, e boil.ContextExecu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Channel")
 	}
@@ -335,7 +334,7 @@ func (shippingZoneChannelL) LoadChannel(ctx context.Context, e boil.ContextExecu
 
 // LoadShippingZone allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (shippingZoneChannelL) LoadShippingZone(ctx context.Context, e boil.ContextExecutor, singular bool, maybeShippingZoneChannel interface{}, mods queries.Applicator) error {
+func (shippingZoneChannelL) LoadShippingZone(e boil.Executor, singular bool, maybeShippingZoneChannel interface{}, mods queries.Applicator) error {
 	var slice []*ShippingZoneChannel
 	var object *ShippingZoneChannel
 
@@ -398,7 +397,7 @@ func (shippingZoneChannelL) LoadShippingZone(ctx context.Context, e boil.Context
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ShippingZone")
 	}
@@ -448,10 +447,10 @@ func (shippingZoneChannelL) LoadShippingZone(ctx context.Context, e boil.Context
 // SetChannel of the shippingZoneChannel to the related item.
 // Sets o.R.Channel to related.
 // Adds o to related.R.ShippingZoneChannels.
-func (o *ShippingZoneChannel) SetChannel(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Channel) error {
+func (o *ShippingZoneChannel) SetChannel(exec boil.Executor, insert bool, related *Channel) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -463,12 +462,11 @@ func (o *ShippingZoneChannel) SetChannel(ctx context.Context, exec boil.ContextE
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -495,10 +493,10 @@ func (o *ShippingZoneChannel) SetChannel(ctx context.Context, exec boil.ContextE
 // SetShippingZone of the shippingZoneChannel to the related item.
 // Sets o.R.ShippingZone to related.
 // Adds o to related.R.ShippingZoneChannels.
-func (o *ShippingZoneChannel) SetShippingZone(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ShippingZone) error {
+func (o *ShippingZoneChannel) SetShippingZone(exec boil.Executor, insert bool, related *ShippingZone) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -510,12 +508,11 @@ func (o *ShippingZoneChannel) SetShippingZone(ctx context.Context, exec boil.Con
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -552,7 +549,7 @@ func ShippingZoneChannels(mods ...qm.QueryMod) shippingZoneChannelQuery {
 
 // FindShippingZoneChannel retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindShippingZoneChannel(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ShippingZoneChannel, error) {
+func FindShippingZoneChannel(exec boil.Executor, iD string, selectCols ...string) (*ShippingZoneChannel, error) {
 	shippingZoneChannelObj := &ShippingZoneChannel{}
 
 	sel := "*"
@@ -565,7 +562,7 @@ func FindShippingZoneChannel(ctx context.Context, exec boil.ContextExecutor, iD 
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, shippingZoneChannelObj)
+	err := q.Bind(nil, exec, shippingZoneChannelObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -578,7 +575,7 @@ func FindShippingZoneChannel(ctx context.Context, exec boil.ContextExecutor, iD 
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *ShippingZoneChannel) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *ShippingZoneChannel) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no shipping_zone_channels provided for insertion")
 	}
@@ -626,16 +623,15 @@ func (o *ShippingZoneChannel) Insert(ctx context.Context, exec boil.ContextExecu
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -654,7 +650,7 @@ func (o *ShippingZoneChannel) Insert(ctx context.Context, exec boil.ContextExecu
 // Update uses an executor to update the ShippingZoneChannel.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *ShippingZoneChannel) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *ShippingZoneChannel) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	shippingZoneChannelUpdateCacheMut.RLock()
@@ -682,13 +678,12 @@ func (o *ShippingZoneChannel) Update(ctx context.Context, exec boil.ContextExecu
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update shipping_zone_channels row")
 	}
@@ -708,10 +703,10 @@ func (o *ShippingZoneChannel) Update(ctx context.Context, exec boil.ContextExecu
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q shippingZoneChannelQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q shippingZoneChannelQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for shipping_zone_channels")
 	}
@@ -725,7 +720,7 @@ func (q shippingZoneChannelQuery) UpdateAll(ctx context.Context, exec boil.Conte
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ShippingZoneChannelSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ShippingZoneChannelSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -755,12 +750,11 @@ func (o ShippingZoneChannelSlice) UpdateAll(ctx context.Context, exec boil.Conte
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, shippingZoneChannelPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in shippingZoneChannel slice")
 	}
@@ -774,7 +768,7 @@ func (o ShippingZoneChannelSlice) UpdateAll(ctx context.Context, exec boil.Conte
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *ShippingZoneChannel) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *ShippingZoneChannel) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no shipping_zone_channels provided for upsert")
 	}
@@ -858,18 +852,17 @@ func (o *ShippingZoneChannel) Upsert(ctx context.Context, exec boil.ContextExecu
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert shipping_zone_channels")
@@ -886,7 +879,7 @@ func (o *ShippingZoneChannel) Upsert(ctx context.Context, exec boil.ContextExecu
 
 // Delete deletes a single ShippingZoneChannel record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ShippingZoneChannel) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *ShippingZoneChannel) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no ShippingZoneChannel provided for delete")
 	}
@@ -894,12 +887,11 @@ func (o *ShippingZoneChannel) Delete(ctx context.Context, exec boil.ContextExecu
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), shippingZoneChannelPrimaryKeyMapping)
 	sql := "DELETE FROM \"shipping_zone_channels\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from shipping_zone_channels")
 	}
@@ -913,14 +905,14 @@ func (o *ShippingZoneChannel) Delete(ctx context.Context, exec boil.ContextExecu
 }
 
 // DeleteAll deletes all matching rows.
-func (q shippingZoneChannelQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q shippingZoneChannelQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no shippingZoneChannelQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from shipping_zone_channels")
 	}
@@ -934,7 +926,7 @@ func (q shippingZoneChannelQuery) DeleteAll(ctx context.Context, exec boil.Conte
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ShippingZoneChannelSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ShippingZoneChannelSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -948,12 +940,11 @@ func (o ShippingZoneChannelSlice) DeleteAll(ctx context.Context, exec boil.Conte
 	sql := "DELETE FROM \"shipping_zone_channels\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, shippingZoneChannelPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from shippingZoneChannel slice")
 	}
@@ -968,8 +959,8 @@ func (o ShippingZoneChannelSlice) DeleteAll(ctx context.Context, exec boil.Conte
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ShippingZoneChannel) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindShippingZoneChannel(ctx, exec, o.ID)
+func (o *ShippingZoneChannel) Reload(exec boil.Executor) error {
+	ret, err := FindShippingZoneChannel(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -980,7 +971,7 @@ func (o *ShippingZoneChannel) Reload(ctx context.Context, exec boil.ContextExecu
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ShippingZoneChannelSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ShippingZoneChannelSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -997,7 +988,7 @@ func (o *ShippingZoneChannelSlice) ReloadAll(ctx context.Context, exec boil.Cont
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ShippingZoneChannelSlice")
 	}
@@ -1008,16 +999,15 @@ func (o *ShippingZoneChannelSlice) ReloadAll(ctx context.Context, exec boil.Cont
 }
 
 // ShippingZoneChannelExists checks if the ShippingZoneChannel row exists.
-func ShippingZoneChannelExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ShippingZoneChannelExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"shipping_zone_channels\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1028,6 +1018,6 @@ func ShippingZoneChannelExists(ctx context.Context, exec boil.ContextExecutor, i
 }
 
 // Exists checks if the ShippingZoneChannel row exists.
-func (o *ShippingZoneChannel) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ShippingZoneChannelExists(ctx, exec, o.ID)
+func (o *ShippingZoneChannel) Exists(exec boil.Executor) (bool, error) {
+	return ShippingZoneChannelExists(exec, o.ID)
 }

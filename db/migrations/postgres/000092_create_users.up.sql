@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS users (
   jwt_token_key text NOT NULL,
   last_activity_at bigint NOT NULL,
   terms_of_service_id uuid NOT NULL,
-  terms_if_service_created_at bigint NOT NULL,
+  terms_of_service_created_at bigint NOT NULL,
   disable_welcome_email bool NOT NULL,
   metadata jsonb,
   private_metadata jsonb

@@ -4,7 +4,7 @@ import (
 	// "context"
 	"sync/atomic"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/searchengine"
 	"github.com/sitename/sitename/store"
@@ -21,7 +21,7 @@ type SearchStore struct {
 	configValue atomic.Value
 }
 
-func NewSearchLayer(baseStore store.Store, searchEngine *searchengine.Broker, cfg *model.Config) *SearchStore {
+func NewSearchLayer(baseStore store.Store, searchEngine *searchengine.Broker, cfg *model_helper.Config) *SearchStore {
 	searchStore := &SearchStore{
 		Store:        baseStore,
 		searchEngine: searchEngine,
@@ -36,12 +36,12 @@ func NewSearchLayer(baseStore store.Store, searchEngine *searchengine.Broker, cf
 	return searchStore
 }
 
-func (s *SearchStore) UpdateConfig(cfg *model.Config) {
+func (s *SearchStore) UpdateConfig(cfg *model_helper.Config) {
 	s.configValue.Store(cfg)
 }
 
-func (s *SearchStore) getConfig() *model.Config {
-	return s.configValue.Load().(*model.Config)
+func (s *SearchStore) getConfig() *model_helper.Config {
+	return s.configValue.Load().(*model_helper.Config)
 }
 
 // func (s *SearchStore) Channel() store.ChannelStore {

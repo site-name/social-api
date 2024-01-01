@@ -14,11 +14,11 @@ type SimpleWorker struct {
 	stopped   chan bool
 	jobs      chan model.Job
 	jobServer *JobServer
-	execute   func(job *model.Job) error
+	execute   func(job model.Job) error
 	isEnabled func(cfg *model_helper.Config) bool
 }
 
-func NewSimpleWorker(name string, jobServer *JobServer, execute func(job *model.Job) error, isEnabled func(cfg *model_helper.Config) bool) *SimpleWorker {
+func NewSimpleWorker(name string, jobServer *JobServer, execute func(job model.Job) error, isEnabled func(cfg *model_helper.Config) bool) *SimpleWorker {
 	return &SimpleWorker{
 		name:      name,
 		stop:      make(chan bool, 1),
@@ -45,7 +45,7 @@ func (worker *SimpleWorker) Run() {
 			return
 		case job := <-worker.jobs:
 			slog.Debug("Worker received a new candidate job.", slog.String("worker", worker.name))
-			worker.DoJob(&job)
+			worker.DoJob(job)
 		}
 	}
 }
@@ -64,7 +64,7 @@ func (worker *SimpleWorker) IsEnabled(cfg *model_helper.Config) bool {
 	return worker.isEnabled(cfg)
 }
 
-func (worker *SimpleWorker) DoJob(job *model.Job) {
+func (worker *SimpleWorker) DoJob(job model.Job) {
 	if claimed, err := worker.jobServer.ClaimJob(job); err != nil {
 		slog.Warn("SimpleWorker experienced an error while trying to claim job",
 			slog.String("worker", worker.name),
@@ -86,14 +86,14 @@ func (worker *SimpleWorker) DoJob(job *model.Job) {
 	worker.setJobSuccess(job)
 }
 
-func (worker *SimpleWorker) setJobSuccess(job *model.Job) {
+func (worker *SimpleWorker) setJobSuccess(job model.Job) {
 	if err := worker.jobServer.SetJobSuccess(job); err != nil {
 		slog.Error("SimpleWorker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
-func (worker *SimpleWorker) setJobError(job *model.Job, appError *model_helper.AppError) {
+func (worker *SimpleWorker) setJobError(job model.Job, appError *model_helper.AppError) {
 	if err := worker.jobServer.SetJobError(job, appError); err != nil {
 		slog.Error("SimpleWorker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.Err(err))
 	}

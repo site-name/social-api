@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -147,12 +146,12 @@ var (
 )
 
 // One returns a single wishlist record from the query.
-func (q wishlistQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Wishlist, error) {
+func (q wishlistQuery) One(exec boil.Executor) (*Wishlist, error) {
 	o := &Wishlist{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -164,10 +163,10 @@ func (q wishlistQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Wis
 }
 
 // All returns all Wishlist records from the query.
-func (q wishlistQuery) All(ctx context.Context, exec boil.ContextExecutor) (WishlistSlice, error) {
+func (q wishlistQuery) All(exec boil.Executor) (WishlistSlice, error) {
 	var o []*Wishlist
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Wishlist slice")
 	}
@@ -176,13 +175,13 @@ func (q wishlistQuery) All(ctx context.Context, exec boil.ContextExecutor) (Wish
 }
 
 // Count returns the count of all Wishlist records in the query.
-func (q wishlistQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q wishlistQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count wishlists rows")
 	}
@@ -191,14 +190,14 @@ func (q wishlistQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // Exists checks if the row exists in the table.
-func (q wishlistQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q wishlistQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if wishlists exists")
 	}
@@ -233,7 +232,7 @@ func (o *Wishlist) WishlistItems(mods ...qm.QueryMod) wishlistItemQuery {
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
+func (wishlistL) LoadUser(e boil.Executor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
 	var slice []*Wishlist
 	var object *Wishlist
 
@@ -296,7 +295,7 @@ func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load User")
 	}
@@ -345,7 +344,7 @@ func (wishlistL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 
 // LoadWishlistItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (wishlistL) LoadWishlistItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
+func (wishlistL) LoadWishlistItems(e boil.Executor, singular bool, maybeWishlist interface{}, mods queries.Applicator) error {
 	var slice []*Wishlist
 	var object *Wishlist
 
@@ -406,7 +405,7 @@ func (wishlistL) LoadWishlistItems(ctx context.Context, e boil.ContextExecutor, 
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load wishlist_items")
 	}
@@ -453,10 +452,10 @@ func (wishlistL) LoadWishlistItems(ctx context.Context, e boil.ContextExecutor, 
 // SetUser of the wishlist to the related item.
 // Sets o.R.User to related.
 // Adds o to related.R.Wishlist.
-func (o *Wishlist) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+func (o *Wishlist) SetUser(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -468,12 +467,11 @@ func (o *Wishlist) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -501,12 +499,12 @@ func (o *Wishlist) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 // of the wishlist, optionally inserting them as new records.
 // Appends related to o.R.WishlistItems.
 // Sets related.R.Wishlist appropriately.
-func (o *Wishlist) AddWishlistItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*WishlistItem) error {
+func (o *Wishlist) AddWishlistItems(exec boil.Executor, insert bool, related ...*WishlistItem) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.WishlistID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -517,12 +515,11 @@ func (o *Wishlist) AddWishlistItems(ctx context.Context, exec boil.ContextExecut
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -563,7 +560,7 @@ func Wishlists(mods ...qm.QueryMod) wishlistQuery {
 
 // FindWishlist retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindWishlist(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Wishlist, error) {
+func FindWishlist(exec boil.Executor, iD string, selectCols ...string) (*Wishlist, error) {
 	wishlistObj := &Wishlist{}
 
 	sel := "*"
@@ -576,7 +573,7 @@ func FindWishlist(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, wishlistObj)
+	err := q.Bind(nil, exec, wishlistObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -589,7 +586,7 @@ func FindWishlist(ctx context.Context, exec boil.ContextExecutor, iD string, sel
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Wishlist) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Wishlist) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no wishlists provided for insertion")
 	}
@@ -637,16 +634,15 @@ func (o *Wishlist) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -665,7 +661,7 @@ func (o *Wishlist) Insert(ctx context.Context, exec boil.ContextExecutor, column
 // Update uses an executor to update the Wishlist.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Wishlist) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Wishlist) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	wishlistUpdateCacheMut.RLock()
@@ -693,13 +689,12 @@ func (o *Wishlist) Update(ctx context.Context, exec boil.ContextExecutor, column
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update wishlists row")
 	}
@@ -719,10 +714,10 @@ func (o *Wishlist) Update(ctx context.Context, exec boil.ContextExecutor, column
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q wishlistQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q wishlistQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for wishlists")
 	}
@@ -736,7 +731,7 @@ func (q wishlistQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o WishlistSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o WishlistSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -766,12 +761,11 @@ func (o WishlistSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, wishlistPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in wishlist slice")
 	}
@@ -785,7 +779,7 @@ func (o WishlistSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Wishlist) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Wishlist) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no wishlists provided for upsert")
 	}
@@ -869,18 +863,17 @@ func (o *Wishlist) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert wishlists")
@@ -897,7 +890,7 @@ func (o *Wishlist) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 
 // Delete deletes a single Wishlist record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Wishlist) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Wishlist) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Wishlist provided for delete")
 	}
@@ -905,12 +898,11 @@ func (o *Wishlist) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), wishlistPrimaryKeyMapping)
 	sql := "DELETE FROM \"wishlists\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from wishlists")
 	}
@@ -924,14 +916,14 @@ func (o *Wishlist) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 }
 
 // DeleteAll deletes all matching rows.
-func (q wishlistQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q wishlistQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no wishlistQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from wishlists")
 	}
@@ -945,7 +937,7 @@ func (q wishlistQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o WishlistSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o WishlistSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -959,12 +951,11 @@ func (o WishlistSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	sql := "DELETE FROM \"wishlists\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, wishlistPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from wishlist slice")
 	}
@@ -979,8 +970,8 @@ func (o WishlistSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Wishlist) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindWishlist(ctx, exec, o.ID)
+func (o *Wishlist) Reload(exec boil.Executor) error {
+	ret, err := FindWishlist(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -991,7 +982,7 @@ func (o *Wishlist) Reload(ctx context.Context, exec boil.ContextExecutor) error 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *WishlistSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *WishlistSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1008,7 +999,7 @@ func (o *WishlistSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in WishlistSlice")
 	}
@@ -1019,16 +1010,15 @@ func (o *WishlistSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // WishlistExists checks if the Wishlist row exists.
-func WishlistExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func WishlistExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"wishlists\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1039,6 +1029,6 @@ func WishlistExists(ctx context.Context, exec boil.ContextExecutor, iD string) (
 }
 
 // Exists checks if the Wishlist row exists.
-func (o *Wishlist) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return WishlistExists(ctx, exec, o.ID)
+func (o *Wishlist) Exists(exec boil.Executor) (bool, error) {
+	return WishlistExists(exec, o.ID)
 }

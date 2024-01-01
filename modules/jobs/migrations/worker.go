@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -26,7 +27,7 @@ type Worker struct {
 	closed    int32
 }
 
-func MakeWorker(jobServer *jobs.JobServer, store store.Store) model.Worker {
+func MakeWorker(jobServer *jobs.JobServer, store store.Store) model_helper.Worker {
 	return &Worker{
 		name:      "Migrations",
 		stop:      make(chan struct{}),
@@ -37,7 +38,7 @@ func MakeWorker(jobServer *jobs.JobServer, store store.Store) model.Worker {
 	}
 }
 
-func (worker *Worker) IsEnabled(_ *model.Config) bool {
+func (worker *Worker) IsEnabled(_ *model_helper.Config) bool {
 	return true
 }
 
@@ -60,7 +61,7 @@ func (worker *Worker) Run() {
 			return
 		case job := <-worker.jobs:
 			slog.Debug("Worker received a new candidate job.", slog.String("worker", worker.name))
-			worker.DoJob(&job)
+			worker.DoJob(job)
 		}
 	}
 }
@@ -79,11 +80,11 @@ func (w *Worker) JobChannel() chan<- model.Job {
 	return w.jobs
 }
 
-func (worker *Worker) DoJob(job *model.Job) {
+func (worker *Worker) DoJob(job model.Job) {
 	if claimed, err := worker.jobServer.ClaimJob(job); err != nil {
 		slog.Info("Worker experienced an error while trying to claim job",
 			slog.String("worker", worker.name),
-			slog.String("job_id", job.Id),
+			slog.String("job_id", job.ID),
 			slog.String("error", err.Error()))
 		return
 	} else if !claimed {
@@ -93,36 +94,36 @@ func (worker *Worker) DoJob(job *model.Job) {
 	cancelCtx, cancelCancelWatcher := context.WithCancel(context.Background())
 	cancelWatcherChan := make(chan interface{}, 1)
 
-	go worker.jobServer.CancellationWatcher(cancelCtx, job.Id, cancelWatcherChan)
+	go worker.jobServer.CancellationWatcher(cancelCtx, job.ID, cancelWatcherChan)
 
 	defer cancelCancelWatcher()
 
 	for {
 		select {
 		case <-cancelWatcherChan:
-			slog.Debug("Worker: Job has been canceled via CancellationWatcher", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+			slog.Debug("Worker: Job has been canceled via CancellationWatcher", slog.String("worker", worker.name), slog.String("job_id", job.ID))
 			worker.setJobCanceled(job)
 			return
 
 		case <-worker.stop:
-			slog.Debug("Worker: Job has been canceled via Worker Stop", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+			slog.Debug("Worker: Job has been canceled via Worker Stop", slog.String("worker", worker.name), slog.String("job_id", job.ID))
 			worker.setJobCanceled(job)
 			return
 
 		case <-time.After(TimeBetweenBatches * time.Millisecond):
-			done, progress, err := worker.runMigration(job.Data[JobDataKeyMigration], job.Data[JobDataKeyMigrationLastDone])
+			done, progress, err := worker.runMigration(job.Data[JobDataKeyMigration].(string), job.Data[JobDataKeyMigrationLastDone].(string))
 			if err != nil {
-				slog.Error("Worker: Failed to run migration", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+				slog.Error("Worker: Failed to run migration", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 				worker.setJobError(job, err)
 				return
 			} else if done {
-				slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.Id))
+				slog.Info("Worker: Job is complete", slog.String("worker", worker.name), slog.String("job_id", job.ID))
 				worker.setJobSuccess(job)
 				return
 			} else {
 				job.Data[JobDataKeyMigrationLastDone] = progress
 				if err := worker.jobServer.UpdateInProgressJobData(job); err != nil {
-					slog.Error("Worker: Failed to update migration status data for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+					slog.Error("Worker: Failed to update migration status data for job", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 					worker.setJobError(job, err)
 					return
 				}
@@ -131,22 +132,22 @@ func (worker *Worker) DoJob(job *model.Job) {
 	}
 }
 
-func (worker *Worker) setJobSuccess(job *model.Job) {
+func (worker *Worker) setJobSuccess(job model.Job) {
 	if err := worker.jobServer.SetJobSuccess(job); err != nil {
-		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
-func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
+func (worker *Worker) setJobError(job model.Job, appError *model_helper.AppError) {
 	if err := worker.jobServer.SetJobError(job, appError); err != nil {
-		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 	}
 }
 
-func (worker *Worker) setJobCanceled(job *model.Job) {
+func (worker *Worker) setJobCanceled(job model.Job) {
 	if err := worker.jobServer.SetJobCanceled(job); err != nil {
-		slog.Error("Worker: Failed to mark job as canceled", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
+		slog.Error("Worker: Failed to mark job as canceled", slog.String("worker", worker.name), slog.String("job_id", job.ID), slog.String("error", err.Error()))
 	}
 }
 
@@ -154,21 +155,21 @@ func (worker *Worker) setJobCanceled(job *model.Job) {
 // - whether the migration is completed on this run (true) or still incomplete (false).
 // - the updated lastDone string for the migration.
 // - any error which may have occurred while running the migration.
-func (worker *Worker) runMigration(key string, lastDone string) (bool, string, *model.AppError) {
+func (worker *Worker) runMigration(key string, lastDone string) (bool, string, *model_helper.AppError) {
 	var done bool
 	var progress string
-	var err *model.AppError
+	var err *model_helper.AppError
 
 	switch key {
-	case model.MigrationKeyAdvancedPermissionsPhase2:
+	case model_helper.MigrationKeyAdvancedPermissionsPhase2:
 		done, progress, err = worker.runAdvancedPermissionsPhase2Migration(lastDone)
 	default:
-		return false, "", model.NewAppError("MigrationsWorker.runMigration", "migrations.worker.run_migration.unknown_key", map[string]interface{}{"key": key}, "", http.StatusInternalServerError)
+		return false, "", model_helper.NewAppError("MigrationsWorker.runMigration", "migrations.worker.run_migration.unknown_key", map[string]interface{}{"key": key}, "", http.StatusInternalServerError)
 	}
 
 	if done {
 		if nErr := worker.store.System().Save(&model.System{Name: key, Value: "true"}); nErr != nil {
-			return false, "", model.NewAppError("runMigration", "migrations.system.save.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+			return false, "", model_helper.NewAppError("runMigration", "migrations.system.save.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 		}
 	}
 

@@ -14,7 +14,7 @@ import (
 	"github.com/blevesearch/bleve/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/mapping"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -35,7 +35,7 @@ type BleveEngine struct {
 	UserIndex bleve.Index
 	Mutex     sync.RWMutex
 	ready     int32
-	cfg       *model.Config
+	cfg       *model_helper.Config
 	jobServer *jobs.JobServer
 	indexSync bool
 }
@@ -115,7 +115,7 @@ func getUserIndexMapping() *mapping.IndexMappingImpl {
 	return indexMapping
 }
 
-func NewBleveEngine(cfg *model.Config, jobServer *jobs.JobServer) *BleveEngine {
+func NewBleveEngine(cfg *model_helper.Config, jobServer *jobs.JobServer) *BleveEngine {
 	return &BleveEngine{
 		cfg:       cfg,
 		jobServer: jobServer,
@@ -139,9 +139,9 @@ func (b *BleveEngine) createOrOpenIndex(indexName string, mapping *mapping.Index
 	return index, nil
 }
 
-func (b *BleveEngine) openIndexes() *model.AppError {
+func (b *BleveEngine) openIndexes() *model_helper.AppError {
 	if atomic.LoadInt32(&b.ready) != 0 {
-		return model.NewAppError("Bleveengine.Start", "bleveengine.already_started.error", nil, "", http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.Start", "bleveengine.already_started.error", nil, "", http.StatusInternalServerError)
 	}
 
 	var err error
@@ -157,7 +157,7 @@ func (b *BleveEngine) openIndexes() *model.AppError {
 
 	b.UserIndex, err = b.createOrOpenIndex(UserIndex, getUserIndexMapping())
 	if err != nil {
-		return model.NewAppError("Bleveengine.Start", "bleveengine.create_user_index.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.Start", "bleveengine.create_user_index.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// b.ChannelIndex, err = b.createOrOpenIndex(ChannelIndex, getChannelIndexMapping())
@@ -169,7 +169,7 @@ func (b *BleveEngine) openIndexes() *model.AppError {
 	return nil
 }
 
-func (b *BleveEngine) Start() *model.AppError {
+func (b *BleveEngine) Start() *model_helper.AppError {
 	if !*b.cfg.BleveSettings.EnableIndexing || *b.cfg.BleveSettings.IndexDir == "" {
 		return nil
 	}
@@ -182,22 +182,22 @@ func (b *BleveEngine) Start() *model.AppError {
 	return b.openIndexes()
 }
 
-func (b *BleveEngine) closeIndexes() *model.AppError {
+func (b *BleveEngine) closeIndexes() *model_helper.AppError {
 	if b.IsActive() {
 		// if err := b.PostIndex.Close(); err != nil {
-		// 	return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_post_index.error", nil, err.Error(), http.StatusInternalServerError)
+		// 	return model_helper.NewAppError("Bleveengine.Stop", "bleveengine.stop_post_index.error", nil, err.Error(), http.StatusInternalServerError)
 		// }
 
 		// if err := b.FileIndex.Close(); err != nil {
-		// 	return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_file_index.error", nil, err.Error(), http.StatusInternalServerError)
+		// 	return model_helper.NewAppError("Bleveengine.Stop", "bleveengine.stop_file_index.error", nil, err.Error(), http.StatusInternalServerError)
 		// }
 
 		if err := b.UserIndex.Close(); err != nil {
-			return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_user_index.error", nil, err.Error(), http.StatusInternalServerError)
+			return model_helper.NewAppError("Bleveengine.Stop", "bleveengine.stop_user_index.error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		// if err := b.ChannelIndex.Close(); err != nil {
-		// 	return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
+		// 	return model_helper.NewAppError("Bleveengine.Stop", "bleveengine.stop_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
 		// }
 	}
 
@@ -205,7 +205,7 @@ func (b *BleveEngine) closeIndexes() *model.AppError {
 	return nil
 }
 
-func (b *BleveEngine) Stop() *model.AppError {
+func (b *BleveEngine) Stop() *model_helper.AppError {
 	b.Mutex.Lock()
 	defer b.Mutex.Unlock()
 
@@ -222,7 +222,7 @@ func (b *BleveEngine) IsIndexingSync() bool {
 	return b.indexSync
 }
 
-func (b *BleveEngine) RefreshIndexes() *model.AppError {
+func (b *BleveEngine) RefreshIndexes() *model_helper.AppError {
 	return nil
 }
 
@@ -242,27 +242,27 @@ func (b *BleveEngine) GetName() string {
 	return EngineName
 }
 
-func (b *BleveEngine) TestConfig(cfg *model.Config) *model.AppError {
+func (b *BleveEngine) TestConfig(cfg *model_helper.Config) *model_helper.AppError {
 	return nil
 }
 
-func (b *BleveEngine) deleteIndexes() *model.AppError {
+func (b *BleveEngine) deleteIndexes() *model_helper.AppError {
 	if err := os.RemoveAll(b.getIndexDir(PostIndex)); err != nil {
-		return model.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_post_index.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_post_index.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	if err := os.RemoveAll(b.getIndexDir(UserIndex)); err != nil {
-		return model.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_user_index.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_user_index.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	if err := os.RemoveAll(b.getIndexDir(ChannelIndex)); err != nil {
-		return model.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	if err := os.RemoveAll(b.getIndexDir(FileIndex)); err != nil {
-		return model.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_file_index.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.PurgeIndexes", "bleveengine.purge_file_index.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }
 
-func (b *BleveEngine) PurgeIndexes() *model.AppError {
+func (b *BleveEngine) PurgeIndexes() *model_helper.AppError {
 	if *b.cfg.BleveSettings.IndexDir == "" {
 		return nil
 	}
@@ -282,7 +282,7 @@ func (b *BleveEngine) PurgeIndexes() *model.AppError {
 	return b.openIndexes()
 }
 
-func (b *BleveEngine) DataRetentionDeleteIndexes(cutoff time.Time) *model.AppError {
+func (b *BleveEngine) DataRetentionDeleteIndexes(cutoff time.Time) *model_helper.AppError {
 	return nil
 }
 
@@ -298,7 +298,7 @@ func (b *BleveEngine) IsSearchEnabled() bool {
 	return *b.cfg.BleveSettings.EnableSearching
 }
 
-func (b *BleveEngine) UpdateConfig(cfg *model.Config) {
+func (b *BleveEngine) UpdateConfig(cfg *model_helper.Config) {
 	b.Mutex.Lock()
 	defer b.Mutex.Unlock()
 

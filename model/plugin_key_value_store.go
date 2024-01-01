@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -128,12 +127,12 @@ var (
 )
 
 // One returns a single pluginKeyValueStore record from the query.
-func (q pluginKeyValueStoreQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PluginKeyValueStore, error) {
+func (q pluginKeyValueStoreQuery) One(exec boil.Executor) (*PluginKeyValueStore, error) {
 	o := &PluginKeyValueStore{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -145,10 +144,10 @@ func (q pluginKeyValueStoreQuery) One(ctx context.Context, exec boil.ContextExec
 }
 
 // All returns all PluginKeyValueStore records from the query.
-func (q pluginKeyValueStoreQuery) All(ctx context.Context, exec boil.ContextExecutor) (PluginKeyValueStoreSlice, error) {
+func (q pluginKeyValueStoreQuery) All(exec boil.Executor) (PluginKeyValueStoreSlice, error) {
 	var o []*PluginKeyValueStore
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to PluginKeyValueStore slice")
 	}
@@ -157,13 +156,13 @@ func (q pluginKeyValueStoreQuery) All(ctx context.Context, exec boil.ContextExec
 }
 
 // Count returns the count of all PluginKeyValueStore records in the query.
-func (q pluginKeyValueStoreQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q pluginKeyValueStoreQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count plugin_key_value_store rows")
 	}
@@ -172,14 +171,14 @@ func (q pluginKeyValueStoreQuery) Count(ctx context.Context, exec boil.ContextEx
 }
 
 // Exists checks if the row exists in the table.
-func (q pluginKeyValueStoreQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q pluginKeyValueStoreQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if plugin_key_value_store exists")
 	}
@@ -200,7 +199,7 @@ func PluginKeyValueStores(mods ...qm.QueryMod) pluginKeyValueStoreQuery {
 
 // FindPluginKeyValueStore retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, pluginID string, selectCols ...string) (*PluginKeyValueStore, error) {
+func FindPluginKeyValueStore(exec boil.Executor, pluginID string, selectCols ...string) (*PluginKeyValueStore, error) {
 	pluginKeyValueStoreObj := &PluginKeyValueStore{}
 
 	sel := "*"
@@ -213,7 +212,7 @@ func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, plu
 
 	q := queries.Raw(query, pluginID)
 
-	err := q.Bind(ctx, exec, pluginKeyValueStoreObj)
+	err := q.Bind(nil, exec, pluginKeyValueStoreObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -226,7 +225,7 @@ func FindPluginKeyValueStore(ctx context.Context, exec boil.ContextExecutor, plu
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *PluginKeyValueStore) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *PluginKeyValueStore) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no plugin_key_value_store provided for insertion")
 	}
@@ -274,16 +273,15 @@ func (o *PluginKeyValueStore) Insert(ctx context.Context, exec boil.ContextExecu
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -302,7 +300,7 @@ func (o *PluginKeyValueStore) Insert(ctx context.Context, exec boil.ContextExecu
 // Update uses an executor to update the PluginKeyValueStore.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *PluginKeyValueStore) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *PluginKeyValueStore) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	pluginKeyValueStoreUpdateCacheMut.RLock()
@@ -330,13 +328,12 @@ func (o *PluginKeyValueStore) Update(ctx context.Context, exec boil.ContextExecu
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update plugin_key_value_store row")
 	}
@@ -356,10 +353,10 @@ func (o *PluginKeyValueStore) Update(ctx context.Context, exec boil.ContextExecu
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q pluginKeyValueStoreQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q pluginKeyValueStoreQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for plugin_key_value_store")
 	}
@@ -373,7 +370,7 @@ func (q pluginKeyValueStoreQuery) UpdateAll(ctx context.Context, exec boil.Conte
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o PluginKeyValueStoreSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o PluginKeyValueStoreSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -403,12 +400,11 @@ func (o PluginKeyValueStoreSlice) UpdateAll(ctx context.Context, exec boil.Conte
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, pluginKeyValueStorePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in pluginKeyValueStore slice")
 	}
@@ -422,7 +418,7 @@ func (o PluginKeyValueStoreSlice) UpdateAll(ctx context.Context, exec boil.Conte
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *PluginKeyValueStore) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *PluginKeyValueStore) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no plugin_key_value_store provided for upsert")
 	}
@@ -506,18 +502,17 @@ func (o *PluginKeyValueStore) Upsert(ctx context.Context, exec boil.ContextExecu
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert plugin_key_value_store")
@@ -534,7 +529,7 @@ func (o *PluginKeyValueStore) Upsert(ctx context.Context, exec boil.ContextExecu
 
 // Delete deletes a single PluginKeyValueStore record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *PluginKeyValueStore) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *PluginKeyValueStore) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no PluginKeyValueStore provided for delete")
 	}
@@ -542,12 +537,11 @@ func (o *PluginKeyValueStore) Delete(ctx context.Context, exec boil.ContextExecu
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pluginKeyValueStorePrimaryKeyMapping)
 	sql := "DELETE FROM \"plugin_key_value_store\" WHERE \"plugin_id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from plugin_key_value_store")
 	}
@@ -561,14 +555,14 @@ func (o *PluginKeyValueStore) Delete(ctx context.Context, exec boil.ContextExecu
 }
 
 // DeleteAll deletes all matching rows.
-func (q pluginKeyValueStoreQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q pluginKeyValueStoreQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no pluginKeyValueStoreQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from plugin_key_value_store")
 	}
@@ -582,7 +576,7 @@ func (q pluginKeyValueStoreQuery) DeleteAll(ctx context.Context, exec boil.Conte
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o PluginKeyValueStoreSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o PluginKeyValueStoreSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -596,12 +590,11 @@ func (o PluginKeyValueStoreSlice) DeleteAll(ctx context.Context, exec boil.Conte
 	sql := "DELETE FROM \"plugin_key_value_store\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, pluginKeyValueStorePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from pluginKeyValueStore slice")
 	}
@@ -616,8 +609,8 @@ func (o PluginKeyValueStoreSlice) DeleteAll(ctx context.Context, exec boil.Conte
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *PluginKeyValueStore) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindPluginKeyValueStore(ctx, exec, o.PluginID)
+func (o *PluginKeyValueStore) Reload(exec boil.Executor) error {
+	ret, err := FindPluginKeyValueStore(exec, o.PluginID)
 	if err != nil {
 		return err
 	}
@@ -628,7 +621,7 @@ func (o *PluginKeyValueStore) Reload(ctx context.Context, exec boil.ContextExecu
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *PluginKeyValueStoreSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *PluginKeyValueStoreSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -645,7 +638,7 @@ func (o *PluginKeyValueStoreSlice) ReloadAll(ctx context.Context, exec boil.Cont
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in PluginKeyValueStoreSlice")
 	}
@@ -656,16 +649,15 @@ func (o *PluginKeyValueStoreSlice) ReloadAll(ctx context.Context, exec boil.Cont
 }
 
 // PluginKeyValueStoreExists checks if the PluginKeyValueStore row exists.
-func PluginKeyValueStoreExists(ctx context.Context, exec boil.ContextExecutor, pluginID string) (bool, error) {
+func PluginKeyValueStoreExists(exec boil.Executor, pluginID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"plugin_key_value_store\" where \"plugin_id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, pluginID)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, pluginID)
 	}
-	row := exec.QueryRowContext(ctx, sql, pluginID)
+	row := exec.QueryRow(sql, pluginID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -676,6 +668,6 @@ func PluginKeyValueStoreExists(ctx context.Context, exec boil.ContextExecutor, p
 }
 
 // Exists checks if the PluginKeyValueStore row exists.
-func (o *PluginKeyValueStore) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return PluginKeyValueStoreExists(ctx, exec, o.PluginID)
+func (o *PluginKeyValueStore) Exists(exec boil.Executor) (bool, error) {
+	return PluginKeyValueStoreExists(exec, o.PluginID)
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -13,7 +14,7 @@ type LocalCacheRoleStore struct {
 	rootStore *LocalCacheStore
 }
 
-func (s *LocalCacheRoleStore) handleClusterInvalidateRole(msg *model.ClusterMessage) {
+func (s *LocalCacheRoleStore) handleClusterInvalidateRole(msg *model_helper.ClusterMessage) {
 	if bytes.Equal(msg.Data, clearCacheMessageData) {
 		s.rootStore.roleCache.Purge()
 	} else {
@@ -21,7 +22,7 @@ func (s *LocalCacheRoleStore) handleClusterInvalidateRole(msg *model.ClusterMess
 	}
 }
 
-func (s *LocalCacheRoleStore) handleClusterInvalidateRolePermissions(msg *model.ClusterMessage) {
+func (s *LocalCacheRoleStore) handleClusterInvalidateRolePermissions(msg *model_helper.ClusterMessage) {
 	if bytes.Equal(msg.Data, clearCacheMessageData) {
 		s.rootStore.rolePermissionsCache.Purge()
 	} else {
@@ -29,12 +30,12 @@ func (s *LocalCacheRoleStore) handleClusterInvalidateRolePermissions(msg *model.
 	}
 }
 
-func (s LocalCacheRoleStore) Save(role *model.Role) (*model.Role, error) {
+func (s LocalCacheRoleStore) Upsert(role model.Role) (*model.Role, error) {
 	if role.Name != "" {
 		defer s.rootStore.doInvalidateCacheCluster(s.rootStore.roleCache, role.Name)
 		defer s.rootStore.doClearCacheCluster(s.rootStore.rolePermissionsCache)
 	}
-	return s.RoleStore.Save(role)
+	return s.RoleStore.Upsert(role)
 }
 
 func (s LocalCacheRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
@@ -51,7 +52,7 @@ func (s LocalCacheRoleStore) GetByName(ctx context.Context, name string) (*model
 	return role, nil
 }
 
-func (s LocalCacheRoleStore) GetByNames(names []string) ([]*model.Role, error) {
+func (s LocalCacheRoleStore) GetByNames(names []string) (model.RoleSlice, error) {
 	var foundRoles []*model.Role
 	var rolesToQuery []string
 

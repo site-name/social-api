@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -140,12 +139,12 @@ var (
 )
 
 // One returns a single wishlistItemProductVariant record from the query.
-func (q wishlistItemProductVariantQuery) One(ctx context.Context, exec boil.ContextExecutor) (*WishlistItemProductVariant, error) {
+func (q wishlistItemProductVariantQuery) One(exec boil.Executor) (*WishlistItemProductVariant, error) {
 	o := &WishlistItemProductVariant{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -157,10 +156,10 @@ func (q wishlistItemProductVariantQuery) One(ctx context.Context, exec boil.Cont
 }
 
 // All returns all WishlistItemProductVariant records from the query.
-func (q wishlistItemProductVariantQuery) All(ctx context.Context, exec boil.ContextExecutor) (WishlistItemProductVariantSlice, error) {
+func (q wishlistItemProductVariantQuery) All(exec boil.Executor) (WishlistItemProductVariantSlice, error) {
 	var o []*WishlistItemProductVariant
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to WishlistItemProductVariant slice")
 	}
@@ -169,13 +168,13 @@ func (q wishlistItemProductVariantQuery) All(ctx context.Context, exec boil.Cont
 }
 
 // Count returns the count of all WishlistItemProductVariant records in the query.
-func (q wishlistItemProductVariantQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q wishlistItemProductVariantQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count wishlist_item_product_variants rows")
 	}
@@ -184,14 +183,14 @@ func (q wishlistItemProductVariantQuery) Count(ctx context.Context, exec boil.Co
 }
 
 // Exists checks if the row exists in the table.
-func (q wishlistItemProductVariantQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q wishlistItemProductVariantQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if wishlist_item_product_variants exists")
 	}
@@ -223,7 +222,7 @@ func (o *WishlistItemProductVariant) WishlistItem(mods ...qm.QueryMod) wishlistI
 
 // LoadProductVariant allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistItemProductVariantL) LoadProductVariant(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
+func (wishlistItemProductVariantL) LoadProductVariant(e boil.Executor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
 	var slice []*WishlistItemProductVariant
 	var object *WishlistItemProductVariant
 
@@ -286,7 +285,7 @@ func (wishlistItemProductVariantL) LoadProductVariant(ctx context.Context, e boi
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load ProductVariant")
 	}
@@ -335,7 +334,7 @@ func (wishlistItemProductVariantL) LoadProductVariant(ctx context.Context, e boi
 
 // LoadWishlistItem allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (wishlistItemProductVariantL) LoadWishlistItem(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
+func (wishlistItemProductVariantL) LoadWishlistItem(e boil.Executor, singular bool, maybeWishlistItemProductVariant interface{}, mods queries.Applicator) error {
 	var slice []*WishlistItemProductVariant
 	var object *WishlistItemProductVariant
 
@@ -398,7 +397,7 @@ func (wishlistItemProductVariantL) LoadWishlistItem(ctx context.Context, e boil.
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load WishlistItem")
 	}
@@ -448,10 +447,10 @@ func (wishlistItemProductVariantL) LoadWishlistItem(ctx context.Context, e boil.
 // SetProductVariant of the wishlistItemProductVariant to the related item.
 // Sets o.R.ProductVariant to related.
 // Adds o to related.R.WishlistItemProductVariants.
-func (o *WishlistItemProductVariant) SetProductVariant(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ProductVariant) error {
+func (o *WishlistItemProductVariant) SetProductVariant(exec boil.Executor, insert bool, related *ProductVariant) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -463,12 +462,11 @@ func (o *WishlistItemProductVariant) SetProductVariant(ctx context.Context, exec
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -495,10 +493,10 @@ func (o *WishlistItemProductVariant) SetProductVariant(ctx context.Context, exec
 // SetWishlistItem of the wishlistItemProductVariant to the related item.
 // Sets o.R.WishlistItem to related.
 // Adds o to related.R.WishlistItemProductVariants.
-func (o *WishlistItemProductVariant) SetWishlistItem(ctx context.Context, exec boil.ContextExecutor, insert bool, related *WishlistItem) error {
+func (o *WishlistItemProductVariant) SetWishlistItem(exec boil.Executor, insert bool, related *WishlistItem) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -510,12 +508,11 @@ func (o *WishlistItemProductVariant) SetWishlistItem(ctx context.Context, exec b
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -552,7 +549,7 @@ func WishlistItemProductVariants(mods ...qm.QueryMod) wishlistItemProductVariant
 
 // FindWishlistItemProductVariant retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindWishlistItemProductVariant(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*WishlistItemProductVariant, error) {
+func FindWishlistItemProductVariant(exec boil.Executor, iD string, selectCols ...string) (*WishlistItemProductVariant, error) {
 	wishlistItemProductVariantObj := &WishlistItemProductVariant{}
 
 	sel := "*"
@@ -565,7 +562,7 @@ func FindWishlistItemProductVariant(ctx context.Context, exec boil.ContextExecut
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, wishlistItemProductVariantObj)
+	err := q.Bind(nil, exec, wishlistItemProductVariantObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -578,7 +575,7 @@ func FindWishlistItemProductVariant(ctx context.Context, exec boil.ContextExecut
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *WishlistItemProductVariant) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *WishlistItemProductVariant) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no wishlist_item_product_variants provided for insertion")
 	}
@@ -626,16 +623,15 @@ func (o *WishlistItemProductVariant) Insert(ctx context.Context, exec boil.Conte
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -654,7 +650,7 @@ func (o *WishlistItemProductVariant) Insert(ctx context.Context, exec boil.Conte
 // Update uses an executor to update the WishlistItemProductVariant.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *WishlistItemProductVariant) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *WishlistItemProductVariant) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	wishlistItemProductVariantUpdateCacheMut.RLock()
@@ -682,13 +678,12 @@ func (o *WishlistItemProductVariant) Update(ctx context.Context, exec boil.Conte
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update wishlist_item_product_variants row")
 	}
@@ -708,10 +703,10 @@ func (o *WishlistItemProductVariant) Update(ctx context.Context, exec boil.Conte
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q wishlistItemProductVariantQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q wishlistItemProductVariantQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for wishlist_item_product_variants")
 	}
@@ -725,7 +720,7 @@ func (q wishlistItemProductVariantQuery) UpdateAll(ctx context.Context, exec boi
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o WishlistItemProductVariantSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o WishlistItemProductVariantSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -755,12 +750,11 @@ func (o WishlistItemProductVariantSlice) UpdateAll(ctx context.Context, exec boi
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, wishlistItemProductVariantPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in wishlistItemProductVariant slice")
 	}
@@ -774,7 +768,7 @@ func (o WishlistItemProductVariantSlice) UpdateAll(ctx context.Context, exec boi
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *WishlistItemProductVariant) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *WishlistItemProductVariant) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no wishlist_item_product_variants provided for upsert")
 	}
@@ -858,18 +852,17 @@ func (o *WishlistItemProductVariant) Upsert(ctx context.Context, exec boil.Conte
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert wishlist_item_product_variants")
@@ -886,7 +879,7 @@ func (o *WishlistItemProductVariant) Upsert(ctx context.Context, exec boil.Conte
 
 // Delete deletes a single WishlistItemProductVariant record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *WishlistItemProductVariant) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *WishlistItemProductVariant) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no WishlistItemProductVariant provided for delete")
 	}
@@ -894,12 +887,11 @@ func (o *WishlistItemProductVariant) Delete(ctx context.Context, exec boil.Conte
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), wishlistItemProductVariantPrimaryKeyMapping)
 	sql := "DELETE FROM \"wishlist_item_product_variants\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from wishlist_item_product_variants")
 	}
@@ -913,14 +905,14 @@ func (o *WishlistItemProductVariant) Delete(ctx context.Context, exec boil.Conte
 }
 
 // DeleteAll deletes all matching rows.
-func (q wishlistItemProductVariantQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q wishlistItemProductVariantQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no wishlistItemProductVariantQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from wishlist_item_product_variants")
 	}
@@ -934,7 +926,7 @@ func (q wishlistItemProductVariantQuery) DeleteAll(ctx context.Context, exec boi
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o WishlistItemProductVariantSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o WishlistItemProductVariantSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -948,12 +940,11 @@ func (o WishlistItemProductVariantSlice) DeleteAll(ctx context.Context, exec boi
 	sql := "DELETE FROM \"wishlist_item_product_variants\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, wishlistItemProductVariantPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from wishlistItemProductVariant slice")
 	}
@@ -968,8 +959,8 @@ func (o WishlistItemProductVariantSlice) DeleteAll(ctx context.Context, exec boi
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *WishlistItemProductVariant) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindWishlistItemProductVariant(ctx, exec, o.ID)
+func (o *WishlistItemProductVariant) Reload(exec boil.Executor) error {
+	ret, err := FindWishlistItemProductVariant(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -980,7 +971,7 @@ func (o *WishlistItemProductVariant) Reload(ctx context.Context, exec boil.Conte
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *WishlistItemProductVariantSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *WishlistItemProductVariantSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -997,7 +988,7 @@ func (o *WishlistItemProductVariantSlice) ReloadAll(ctx context.Context, exec bo
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in WishlistItemProductVariantSlice")
 	}
@@ -1008,16 +999,15 @@ func (o *WishlistItemProductVariantSlice) ReloadAll(ctx context.Context, exec bo
 }
 
 // WishlistItemProductVariantExists checks if the WishlistItemProductVariant row exists.
-func WishlistItemProductVariantExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func WishlistItemProductVariantExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"wishlist_item_product_variants\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1028,6 +1018,6 @@ func WishlistItemProductVariantExists(ctx context.Context, exec boil.ContextExec
 }
 
 // Exists checks if the WishlistItemProductVariant row exists.
-func (o *WishlistItemProductVariant) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return WishlistItemProductVariantExists(ctx, exec, o.ID)
+func (o *WishlistItemProductVariant) Exists(exec boil.Executor) (bool, error) {
+	return WishlistItemProductVariantExists(exec, o.ID)
 }

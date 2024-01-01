@@ -50,7 +50,13 @@ type NullInt64 struct {
 	Int64 *int64
 }
 
-func (n NullInt64) IsNil() bool { return n.Int64 == nil }
+func (n NullInt64) IsNil() bool {
+	return n.Int64 == nil
+}
+
+func NewNullInt64(value int64) NullInt64 {
+	return NullInt64{&value}
+}
 
 func (n *NullInt64) Scan(value any) error {
 	if value == nil {
@@ -102,7 +108,13 @@ type NullInt struct {
 	Int *int
 }
 
-func (n *NullInt) IsNil() bool { return n.Int == nil }
+func (n *NullInt) IsNil() bool {
+	return n.Int == nil
+}
+
+func NewNullInt(value int) NullInt {
+	return NullInt{&value}
+}
 
 func (n *NullInt) Scan(value any) error {
 	if value == nil {
@@ -154,7 +166,13 @@ type NullDecimal struct {
 	Decimal *decimal.Decimal
 }
 
-func (n NullDecimal) IsNil() bool { return n.Decimal == nil }
+func NewNullDecimal(value decimal.Decimal) NullDecimal {
+	return NullDecimal{&value}
+}
+
+func (n NullDecimal) IsNil() bool {
+	return n.Decimal == nil
+}
 
 func (n *NullDecimal) Scan(value any) error {
 	if value == nil {
@@ -231,7 +249,13 @@ type NullString struct {
 	String *string
 }
 
-func (n NullString) IsNil() bool { return n.String == nil }
+func (n NullString) IsNil() bool {
+	return n.String == nil
+}
+
+func NewNullString(value string) NullString {
+	return NullString{&value}
+}
 
 func (n *NullString) Scan(value any) error {
 	if value == nil {
@@ -278,7 +302,13 @@ type NullFloat32 struct {
 	Float32 *float32
 }
 
-func (f NullFloat32) IsNil() bool { return f.Float32 == nil }
+func (f NullFloat32) IsNil() bool {
+	return f.Float32 == nil
+}
+
+func NewNullFloat32(value float32) NullFloat32 {
+	return NullFloat32{&value}
+}
 
 func (f *NullFloat32) Scan(value any) error {
 	if value == nil {
@@ -330,7 +360,13 @@ type NullBool struct {
 	Bool *bool
 }
 
-func (n NullBool) IsNil() bool { return n.Bool == nil }
+func (n NullBool) IsNil() bool {
+	return n.Bool == nil
+}
+
+func NewNullBool(value bool) NullBool {
+	return NullBool{&value}
+}
 
 func (n *NullBool) Scan(value any) error {
 	if value == nil {
@@ -375,7 +411,13 @@ type NullTime struct {
 	Time *time.Time
 }
 
-func (n NullTime) IsNil() bool { return n.Time == nil }
+func (n NullTime) IsNil() bool {
+	return n.Time == nil
+}
+
+func NewNullTime(value time.Time) NullTime {
+	return NullTime{&value}
+}
 
 func (n *NullTime) Scan(value any) error {
 	if value == nil {

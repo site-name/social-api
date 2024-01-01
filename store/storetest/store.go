@@ -4,17 +4,17 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/sync/errgroup"
-	"gorm.io/gorm"
 )
 
 type storeType struct {
 	Name        string
-	SqlSettings *model.SqlSettings
+	SqlSettings *model_helper.SqlSettings
 	SqlStore    *sqlstore.SqlStore
 	Store       store.Store
 }
@@ -70,7 +70,7 @@ func initStores() {
 		return
 	}
 
-	storeTypes = append(storeTypes, newStoreType("PostgreSQL", model.DATABASE_DRIVER_POSTGRES))
+	storeTypes = append(storeTypes, newStoreType("PostgreSQL", model_helper.DATABASE_DRIVER_POSTGRES))
 	defer func() {
 		if err := recover(); err != nil {
 			tearDownStores()
@@ -181,7 +181,7 @@ func TestGetReplica(t *testing.T) {
 	for _, testCase := range testCases {
 		testCase := testCase
 		t.Run(testCase.Description, func(t *testing.T) {
-			settings := MakeSqlSettings(model.DATABASE_DRIVER_POSTGRES, false)
+			settings := MakeSqlSettings(model_helper.DATABASE_DRIVER_POSTGRES, false)
 
 			dataSourceReplicas := []string{}
 			dataSourceSearchReplicas := []string{}
@@ -202,7 +202,7 @@ func TestGetReplica(t *testing.T) {
 				CleanupSqlSettings(settings)
 			}()
 
-			replicas := map[*gorm.DB]bool{}
+			replicas := map[boil.ContextExecutor]bool{}
 			for i := 0; i < 5; i++ {
 				replicas[store.GetReplica()] = true
 			}

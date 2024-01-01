@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -230,12 +229,12 @@ var (
 )
 
 // One returns a single collection record from the query.
-func (q collectionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Collection, error) {
+func (q collectionQuery) One(exec boil.Executor) (*Collection, error) {
 	o := &Collection{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -247,10 +246,10 @@ func (q collectionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*C
 }
 
 // All returns all Collection records from the query.
-func (q collectionQuery) All(ctx context.Context, exec boil.ContextExecutor) (CollectionSlice, error) {
+func (q collectionQuery) All(exec boil.Executor) (CollectionSlice, error) {
 	var o []*Collection
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Collection slice")
 	}
@@ -259,13 +258,13 @@ func (q collectionQuery) All(ctx context.Context, exec boil.ContextExecutor) (Co
 }
 
 // Count returns the count of all Collection records in the query.
-func (q collectionQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q collectionQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count collections rows")
 	}
@@ -274,14 +273,14 @@ func (q collectionQuery) Count(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // Exists checks if the row exists in the table.
-func (q collectionQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q collectionQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if collections exists")
 	}
@@ -375,7 +374,7 @@ func (o *Collection) VoucherCollections(mods ...qm.QueryMod) voucherCollectionQu
 
 // LoadCollectionChannelListings allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionChannelListings(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadCollectionChannelListings(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -436,7 +435,7 @@ func (collectionL) LoadCollectionChannelListings(ctx context.Context, e boil.Con
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load collection_channel_listings")
 	}
@@ -482,7 +481,7 @@ func (collectionL) LoadCollectionChannelListings(ctx context.Context, e boil.Con
 
 // LoadCollectionTranslations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadCollectionTranslations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadCollectionTranslations(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -543,7 +542,7 @@ func (collectionL) LoadCollectionTranslations(ctx context.Context, e boil.Contex
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load collection_translations")
 	}
@@ -589,7 +588,7 @@ func (collectionL) LoadCollectionTranslations(ctx context.Context, e boil.Contex
 
 // LoadMenuItems allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadMenuItems(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -650,7 +649,7 @@ func (collectionL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load menu_items")
 	}
@@ -696,7 +695,7 @@ func (collectionL) LoadMenuItems(ctx context.Context, e boil.ContextExecutor, si
 
 // LoadProductCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadProductCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadProductCollections(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -757,7 +756,7 @@ func (collectionL) LoadProductCollections(ctx context.Context, e boil.ContextExe
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load product_collections")
 	}
@@ -803,7 +802,7 @@ func (collectionL) LoadProductCollections(ctx context.Context, e boil.ContextExe
 
 // LoadSaleCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadSaleCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadSaleCollections(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -864,7 +863,7 @@ func (collectionL) LoadSaleCollections(ctx context.Context, e boil.ContextExecut
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load sale_collections")
 	}
@@ -910,7 +909,7 @@ func (collectionL) LoadSaleCollections(ctx context.Context, e boil.ContextExecut
 
 // LoadVoucherCollections allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (collectionL) LoadVoucherCollections(ctx context.Context, e boil.ContextExecutor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
+func (collectionL) LoadVoucherCollections(e boil.Executor, singular bool, maybeCollection interface{}, mods queries.Applicator) error {
 	var slice []*Collection
 	var object *Collection
 
@@ -971,7 +970,7 @@ func (collectionL) LoadVoucherCollections(ctx context.Context, e boil.ContextExe
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load voucher_collections")
 	}
@@ -1019,12 +1018,12 @@ func (collectionL) LoadVoucherCollections(ctx context.Context, e boil.ContextExe
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.CollectionChannelListings.
 // Sets related.R.Collection appropriately.
-func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionChannelListing) error {
+func (o *Collection) AddCollectionChannelListings(exec boil.Executor, insert bool, related ...*CollectionChannelListing) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CollectionID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1035,12 +1034,11 @@ func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1072,12 +1070,12 @@ func (o *Collection) AddCollectionChannelListings(ctx context.Context, exec boil
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.CollectionTranslations.
 // Sets related.R.Collection appropriately.
-func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*CollectionTranslation) error {
+func (o *Collection) AddCollectionTranslations(exec boil.Executor, insert bool, related ...*CollectionTranslation) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CollectionID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1088,12 +1086,11 @@ func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.Co
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1125,12 +1122,12 @@ func (o *Collection) AddCollectionTranslations(ctx context.Context, exec boil.Co
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.MenuItems.
 // Sets related.R.Collection appropriately.
-func (o *Collection) AddMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+func (o *Collection) AddMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.CollectionID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1141,12 +1138,11 @@ func (o *Collection) AddMenuItems(ctx context.Context, exec boil.ContextExecutor
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1180,15 +1176,14 @@ func (o *Collection) AddMenuItems(ctx context.Context, exec boil.ContextExecutor
 // Sets o.R.Collection's MenuItems accordingly.
 // Replaces o.R.MenuItems with related.
 // Sets related.R.Collection's MenuItems accordingly.
-func (o *Collection) SetMenuItems(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*MenuItem) error {
+func (o *Collection) SetMenuItems(exec boil.Executor, insert bool, related ...*MenuItem) error {
 	query := "update \"menu_items\" set \"collection_id\" = null where \"collection_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1205,13 +1200,13 @@ func (o *Collection) SetMenuItems(ctx context.Context, exec boil.ContextExecutor
 		o.R.MenuItems = nil
 	}
 
-	return o.AddMenuItems(ctx, exec, insert, related...)
+	return o.AddMenuItems(exec, insert, related...)
 }
 
 // RemoveMenuItems relationships from objects passed in.
 // Removes related items from R.MenuItems (uses pointer comparison, removal does not keep order)
 // Sets related.R.Collection.
-func (o *Collection) RemoveMenuItems(ctx context.Context, exec boil.ContextExecutor, related ...*MenuItem) error {
+func (o *Collection) RemoveMenuItems(exec boil.Executor, related ...*MenuItem) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1222,7 +1217,7 @@ func (o *Collection) RemoveMenuItems(ctx context.Context, exec boil.ContextExecu
 		if rel.R != nil {
 			rel.R.Collection = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("collection_id")); err != nil {
 			return err
 		}
 	}
@@ -1252,12 +1247,12 @@ func (o *Collection) RemoveMenuItems(ctx context.Context, exec boil.ContextExecu
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.ProductCollections.
 // Sets related.R.Collection appropriately.
-func (o *Collection) AddProductCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ProductCollection) error {
+func (o *Collection) AddProductCollections(exec boil.Executor, insert bool, related ...*ProductCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CollectionID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1268,12 +1263,11 @@ func (o *Collection) AddProductCollections(ctx context.Context, exec boil.Contex
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1305,12 +1299,12 @@ func (o *Collection) AddProductCollections(ctx context.Context, exec boil.Contex
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.SaleCollections.
 // Sets related.R.Collection appropriately.
-func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*SaleCollection) error {
+func (o *Collection) AddSaleCollections(exec boil.Executor, insert bool, related ...*SaleCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CollectionID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1321,12 +1315,11 @@ func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextEx
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1358,12 +1351,12 @@ func (o *Collection) AddSaleCollections(ctx context.Context, exec boil.ContextEx
 // of the collection, optionally inserting them as new records.
 // Appends related to o.R.VoucherCollections.
 // Sets related.R.Collection appropriately.
-func (o *Collection) AddVoucherCollections(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VoucherCollection) error {
+func (o *Collection) AddVoucherCollections(exec boil.Executor, insert bool, related ...*VoucherCollection) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.CollectionID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1374,12 +1367,11 @@ func (o *Collection) AddVoucherCollections(ctx context.Context, exec boil.Contex
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1420,7 +1412,7 @@ func Collections(mods ...qm.QueryMod) collectionQuery {
 
 // FindCollection retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindCollection(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Collection, error) {
+func FindCollection(exec boil.Executor, iD string, selectCols ...string) (*Collection, error) {
 	collectionObj := &Collection{}
 
 	sel := "*"
@@ -1433,7 +1425,7 @@ func FindCollection(ctx context.Context, exec boil.ContextExecutor, iD string, s
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, collectionObj)
+	err := q.Bind(nil, exec, collectionObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -1446,7 +1438,7 @@ func FindCollection(ctx context.Context, exec boil.ContextExecutor, iD string, s
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Collection) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Collection) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no collections provided for insertion")
 	}
@@ -1494,16 +1486,15 @@ func (o *Collection) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -1522,7 +1513,7 @@ func (o *Collection) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 // Update uses an executor to update the Collection.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Collection) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Collection) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	collectionUpdateCacheMut.RLock()
@@ -1550,13 +1541,12 @@ func (o *Collection) Update(ctx context.Context, exec boil.ContextExecutor, colu
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update collections row")
 	}
@@ -1576,10 +1566,10 @@ func (o *Collection) Update(ctx context.Context, exec boil.ContextExecutor, colu
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q collectionQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q collectionQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for collections")
 	}
@@ -1593,7 +1583,7 @@ func (q collectionQuery) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o CollectionSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o CollectionSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -1623,12 +1613,11 @@ func (o CollectionSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, collectionPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in collection slice")
 	}
@@ -1642,7 +1631,7 @@ func (o CollectionSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Collection) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Collection) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no collections provided for upsert")
 	}
@@ -1726,18 +1715,17 @@ func (o *Collection) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert collections")
@@ -1754,7 +1742,7 @@ func (o *Collection) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 
 // Delete deletes a single Collection record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Collection) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Collection) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Collection provided for delete")
 	}
@@ -1762,12 +1750,11 @@ func (o *Collection) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), collectionPrimaryKeyMapping)
 	sql := "DELETE FROM \"collections\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from collections")
 	}
@@ -1781,14 +1768,14 @@ func (o *Collection) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 }
 
 // DeleteAll deletes all matching rows.
-func (q collectionQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q collectionQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no collectionQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from collections")
 	}
@@ -1802,7 +1789,7 @@ func (q collectionQuery) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o CollectionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o CollectionSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1816,12 +1803,11 @@ func (o CollectionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	sql := "DELETE FROM \"collections\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, collectionPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from collection slice")
 	}
@@ -1836,8 +1822,8 @@ func (o CollectionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Collection) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindCollection(ctx, exec, o.ID)
+func (o *Collection) Reload(exec boil.Executor) error {
+	ret, err := FindCollection(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1848,7 +1834,7 @@ func (o *Collection) Reload(ctx context.Context, exec boil.ContextExecutor) erro
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *CollectionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *CollectionSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1865,7 +1851,7 @@ func (o *CollectionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in CollectionSlice")
 	}
@@ -1876,16 +1862,15 @@ func (o *CollectionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 }
 
 // CollectionExists checks if the Collection row exists.
-func CollectionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func CollectionExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"collections\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1896,6 +1881,6 @@ func CollectionExists(ctx context.Context, exec boil.ContextExecutor, iD string)
 }
 
 // Exists checks if the Collection row exists.
-func (o *Collection) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return CollectionExists(ctx, exec, o.ID)
+func (o *Collection) Exists(exec boil.Executor) (bool, error) {
+	return CollectionExists(exec, o.ID)
 }

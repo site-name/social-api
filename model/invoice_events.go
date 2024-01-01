@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -214,12 +213,12 @@ var (
 )
 
 // One returns a single invoiceEvent record from the query.
-func (q invoiceEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (*InvoiceEvent, error) {
+func (q invoiceEventQuery) One(exec boil.Executor) (*InvoiceEvent, error) {
 	o := &InvoiceEvent{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -231,10 +230,10 @@ func (q invoiceEventQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // All returns all InvoiceEvent records from the query.
-func (q invoiceEventQuery) All(ctx context.Context, exec boil.ContextExecutor) (InvoiceEventSlice, error) {
+func (q invoiceEventQuery) All(exec boil.Executor) (InvoiceEventSlice, error) {
 	var o []*InvoiceEvent
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to InvoiceEvent slice")
 	}
@@ -243,13 +242,13 @@ func (q invoiceEventQuery) All(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // Count returns the count of all InvoiceEvent records in the query.
-func (q invoiceEventQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q invoiceEventQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count invoice_events rows")
 	}
@@ -258,14 +257,14 @@ func (q invoiceEventQuery) Count(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // Exists checks if the row exists in the table.
-func (q invoiceEventQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q invoiceEventQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if invoice_events exists")
 	}
@@ -308,7 +307,7 @@ func (o *InvoiceEvent) User(mods ...qm.QueryMod) userQuery {
 
 // LoadInvoice allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceEventL) LoadInvoice(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
+func (invoiceEventL) LoadInvoice(e boil.Executor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
 	var slice []*InvoiceEvent
 	var object *InvoiceEvent
 
@@ -375,7 +374,7 @@ func (invoiceEventL) LoadInvoice(ctx context.Context, e boil.ContextExecutor, si
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Invoice")
 	}
@@ -424,7 +423,7 @@ func (invoiceEventL) LoadInvoice(ctx context.Context, e boil.ContextExecutor, si
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
+func (invoiceEventL) LoadOrder(e boil.Executor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
 	var slice []*InvoiceEvent
 	var object *InvoiceEvent
 
@@ -491,7 +490,7 @@ func (invoiceEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sing
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Order")
 	}
@@ -540,7 +539,7 @@ func (invoiceEventL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sing
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (invoiceEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
+func (invoiceEventL) LoadUser(e boil.Executor, singular bool, maybeInvoiceEvent interface{}, mods queries.Applicator) error {
 	var slice []*InvoiceEvent
 	var object *InvoiceEvent
 
@@ -607,7 +606,7 @@ func (invoiceEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load User")
 	}
@@ -657,10 +656,10 @@ func (invoiceEventL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 // SetInvoice of the invoiceEvent to the related item.
 // Sets o.R.Invoice to related.
 // Adds o to related.R.InvoiceEvents.
-func (o *InvoiceEvent) SetInvoice(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Invoice) error {
+func (o *InvoiceEvent) SetInvoice(exec boil.Executor, insert bool, related *Invoice) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -672,12 +671,11 @@ func (o *InvoiceEvent) SetInvoice(ctx context.Context, exec boil.ContextExecutor
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -704,11 +702,11 @@ func (o *InvoiceEvent) SetInvoice(ctx context.Context, exec boil.ContextExecutor
 // RemoveInvoice relationship.
 // Sets o.R.Invoice to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *InvoiceEvent) RemoveInvoice(ctx context.Context, exec boil.ContextExecutor, related *Invoice) error {
+func (o *InvoiceEvent) RemoveInvoice(exec boil.Executor, related *Invoice) error {
 	var err error
 
 	queries.SetScanner(&o.InvoiceID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("invoice_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("invoice_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -737,10 +735,10 @@ func (o *InvoiceEvent) RemoveInvoice(ctx context.Context, exec boil.ContextExecu
 // SetOrder of the invoiceEvent to the related item.
 // Sets o.R.Order to related.
 // Adds o to related.R.InvoiceEvents.
-func (o *InvoiceEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+func (o *InvoiceEvent) SetOrder(exec boil.Executor, insert bool, related *Order) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -752,12 +750,11 @@ func (o *InvoiceEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, 
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -784,11 +781,11 @@ func (o *InvoiceEvent) SetOrder(ctx context.Context, exec boil.ContextExecutor, 
 // RemoveOrder relationship.
 // Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *InvoiceEvent) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *InvoiceEvent) RemoveOrder(exec boil.Executor, related *Order) error {
 	var err error
 
 	queries.SetScanner(&o.OrderID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -817,10 +814,10 @@ func (o *InvoiceEvent) RemoveOrder(ctx context.Context, exec boil.ContextExecuto
 // SetUser of the invoiceEvent to the related item.
 // Sets o.R.User to related.
 // Adds o to related.R.InvoiceEvents.
-func (o *InvoiceEvent) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+func (o *InvoiceEvent) SetUser(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -832,12 +829,11 @@ func (o *InvoiceEvent) SetUser(ctx context.Context, exec boil.ContextExecutor, i
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -864,11 +860,11 @@ func (o *InvoiceEvent) SetUser(ctx context.Context, exec boil.ContextExecutor, i
 // RemoveUser relationship.
 // Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *InvoiceEvent) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
+func (o *InvoiceEvent) RemoveUser(exec boil.Executor, related *User) error {
 	var err error
 
 	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("user_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -907,7 +903,7 @@ func InvoiceEvents(mods ...qm.QueryMod) invoiceEventQuery {
 
 // FindInvoiceEvent retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindInvoiceEvent(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*InvoiceEvent, error) {
+func FindInvoiceEvent(exec boil.Executor, iD string, selectCols ...string) (*InvoiceEvent, error) {
 	invoiceEventObj := &InvoiceEvent{}
 
 	sel := "*"
@@ -920,7 +916,7 @@ func FindInvoiceEvent(ctx context.Context, exec boil.ContextExecutor, iD string,
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, invoiceEventObj)
+	err := q.Bind(nil, exec, invoiceEventObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -933,7 +929,7 @@ func FindInvoiceEvent(ctx context.Context, exec boil.ContextExecutor, iD string,
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *InvoiceEvent) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *InvoiceEvent) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no invoice_events provided for insertion")
 	}
@@ -981,16 +977,15 @@ func (o *InvoiceEvent) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -1009,7 +1004,7 @@ func (o *InvoiceEvent) Insert(ctx context.Context, exec boil.ContextExecutor, co
 // Update uses an executor to update the InvoiceEvent.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *InvoiceEvent) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *InvoiceEvent) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	invoiceEventUpdateCacheMut.RLock()
@@ -1037,13 +1032,12 @@ func (o *InvoiceEvent) Update(ctx context.Context, exec boil.ContextExecutor, co
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update invoice_events row")
 	}
@@ -1063,10 +1057,10 @@ func (o *InvoiceEvent) Update(ctx context.Context, exec boil.ContextExecutor, co
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q invoiceEventQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q invoiceEventQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for invoice_events")
 	}
@@ -1080,7 +1074,7 @@ func (q invoiceEventQuery) UpdateAll(ctx context.Context, exec boil.ContextExecu
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o InvoiceEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o InvoiceEventSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -1110,12 +1104,11 @@ func (o InvoiceEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExecu
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, invoiceEventPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in invoiceEvent slice")
 	}
@@ -1129,7 +1122,7 @@ func (o InvoiceEventSlice) UpdateAll(ctx context.Context, exec boil.ContextExecu
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *InvoiceEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *InvoiceEvent) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no invoice_events provided for upsert")
 	}
@@ -1213,18 +1206,17 @@ func (o *InvoiceEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert invoice_events")
@@ -1241,7 +1233,7 @@ func (o *InvoiceEvent) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 
 // Delete deletes a single InvoiceEvent record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *InvoiceEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *InvoiceEvent) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no InvoiceEvent provided for delete")
 	}
@@ -1249,12 +1241,11 @@ func (o *InvoiceEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), invoiceEventPrimaryKeyMapping)
 	sql := "DELETE FROM \"invoice_events\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from invoice_events")
 	}
@@ -1268,14 +1259,14 @@ func (o *InvoiceEvent) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 }
 
 // DeleteAll deletes all matching rows.
-func (q invoiceEventQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q invoiceEventQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no invoiceEventQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from invoice_events")
 	}
@@ -1289,7 +1280,7 @@ func (q invoiceEventQuery) DeleteAll(ctx context.Context, exec boil.ContextExecu
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o InvoiceEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o InvoiceEventSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1303,12 +1294,11 @@ func (o InvoiceEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 	sql := "DELETE FROM \"invoice_events\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, invoiceEventPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from invoiceEvent slice")
 	}
@@ -1323,8 +1313,8 @@ func (o InvoiceEventSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *InvoiceEvent) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindInvoiceEvent(ctx, exec, o.ID)
+func (o *InvoiceEvent) Reload(exec boil.Executor) error {
+	ret, err := FindInvoiceEvent(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1335,7 +1325,7 @@ func (o *InvoiceEvent) Reload(ctx context.Context, exec boil.ContextExecutor) er
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *InvoiceEventSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *InvoiceEventSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1352,7 +1342,7 @@ func (o *InvoiceEventSlice) ReloadAll(ctx context.Context, exec boil.ContextExec
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in InvoiceEventSlice")
 	}
@@ -1363,16 +1353,15 @@ func (o *InvoiceEventSlice) ReloadAll(ctx context.Context, exec boil.ContextExec
 }
 
 // InvoiceEventExists checks if the InvoiceEvent row exists.
-func InvoiceEventExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func InvoiceEventExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"invoice_events\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1383,6 +1372,6 @@ func InvoiceEventExists(ctx context.Context, exec boil.ContextExecutor, iD strin
 }
 
 // Exists checks if the InvoiceEvent row exists.
-func (o *InvoiceEvent) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return InvoiceEventExists(ctx, exec, o.ID)
+func (o *InvoiceEvent) Exists(exec boil.Executor) (bool, error) {
+	return InvoiceEventExists(exec, o.ID)
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/storetest"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,7 @@ import (
 
 func TestUserStore(t *testing.T) {
 	storetest.StoreTestWithSqlStore(t, func(t *testing.T, ss store.Store, s storetest.SqlStore) {
-		users, err := ss.User().GetAllProfiles(&model.UserGetOptions{
+		users, err := ss.User().GetAllProfiles(&model_helper.UserGetOptions{
 			Sort: model.UserTableName + ".Username ASC",
 		})
 		require.NoError(t, err, "failed cleaning up test users")

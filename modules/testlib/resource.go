@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/modules/util/fileutils"
@@ -24,7 +24,7 @@ const (
 	actionSymlink
 )
 
-const root = "___mattermost-server"
+const root = "___sitename-server"
 
 type testResourceDetails struct {
 	src     string
@@ -175,7 +175,7 @@ func SetupTestResources() (string, error) {
 
 func setupConfig(configDir string) error {
 	var err error
-	var config model.Config
+	var config model_helper.Config
 
 	config.SetDefaults()
 

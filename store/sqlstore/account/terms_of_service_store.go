@@ -1,12 +1,14 @@
 package account
 
 import (
-	"errors"
+	"database/sql"
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlTermsOfServiceStore struct {
@@ -18,35 +20,39 @@ func NewSqlTermsOfServiceStore(sqlStore store.Store, metrics einterfaces.Metrics
 	return &SqlTermsOfServiceStore{sqlStore, metrics}
 }
 
-func (s *SqlTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
-	err := s.GetMaster().Create(termsOfService).Error
-	if err != nil {
+func (s *SqlTermsOfServiceStore) Save(termsOfService model.TermsOfService) (*model.TermsOfService, error) {
+	model_helper.TermsOfServicePreSave(&termsOfService)
+	if err := model_helper.TermsOfServiceIsValid(termsOfService); err != nil {
 		return nil, err
 	}
-	return termsOfService, nil
-}
 
-func (s *SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfService, error) {
-	var termsOfService model.TermsOfService
-	err := s.GetReplica().Order("CreateAt DESC").First(&termsOfService).Error
+	err := termsOfService.Insert(s.GetMaster(), boil.Infer())
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.TermsOfServiceTableName, "")
-		}
 		return nil, err
 	}
 	return &termsOfService, nil
 }
 
-func (s *SqlTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
-	var res model.TermsOfService
-	err := s.GetReplica().First(&res, "Id = ?", id).Error
+func (s *SqlTermsOfServiceStore) GetLatest(_ bool) (*model.TermsOfService, error) {
+	term, err := model.TermsOfServices(qm.OrderBy(model.TermsOfServiceColumns.CreatedAt + " DESC")).One(s.GetReplica())
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.TermsOfServiceTableName, id)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.TermsOfServices, "latest")
 		}
 		return nil, err
 	}
 
-	return &res, nil
+	return term, nil
+}
+
+func (s *SqlTermsOfServiceStore) Get(id string, _ bool) (*model.TermsOfService, error) {
+	term, err := model.FindTermsOfService(s.GetReplica(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.TermsOfServices, id)
+		}
+		return nil, err
+	}
+
+	return term, nil
 }

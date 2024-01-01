@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/services/searchengine"
 )
 
@@ -79,7 +81,7 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 	usernameAndNicknameSuggestions := append(usernameSuggestions, nicknameSuggesitons...)
 
 	return &BLVUser{
-		Id:                         user.Id,
+		Id:                         user.ID,
 		SuggestionsWithFullname:    append(usernameAndNicknameSuggestions, fullnameSuggestions...),
 		SuggestionsWithoutFullname: usernameAndNicknameSuggestions,
 		TeamsIds:                   teamsIds,
@@ -87,15 +89,15 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 	}
 }
 
-func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
+func BLVUserFromUserForIndexing(userForIndexing *model_helper.UserForIndexing) *BLVUser {
 	user := &model.User{
-		Id:        userForIndexing.Id,
+		ID:        userForIndexing.Id,
 		Username:  userForIndexing.Username,
 		Nickname:  userForIndexing.Nickname,
 		FirstName: userForIndexing.FirstName,
 		LastName:  userForIndexing.LastName,
-		CreateAt:  userForIndexing.CreateAt,
-		DeleteAt:  userForIndexing.DeleteAt,
+		CreatedAt: userForIndexing.CreatedAt,
+		DeleteAt:  model_types.NewNullInt64(userForIndexing.DeletedAt),
 	}
 
 	// return BLVUserFromUserAndTeams(user, userForIndexing.TeamsIds, userForIndexing.ChannelsIds)

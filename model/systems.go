@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -112,12 +111,12 @@ var (
 )
 
 // One returns a single system record from the query.
-func (q systemQuery) One(ctx context.Context, exec boil.ContextExecutor) (*System, error) {
+func (q systemQuery) One(exec boil.Executor) (*System, error) {
 	o := &System{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -129,10 +128,10 @@ func (q systemQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Syste
 }
 
 // All returns all System records from the query.
-func (q systemQuery) All(ctx context.Context, exec boil.ContextExecutor) (SystemSlice, error) {
+func (q systemQuery) All(exec boil.Executor) (SystemSlice, error) {
 	var o []*System
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to System slice")
 	}
@@ -141,13 +140,13 @@ func (q systemQuery) All(ctx context.Context, exec boil.ContextExecutor) (System
 }
 
 // Count returns the count of all System records in the query.
-func (q systemQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q systemQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count systems rows")
 	}
@@ -156,14 +155,14 @@ func (q systemQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int6
 }
 
 // Exists checks if the row exists in the table.
-func (q systemQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q systemQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if systems exists")
 	}
@@ -184,7 +183,7 @@ func Systems(mods ...qm.QueryMod) systemQuery {
 
 // FindSystem retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindSystem(ctx context.Context, exec boil.ContextExecutor, name string, selectCols ...string) (*System, error) {
+func FindSystem(exec boil.Executor, name string, selectCols ...string) (*System, error) {
 	systemObj := &System{}
 
 	sel := "*"
@@ -197,7 +196,7 @@ func FindSystem(ctx context.Context, exec boil.ContextExecutor, name string, sel
 
 	q := queries.Raw(query, name)
 
-	err := q.Bind(ctx, exec, systemObj)
+	err := q.Bind(nil, exec, systemObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -210,7 +209,7 @@ func FindSystem(ctx context.Context, exec boil.ContextExecutor, name string, sel
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *System) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *System) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no systems provided for insertion")
 	}
@@ -258,16 +257,15 @@ func (o *System) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -286,7 +284,7 @@ func (o *System) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 // Update uses an executor to update the System.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *System) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *System) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	systemUpdateCacheMut.RLock()
@@ -314,13 +312,12 @@ func (o *System) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update systems row")
 	}
@@ -340,10 +337,10 @@ func (o *System) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q systemQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q systemQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for systems")
 	}
@@ -357,7 +354,7 @@ func (q systemQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o SystemSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o SystemSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -387,12 +384,11 @@ func (o SystemSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, systemPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in system slice")
 	}
@@ -406,7 +402,7 @@ func (o SystemSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *System) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *System) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no systems provided for upsert")
 	}
@@ -490,18 +486,17 @@ func (o *System) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert systems")
@@ -518,7 +513,7 @@ func (o *System) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 
 // Delete deletes a single System record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *System) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *System) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no System provided for delete")
 	}
@@ -526,12 +521,11 @@ func (o *System) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), systemPrimaryKeyMapping)
 	sql := "DELETE FROM \"systems\" WHERE \"name\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from systems")
 	}
@@ -545,14 +539,14 @@ func (o *System) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 }
 
 // DeleteAll deletes all matching rows.
-func (q systemQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q systemQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no systemQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from systems")
 	}
@@ -566,7 +560,7 @@ func (q systemQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o SystemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o SystemSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -580,12 +574,11 @@ func (o SystemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 	sql := "DELETE FROM \"systems\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, systemPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from system slice")
 	}
@@ -600,8 +593,8 @@ func (o SystemSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *System) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindSystem(ctx, exec, o.Name)
+func (o *System) Reload(exec boil.Executor) error {
+	ret, err := FindSystem(exec, o.Name)
 	if err != nil {
 		return err
 	}
@@ -612,7 +605,7 @@ func (o *System) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *SystemSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *SystemSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -629,7 +622,7 @@ func (o *SystemSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in SystemSlice")
 	}
@@ -640,16 +633,15 @@ func (o *SystemSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // SystemExists checks if the System row exists.
-func SystemExists(ctx context.Context, exec boil.ContextExecutor, name string) (bool, error) {
+func SystemExists(exec boil.Executor, name string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"systems\" where \"name\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, name)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, name)
 	}
-	row := exec.QueryRowContext(ctx, sql, name)
+	row := exec.QueryRow(sql, name)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -660,6 +652,6 @@ func SystemExists(ctx context.Context, exec boil.ContextExecutor, name string) (
 }
 
 // Exists checks if the System row exists.
-func (o *System) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return SystemExists(ctx, exec, o.Name)
+func (o *System) Exists(exec boil.Executor) (bool, error) {
+	return SystemExists(exec, o.Name)
 }

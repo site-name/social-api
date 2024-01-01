@@ -23,10 +23,10 @@ func (s *SearchUserStore) deleteUserIndex(user *model.User) {
 		if engine.IsIndexingEnabled() {
 			runIndexFn(engine, func(engineCopy searchengine.SearchEngineInterface) {
 				if err := engineCopy.DeleteUser(user); err != nil {
-					slog.Error("Encountered error deleting user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
+					slog.Error("Encountered error deleting user", slog.String("user_id", user.ID), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
 					return
 				}
-				slog.Debug("Removed user from the index in search engine", slog.String("search_engine", engineCopy.GetName()), slog.String("user_id", user.Id))
+				slog.Debug("Removed user from the index in search engine", slog.String("search_engine", engineCopy.GetName()), slog.String("user_id", user.ID))
 			})
 		}
 	}

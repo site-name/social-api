@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -220,12 +219,12 @@ var (
 )
 
 // One returns a single warehouse record from the query.
-func (q warehouseQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Warehouse, error) {
+func (q warehouseQuery) One(exec boil.Executor) (*Warehouse, error) {
 	o := &Warehouse{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -237,10 +236,10 @@ func (q warehouseQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Wa
 }
 
 // All returns all Warehouse records from the query.
-func (q warehouseQuery) All(ctx context.Context, exec boil.ContextExecutor) (WarehouseSlice, error) {
+func (q warehouseQuery) All(exec boil.Executor) (WarehouseSlice, error) {
 	var o []*Warehouse
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to Warehouse slice")
 	}
@@ -249,13 +248,13 @@ func (q warehouseQuery) All(ctx context.Context, exec boil.ContextExecutor) (War
 }
 
 // Count returns the count of all Warehouse records in the query.
-func (q warehouseQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q warehouseQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count warehouses rows")
 	}
@@ -264,14 +263,14 @@ func (q warehouseQuery) Count(ctx context.Context, exec boil.ContextExecutor) (i
 }
 
 // Exists checks if the row exists in the table.
-func (q warehouseQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q warehouseQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if warehouses exists")
 	}
@@ -348,7 +347,7 @@ func (o *Warehouse) WarehouseShippingZones(mods ...qm.QueryMod) warehouseShippin
 
 // LoadAddress allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (warehouseL) LoadAddress(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
+func (warehouseL) LoadAddress(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -415,7 +414,7 @@ func (warehouseL) LoadAddress(ctx context.Context, e boil.ContextExecutor, singu
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Address")
 	}
@@ -464,7 +463,7 @@ func (warehouseL) LoadAddress(ctx context.Context, e boil.ContextExecutor, singu
 
 // LoadCollectionPointCheckouts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadCollectionPointCheckouts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
+func (warehouseL) LoadCollectionPointCheckouts(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -525,7 +524,7 @@ func (warehouseL) LoadCollectionPointCheckouts(ctx context.Context, e boil.Conte
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load checkouts")
 	}
@@ -571,7 +570,7 @@ func (warehouseL) LoadCollectionPointCheckouts(ctx context.Context, e boil.Conte
 
 // LoadCollectionPointOrders allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadCollectionPointOrders(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
+func (warehouseL) LoadCollectionPointOrders(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -632,7 +631,7 @@ func (warehouseL) LoadCollectionPointOrders(ctx context.Context, e boil.ContextE
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load orders")
 	}
@@ -678,7 +677,7 @@ func (warehouseL) LoadCollectionPointOrders(ctx context.Context, e boil.ContextE
 
 // LoadStocks allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadStocks(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
+func (warehouseL) LoadStocks(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -739,7 +738,7 @@ func (warehouseL) LoadStocks(ctx context.Context, e boil.ContextExecutor, singul
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load stocks")
 	}
@@ -785,7 +784,7 @@ func (warehouseL) LoadStocks(ctx context.Context, e boil.ContextExecutor, singul
 
 // LoadWarehouseShippingZones allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (warehouseL) LoadWarehouseShippingZones(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
+func (warehouseL) LoadWarehouseShippingZones(e boil.Executor, singular bool, maybeWarehouse interface{}, mods queries.Applicator) error {
 	var slice []*Warehouse
 	var object *Warehouse
 
@@ -846,7 +845,7 @@ func (warehouseL) LoadWarehouseShippingZones(ctx context.Context, e boil.Context
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load warehouse_shipping_zones")
 	}
@@ -893,10 +892,10 @@ func (warehouseL) LoadWarehouseShippingZones(ctx context.Context, e boil.Context
 // SetAddress of the warehouse to the related item.
 // Sets o.R.Address to related.
 // Adds o to related.R.Warehouses.
-func (o *Warehouse) SetAddress(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Address) error {
+func (o *Warehouse) SetAddress(exec boil.Executor, insert bool, related *Address) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -908,12 +907,11 @@ func (o *Warehouse) SetAddress(ctx context.Context, exec boil.ContextExecutor, i
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -940,11 +938,11 @@ func (o *Warehouse) SetAddress(ctx context.Context, exec boil.ContextExecutor, i
 // RemoveAddress relationship.
 // Sets o.R.Address to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *Warehouse) RemoveAddress(ctx context.Context, exec boil.ContextExecutor, related *Address) error {
+func (o *Warehouse) RemoveAddress(exec boil.Executor, related *Address) error {
 	var err error
 
 	queries.SetScanner(&o.AddressID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("address_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("address_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -974,12 +972,12 @@ func (o *Warehouse) RemoveAddress(ctx context.Context, exec boil.ContextExecutor
 // of the warehouse, optionally inserting them as new records.
 // Appends related to o.R.CollectionPointCheckouts.
 // Sets related.R.CollectionPoint appropriately.
-func (o *Warehouse) AddCollectionPointCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *Warehouse) AddCollectionPointCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.CollectionPointID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -990,12 +988,11 @@ func (o *Warehouse) AddCollectionPointCheckouts(ctx context.Context, exec boil.C
 			)
 			values := []interface{}{o.ID, rel.Token}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1029,15 +1026,14 @@ func (o *Warehouse) AddCollectionPointCheckouts(ctx context.Context, exec boil.C
 // Sets o.R.CollectionPoint's CollectionPointCheckouts accordingly.
 // Replaces o.R.CollectionPointCheckouts with related.
 // Sets related.R.CollectionPoint's CollectionPointCheckouts accordingly.
-func (o *Warehouse) SetCollectionPointCheckouts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Checkout) error {
+func (o *Warehouse) SetCollectionPointCheckouts(exec boil.Executor, insert bool, related ...*Checkout) error {
 	query := "update \"checkouts\" set \"collection_point_id\" = null where \"collection_point_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1054,13 +1050,13 @@ func (o *Warehouse) SetCollectionPointCheckouts(ctx context.Context, exec boil.C
 		o.R.CollectionPointCheckouts = nil
 	}
 
-	return o.AddCollectionPointCheckouts(ctx, exec, insert, related...)
+	return o.AddCollectionPointCheckouts(exec, insert, related...)
 }
 
 // RemoveCollectionPointCheckouts relationships from objects passed in.
 // Removes related items from R.CollectionPointCheckouts (uses pointer comparison, removal does not keep order)
 // Sets related.R.CollectionPoint.
-func (o *Warehouse) RemoveCollectionPointCheckouts(ctx context.Context, exec boil.ContextExecutor, related ...*Checkout) error {
+func (o *Warehouse) RemoveCollectionPointCheckouts(exec boil.Executor, related ...*Checkout) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1071,7 +1067,7 @@ func (o *Warehouse) RemoveCollectionPointCheckouts(ctx context.Context, exec boi
 		if rel.R != nil {
 			rel.R.CollectionPoint = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_point_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("collection_point_id")); err != nil {
 			return err
 		}
 	}
@@ -1101,12 +1097,12 @@ func (o *Warehouse) RemoveCollectionPointCheckouts(ctx context.Context, exec boi
 // of the warehouse, optionally inserting them as new records.
 // Appends related to o.R.CollectionPointOrders.
 // Sets related.R.CollectionPoint appropriately.
-func (o *Warehouse) AddCollectionPointOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *Warehouse) AddCollectionPointOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			queries.Assign(&rel.CollectionPointID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1117,12 +1113,11 @@ func (o *Warehouse) AddCollectionPointOrders(ctx context.Context, exec boil.Cont
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1156,15 +1151,14 @@ func (o *Warehouse) AddCollectionPointOrders(ctx context.Context, exec boil.Cont
 // Sets o.R.CollectionPoint's CollectionPointOrders accordingly.
 // Replaces o.R.CollectionPointOrders with related.
 // Sets related.R.CollectionPoint's CollectionPointOrders accordingly.
-func (o *Warehouse) SetCollectionPointOrders(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Order) error {
+func (o *Warehouse) SetCollectionPointOrders(exec boil.Executor, insert bool, related ...*Order) error {
 	query := "update \"orders\" set \"collection_point_id\" = null where \"collection_point_id\" = $1"
 	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	_, err := exec.ExecContext(ctx, query, values...)
+	_, err := exec.Exec(query, values...)
 	if err != nil {
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
@@ -1181,13 +1175,13 @@ func (o *Warehouse) SetCollectionPointOrders(ctx context.Context, exec boil.Cont
 		o.R.CollectionPointOrders = nil
 	}
 
-	return o.AddCollectionPointOrders(ctx, exec, insert, related...)
+	return o.AddCollectionPointOrders(exec, insert, related...)
 }
 
 // RemoveCollectionPointOrders relationships from objects passed in.
 // Removes related items from R.CollectionPointOrders (uses pointer comparison, removal does not keep order)
 // Sets related.R.CollectionPoint.
-func (o *Warehouse) RemoveCollectionPointOrders(ctx context.Context, exec boil.ContextExecutor, related ...*Order) error {
+func (o *Warehouse) RemoveCollectionPointOrders(exec boil.Executor, related ...*Order) error {
 	if len(related) == 0 {
 		return nil
 	}
@@ -1198,7 +1192,7 @@ func (o *Warehouse) RemoveCollectionPointOrders(ctx context.Context, exec boil.C
 		if rel.R != nil {
 			rel.R.CollectionPoint = nil
 		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("collection_point_id")); err != nil {
+		if _, err = rel.Update(exec, boil.Whitelist("collection_point_id")); err != nil {
 			return err
 		}
 	}
@@ -1228,12 +1222,12 @@ func (o *Warehouse) RemoveCollectionPointOrders(ctx context.Context, exec boil.C
 // of the warehouse, optionally inserting them as new records.
 // Appends related to o.R.Stocks.
 // Sets related.R.Warehouse appropriately.
-func (o *Warehouse) AddStocks(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Stock) error {
+func (o *Warehouse) AddStocks(exec boil.Executor, insert bool, related ...*Stock) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.WarehouseID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1244,12 +1238,11 @@ func (o *Warehouse) AddStocks(ctx context.Context, exec boil.ContextExecutor, in
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1281,12 +1274,12 @@ func (o *Warehouse) AddStocks(ctx context.Context, exec boil.ContextExecutor, in
 // of the warehouse, optionally inserting them as new records.
 // Appends related to o.R.WarehouseShippingZones.
 // Sets related.R.Warehouse appropriately.
-func (o *Warehouse) AddWarehouseShippingZones(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*WarehouseShippingZone) error {
+func (o *Warehouse) AddWarehouseShippingZones(exec boil.Executor, insert bool, related ...*WarehouseShippingZone) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.WarehouseID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -1297,12 +1290,11 @@ func (o *Warehouse) AddWarehouseShippingZones(ctx context.Context, exec boil.Con
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -1343,7 +1335,7 @@ func Warehouses(mods ...qm.QueryMod) warehouseQuery {
 
 // FindWarehouse retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindWarehouse(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Warehouse, error) {
+func FindWarehouse(exec boil.Executor, iD string, selectCols ...string) (*Warehouse, error) {
 	warehouseObj := &Warehouse{}
 
 	sel := "*"
@@ -1356,7 +1348,7 @@ func FindWarehouse(ctx context.Context, exec boil.ContextExecutor, iD string, se
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, warehouseObj)
+	err := q.Bind(nil, exec, warehouseObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -1369,7 +1361,7 @@ func FindWarehouse(ctx context.Context, exec boil.ContextExecutor, iD string, se
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Warehouse) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Warehouse) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no warehouses provided for insertion")
 	}
@@ -1417,16 +1409,15 @@ func (o *Warehouse) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -1445,7 +1436,7 @@ func (o *Warehouse) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 // Update uses an executor to update the Warehouse.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Warehouse) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Warehouse) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	warehouseUpdateCacheMut.RLock()
@@ -1473,13 +1464,12 @@ func (o *Warehouse) Update(ctx context.Context, exec boil.ContextExecutor, colum
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update warehouses row")
 	}
@@ -1499,10 +1489,10 @@ func (o *Warehouse) Update(ctx context.Context, exec boil.ContextExecutor, colum
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q warehouseQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q warehouseQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for warehouses")
 	}
@@ -1516,7 +1506,7 @@ func (q warehouseQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o WarehouseSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o WarehouseSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -1546,12 +1536,11 @@ func (o WarehouseSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, warehousePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in warehouse slice")
 	}
@@ -1565,7 +1554,7 @@ func (o WarehouseSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Warehouse) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Warehouse) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no warehouses provided for upsert")
 	}
@@ -1649,18 +1638,17 @@ func (o *Warehouse) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert warehouses")
@@ -1677,7 +1665,7 @@ func (o *Warehouse) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 
 // Delete deletes a single Warehouse record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Warehouse) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Warehouse) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no Warehouse provided for delete")
 	}
@@ -1685,12 +1673,11 @@ func (o *Warehouse) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), warehousePrimaryKeyMapping)
 	sql := "DELETE FROM \"warehouses\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from warehouses")
 	}
@@ -1704,14 +1691,14 @@ func (o *Warehouse) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 }
 
 // DeleteAll deletes all matching rows.
-func (q warehouseQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q warehouseQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no warehouseQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from warehouses")
 	}
@@ -1725,7 +1712,7 @@ func (q warehouseQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o WarehouseSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o WarehouseSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1739,12 +1726,11 @@ func (o WarehouseSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 	sql := "DELETE FROM \"warehouses\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, warehousePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from warehouse slice")
 	}
@@ -1759,8 +1745,8 @@ func (o WarehouseSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Warehouse) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindWarehouse(ctx, exec, o.ID)
+func (o *Warehouse) Reload(exec boil.Executor) error {
+	ret, err := FindWarehouse(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1771,7 +1757,7 @@ func (o *Warehouse) Reload(ctx context.Context, exec boil.ContextExecutor) error
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *WarehouseSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *WarehouseSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1788,7 +1774,7 @@ func (o *WarehouseSlice) ReloadAll(ctx context.Context, exec boil.ContextExecuto
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in WarehouseSlice")
 	}
@@ -1799,16 +1785,15 @@ func (o *WarehouseSlice) ReloadAll(ctx context.Context, exec boil.ContextExecuto
 }
 
 // WarehouseExists checks if the Warehouse row exists.
-func WarehouseExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func WarehouseExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"warehouses\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1819,6 +1804,6 @@ func WarehouseExists(ctx context.Context, exec boil.ContextExecutor, iD string) 
 }
 
 // Exists checks if the Warehouse row exists.
-func (o *Warehouse) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return WarehouseExists(ctx, exec, o.ID)
+func (o *Warehouse) Exists(exec boil.Executor) (bool, error) {
+	return WarehouseExists(exec, o.ID)
 }

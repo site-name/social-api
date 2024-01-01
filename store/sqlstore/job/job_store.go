@@ -1,13 +1,14 @@
 package job
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gorm.io/gorm"
 )
 
 type SqlJobStore struct {
@@ -19,6 +20,7 @@ func NewSqlJobStore(sqlStore store.Store) store.JobStore {
 }
 
 func (jss SqlJobStore) Save(job model.Job) (*model.Job, error) {
+	model_helper.JobPreSave(&job)
 	appErr := model_helper.JobIsValid(job)
 	if appErr != nil {
 		return nil, appErr
@@ -34,7 +36,7 @@ func (j SqlJobStore) FindAll(mods ...qm.QueryMod) (model.JobSlice, error) {
 	return model.Jobs(mods...).All(j.Context(), j.GetReplica())
 }
 
-func (jss SqlJobStore) UpdateOptimistically(job *model.Job, currentStatus model.Jobstatus) (bool, error) {
+func (jss SqlJobStore) UpdateOptimistically(job model.Job, currentStatus model.Jobstatus) (bool, error) {
 	_, err := model.
 		Jobs(
 			model.JobWhere.ID.EQ(job.ID),
@@ -88,8 +90,8 @@ func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus model
 func (jss SqlJobStore) Get(mods ...qm.QueryMod) (*model.Job, error) {
 	job, err := model.Jobs(mods...).One(jss.Context(), jss.GetReplica())
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("Job", "mods")
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Jobs, "mods")
 		}
 		return nil, err
 	}

@@ -1,9 +1,11 @@
 package account
 
 import (
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SqlStaffNotificationRecipientStore struct {
@@ -14,27 +16,20 @@ func NewSqlStaffNotificationRecipientStore(s store.Store) store.StaffNotificatio
 	return &SqlStaffNotificationRecipientStore{s}
 }
 
-func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
-	err := ss.GetMaster().Create(record).Error
-	if err != nil {
-		if ss.IsUniqueConstraintError(err, []string{"staff_notification_recipients_staff_email_key", "StaffEmail"}) {
-			return nil, store.NewErrInvalidInput(model.StaffNotificationRecipientTableName, "StaffEmail", record.StaffEmail)
-		}
-		return nil, errors.Wrap(err, "failed to create the record")
+func (ss *SqlStaffNotificationRecipientStore) Save(record model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
+	if err := model_helper.StaffNotificationRecipientIsValid(record); err != nil {
+		return nil, err
 	}
-	return record, nil
+	err := record.Insert(ss.GetMaster(), boil.Infer())
+	if err != nil {
+		if ss.IsUniqueConstraintError(err, []string{"staff_email_unique"}) {
+			return nil, store.NewErrInvalidInput(model.TableNames.StaffNotificationRecipients, "StaffEmail", record.StaffEmail)
+		}
+		return nil, err
+	}
+	return &record, nil
 }
 
-func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
-	args, err := store.BuildSqlizer(options.Conditions, "FilterByOptions")
-	if err != nil {
-		return nil, err
-	}
-
-	var res []*model.StaffNotificationRecipient
-	err = s.GetReplica().Find(&res, args...).Error
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options ...qm.QueryMod) (model.StaffNotificationRecipientSlice, error) {
+	return model.StaffNotificationRecipients(options...).All(s.GetReplica())
 }

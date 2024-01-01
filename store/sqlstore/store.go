@@ -14,13 +14,11 @@ import (
 	"time"
 
 	ps "github.com/mattermost/morph/drivers/postgres"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	jackcpgconn "github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/lib/pq"
 	"github.com/mattermost/morph"
 	mbindata "github.com/mattermost/morph/sources/embedded"
 	"github.com/pkg/errors"
@@ -57,6 +55,8 @@ const (
 	replicaLagPrefix = "replica-lag"
 )
 
+var _ store.Store = (*SqlStore)(nil)
+
 type SqlStore struct {
 	// rrCounter and srCounter should be kept first.
 	rrCounter int64
@@ -65,10 +65,6 @@ type SqlStore struct {
 	master         *sqlDBWrapper
 	Replicas       []*sqlDBWrapper
 	searchReplicas []*sqlDBWrapper
-
-	// masterX         *sqlxDBWrapper
-	// replicaXs       []*sqlxDBWrapper
-	// searchReplicaXs []*sqlxDBWrapper
 
 	replicaLagHandles []*dbsql.DB
 	stores            *SqlStoreStores
@@ -250,11 +246,11 @@ func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
 	return version, nil
 }
 
-func (ss *SqlStore) GetMaster() *sqlDBWrapper {
+func (ss *SqlStore) GetMaster() store.ContextRunner {
 	return ss.master
 }
 
-func (ss *SqlStore) GetReplica() *sqlDBWrapper {
+func (ss *SqlStore) GetReplica() boil.ContextExecutor {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
 		return ss.GetMaster()
 	}
@@ -389,18 +385,13 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 }
 
 func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool {
-	unique := false
-
-	switch errT := err.(type) {
-	case *pq.Error:
-		unique = errT.Code == "23505"
-	case *pgconn.PgError:
-		unique = errT.Code == "23505"
-	case *jackcpgconn.PgError:
-		unique = errT.Code == "23505"
+	for _, contain := range indexNames {
+		if strings.Contains(err.Error(), contain) {
+			return true
+		}
 	}
 
-	return unique && lo.SomeBy(indexNames, func(index string) bool { return strings.Contains(err.Error(), index) })
+	return false
 }
 
 // Get all databases connections
@@ -517,7 +508,7 @@ func (ss *SqlStore) initMorph(dryRun bool) (*morph.Morph, error) {
 		return nil, err
 	}
 
-	driver, err := ps.WithInstance(ss.GetMaster().sqlDBInterface.(*sql.DB))
+	driver, err := ps.WithInstance(ss.GetMaster().(*sqlDBWrapper).sqlDBInterface.(*sql.DB))
 	if err != nil {
 		return nil, err
 	}

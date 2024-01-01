@@ -2,13 +2,13 @@ package account
 
 import (
 	"context"
-	"fmt"
-	"strings"
+	"database/sql"
 
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -21,129 +21,85 @@ func NewSqlRoleStore(sqlStore store.Store) store.RoleStore {
 }
 
 // Save can be used to both save and update roles
-func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
-	// Check the role is valid before proceeding.
-	if !role.IsValidWithoutId() {
-		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
+func (s *SqlRoleStore) Upsert(role model.Role) (*model.Role, error) {
+	if !model_helper.RoleIsValidWithoutId(role) {
+		return nil, store.NewErrInvalidInput(model.TableNames.Roles, "any", nil)
 	}
 
-	if role.Id == "" { // this means create new Role
-		tx := s.GetMaster().Begin()
-		if tx.Error != nil {
-			return nil, errors.Wrap(tx.Error, "begin_transaction")
+	if role.ID == "" {
+		tx, err := s.GetMaster().BeginTx(s.Context(), &sql.TxOptions{})
+		if err != nil {
+			return nil, errors.Wrap(err, "begin_transaction")
 		}
 		defer s.FinalizeTransaction(tx)
 
-		createdRole, err := s.createRole(role, tx)
+		model_helper.RolePreSave(&role)
+
+		err = role.Insert(tx, boil.Infer())
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to create Role")
-		} else if err := tx.Commit().Error; err != nil {
+			return nil, err
+		} else if err := tx.Commit(); err != nil {
 			return nil, errors.Wrap(err, "commit_transaction")
 		}
-		return createdRole, nil
+
+		return &role, nil
 	}
 
-	// update
-
-	role.CreateAt = 0 // prevent update
-
-	err := s.GetMaster().Model(&role).Updates(role).Error
+	_, err := role.Update(s.GetMaster(), boil.Blacklist(model.RoleColumns.CreatedAt))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to update Role")
-	}
-	role.Permissions = strings.Fields(role.Permmissions_)
-	return role, nil
-}
-
-func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorm.DB) (*model.Role, error) {
-	// Check the role is valid before proceeding.
-	if !role.IsValidWithoutId() {
-		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
+		return nil, err
 	}
 
-	if err := transaction.Create(role).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to save Role")
-	}
-
-	return role, nil
+	return &role, nil
 }
 
 func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
-	var role model.Role
-	if err := s.GetReplica().First(&role, "Id = ?", roleId).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.RoleTableName, roleId)
+	role, err := model.FindRole(s.GetReplica(), roleId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Roles, roleId)
 		}
-		return nil, errors.Wrap(err, "failed to get Role")
+		return nil, err
 	}
-
-	role.Permissions = strings.Fields(role.Permmissions_)
-	return &role, nil
+	return role, nil
 }
 
-func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
-	dbRoles := []*model.Role{}
-	if err := s.GetReplica().Find(&dbRoles).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find Roles")
-	}
-
-	for _, role := range dbRoles {
-		role.Permissions = strings.Fields(role.Permmissions_)
-	}
-	return dbRoles, nil
+func (s *SqlRoleStore) GetAll() (model.RoleSlice, error) {
+	return model.Roles().All(s.GetReplica())
 }
 
 func (s *SqlRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
-	dbRole := model.Role{}
-	if err := s.DBXFromContext(ctx).First(&dbRole, "Name = ?", name).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("Role", fmt.Sprintf("name=%s", name))
+	role, err := model.Roles(model.RoleWhere.Name.EQ(name)).One(s.DBXFromContext(ctx))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.Roles, name)
 		}
-		return nil, errors.Wrapf(err, "failed to find Roles with name=%s", name)
+		return nil, err
 	}
 
-	dbRole.Permissions = strings.Fields(dbRole.Permmissions_)
-	return &dbRole, nil
+	return role, nil
 }
 
-func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
-	var roles []*model.Role
-	err := s.GetReplica().Find(&roles, "Name IN ?", names).Error
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find roles by names")
-	}
-	for _, role := range roles {
-		role.Permissions = strings.Fields(role.Permmissions_)
-	}
-	return roles, nil
+func (s *SqlRoleStore) GetByNames(names []string) (model.RoleSlice, error) {
+	return model.Roles(model.RoleWhere.Name.IN(names)).All(s.GetReplica())
 }
 
 func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
-	// Get the role.
-	var role model.Role
-	if err := s.GetReplica().First(&role, "Id = ?", roleId).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("Role", roleId)
-		}
-		return nil, errors.Wrapf(err, "failed to get Role with id=%s", roleId)
-	}
-
-	time := model.GetMillis()
-	role.CreateAt = 0 // prevent update
-	role.DeleteAt = time
-
-	err := s.GetMaster().Model(role).Updates(role).Error
+	_, err := model.
+		Roles(model.RoleWhere.ID.EQ(roleId)).
+		UpdateAll(s.GetMaster(), model.M{
+			model.RoleColumns.DeleteAt: model_helper.GetMillis(),
+		})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to update Role")
+		return nil, err
 	}
 
-	return &role, nil
+	return &model.Role{
+		ID: roleId,
+	}, nil
 }
 
 func (s *SqlRoleStore) PermanentDeleteAll() error {
-	if err := s.GetMaster().Raw("DELETE FROM Roles").Error; err != nil {
-		return errors.Wrap(err, "failed to delete Roles")
-	}
-
-	return nil
+	_, err := model.Roles().DeleteAll(s.GetMaster())
+	return err
 }

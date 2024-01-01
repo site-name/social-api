@@ -16,7 +16,7 @@ func MakeWorker(jobServer *jobs.JobServer, store store.Store, getMetrics func() 
 	isEnabled := func(cfg *model_helper.Config) bool {
 		return *cfg.MetricsSettings.Enable
 	}
-	execute := func(job *model.Job) error {
+	execute := func(job model.Job) error {
 		count, err := store.User().Count(model_helper.UserCountOptions{IncludeDeleted: false})
 		if err != nil {
 			return err

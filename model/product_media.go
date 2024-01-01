@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -190,12 +189,12 @@ var (
 )
 
 // One returns a single productMedium record from the query.
-func (q productMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ProductMedium, error) {
+func (q productMediumQuery) One(exec boil.Executor) (*ProductMedium, error) {
 	o := &ProductMedium{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -207,10 +206,10 @@ func (q productMediumQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // All returns all ProductMedium records from the query.
-func (q productMediumQuery) All(ctx context.Context, exec boil.ContextExecutor) (ProductMediumSlice, error) {
+func (q productMediumQuery) All(exec boil.Executor) (ProductMediumSlice, error) {
 	var o []*ProductMedium
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to ProductMedium slice")
 	}
@@ -219,13 +218,13 @@ func (q productMediumQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // Count returns the count of all ProductMedium records in the query.
-func (q productMediumQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q productMediumQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count product_media rows")
 	}
@@ -234,14 +233,14 @@ func (q productMediumQuery) Count(ctx context.Context, exec boil.ContextExecutor
 }
 
 // Exists checks if the row exists in the table.
-func (q productMediumQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q productMediumQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if product_media exists")
 	}
@@ -276,7 +275,7 @@ func (o *ProductMedium) MediumVariantMedia(mods ...qm.QueryMod) variantMediumQue
 
 // LoadProduct allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (productMediumL) LoadProduct(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
+func (productMediumL) LoadProduct(e boil.Executor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
 	var slice []*ProductMedium
 	var object *ProductMedium
 
@@ -339,7 +338,7 @@ func (productMediumL) LoadProduct(ctx context.Context, e boil.ContextExecutor, s
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Product")
 	}
@@ -388,7 +387,7 @@ func (productMediumL) LoadProduct(ctx context.Context, e boil.ContextExecutor, s
 
 // LoadMediumVariantMedia allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (productMediumL) LoadMediumVariantMedia(ctx context.Context, e boil.ContextExecutor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
+func (productMediumL) LoadMediumVariantMedia(e boil.Executor, singular bool, maybeProductMedium interface{}, mods queries.Applicator) error {
 	var slice []*ProductMedium
 	var object *ProductMedium
 
@@ -449,7 +448,7 @@ func (productMediumL) LoadMediumVariantMedia(ctx context.Context, e boil.Context
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load variant_media")
 	}
@@ -496,10 +495,10 @@ func (productMediumL) LoadMediumVariantMedia(ctx context.Context, e boil.Context
 // SetProduct of the productMedium to the related item.
 // Sets o.R.Product to related.
 // Adds o to related.R.ProductMedia.
-func (o *ProductMedium) SetProduct(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Product) error {
+func (o *ProductMedium) SetProduct(exec boil.Executor, insert bool, related *Product) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -511,12 +510,11 @@ func (o *ProductMedium) SetProduct(ctx context.Context, exec boil.ContextExecuto
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -544,12 +542,12 @@ func (o *ProductMedium) SetProduct(ctx context.Context, exec boil.ContextExecuto
 // of the product_medium, optionally inserting them as new records.
 // Appends related to o.R.MediumVariantMedia.
 // Sets related.R.Medium appropriately.
-func (o *ProductMedium) AddMediumVariantMedia(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*VariantMedium) error {
+func (o *ProductMedium) AddMediumVariantMedia(exec boil.Executor, insert bool, related ...*VariantMedium) error {
 	var err error
 	for _, rel := range related {
 		if insert {
 			rel.MediaID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+			if err = rel.Insert(exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
@@ -560,12 +558,11 @@ func (o *ProductMedium) AddMediumVariantMedia(ctx context.Context, exec boil.Con
 			)
 			values := []interface{}{o.ID, rel.ID}
 
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
 			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
@@ -606,7 +603,7 @@ func ProductMedia(mods ...qm.QueryMod) productMediumQuery {
 
 // FindProductMedium retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindProductMedium(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ProductMedium, error) {
+func FindProductMedium(exec boil.Executor, iD string, selectCols ...string) (*ProductMedium, error) {
 	productMediumObj := &ProductMedium{}
 
 	sel := "*"
@@ -619,7 +616,7 @@ func FindProductMedium(ctx context.Context, exec boil.ContextExecutor, iD string
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, productMediumObj)
+	err := q.Bind(nil, exec, productMediumObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -632,7 +629,7 @@ func FindProductMedium(ctx context.Context, exec boil.ContextExecutor, iD string
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *ProductMedium) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *ProductMedium) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no product_media provided for insertion")
 	}
@@ -680,16 +677,15 @@ func (o *ProductMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -708,7 +704,7 @@ func (o *ProductMedium) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update uses an executor to update the ProductMedium.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *ProductMedium) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *ProductMedium) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	productMediumUpdateCacheMut.RLock()
@@ -736,13 +732,12 @@ func (o *ProductMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update product_media row")
 	}
@@ -762,10 +757,10 @@ func (o *ProductMedium) Update(ctx context.Context, exec boil.ContextExecutor, c
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q productMediumQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q productMediumQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for product_media")
 	}
@@ -779,7 +774,7 @@ func (q productMediumQuery) UpdateAll(ctx context.Context, exec boil.ContextExec
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ProductMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o ProductMediumSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -809,12 +804,11 @@ func (o ProductMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, productMediumPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in productMedium slice")
 	}
@@ -828,7 +822,7 @@ func (o ProductMediumSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *ProductMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *ProductMedium) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no product_media provided for upsert")
 	}
@@ -912,18 +906,17 @@ func (o *ProductMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert product_media")
@@ -940,7 +933,7 @@ func (o *ProductMedium) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 
 // Delete deletes a single ProductMedium record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ProductMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *ProductMedium) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no ProductMedium provided for delete")
 	}
@@ -948,12 +941,11 @@ func (o *ProductMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), productMediumPrimaryKeyMapping)
 	sql := "DELETE FROM \"product_media\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from product_media")
 	}
@@ -967,14 +959,14 @@ func (o *ProductMedium) Delete(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // DeleteAll deletes all matching rows.
-func (q productMediumQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q productMediumQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no productMediumQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from product_media")
 	}
@@ -988,7 +980,7 @@ func (q productMediumQuery) DeleteAll(ctx context.Context, exec boil.ContextExec
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ProductMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o ProductMediumSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1002,12 +994,11 @@ func (o ProductMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	sql := "DELETE FROM \"product_media\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, productMediumPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from productMedium slice")
 	}
@@ -1022,8 +1013,8 @@ func (o ProductMediumSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ProductMedium) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindProductMedium(ctx, exec, o.ID)
+func (o *ProductMedium) Reload(exec boil.Executor) error {
+	ret, err := FindProductMedium(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1034,7 +1025,7 @@ func (o *ProductMedium) Reload(ctx context.Context, exec boil.ContextExecutor) e
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ProductMediumSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *ProductMediumSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -1051,7 +1042,7 @@ func (o *ProductMediumSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in ProductMediumSlice")
 	}
@@ -1062,16 +1053,15 @@ func (o *ProductMediumSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 }
 
 // ProductMediumExists checks if the ProductMedium row exists.
-func ProductMediumExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func ProductMediumExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"product_media\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1082,6 +1072,6 @@ func ProductMediumExists(ctx context.Context, exec boil.ContextExecutor, iD stri
 }
 
 // Exists checks if the ProductMedium row exists.
-func (o *ProductMedium) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ProductMediumExists(ctx, exec, o.ID)
+func (o *ProductMedium) Exists(exec boil.Executor) (bool, error) {
+	return ProductMediumExists(exec, o.ID)
 }

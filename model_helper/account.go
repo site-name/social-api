@@ -1,6 +1,7 @@
 package model_helper
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -8,20 +9,17 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/model_types"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/bcrypt"
-)
-
-const (
-	USER_NAME_PART_MAX_RUNES = 64
 )
 
 const (
 	SESSION_COOKIE_TOKEN              = "SNAUTHTOKEN"
 	SESSION_COOKIE_USER               = "SNUSERID"
 	SESSION_COOKIE_CSRF               = "SNCSRF"
-	SESSION_CACHE_SIZE                = 35000
 	SESSION_PROP_PLATFORM             = "platform"
 	SESSION_PROP_OS                   = "os"
 	SESSION_PROP_BROWSER              = "browser"
@@ -33,8 +31,18 @@ const (
 	SESSION_TYPE_CLOUD_KEY            = "CloudKey"
 	SESSION_TYPE_REMOTECLUSTER_TOKEN  = "RemoteClusterToken"
 	SESSION_PROP_IS_GUEST             = "is_guest"
+	SESSION_CACHE_SIZE                = 35000
 	SESSION_ACTIVITY_TIMEOUT          = 1000 * 60 * 5 // 5 minutes
 	SESSION_USER_ACCESS_TOKEN_EXPIRY  = 100 * 365     // 100 years
+	USER_NICK_NAME_MAX_RUNES          = 64
+	USER_AUTH_DATA_MAX_LENGTH         = 128
+	USER_ROLES_MAX_LENGTH             = 256
+)
+
+const (
+	USER_AUTH_SERVICE_LDAP       = "ldap"
+	LDAP_PUBLIC_CERTIFICATE_NAME = "ldap-public.crt"
+	LDAP_PRIVATE_KEY_NAME        = "ldap-private.key"
 )
 
 const (
@@ -44,6 +52,17 @@ const (
 	STATUS_CACHE_SIZE      = SESSION_CACHE_SIZE
 	STATUS_CHANNEL_TIMEOUT = 20000  // 20 seconds
 	STATUS_MIN_UPDATE_TIME = 120000 // 2 minutes
+)
+
+const (
+	ME                        = "me"
+	PUSH_NOTIFY_PROP          = "push"
+	EMAIL_NOTIFY_PROP         = "email"
+	USER_NOTIFY_MENTION       = "mention"
+	MENTION_KEYS_NOTIFY_PROP  = "mention_keys"
+	USER_FIRST_NAME_MAX_RUNES = 64
+	USER_LAST_NAME_MAX_RUNES  = 64
+	USER_TIMEZONE_MAX_RUNES   = 256
 )
 
 // Options for counting users
@@ -73,6 +92,7 @@ const (
 	SystemManagerRoleId         = "system_manager"
 	ShopAdminRoleId             = "shop_admin"
 	ShopStaffRoleId             = "shop_staff"
+	SystemGuestRoleId           = "system_guest"
 )
 
 // ----- address ---------
@@ -102,7 +122,7 @@ func AddressCommonPre(a *model.Address) {
 	}
 }
 
-func AddressIsValid(a *model.Address) *AppError {
+func AddressIsValid(a model.Address) *AppError {
 	if !IsValidNamePart(a.FirstName) {
 		return NewAppError("Address.IsValid", "model.address.is_valid.first_name.app_error", nil, "please provide valid first name", http.StatusBadRequest)
 	}
@@ -160,7 +180,7 @@ func CleanNamePart(nameValue string) string {
 }
 
 func IsValidNamePart(name string) bool {
-	if utf8.RuneCountInString(name) > USER_NAME_PART_MAX_RUNES {
+	if utf8.RuneCountInString(name) > USER_FIRST_NAME_MAX_RUNES {
 		return false
 	}
 	if !ValidUsernameChars.MatchString(name) {
@@ -171,7 +191,7 @@ func IsValidNamePart(name string) bool {
 
 // ----------- customer note ----------
 
-func CustomerNoteIsValid(c *model.CustomerNote) *AppError {
+func CustomerNoteIsValid(c model.CustomerNote) *AppError {
 	if !c.UserID.IsNil() && !IsValidId(*c.UserID.String) {
 		return NewAppError("CustomerNote.IsValid", "model.customer_note.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
@@ -183,13 +203,32 @@ func CustomerNoteIsValid(c *model.CustomerNote) *AppError {
 
 // -------- session ---------
 
+func SessionPreSave(s *model.Session) {
+	if s.Token == "" {
+		s.Token = NewId()
+	}
+	s.CreatedAt = GetMillis()
+	s.LastActivityAt = s.CreatedAt
+	if s.Props == nil {
+		s.Props = model_types.JsonMap{}
+	}
+}
+
 func SessionIsUnrestricted(s *model.Session) bool {
 	return s.Local
 }
 
-func SessionIsValid(s *model.Session) *AppError {
+func SessionIsValid(s model.Session) *AppError {
 	if !IsValidId(s.UserID) {
 		return NewAppError("Session.IsValid", "model.session.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	if s.CreatedAt == 0 {
+		return NewAppError("Session.IsValid", "model.session.is_valid.create_at.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	if len(s.Roles) > USER_ROLES_MAX_LENGTH {
+		return NewAppError("Session.IsValid", "model.session.is_valid.roles_limit.app_error",
+			map[string]any{"Limit": USER_ROLES_MAX_LENGTH}, "session_id="+s.ID, http.StatusBadRequest)
 	}
 	return nil
 }
@@ -319,7 +358,7 @@ func HashPassword(password string) string {
 
 // --------- user access token --------
 
-func UserAccessTokenIsValid(t *model.UserAccessToken) *AppError {
+func UserAccessTokenIsValid(t model.UserAccessToken) *AppError {
 	if !IsValidId(t.Token) {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.token.app_error", nil, "please provide valid token", http.StatusBadRequest)
 	}
@@ -335,6 +374,479 @@ func UserAccessTokenCommonPre(t *model.UserAccessToken) {
 	}
 }
 
-func IsSSOUser(u model.User) bool {
+// ------------ user ---------------
+
+type UserPatch struct {
+	Username    *string             `json:"username"`
+	Password    *string             `json:"password,omitempty"`
+	Nickname    *string             `json:"nickname"`
+	FirstName   *string             `json:"first_name"`
+	LastName    *string             `json:"last_name"`
+	Email       *string             `json:"email"`
+	Locale      *model.Languagecode `json:"locale"`
+	Timezone    model_types.JsonMap `json:"timezone"`
+	NotifyProps model_types.JsonMap `json:"notify_props,omitempty"`
+}
+
+func UserIsLDAP(u model.User) bool {
+	return u.AuthService == USER_AUTH_SERVICE_LDAP
+}
+
+func UserIsSAML(u model.User) bool {
+	return u.AuthService == USER_AUTH_SERVICE_SAML
+}
+
+func UserIsSSO(u model.User) bool {
 	return u.AuthService != "" && u.AuthService != USER_AUTH_SERVICE_EMAIL
+}
+
+func UserIsOauth(u model.User) bool {
+	return u.AuthService == SERVICE_GOOGLE || u.AuthService == SERVICE_OPENID
+}
+
+func UserPreSave(u *model.User) {
+	userCommonPre(u)
+	if u.Password != "" {
+		u.Password = HashPassword(u.Password)
+	}
+
+	u.CreatedAt = GetMillis()
+	u.UpdatedAt = u.CreatedAt
+}
+
+func UserPreUpdate(u *model.User) {
+	if _, ok := u.NotifyProps[MENTION_KEYS_NOTIFY_PROP]; ok {
+		// Remove any blank mention keys
+		splitKeys := strings.Split(u.NotifyProps[MENTION_KEYS_NOTIFY_PROP].(string), ",")
+		goodKeys := []string{}
+		for _, key := range splitKeys {
+			if key != "" {
+				goodKeys = append(goodKeys, strings.ToLower(key))
+			}
+		}
+		u.NotifyProps[MENTION_KEYS_NOTIFY_PROP] = strings.Join(goodKeys, ",")
+	}
+	userCommonPre(u)
+	u.UpdatedAt = GetMillis()
+}
+
+func userCommonPre(u *model.User) {
+	if u.NotifyProps == nil || len(u.NotifyProps) == 0 {
+		UserSetDefaultNotifications(u)
+	}
+	u.Username = SanitizeUnicode(u.Username)
+	u.FirstName = SanitizeUnicode(u.FirstName)
+	u.LastName = SanitizeUnicode(u.LastName)
+	u.Nickname = SanitizeUnicode(u.Nickname)
+	u.Username = NormalizeUsername(u.Username)
+	u.Email = NormalizeEmail(u.Email)
+
+	if !u.AuthData.IsNil() && *u.AuthData.String == "" {
+		u.AuthData.String = nil
+	}
+	if u.Props == nil {
+		u.Props = model_types.JsonMap{}
+	}
+
+	u.Locale = strings.ToUpper(u.Locale)
+	if model.Languagecode(u.Locale).IsValid() != nil {
+		u.Locale = DEFAULT_LOCALE.String()
+	}
+	if u.Timezone == nil {
+		u.Timezone = timezones.DefaultUserTimezone()
+	}
+}
+
+func UserSetDefaultNotifications(u *model.User) {
+	u.NotifyProps = model_types.JsonMap{
+		EMAIL_NOTIFY_PROP: "true",
+		PUSH_NOTIFY_PROP:  USER_NOTIFY_MENTION,
+	}
+}
+
+func PatchUser(u *model.User, patch UserPatch) {
+	if patch.Username != nil {
+		u.Username = *patch.Username
+	}
+	if patch.Nickname != nil {
+		u.Nickname = *patch.Nickname
+	}
+	if patch.FirstName != nil {
+		u.FirstName = *patch.FirstName
+	}
+	if patch.NotifyProps != nil {
+		u.NotifyProps = patch.NotifyProps
+	}
+	if patch.LastName != nil {
+		u.LastName = *patch.LastName
+	}
+	if patch.Email != nil {
+		u.Email = *patch.Email
+	}
+	if patch.Locale != nil && patch.Locale.IsValid() == nil {
+		u.Locale = patch.Locale.String()
+	}
+	if patch.Timezone != nil {
+		u.Timezone = patch.Timezone
+	}
+}
+
+func UserEtag(u model.User, showFullName, showEmail string) string {
+	return Etag(u.ID, u.UpdatedAt, u.TermsOfServiceID, u.TermsOfServiceCreatedAt, showFullName, showEmail)
+}
+
+func UserSanitize(u *model.User, options map[string]bool) {
+	u.Password = ""
+	u.AuthData.String = GetPointerOfValue("")
+	u.MfaSecret = ""
+
+	if len(options) != 0 && !options["email"] {
+		u.Email = ""
+	}
+	if len(options) != 0 && !options["fullname"] {
+		u.FirstName = ""
+		u.LastName = ""
+	}
+	if len(options) != 0 && !options["passwordupdate"] {
+		u.LastPasswordUpdate = 0
+	}
+	if len(options) != 0 && !options["authservice"] {
+		u.AuthService = ""
+	}
+}
+
+func UserSanitizeInput(u *model.User, isAdmin bool) {
+	if !isAdmin {
+		u.AuthData.String = GetPointerOfValue("")
+		u.AuthService = ""
+		u.EmailVerified = false
+	}
+	u.LastPasswordUpdate = 0
+	u.LastPictureUpdate = 0
+	u.FailedAttempts = 0
+	u.MfaActive = false
+	u.MfaSecret = ""
+}
+
+func UserUpdateMentionKeysFromUsername(u *model.User, oldUsername string) {
+	nonUsernameKeys := []string{}
+	for _, key := range UserGetMentionKeys(*u) {
+		if key != oldUsername && key != "@"+oldUsername {
+			nonUsernameKeys = append(nonUsernameKeys, key)
+		}
+	}
+
+	u.NotifyProps[MENTION_KEYS_NOTIFY_PROP] = ""
+	if len(nonUsernameKeys) > 0 {
+		u.NotifyProps[MENTION_KEYS_NOTIFY_PROP] = u.NotifyProps[MENTION_KEYS_NOTIFY_PROP].(string) + "," + strings.Join(nonUsernameKeys, ",")
+	}
+}
+
+func UserGetMentionKeys(u model.User) []string {
+	var keys []string
+	for _, key := range strings.Split(u.NotifyProps[MENTION_KEYS_NOTIFY_PROP].(string), ",") {
+		trimmedKey := strings.TrimSpace(key)
+		if trimmedKey == "" {
+			continue
+		}
+		keys = append(keys, trimmedKey)
+	}
+
+	return keys
+}
+
+func UserClearNonProfileFields(u *model.User) {
+	u.Password = ""
+	u.AuthData.String = GetPointerOfValue("")
+	u.MfaSecret = ""
+	u.EmailVerified = false
+	u.LastPasswordUpdate = 0
+	u.FailedAttempts = 0
+}
+
+func UserSanitizeProfile(u *model.User, options map[string]bool) {
+	UserClearNonProfileFields(u)
+	UserSanitize(u, options)
+}
+
+func UserGetFullName(u model.User) string {
+	if u.FirstName != "" && u.LastName != "" {
+		return u.FirstName + " " + u.LastName
+	} else if u.FirstName != "" {
+		return u.FirstName
+	} else if u.LastName != "" {
+		return u.LastName
+	} else {
+		return ""
+	}
+}
+
+func getUserDisplayName(u model.User, baseName, nameFormat string) string {
+	displayName := baseName
+
+	if nameFormat == SHOW_NICKNAME_FULLNAME {
+		if u.Nickname != "" {
+			displayName = u.Nickname
+		} else if fullName := UserGetFullName(u); fullName != "" {
+			displayName = fullName
+		}
+	} else if nameFormat == SHOW_FULLNAME {
+		if fullName := UserGetFullName(u); fullName != "" {
+			displayName = fullName
+		}
+	}
+
+	return displayName
+}
+
+func UserGetDisplayName(u model.User, nameFormat string) string {
+	displayName := u.Username
+	return getUserDisplayName(u, displayName, nameFormat)
+}
+
+func UserGetDisplayNameWithPrefix(u model.User, nameFormat, prefix string) string {
+	displayName := prefix + u.Username
+
+	return getUserDisplayName(u, displayName, nameFormat)
+}
+
+func UserGetRoles(u model.User) util.AnyArray[string] {
+	return strings.Fields(u.Roles)
+}
+
+func UserGetRawRoles(u model.User) string {
+	return u.Roles
+}
+
+func IsValidUserRoles(userRoles string) bool {
+	roles := strings.Fields(strings.TrimSpace(userRoles))
+
+	for _, r := range roles {
+		if !IsValidRoleName(r) {
+			return false
+		}
+	}
+
+	// Exclude just the system_admin role explicitly to prevent mistakes
+	if len(roles) == 1 && roles[0] == SystemAdminRoleId {
+		return false
+	}
+
+	return true
+}
+
+func UserToPatch(u model.User) UserPatch {
+	return UserPatch{
+		Username:  &u.Username,
+		Password:  &u.Password,
+		Nickname:  &u.Nickname,
+		FirstName: &u.FirstName,
+		LastName:  &u.LastName,
+		Email:     &u.Email,
+		Locale:    GetPointerOfValue(model.Languagecode(u.Locale)),
+		Timezone:  u.Timezone,
+	}
+}
+
+func (u *UserPatch) SetField(fieldName string, fieldValue string) {
+	switch fieldName {
+	case "FirstName":
+		u.FirstName = &fieldValue
+	case "LastName":
+		u.LastName = &fieldValue
+	case "Nickname":
+		u.Nickname = &fieldValue
+	case "Email":
+		u.Email = &fieldValue
+	case "Username":
+		u.Username = &fieldValue
+	}
+}
+
+// UserSearchOptions captures internal parameters derived from the user's permissions and a
+// UserSearch request.
+type UserSearchOptions struct {
+	// IsAdmin tracks whether or not the search is being conducted by an administrator.
+	IsAdmin bool
+	// AllowEmails allows search to examine the emails of users.
+	AllowEmails bool
+	// AllowFullNames allows search to examine the full names of users, vs. just usernames and nicknames.
+	AllowFullNames bool
+	// AllowInactive configures whether or not to return inactive users in the search results.
+	AllowInactive bool
+	// Narrows the search to the group constrained users
+	// GroupConstrained bool
+	// Limit limits the total number of results returned.
+	Limit int
+	// Filters for the given role
+	Role string
+	// Filters for users that have any of the given system roles
+	Roles []string
+}
+
+type UserGetOptions struct {
+	Inactive bool
+	// Filters the active users
+	Active bool
+	// Filters for the given role
+	Role string
+	// Filters for users matching any of the given system wide roles
+	Roles []string
+	// Filters for users matching any of the given channel roles, must be used with InChannelId
+	// Sorting option
+	Sort string
+	// Restrict to search in a list of teams and channels
+	// ViewRestrictions *ViewUsersRestrictions
+	// Page
+	Page int
+	// Page size
+	PerPage int
+}
+
+func UserMakeNonNil(u *model.User) {
+	if u.Props == nil {
+		u.Props = model_types.JsonMap{}
+	}
+	if u.NotifyProps == nil {
+		u.NotifyProps = model_types.JsonMap{}
+	}
+}
+
+func UserIsValid(u model.User) *AppError {
+	if u.CreatedAt <= 0 {
+		return InvalidUserError(model.UserColumns.CreatedAt, u.ID, u.CreatedAt)
+	}
+	if u.UpdatedAt <= 0 {
+		return InvalidUserError(model.UserColumns.UpdatedAt, u.ID, u.UpdatedAt)
+	}
+	if !IsValidUsername(u.Username) {
+		return InvalidUserError(model.UserColumns.Username, u.ID, u.Username)
+	}
+	if len(u.Email) > USER_EMAIL_MAX_LENGTH || u.Email == "" || !IsValidEmail(u.Email) {
+		return InvalidUserError(model.UserColumns.Email, u.ID, u.Email)
+	}
+	if utf8.RuneCountInString(u.Nickname) > USER_NICK_NAME_MAX_RUNES {
+		return InvalidUserError(model.UserColumns.Nickname, u.ID, u.Nickname)
+	}
+	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES {
+		return InvalidUserError(model.UserColumns.FirstName, u.ID, u.FirstName)
+	}
+	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES {
+		return InvalidUserError(model.UserColumns.LastName, u.ID, u.LastName)
+	}
+	if !u.AuthData.IsNil() && len(*u.AuthData.String) > USER_AUTH_DATA_MAX_LENGTH {
+		return InvalidUserError(model.UserColumns.AuthData, u.ID, u.AuthData)
+	}
+	if !u.AuthData.IsNil() && *u.AuthData.String != "" && u.AuthService == "" {
+		return InvalidUserError("auth_data_type", u.ID, *u.AuthData.String+" "+u.AuthService)
+	}
+	if u.Password != "" && !u.AuthData.IsNil() && *u.AuthData.String != "" {
+		return InvalidUserError("auth_data_pwd", u.ID, *u.AuthData.String)
+	}
+	if model.Languagecode(u.Locale).IsValid() != nil {
+		return InvalidUserError(model.UserColumns.Locale, u.ID, u.Locale)
+	}
+	if len(u.Timezone) > 0 {
+		if tzJSON, err := json.Marshal(u.Timezone); err != nil {
+			return NewAppError("User.IsValid", "model.user.is_valid.marshal.app_error", nil, "", http.StatusInternalServerError).Wrap(err)
+		} else if utf8.RuneCount(tzJSON) > USER_TIMEZONE_MAX_RUNES {
+			return InvalidUserError("timezone_limit", u.ID, u.Timezone)
+		}
+	}
+	if len(u.Roles) > USER_ROLES_MAX_LENGTH {
+		return NewAppError("User.IsValid", "model.user.is_valid.roles_limit.app_error",
+			map[string]any{"Limit": USER_ROLES_MAX_LENGTH}, "user_id="+u.ID+" roles_limit="+u.Roles, http.StatusBadRequest)
+	}
+	if !u.DefaultBillingAddressID.IsNil() && !IsValidId(*u.DefaultBillingAddressID.String) {
+		return InvalidUserError(model.UserColumns.DefaultBillingAddressID, u.ID, *u.DefaultBillingAddressID.String)
+	}
+	if !u.DefaultShippingAddressID.IsNil() && !IsValidId(*u.DefaultShippingAddressID.String) {
+		return InvalidUserError(model.UserColumns.DefaultShippingAddressID, u.ID, *u.DefaultBillingAddressID.String)
+	}
+	if !IsValidId(u.TermsOfServiceID) {
+		return InvalidUserError(model.UserColumns.TermsOfServiceID, u.ID, u.TermsOfServiceID)
+	}
+
+	return nil
+}
+
+func InvalidUserError(fieldName, userId string, fieldValue any) *AppError {
+	id := fmt.Sprintf("model.user.is_valid.%s.app_error", fieldName)
+	details := ""
+	if userId != "" {
+		details = "user_id=" + userId
+	}
+	details += fmt.Sprintf(" %s=%v", fieldName, fieldValue)
+	return NewAppError("User.IsValid", id, nil, details, http.StatusBadRequest)
+}
+
+type UserForIndexing struct {
+	Id        string `json:"id"`
+	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Roles     string `json:"roles"`
+	CreatedAt int64  `json:"create_at"`
+	DeletedAt int64  `json:"delete_at"`
+}
+
+type UserUpdate struct {
+	Old *model.User
+	New *model.User
+}
+
+// --------------- customer event
+
+func CustomerEventIsValid(ce model.CustomerEvent) *AppError {
+	if err := ce.Type.IsValid(); err != nil {
+		return NewAppError("CustomerEventIsValid", "model.customer_event.is_valid.type.app_error", nil, err.Error(), http.StatusBadRequest)
+	}
+	if !ce.OrderID.IsNil() && !IsValidId(*ce.OrderID.String) {
+		return NewAppError("CustomerEventIsValid", "model.customer_event.is_valid.order_id.app_error", nil, "invalid order id", http.StatusBadRequest)
+	}
+	if !ce.UserID.IsNil() && !IsValidId(*ce.UserID.String) {
+		return NewAppError("CustomerEventIsValid", "model.customer_event.is_valid.user_id.app_error", nil, "invalid user id", http.StatusBadRequest)
+	}
+	return nil
+}
+
+// ----------------- staff notification recipient --------------------
+
+func StaffNotificationRecipientIsValid(s model.StaffNotificationRecipient) *AppError {
+	if !s.UserID.IsNil() && !IsValidId(*s.UserID.String) {
+		return NewAppError("StaffNotificationRecipientIsValid", "model.staff_notification_recipient.is_valid.user_id.app_error", nil, "invalid user id", http.StatusBadRequest)
+	}
+	if !s.StaffEmail.IsNil() && !IsValidEmail(*s.StaffEmail.String) {
+		return NewAppError("StaffNotificationRecipientIsValid", "model.staff_notification_recipient.is_valid.staff_email.app_error", nil, "invalid staff email", http.StatusBadRequest)
+	}
+	return nil
+}
+
+// ------------------------ status -------------------
+
+func StatusIsValid(s model.Status) *AppError {
+	if !IsValidId(s.UserID) {
+		return NewAppError("StatusIsValid", "model.status.is_valid.user_id.app_error", nil, "invalid user id", http.StatusBadRequest)
+	}
+	return nil
+}
+
+// ------------------ term of service ----------------
+
+func TermsOfServicePreSave(t *model.TermsOfService) {
+	if t.CreatedAt == 0 {
+		t.CreatedAt = GetMillis()
+	}
+}
+
+func TermsOfServiceIsValid(t model.TermsOfService) *AppError {
+	if t.CreatedAt == 0 {
+		return NewAppError("TermsOfServiceIsValid", "model.terms_of_service.is_valid.created_at.app_error", nil, "", http.StatusBadRequest)
+	}
+	if !IsValidId(t.UserID) {
+		return NewAppError("TermsOfServiceIsValid", "model.terms_of_service.is_valid.user_id.app_error", nil, "invalid user id", http.StatusBadRequest)
+	}
+
+	return nil
 }

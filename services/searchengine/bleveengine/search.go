@@ -9,6 +9,7 @@ import (
 	// "github.com/blevesearch/bleve/search/query"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	// "github.com/sitename/sitename/modules/slog"
 )
 
@@ -348,13 +349,13 @@ const DeleteFilesBatchSize = 500
 // 	return nil
 // }
 
-func (b *BleveEngine) IndexUser(user *model.User, teamsIds, channelsIds []string) *model.AppError {
+func (b *BleveEngine) IndexUser(user *model.User, teamsIds, channelsIds []string) *model_helper.AppError {
 	b.Mutex.RLock()
 	defer b.Mutex.RUnlock()
 
 	blvUser := BLVUserFromUserAndTeams(user, teamsIds, channelsIds)
 	if err := b.UserIndex.Index(blvUser.Id, blvUser); err != nil {
-		return model.NewAppError("Bleveengine.IndexUser", "bleveengine.index_user.error", nil, err.Error(), http.StatusInternalServerError)
+		return model_helper.NewAppError("Bleveengine.IndexUser", "bleveengine.index_user.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }
@@ -497,12 +498,12 @@ func (b *BleveEngine) IndexUser(user *model.User, teamsIds, channelsIds []string
 // 	return usersIds, nil
 // }
 
-func (b *BleveEngine) DeleteUser(user *model.User) *model.AppError {
+func (b *BleveEngine) DeleteUser(user *model.User) *model_helper.AppError {
 	b.Mutex.RLock()
 	defer b.Mutex.RUnlock()
 
-	if err := b.UserIndex.Delete(user.Id); err != nil {
-		return model.NewAppError("Bleveengine.DeleteUser", "bleveengine.delete_user.error", nil, err.Error(), http.StatusInternalServerError)
+	if err := b.UserIndex.Delete(user.ID); err != nil {
+		return model_helper.NewAppError("Bleveengine.DeleteUser", "bleveengine.delete_user.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }

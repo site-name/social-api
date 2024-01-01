@@ -1,12 +1,15 @@
 package account
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/store"
 )
 
@@ -18,183 +21,172 @@ func NewSqlUserAccessTokenStore(sqlStore store.Store) store.UserAccessTokenStore
 	return &SqlUserAccessTokenStore{sqlStore}
 }
 
-func (s *SqlUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
-	err := s.GetMaster().Create(token).Error
+func (s *SqlUserAccessTokenStore) Save(token model.UserAccessToken) (*model.UserAccessToken, error) {
+	model_helper.UserAccessTokenCommonPre(&token)
+	if err := model_helper.UserAccessTokenIsValid(token); err != nil {
+		return nil, err
+	}
+
+	err := token.Insert(s.Context(), s.GetMaster(), boil.Infer())
 	if err != nil {
 		return nil, err
 	}
-	return token, nil
+	return &token, nil
 }
 
 func (s *SqlUserAccessTokenStore) Delete(tokenId string) error {
-	tx := s.GetMaster().Begin()
-	if tx.Error != nil {
-		return errors.Wrap(tx.Error, "begin_transaction")
+	tx, err := s.GetMaster().BeginTx(s.Context(), &sql.TxOptions{})
+	if err != nil {
+		return errors.Wrap(err, "begin_transaction")
 	}
 	defer s.FinalizeTransaction(tx)
 
-	err := s.deleteSessionsAndTokensById(tx, tokenId)
+	// delete related session
+	_, err = tx.ExecContext(
+		s.Context(),
+		fmt.Sprintf(
+			"DELETE FROM %s USING %s WHERE %s = %s AND %s = $1",
+			model.TableNames.Sessions,
+			model.TableNames.UserAccessTokens,
+			model.SessionTableColumns.Token,
+			model.UserAccessTokenTableColumns.Token,
+			model.UserAccessTokenTableColumns.ID,
+		),
+		tokenId)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete related session of given user access token")
+	}
+
+	// delete user access token
+	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).DeleteAll(s.Context(), tx)
 	if err != nil {
 		return err
 	}
-	if err := tx.Commit().Error; err != nil {
-		// don't need to rollback here since the transaction is already closed
+
+	if err := tx.Commit(); err != nil {
 		return errors.Wrap(err, "commit_transaction")
-	}
-
-	return nil
-}
-
-func (s *SqlUserAccessTokenStore) deleteSessionsAndTokensById(transaction *gorm.DB, tokenId string) error {
-	err := transaction.Raw("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.Id = ?", tokenId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken id=%s", tokenId)
-	}
-
-	return s.deleteTokensById(transaction, tokenId)
-}
-
-func (s *SqlUserAccessTokenStore) deleteTokensById(transaction *gorm.DB, tokenId string) error {
-	err := transaction.Raw("DELETE FROM UserAccessTokens WHERE Id = ?", tokenId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete UserAccessToken id=%s", tokenId)
 	}
 
 	return nil
 }
 
 func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
-	tx := s.GetMaster().Begin()
-	if tx.Error != nil {
-		return errors.Wrap(tx.Error, "begin_transaction")
+	tx, err := s.GetMaster().BeginTx(s.Context(), &sql.TxOptions{})
+	if err != nil {
+		return errors.Wrap(err, "begin_transaction")
 	}
 	defer s.FinalizeTransaction(tx)
 
-	if err := s.deleteSessionsandTokensByUser(tx, userId); err != nil {
+	// delete related user session
+	_, err = tx.ExecContext(
+		s.Context(),
+		fmt.Sprintf(
+			"DELETE FROM %s USING %s WHERE %s = %s AND %s = $1",
+			model.TableNames.Sessions,
+			model.TableNames.UserAccessTokens,
+			model.SessionTableColumns.Token,
+			model.UserAccessTokenTableColumns.Token,
+			model.UserAccessTokenTableColumns.UserID,
+		),
+		userId)
+
+	// delete user access token
+	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.UserID.EQ(userId)).DeleteAll(s.Context(), tx)
+	if err != nil {
 		return err
 	}
 
-	if err := tx.Commit().Error; err != nil {
-		// don't need to rollback here since the transaction is already closed
+	if err := tx.Commit(); err != nil {
 		return errors.Wrap(err, "commit_transaction")
 	}
-	return nil
-}
-
-func (s *SqlUserAccessTokenStore) deleteSessionsandTokensByUser(transaction *gorm.DB, userId string) error {
-	err := transaction.Raw("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.UserId = ?", userId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken userId=%s", userId)
-	}
-
-	return s.deleteTokensByUser(transaction, userId)
-}
-
-func (s *SqlUserAccessTokenStore) deleteTokensByUser(transaction *gorm.DB, userId string) error {
-	err := transaction.Raw("DELETE FROM UserAccessTokens WHERE UserId = ?", userId).Error
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete UserAccessToken userId=%s", userId)
-	}
-
 	return nil
 }
 
 func (s *SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, error) {
-	var token model.UserAccessToken
-
-	if err := s.GetReplica().First(&token, "Id = ?", tokenId).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("UserAccessToken", tokenId)
+	token, err := model.FindUserAccessToken(s.Context(), s.GetReplica(), tokenId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.UserAccessTokens, tokenId)
 		}
-		return nil, errors.Wrapf(err, "failed to get UserAccessToken with id=%s", tokenId)
+		return nil, err
 	}
 
-	return &token, nil
+	return token, nil
 }
 
-func (s *SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*model.UserAccessToken, error) {
-	tokens := []*model.UserAccessToken{}
-
-	if err := s.GetReplica().Raw("SELECT * FROM "+model.UserAccessTokenTableName+" OFFSET ? LIMIT ?", offset, limit).Scan(&tokens).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find UserAccessTokens")
-	}
-
-	return tokens, nil
+func (s *SqlUserAccessTokenStore) GetAll(conds ...qm.QueryMod) (model.UserAccessTokenSlice, error) {
+	return model.UserAccessTokens(conds...).All(s.Context(), s.GetReplica())
 }
 
 func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
-	var token model.UserAccessToken
-
-	if err := s.GetReplica().First(&token, "Token = ?", tokenString).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound("UserAccessToken", fmt.Sprintf("token=%s", tokenString))
+	token, err := model.UserAccessTokens(model.UserAccessTokenWhere.Token.EQ(tokenString)).One(s.Context(), s.GetReplica())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(model.TableNames.UserAccessTokens, "token")
 		}
-		return nil, errors.Wrapf(err, "failed to get UserAccessToken with token=%s", tokenString)
+		return nil, err
 	}
 
-	return &token, nil
+	return token, nil
 }
 
-func (s *SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]*model.UserAccessToken, error) {
-	tokens := []*model.UserAccessToken{}
-
-	if err := s.GetReplica().Offset(offset).Limit(limit).Find(&tokens, "UserId = ?", userId).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find UserAccessTokens with userId=%s", userId)
-	}
-
-	return tokens, nil
-}
-
-func (s *SqlUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
+func (s *SqlUserAccessTokenStore) Search(term string) (model.UserAccessTokenSlice, error) {
 	term = store.SanitizeSearchTerm(term, "\\")
-	tokens := []*model.UserAccessToken{}
 
-	if err := s.GetReplica().
-		Table(model.UserAccessTokenTableName).
-		Joins("INNER JOIN "+model.UserTableName+" ON Users.Id = UserAccessTokens.UserId").
-		Find(&tokens, "UserAccessTokens.Id LIKE ? OR UserAccessTokens.UserId LIKE OR Users.Username LIKE ?", term, term, term).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find UserAccessTokens by term with value '%s'", term)
-	}
-
-	return tokens, nil
+	return model.
+		UserAccessTokens(
+			qm.InnerJoin(fmt.Sprintf(
+				"%[1]s ON %[2]s = %[3]s",
+				model.TableNames.Users,                   // 1
+				model.UserTableColumns.ID,                // 2
+				model.UserAccessTokenTableColumns.UserID, // 3
+			)),
+			model.UserAccessTokenWhere.ID.LIKE(term),
+			qm.Or(model.UserAccessTokenTableColumns.UserID+" LIKE ?", term),
+			qm.Or(model.UserTableColumns.Username+" LIKE ?", term),
+		).
+		All(s.Context(), s.GetReplica())
 }
 
 func (s *SqlUserAccessTokenStore) UpdateTokenEnable(tokenId string) error {
-	if err := s.GetMaster().Exec("UPDATE UserAccessTokens SET IsActive = TRUE WHERE Id = ?", tokenId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update UserAccessTokens with id=%s", tokenId)
-	}
-	return nil
+	_, err := model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).UpdateAll(s.Context(), s.GetMaster(), model.M{
+		model.UserAccessTokenColumns.IsActive: true,
+	})
+	return err
 }
 
 func (s *SqlUserAccessTokenStore) UpdateTokenDisable(tokenId string) error {
-	tx := s.GetMaster().Begin()
-	if tx.Error != nil {
-		return errors.Wrap(tx.Error, "begin_transaction")
+	tx, err := s.GetMaster().BeginTx(s.Context(), &sql.TxOptions{})
+	if err != nil {
+		return errors.Wrap(err, "begin_transaction")
 	}
 	defer s.FinalizeTransaction(tx)
 
-	if err := s.deleteSessionsAndDisableToken(tx, tokenId); err != nil {
+	// delete related session
+	_, err = tx.ExecContext(
+		s.Context(),
+		fmt.Sprintf(
+			"DELETE FROM %s USING %s WHERE %s = %s AND %s = $1",
+			model.TableNames.Sessions,
+			model.TableNames.UserAccessTokens,
+			model.SessionTableColumns.Token,
+			model.UserAccessTokenTableColumns.Token,
+			model.UserAccessTokenTableColumns.ID,
+		),
+		tokenId)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete related session of given user access token")
+	}
+
+	_, err = model.UserAccessTokens(model.UserAccessTokenWhere.ID.EQ(tokenId)).UpdateAll(s.Context(), s.GetMaster(), model.M{
+		model.UserAccessTokenColumns.IsActive: false,
+	})
+	if err != nil {
 		return err
 	}
-	if err := tx.Commit().Error; err != nil {
-		// don't need to rollback here since the transaction is already closed
+
+	if err := tx.Commit(); err != nil {
 		return errors.Wrap(err, "commit_transaction")
 	}
-	return nil
-}
-
-func (s *SqlUserAccessTokenStore) deleteSessionsAndDisableToken(transaction *gorm.DB, tokenId string) error {
-	if err := transaction.Exec("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.Id = ?", tokenId).Error; err != nil {
-		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken id=%s", tokenId)
-	}
-
-	return s.updateTokenDisable(transaction, tokenId)
-}
-
-func (s *SqlUserAccessTokenStore) updateTokenDisable(transaction *gorm.DB, tokenId string) error {
-	if err := transaction.Exec("UPDATE UserAccessTokens SET IsActive = FALSE WHERE Id = ?", tokenId).Error; err != nil {
-		return errors.Wrapf(err, "failed to update UserAccessToken with id=%s", tokenId)
-	}
-
 	return nil
 }

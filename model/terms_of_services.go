@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -126,12 +125,12 @@ var (
 )
 
 // One returns a single termsOfService record from the query.
-func (q termsOfServiceQuery) One(ctx context.Context, exec boil.ContextExecutor) (*TermsOfService, error) {
+func (q termsOfServiceQuery) One(exec boil.Executor) (*TermsOfService, error) {
 	o := &TermsOfService{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -143,10 +142,10 @@ func (q termsOfServiceQuery) One(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // All returns all TermsOfService records from the query.
-func (q termsOfServiceQuery) All(ctx context.Context, exec boil.ContextExecutor) (TermsOfServiceSlice, error) {
+func (q termsOfServiceQuery) All(exec boil.Executor) (TermsOfServiceSlice, error) {
 	var o []*TermsOfService
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to TermsOfService slice")
 	}
@@ -155,13 +154,13 @@ func (q termsOfServiceQuery) All(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // Count returns the count of all TermsOfService records in the query.
-func (q termsOfServiceQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q termsOfServiceQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count terms_of_services rows")
 	}
@@ -170,14 +169,14 @@ func (q termsOfServiceQuery) Count(ctx context.Context, exec boil.ContextExecuto
 }
 
 // Exists checks if the row exists in the table.
-func (q termsOfServiceQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q termsOfServiceQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if terms_of_services exists")
 	}
@@ -198,7 +197,7 @@ func TermsOfServices(mods ...qm.QueryMod) termsOfServiceQuery {
 
 // FindTermsOfService retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindTermsOfService(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*TermsOfService, error) {
+func FindTermsOfService(exec boil.Executor, iD string, selectCols ...string) (*TermsOfService, error) {
 	termsOfServiceObj := &TermsOfService{}
 
 	sel := "*"
@@ -211,7 +210,7 @@ func FindTermsOfService(ctx context.Context, exec boil.ContextExecutor, iD strin
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, termsOfServiceObj)
+	err := q.Bind(nil, exec, termsOfServiceObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -224,7 +223,7 @@ func FindTermsOfService(ctx context.Context, exec boil.ContextExecutor, iD strin
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *TermsOfService) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *TermsOfService) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no terms_of_services provided for insertion")
 	}
@@ -272,16 +271,15 @@ func (o *TermsOfService) Insert(ctx context.Context, exec boil.ContextExecutor, 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -300,7 +298,7 @@ func (o *TermsOfService) Insert(ctx context.Context, exec boil.ContextExecutor, 
 // Update uses an executor to update the TermsOfService.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *TermsOfService) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *TermsOfService) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	termsOfServiceUpdateCacheMut.RLock()
@@ -328,13 +326,12 @@ func (o *TermsOfService) Update(ctx context.Context, exec boil.ContextExecutor, 
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update terms_of_services row")
 	}
@@ -354,10 +351,10 @@ func (o *TermsOfService) Update(ctx context.Context, exec boil.ContextExecutor, 
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q termsOfServiceQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q termsOfServiceQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for terms_of_services")
 	}
@@ -371,7 +368,7 @@ func (q termsOfServiceQuery) UpdateAll(ctx context.Context, exec boil.ContextExe
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o TermsOfServiceSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o TermsOfServiceSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -401,12 +398,11 @@ func (o TermsOfServiceSlice) UpdateAll(ctx context.Context, exec boil.ContextExe
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, termsOfServicePrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in termsOfService slice")
 	}
@@ -420,7 +416,7 @@ func (o TermsOfServiceSlice) UpdateAll(ctx context.Context, exec boil.ContextExe
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *TermsOfService) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *TermsOfService) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no terms_of_services provided for upsert")
 	}
@@ -504,18 +500,17 @@ func (o *TermsOfService) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert terms_of_services")
@@ -532,7 +527,7 @@ func (o *TermsOfService) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 
 // Delete deletes a single TermsOfService record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *TermsOfService) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *TermsOfService) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no TermsOfService provided for delete")
 	}
@@ -540,12 +535,11 @@ func (o *TermsOfService) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), termsOfServicePrimaryKeyMapping)
 	sql := "DELETE FROM \"terms_of_services\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from terms_of_services")
 	}
@@ -559,14 +553,14 @@ func (o *TermsOfService) Delete(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // DeleteAll deletes all matching rows.
-func (q termsOfServiceQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q termsOfServiceQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no termsOfServiceQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from terms_of_services")
 	}
@@ -580,7 +574,7 @@ func (q termsOfServiceQuery) DeleteAll(ctx context.Context, exec boil.ContextExe
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o TermsOfServiceSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o TermsOfServiceSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -594,12 +588,11 @@ func (o TermsOfServiceSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 	sql := "DELETE FROM \"terms_of_services\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, termsOfServicePrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from termsOfService slice")
 	}
@@ -614,8 +607,8 @@ func (o TermsOfServiceSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *TermsOfService) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindTermsOfService(ctx, exec, o.ID)
+func (o *TermsOfService) Reload(exec boil.Executor) error {
+	ret, err := FindTermsOfService(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -626,7 +619,7 @@ func (o *TermsOfService) Reload(ctx context.Context, exec boil.ContextExecutor) 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *TermsOfServiceSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *TermsOfServiceSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -643,7 +636,7 @@ func (o *TermsOfServiceSlice) ReloadAll(ctx context.Context, exec boil.ContextEx
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in TermsOfServiceSlice")
 	}
@@ -654,16 +647,15 @@ func (o *TermsOfServiceSlice) ReloadAll(ctx context.Context, exec boil.ContextEx
 }
 
 // TermsOfServiceExists checks if the TermsOfService row exists.
-func TermsOfServiceExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func TermsOfServiceExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"terms_of_services\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -674,6 +666,6 @@ func TermsOfServiceExists(ctx context.Context, exec boil.ContextExecutor, iD str
 }
 
 // Exists checks if the TermsOfService row exists.
-func (o *TermsOfService) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return TermsOfServiceExists(ctx, exec, o.ID)
+func (o *TermsOfService) Exists(exec boil.Executor) (bool, error) {
+	return TermsOfServiceExists(exec, o.ID)
 }

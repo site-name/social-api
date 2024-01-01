@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model_helper"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/services/searchengine"
 	"github.com/sitename/sitename/store"
@@ -19,7 +19,7 @@ import (
 )
 
 type MainHelper struct {
-	Settings         *model.SqlSettings
+	Settings         *model_helper.SqlSettings
 	Store            store.Store
 	SearchEngine     *searchengine.Broker
 	SQLStore         *sqlstore.SqlStore
@@ -103,13 +103,13 @@ func (h *MainHelper) Main(m *testing.M) {
 func (h *MainHelper) setupStore(withReadReplica bool) {
 	driverName := os.Getenv("MM_SQLSETTINGS_DRIVERNAME")
 	if driverName == "" {
-		driverName = model.DATABASE_DRIVER_POSTGRES
+		driverName = model_helper.DATABASE_DRIVER_POSTGRES
 	}
 
 	h.Settings = storetest.MakeSqlSettings(driverName, withReadReplica)
 	h.replicas = h.Settings.DataSourceReplicas
 
-	config := &model.Config{}
+	config := &model_helper.Config{}
 	config.SetDefaults()
 
 	h.SearchEngine = searchengine.NewBroker(config)
@@ -166,13 +166,13 @@ func (h *MainHelper) PreloadMigrations() {
 	}
 	relPath := "channels/testlib/testdata"
 	switch *h.Settings.DriverName {
-	case model.DATABASE_DRIVER_POSTGRES:
+	case model_helper.DATABASE_DRIVER_POSTGRES:
 		finalPath := filepath.Join(basePath, relPath, "postgres_migration_warmup.sql")
 		buf, err = os.ReadFile(finalPath)
 		if err != nil {
 			panic(fmt.Errorf("cannot read file: %v", err))
 		}
-	case model.DATABASE_DRIVER_MYSQL:
+	case model_helper.DATABASE_DRIVER_MYSQL:
 		finalPath := filepath.Join(basePath, relPath, "mysql_migration_warmup.sql")
 		buf, err = os.ReadFile(finalPath)
 		if err != nil {
@@ -180,7 +180,7 @@ func (h *MainHelper) PreloadMigrations() {
 		}
 	}
 	handle := h.SQLStore.GetMaster()
-	err = handle.Exec(string(buf)).Error
+	_, err = handle.Exec(string(buf))
 	if err != nil {
 		panic(errors.Wrap(err, "Error preloading migrations. Check if you have &multiStatements=true in your DSN if you are using MySQL. Or perhaps the schema changed? If yes, then update the warmup files accordingly"))
 	}
@@ -206,7 +206,7 @@ func (h *MainHelper) Close() error {
 	return nil
 }
 
-func (h *MainHelper) GetSQLSettings() *model.SqlSettings {
+func (h *MainHelper) GetSQLSettings() *model_helper.SqlSettings {
 	if h.Settings == nil {
 		panic("MainHelper not initialized with database access.")
 	}
@@ -247,8 +247,8 @@ func (h *MainHelper) GetSearchEngine() *searchengine.Broker {
 }
 
 func (h *MainHelper) SetReplicationLagForTesting(seconds int) error {
-	if dn := h.SQLStore.DriverName(); dn != model.DATABASE_DRIVER_MYSQL {
-		return fmt.Errorf("method not implemented for %q database driver, only %q is supported", dn, model.DATABASE_DRIVER_MYSQL)
+	if dn := h.SQLStore.DriverName(); dn != model_helper.DATABASE_DRIVER_MYSQL {
+		return fmt.Errorf("method not implemented for %q database driver, only %q is supported", dn, model_helper.DATABASE_DRIVER_MYSQL)
 	}
 
 	err := h.execOnEachReplica("STOP SLAVE SQL_THREAD FOR CHANNEL ''")
@@ -271,7 +271,7 @@ func (h *MainHelper) SetReplicationLagForTesting(seconds int) error {
 
 func (h *MainHelper) execOnEachReplica(query string, args ...any) error {
 	for _, replica := range h.SQLStore.Replicas {
-		err := replica.Exec(query, args...).Error
+		_, err := replica.Exec(query, args...)
 		if err != nil {
 			return err
 		}

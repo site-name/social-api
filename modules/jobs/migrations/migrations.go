@@ -27,7 +27,7 @@ func GetMigrationState(migration string, store store.Store) (string, *model.Job,
 		return MigrationStateCompleted, nil, nil
 	}
 
-	jobs, err := store.Job().GetAllByType(model.JobtypeMigrations.String())
+	jobs, err := store.Job().FindAll(model.JobWhere.Type.EQ(model.JobtypeMigrations))
 	if err != nil {
 		return "", nil, model_helper.NewAppError("GetMigrationState", "app.job.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

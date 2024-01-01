@@ -4,7 +4,6 @@
 package model
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -251,12 +250,12 @@ var (
 )
 
 // One returns a single orderDiscount record from the query.
-func (q orderDiscountQuery) One(ctx context.Context, exec boil.ContextExecutor) (*OrderDiscount, error) {
+func (q orderDiscountQuery) One(exec boil.Executor) (*OrderDiscount, error) {
 	o := &OrderDiscount{}
 
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Bind(ctx, exec, o)
+	err := q.Bind(nil, exec, o)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -268,10 +267,10 @@ func (q orderDiscountQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // All returns all OrderDiscount records from the query.
-func (q orderDiscountQuery) All(ctx context.Context, exec boil.ContextExecutor) (OrderDiscountSlice, error) {
+func (q orderDiscountQuery) All(exec boil.Executor) (OrderDiscountSlice, error) {
 	var o []*OrderDiscount
 
-	err := q.Bind(ctx, exec, &o)
+	err := q.Bind(nil, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "model: failed to assign all query results to OrderDiscount slice")
 	}
@@ -280,13 +279,13 @@ func (q orderDiscountQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // Count returns the count of all OrderDiscount records in the query.
-func (q orderDiscountQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q orderDiscountQuery) Count(exec boil.Executor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: failed to count order_discounts rows")
 	}
@@ -295,14 +294,14 @@ func (q orderDiscountQuery) Count(ctx context.Context, exec boil.ContextExecutor
 }
 
 // Exists checks if the row exists in the table.
-func (q orderDiscountQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q orderDiscountQuery) Exists(exec boil.Executor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 
-	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
+	err := q.Query.QueryRow(exec).Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "model: failed to check if order_discounts exists")
 	}
@@ -323,7 +322,7 @@ func (o *OrderDiscount) Order(mods ...qm.QueryMod) orderQuery {
 
 // LoadOrder allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (orderDiscountL) LoadOrder(ctx context.Context, e boil.ContextExecutor, singular bool, maybeOrderDiscount interface{}, mods queries.Applicator) error {
+func (orderDiscountL) LoadOrder(e boil.Executor, singular bool, maybeOrderDiscount interface{}, mods queries.Applicator) error {
 	var slice []*OrderDiscount
 	var object *OrderDiscount
 
@@ -390,7 +389,7 @@ func (orderDiscountL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sin
 		mods.Apply(query)
 	}
 
-	results, err := query.QueryContext(ctx, e)
+	results, err := query.Query(e)
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load Order")
 	}
@@ -440,10 +439,10 @@ func (orderDiscountL) LoadOrder(ctx context.Context, e boil.ContextExecutor, sin
 // SetOrder of the orderDiscount to the related item.
 // Sets o.R.Order to related.
 // Adds o to related.R.OrderDiscounts.
-func (o *OrderDiscount) SetOrder(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Order) error {
+func (o *OrderDiscount) SetOrder(exec boil.Executor, insert bool, related *Order) error {
 	var err error
 	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -455,12 +454,11 @@ func (o *OrderDiscount) SetOrder(ctx context.Context, exec boil.ContextExecutor,
 	)
 	values := []interface{}{related.ID, o.ID}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -487,11 +485,11 @@ func (o *OrderDiscount) SetOrder(ctx context.Context, exec boil.ContextExecutor,
 // RemoveOrder relationship.
 // Sets o.R.Order to nil.
 // Removes o from all passed in related items' relationships struct.
-func (o *OrderDiscount) RemoveOrder(ctx context.Context, exec boil.ContextExecutor, related *Order) error {
+func (o *OrderDiscount) RemoveOrder(exec boil.Executor, related *Order) error {
 	var err error
 
 	queries.SetScanner(&o.OrderID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("order_id")); err != nil {
+	if _, err = o.Update(exec, boil.Whitelist("order_id")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -530,7 +528,7 @@ func OrderDiscounts(mods ...qm.QueryMod) orderDiscountQuery {
 
 // FindOrderDiscount retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOrderDiscount(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*OrderDiscount, error) {
+func FindOrderDiscount(exec boil.Executor, iD string, selectCols ...string) (*OrderDiscount, error) {
 	orderDiscountObj := &OrderDiscount{}
 
 	sel := "*"
@@ -543,7 +541,7 @@ func FindOrderDiscount(ctx context.Context, exec boil.ContextExecutor, iD string
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, orderDiscountObj)
+	err := q.Bind(nil, exec, orderDiscountObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -556,7 +554,7 @@ func FindOrderDiscount(ctx context.Context, exec boil.ContextExecutor, iD string
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *OrderDiscount) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *OrderDiscount) Insert(exec boil.Executor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no order_discounts provided for insertion")
 	}
@@ -604,16 +602,15 @@ func (o *OrderDiscount) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 
 	if err != nil {
@@ -632,7 +629,7 @@ func (o *OrderDiscount) Insert(ctx context.Context, exec boil.ContextExecutor, c
 // Update uses an executor to update the OrderDiscount.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *OrderDiscount) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *OrderDiscount) Update(exec boil.Executor, columns boil.Columns) (int64, error) {
 	var err error
 	key := makeCacheKey(columns, nil)
 	orderDiscountUpdateCacheMut.RLock()
@@ -660,13 +657,12 @@ func (o *OrderDiscount) Update(ctx context.Context, exec boil.ContextExecutor, c
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, values)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	var result sql.Result
-	result, err = exec.ExecContext(ctx, cache.query, values...)
+	result, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update order_discounts row")
 	}
@@ -686,10 +682,10 @@ func (o *OrderDiscount) Update(ctx context.Context, exec boil.ContextExecutor, c
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q orderDiscountQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q orderDiscountQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all for order_discounts")
 	}
@@ -703,7 +699,7 @@ func (q orderDiscountQuery) UpdateAll(ctx context.Context, exec boil.ContextExec
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o OrderDiscountSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o OrderDiscountSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -733,12 +729,11 @@ func (o OrderDiscountSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, orderDiscountPrimaryKeyColumns, len(o)))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to update all in orderDiscount slice")
 	}
@@ -752,7 +747,7 @@ func (o OrderDiscountSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *OrderDiscount) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *OrderDiscount) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("model: no order_discounts provided for upsert")
 	}
@@ -836,18 +831,17 @@ func (o *OrderDiscount) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, cache.query)
-		fmt.Fprintln(writer, vals)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
 		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
-		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "model: unable to upsert order_discounts")
@@ -864,7 +858,7 @@ func (o *OrderDiscount) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 
 // Delete deletes a single OrderDiscount record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *OrderDiscount) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *OrderDiscount) Delete(exec boil.Executor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("model: no OrderDiscount provided for delete")
 	}
@@ -872,12 +866,11 @@ func (o *OrderDiscount) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), orderDiscountPrimaryKeyMapping)
 	sql := "DELETE FROM \"order_discounts\" WHERE \"id\"=$1"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args...)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete from order_discounts")
 	}
@@ -891,14 +884,14 @@ func (o *OrderDiscount) Delete(ctx context.Context, exec boil.ContextExecutor) (
 }
 
 // DeleteAll deletes all matching rows.
-func (q orderDiscountQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q orderDiscountQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("model: no orderDiscountQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
-	result, err := q.Query.ExecContext(ctx, exec)
+	result, err := q.Query.Exec(exec)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from order_discounts")
 	}
@@ -912,7 +905,7 @@ func (q orderDiscountQuery) DeleteAll(ctx context.Context, exec boil.ContextExec
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o OrderDiscountSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o OrderDiscountSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -926,12 +919,11 @@ func (o OrderDiscountSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	sql := "DELETE FROM \"order_discounts\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, orderDiscountPrimaryKeyColumns, len(o))
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	result, err := exec.ExecContext(ctx, sql, args...)
+	result, err := exec.Exec(sql, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "model: unable to delete all from orderDiscount slice")
 	}
@@ -946,8 +938,8 @@ func (o OrderDiscountSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *OrderDiscount) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindOrderDiscount(ctx, exec, o.ID)
+func (o *OrderDiscount) Reload(exec boil.Executor) error {
+	ret, err := FindOrderDiscount(exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -958,7 +950,7 @@ func (o *OrderDiscount) Reload(ctx context.Context, exec boil.ContextExecutor) e
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *OrderDiscountSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *OrderDiscountSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -975,7 +967,7 @@ func (o *OrderDiscountSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 
 	q := queries.Raw(sql, args...)
 
-	err := q.Bind(ctx, exec, &slice)
+	err := q.Bind(nil, exec, &slice)
 	if err != nil {
 		return errors.Wrap(err, "model: unable to reload all in OrderDiscountSlice")
 	}
@@ -986,16 +978,15 @@ func (o *OrderDiscountSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 }
 
 // OrderDiscountExists checks if the OrderDiscount row exists.
-func OrderDiscountExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func OrderDiscountExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"order_discounts\" where \"id\"=$1 limit 1)"
 
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRow(sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1006,6 +997,6 @@ func OrderDiscountExists(ctx context.Context, exec boil.ContextExecutor, iD stri
 }
 
 // Exists checks if the OrderDiscount row exists.
-func (o *OrderDiscount) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return OrderDiscountExists(ctx, exec, o.ID)
+func (o *OrderDiscount) Exists(exec boil.Executor) (bool, error) {
+	return OrderDiscountExists(exec, o.ID)
 }
